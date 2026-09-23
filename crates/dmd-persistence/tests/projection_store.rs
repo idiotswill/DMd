@@ -2,8 +2,9 @@ use std::{path::PathBuf, str::FromStr};
 
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, CommandId, CommandIssuer, CommandMeta,
-    EntityExistence, EntityId, EntityKind, EventId, EventSource, Location, LocationId, PendingEvent,
-    SerializedRecord, VersionedRef, WorldClock, WorldDuration, WorldEntity, WorldInstant,
+    EntityExistence, EntityId, EntityKind, EventId, EventSource, Location, LocationId,
+    PendingEvent, SerializedRecord, VersionedRef, WorldClock, WorldDuration, WorldEntity,
+    WorldInstant,
 };
 use dmd_persistence::{
     ProjectionStoreError, ReplayApplyError, ReplayEventApplier, StoredJournalEvent,
@@ -232,7 +233,8 @@ async fn projection_failure_rolls_back_authoritative_transition_and_journal() {
 
 #[tokio::test]
 async fn projections_survive_close_and_reopen() {
-    let path: PathBuf = std::env::temp_dir().join(format!("dmd-projections-{}.sqlite", Uuid::new_v4()));
+    let path: PathBuf =
+        std::env::temp_dir().join(format!("dmd-projections-{}.sqlite", Uuid::new_v4()));
     let url = format!("sqlite://{}", path.display());
     let pool = open_sqlite(&url).await.unwrap();
     let (state, location_id, entity_id) = state("Restart");
