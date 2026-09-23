@@ -69,8 +69,8 @@ pub async fn save_play_session(
         .await?;
 
     for (ordinal, participant) in session.participants.iter().enumerate() {
-        let ordinal = i64::try_from(ordinal)
-            .map_err(|_| SessionStoreError::ParticipantOrdinalOverflow)?;
+        let ordinal =
+            i64::try_from(ordinal).map_err(|_| SessionStoreError::ParticipantOrdinalOverflow)?;
         sqlx::query(
             r#"
             INSERT INTO play_session_participants (
@@ -209,8 +209,8 @@ mod tests {
     use super::*;
     use crate::migrate_sqlite;
     use dmd_domain::{
-        Campaign, CampaignStatus, Character, CharacterStatus, EntityExistence, EntityId, EntityKind,
-        Player, VersionedRef, WorldClock, WorldEntity,
+        Campaign, CampaignStatus, Character, CharacterStatus, EntityExistence, EntityId,
+        EntityKind, Player, VersionedRef, WorldClock, WorldEntity,
     };
     use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
     use std::str::FromStr;
