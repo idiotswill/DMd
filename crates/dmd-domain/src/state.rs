@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, DirectiveId,
-    EntityId, Fact, FactId, Faction, FactionId, ItemId, ItemInstance, KnowledgeRecord, Location,
-    LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
+    EntityId, Fact, FactId, Faction, FactionId, ItemId, ItemInstance, KnowledgeId, KnowledgeRecord,
+    Location, LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock,
+    WorldEntity,
 };
 
 pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
@@ -25,7 +26,7 @@ pub struct CampaignState {
     pub facts: HashMap<FactId, Fact>,
     pub claims: HashMap<ClaimId, Claim>,
     pub beliefs: HashMap<BeliefId, Belief>,
-    pub knowledge: Vec<KnowledgeRecord>,
+    pub knowledge: HashMap<KnowledgeId, KnowledgeRecord>,
     pub directives: HashMap<DirectiveId, StandingDirective>,
     /// Last event sequence incorporated into this materialized snapshot.
     pub applied_event_sequence: u64,
@@ -48,7 +49,7 @@ impl CampaignState {
             facts: HashMap::new(),
             claims: HashMap::new(),
             beliefs: HashMap::new(),
-            knowledge: Vec::new(),
+            knowledge: HashMap::new(),
             directives: HashMap::new(),
             applied_event_sequence: 0,
         }
