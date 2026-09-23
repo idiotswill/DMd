@@ -5,7 +5,7 @@ use std::{
     path::{Component, Path, PathBuf},
 };
 
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Deserializer, Serialize};
 
 use crate::{Campaign, VersionedRef};
 
@@ -51,12 +51,14 @@ pub enum ChecksumAlgorithm {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ContentChecksum {
     pub algorithm: ChecksumAlgorithm,
     pub value: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ManifestFile {
     pub path: String,
     pub byte_len: u64,
@@ -64,18 +66,40 @@ pub struct ManifestFile {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ContentManifest {
     pub manifest_schema_version: u32,
     pub content_contract_version: u32,
     pub kind: ManifestKind,
     pub id: String,
     pub version: String,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_versioned_refs")]
     pub compatible_rulesets: Vec<VersionedRef>,
-    #[serde(default)]
+    #[serde(default, deserialize_with = "deserialize_versioned_refs")]
     pub dependencies: Vec<VersionedRef>,
     #[serde(default)]
     pub files: Vec<ManifestFile>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct StrictVersionedRef {
+    id: String,
+    version: String,
+}
+
+fn deserialize_versioned_refs<'de, D>(deserializer: D) -> Result<Vec<VersionedRef>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let references = Vec::<StrictVersionedRef>::deserialize(deserializer)?;
+    Ok(references
+        .into_iter()
+        .map(|reference| VersionedRef {
+            id: reference.id,
+            version: reference.version,
+        })
+        .collect())
 }
 
 impl ContentManifest {
@@ -244,11 +268,7 @@ impl fmt::Display for CatalogLoadError {
                 write!(formatter, "I/O error at {}: {message}", path.display())
             }
             Self::SymlinkNotAllowed(path) => {
-                write!(
-                    formatter,
-                    "content discovery does not follow symlink {}",
-                    path.display()
-                )
+                write!(formatter, "content paths do not follow symlink {}", path.display())
             }
             Self::MalformedManifest { path, message } => {
                 write!(
@@ -648,23 +668,7 @@ fn verify_manifest_files(
     let identity = manifest.identity();
     let base = manifest_path.parent().unwrap_or_else(|| Path::new("."));
     for declared in &manifest.files {
-        let path = base.join(&declared.path);
-        let metadata = match fs::symlink_metadata(&path) {
-            Ok(metadata) => metadata,
-            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
-                return Err(CatalogLoadError::MissingContentFile {
-                    identity: identity.clone(),
-                    path,
-                });
-            }
-            Err(error) => return Err(io_error(&path, error)),
-        };
-        if metadata.file_type().is_symlink() || !metadata.is_file() {
-            return Err(CatalogLoadError::NonRegularContentFile {
-                identity: identity.clone(),
-                path,
-            });
-        }
+        let (path, metadata) = verified_content_file(&identity, base, &declared.path)?;
         if metadata.len() != declared.byte_len {
             return Err(CatalogLoadError::ContentFileLengthMismatch {
                 identity: identity.clone(),
@@ -685,6 +689,55 @@ fn verify_manifest_files(
         }
     }
     Ok(())
+}
+
+fn verified_content_file(
+    identity: &ManifestIdentity,
+    base: &Path,
+    declared_path: &str,
+) -> Result<(PathBuf, fs::Metadata), CatalogLoadError> {
+    let path = base.join(declared_path);
+    let mut current = base.to_path_buf();
+    let mut components = Path::new(declared_path).components().peekable();
+
+    while let Some(component) = components.next() {
+        let Component::Normal(part) = component else {
+            unreachable!("manifest validation rejects non-normal content paths");
+        };
+        current.push(part);
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                return Err(CatalogLoadError::MissingContentFile {
+                    identity: identity.clone(),
+                    path,
+                });
+            }
+            Err(error) => return Err(io_error(&current, error)),
+        };
+        if metadata.file_type().is_symlink() {
+            return Err(CatalogLoadError::SymlinkNotAllowed(current));
+        }
+
+        if components.peek().is_none() {
+            if !metadata.is_file() {
+                return Err(CatalogLoadError::NonRegularContentFile {
+                    identity: identity.clone(),
+                    path: current,
+                });
+            }
+            return Ok((path, metadata));
+        }
+
+        if !metadata.is_dir() {
+            return Err(CatalogLoadError::NonRegularContentFile {
+                identity: identity.clone(),
+                path: current,
+            });
+        }
+    }
+
+    unreachable!("manifest validation rejects empty content paths")
 }
 
 fn io_error(path: &Path, error: std::io::Error) -> CatalogLoadError {
