@@ -5,7 +5,7 @@ use crate::{
     WorldInstant,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SubjectRef {
     Campaign(CampaignId),
     Entity(EntityId),
@@ -33,6 +33,23 @@ pub struct Proposition {
     pub value: FactValue,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AgentRef {
+    Entity(EntityId),
+    Faction(FactionId),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ClaimSource {
+    Agent(AgentRef),
+    /// A document, ledger, inscription object, recording, or similar source whose author may be unknown.
+    Item(ItemId),
+    /// A fixed inscription, notice, environmental message, or other location-bound source.
+    Location(LocationId),
+    /// Rumor/hearsay whose origin is intentionally unresolved.
+    Unknown,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FactProvenance {
     InitialWorldState,
@@ -58,8 +75,8 @@ pub struct Fact {
 pub struct Claim {
     pub id: ClaimId,
     pub campaign_id: CampaignId,
-    pub speaker: EntityId,
-    /// What the speaker asserted. It is not promoted to world truth by existing.
+    /// Where the assertion came from. A source is evidence/provenance, never proof of truth.
+    pub source: ClaimSource,
     pub proposition: Proposition,
     pub made_at: WorldInstant,
     pub source_event_id: EventId,
@@ -85,7 +102,8 @@ pub enum BeliefBasis {
 pub struct Belief {
     pub id: BeliefId,
     pub campaign_id: CampaignId,
-    pub holder: EntityId,
+    /// Individual or institution whose internal model contains this belief.
+    pub holder: AgentRef,
     pub proposition: Proposition,
     pub confidence: BeliefConfidence,
     pub basis: Vec<BeliefBasis>,
@@ -94,7 +112,7 @@ pub struct Belief {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KnowledgeHolder {
-    Entity(EntityId),
+    Agent(AgentRef),
     /// Explicitly shared table knowledge; never implied by out-of-character chatter alone.
     Table,
 }
