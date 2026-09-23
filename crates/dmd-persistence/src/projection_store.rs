@@ -9,6 +9,7 @@ pub struct CampaignProjectionSummary {
     pub campaign_id: CampaignId,
     pub state_schema_version: u32,
     pub applied_event_sequence: u64,
+    pub campaigns: u64,
     pub players: u64,
     pub characters: u64,
     pub entities: u64,
@@ -71,9 +72,9 @@ pub async fn load_campaign_projection_summary(
     let row = sqlx::query(
         r#"
         SELECT p.state_schema_version, p.applied_event_sequence,
-               p.players_count, p.characters_count, p.entities_count, p.factions_count,
-               p.locations_count, p.scenes_count, p.scene_presences_count, p.items_count,
-               p.facts_count, p.claims_count, p.beliefs_count, p.knowledge_count,
+               p.campaigns_count, p.players_count, p.characters_count, p.entities_count,
+               p.factions_count, p.locations_count, p.scenes_count, p.scene_presences_count,
+               p.items_count, p.facts_count, p.claims_count, p.beliefs_count, p.knowledge_count,
                p.directives_count,
                c.schema_version AS authoritative_schema,
                c.applied_event_sequence AS authoritative_sequence
@@ -131,6 +132,10 @@ pub async fn load_campaign_projection_summary(
         campaign_id,
         state_schema_version: projection_schema,
         applied_event_sequence: projection_sequence,
+        campaigns: stored_u64(
+            row.try_get("campaigns_count")?,
+            "projection_heads.campaigns_count",
+        )?,
         players: stored_u64(
             row.try_get("players_count")?,
             "projection_heads.players_count",
@@ -275,10 +280,11 @@ async fn rebuild_from_replayed_state(
 async fn load_actual_counts(
     connection: &mut sqlx::SqliteConnection,
     campaign_id: CampaignId,
-) -> Result<[u64; 13], ProjectionStoreError> {
+) -> Result<[u64; 14], ProjectionStoreError> {
     let row = sqlx::query(
         r#"
         SELECT
+          (SELECT COUNT(*) FROM projection_campaigns WHERE campaign_id = ?) campaigns,
           (SELECT COUNT(*) FROM projection_players WHERE campaign_id = ?) players,
           (SELECT COUNT(*) FROM projection_characters WHERE campaign_id = ?) characters,
           (SELECT COUNT(*) FROM projection_entities WHERE campaign_id = ?) entities,
@@ -307,9 +313,11 @@ async fn load_actual_counts(
     .bind(campaign_id.0.to_string())
     .bind(campaign_id.0.to_string())
     .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
     .fetch_one(&mut *connection)
     .await?;
     Ok([
+        stored_u64(row.try_get("campaigns")?, "projection_campaigns.count")?,
         stored_u64(row.try_get("players")?, "projection_players.count")?,
         stored_u64(row.try_get("characters")?, "projection_characters.count")?,
         stored_u64(row.try_get("entities")?, "projection_entities.count")?,
@@ -329,8 +337,9 @@ async fn load_actual_counts(
     ])
 }
 
-fn summary_counts(summary: &CampaignProjectionSummary) -> [u64; 13] {
+fn summary_counts(summary: &CampaignProjectionSummary) -> [u64; 14] {
     [
+        summary.campaigns,
         summary.players,
         summary.characters,
         summary.entities,
