@@ -23,6 +23,7 @@ macro_rules! id_type {
 }
 
 id_type!(CampaignId);
+id_type!(PlaySessionId);
 id_type!(PlayerId);
 id_type!(CharacterId);
 id_type!(EntityId);
