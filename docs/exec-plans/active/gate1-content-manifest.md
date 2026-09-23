@@ -1,10 +1,10 @@
 # Gate 1 versioned rules/content manifest
 
-Status: in progress
+Status: implementation complete; final exact-head CI pending
 Branch: gate1/content-manifest
-PR: pending
-Base: main @ d450766b1b834d739c586db5594de6dd23dd9722
-Verified head: d450766b1b834d739c586db5594de6dd23dd9722 (pre-plan)
+PR: #11 (draft)
+Base at start: main @ d450766b1b834d739c586db5594de6dd23dd9722
+Initial verified head: d450766b1b834d739c586db5594de6dd23dd9722
 
 ## Objective
 Make campaign `ruleset` and `content_packs` references resolve against explicit, versioned, validated, local content manifests so existing saves cannot silently change meaning or run against missing/incompatible content.
@@ -33,43 +33,48 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - ADR 004 `docs/architecture/004-content-and-campaign-isolation.md` — engine/content/world/campaign separation and versioned content.
 - ADR 005 `docs/architecture/005-domain-state-model.md` — campaign manifest refs live in authoritative state.
 - ADR 012 `docs/architecture/012-snapshot-migration-and-replay.md` — save compatibility must fail closed rather than guess.
+- ADR 013 `docs/architecture/013-versioned-content-manifests.md` — exact manifest identity, compatibility, local authority, lifecycle integration requirement, and future migration boundary introduced by this work.
 
 ## Acceptance criteria
-- [ ] Manifest identity is `(kind, id, version)` with an explicit manifest schema version and engine content-contract version.
-- [ ] Campaign `VersionedRef` values resolve exactly; installed newer/older versions do not silently substitute.
-- [ ] Missing ID, wrong version, kind mismatch, incompatible ruleset, duplicate identity, malformed manifest, unsafe file path, missing file, and file-integrity mismatch fail explicitly.
-- [ ] Discovery order is deterministic and network-independent.
-- [ ] Content-pack compatibility with the campaign ruleset and exact pack dependencies is mechanically checked.
-- [ ] Campaign refs remain unchanged during resolution; upgrades require an explicit future migration/change path.
-- [ ] Engine/rules code contains no current campaign/setting/PC names or four-character assumptions.
-- [ ] Tests prove multiple unrelated ruleset/content-pack combinations resolve independently and incompatibilities do not leak across campaigns.
-- [ ] Missing/incompatible/corrupt cases are exercised through tests.
-- [ ] `./scripts/verify-fast` passes on the implementation head.
-- [ ] `./scripts/verify` passes on the implementation head.
-- [ ] PR CI is green on the exact final head.
-- [ ] Full diff is inspected against ADR/checkpoint invariants before ready-for-review.
+- [x] Manifest identity is `(kind, id, version)` with an explicit manifest schema version and engine content-contract version.
+- [x] Campaign `VersionedRef` values resolve exactly; installed newer/older versions do not silently substitute.
+- [x] Missing ID, wrong version, kind mismatch, incompatible ruleset, duplicate identity, malformed manifest, unsafe file path, missing file, and file-integrity mismatch fail explicitly.
+- [x] Discovery order is deterministic and network-independent.
+- [x] Content-pack compatibility with the campaign ruleset and exact pack dependencies is mechanically checked.
+- [x] Campaign refs remain unchanged during resolution; upgrades require an explicit future migration/change path.
+- [x] Engine/rules code contains no current campaign/setting/PC names or four-character assumptions.
+- [x] Tests prove multiple unrelated ruleset/content-pack combinations resolve independently and incompatibilities do not leak across campaigns.
+- [x] Missing/wrong-version/incompatible/duplicate/malformed/corrupt pack cases are exercised through tests.
+- [x] `./scripts/verify-fast` passed on implementation head `bb22af99595a5b80547b94cc3a9db710624ad7af` in CI run #192.
+- [x] The constituent checks run by `./scripts/verify` (fast verification, Clippy with warnings denied, workspace tests, genericity guard, architecture boundary guard) passed on implementation head `bb22af99595a5b80547b94cc3a9db710624ad7af` in CI run #192.
+- [ ] PR CI is green on the exact final documentation/test head.
+- [ ] Full diff is inspected against ADR/checkpoint invariants after the final plan/test edits.
 
-## Planned slices
-1. Add typed manifest/catalog/resolution infrastructure in `dmd-rules`, using exact versions and stable non-security file integrity metadata without introducing campaign content.
-2. Add generic fixtures/tests for deterministic discovery, exact resolution, compatibility, duplicate/malformed/corrupt failures, and unrelated campaign combinations.
-3. Add a focused architecture contract for manifest authority/compatibility and lifecycle integration requirements; avoid editing shared Gate 1 checkpoint text unless needed at closeout.
-4. Run fast/full verification, inspect the full PR diff, update plan/PR summary, record licensing/content and future migration debt, and verify CI on the exact head.
+## Implemented slices
+1. Added typed manifest/catalog/resolution infrastructure in `dmd-domain` with exact versions, deterministic local discovery, explicit compatibility/dependency checks, and stable non-security file integrity metadata without introducing campaign content.
+2. Added generic integration tests for unrelated rules/content combinations plus missing, wrong-version, incompatible, duplicate, malformed, unsafe-path, missing-file, and corrupt-content failure modes.
+3. Added ADR 013 documenting manifest authority/compatibility, provider non-authority, explicit future upgrades, and the lifecycle create/open/resume/restore integration requirement without editing the shared Gate 1 checkpoint text.
+4. Opened draft PR #11 early and used CI to fix rustfmt and Clippy failures without suppressing checks.
 
 ## Decision log
 - 2026-09-23 — Keep `Campaign.ruleset`/`content_packs` as persisted exact refs; resolution must never rewrite them to an installed “closest” version.
-- 2026-09-23 — Keep raw SQLite persistence generic. Content authority belongs to the rules/content layer; lifecycle/application callers must resolve after load and before a campaign is considered runnable.
-- 2026-09-23 — Do not encode permissive/restrictive licensing policy in this slice. Legal/licensing metadata, if represented, is descriptive only until policy assumptions are verified from authoritative current sources.
-- 2026-09-23 — Pack file integrity is corruption detection, not DRM/authenticity. The manifest contract must name the integrity algorithm explicitly so it can evolve by manifest schema version.
+- 2026-09-23 — Keep raw SQLite persistence generic. Content authority belongs to the manifest/domain compatibility layer; lifecycle/application callers must resolve after load and before a campaign is considered runnable.
+- 2026-09-23 — Place the manifest identity/validation/catalog contract in `dmd-domain`, next to persisted `VersionedRef` semantics, because it contains no concrete rules data or campaign lore and introduces no dependency from domain state to `dmd-rules`. If a dedicated application/content-installation composition layer appears later, filesystem discovery can be extracted without changing the exact manifest contract.
+- 2026-09-23 — Do not encode permissive/restrictive licensing policy in this slice. Legal/licensing policy remains deferred until verified from authoritative current sources.
+- 2026-09-23 — Pack file integrity is corruption detection, not DRM/authenticity. Manifest schema v1 names `fnv1a64` explicitly so stronger digest/signature mechanisms can evolve by schema/content-contract version without silently changing existing saves.
+- 2026-09-23 — Duplicate installed manifest identities fail catalog construction rather than allowing search-root order to decide authority.
 
 ## Validation
-- `./scripts/verify-fast` — pending
-- `./scripts/verify` — pending
-- CI — pending
+- CI run #192 on `bb22af99595a5b80547b94cc3a9db710624ad7af`: `verify-fast`, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard all passed.
+- Additional direct pack-level failure tests were added after run #192; final exact-head CI remains required before handoff.
+- `./scripts/verify` is not invoked as one wrapper by CI, but CI executes the same constituent commands plus the MSRV check. Do not claim the wrapper itself was directly run.
 
-## Risks / blockers
-- No application/lifecycle composition crate currently owns “open runnable campaign”; this branch will provide the resolver contract and document that lifecycle create/open/restore must require it rather than implementing lifecycle behavior here.
-- A future manifest schema may need cryptographic signatures/trust stores for publisher authenticity; Gate 1 only needs deterministic local authority and corruption/compatibility checks.
-- Licensing/proprietary-content policy remains unresolved and must be verified from authoritative current sources before repository policy is added.
+## Risks / blockers / deferred debt
+- No application/lifecycle composition crate currently owns “open runnable campaign”. ADR 013 requires the separate `gate1/campaign-lifecycle` work to resolve campaign content before create/open/resume/restore is considered runnable; this branch intentionally does not implement lifecycle behavior.
+- A future manifest schema may need cryptographic digests, publisher signatures, or trust stores for authenticity. Gate 1 provides deterministic local authority and corruption detection only.
+- Content installation/distribution UX and source provenance are not implemented here.
+- Explicit rules/content upgrade and migration workflows remain future work; resolution never mutates stored refs.
+- Licensing/proprietary-content policy remains unresolved. No third-party rules corpus or licensing entitlement assumption was added; any future policy must be verified from authoritative current sources first.
 
 ## Next action
-Create the draft PR, then implement the manifest/catalog resolver and generic failure-mode tests in `dmd-rules` without adding campaign lore or lifecycle behavior.
+Inspect the complete final PR diff, verify CI is green on the exact closeout head, update the draft PR summary with validation/debt, and hand off for human review without merging.
