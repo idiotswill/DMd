@@ -1,0 +1,20 @@
+{
+  "id": "voice-travel-001",
+  "description": "Players authorize routine traversal to be compressed until a meaningful stop condition occurs.",
+  "input": "We keep following the tracks in the same formation. Don't stop us for normal corridors or ordinary doors; stop when the trail ends, we notice danger, or something important changes.",
+  "expected": {
+    "intent": "standing_exploration_directive",
+    "formation_persists": true,
+    "stop_conditions": [
+      "trail_lost",
+      "danger_detected",
+      "meaningful_decision_required",
+      "significant_discovery"
+    ],
+    "must_not_prompt_for": [
+      "routine_corridor",
+      "ordinary_door_without_relevant_risk",
+      "unchanged_scenery"
+    ]
+  }
+}
