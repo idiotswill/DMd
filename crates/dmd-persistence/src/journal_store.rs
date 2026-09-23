@@ -800,10 +800,7 @@ async fn load_existing_event_metadata(
             metadata.insert(
                 EventId(parse_uuid(&id, "event_journal.id")?),
                 ExistingEventMetadata {
-                    campaign_id: CampaignId(parse_uuid(
-                        &campaign_id,
-                        "event_journal.campaign_id",
-                    )?),
+                    campaign_id: CampaignId(parse_uuid(&campaign_id, "event_journal.campaign_id")?),
                     sequence: stored_u64(row.try_get("sequence")?, "event_journal.sequence")?,
                 },
             );
