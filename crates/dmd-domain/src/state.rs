@@ -1,11 +1,13 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, DirectiveId,
-    EntityId, Fact, FactId, ItemId, ItemInstance, KnowledgeRecord, Location, LocationId, Player,
-    PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
+    Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, Custody,
+    DirectiveId, EntityId, EntityKind, Fact, FactId, FactValue, Faction, FactionId, ItemId,
+    ItemInstance, KnowledgeHolder, KnowledgeRecord, KnowledgeTarget, Location, LocationId,
+    Ownership, Player, PlayerId, Scene, SceneId, StandingDirective, SubjectRef, WorldClock,
+    WorldEntity,
 };
 
 pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
@@ -18,6 +20,7 @@ pub struct CampaignState {
     pub players: HashMap<PlayerId, Player>,
     pub characters: HashMap<CharacterId, Character>,
     pub entities: HashMap<EntityId, WorldEntity>,
+    pub factions: HashMap<FactionId, Faction>,
     pub locations: HashMap<LocationId, Location>,
     pub scenes: HashMap<SceneId, Scene>,
     pub items: HashMap<ItemId, ItemInstance>,
@@ -40,6 +43,7 @@ impl CampaignState {
             players: HashMap::new(),
             characters: HashMap::new(),
             entities: HashMap::new(),
+            factions: HashMap::new(),
             locations: HashMap::new(),
             scenes: HashMap::new(),
             items: HashMap::new(),
@@ -61,6 +65,7 @@ impl CampaignState {
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = Vec::new();
         let expected = self.campaign.id;
+        let mut character_entities = HashSet::new();
 
         for (key, player) in &self.players {
             check_key(*key == player.id, "player", &mut violations);
@@ -75,8 +80,21 @@ impl CampaignState {
                 "character",
                 &mut violations,
             );
-            if !self.entities.contains_key(&character.entity_id) {
-                violations.push(StateInvariantViolation::MissingReference {
+            match self.entities.get(&character.entity_id) {
+                Some(entity) if entity.kind != EntityKind::Character => {
+                    violations.push(StateInvariantViolation::WrongEntityKind {
+                        owner: "character".into(),
+                        expected: "Character".into(),
+                    });
+                }
+                Some(_) => {}
+                None => violations.push(StateInvariantViolation::MissingReference {
+                    owner: "character".into(),
+                    target: "entity".into(),
+                }),
+            }
+            if !character_entities.insert(character.entity_id) {
+                violations.push(StateInvariantViolation::DuplicateReference {
                     owner: "character".into(),
                     target: "entity".into(),
                 });
@@ -96,11 +114,18 @@ impl CampaignState {
             check_campaign(expected, entity.campaign_id, "entity", &mut violations);
         }
 
+        for (key, faction) in &self.factions {
+            check_key(*key == faction.id, "faction", &mut violations);
+            check_campaign(expected, faction.campaign_id, "faction", &mut violations);
+        }
+
         for (key, location) in &self.locations {
             check_key(*key == location.id, "location", &mut violations);
             check_campaign(expected, location.campaign_id, "location", &mut violations);
             if let Some(parent_id) = location.parent_location_id {
-                if !self.locations.contains_key(&parent_id) {
+                if parent_id == location.id {
+                    violations.push(StateInvariantViolation::SelfReference("location parent".into()));
+                } else if !self.locations.contains_key(&parent_id) {
                     violations.push(StateInvariantViolation::MissingReference {
                         owner: "location".into(),
                         target: "parent location".into(),
@@ -118,11 +143,18 @@ impl CampaignState {
                     target: "location".into(),
                 });
             }
+            let mut scene_entities = HashSet::new();
             for presence in &scene.presences {
                 if !self.entities.contains_key(&presence.entity_id) {
                     violations.push(StateInvariantViolation::MissingReference {
                         owner: "scene presence".into(),
                         target: "entity".into(),
+                    });
+                }
+                if !scene_entities.insert(presence.entity_id) {
+                    violations.push(StateInvariantViolation::DuplicateReference {
+                        owner: "scene".into(),
+                        target: "presence entity".into(),
                     });
                 }
             }
@@ -131,18 +163,48 @@ impl CampaignState {
         for (key, item) in &self.items {
             check_key(*key == item.id, "item", &mut violations);
             check_campaign(expected, item.campaign_id, "item", &mut violations);
+            match item.owner {
+                Ownership::Entity(entity_id) => {
+                    check_exists(self.entities.contains_key(&entity_id), "item", "owner entity", &mut violations);
+                }
+                Ownership::Faction(faction_id) => {
+                    check_exists(self.factions.contains_key(&faction_id), "item", "owner faction", &mut violations);
+                }
+                Ownership::Unowned => {}
+            }
+            match item.custody {
+                Custody::Entity(entity_id) => {
+                    check_exists(self.entities.contains_key(&entity_id), "item", "custody entity", &mut violations);
+                }
+                Custody::Location(location_id) => {
+                    check_exists(self.locations.contains_key(&location_id), "item", "custody location", &mut violations);
+                }
+                Custody::Container(container_id) => {
+                    check_exists(self.items.contains_key(&container_id), "item", "container item", &mut violations);
+                    if container_id == item.id {
+                        violations.push(StateInvariantViolation::SelfReference("item container".into()));
+                    }
+                }
+                Custody::Missing | Custody::Destroyed => {}
+            }
         }
+
         for (key, fact) in &self.facts {
             check_key(*key == fact.id, "fact", &mut violations);
             check_campaign(expected, fact.campaign_id, "fact", &mut violations);
+            self.validate_proposition_refs(&fact.proposition.subject, &fact.proposition.value, &mut violations);
         }
         for (key, claim) in &self.claims {
             check_key(*key == claim.id, "claim", &mut violations);
             check_campaign(expected, claim.campaign_id, "claim", &mut violations);
+            check_exists(self.entities.contains_key(&claim.speaker), "claim", "speaker entity", &mut violations);
+            self.validate_proposition_refs(&claim.proposition.subject, &claim.proposition.value, &mut violations);
         }
         for (key, belief) in &self.beliefs {
             check_key(*key == belief.id, "belief", &mut violations);
             check_campaign(expected, belief.campaign_id, "belief", &mut violations);
+            check_exists(self.entities.contains_key(&belief.holder), "belief", "holder entity", &mut violations);
+            self.validate_proposition_refs(&belief.proposition.subject, &belief.proposition.value, &mut violations);
         }
         for knowledge in &self.knowledge {
             check_campaign(
@@ -151,6 +213,17 @@ impl CampaignState {
                 "knowledge",
                 &mut violations,
             );
+            if let KnowledgeHolder::Entity(entity_id) = knowledge.holder {
+                check_exists(self.entities.contains_key(&entity_id), "knowledge", "holder entity", &mut violations);
+            }
+            match knowledge.target {
+                KnowledgeTarget::Fact(fact_id) => {
+                    check_exists(self.facts.contains_key(&fact_id), "knowledge", "fact", &mut violations);
+                }
+                KnowledgeTarget::Claim(claim_id) => {
+                    check_exists(self.claims.contains_key(&claim_id), "knowledge", "claim", &mut violations);
+                }
+            }
         }
         for (key, directive) in &self.directives {
             check_key(*key == directive.id, "directive", &mut violations);
@@ -160,15 +233,84 @@ impl CampaignState {
                 "directive",
                 &mut violations,
             );
-            if !self.scenes.contains_key(&directive.scene_id) {
-                violations.push(StateInvariantViolation::MissingReference {
-                    owner: "directive".into(),
-                    target: "scene".into(),
-                });
+            check_exists(self.scenes.contains_key(&directive.scene_id), "directive", "scene", &mut violations);
+            for actor in &directive.actors {
+                check_exists(self.entities.contains_key(actor), "directive", "actor entity", &mut violations);
             }
         }
 
         violations
+    }
+
+    fn validate_proposition_refs(
+        &self,
+        subject: &SubjectRef,
+        value: &FactValue,
+        violations: &mut Vec<StateInvariantViolation>,
+    ) {
+        match subject {
+            SubjectRef::Campaign(id) => {
+                if *id != self.campaign.id {
+                    violations.push(StateInvariantViolation::CampaignMismatch {
+                        record_kind: "proposition subject".into(),
+                        expected: self.campaign.id,
+                        actual: *id,
+                    });
+                }
+            }
+            SubjectRef::Entity(id) => check_exists(
+                self.entities.contains_key(id),
+                "proposition",
+                "subject entity",
+                violations,
+            ),
+            SubjectRef::Location(id) => check_exists(
+                self.locations.contains_key(id),
+                "proposition",
+                "subject location",
+                violations,
+            ),
+            SubjectRef::Faction(id) => check_exists(
+                self.factions.contains_key(id),
+                "proposition",
+                "subject faction",
+                violations,
+            ),
+            SubjectRef::Item(id) => check_exists(
+                self.items.contains_key(id),
+                "proposition",
+                "subject item",
+                violations,
+            ),
+        }
+
+        match value {
+            FactValue::Entity(id) => check_exists(
+                self.entities.contains_key(id),
+                "proposition",
+                "value entity",
+                violations,
+            ),
+            FactValue::Location(id) => check_exists(
+                self.locations.contains_key(id),
+                "proposition",
+                "value location",
+                violations,
+            ),
+            FactValue::Faction(id) => check_exists(
+                self.factions.contains_key(id),
+                "proposition",
+                "value faction",
+                violations,
+            ),
+            FactValue::Item(id) => check_exists(
+                self.items.contains_key(id),
+                "proposition",
+                "value item",
+                violations,
+            ),
+            FactValue::Boolean(_) | FactValue::Integer(_) | FactValue::Text(_) | FactValue::Time(_) => {}
+        }
     }
 }
 
@@ -183,6 +325,15 @@ pub enum StateInvariantViolation {
     MissingReference {
         owner: String,
         target: String,
+    },
+    DuplicateReference {
+        owner: String,
+        target: String,
+    },
+    SelfReference(String),
+    WrongEntityKind {
+        owner: String,
+        expected: String,
     },
 }
 
@@ -209,6 +360,20 @@ fn check_key(matches: bool, record_kind: &str, violations: &mut Vec<StateInvaria
     }
 }
 
+fn check_exists(
+    exists: bool,
+    owner: &str,
+    target: &str,
+    violations: &mut Vec<StateInvariantViolation>,
+) {
+    if !exists {
+        violations.push(StateInvariantViolation::MissingReference {
+            owner: owner.into(),
+            target: target.into(),
+        });
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -228,29 +393,25 @@ mod tests {
         }
     }
 
-    #[test]
-    fn empty_state_is_valid() {
+    fn empty_state() -> CampaignState {
         let id = CampaignId::new();
-        let state = CampaignState::empty(
+        CampaignState::empty(
             campaign(id),
             WorldClock {
-                now: WorldInstant(0),
+                now: crate::WorldInstant(0),
                 calendar_id: "test.calendar".into(),
             },
-        );
-        assert!(state.validate().is_empty());
+        )
+    }
+
+    #[test]
+    fn empty_state_is_valid() {
+        assert!(empty_state().validate().is_empty());
     }
 
     #[test]
     fn cross_campaign_record_is_rejected() {
-        let id = CampaignId::new();
-        let mut state = CampaignState::empty(
-            campaign(id),
-            WorldClock {
-                now: WorldInstant(0),
-                calendar_id: "test.calendar".into(),
-            },
-        );
+        let mut state = empty_state();
         let player = Player {
             id: PlayerId::new(),
             campaign_id: CampaignId::new(),
@@ -264,5 +425,36 @@ mod tests {
                 .iter()
                 .any(|v| matches!(v, StateInvariantViolation::CampaignMismatch { .. }))
         );
+    }
+
+    #[test]
+    fn dangling_scene_presence_is_rejected() {
+        let mut state = empty_state();
+        let location = Location {
+            id: LocationId::new(),
+            campaign_id: state.campaign_id(),
+            display_name: "Test Location".into(),
+            parent_location_id: None,
+        };
+        state.locations.insert(location.id, location.clone());
+        let scene = Scene {
+            id: SceneId::new(),
+            campaign_id: state.campaign_id(),
+            location_id: location.id,
+            mode: crate::SceneMode::Exploration,
+            status: crate::SceneStatus::Active,
+            started_at: WorldInstant(0),
+            presences: vec![crate::ScenePresence {
+                entity_id: EntityId::new(),
+                role: crate::PresenceRole::Participant,
+            }],
+        };
+        state.scenes.insert(scene.id, scene);
+
+        assert!(state.validate().iter().any(|v| matches!(
+            v,
+            StateInvariantViolation::MissingReference { owner, target }
+                if owner == "scene presence" && target == "entity"
+        )));
     }
 }
