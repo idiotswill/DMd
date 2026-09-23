@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     AgentRef, BeliefId, CampaignId, ClaimId, EntityId, EventId, FactId, FactionId, ItemId,
-    LocationId, WorldInstant,
+    KnowledgeId, LocationId, WorldInstant,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -104,21 +104,24 @@ pub struct Belief {
     pub updated_at: WorldInstant,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum KnowledgeHolder {
     Agent(AgentRef),
     /// Explicitly shared table knowledge; never implied by out-of-character chatter alone.
     Table,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum KnowledgeTarget {
     Fact(FactId),
     Claim(ClaimId),
 }
 
+/// Current materialized knowledge relation.
+/// Repeated observations/acquisitions belong in the event journal rather than duplicate rows here.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct KnowledgeRecord {
+    pub id: KnowledgeId,
     pub campaign_id: CampaignId,
     pub holder: KnowledgeHolder,
     pub target: KnowledgeTarget,
