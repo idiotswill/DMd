@@ -267,6 +267,14 @@ pub async fn commit_campaign_transition(
     .fetch_one(&mut *transaction)
     .await?;
     verify_journal_head(&current_state, &head)?;
+    let no_pending_events = HashSet::new();
+    validate_state_event_references(
+        &mut transaction,
+        command_meta.campaign_id,
+        &current_state,
+        &no_pending_events,
+    )
+    .await?;
 
     if current_state.applied_event_sequence != command_meta.expected_event_sequence {
         return Err(JournalStoreError::StaleState {
