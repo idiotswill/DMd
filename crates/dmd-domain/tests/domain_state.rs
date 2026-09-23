@@ -1,8 +1,8 @@
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, Character, CharacterId, CharacterStatus,
-    Claim, ClaimId, EntityExistence, EntityId, EntityKind, EventId, FactValue, Location, LocationId,
-    Player, PlayerId, PresenceRole, Proposition, Scene, SceneId, SceneMode, ScenePresence, SceneStatus,
-    SubjectRef, VersionedRef, WorldClock, WorldEntity, WorldInstant,
+    Claim, ClaimId, EntityExistence, EntityId, EntityKind, EventId, FactValue, Location,
+    LocationId, Player, PlayerId, PresenceRole, Proposition, Scene, SceneId, SceneMode,
+    ScenePresence, SceneStatus, SubjectRef, VersionedRef, WorldClock, WorldEntity, WorldInstant,
 };
 
 fn new_state() -> CampaignState {
