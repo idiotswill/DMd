@@ -2,7 +2,7 @@
 
 Status: in progress
 Branch: `lab0/dev-lab`
-PR: pending
+PR: #2
 Base: `gate0/foundation` @ `74a909ba463d748fa90f56e51e647fc1881525e8`
 Verified head: pending
 
@@ -14,7 +14,7 @@ Make DMd safe and efficient to develop through disposable AI/chat execution cont
 
 - root `AGENTS.md` navigation/invariant map;
 - checked-in execution-plan protocol;
-- development, CI, and recovery runbooks;
+- development, CI, recovery, and GitHub-settings runbooks;
 - explicit technical-debt ledger;
 - canonical fast/full verification scripts;
 - PR template for scoped, verifiable changes;
@@ -37,40 +37,43 @@ Make DMd safe and efficient to develop through disposable AI/chat execution cont
 
 ## Acceptance criteria
 
-- [ ] A fresh agent can discover current work from repository files without chat history.
-- [ ] Development rules prohibit concurrent writers on one branch and require head refresh after unexpected movement.
-- [ ] Nontrivial tasks have a standard resumable execution-plan format.
-- [ ] Local fast/full verification commands are canonical and documented.
+- [x] A fresh agent can discover current work from repository files without chat history.
+- [x] Development rules prohibit concurrent writers on one branch and require head refresh after unexpected movement.
+- [x] Nontrivial tasks have a standard resumable execution-plan format.
+- [x] Local fast/full verification commands are canonical and documented.
 - [ ] CI cancels superseded runs for the same PR/ref.
-- [ ] PRs have a standard objective/scope/validation/risk checklist.
-- [ ] Recovery from interruption, stale SHA, tool failure, or failed CI has a documented procedure.
-- [ ] The full branch passes `./scripts/verify` and CI.
+- [x] PRs have a standard objective/scope/validation/risk checklist.
+- [x] Recovery from interruption, stale SHA, tool failure, or failed CI has a documented procedure.
+- [ ] The full branch passes equivalent `./scripts/verify` checks and CI on the final head.
 
 ## Planned slices
 
-1. Add repository navigation and execution-plan protocol.
-2. Add runbooks/debt ledger/PR template.
-3. Add verification scripts and CI concurrency.
-4. Open a stacked draft PR against `gate0/foundation`.
-5. Verify the complete head and close this plan.
+1. Add repository navigation and execution-plan protocol. — complete
+2. Add runbooks/debt ledger/PR template. — complete
+3. Add verification scripts and CI concurrency. — complete
+4. Open a stacked draft PR against `gate0/foundation`. — complete (#2)
+5. Verify superseded-run cancellation and the complete final head. — in progress
 
 ## Decision log
 
 - 2026-09-23 — Dev Lab is a separate stacked PR/branch so process tooling does not obscure the Gate 0 architecture review.
 - 2026-09-23 — Repository files are authoritative handoff memory; chat/project instructions are behavioral bootstrap only.
 - 2026-09-23 — Coherent multi-file changes should use one Git tree/commit to reduce CI churn and stale-head conflicts.
+- 2026-09-23 — Repository rulesets are currently empty. The GitHub connector can read but not administer rulesets, so `main` protection is a documented manual repository-setting follow-up rather than an in-chat mutation.
+- 2026-09-23 — A metadata follow-up commit is intentionally pushed while CI run 121 is active to verify that the new concurrency group cancels superseded runs.
 
 ## Validation
 
-- `./scripts/verify-fast` — pending
-- `./scripts/verify` — pending
-- CI — pending
+- First implementation head `75f1a82d29ff1f887a2ef56e55f74047e9b27806` — CI run 121 started; supersession test pending.
+- `./scripts/verify-fast` equivalent — pending on final head.
+- `./scripts/verify` equivalent — pending on final head.
+- CI — pending on final head.
 
 ## Risks / blockers
 
-- GitHub repository rules/branch protection may require account-level settings unavailable to the connector; document any manual follow-up if so.
+- GitHub `main` ruleset/branch protection cannot be created through the available connector permissions. Apply the settings in `docs/runbooks/github-settings.md` manually when convenient.
 - Shell verification scripts assume a bash-compatible developer shell; CI provides one. Native Windows developer wrappers can be added when desktop development begins if useful.
 
 ## Next action
 
-Create the batched Lab 0 commit, open the stacked draft PR, and verify its CI head.
+Confirm run 121 is cancelled by this superseding commit, then verify all CI jobs on the new head and update this plan to ready-for-review status.
