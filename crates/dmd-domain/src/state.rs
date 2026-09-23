@@ -5,8 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, DirectiveId,
     EntityId, Fact, FactId, Faction, FactionId, ItemId, ItemInstance, KnowledgeRecord, Location,
-    LocationId, PlaySession, PlaySessionId, Player, PlayerId, Scene, SceneId, StandingDirective,
-    WorldClock, WorldEntity,
+    LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
 };
 
 pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
@@ -16,7 +15,6 @@ pub struct CampaignState {
     pub schema_version: u32,
     pub campaign: Campaign,
     pub clock: WorldClock,
-    pub sessions: HashMap<PlaySessionId, PlaySession>,
     pub players: HashMap<PlayerId, Player>,
     pub characters: HashMap<CharacterId, Character>,
     pub entities: HashMap<EntityId, WorldEntity>,
@@ -40,7 +38,6 @@ impl CampaignState {
             schema_version: CURRENT_STATE_SCHEMA_VERSION,
             campaign,
             clock,
-            sessions: HashMap::new(),
             players: HashMap::new(),
             characters: HashMap::new(),
             entities: HashMap::new(),
