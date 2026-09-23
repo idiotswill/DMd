@@ -6,7 +6,8 @@ Gate 0 exists to prevent expensive architectural rewrites before gameplay implem
 
 ### Repository and build
 - Rust workspace is split into domain, core, rules, persistence, and conversation boundaries.
-- CI runs formatting, compilation, Clippy, and tests.
+- `Cargo.lock` is versioned for reproducible application builds.
+- CI uses locked dependency resolution for compile, Clippy, tests, and the declared Rust 1.88 minimum-version check.
 - Production Rust crates contain no current-campaign names or assumptions.
 
 ### Architectural decisions
@@ -57,7 +58,8 @@ The following must hold:
 - world facts, NPC/player claims, beliefs, and knowledge are separate record types;
 - a claim does not become a fact merely because an NPC said it;
 - beliefs carry a basis and confidence;
-- knowledge can belong to one entity or be explicitly shared with the table;
+- durable materialized knowledge records have stable `KnowledgeId` identity rather than being addressed by display text or collection position;
+- knowledge can belong to one entity/faction or be explicitly shared with the table;
 - out-of-character chatter is not implicitly promoted to character knowledge.
 
 ### Inventory model
@@ -87,5 +89,8 @@ Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 12. Can an item be owned by one entity while physically carried by another?
 13. Can a long-running campaign accumulate many tabletop sessions without making every world snapshot carry that historical session ledger?
 14. Can the language provider be replaced without forcing core handlers to understand a provider's JSON shape or magic command strings?
+15. Can durable information/knowledge records be migrated or corrected by stable identity rather than relying on vector position or display text?
+
+The current risk/status assessment is maintained in `docs/checkpoints/gate-0-review.md`.
 
 Gate 0 should not be marked complete merely because the code compiles.
