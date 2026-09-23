@@ -6,8 +6,8 @@ use crate::{
     Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, Custody,
     DirectiveId, EntityId, EntityKind, Fact, FactId, FactValue, Faction, FactionId, ItemId,
     ItemInstance, KnowledgeHolder, KnowledgeRecord, KnowledgeTarget, Location, LocationId,
-    Ownership, Player, PlayerId, Scene, SceneId, StandingDirective, SubjectRef, WorldClock,
-    WorldEntity,
+    Ownership, Player, PlayerId, PresenceRole, Scene, SceneId, SceneStatus, StandingDirective,
+    SubjectRef, WorldClock, WorldEntity,
 };
 
 pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
@@ -112,6 +112,14 @@ impl CampaignState {
         for (key, entity) in &self.entities {
             check_key(*key == entity.id, "entity", &mut violations);
             check_campaign(expected, entity.campaign_id, "entity", &mut violations);
+            if let Some(location_id) = entity.location_id {
+                check_exists(
+                    self.locations.contains_key(&location_id),
+                    "entity",
+                    "location",
+                    &mut violations,
+                );
+            }
         }
 
         for (key, faction) in &self.factions {
@@ -136,6 +144,7 @@ impl CampaignState {
             }
         }
 
+        let mut active_scene_participants = HashSet::new();
         for (key, scene) in &self.scenes {
             check_key(*key == scene.id, "scene", &mut violations);
             check_campaign(expected, scene.campaign_id, "scene", &mut violations);
@@ -147,7 +156,8 @@ impl CampaignState {
             }
             let mut scene_entities = HashSet::new();
             for presence in &scene.presences {
-                if !self.entities.contains_key(&presence.entity_id) {
+                let entity = self.entities.get(&presence.entity_id);
+                if entity.is_none() {
                     violations.push(StateInvariantViolation::MissingReference {
                         owner: "scene presence".into(),
                         target: "entity".into(),
@@ -158,6 +168,24 @@ impl CampaignState {
                         owner: "scene".into(),
                         target: "presence entity".into(),
                     });
+                }
+                if scene.status == SceneStatus::Active && presence.role == PresenceRole::Participant
+                {
+                    if !active_scene_participants.insert(presence.entity_id) {
+                        violations.push(StateInvariantViolation::MultipleActiveSceneParticipation(
+                            presence.entity_id,
+                        ));
+                    }
+                    if let Some(entity) = entity {
+                        if entity.location_id != Some(scene.location_id) {
+                            violations.push(StateInvariantViolation::SceneLocationMismatch {
+                                entity_id: presence.entity_id,
+                                scene_id: scene.id,
+                                scene_location_id: scene.location_id,
+                                entity_location_id: entity.location_id,
+                            });
+                        }
+                    }
                 }
             }
         }
@@ -413,6 +441,13 @@ pub enum StateInvariantViolation {
     WrongEntityKind {
         owner: String,
         expected: String,
+    },
+    MultipleActiveSceneParticipation(EntityId),
+    SceneLocationMismatch {
+        entity_id: EntityId,
+        scene_id: SceneId,
+        scene_location_id: LocationId,
+        entity_location_id: Option<LocationId>,
     },
 }
 
