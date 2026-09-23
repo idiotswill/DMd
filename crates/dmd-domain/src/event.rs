@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{AgentRef, CampaignId, CommandId, EventId, WorldInstant};
+use crate::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId, WorldInstant};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EventSource {
@@ -16,6 +16,8 @@ pub enum EventSource {
 pub struct EventMeta {
     pub id: EventId,
     pub campaign_id: CampaignId,
+    /// None is valid for between-session simulation, imports, or maintenance events.
+    pub session_id: Option<PlaySessionId>,
     /// Monotonic within a campaign. Persistence owns allocation and uniqueness.
     pub sequence: u64,
     pub occurred_at: WorldInstant,
@@ -55,6 +57,7 @@ mod tests {
         let meta = EventMeta {
             id: EventId::new(),
             campaign_id: CampaignId::new(),
+            session_id: None,
             sequence: 3,
             occurred_at: WorldInstant(10),
             source: EventSource::WorldSimulation,
