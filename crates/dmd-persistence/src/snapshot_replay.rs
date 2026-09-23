@@ -235,13 +235,8 @@ pub async fn load_campaign_snapshot_at_or_before(
     let snapshot = load_snapshot(&mut transaction, campaign_id, target_sequence, codec).await?;
     if let Some((snapshot_sequence, state)) = &snapshot {
         verify_journal_prefix(&mut transaction, campaign_id, *snapshot_sequence).await?;
-        validate_state_event_references(
-            &mut transaction,
-            campaign_id,
-            *snapshot_sequence,
-            state,
-        )
-        .await?;
+        validate_state_event_references(&mut transaction, campaign_id, *snapshot_sequence, state)
+            .await?;
     }
     transaction.commit().await?;
     Ok(snapshot.map(|(_, state)| state))

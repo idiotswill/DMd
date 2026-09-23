@@ -7,9 +7,8 @@ use dmd_domain::{
 };
 use dmd_persistence::{
     CampaignStateSnapshotCodec, ReplayApplyError, ReplayEventApplier, SnapshotCodecError,
-    SnapshotReplayError, StoredJournalEvent, commit_campaign_transition,
-    initialize_campaign_state, load_campaign_snapshot_at_or_before, migrate_sqlite,
-    replay_campaign_to_head,
+    SnapshotReplayError, StoredJournalEvent, commit_campaign_transition, initialize_campaign_state,
+    load_campaign_snapshot_at_or_before, migrate_sqlite, replay_campaign_to_head,
 };
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
