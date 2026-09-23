@@ -370,10 +370,15 @@ impl CampaignState {
                 if !seen.insert(item_id) {
                     return true;
                 }
-                current = self.items.get(&item_id).and_then(|item| match item.custody {
-                    Custody::Container(container_id) if container_id != item_id => Some(container_id),
-                    _ => None,
-                });
+                current = self
+                    .items
+                    .get(&item_id)
+                    .and_then(|item| match item.custody {
+                        Custody::Container(container_id) if container_id != item_id => {
+                            Some(container_id)
+                        }
+                        _ => None,
+                    });
             }
         }
         false
