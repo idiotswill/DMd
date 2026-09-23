@@ -1,3 +1,7 @@
+pub mod session_store;
+
+pub use session_store::*;
+
 use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 use std::str::FromStr;
 
