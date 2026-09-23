@@ -2,7 +2,7 @@ use dmd_domain::{
     AgentRef, Belief, BeliefBasis, BeliefConfidence, BeliefId, Campaign, CampaignId, CampaignState,
     CampaignStatus, Claim, ClaimId, ClaimSource, Custody, EventId, Fact, FactId, FactProvenance,
     FactValue, Faction, FactionId, FactionStatus, ItemId, ItemInstance, ItemState, KnowledgeHolder,
-    KnowledgeRecord, KnowledgeTarget, Location, LocationId, Ownership, Proposition,
+    KnowledgeId, KnowledgeRecord, KnowledgeTarget, Location, LocationId, Ownership, Proposition,
     StateInvariantViolation, SubjectRef, VersionedRef, WorldClock, WorldInstant,
 };
 
@@ -106,6 +106,7 @@ fn faction_can_hold_established_knowledge() {
     let fact_id = fact.id;
     state.facts.insert(fact_id, fact);
     state.knowledge.push(KnowledgeRecord {
+        id: KnowledgeId::new(),
         campaign_id: state.campaign_id(),
         holder: KnowledgeHolder::Agent(AgentRef::Faction(faction_id)),
         target: KnowledgeTarget::Fact(fact_id),
