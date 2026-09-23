@@ -118,6 +118,45 @@ fn faction_can_hold_established_knowledge() {
 }
 
 #[test]
+fn duplicate_knowledge_ids_are_rejected() {
+    let mut state = state();
+    let faction_id = faction(&mut state);
+    let fact = Fact {
+        id: FactId::new(),
+        campaign_id: state.campaign_id(),
+        proposition: Proposition {
+            subject: SubjectRef::Faction(faction_id),
+            predicate: "knows_old_password".into(),
+            value: FactValue::Boolean(true),
+        },
+        valid_from: state.clock.now,
+        valid_until: None,
+        provenance: FactProvenance::InitialWorldState,
+        source_event_id: None,
+    };
+    let fact_id = fact.id;
+    state.facts.insert(fact_id, fact);
+
+    let id = KnowledgeId::new();
+    for source_event_id in [EventId::new(), EventId::new()] {
+        state.knowledge.push(KnowledgeRecord {
+            id,
+            campaign_id: state.campaign_id(),
+            holder: KnowledgeHolder::Agent(AgentRef::Faction(faction_id)),
+            target: KnowledgeTarget::Fact(fact_id),
+            acquired_at: state.clock.now,
+            source_event_id,
+        });
+    }
+
+    assert!(state.validate().iter().any(|violation| matches!(
+        violation,
+        StateInvariantViolation::DuplicateReference { owner, target }
+            if owner == "knowledge" && target == "id"
+    )));
+}
+
+#[test]
 fn belief_basis_must_reference_materialized_fact_or_claim() {
     let mut state = state();
     let faction_id = faction(&mut state);
