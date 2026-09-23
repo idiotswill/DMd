@@ -4,6 +4,7 @@ pub mod ids;
 pub mod inventory;
 pub mod knowledge;
 pub mod scene;
+pub mod state;
 pub mod time;
 pub mod world;
 
@@ -13,5 +14,6 @@ pub use ids::*;
 pub use inventory::*;
 pub use knowledge::*;
 pub use scene::*;
+pub use state::*;
 pub use time::*;
 pub use world::*;
