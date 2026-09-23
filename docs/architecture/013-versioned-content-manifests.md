@@ -35,6 +35,8 @@ Every manifest declares:
 
 Gate 1 supports manifest schema version 1 and content-contract version 1. Unknown schema versions or incompatible content-contract versions fail explicitly. Future support must be added deliberately; it is not inferred from JSON shape.
 
+Manifest schema version 1 is a closed schema: unknown fields are rejected at the manifest, declared-file, checksum, and manifest-reference boundaries. Optional lists may default only when the declared field is genuinely absent; a misspelled field is an invalid manifest rather than an empty constraint set.
+
 ### Content-pack compatibility is explicit
 
 A ruleset manifest cannot declare ruleset compatibility or pack dependencies.
@@ -60,6 +62,8 @@ Duplicate installed manifests with the same exact identity fail catalog construc
 ### Declared content files are integrity-checked
 
 A manifest may list relative regular files with exact byte length and a named checksum algorithm. Manifest paths that are absolute, contain parent traversal, or otherwise escape the pack directory are invalid.
+
+Every path component between the manifest directory and a declared content file is inspected without following symlinks. A symlink at either an intermediate directory component or the terminal file fails closed, so a declared relative path cannot escape the pack through symlink traversal.
 
 Manifest schema version 1 supports `fnv1a64` as a stable, dependency-free corruption checksum. It detects ordinary missing/changed/corrupt content but is **not** a cryptographic authenticity mechanism, signature scheme, DRM system, or licensing control. A future manifest schema/content contract may add cryptographic digests and publisher signatures without changing the meaning of version-1 manifests.
 
@@ -90,6 +94,7 @@ A content update on disk therefore cannot silently alter the interpretation of a
 The manifest/catalog boundary fails explicitly on representative cases including:
 
 - malformed manifest JSON;
+- unknown manifest or nested schema fields;
 - unsupported manifest schema;
 - incompatible engine content contract;
 - invalid identity/reference tokens;
@@ -103,7 +108,7 @@ The manifest/catalog boundary fails explicitly on representative cases including
 - unsafe declared file path;
 - missing/non-regular declared file;
 - declared file length or checksum mismatch;
-- symlinked discovery/content paths.
+- symlinked discovery/content paths, including intermediate declared-file path components.
 
 These failures do not mutate campaign state or choose substitutes.
 
