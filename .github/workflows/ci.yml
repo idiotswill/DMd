@@ -26,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@1.85.0
-      - name: Check declared Rust 1.85 minimum
+      - uses: dtolnay/rust-toolchain@1.88.0
+      - name: Check declared Rust 1.88 minimum
         run: cargo check --locked --workspace --all-targets
 
   genericity-guard:
