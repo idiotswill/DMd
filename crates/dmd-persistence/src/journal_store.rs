@@ -308,7 +308,7 @@ pub async fn commit_campaign_transition(
     }
 
     let pending_ids = event_positions.keys().copied().collect::<HashSet<_>>();
-    let existing_pending = load_existing_event_metadata(&mut *transaction, &pending_ids).await?;
+    let existing_pending = load_existing_event_metadata(&mut transaction, &pending_ids).await?;
     if let Some(event_id) = existing_pending.keys().next() {
         return Err(JournalStoreError::EventAlreadyExists(*event_id));
     }
@@ -327,7 +327,7 @@ pub async fn commit_campaign_transition(
         .filter(|event_id| !event_positions.contains_key(event_id))
         .collect::<HashSet<_>>();
     let external_cause_metadata =
-        load_existing_event_metadata(&mut *transaction, &external_causes).await?;
+        load_existing_event_metadata(&mut transaction, &external_causes).await?;
 
     for (index, event) in events.iter().enumerate() {
         let child_sequence = sequence_at(current_state.applied_event_sequence, index)?;
@@ -704,7 +704,7 @@ async fn verify_loaded_state_event_references(
     }
 
     let mut connection = pool.acquire().await?;
-    let metadata = load_existing_event_metadata(&mut *connection, &references).await?;
+    let metadata = load_existing_event_metadata(&mut connection, &references).await?;
     validate_reference_campaigns(campaign_id, &references, &metadata)
 }
 
@@ -773,7 +773,7 @@ async fn validate_state_event_references(
         return Ok(());
     }
 
-    let metadata = load_existing_event_metadata(&mut **transaction, &references).await?;
+    let metadata = load_existing_event_metadata(transaction, &references).await?;
     validate_reference_campaigns(campaign_id, &references, &metadata)
 }
 
