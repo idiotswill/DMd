@@ -8,6 +8,7 @@ pub mod reference;
 pub mod scene;
 pub mod state;
 pub mod time;
+pub mod validation;
 pub mod world;
 
 pub use campaign::*;
@@ -20,4 +21,5 @@ pub use reference::*;
 pub use scene::*;
 pub use state::*;
 pub use time::*;
+pub use validation::*;
 pub use world::*;
