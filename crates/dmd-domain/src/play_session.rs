@@ -2,9 +2,7 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    CampaignId, CampaignState, CharacterId, PlaySessionId, PlayerId, WorldInstant,
-};
+use crate::{CampaignId, CampaignState, CharacterId, PlaySessionId, PlayerId, WorldInstant};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaySessionStatus {
@@ -124,7 +122,9 @@ impl PlaySession {
             }
             if let Some(character_id) = participant.character_id {
                 if !state.characters.contains_key(&character_id) {
-                    violations.push(PlaySessionReferenceViolation::MissingCharacter(character_id));
+                    violations.push(PlaySessionReferenceViolation::MissingCharacter(
+                        character_id,
+                    ));
                 }
             }
         }
