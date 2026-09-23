@@ -1,0 +1,27 @@
+{
+  "id": "voice-ambiguity-001",
+  "description": "A materially ambiguous target must trigger a narrow clarification because the alternatives would produce different state and consequences.",
+  "context": {
+    "speaker": "Cora",
+    "visible_doors": [
+      {
+        "id": "door-east",
+        "description": "east iron door",
+        "known_risk": "alarm rune"
+      },
+      {
+        "id": "door-west",
+        "description": "west wooden door",
+        "known_risk": "none"
+      }
+    ]
+  },
+  "input": "I open the door.",
+  "expected": {
+    "intent": "ambiguous",
+    "candidate_targets": ["door-east", "door-west"],
+    "requires_confirmation": true,
+    "clarification_scope": "which door",
+    "must_not_commit_before_confirmation": true
+  }
+}

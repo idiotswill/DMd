@@ -1,0 +1,23 @@
+{
+  "id": "voice-compound-001",
+  "description": "One utterance contains multiple actors, dialogue, support, and a separate concurrent task.",
+  "context": {
+    "characters": ["Arin", "Bex", "Cora", "Dane"]
+  },
+  "input": "Arin talks to the children and offers money for directions, Bex holds up the coins so they can see we are serious, Dane stands behind him trying to look intimidating, and Cora checks the street signs to figure out where the inn is. Does Bex helping give Arin advantage?",
+  "expected": {
+    "minimum_intent_count": 5,
+    "must_include": [
+      "in_world_action",
+      "supporting_action",
+      "concurrent_action",
+      "rules_query"
+    ],
+    "must_not_invent": [
+      "money_transferred",
+      "directions_received",
+      "successful_intimidation"
+    ],
+    "requires_global_confirmation": false
+  }
+}

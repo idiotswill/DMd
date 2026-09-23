@@ -1,0 +1,27 @@
+{
+  "id": "voice-split-scene-001",
+  "description": "An utterance from one player in a split party must be routed to that character's active scene without moving or involving characters in the other scene.",
+  "context": {
+    "speaker": "Bex",
+    "scenes": [
+      {
+        "id": "scene-market",
+        "location": "market",
+        "participants": ["Arin", "Bex"]
+      },
+      {
+        "id": "scene-temple",
+        "location": "temple",
+        "participants": ["Cora", "Dane"]
+      }
+    ]
+  },
+  "input": "I ask the fruit seller whether the guards came through here this morning.",
+  "expected": {
+    "intent": "in_world_action",
+    "target_scene": "scene-market",
+    "actor": "Bex",
+    "must_not_move_or_involve": ["Cora", "Dane"],
+    "requires_global_confirmation": false
+  }
+}

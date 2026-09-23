@@ -1,0 +1,10 @@
+{
+  "name": "dmd-workspace",
+  "private": true,
+  "scripts": {
+    "check:rust": "cargo check --workspace",
+    "test:rust": "cargo test --workspace",
+    "check:web": "pnpm --recursive check",
+    "test:web": "pnpm --recursive test"
+  }
+}

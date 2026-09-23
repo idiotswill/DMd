@@ -1,0 +1,18 @@
+{
+  "id": "voice-correction-001",
+  "description": "A player retracts one part of a compound declaration before it becomes authoritative state.",
+  "context": {
+    "character": "Dane",
+    "item": "sealed demolition charge"
+  },
+  "sequence": [
+    "Dane puts the charge under his cloak and then we search the room for a better hiding place.",
+    "Forget the cloak part. The charge stays where it was; we only search for a hiding place."
+  ],
+  "expected": {
+    "committed_effects": ["search_for_hiding_place"],
+    "forbidden_effects": ["move_charge_under_cloak"],
+    "requires_retcon": false,
+    "requires_confirmation": false
+  }
+}

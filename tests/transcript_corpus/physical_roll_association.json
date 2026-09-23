@@ -1,0 +1,24 @@
+{
+  "id": "voice-roll-001",
+  "description": "A reported physical die face is associated with the outstanding roll request rather than accepted as a free-floating authoritative total.",
+  "context": {
+    "speaker": "Arin",
+    "outstanding_roll": {
+      "request_id": "roll-request-1",
+      "roller": "Arin",
+      "dice": "1d20",
+      "modifier": 5,
+      "reason": "perception check"
+    }
+  },
+  "input": "I rolled a 13.",
+  "expected": {
+    "intent": "dice_result",
+    "request_id": "roll-request-1",
+    "raw_faces": [13],
+    "source": "physical",
+    "must_not_treat_as_authoritative_total": true,
+    "engine_computed_total": 18,
+    "requires_confirmation": false
+  }
+}
