@@ -178,9 +178,9 @@ impl RollRequest {
 }
 
 fn dice_match_specs(specs: &[DieSpec], results: &[DieResult]) -> bool {
-    let expected_count = specs
-        .iter()
-        .try_fold(0_usize, |total, spec| total.checked_add(usize::from(spec.count)));
+    let expected_count = specs.iter().try_fold(0_usize, |total, spec| {
+        total.checked_add(usize::from(spec.count))
+    });
     if expected_count != Some(results.len()) {
         return false;
     }
@@ -188,7 +188,10 @@ fn dice_match_specs(specs: &[DieSpec], results: &[DieResult]) -> bool {
     let mut unmatched = results.to_vec();
     for spec in specs {
         for _ in 0..spec.count {
-            let Some(index) = unmatched.iter().position(|result| result.sides == spec.sides) else {
+            let Some(index) = unmatched
+                .iter()
+                .position(|result| result.sides == spec.sides)
+            else {
                 return false;
             };
             unmatched.swap_remove(index);
