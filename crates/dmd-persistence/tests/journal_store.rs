@@ -1,9 +1,10 @@
 use std::{fs, path::Path};
 
 use dmd_domain::{
-    Campaign, CampaignId, CampaignState, CampaignStatus, Claim, ClaimId, ClaimSource, CommandId,
-    CommandIssuer, CommandMeta, EventId, EventSource, FactValue, PendingEvent, PlaySessionId,
-    Proposition, SerializedRecord, SubjectRef, VersionedRef, WorldClock, WorldDuration,
+    AgentRef, Campaign, CampaignId, CampaignState, CampaignStatus, Claim, ClaimId, ClaimSource,
+    CommandId, CommandIssuer, CommandMeta, EntityExistence, EntityId, EntityKind, EventId,
+    EventSource, FactValue, PendingEvent, PlaySessionId, Player, PlayerId, Proposition,
+    SerializedRecord, SubjectRef, VersionedRef, WorldClock, WorldDuration, WorldEntity,
     WorldInstant,
 };
 use dmd_persistence::{
@@ -86,6 +87,21 @@ fn next_state(current: &CampaignState, event_count: u64) -> CampaignState {
     next
 }
 
+fn claim_with_source_event(state: &CampaignState, source_event_id: EventId) -> Claim {
+    Claim {
+        id: ClaimId::new(),
+        campaign_id: state.campaign_id(),
+        source: ClaimSource::Unknown,
+        proposition: Proposition {
+            subject: SubjectRef::Campaign(state.campaign_id()),
+            predicate: "test_claim".into(),
+            value: FactValue::Boolean(true),
+        },
+        made_at: state.clock.now,
+        source_event_id,
+    }
+}
+
 #[tokio::test]
 async fn initializes_and_loads_clean_campaign_state() {
     let pool = test_pool().await;
@@ -113,18 +129,7 @@ async fn initial_state_cannot_reference_nonexistent_journal_event() {
     let pool = test_pool().await;
     let mut initial = state();
     let missing_event = EventId::new();
-    let claim = Claim {
-        id: ClaimId::new(),
-        campaign_id: initial.campaign_id(),
-        source: ClaimSource::Unknown,
-        proposition: Proposition {
-            subject: SubjectRef::Campaign(initial.campaign_id()),
-            predicate: "preexisting_claim".into(),
-            value: FactValue::Boolean(true),
-        },
-        made_at: initial.clock.now,
-        source_event_id: missing_event,
-    };
+    let claim = claim_with_source_event(&initial, missing_event);
     initial.claims.insert(claim.id, claim);
 
     let result = initialize_campaign_state(&pool, &initial).await;
@@ -139,6 +144,34 @@ async fn initial_state_cannot_reference_nonexistent_journal_event() {
             .expect("lookup should succeed")
             .is_none()
     );
+}
+
+#[tokio::test]
+async fn recovery_rejects_materialized_state_with_dangling_event_provenance() {
+    let pool = test_pool().await;
+    let current = state();
+    initialize_campaign_state(&pool, &current)
+        .await
+        .expect("state should initialize");
+
+    let missing_event = EventId::new();
+    let mut corrupt = current.clone();
+    let claim = claim_with_source_event(&corrupt, missing_event);
+    corrupt.claims.insert(claim.id, claim);
+    let corrupt_json = corrupt.encode_json().expect("fixture state should encode");
+    sqlx::query("UPDATE campaign_state_current SET state_json = ? WHERE campaign_id = ?")
+        .bind(corrupt_json)
+        .bind(current.campaign_id().0.to_string())
+        .execute(&pool)
+        .await
+        .expect("fixture corruption should be written");
+
+    let result = load_campaign_state(&pool, current.campaign_id()).await;
+
+    assert!(matches!(
+        result,
+        Err(JournalStoreError::MissingStateEventReference(event_id)) if event_id == missing_event
+    ));
 }
 
 #[tokio::test]
@@ -193,6 +226,51 @@ async fn accepted_transition_commits_state_audit_and_event_atomically() {
     assert_eq!(audit.payload.kind, "test.advance_time");
     assert_eq!(audit.emitted_event_ids, vec![event_id]);
     assert_eq!(audit.resulting_event_sequence, 1);
+}
+
+#[tokio::test]
+async fn audit_preserves_player_issuer_separately_from_world_actor() {
+    let pool = test_pool().await;
+    let mut current = state();
+    let player = Player {
+        id: PlayerId::new(),
+        campaign_id: current.campaign_id(),
+        display_name: "Test Player".into(),
+    };
+    let actor = WorldEntity {
+        id: EntityId::new(),
+        campaign_id: current.campaign_id(),
+        display_name: "Test Actor".into(),
+        kind: EntityKind::Npc,
+        existence: EntityExistence::Present,
+        location_id: None,
+    };
+    current.players.insert(player.id, player.clone());
+    current.entities.insert(actor.id, actor.clone());
+    initialize_campaign_state(&pool, &current)
+        .await
+        .expect("state should initialize");
+
+    let mut meta = command_meta(current.campaign_id(), 0);
+    meta.issuer = CommandIssuer::Player(player.id);
+    meta.actor = Some(AgentRef::Entity(actor.id));
+    commit_campaign_transition(
+        &pool,
+        &meta,
+        &command_payload(),
+        &next_state(&current, 1),
+        &[event(EventId::new(), vec![], WorldInstant(101))],
+        "Player-authorized actor action.",
+    )
+    .await
+    .expect("transition should commit");
+
+    let audit = load_command_audit(&pool, meta.id)
+        .await
+        .expect("audit should load")
+        .expect("audit should exist");
+    assert_eq!(audit.meta.issuer, CommandIssuer::Player(player.id));
+    assert_eq!(audit.meta.actor, Some(AgentRef::Entity(actor.id)));
 }
 
 #[tokio::test]
@@ -377,18 +455,7 @@ async fn resulting_state_cannot_reference_unpersisted_event() {
         .expect("state should initialize");
     let missing_event = EventId::new();
     let mut next = next_state(&current, 1);
-    let claim = Claim {
-        id: ClaimId::new(),
-        campaign_id: current.campaign_id(),
-        source: ClaimSource::Unknown,
-        proposition: Proposition {
-            subject: SubjectRef::Campaign(current.campaign_id()),
-            predicate: "test_claim".into(),
-            value: FactValue::Boolean(true),
-        },
-        made_at: WorldInstant(101),
-        source_event_id: missing_event,
-    };
+    let claim = claim_with_source_event(&next, missing_event);
     next.claims.insert(claim.id, claim);
 
     let result = commit_campaign_transition(

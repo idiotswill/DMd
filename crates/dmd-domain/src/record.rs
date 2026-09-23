@@ -2,10 +2,11 @@ use std::{error::Error, fmt};
 
 use serde::{Serialize, de::DeserializeOwned};
 
-/// Versioned serialized form of an already-typed application/domain payload.
+/// Versioned serialized representation of an already-typed Rust payload.
 ///
-/// Construction requires a value implementing `Serialize`; callers cannot provide a raw JSON
-/// object and claim that it crossed the typed command/event boundary.
+/// This type preserves the kind/version/body needed for durable audit and replay tooling. Encoding
+/// a value is not itself proof of authorization or semantic validation; callers must only persist
+/// records that have crossed the application/core command or event validation boundary.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct SerializedRecord {
     kind: String,

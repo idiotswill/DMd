@@ -202,6 +202,7 @@ pub async fn load_campaign_state(
     .fetch_one(pool)
     .await?;
     verify_journal_head(&state, &head)?;
+    verify_loaded_state_event_references(pool, campaign_id, &state).await?;
 
     Ok(Some(state))
 }
@@ -665,6 +666,32 @@ fn verify_journal_head(state: &CampaignState, row: &SqliteRow) -> Result<(), Jou
             event_count,
             max_sequence,
         });
+    }
+    Ok(())
+}
+
+async fn verify_loaded_state_event_references(
+    pool: &SqlitePool,
+    campaign_id: CampaignId,
+    state: &CampaignState,
+) -> Result<(), JournalStoreError> {
+    for event_id in collect_state_event_references(state) {
+        let row = sqlx::query("SELECT campaign_id FROM event_journal WHERE id = ?")
+            .bind(event_id.0.to_string())
+            .fetch_optional(pool)
+            .await?;
+        let Some(row) = row else {
+            return Err(JournalStoreError::MissingStateEventReference(event_id));
+        };
+        let stored_campaign: String = row.try_get("campaign_id")?;
+        let actual = CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
+        if actual != campaign_id {
+            return Err(JournalStoreError::StateEventReferenceCampaignMismatch {
+                event_id,
+                expected: campaign_id,
+                actual,
+            });
+        }
     }
     Ok(())
 }
