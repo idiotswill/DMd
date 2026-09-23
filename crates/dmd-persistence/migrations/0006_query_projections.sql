@@ -25,7 +25,6 @@ CREATE TABLE projection_campaigns (
     campaign_id TEXT PRIMARY KEY NOT NULL,
     display_name TEXT NOT NULL,
     status TEXT NOT NULL,
-    world_seed INTEGER NOT NULL,
     world_now INTEGER NOT NULL,
     calendar_id TEXT NOT NULL,
     record_json TEXT NOT NULL CHECK (json_valid(record_json)),
@@ -221,8 +220,8 @@ BEGIN
     );
     INSERT INTO projection_campaigns
     SELECT NEW.campaign_id, json_extract(NEW.state_json, '$.campaign.display_name'), json_extract(NEW.state_json, '$.campaign.status'),
-           json_extract(NEW.state_json, '$.campaign.world_seed'), json_extract(NEW.state_json, '$.clock.now'),
-           json_extract(NEW.state_json, '$.clock.calendar_id'), json_extract(NEW.state_json, '$.campaign');
+           json_extract(NEW.state_json, '$.clock.now'), json_extract(NEW.state_json, '$.clock.calendar_id'),
+           json_extract(NEW.state_json, '$.campaign');
     INSERT INTO projection_players SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.display_name'), value FROM json_each(NEW.state_json,'$.players');
     INSERT INTO projection_characters SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.entity_id'), json_extract(value,'$.controlling_player_id'), json_extract(value,'$.display_name'), json_extract(value,'$.status'), value FROM json_each(NEW.state_json,'$.characters');
     INSERT INTO projection_entities SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.display_name'), json_extract(value,'$.kind'), json_extract(value,'$.existence'), json_extract(value,'$.location_id'), value FROM json_each(NEW.state_json,'$.entities');
@@ -259,7 +258,7 @@ BEGIN
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.knowledge')),
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.directives'))
     );
-    INSERT INTO projection_campaigns SELECT NEW.campaign_id, json_extract(NEW.state_json, '$.campaign.display_name'), json_extract(NEW.state_json, '$.campaign.status'), json_extract(NEW.state_json, '$.campaign.world_seed'), json_extract(NEW.state_json, '$.clock.now'), json_extract(NEW.state_json, '$.clock.calendar_id'), json_extract(NEW.state_json, '$.campaign');
+    INSERT INTO projection_campaigns SELECT NEW.campaign_id, json_extract(NEW.state_json, '$.campaign.display_name'), json_extract(NEW.state_json, '$.campaign.status'), json_extract(NEW.state_json, '$.clock.now'), json_extract(NEW.state_json, '$.clock.calendar_id'), json_extract(NEW.state_json, '$.campaign');
     INSERT INTO projection_players SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.display_name'), value FROM json_each(NEW.state_json,'$.players');
     INSERT INTO projection_characters SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.entity_id'), json_extract(value,'$.controlling_player_id'), json_extract(value,'$.display_name'), json_extract(value,'$.status'), value FROM json_each(NEW.state_json,'$.characters');
     INSERT INTO projection_entities SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.display_name'), json_extract(value,'$.kind'), json_extract(value,'$.existence'), json_extract(value,'$.location_id'), value FROM json_each(NEW.state_json,'$.entities');
