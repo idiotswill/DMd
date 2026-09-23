@@ -28,6 +28,9 @@ pub struct WorldEntity {
     pub display_name: String,
     pub kind: EntityKind,
     pub existence: EntityExistence,
+    /// Coarse persistent world position. Tactical coordinates belong to the spatial layer.
+    /// `None` means unknown, unplaced, extraplanar, or otherwise intentionally unresolved.
+    pub location_id: Option<LocationId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
