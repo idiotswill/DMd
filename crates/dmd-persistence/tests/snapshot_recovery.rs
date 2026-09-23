@@ -6,8 +6,9 @@ use dmd_domain::{
     WorldInstant,
 };
 use dmd_persistence::{
-    ReplayApplyError, ReplayEventApplier, SnapshotCodecError, SnapshotReplayError,
-    StoredJournalEvent, commit_campaign_transition, initialize_campaign_state, migrate_sqlite,
+    CampaignStateSnapshotCodec, ReplayApplyError, ReplayEventApplier, SnapshotCodecError,
+    SnapshotReplayError, StoredJournalEvent, commit_campaign_transition,
+    initialize_campaign_state, load_campaign_snapshot_at_or_before, migrate_sqlite,
     replay_campaign_to_head,
 };
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
@@ -236,6 +237,42 @@ async fn replay_fails_explicitly_when_no_snapshot_is_available() {
     assert!(matches!(
         result,
         Err(SnapshotReplayError::MissingSnapshot { target: 0 })
+    ));
+}
+
+#[tokio::test]
+async fn direct_snapshot_load_requires_a_matching_journal_prefix() {
+    let pool = test_pool().await;
+    let initial = state();
+    initialize_campaign_state(&pool, &initial)
+        .await
+        .expect("campaign should initialize");
+
+    let mut forged = initial.clone();
+    forged.applied_event_sequence = 1;
+    sqlx::query(
+        "INSERT INTO campaign_snapshots (campaign_id, event_sequence, state_schema_version, state_json) VALUES (?, 1, 1, ?)",
+    )
+    .bind(initial.campaign_id().0.to_string())
+    .bind(forged.encode_json().expect("forged snapshot should encode"))
+    .execute(&pool)
+    .await
+    .expect("corruption fixture should insert a structurally valid unsupported snapshot");
+
+    let result = load_campaign_snapshot_at_or_before(
+        &pool,
+        initial.campaign_id(),
+        1,
+        &CampaignStateSnapshotCodec::new(),
+    )
+    .await;
+    assert!(matches!(
+        result,
+        Err(SnapshotReplayError::CorruptJournalPrefix {
+            target: 1,
+            event_count: 0,
+            max_sequence: 0
+        })
     ));
 }
 
