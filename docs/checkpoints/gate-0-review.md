@@ -13,8 +13,9 @@ The current foundation provides:
 - `CharacterId` separated from world-facing `EntityId`;
 - split-scene and persistent coarse-location primitives;
 - truth / claim / belief / knowledge separation;
-- stable identity for durable information records, including `KnowledgeId`;
+- stable identity for durable information records, including `KnowledgeId`, with duplicate knowledge IDs rejected;
 - a typed `GameCommand<C>` boundary rather than string + arbitrary-JSON command dispatch;
+- trusted `CommandIssuer` metadata separated from the optional in-world `actor`;
 - typed `EventEnvelope<T>` metadata with multi-parent causality;
 - physical/digital dice requests and raw-result provenance;
 - a play-session ledger that is persisted beside, not inside, `CampaignState`;
@@ -30,11 +31,13 @@ The current foundation provides:
 
 **Review result:** boundary represented in code and protected by regression coverage.
 
-### Language / AI
+### Language / AI and player authority
 
 Provider output may classify and propose typed candidates. It cannot directly write authoritative state. Core commands have typed payloads and separate authority metadata.
 
-**Review result:** foundation boundary is sound. Concrete gameplay command payloads remain intentionally deferred.
+The trusted command issuer (`Player`, `System`, `Admin`, or `Import`) is distinct from the optional in-world entity/faction actor. Player/speaker identity must come from the application/session/input channel, not from a language model recognizing or emitting a name.
+
+**Review result:** foundation boundary is sound. Concrete gameplay command payloads and command-specific authorization policies remain intentionally deferred.
 
 ### Tabletop sessions
 
@@ -44,9 +47,9 @@ Attendance and session history are durable campaign records but not world truth.
 
 ### Information provenance
 
-Facts, claims, beliefs, and knowledge remain distinct. NPC/faction knowledge can differ from world truth. Materialized knowledge records have stable identity; historical acquisition/observation detail belongs in events rather than being inferred from prose.
+Facts, claims, beliefs, and knowledge remain distinct. NPC/faction knowledge can differ from world truth. Materialized knowledge records have stable identity; duplicate `KnowledgeId` values are rejected. Historical acquisition/observation detail belongs in events rather than being inferred from prose.
 
-**Review result:** foundation boundary is sound. Propagation/trust/evidence mechanics remain deferred.
+**Review result:** foundation boundary is sound. Propagation/trust/evidence and repeated holder/target merge semantics remain deferred.
 
 ### Dice
 
@@ -58,11 +61,12 @@ A roll request owns dice shape, modifier, mode, visibility, roller, and reason. 
 
 | Risk | Severity | Gate impact | Current mitigation / required next action |
 | --- | --- | --- | --- |
-| ADR 002 specifies one transaction that appends events and updates normalized state, but the general state/event-journal store is not implemented yet. | High | Gate 1 implementation blocker, not a reason to add more Gate 0 schemas | First Gate 1 persistence slice must implement atomic state + event commit, sequence allocation, causal-reference validation, and crash recovery tests before gameplay systems depend on it. |
+| ADR 002 specifies one transaction that appends events and updates normalized state, but the general state/event-journal store is not implemented yet. | High | Gate 1 implementation blocker, not a reason to add more Gate 0 schemas | First Gate 1 persistence slice must implement atomic state + event commit, sequence allocation, causal-reference validation, durable command/resolution authority metadata (including issuer), and crash recovery tests before gameplay systems depend on it. |
 | `CampaignState.schema_version` exists, but snapshot migration/replay code is not implemented. | High | Gate 1 blocker | Add explicit snapshot codecs/migrations and replay tests before any released save format is considered durable. |
 | Ruleset/content-pack IDs are versioned references, but content schemas, validation, dependency resolution, and licensing boundaries are not implemented. | High | Gate 1/content foundation | Define content-pack manifests and validators before importing large rules/content datasets. Do not copy campaign/rulebook prose into engine code. |
 | Transcript fixtures are behavioral specifications, not yet an executable end-to-end interpreter evaluation harness. | Medium | Later language-layer blocker | Preserve fixtures now; wire them to deterministic/mock and local-provider evaluations when the intent interpreter is implemented. Do not weaken fixtures to fit a provider. |
-| Knowledge records now have stable identity, but uniqueness/merge semantics for repeated acquisition of the same target are intentionally not frozen. | Medium | Gate 1 information persistence | Decide whether current state permits multiple provenance records per holder/target or canonicalizes to one relation; keep repeated historical observations in the event journal either way. |
+| Knowledge records now have stable unique identity, but uniqueness/merge semantics for repeated acquisition of the same target are intentionally not frozen. | Medium | Gate 1 information persistence | Decide whether current state permits multiple provenance records per holder/target or canonicalizes to one relation; keep repeated historical observations in the event journal either way. |
+| `CommandIssuer::Admin` identifies an authority category, not a distinct local operator account. | Low | Later admin/audit design | If multiple human operators/admin identities are introduced, add a trusted operator identity without collapsing issuer and in-world actor. Single-host Gate 0 does not need an account system. |
 | World/entity location is deliberately coarse; tactical geometry, routes, portals, reach, LoS, and AoE are absent. | High | Gate 3 blocker | Keep them out of the base `Location` type. Introduce a dedicated spatial subsystem and reaction/timing architecture before full combat content. |
 | The foundation has no Director, simulation, audio, or UI crate yet. | Medium | Later gates | Current ADRs define ownership boundaries. Add these as separate modules/crates only when their first production slice is implemented; do not fold them into domain or conversation as shortcuts. |
 
@@ -76,9 +80,11 @@ A roll request owns dice shape, modifier, mode, visibility, roller, and reason. 
 | Can split-party scenes exist? | **Automated pass.** Multiple scenes are supported while simultaneous active participation of one entity is rejected. |
 | Can a witness lie without changing world truth? | **Automated pass.** Claims and facts are separate and independently validated. |
 | Can NPC/faction knowledge differ from truth? | **Structural pass.** Knowledge/belief holders and targets are explicit; renderer filtering is still a later implementation task. |
+| Do durable knowledge records have unambiguous identity? | **Automated pass.** Every record has `KnowledgeId`; duplicate IDs are rejected while holder/target merge policy remains deferred. |
 | Can tabletop attendance/history grow without bloating world snapshots? | **Automated pass.** Session ledger is external to `CampaignState` and correlated by ID. |
 | Can physical dice remain first-class and auditable? | **Automated primitive pass.** Raw faces, request identity, source, kept dice, modifiers, and resolved total are preserved. |
 | Can an LLM/provider mutate state directly? | **Boundary pass.** Core accepts typed commands; arbitrary provider JSON is not the authority contract. |
+| Can a provider gain authority over another PC by merely naming that PC? | **Boundary pass.** Trusted `CommandIssuer::Player(PlayerId)` is separate from provider-proposed/in-world `actor`; command-specific ownership checks have an explicit principal to validate. |
 | Are live saves independent of GitHub/Drive? | **Architecture pass; partial persistence implementation.** SQLite is the runtime authority; general state/event transaction implementation is Gate 1 work. |
 | Are Rust builds reproducible across dependency resolution? | **Automated pass.** `Cargo.lock` is versioned and compile/Clippy/test/MSRV CI use locked dependency resolution. |
 | Has a human architecture/acceptance review been completed? | **No.** PR must remain draft. |
