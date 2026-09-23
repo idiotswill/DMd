@@ -19,7 +19,7 @@ The domain model is deliberately independent of voice, UI, LLM providers, and an
 7. **Split scenes are normal.** A campaign may have multiple active/paused scenes at different locations.
 8. **Standing directives are state.** Instructions such as “follow the trail until it ends or danger appears” survive across several low-level simulation steps without repeated prompts.
 9. **Ownership and physical custody are separate.** Borrowed, stolen, hidden, dropped, faction-owned, and container-held items require no special-case semantics.
-10. **Every durable mutation has provenance.** Events record campaign, sequence, world time, source, actor when relevant, command correlation, and causal parent when relevant.
+10. **Every durable mutation has provenance.** Events record campaign, sequence, world time, source, actor when relevant, command correlation, and causal parents when relevant.
 
 ## Aggregate overview
 
@@ -63,9 +63,9 @@ Persistence will additionally enforce campaign isolation with database keys/cons
 - `CharacterId`
 - world-facing `EntityId`
 - optional controlling `PlayerId`
-- lifecycle state (`Active`, `Absent`, `Retired`, `Dead`)
+- lifecycle state (`Active`, `Retired`, `Dead`)
 
-This permits death and replacement without deleting history, guest/unassigned imports, temporary player absence, and later conversion of a former PC into an autonomous world actor if desired.
+This permits death and replacement without deleting history, guest/unassigned imports, and later conversion of a former PC into an autonomous world actor if desired. Temporary player absence is session attendance and does not mutate character lifecycle.
 
 No engine invariant assumes exactly four players or exactly one lifetime character per player.
 
@@ -171,7 +171,7 @@ Metadata includes:
 - world time
 - event source
 - actor when relevant
-- causal parent event when relevant
+- causal parent events when relevant
 - originating command when relevant
 
 This enables deterministic debugging questions such as “why did this settlement price change?” without forcing all current state to be recomputed from the beginning on every startup.
