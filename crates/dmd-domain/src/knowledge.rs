@@ -92,14 +92,14 @@ pub struct Belief {
     pub updated_at: WorldInstant,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KnowledgeHolder {
     Entity(EntityId),
     /// Explicitly shared table knowledge; never implied by out-of-character chatter alone.
     Table,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum KnowledgeTarget {
     Fact(FactId),
     Claim(ClaimId),
