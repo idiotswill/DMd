@@ -1,4 +1,7 @@
-use std::{env, fs, path::{Path, PathBuf}};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 use dmd_domain::{
     CONTENT_MANIFEST_FILENAME, CURRENT_CONTENT_CONTRACT_VERSION,
@@ -102,8 +105,8 @@ fn unrelated_rulesets_and_content_packs_resolve_without_hardcoded_campaign_assum
         "space-pack",
         &pack("world.space", "3", reference("rules.beta", "9.4")),
     );
-    let catalog = ContentCatalog::load_from_roots(&[root.path().to_path_buf()])
-        .expect("catalog should load");
+    let catalog =
+        ContentCatalog::load_from_roots(&[root.path().to_path_buf()]).expect("catalog should load");
 
     let alpha = campaign(
         reference("rules.alpha", "1.0.0"),
