@@ -1,6 +1,7 @@
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, Custody, ItemId, ItemInstance, ItemState,
-    Location, LocationId, Ownership, StateInvariantViolation, VersionedRef, WorldClock, WorldInstant,
+    Location, LocationId, Ownership, StateInvariantViolation, VersionedRef, WorldClock,
+    WorldInstant,
 };
 
 fn state() -> CampaignState {
