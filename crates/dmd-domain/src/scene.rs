@@ -1,8 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    CampaignId, DirectiveId, EntityId, LocationId, SceneId, WorldDuration, WorldInstant,
-};
+use crate::{CampaignId, DirectiveId, EntityId, LocationId, SceneId, WorldDuration, WorldInstant};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SceneMode {
