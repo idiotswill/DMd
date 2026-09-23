@@ -156,7 +156,7 @@ A final endurance campaign must include, at minimum:
 2. Create a brand-new world/campaign and arbitrary PCs through supported product flows.
 3. Play multiple real sessions through the normal application interface.
 4. Exercise combat, exploration, social interaction, travel, downtime, inventory/resources, rests, advancement, and meaningful choices.
-5. Use physical dice and normal voice/table interaction where those systems are part of the release target.
+5. Use physical dice and natural voice/table interaction through the supported product flows.
 6. Save, exit, restart, and resume repeatedly without manual state repair.
 7. Allow the party to diverge materially from initial hooks and ignore offered situations.
 8. Advance enough in-world time for off-screen actors/processes to act repeatedly.
