@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{CampaignId, CommandId, EntityId, EventId, WorldInstant};
+use crate::{AgentRef, CampaignId, CommandId, EventId, WorldInstant};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EventSource {
@@ -20,7 +20,7 @@ pub struct EventMeta {
     pub sequence: u64,
     pub occurred_at: WorldInstant,
     pub source: EventSource,
-    pub actor: Option<EntityId>,
+    pub actor: Option<AgentRef>,
     /// Direct causal parents. Empty means no earlier material event is recorded as a cause.
     /// Multiple parents allow consequences produced jointly by several prior developments.
     pub caused_by_event_ids: Vec<EventId>,
@@ -46,6 +46,7 @@ impl<T> EventEnvelope<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::FactionId;
 
     #[test]
     fn event_can_record_multiple_direct_causes() {
@@ -57,11 +58,12 @@ mod tests {
             sequence: 3,
             occurred_at: WorldInstant(10),
             source: EventSource::WorldSimulation,
-            actor: None,
+            actor: Some(AgentRef::Faction(FactionId::new())),
             caused_by_event_ids: vec![first, second],
             command_id: None,
         };
 
         assert_eq!(meta.caused_by_event_ids, vec![first, second]);
+        assert!(matches!(meta.actor, Some(AgentRef::Faction(_))));
     }
 }
