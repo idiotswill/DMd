@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+./scripts/verify-fast
+
+echo '==> clippy'
+cargo clippy --locked --workspace --all-targets -- -D warnings
+
+echo '==> tests'
+cargo test --locked --workspace
+
+echo '==> genericity guard'
+./scripts/check-genericity
+
+echo 'Full verification passed.'
