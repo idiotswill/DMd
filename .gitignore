@@ -1,0 +1,17 @@
+/target/
+/node_modules/
+/dist/
+/.svelte-kit/
+/apps/desktop/src-tauri/target/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
