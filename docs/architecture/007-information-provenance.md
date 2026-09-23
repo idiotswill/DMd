@@ -13,7 +13,7 @@ DMd distinguishes four concepts:
 - **Fact** — accepted world truth for a validity interval.
 - **Claim** — an assertion that exists regardless of whether it is true.
 - **Belief** — an individual or faction's internal proposition with confidence and basis.
-- **KnowledgeRecord** — access to an established fact or claim.
+- **KnowledgeRecord** — durable access to an established fact or claim, identified by a stable `KnowledgeId`.
 
 A claim is never promoted into a fact merely because it exists or because a social check succeeded.
 
@@ -57,6 +57,8 @@ Snapshot validation checks fact/claim basis references. Direct observation event
 - an entity agent;
 - a faction agent;
 - explicit shared-table knowledge.
+
+Each materialized `KnowledgeRecord` has its own stable identity so persistence, corrections, migrations, and provenance do not have to address records by display text or vector position. Repeated observations or reminders may create journal events without requiring duplicate current-state knowledge rows.
 
 Out-of-character table discussion does not create character or faction knowledge. Narrative and NPC-dialogue renderers must receive only the information visible to the relevant holder/context.
 
