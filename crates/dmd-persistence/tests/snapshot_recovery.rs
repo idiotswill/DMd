@@ -290,7 +290,8 @@ async fn replay_rejects_applier_that_changes_campaign_identity() {
     .await
     .expect("transition should commit");
 
-    let result = replay_campaign_to_head(&pool, initial.campaign_id(), &CampaignChangingApplier).await;
+    let result =
+        replay_campaign_to_head(&pool, initial.campaign_id(), &CampaignChangingApplier).await;
     assert!(matches!(
         result,
         Err(SnapshotReplayError::CampaignIdentityChanged)
@@ -316,7 +317,8 @@ async fn replay_rejects_applier_that_changes_state_schema() {
     .await
     .expect("transition should commit");
 
-    let result = replay_campaign_to_head(&pool, initial.campaign_id(), &SchemaChangingApplier).await;
+    let result =
+        replay_campaign_to_head(&pool, initial.campaign_id(), &SchemaChangingApplier).await;
     assert!(matches!(
         result,
         Err(SnapshotReplayError::StateSchemaChanged {

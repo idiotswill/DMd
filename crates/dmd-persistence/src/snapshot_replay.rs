@@ -167,10 +167,7 @@ pub enum SnapshotReplayError {
         row_sequence: u64,
     },
     #[error("journal head is inconsistent: count={event_count}, max={max_sequence}")]
-    CorruptJournalHead {
-        event_count: u64,
-        max_sequence: u64,
-    },
+    CorruptJournalHead { event_count: u64, max_sequence: u64 },
     #[error(
         "journal prefix through {target} is inconsistent: count={event_count}, max={max_sequence}"
     )]
