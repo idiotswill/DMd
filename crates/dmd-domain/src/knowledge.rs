@@ -1,8 +1,18 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    BeliefId, CampaignId, ClaimId, EntityId, EventId, FactId, LocationId, WorldInstant,
+    BeliefId, CampaignId, ClaimId, EntityId, EventId, FactId, FactionId, ItemId, LocationId,
+    WorldInstant,
 };
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SubjectRef {
+    Campaign(CampaignId),
+    Entity(EntityId),
+    Location(LocationId),
+    Faction(FactionId),
+    Item(ItemId),
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum FactValue {
@@ -11,12 +21,14 @@ pub enum FactValue {
     Text(String),
     Entity(EntityId),
     Location(LocationId),
+    Faction(FactionId),
+    Item(ItemId),
     Time(WorldInstant),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Proposition {
-    pub subject: EntityId,
+    pub subject: SubjectRef,
     pub predicate: String,
     pub value: FactValue,
 }
