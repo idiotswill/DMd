@@ -232,8 +232,8 @@ pub enum CatalogLoadError {
     ContentFileChecksumMismatch {
         identity: ManifestIdentity,
         path: PathBuf,
-        expected: String,
-        actual: String,
+        expected: Box<str>,
+        actual: Box<str>,
     },
 }
 
@@ -679,8 +679,8 @@ fn verify_manifest_files(
             return Err(CatalogLoadError::ContentFileChecksumMismatch {
                 identity: identity.clone(),
                 path,
-                expected: declared.checksum.value.clone(),
-                actual,
+                expected: declared.checksum.value.clone().into_boxed_str(),
+                actual: actual.into_boxed_str(),
             });
         }
     }
