@@ -1,10 +1,10 @@
 # Gate 1 — Atomic state and event journal
 
-Status: ready for human review
+Status: ready for human approval
 Branch: `gate1/atomic-journal-finalize`
 PR: #6
 Base: `main` @ `a836ef3f9c001ea6bbec81e191209230bd2293f6`
-Verified implementation head: `596675f87931aa539e7c2ae128b470180eff21ce` (CI run 145 — pass)
+Verified closeout head: `b35856733c65e0d50c6abac60d03356d3917847e` (CI run 146 — pass)
 
 ## Objective
 
@@ -63,7 +63,7 @@ The materialized-state row introduced in this slice is a durable recovery/snapsh
 - [x] Proposed ADR/checkpoint wording has been reconciled with the implementation and deferred work.
 - [x] Implementation CI run 145 passed on exact head `596675f87931aa539e7c2ae128b470180eff21ce`.
 - [x] Complete PR #6 diff and review-thread state were inspected; no review comments/blockers were present before closeout docs.
-- [ ] Final docs-only closeout head CI passes.
+- [x] Closeout CI run 146 passed on exact head `b35856733c65e0d50c6abac60d03356d3917847e` across fast verification, Clippy, tests, Rust 1.88 MSRV, genericity, and architecture boundaries.
 - [ ] Human explicitly approves this save-format/high-impact slice for merge.
 
 ## Planned slices
@@ -72,7 +72,7 @@ The materialized-state row introduced in this slice is a durable recovery/snapsh
 2. Implement initialize/load/atomic-commit APIs and invariant checks. — complete
 3. Add restart, stale-write, causality, provenance, authority, rollback, corruption, and immutability tests. — complete
 4. Add the scoped Gate 1 checkpoint/ADR and mechanical boundary guard. — complete
-5. Run final verification, inspect complete diff, update plan/PR, and hand off for human merge approval. — implementation verified; docs-only final CI pending
+5. Run final verification, inspect complete diff, update plan/PR, and hand off for human merge approval. — complete except human approval/merge
 
 ## Decision log
 
@@ -100,8 +100,8 @@ The materialized-state row introduced in this slice is a durable recovery/snapsh
 - `bb68fdd598da83dd8635b256f5ce61b91f721c86` — fixed exactly those Clippy warnings.
 - `e3e201d74430aa5aabbb3d9ac583abef39ea5cd2` — single-snapshot recovery read; verified green before branch isolation.
 - CI run 144 on `6cd806a185c9961725ecc7cc8a6beac95500a507` — failed rustfmt only in the new integrity regression file.
-- CI run 145 on `596675f87931aa539e7c2ae128b470180eff21ce` — **passed**: fast verification, Clippy, all tests, Rust 1.88 MSRV, genericity, architecture guard.
-- final docs-only head CI — pending.
+- CI run 145 on `596675f87931aa539e7c2ae128b470180eff21ce` — passed fast verification, Clippy, all tests, Rust 1.88 MSRV, genericity, architecture guard.
+- CI run 146 on `b35856733c65e0d50c6abac60d03356d3917847e` — **passed** the same full suite on the reconciled docs closeout head.
 
 ## Risks / remaining debt
 
@@ -113,4 +113,4 @@ The materialized-state row introduced in this slice is a durable recovery/snapsh
 
 ## Next action
 
-Run CI on the docs-only closeout commit. If green and PR #6 head is unchanged, update the PR summary with exact validation evidence and mark it ready for human review. Do not merge until the user explicitly approves this save-format/high-impact slice.
+Obtain explicit human approval for PR #6. Immediately before any merge, re-fetch the PR head and verify CI is green on that exact unchanged head. After merge, keep Gate 1 open and proceed to snapshot migration/replay rather than treating Slice A as Gate 1 completion.
