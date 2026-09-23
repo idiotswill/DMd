@@ -180,6 +180,65 @@ async fn projection_corruption_is_detected_and_rebuild_repairs_from_replay() {
 }
 
 #[tokio::test]
+async fn malformed_materialized_json_invalidates_projection_and_rebuild_repairs_it() {
+    let pool = test_pool().await;
+    let (state, _, _) = state("Malformed");
+    initialize_campaign_state(&pool, &state).await.unwrap();
+
+    sqlx::query("UPDATE campaign_state_current SET state_json = ? WHERE campaign_id = ?")
+        .bind("{not-json")
+        .bind(state.campaign_id().0.to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert!(matches!(
+        load_campaign_projection_summary(&pool, state.campaign_id()).await,
+        Err(ProjectionStoreError::MissingProjection)
+    ));
+
+    let rebuilt = rebuild_campaign_projections(&pool, state.campaign_id(), &NoopApplier)
+        .await
+        .unwrap();
+    assert_eq!(rebuilt.applied_event_sequence, 0);
+    assert_eq!(rebuilt.entities, 1);
+}
+
+#[tokio::test]
+async fn rebuild_repairs_stale_materialized_sequence_from_journal() {
+    let pool = test_pool().await;
+    let (state, _, _) = state("Stale sequence");
+    initialize_campaign_state(&pool, &state).await.unwrap();
+
+    sqlx::query(
+        "UPDATE campaign_state_current SET applied_event_sequence = 7 WHERE campaign_id = ?",
+    )
+    .bind(state.campaign_id().0.to_string())
+    .execute(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        load_campaign_projection_summary(&pool, state.campaign_id())
+            .await
+            .unwrap()
+            .applied_event_sequence,
+        7
+    );
+
+    let rebuilt = rebuild_campaign_projections(&pool, state.campaign_id(), &NoopApplier)
+        .await
+        .unwrap();
+    assert_eq!(rebuilt.applied_event_sequence, 0);
+    assert_eq!(
+        load_campaign_state(&pool, state.campaign_id())
+            .await
+            .unwrap()
+            .unwrap()
+            .applied_event_sequence,
+        0
+    );
+}
+
+#[tokio::test]
 async fn projection_failure_rolls_back_authoritative_transition_and_journal() {
     let pool = test_pool().await;
     let (current, _, _) = state("Atomic");
