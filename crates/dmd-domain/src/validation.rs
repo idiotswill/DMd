@@ -3,7 +3,8 @@ use std::collections::HashSet;
 use crate::{
     AgentRef, BeliefBasis, CampaignId, CampaignState, CharacterId, CharacterStatus, ClaimSource,
     Custody, EntityExistence, EntityId, EntityKind, FactValue, KnowledgeHolder, KnowledgeTarget,
-    LocationId, Ownership, PresenceRole, SceneId, SceneStatus, SubjectRef,
+    LocationId, Ownership, PlaySessionId, PlaySessionStatus, PresenceRole, SceneId, SceneStatus,
+    SubjectRef,
 };
 
 impl CampaignState {
@@ -11,13 +12,49 @@ impl CampaignState {
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = Vec::new();
         let expected = self.campaign.id;
-        let mut character_entities = HashSet::new();
+        let mut active_play_sessions = 0_u32;
+
+        for (key, session) in &self.sessions {
+            check_key(*key == session.id, "play session", &mut violations);
+            check_campaign(
+                expected,
+                session.campaign_id,
+                "play session",
+                &mut violations,
+            );
+            if !session.validate_shape().is_empty() {
+                violations.push(StateInvariantViolation::InvalidPlaySessionShape(session.id));
+            }
+            if session.status == PlaySessionStatus::Active {
+                active_play_sessions += 1;
+            }
+            for participant in &session.participants {
+                check_exists(
+                    self.players.contains_key(&participant.player_id),
+                    "play session participant",
+                    "player",
+                    &mut violations,
+                );
+                if let Some(character_id) = participant.character_id {
+                    check_exists(
+                        self.characters.contains_key(&character_id),
+                        "play session participant",
+                        "character",
+                        &mut violations,
+                    );
+                }
+            }
+        }
+        if active_play_sessions > 1 {
+            violations.push(StateInvariantViolation::MultipleActivePlaySessions);
+        }
 
         for (key, player) in &self.players {
             check_key(*key == player.id, "player", &mut violations);
             check_campaign(expected, player.campaign_id, "player", &mut violations);
         }
 
+        let mut character_entities = HashSet::new();
         for (key, character) in &self.characters {
             check_key(*key == character.id, "character", &mut violations);
             check_campaign(
@@ -514,6 +551,8 @@ pub enum StateInvariantViolation {
         owner: String,
         expected: String,
     },
+    InvalidPlaySessionShape(PlaySessionId),
+    MultipleActivePlaySessions,
     CharacterLifecycleMismatch(CharacterId),
     MultipleActiveSceneParticipation(EntityId),
     SceneLocationMismatch {
@@ -565,8 +604,8 @@ fn check_exists(
 mod tests {
     use super::*;
     use crate::{
-        Campaign, CampaignStatus, Character, EntityId, Location, Player, PlayerId, VersionedRef,
-        WorldClock, WorldInstant,
+        Campaign, CampaignStatus, Character, EntityId, Location, PlaySession, Player, PlayerId,
+        SessionParticipant, VersionedRef, WorldClock, WorldInstant,
     };
 
     fn campaign(id: CampaignId) -> Campaign {
@@ -679,6 +718,39 @@ mod tests {
         assert!(state.validate().iter().any(|violation| matches!(
             violation,
             StateInvariantViolation::CharacterLifecycleMismatch(_)
+        )));
+    }
+
+    #[test]
+    fn more_than_one_active_play_session_is_rejected() {
+        let mut state = empty_state();
+        let player = Player {
+            id: PlayerId::new(),
+            campaign_id: state.campaign_id(),
+            display_name: "Player".into(),
+        };
+        state.players.insert(player.id, player.clone());
+
+        for label in ["First", "Second"] {
+            let session = PlaySession {
+                id: PlaySessionId::new(),
+                campaign_id: state.campaign_id(),
+                display_name: label.into(),
+                status: PlaySessionStatus::Active,
+                started_at_world: state.clock.now,
+                ended_at_world: None,
+                participants: vec![SessionParticipant {
+                    player_id: player.id,
+                    character_id: None,
+                    attendance: crate::AttendanceStatus::Present,
+                }],
+            };
+            state.sessions.insert(session.id, session);
+        }
+
+        assert!(state.validate().iter().any(|violation| matches!(
+            violation,
+            StateInvariantViolation::MultipleActivePlaySessions
         )));
     }
 }
