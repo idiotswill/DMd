@@ -12,13 +12,14 @@ pub enum EntityKind {
     Other(String),
 }
 
+/// Objective coarse existence of an entity in world state.
+/// Party/campaign lifecycle such as character retirement is modeled separately.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EntityExistence {
     Present,
     Missing,
     Destroyed,
     Dead,
-    Retired,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
