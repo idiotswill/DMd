@@ -1,4 +1,4 @@
-use dmd_domain::{AgentRef, CampaignId, CommandId, EventId};
+use dmd_domain::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -6,6 +6,8 @@ use thiserror::Error;
 pub struct GameCommand {
     pub id: CommandId,
     pub campaign_id: CampaignId,
+    /// None is valid for between-session simulation, imports, and maintenance commands.
+    pub session_id: Option<PlaySessionId>,
     pub actor: Option<AgentRef>,
     /// Journal sequence observed when the command was constructed.
     pub expected_event_sequence: u64,
