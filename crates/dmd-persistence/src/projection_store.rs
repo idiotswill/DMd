@@ -226,22 +226,30 @@ pub async fn list_projected_entities_at_location(
 }
 
 /// Deterministically repairs projection drift from the accepted snapshot+journal recovery path.
-/// Replay remains the authority. The materialized recovery row is refreshed only if it still points
-/// at the replayed journal head; the SQLite projection trigger then replaces all derivative rows in
-/// that same statement transaction. No command/event/snapshot history is edited.
+/// Replay remains the authority. The materialized recovery row is replaced only if its sequence is
+/// unchanged from the value observed before replay; the SQLite projection trigger then replaces all
+/// derivative rows in that same statement transaction. No command/event/snapshot history is edited.
 pub async fn rebuild_campaign_projections(
     pool: &SqlitePool,
     campaign_id: CampaignId,
     applier: &dyn ReplayEventApplier,
 ) -> Result<CampaignProjectionSummary, ProjectionStoreError> {
+    let observed_sequence = sqlx::query_scalar::<_, i64>(
+        "SELECT applied_event_sequence FROM campaign_state_current WHERE campaign_id = ?",
+    )
+    .bind(campaign_id.0.to_string())
+    .fetch_optional(pool)
+    .await?
+    .ok_or(ProjectionStoreError::CampaignNotInitialized)?;
     let state = replay_campaign_to_head(pool, campaign_id, applier).await?;
-    rebuild_from_replayed_state(pool, campaign_id, &state).await?;
+    rebuild_from_replayed_state(pool, campaign_id, observed_sequence, &state).await?;
     load_campaign_projection_summary(pool, campaign_id).await
 }
 
 async fn rebuild_from_replayed_state(
     pool: &SqlitePool,
     campaign_id: CampaignId,
+    observed_sequence: i64,
     state: &CampaignState,
 ) -> Result<(), ProjectionStoreError> {
     let state_json = state
@@ -255,7 +263,7 @@ async fn rebuild_from_replayed_state(
     .bind(applied_sequence)
     .bind(state_json)
     .bind(campaign_id.0.to_string())
-    .bind(applied_sequence)
+    .bind(observed_sequence)
     .execute(pool)
     .await?;
     if updated.rows_affected() != 1 {
