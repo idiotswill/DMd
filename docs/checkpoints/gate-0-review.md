@@ -19,6 +19,7 @@ The current foundation provides:
 - physical/digital dice requests and raw-result provenance;
 - a play-session ledger that is persisted beside, not inside, `CampaignState`;
 - versioned SQLx migrations for the implemented SQLite schema;
+- a versioned `Cargo.lock`, locked dependency resolution in CI, and an explicit Rust 1.88 minimum-version check;
 - CI for formatting, compilation, Clippy, tests, and campaign-name genericity checks.
 
 ## Boundary review
@@ -57,7 +58,6 @@ A roll request owns dice shape, modifier, mode, visibility, roller, and reason. 
 
 | Risk | Severity | Gate impact | Current mitigation / required next action |
 | --- | --- | --- | --- |
-| `Cargo.lock` is generated in CI but is not yet versioned in the branch. Dependency resolution can therefore drift between machines or dates. | High | Gate 0 release-hygiene blocker | Commit the generated lockfile, then run Cargo CI with `--locked`. The current CI artifact preserves the exact generated candidate until this is done. |
 | ADR 002 specifies one transaction that appends events and updates normalized state, but the general state/event-journal store is not implemented yet. | High | Gate 1 implementation blocker, not a reason to add more Gate 0 schemas | First Gate 1 persistence slice must implement atomic state + event commit, sequence allocation, causal-reference validation, and crash recovery tests before gameplay systems depend on it. |
 | `CampaignState.schema_version` exists, but snapshot migration/replay code is not implemented. | High | Gate 1 blocker | Add explicit snapshot codecs/migrations and replay tests before any released save format is considered durable. |
 | Ruleset/content-pack IDs are versioned references, but content schemas, validation, dependency resolution, and licensing boundaries are not implemented. | High | Gate 1/content foundation | Define content-pack manifests and validators before importing large rules/content datasets. Do not copy campaign/rulebook prose into engine code. |
@@ -80,7 +80,7 @@ A roll request owns dice shape, modifier, mode, visibility, roller, and reason. 
 | Can physical dice remain first-class and auditable? | **Automated primitive pass.** Raw faces, request identity, source, kept dice, modifiers, and resolved total are preserved. |
 | Can an LLM/provider mutate state directly? | **Boundary pass.** Core accepts typed commands; arbitrary provider JSON is not the authority contract. |
 | Are live saves independent of GitHub/Drive? | **Architecture pass; partial persistence implementation.** SQLite is the runtime authority; general state/event transaction implementation is Gate 1 work. |
-| Are saves reproducible across dependency resolution? | **Not yet.** `Cargo.lock` must be committed and CI switched to locked mode. |
+| Are Rust builds reproducible across dependency resolution? | **Automated pass.** `Cargo.lock` is versioned and compile/Clippy/test/MSRV CI use locked dependency resolution. |
 | Has a human architecture/acceptance review been completed? | **No.** PR must remain draft. |
 
 ## Gate 0 merge posture
@@ -89,9 +89,8 @@ Do **not** mark this PR ready merely because CI is green.
 
 Before Gate 0 is accepted:
 
-1. version the Rust dependency lockfile and make CI use locked resolution;
-2. reconcile this review with the main Gate 0 checklist and PR description;
-3. perform the human architecture/acceptance review against the questions in `docs/checkpoints/gate-0.md`;
-4. keep deferred gameplay/simulation schemas deferred unless a concrete Gate 1 requirement proves they belong in the foundation.
+1. reconcile this review with the main Gate 0 checklist and PR description;
+2. perform the human architecture/acceptance review against the questions in `docs/checkpoints/gate-0.md`;
+3. keep deferred gameplay/simulation schemas deferred unless a concrete Gate 1 requirement proves they belong in the foundation.
 
 The next production implementation after Gate 0 should begin with persistence/replay foundations, not 5e combat content or AI narration.
