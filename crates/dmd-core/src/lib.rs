@@ -1,4 +1,4 @@
-use dmd_domain::{CampaignId, CommandId, EntityId, EventId};
+use dmd_domain::{AgentRef, CampaignId, CommandId, EventId};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
@@ -6,7 +6,7 @@ use thiserror::Error;
 pub struct GameCommand {
     pub id: CommandId,
     pub campaign_id: CampaignId,
-    pub actor: Option<EntityId>,
+    pub actor: Option<AgentRef>,
     /// Journal sequence observed when the command was constructed.
     pub expected_event_sequence: u64,
     pub kind: String,
