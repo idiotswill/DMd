@@ -1,12 +1,13 @@
 # Gate 1 versioned rules/content manifest
 
-Status: review blockers fixed; final documentation-head CI pending
+Status: blocker fixes complete; ready for control re-review when PR checks are green on the current head
 Branch: gate1/content-manifest
 PR: #11 (draft)
 Base at start: main @ d450766b1b834d739c586db5594de6dd23dd9722
 Initial verified head: d450766b1b834d739c586db5594de6dd23dd9722
 Reviewed head: 8542c93802b65df2af3dab74686d2ef2e43e7c9f
 Repair validation head: 9fca0ce98340fea9f57bd7f83bce9247d15973f2
+Documentation closeout validation head: 3840a8b5a8e5597436e2a78fa9adce80363bcb7b
 
 ## Objective
 Make campaign `ruleset` and `content_packs` references resolve against explicit, versioned, validated, local content manifests so existing saves cannot silently change meaning or run against missing/incompatible content.
@@ -51,8 +52,8 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - [x] Every component of a declared content path is checked without following symlinks; intermediate symlink escape regression passes.
 - [x] `./scripts/verify-fast` passed on repaired head `9fca0ce98340fea9f57bd7f83bce9247d15973f2` in CI run #212.
 - [x] Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, and architecture boundary guard passed on repaired head `9fca0ce98340fea9f57bd7f83bce9247d15973f2` in CI run #212.
-- [ ] PR CI is green on the exact final documentation head.
-- [x] Full seven-file diff was re-inspected against ADR/checkpoint invariants after blocker fixes on repair head `9fca0ce98340fea9f57bd7f83bce9247d15973f2`.
+- [x] PR CI was green on documentation closeout head `3840a8b5a8e5597436e2a78fa9adce80363bcb7b` in CI run #218.
+- [x] Full seven-file diff was re-inspected against ADR/checkpoint invariants after blocker fixes on repair head `9fca0ce98340fea9f57bd7f83bce9247d15973f2`; the subsequent changes were ADR/plan documentation only.
 
 ## Implemented slices
 1. Added typed manifest/catalog/resolution infrastructure in `dmd-domain` with exact versions, deterministic local discovery, explicit compatibility/dependency checks, and stable non-security file integrity metadata without introducing campaign content.
@@ -61,6 +62,7 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 4. Opened draft PR #11 early and used CI to fix rustfmt and Clippy failures without suppressing checks.
 5. Control review #5296031702 on head `8542c93802b65df2af3dab74686d2ef2e43e7c9f` found two merge blockers: permissive unknown-field deserialization and intermediate symlink traversal in declared content paths.
 6. Repaired both blockers without broadening save-format behavior: manifests now reject unknown fields at the top-level and nested manifest schema boundaries through strict manifest-only serde, while declared content files are verified component-by-component with `symlink_metadata` before any read. Regression tests cover misspelled fields and a direct-manifest-root intermediate symlink escape.
+7. Updated ADR 013 to make both fail-closed requirements explicit architecture invariants.
 
 ## Decision log
 - 2026-09-23 — Keep `Campaign.ruleset`/`content_packs` as persisted exact refs; resolution must never rewrite them to an installed “closest” version.
@@ -77,11 +79,13 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - CI run #201 on reviewed head `8542c93802b65df2af3dab74686d2ef2e43e7c9f` was green but did not cover the review-discovered gaps.
 - CI run #211 on initial repair head `52d68c4ec42fd7a393587e5f8ba343fc33df2ce6` failed only on rustfmt before compilation; no check was weakened.
 - CI run #212 on repaired/formatted head `9fca0ce98340fea9f57bd7f83bce9247d15973f2` is fully green: `verify-fast`, Clippy with warnings denied, workspace tests (including both blocker regressions), Rust 1.88 MSRV, genericity guard, and architecture guard all passed.
+- CI run #218 on documentation closeout head `3840a8b5a8e5597436e2a78fa9adce80363bcb7b` is fully green across the same jobs.
 - The complete seven-file PR diff was inspected after the blocker fixes. No lifecycle/projection implementation, campaign lore, proprietary corpus, current-PC/setting names, or fixed-party-size assumption was introduced.
 - `./scripts/verify` is not invoked as one wrapper by CI, but CI executes its constituent commands plus the MSRV check. The wrapper itself has not been claimed as directly run.
+- Final readiness is intentionally determined by PR #11 checks on the **current branch head** rather than persisted as a self-referential checkbox: any branch movement invalidates readiness until CI is green again.
 
 ## Risks / blockers / deferred debt
-- The two findings in control review #5296031702 are fixed and covered by regression tests. Merge remains blocked pending final exact-documentation-head CI and human/control re-review; this worker will not merge.
+- The two findings in control review #5296031702 are fixed and covered by regression tests. Merge remains subject to current-head green CI and human/control re-review; this worker will not merge.
 - No application/lifecycle composition crate currently owns “open runnable campaign”. ADR 013 requires the separate `gate1/campaign-lifecycle` work to resolve campaign content before create/open/resume/restore is considered runnable; this branch intentionally does not implement lifecycle behavior.
 - A future manifest schema may need cryptographic digests, publisher signatures, or trust stores for authenticity. Gate 1 provides deterministic local authority and corruption detection only.
 - Content installation/distribution UX and source provenance are not implemented here.
@@ -89,4 +93,4 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - Licensing/proprietary-content policy remains unresolved. No third-party rules corpus or licensing entitlement assumption was added; any future policy must be verified from authoritative current sources first.
 
 ## Next action
-Verify CI on the exact documentation-closeout head, update the draft PR summary with the repaired head and validation, and return PR #11 to control/human review without merging.
+Once PR #11 checks are green on this status-only current head, return the draft PR to control/human re-review without merging.
