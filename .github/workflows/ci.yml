@@ -16,11 +16,19 @@ jobs:
       - name: Format
         run: cargo fmt --all -- --check
       - name: Check
-        run: cargo check --workspace --all-targets
+        run: cargo check --locked --workspace --all-targets
       - name: Clippy
-        run: cargo clippy --workspace --all-targets -- -D warnings
+        run: cargo clippy --locked --workspace --all-targets -- -D warnings
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --locked --workspace
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.85.0
+      - name: Check declared Rust 1.85 minimum
+        run: cargo check --locked --workspace --all-targets
 
   genericity-guard:
     runs-on: ubuntu-latest
@@ -33,16 +41,3 @@ jobs:
             echo 'Campaign-specific Asterra terms are forbidden in production Rust crates.'
             exit 1
           fi
-
-  lockfile-artifact:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Generate lockfile
-        run: cargo generate-lockfile
-      - uses: actions/upload-artifact@v7
-        with:
-          name: generated-cargo-lock
-          path: Cargo.lock
-          if-no-files-found: error
