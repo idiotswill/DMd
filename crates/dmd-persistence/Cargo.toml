@@ -10,3 +10,4 @@ dmd-domain = { path = "../dmd-domain" }
 sqlx.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
+uuid.workspace = true
