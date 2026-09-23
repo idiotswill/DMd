@@ -36,25 +36,29 @@ Slice A establishes the trustworthy atomic persistence primitive. It does **not*
 
 ## Slice B — snapshot migration and replay
 
-Status: **Active on `gate1/snapshot-replay`**
+Status: **Implementation complete on PR #7; exact-head closeout CI and explicit human merge approval remain required**
 
-Acceptance requires:
+Implemented properties:
 
 - immutable per-campaign snapshots keyed by journal sequence;
-- migration-time backfill of a snapshot at the current materialized head for pre-Slice-B databases;
+- migration-time backfill of a snapshot at the current materialized head for pre-Slice-B databases without fabricating older history;
 - sequence-0 snapshot creation for new campaigns;
-- bounded periodic snapshot creation inside the authoritative transaction path;
+- bounded periodic snapshot creation inside the authoritative transaction path after at least 100 events since the latest snapshot;
 - explicit version-aware `CampaignState` snapshot codec/migration chaining;
 - distinct failure behavior for unsupported future snapshot versions and legacy versions lacking a migration path;
 - replay from the latest snapshot at or before a target sequence using contiguous same-campaign journal events;
-- event semantics delegated to an injected typed applier contract rather than inferred by persistence from arbitrary JSON;
-- fail-closed handling of unsupported event kinds/versions, invalid payloads/transitions, sequence gaps, target/head mismatch, campaign identity changes, schema changes, or invalid final provenance;
+- replay-to-head derives its target from append-only journal history rather than trusting the mutable current-state head;
+- event semantics are delegated to an injected typed applier contract rather than inferred by persistence from arbitrary JSON;
+- fail-closed handling of unsupported event kinds/versions, invalid payloads/transitions, sequence gaps, target/head mismatch, campaign identity changes, schema changes, missing snapshots, and invalid provenance;
+- direct snapshot loads validate their selected journal prefix and state-held provenance before returning authoritative-looking state;
 - snapshot rows reject direct update/delete;
-- restart/recovery and failure-mode tests pass through the real persistence path;
-- full repository verification and CI pass on the exact reviewed head;
-- explicit human approval before merge because this extends the save-format compatibility surface.
+- restart/recovery, migration, corrupted-current-state, journal-gap, missing/future-snapshot, malicious-applier, and forged-snapshot tests exercise the real persistence path;
+- implementation head `73d07f7af8730e6eba27aebeb18d43e6d978229d` passed CI run 156 across fast verification, Clippy, tests, Rust 1.88 MSRV, genericity, and architecture boundaries;
+- the compatibility/recovery decision is documented in `docs/architecture/012-snapshot-migration-and-replay.md`.
 
-Slice B does not claim complete gameplay replay until gameplay subsystems have defined their durable event kinds and typed appliers.
+Slice B does not claim complete gameplay replay until gameplay subsystems have defined their durable event kinds/versions and typed appliers. It also does not provide automatic write-back repair of a damaged current-state row; this slice reconstructs/validates state without silently mutating recovery evidence.
+
+Before Slice B may merge, the documentation-complete PR head must pass exact-head CI and a human must explicitly approve this additional save-format/high-impact change.
 
 ## Remaining Gate 1 blockers after Slice B
 
