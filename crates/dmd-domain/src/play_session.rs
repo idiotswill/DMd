@@ -70,10 +70,10 @@ impl PlaySession {
                     participant.player_id,
                 ));
             }
-            if let Some(character_id) = participant.character_id {
-                if !characters.insert(character_id) {
-                    violations.push(PlaySessionShapeViolation::DuplicateCharacter(character_id));
-                }
+            if let Some(character_id) = participant.character_id
+                && !characters.insert(character_id)
+            {
+                violations.push(PlaySessionShapeViolation::DuplicateCharacter(character_id));
             }
         }
 
@@ -87,10 +87,10 @@ impl PlaySession {
             _ => {}
         }
 
-        if let Some(ended_at) = self.ended_at_world {
-            if ended_at < self.started_at_world {
-                violations.push(PlaySessionShapeViolation::EndBeforeStart);
-            }
+        if let Some(ended_at) = self.ended_at_world
+            && ended_at < self.started_at_world
+        {
+            violations.push(PlaySessionShapeViolation::EndBeforeStart);
         }
 
         violations
@@ -120,12 +120,12 @@ impl PlaySession {
                     participant.player_id,
                 ));
             }
-            if let Some(character_id) = participant.character_id {
-                if !state.characters.contains_key(&character_id) {
-                    violations.push(PlaySessionReferenceViolation::MissingCharacter(
-                        character_id,
-                    ));
-                }
+            if let Some(character_id) = participant.character_id
+                && !state.characters.contains_key(&character_id)
+            {
+                violations.push(PlaySessionReferenceViolation::MissingCharacter(
+                    character_id,
+                ));
             }
         }
 
