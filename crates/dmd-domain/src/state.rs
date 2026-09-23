@@ -58,4 +58,12 @@ impl CampaignState {
     pub fn campaign_id(&self) -> CampaignId {
         self.campaign.id
     }
+
+    pub fn encode_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(self)
+    }
+
+    pub fn decode_json(value: &str) -> Result<Self, serde_json::Error> {
+        serde_json::from_str(value)
+    }
 }

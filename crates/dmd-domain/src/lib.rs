@@ -1,10 +1,12 @@
 pub mod campaign;
+pub mod command;
 pub mod event;
 pub mod faction;
 pub mod ids;
 pub mod inventory;
 pub mod knowledge;
 pub mod play_session;
+pub mod record;
 pub mod reference;
 pub mod scene;
 pub mod state;
@@ -13,12 +15,14 @@ pub mod validation;
 pub mod world;
 
 pub use campaign::*;
+pub use command::*;
 pub use event::*;
 pub use faction::*;
 pub use ids::*;
 pub use inventory::*;
 pub use knowledge::*;
 pub use play_session::*;
+pub use record::*;
 pub use reference::*;
 pub use scene::*;
 pub use state::*;
