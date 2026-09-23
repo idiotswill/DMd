@@ -194,14 +194,19 @@ pub async fn load_campaign_state(
     pool: &SqlitePool,
     campaign_id: CampaignId,
 ) -> Result<Option<CampaignState>, JournalStoreError> {
+    // Recovery integrity checks must observe one SQLite snapshot. Without a read transaction, a
+    // concurrent writer could advance the journal between these queries and make healthy state
+    // appear corrupt merely because the reads came from different committed moments.
+    let mut transaction = pool.begin().await?;
     let row = sqlx::query(
         "SELECT campaign_id, schema_version, applied_event_sequence, state_json FROM campaign_state_current WHERE campaign_id = ?",
     )
     .bind(campaign_id.0.to_string())
-    .fetch_optional(pool)
+    .fetch_optional(&mut *transaction)
     .await?;
 
     let Some(row) = row else {
+        transaction.rollback().await?;
         return Ok(None);
     };
 
@@ -210,10 +215,11 @@ pub async fn load_campaign_state(
         "SELECT COUNT(*) AS event_count, COALESCE(MAX(sequence), 0) AS max_sequence FROM event_journal WHERE campaign_id = ?",
     )
     .bind(campaign_id.0.to_string())
-    .fetch_one(pool)
+    .fetch_one(&mut *transaction)
     .await?;
     verify_journal_head(&state, &head)?;
-    verify_loaded_state_event_references(pool, campaign_id, &state).await?;
+    verify_loaded_state_event_references(&mut transaction, campaign_id, &state).await?;
+    transaction.commit().await?;
 
     Ok(Some(state))
 }
@@ -694,7 +700,7 @@ fn verify_journal_head(state: &CampaignState, row: &SqliteRow) -> Result<(), Jou
 }
 
 async fn verify_loaded_state_event_references(
-    pool: &SqlitePool,
+    transaction: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
     campaign_id: CampaignId,
     state: &CampaignState,
 ) -> Result<(), JournalStoreError> {
@@ -703,8 +709,7 @@ async fn verify_loaded_state_event_references(
         return Ok(());
     }
 
-    let mut connection = pool.acquire().await?;
-    let metadata = load_existing_event_metadata(&mut connection, &references).await?;
+    let metadata = load_existing_event_metadata(transaction, &references).await?;
     validate_reference_campaigns(campaign_id, &references, &metadata)
 }
 
