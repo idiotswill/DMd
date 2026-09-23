@@ -60,11 +60,13 @@ Make DMd safe and efficient to develop through disposable AI/chat execution cont
 - 2026-09-23 — Repository files are authoritative handoff memory; chat/project instructions are behavioral bootstrap only.
 - 2026-09-23 — Coherent multi-file changes should use one Git tree/commit to reduce CI churn and stale-head conflicts.
 - 2026-09-23 — Repository rulesets are currently empty. The GitHub connector can read but not administer rulesets, so `main` protection is a documented manual repository-setting follow-up rather than an in-chat mutation.
-- 2026-09-23 — A metadata follow-up commit is intentionally pushed while CI run 121 is active to verify that the new concurrency group cancels superseded runs.
+- 2026-09-23 — CI run 121 completed successfully before the first superseding commit could cancel it, so that cancellation test was inconclusive.
+- 2026-09-23 — CI run 122 is queued on head `47911198bf8182fd939a4cc1540b044a3b0cef76`; this plan-only commit intentionally supersedes it to test `cancel-in-progress` deterministically.
 
 ## Validation
 
-- First implementation head `75f1a82d29ff1f887a2ef56e55f74047e9b27806` — CI run 121 started; supersession test pending.
+- First implementation head `75f1a82d29ff1f887a2ef56e55f74047e9b27806` — CI run 121 passed.
+- Intermediate metadata head `47911198bf8182fd939a4cc1540b044a3b0cef76` — CI run 122 queued and intentionally superseded.
 - `./scripts/verify-fast` equivalent — pending on final head.
 - `./scripts/verify` equivalent — pending on final head.
 - CI — pending on final head.
@@ -76,4 +78,4 @@ Make DMd safe and efficient to develop through disposable AI/chat execution cont
 
 ## Next action
 
-Confirm run 121 is cancelled by this superseding commit, then verify all CI jobs on the new head and update this plan to ready-for-review status.
+Confirm run 122 is cancelled by this superseding commit, then verify all CI jobs on the new head and update this plan to ready-for-review status.
