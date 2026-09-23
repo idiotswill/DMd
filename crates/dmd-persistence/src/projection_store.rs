@@ -2,9 +2,7 @@ use dmd_domain::{CampaignId, CampaignState};
 use sqlx::{Row, SqlitePool};
 use thiserror::Error;
 
-use crate::{
-    ReplayEventApplier, SnapshotReplayError, load_campaign_state, replay_campaign_to_head,
-};
+use crate::{ReplayEventApplier, SnapshotReplayError, replay_campaign_to_head};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CampaignProjectionSummary {
@@ -59,8 +57,8 @@ pub enum ProjectionStoreError {
     InvalidInteger { field: &'static str, value: i64 },
     #[error("replayed campaign state could not be encoded for projection rebuild: {0}")]
     StateSerialization(String),
-    #[error("replay rebuild changed no initialized campaign row")]
-    RebuildTargetMissing,
+    #[error("campaign head changed while projection rebuild was being prepared")]
+    RebuildHeadChanged,
 }
 
 /// Loads the campaign's normalized projection head and mechanically verifies that it mirrors the
@@ -103,10 +101,22 @@ pub async fn load_campaign_projection_summary(
         };
     };
 
-    let projection_schema = stored_u32(row.try_get("state_schema_version")?, "projection_heads.state_schema_version")?;
-    let projection_sequence = stored_u64(row.try_get("applied_event_sequence")?, "projection_heads.applied_event_sequence")?;
-    let authoritative_schema = stored_u32(row.try_get("authoritative_schema")?, "campaign_state_current.schema_version")?;
-    let authoritative_sequence = stored_u64(row.try_get("authoritative_sequence")?, "campaign_state_current.applied_event_sequence")?;
+    let projection_schema = stored_u32(
+        row.try_get("state_schema_version")?,
+        "projection_heads.state_schema_version",
+    )?;
+    let projection_sequence = stored_u64(
+        row.try_get("applied_event_sequence")?,
+        "projection_heads.applied_event_sequence",
+    )?;
+    let authoritative_schema = stored_u32(
+        row.try_get("authoritative_schema")?,
+        "campaign_state_current.schema_version",
+    )?;
+    let authoritative_sequence = stored_u64(
+        row.try_get("authoritative_sequence")?,
+        "campaign_state_current.applied_event_sequence",
+    )?;
     if projection_schema != authoritative_schema || projection_sequence != authoritative_sequence {
         transaction.rollback().await?;
         return Err(ProjectionStoreError::HeadMismatch {
@@ -121,19 +131,52 @@ pub async fn load_campaign_projection_summary(
         campaign_id,
         state_schema_version: projection_schema,
         applied_event_sequence: projection_sequence,
-        players: stored_u64(row.try_get("players_count")?, "projection_heads.players_count")?,
-        characters: stored_u64(row.try_get("characters_count")?, "projection_heads.characters_count")?,
-        entities: stored_u64(row.try_get("entities_count")?, "projection_heads.entities_count")?,
-        factions: stored_u64(row.try_get("factions_count")?, "projection_heads.factions_count")?,
-        locations: stored_u64(row.try_get("locations_count")?, "projection_heads.locations_count")?,
-        scenes: stored_u64(row.try_get("scenes_count")?, "projection_heads.scenes_count")?,
-        scene_presences: stored_u64(row.try_get("scene_presences_count")?, "projection_heads.scene_presences_count")?,
+        players: stored_u64(
+            row.try_get("players_count")?,
+            "projection_heads.players_count",
+        )?,
+        characters: stored_u64(
+            row.try_get("characters_count")?,
+            "projection_heads.characters_count",
+        )?,
+        entities: stored_u64(
+            row.try_get("entities_count")?,
+            "projection_heads.entities_count",
+        )?,
+        factions: stored_u64(
+            row.try_get("factions_count")?,
+            "projection_heads.factions_count",
+        )?,
+        locations: stored_u64(
+            row.try_get("locations_count")?,
+            "projection_heads.locations_count",
+        )?,
+        scenes: stored_u64(
+            row.try_get("scenes_count")?,
+            "projection_heads.scenes_count",
+        )?,
+        scene_presences: stored_u64(
+            row.try_get("scene_presences_count")?,
+            "projection_heads.scene_presences_count",
+        )?,
         items: stored_u64(row.try_get("items_count")?, "projection_heads.items_count")?,
         facts: stored_u64(row.try_get("facts_count")?, "projection_heads.facts_count")?,
-        claims: stored_u64(row.try_get("claims_count")?, "projection_heads.claims_count")?,
-        beliefs: stored_u64(row.try_get("beliefs_count")?, "projection_heads.beliefs_count")?,
-        knowledge: stored_u64(row.try_get("knowledge_count")?, "projection_heads.knowledge_count")?,
-        directives: stored_u64(row.try_get("directives_count")?, "projection_heads.directives_count")?,
+        claims: stored_u64(
+            row.try_get("claims_count")?,
+            "projection_heads.claims_count",
+        )?,
+        beliefs: stored_u64(
+            row.try_get("beliefs_count")?,
+            "projection_heads.beliefs_count",
+        )?,
+        knowledge: stored_u64(
+            row.try_get("knowledge_count")?,
+            "projection_heads.knowledge_count",
+        )?,
+        directives: stored_u64(
+            row.try_get("directives_count")?,
+            "projection_heads.directives_count",
+        )?,
     };
 
     let actual = load_actual_counts(&mut transaction, campaign_id).await?;
@@ -183,9 +226,9 @@ pub async fn list_projected_entities_at_location(
 }
 
 /// Deterministically repairs projection drift from the accepted snapshot+journal recovery path.
-/// Replay remains the authority; the current materialized recovery artifact is replaced with the
-/// replayed equivalent at the journal head, and the SQLite projection trigger derives all query rows
-/// in the same transaction. No command/event/snapshot history is edited.
+/// Replay remains the authority. The materialized recovery row is refreshed only if it still points
+/// at the replayed journal head; the SQLite projection trigger then replaces all derivative rows in
+/// that same statement transaction. No command/event/snapshot history is edited.
 pub async fn rebuild_campaign_projections(
     pool: &SqlitePool,
     campaign_id: CampaignId,
@@ -204,17 +247,19 @@ async fn rebuild_from_replayed_state(
     let state_json = state
         .encode_json()
         .map_err(|error| ProjectionStoreError::StateSerialization(error.to_string()))?;
+    let applied_sequence = sequence_to_i64(state.applied_event_sequence)?;
     let updated = sqlx::query(
-        "UPDATE campaign_state_current SET schema_version = ?, applied_event_sequence = ?, state_json = ? WHERE campaign_id = ?",
+        "UPDATE campaign_state_current SET schema_version = ?, applied_event_sequence = ?, state_json = ? WHERE campaign_id = ? AND applied_event_sequence = ?",
     )
     .bind(i64::from(state.schema_version))
-    .bind(sequence_to_i64(state.applied_event_sequence)?)
+    .bind(applied_sequence)
     .bind(state_json)
     .bind(campaign_id.0.to_string())
+    .bind(applied_sequence)
     .execute(pool)
     .await?;
     if updated.rows_affected() != 1 {
-        return Err(ProjectionStoreError::RebuildTargetMissing);
+        return Err(ProjectionStoreError::RebuildHeadChanged);
     }
     Ok(())
 }
@@ -241,12 +286,18 @@ async fn load_actual_counts(
           (SELECT COUNT(*) FROM projection_directives WHERE campaign_id = ?) directives
         "#,
     )
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
-    .bind(campaign_id.0.to_string()).bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
+    .bind(campaign_id.0.to_string())
     .bind(campaign_id.0.to_string())
     .fetch_one(&mut *connection)
     .await?;
@@ -257,7 +308,10 @@ async fn load_actual_counts(
         stored_u64(row.try_get("factions")?, "projection_factions.count")?,
         stored_u64(row.try_get("locations")?, "projection_locations.count")?,
         stored_u64(row.try_get("scenes")?, "projection_scenes.count")?,
-        stored_u64(row.try_get("scene_presences")?, "projection_scene_presences.count")?,
+        stored_u64(
+            row.try_get("scene_presences")?,
+            "projection_scene_presences.count",
+        )?,
         stored_u64(row.try_get("items")?, "projection_items.count")?,
         stored_u64(row.try_get("facts")?, "projection_facts.count")?,
         stored_u64(row.try_get("claims")?, "projection_claims.count")?,
