@@ -118,7 +118,10 @@ fn retired_character_can_remain_alive_in_world() {
     let mut state = new_state();
     let entity_id = add_character(&mut state, "Former Adventurer", CharacterStatus::Retired);
 
-    assert_eq!(state.entities[&entity_id].existence, EntityExistence::Present);
+    assert_eq!(
+        state.entities[&entity_id].existence,
+        EntityExistence::Present
+    );
     assert!(state.validate().is_empty());
 }
 
