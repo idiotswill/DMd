@@ -2,14 +2,14 @@ use serde::{Deserialize, Serialize};
 
 use crate::{CampaignId, EntityId, FactionId, ItemId, LocationId};
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Ownership {
     Entity(EntityId),
     Faction(FactionId),
     Unowned,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Custody {
     Entity(EntityId),
     Location(LocationId),
