@@ -1,10 +1,11 @@
 # Gate 1 — Query/materialized projections
 
-Status: review fixes implemented; exact-head validation pending
+Status: review fixes validated; final closeout exact-head CI pending
 Branch: `gate1/projections`
 PR: `#10`
 Base: `main` @ `d450766b1b834d739c586db5594de6dd23dd9722`
 Reviewed head: `521d34fb63dc208217c398dafb9868f1921c1c85`
+Post-review implementation head: `c17346c54299fa3307e26ac7fa3db58a090064e7`
 
 ## Objective
 
@@ -57,10 +58,10 @@ Build the production-intended normalized/materialized query projection layer req
 - [x] Campaign A projection queries/rebuilds cannot read, alter, or satisfy references using Campaign B rows.
 - [x] Existing append-only history, replay, state-held provenance, stale-command, and authority invariants remain intact in the implementation design and regression suite.
 - [x] Real persistence tests cover rollback on projection write failure, missing campaign metadata, stale/corrupt projection recovery, malformed materialized JSON recovery, stale materialized sequence recovery, restart behavior, and campaign isolation.
-- [ ] `./scripts/verify-fast` passes on the post-review-fix head.
-- [ ] `./scripts/verify` equivalent CI passes on the final reviewed head.
-- [ ] Repository CI passes on the exact PR head declared ready after review fixes.
-- [x] Full PR diff was reviewed against this plan and relevant ADRs; reviewer findings are recorded below and fixed in code/docs pending validation.
+- [x] `./scripts/verify-fast` passed in CI run #219 on post-review implementation head `c17346c54299fa3307e26ac7fa3db58a090064e7`.
+- [x] `./scripts/verify` equivalent CI passed in run #219 on post-review implementation head `c17346c54299fa3307e26ac7fa3db58a090064e7`.
+- [ ] Repository CI passes on the exact final PR head after this closeout-plan commit.
+- [x] Full PR diff was inspected against this plan and relevant ADRs; reviewer findings are recorded below and fixed.
 
 ## Implemented design
 
@@ -89,9 +90,9 @@ Build the production-intended normalized/materialized query projection layer req
 ## Validation
 
 - Historical CI run #203 passed on reviewed head `521d34fb63dc208217c398dafb9868f1921c1c85`, covering fast verification, Clippy, full workspace tests, genericity guard, architecture guard, and Rust 1.88 MSRV.
-- Projection regression coverage before review fixes included: normalized query + campaign isolation; same-transaction rollback on forced projection failure; row-count corruption detection and replay repair; malformed materialized JSON invalidation/rebuild; stale materialized sequence replay repair; and close/reopen persistence.
-- Added post-review regression: deleting the sole `projection_campaigns` row must produce `CountMismatch`, and replay-backed rebuild must restore exactly one row.
-- Final exact-head CI after review fixes: pending. The successful exact-head run will be recorded in PR #10's summary rather than committed back into this file, because committing the result would itself create a new unvalidated head.
+- Post-review CI run #219 passed on `c17346c54299fa3307e26ac7fa3db58a090064e7`, covering fast verification, Clippy, full workspace tests, genericity guard, architecture guard, and Rust 1.88 MSRV.
+- Projection regression coverage includes: normalized query + campaign isolation; same-transaction rollback on forced projection failure; collection row-count corruption detection and replay repair; deletion of the sole campaign metadata projection row with fail-closed detection and replay repair; malformed materialized JSON invalidation/rebuild; stale materialized sequence replay repair; and close/reopen persistence.
+- Final exact-head CI after this documentation closeout commit is intentionally recorded in PR #10 rather than committed back into this plan, because committing that result would create a new unvalidated head.
 
 ## Remaining debt / explicit tradeoffs
 
@@ -104,4 +105,4 @@ Build the production-intended normalized/materialized query projection layer req
 
 ## Next action
 
-Verify the exact post-review-fix branch head with repository CI, inspect the resulting full PR diff, update PR #10 and review #5296159424 with the exact SHA/results, and leave the PR unmerged for human approval.
+Verify repository CI on the exact final branch head created by this closeout-plan update, then update PR #10 and review #5296159424 with the exact SHA/results. Do not merge; wait for human architecture approval.
