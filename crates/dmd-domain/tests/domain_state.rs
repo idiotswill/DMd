@@ -1,8 +1,8 @@
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, Character, CharacterId, CharacterStatus,
-    Claim, ClaimId, EntityId, EntityKind, EntityExistence, EventId, FactValue, Location,
-    LocationId, Player, PlayerId, PresenceRole, Proposition, Scene, SceneId, SceneMode,
-    ScenePresence, SceneStatus, SubjectRef, VersionedRef, WorldClock, WorldEntity, WorldInstant,
+    Claim, ClaimId, EntityExistence, EntityId, EntityKind, EventId, FactValue, Location, LocationId,
+    Player, PlayerId, PresenceRole, Proposition, Scene, SceneId, SceneMode, ScenePresence, SceneStatus,
+    SubjectRef, VersionedRef, WorldClock, WorldEntity, WorldInstant,
 };
 
 fn new_state() -> CampaignState {
@@ -141,4 +141,35 @@ fn a_claim_does_not_become_world_truth() {
     assert_eq!(state.claims.len(), 1);
     assert!(state.facts.is_empty());
     assert!(state.validate().is_empty());
+}
+
+#[test]
+fn campaign_state_snapshot_round_trips_without_identity_loss() {
+    let mut state = new_state();
+    let location_id = add_location(&mut state, "Harbor District");
+    let entity_id = add_character(&mut state, "Traveler", CharacterStatus::Active);
+    let scene = Scene {
+        id: SceneId::new(),
+        campaign_id: state.campaign_id(),
+        location_id,
+        mode: SceneMode::Social,
+        status: SceneStatus::Active,
+        started_at: state.clock.now,
+        presences: vec![ScenePresence {
+            entity_id,
+            role: PresenceRole::Participant,
+        }],
+    };
+    state.scenes.insert(scene.id, scene);
+    state.applied_event_sequence = 17;
+
+    assert!(state.validate().is_empty());
+
+    let encoded = serde_json::to_string(&state).expect("campaign snapshot should serialize");
+    let decoded: CampaignState =
+        serde_json::from_str(&encoded).expect("campaign snapshot should deserialize");
+
+    assert_eq!(decoded, state);
+    assert_eq!(decoded.applied_event_sequence, 17);
+    assert!(decoded.validate().is_empty());
 }
