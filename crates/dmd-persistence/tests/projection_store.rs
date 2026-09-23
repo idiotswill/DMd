@@ -132,6 +132,8 @@ async fn projections_are_queryable_and_campaign_isolated() {
     let b_summary = load_campaign_projection_summary(&pool, b.campaign_id())
         .await
         .unwrap();
+    assert_eq!(a_summary.campaigns, 1);
+    assert_eq!(b_summary.campaigns, 1);
     assert_eq!(a_summary.entities, 1);
     assert_eq!(b_summary.entities, 1);
 
@@ -180,6 +182,36 @@ async fn projection_corruption_is_detected_and_rebuild_repairs_from_replay() {
 }
 
 #[tokio::test]
+async fn missing_campaign_projection_is_detected_and_rebuild_repairs_from_replay() {
+    let pool = test_pool().await;
+    let (state, _, _) = state("Campaign metadata repair");
+    initialize_campaign_state(&pool, &state).await.unwrap();
+
+    sqlx::query("DELETE FROM projection_campaigns WHERE campaign_id = ?")
+        .bind(state.campaign_id().0.to_string())
+        .execute(&pool)
+        .await
+        .unwrap();
+    assert!(matches!(
+        load_campaign_projection_summary(&pool, state.campaign_id()).await,
+        Err(ProjectionStoreError::CountMismatch)
+    ));
+
+    let rebuilt = rebuild_campaign_projections(&pool, state.campaign_id(), &NoopApplier)
+        .await
+        .unwrap();
+    assert_eq!(rebuilt.campaigns, 1);
+    let campaign_rows = sqlx::query_scalar::<_, i64>(
+        "SELECT COUNT(*) FROM projection_campaigns WHERE campaign_id = ?",
+    )
+    .bind(state.campaign_id().0.to_string())
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(campaign_rows, 1);
+}
+
+#[tokio::test]
 async fn malformed_materialized_json_invalidates_projection_and_rebuild_repairs_it() {
     let pool = test_pool().await;
     let (state, _, _) = state("Malformed");
@@ -200,6 +232,7 @@ async fn malformed_materialized_json_invalidates_projection_and_rebuild_repairs_
         .await
         .unwrap();
     assert_eq!(rebuilt.applied_event_sequence, 0);
+    assert_eq!(rebuilt.campaigns, 1);
     assert_eq!(rebuilt.entities, 1);
 }
 
