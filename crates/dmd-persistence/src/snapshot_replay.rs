@@ -17,7 +17,7 @@ const EVENT_LOOKUP_BATCH_SIZE: usize = 400;
 pub const SNAPSHOT_EVENT_INTERVAL: u64 = 100;
 
 pub trait SnapshotMigration: Send + Sync {
-    fn from_version(&self) -> u32;
+    fn source_version(&self) -> u32;
     fn migrate_json(&self, json: &str) -> Result<String, String>;
 }
 
@@ -36,7 +36,7 @@ impl CampaignStateSnapshotCodec {
     where
         M: SnapshotMigration + 'static,
     {
-        let from_version = migration.from_version();
+        let from_version = migration.source_version();
         if from_version >= CURRENT_STATE_SCHEMA_VERSION {
             return Err(SnapshotCodecError::InvalidMigrationRegistration {
                 from_version,

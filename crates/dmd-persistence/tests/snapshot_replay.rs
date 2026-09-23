@@ -121,7 +121,7 @@ impl ReplayEventApplier for ClockApplier {
 struct ZeroToOneMigration;
 
 impl SnapshotMigration for ZeroToOneMigration {
-    fn from_version(&self) -> u32 {
+    fn source_version(&self) -> u32 {
         0
     }
 
