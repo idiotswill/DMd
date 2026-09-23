@@ -53,7 +53,7 @@ A play session may contain any number of participants. Shape validation rejects:
 - a closed session without an end time;
 - an end time earlier than the start time.
 
-Reference validation checks the session's campaign, players, and optional character IDs against the loaded `CampaignState` before session start/update.
+Reference validation checks the session's campaign, players, and optional character IDs against the loaded `CampaignState` before a session can be persisted. The public session write path also rejects an already-invalid world snapshot instead of committing audit data against inconsistent authoritative state.
 
 A participant may have no character during character creation, after a death, or when attending without controlling a PC.
 
@@ -61,7 +61,9 @@ A participant may have no character during character creation, after a death, or
 
 SQLite is authoritative for session-ledger persistence.
 
-The initial schema uses normalized `play_sessions` and `play_session_participants` tables. Database constraints enforce:
+The schema is managed by **versioned SQLx migrations**, not ad-hoc `CREATE TABLE IF NOT EXISTS` calls. The migration files are embedded in the binary with `sqlx::migrate!`, applied when the local database is opened, and tracked by the persistence crate's stable-Rust build script so editing a migration invalidates the embedded migration build.
+
+The initial migration creates normalized `play_sessions` and `play_session_participants` tables. Database constraints enforce:
 
 - one active play session per campaign;
 - one participant row per player within a session;
@@ -69,6 +71,8 @@ The initial schema uses normalized `play_sessions` and `play_session_participant
 - participant rows cannot outlive their session record.
 
 The participant ordinal is persisted so session records round-trip without silently reordering the table.
+
+Application validation and database constraints intentionally overlap: domain/reference checks provide meaningful rejection before SQL, while SQLite remains the final guard against uniqueness and relational corruption.
 
 ## World time vs wall-clock time
 
@@ -83,6 +87,7 @@ Real-world timestamps, microphone timing, latency, pauses, interruptions, and ot
 - Between-session simulation remains first-class instead of being forced into a fake session.
 - Attendance and replacement-character workflows no longer contaminate character lifecycle state.
 - Session persistence can evolve independently from world snapshot schema migrations.
+- Database upgrades are explicit, ordered, testable migrations rather than implicit schema creation hidden in repository code paths.
 
 ## Non-goals for Gate 0
 
