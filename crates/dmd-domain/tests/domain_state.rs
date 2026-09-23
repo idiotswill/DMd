@@ -55,8 +55,7 @@ fn add_character(state: &mut CampaignState, name: &str, status: CharacterStatus)
         kind: EntityKind::Character,
         existence: match status {
             CharacterStatus::Dead => EntityExistence::Dead,
-            CharacterStatus::Retired => EntityExistence::Retired,
-            CharacterStatus::Active | CharacterStatus::Absent => EntityExistence::Present,
+            CharacterStatus::Active | CharacterStatus::Retired => EntityExistence::Present,
         },
         location_id: None,
     };
@@ -111,6 +110,15 @@ fn dead_character_remains_valid_historical_state() {
     let entity_id = add_character(&mut state, "Fallen Hero", CharacterStatus::Dead);
 
     assert_eq!(state.entities[&entity_id].existence, EntityExistence::Dead);
+    assert!(state.validate().is_empty());
+}
+
+#[test]
+fn retired_character_can_remain_alive_in_world() {
+    let mut state = new_state();
+    let entity_id = add_character(&mut state, "Former Adventurer", CharacterStatus::Retired);
+
+    assert_eq!(state.entities[&entity_id].existence, EntityExistence::Present);
     assert!(state.validate().is_empty());
 }
 
