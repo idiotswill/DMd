@@ -302,7 +302,14 @@ impl CampaignState {
             }
         }
 
+        let mut knowledge_ids = HashSet::new();
         for knowledge in &self.knowledge {
+            if !knowledge_ids.insert(knowledge.id) {
+                violations.push(StateInvariantViolation::DuplicateReference {
+                    owner: "knowledge".into(),
+                    target: "id".into(),
+                });
+            }
             check_campaign(expected, knowledge.campaign_id, "knowledge", violations);
             if let KnowledgeHolder::Agent(agent) = knowledge.holder {
                 self.validate_agent_ref(agent, "knowledge", "holder", violations);
