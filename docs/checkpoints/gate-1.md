@@ -12,7 +12,7 @@ Voice/table UX, complete rules, living-world simulation, procedural materializat
 
 ## Slice A — atomic authoritative commit and journal
 
-PR #4 is responsible for this slice.
+PR #6 is the final review path for this slice. PR #4 was the original draft branch and was superseded after repeated concurrent branch movement violated the one-writer-per-branch execution invariant.
 
 Acceptance requires:
 
@@ -23,13 +23,15 @@ Acceptance requires:
 - campaign/session/issuer/actor references are validated before commit;
 - causal parents must exist in the same campaign and precede their child;
 - event provenance referenced by materialized state cannot dangle or cross campaigns;
+- recovery reads state/head/provenance from one SQLite snapshot and rejects detectable corruption;
+- a later transition cannot silently heal corrupt current-state provenance;
 - trusted command issuer is persisted separately from optional in-world actor;
-- restart/reopen recovers the last committed state and rejects detectable state/journal corruption;
+- direct update/delete of command/event/causal history is rejected at the database layer;
 - the conversation/core/rules layers have no direct SQLite/persistence write dependency;
 - existing session-ledger behavior remains green;
 - full repository verification and CI pass on the exact reviewed head.
 
-Completion of Slice A means the production path has a trustworthy atomic persistence primitive. It does **not** mean save-format evolution or replay is complete.
+Completion of Slice A means the production path has a trustworthy atomic persistence primitive. It does **not** mean save-format evolution, replay, or complete campaign lifecycle management is complete.
 
 ## Remaining Gate 1 blockers after Slice A
 
@@ -49,7 +51,7 @@ Completion of Slice A means the production path has a trustworthy atomic persist
 ### Campaign lifecycle
 
 - durable create/open/list/archive/delete flows for multiple unrelated campaigns;
-- deliberate aggregate deletion semantics that do not permit partial historical surgery;
+- deliberate aggregate deletion semantics that temporarily/explicitly bypass history delete guards only for a complete authorized campaign purge;
 - backup/export/restore strategy before destructive migrations or lifecycle operations.
 
 ### Versioned rules/content manifest
