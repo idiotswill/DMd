@@ -2,7 +2,9 @@ use std::collections::HashSet;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{CampaignId, CharacterId, PlaySessionId, PlayerId, WorldInstant};
+use crate::{
+    CampaignId, CampaignState, CharacterId, PlaySessionId, PlayerId, WorldInstant,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum PlaySessionStatus {
@@ -46,6 +48,17 @@ pub enum PlaySessionShapeViolation {
     EndBeforeStart,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum PlaySessionReferenceViolation {
+    Shape(PlaySessionShapeViolation),
+    CampaignMismatch {
+        expected: CampaignId,
+        actual: CampaignId,
+    },
+    MissingPlayer(PlayerId),
+    MissingCharacter(CharacterId),
+}
+
 impl PlaySession {
     #[must_use]
     pub fn validate_shape(&self) -> Vec<PlaySessionShapeViolation> {
@@ -84,11 +97,67 @@ impl PlaySession {
 
         violations
     }
+
+    #[must_use]
+    pub fn validate_against_state(
+        &self,
+        state: &CampaignState,
+    ) -> Vec<PlaySessionReferenceViolation> {
+        let mut violations = self
+            .validate_shape()
+            .into_iter()
+            .map(PlaySessionReferenceViolation::Shape)
+            .collect::<Vec<_>>();
+
+        if self.campaign_id != state.campaign_id() {
+            violations.push(PlaySessionReferenceViolation::CampaignMismatch {
+                expected: state.campaign_id(),
+                actual: self.campaign_id,
+            });
+        }
+
+        for participant in &self.participants {
+            if !state.players.contains_key(&participant.player_id) {
+                violations.push(PlaySessionReferenceViolation::MissingPlayer(
+                    participant.player_id,
+                ));
+            }
+            if let Some(character_id) = participant.character_id {
+                if !state.characters.contains_key(&character_id) {
+                    violations.push(PlaySessionReferenceViolation::MissingCharacter(character_id));
+                }
+            }
+        }
+
+        violations
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::{Campaign, CampaignStatus, VersionedRef, WorldClock};
+
+    fn empty_state() -> CampaignState {
+        let campaign_id = CampaignId::new();
+        CampaignState::empty(
+            Campaign {
+                id: campaign_id,
+                display_name: "Session Validation Test".into(),
+                status: CampaignStatus::Active,
+                world_seed: 1,
+                ruleset: VersionedRef {
+                    id: "test.rules".into(),
+                    version: "1".into(),
+                },
+                content_packs: vec![],
+            },
+            WorldClock {
+                now: WorldInstant(10),
+                calendar_id: "test.calendar".into(),
+            },
+        )
+    }
 
     #[test]
     fn absence_is_session_attendance_not_character_lifecycle() {
@@ -143,6 +212,36 @@ mod tests {
         assert!(session.validate_shape().iter().any(|violation| matches!(
             violation,
             PlaySessionShapeViolation::DuplicateCharacter(id) if *id == character_id
+        )));
+    }
+
+    #[test]
+    fn session_references_are_checked_against_world_state() {
+        let state = empty_state();
+        let missing_player = PlayerId::new();
+        let missing_character = CharacterId::new();
+        let session = PlaySession {
+            id: PlaySessionId::new(),
+            campaign_id: state.campaign_id(),
+            display_name: "Test Session".into(),
+            status: PlaySessionStatus::Active,
+            started_at_world: state.clock.now,
+            ended_at_world: None,
+            participants: vec![SessionParticipant {
+                player_id: missing_player,
+                character_id: Some(missing_character),
+                attendance: AttendanceStatus::Present,
+            }],
+        };
+
+        let violations = session.validate_against_state(&state);
+        assert!(violations.iter().any(|violation| matches!(
+            violation,
+            PlaySessionReferenceViolation::MissingPlayer(id) if *id == missing_player
+        )));
+        assert!(violations.iter().any(|violation| matches!(
+            violation,
+            PlaySessionReferenceViolation::MissingCharacter(id) if *id == missing_character
         )));
     }
 }
