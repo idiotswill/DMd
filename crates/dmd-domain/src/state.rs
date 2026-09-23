@@ -63,16 +63,12 @@ impl CampaignState {
         let expected = self.campaign.id;
 
         for (key, player) in &self.players {
-            if *key != player.id {
-                violations.push(StateInvariantViolation::KeyDoesNotMatchRecord("player".into()));
-            }
+            check_key(*key == player.id, "player", &mut violations);
             check_campaign(expected, player.campaign_id, "player", &mut violations);
         }
 
         for (key, character) in &self.characters {
-            if *key != character.id {
-                violations.push(StateInvariantViolation::KeyDoesNotMatchRecord("character".into()));
-            }
+            check_key(*key == character.id, "character", &mut violations);
             check_campaign(expected, character.campaign_id, "character", &mut violations);
             if !self.entities.contains_key(&character.entity_id) {
                 violations.push(StateInvariantViolation::MissingReference {
@@ -80,42 +76,36 @@ impl CampaignState {
                     target: "entity".into(),
                 });
             }
-            if let Some(player_id) = character.controlling_player_id
-                && !self.players.contains_key(&player_id)
-            {
-                violations.push(StateInvariantViolation::MissingReference {
-                    owner: "character".into(),
-                    target: "controlling player".into(),
-                });
+            if let Some(player_id) = character.controlling_player_id {
+                if !self.players.contains_key(&player_id) {
+                    violations.push(StateInvariantViolation::MissingReference {
+                        owner: "character".into(),
+                        target: "controlling player".into(),
+                    });
+                }
             }
         }
 
         for (key, entity) in &self.entities {
-            if *key != entity.id {
-                violations.push(StateInvariantViolation::KeyDoesNotMatchRecord("entity".into()));
-            }
+            check_key(*key == entity.id, "entity", &mut violations);
             check_campaign(expected, entity.campaign_id, "entity", &mut violations);
         }
 
         for (key, location) in &self.locations {
-            if *key != location.id {
-                violations.push(StateInvariantViolation::KeyDoesNotMatchRecord("location".into()));
-            }
+            check_key(*key == location.id, "location", &mut violations);
             check_campaign(expected, location.campaign_id, "location", &mut violations);
-            if let Some(parent_id) = location.parent_location_id
-                && !self.locations.contains_key(&parent_id)
-            {
-                violations.push(StateInvariantViolation::MissingReference {
-                    owner: "location".into(),
-                    target: "parent location".into(),
-                });
+            if let Some(parent_id) = location.parent_location_id {
+                if !self.locations.contains_key(&parent_id) {
+                    violations.push(StateInvariantViolation::MissingReference {
+                        owner: "location".into(),
+                        target: "parent location".into(),
+                    });
+                }
             }
         }
 
         for (key, scene) in &self.scenes {
-            if *key != scene.id {
-                violations.push(StateInvariantViolation::KeyDoesNotMatchRecord("scene".into()));
-            }
+            check_key(*key == scene.id, "scene", &mut violations);
             check_campaign(expected, scene.campaign_id, "scene", &mut violations);
             if !self.locations.contains_key(&scene.location_id) {
                 violations.push(StateInvariantViolation::MissingReference {
@@ -133,22 +123,27 @@ impl CampaignState {
             }
         }
 
-        for item in self.items.values() {
+        for (key, item) in &self.items {
+            check_key(*key == item.id, "item", &mut violations);
             check_campaign(expected, item.campaign_id, "item", &mut violations);
         }
-        for fact in self.facts.values() {
+        for (key, fact) in &self.facts {
+            check_key(*key == fact.id, "fact", &mut violations);
             check_campaign(expected, fact.campaign_id, "fact", &mut violations);
         }
-        for claim in self.claims.values() {
+        for (key, claim) in &self.claims {
+            check_key(*key == claim.id, "claim", &mut violations);
             check_campaign(expected, claim.campaign_id, "claim", &mut violations);
         }
-        for belief in self.beliefs.values() {
+        for (key, belief) in &self.beliefs {
+            check_key(*key == belief.id, "belief", &mut violations);
             check_campaign(expected, belief.campaign_id, "belief", &mut violations);
         }
         for knowledge in &self.knowledge {
             check_campaign(expected, knowledge.campaign_id, "knowledge", &mut violations);
         }
-        for directive in self.directives.values() {
+        for (key, directive) in &self.directives {
+            check_key(*key == directive.id, "directive", &mut violations);
             check_campaign(expected, directive.campaign_id, "directive", &mut violations);
             if !self.scenes.contains_key(&directive.scene_id) {
                 violations.push(StateInvariantViolation::MissingReference {
@@ -188,6 +183,14 @@ fn check_campaign(
             expected,
             actual,
         });
+    }
+}
+
+fn check_key(matches: bool, record_kind: &str, violations: &mut Vec<StateInvariantViolation>) {
+    if !matches {
+        violations.push(StateInvariantViolation::KeyDoesNotMatchRecord(
+            record_kind.into(),
+        ));
     }
 }
 
