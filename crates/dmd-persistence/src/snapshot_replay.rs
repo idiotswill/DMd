@@ -43,13 +43,10 @@ impl CampaignStateSnapshotCodec {
                 current_version: CURRENT_STATE_SCHEMA_VERSION,
             });
         }
-        if self
-            .migrations
-            .insert(from_version, Box::new(migration))
-            .is_some()
-        {
+        if self.migrations.contains_key(&from_version) {
             return Err(SnapshotCodecError::DuplicateMigration { from_version });
         }
+        self.migrations.insert(from_version, Box::new(migration));
         Ok(())
     }
 
@@ -69,7 +66,9 @@ impl CampaignStateSnapshotCodec {
         let mut migrated_json = json.to_owned();
         while version < CURRENT_STATE_SCHEMA_VERSION {
             let Some(migration) = self.migrations.get(&version) else {
-                return Err(SnapshotCodecError::MissingMigration { from_version: version });
+                return Err(SnapshotCodecError::MissingMigration {
+                    from_version: version,
+                });
             };
             migrated_json = migration.migrate_json(&migrated_json).map_err(|message| {
                 SnapshotCodecError::MigrationFailed {
@@ -176,10 +175,9 @@ pub enum SnapshotReplayError {
         max_sequence: u64,
     },
     #[error("replay journal gap: expected sequence {expected}, found {actual:?}")]
-    JournalGap {
-        expected: u64,
-        actual: Option<u64>,
-    },
+    JournalGap { expected: u64, actual: Option<u64> },
+    #[error("event sequence {0} exceeds SQLite signed integer range")]
+    SequenceOverflow(u64),
     #[error("stored UUID in {field} is invalid: {source}")]
     InvalidUuid {
         field: &'static str,
@@ -197,9 +195,7 @@ pub enum SnapshotReplayError {
         event_id: EventId,
         parent_id: EventId,
     },
-    #[error(
-        "replay applier failed at sequence {sequence} for {kind}@{schema_version}: {source}"
-    )]
+    #[error("replay applier failed at sequence {sequence} for {kind}@{schema_version}: {source}")]
     EventApply {
         sequence: u64,
         kind: String,
@@ -234,13 +230,7 @@ pub async fn load_campaign_snapshot_at_or_before(
     codec: &CampaignStateSnapshotCodec,
 ) -> Result<Option<CampaignState>, SnapshotReplayError> {
     let mut transaction = pool.begin().await?;
-    let snapshot = load_snapshot(
-        &mut transaction,
-        campaign_id,
-        target_sequence,
-        codec,
-    )
-    .await?;
+    let snapshot = load_snapshot(&mut transaction, campaign_id, target_sequence, codec).await?;
     transaction.commit().await?;
     Ok(snapshot.map(|(_, state)| state))
 }
@@ -262,14 +252,7 @@ pub async fn replay_campaign_to_head_with_codec(
 ) -> Result<CampaignState, SnapshotReplayError> {
     let mut transaction = pool.begin().await?;
     let head = load_campaign_head(&mut transaction, campaign_id).await?;
-    let state = replay_to_target(
-        &mut transaction,
-        campaign_id,
-        head,
-        codec,
-        applier,
-    )
-    .await?;
+    let state = replay_to_target(&mut transaction, campaign_id, head, codec, applier).await?;
     transaction.commit().await?;
     Ok(state)
 }
@@ -281,14 +264,8 @@ pub async fn replay_campaign_to_sequence(
     applier: &dyn ReplayEventApplier,
 ) -> Result<CampaignState, SnapshotReplayError> {
     let codec = CampaignStateSnapshotCodec::default();
-    replay_campaign_to_sequence_with_codec(
-        pool,
-        campaign_id,
-        target_sequence,
-        &codec,
-        applier,
-    )
-    .await
+    replay_campaign_to_sequence_with_codec(pool, campaign_id, target_sequence, &codec, applier)
+        .await
 }
 
 pub async fn replay_campaign_to_sequence_with_codec(
@@ -335,21 +312,10 @@ async fn replay_to_target(
         });
     };
 
-    validate_state_event_references(
-        connection,
-        campaign_id,
-        snapshot_sequence,
-        &state,
-    )
-    .await?;
+    validate_state_event_references(connection, campaign_id, snapshot_sequence, &state).await?;
 
-    let events = load_replay_events(
-        connection,
-        campaign_id,
-        snapshot_sequence,
-        target_sequence,
-    )
-    .await?;
+    let events =
+        load_replay_events(connection, campaign_id, snapshot_sequence, target_sequence).await?;
     let expected_count = target_sequence
         .checked_sub(snapshot_sequence)
         .expect("snapshot is selected at or before target");
@@ -363,10 +329,12 @@ async fn replay_to_target(
 
     for (index, event) in events.iter().enumerate() {
         let expected = snapshot_sequence
-            .checked_add(u64::try_from(index).map_err(|_| SnapshotReplayError::JournalGap {
-                expected: snapshot_sequence,
-                actual: None,
-            })?)
+            .checked_add(
+                u64::try_from(index).map_err(|_| SnapshotReplayError::JournalGap {
+                    expected: snapshot_sequence,
+                    actual: None,
+                })?,
+            )
             .and_then(|value| value.checked_add(1))
             .ok_or(SnapshotReplayError::JournalGap {
                 expected: snapshot_sequence,
@@ -547,10 +515,7 @@ async fn load_replay_events(
         let event_id_string: String = row.try_get("event_id")?;
         let cause_id_string: String = row.try_get("cause_event_id")?;
         let event_id = EventId(parse_uuid(&event_id_string, "event_causes.event_id")?);
-        let parent_id = EventId(parse_uuid(
-            &cause_id_string,
-            "event_causes.cause_event_id",
-        )?);
+        let parent_id = EventId(parse_uuid(&cause_id_string, "event_causes.cause_event_id")?);
         let child_sequence = stored_u64(
             row.try_get("child_sequence")?,
             "event_causes.child_sequence",
@@ -582,10 +547,7 @@ fn decode_journal_row(
     let event_id_string: String = row.try_get("id")?;
     let event_id = EventId(parse_uuid(&event_id_string, "event_journal.id")?);
     let campaign_string: String = row.try_get("campaign_id")?;
-    let campaign_id = CampaignId(parse_uuid(
-        &campaign_string,
-        "event_journal.campaign_id",
-    )?);
+    let campaign_id = CampaignId(parse_uuid(&campaign_string, "event_journal.campaign_id")?);
     let session_id = parse_optional_play_session(row.try_get("session_id")?)?;
     let actor = decode_agent(row.try_get("actor_kind")?, row.try_get("actor_id")?)?;
     let command_id: String = row.try_get("command_id")?;
@@ -749,10 +711,7 @@ fn parse_uuid(value: &str, field: &'static str) -> Result<Uuid, SnapshotReplayEr
 }
 
 fn sequence_to_i64(value: u64) -> Result<i64, SnapshotReplayError> {
-    i64::try_from(value).map_err(|_| SnapshotReplayError::InvalidInteger {
-        field: "event_sequence",
-        value: i64::MAX,
-    })
+    i64::try_from(value).map_err(|_| SnapshotReplayError::SequenceOverflow(value))
 }
 
 fn stored_u64(value: i64, field: &'static str) -> Result<u64, SnapshotReplayError> {

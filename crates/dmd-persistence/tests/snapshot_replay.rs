@@ -106,14 +106,14 @@ impl ReplayEventApplier for ClockApplier {
                 schema_version: event.payload.schema_version,
             });
         }
-        let duration: WorldDuration = serde_json::from_str(&event.payload.json).map_err(|error| {
+        let raw_duration = event.payload.json.parse::<i64>().map_err(|error| {
             ReplayApplyError::InvalidPayload {
                 kind: event.payload.kind.clone(),
                 schema_version: event.payload.schema_version,
                 message: error.to_string(),
             }
         })?;
-        state.clock.now = state.clock.now.advance(duration);
+        state.clock.now = state.clock.now.advance(WorldDuration(raw_duration));
         Ok(())
     }
 }
@@ -146,9 +146,7 @@ async fn new_campaign_gets_sequence_zero_snapshot_and_snapshot_is_immutable() {
     .await
     .expect("snapshot should exist");
     let sequence: i64 = row.try_get("event_sequence").expect("event sequence");
-    let schema_version: i64 = row
-        .try_get("state_schema_version")
-        .expect("schema version");
+    let schema_version: i64 = row.try_get("state_schema_version").expect("schema version");
     let json: String = row.try_get("state_json").expect("state JSON");
     assert_eq!(sequence, 0);
     assert_eq!(schema_version, 1);
@@ -162,12 +160,11 @@ async fn new_campaign_gets_sequence_zero_snapshot_and_snapshot_is_immutable() {
     .await;
     assert!(update.is_err(), "snapshot update must be rejected");
 
-    let delete = sqlx::query(
-        "DELETE FROM campaign_snapshots WHERE campaign_id = ? AND event_sequence = 0",
-    )
-    .bind(initial.campaign_id().0.to_string())
-    .execute(&pool)
-    .await;
+    let delete =
+        sqlx::query("DELETE FROM campaign_snapshots WHERE campaign_id = ? AND event_sequence = 0")
+            .bind(initial.campaign_id().0.to_string())
+            .execute(&pool)
+            .await;
     assert!(delete.is_err(), "snapshot delete must be rejected");
 }
 
@@ -301,7 +298,10 @@ async fn replay_rejects_unsupported_event_version() {
     assert!(matches!(
         result,
         Err(SnapshotReplayError::EventApply {
-            source: ReplayApplyError::UnsupportedEvent { schema_version: 2, .. },
+            source: ReplayApplyError::UnsupportedEvent {
+                schema_version: 2,
+                ..
+            },
             ..
         })
     ));
@@ -363,6 +363,29 @@ fn snapshot_codec_applies_registered_sequential_migration() {
     assert_eq!(migrated.campaign_id(), legacy.campaign_id());
 }
 
+#[test]
+fn duplicate_snapshot_migration_registration_does_not_replace_original() {
+    let mut codec = CampaignStateSnapshotCodec::new();
+    codec
+        .register(ZeroToOneMigration)
+        .expect("first migration should register");
+    let result = codec.register(ZeroToOneMigration);
+    assert!(matches!(
+        result,
+        Err(SnapshotCodecError::DuplicateMigration { from_version: 0 })
+    ));
+
+    let mut legacy = state();
+    legacy.schema_version = 0;
+    let migrated = codec
+        .decode_state(
+            0,
+            &legacy.encode_json().expect("legacy fixture should encode"),
+        )
+        .expect("original registered migration should remain usable");
+    assert_eq!(migrated.schema_version, 1);
+}
+
 #[tokio::test]
 async fn migration_sql_backfills_existing_materialized_head() {
     let options = SqliteConnectOptions::from_str("sqlite::memory:")
@@ -415,9 +438,7 @@ async fn migration_sql_backfills_existing_materialized_head() {
     .await
     .expect("backfilled snapshot should exist");
     let sequence: i64 = row.try_get("event_sequence").expect("event sequence");
-    let schema_version: i64 = row
-        .try_get("state_schema_version")
-        .expect("schema version");
+    let schema_version: i64 = row.try_get("state_schema_version").expect("schema version");
     let json: String = row.try_get("state_json").expect("state JSON");
     assert_eq!(sequence, 7);
     assert_eq!(schema_version, 1);
@@ -442,13 +463,8 @@ async fn snapshot_lookup_returns_none_before_oldest_available_snapshot() {
     .expect("state insert should trigger a snapshot at sequence five");
 
     let codec = CampaignStateSnapshotCodec::new();
-    let snapshot = load_campaign_snapshot_at_or_before(
-        &pool,
-        current.campaign_id(),
-        4,
-        &codec,
-    )
-    .await
-    .expect("snapshot lookup should succeed");
+    let snapshot = load_campaign_snapshot_at_or_before(&pool, current.campaign_id(), 4, &codec)
+        .await
+        .expect("snapshot lookup should succeed");
     assert!(snapshot.is_none());
 }
