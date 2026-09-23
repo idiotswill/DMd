@@ -33,3 +33,16 @@ jobs:
             echo 'Campaign-specific Asterra terms are forbidden in production Rust crates.'
             exit 1
           fi
+
+  lockfile-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Generate lockfile
+        run: cargo generate-lockfile
+      - uses: actions/upload-artifact@v7
+        with:
+          name: generated-cargo-lock
+          path: Cargo.lock
+          if-no-files-found: error
