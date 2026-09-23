@@ -151,7 +151,10 @@ fn duplicate_content_pack_id_in_campaign_is_explicit() {
         catalog
             .resolve_campaign(&campaign(
                 rules,
-                vec![reference("pack.generic", "1"), reference("pack.generic", "2")],
+                vec![
+                    reference("pack.generic", "1"),
+                    reference("pack.generic", "2"),
+                ],
             ))
             .unwrap_err(),
         ContentResolutionError::DuplicateCampaignPackId("pack.generic".into())
