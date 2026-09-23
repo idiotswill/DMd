@@ -32,10 +32,11 @@ pub struct Player {
     pub display_name: String,
 }
 
+/// Persistent lifecycle of a player character across the campaign.
+/// Session attendance and temporary scene absence are modeled elsewhere.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CharacterStatus {
     Active,
-    Absent,
     Retired,
     Dead,
 }
