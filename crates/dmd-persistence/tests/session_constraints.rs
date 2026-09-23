@@ -27,9 +27,10 @@ async fn persisted_session_cannot_move_between_campaigns() {
     .await
     .expect("fixture session should insert");
 
-    let result = sqlx::query("UPDATE play_sessions SET campaign_id = 'campaign-b' WHERE id = 'session-1'")
-        .execute(&pool)
-        .await;
+    let result =
+        sqlx::query("UPDATE play_sessions SET campaign_id = 'campaign-b' WHERE id = 'session-1'")
+            .execute(&pool)
+            .await;
 
     assert!(result.is_err());
 }
