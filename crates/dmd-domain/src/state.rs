@@ -124,7 +124,9 @@ impl CampaignState {
             check_campaign(expected, location.campaign_id, "location", &mut violations);
             if let Some(parent_id) = location.parent_location_id {
                 if parent_id == location.id {
-                    violations.push(StateInvariantViolation::SelfReference("location parent".into()));
+                    violations.push(StateInvariantViolation::SelfReference(
+                        "location parent".into(),
+                    ));
                 } else if !self.locations.contains_key(&parent_id) {
                     violations.push(StateInvariantViolation::MissingReference {
                         owner: "location".into(),
@@ -165,24 +167,51 @@ impl CampaignState {
             check_campaign(expected, item.campaign_id, "item", &mut violations);
             match item.owner {
                 Ownership::Entity(entity_id) => {
-                    check_exists(self.entities.contains_key(&entity_id), "item", "owner entity", &mut violations);
+                    check_exists(
+                        self.entities.contains_key(&entity_id),
+                        "item",
+                        "owner entity",
+                        &mut violations,
+                    );
                 }
                 Ownership::Faction(faction_id) => {
-                    check_exists(self.factions.contains_key(&faction_id), "item", "owner faction", &mut violations);
+                    check_exists(
+                        self.factions.contains_key(&faction_id),
+                        "item",
+                        "owner faction",
+                        &mut violations,
+                    );
                 }
                 Ownership::Unowned => {}
             }
             match item.custody {
                 Custody::Entity(entity_id) => {
-                    check_exists(self.entities.contains_key(&entity_id), "item", "custody entity", &mut violations);
+                    check_exists(
+                        self.entities.contains_key(&entity_id),
+                        "item",
+                        "custody entity",
+                        &mut violations,
+                    );
                 }
                 Custody::Location(location_id) => {
-                    check_exists(self.locations.contains_key(&location_id), "item", "custody location", &mut violations);
+                    check_exists(
+                        self.locations.contains_key(&location_id),
+                        "item",
+                        "custody location",
+                        &mut violations,
+                    );
                 }
                 Custody::Container(container_id) => {
-                    check_exists(self.items.contains_key(&container_id), "item", "container item", &mut violations);
+                    check_exists(
+                        self.items.contains_key(&container_id),
+                        "item",
+                        "container item",
+                        &mut violations,
+                    );
                     if container_id == item.id {
-                        violations.push(StateInvariantViolation::SelfReference("item container".into()));
+                        violations.push(StateInvariantViolation::SelfReference(
+                            "item container".into(),
+                        ));
                     }
                 }
                 Custody::Missing | Custody::Destroyed => {}
@@ -192,19 +221,41 @@ impl CampaignState {
         for (key, fact) in &self.facts {
             check_key(*key == fact.id, "fact", &mut violations);
             check_campaign(expected, fact.campaign_id, "fact", &mut violations);
-            self.validate_proposition_refs(&fact.proposition.subject, &fact.proposition.value, &mut violations);
+            self.validate_proposition_refs(
+                &fact.proposition.subject,
+                &fact.proposition.value,
+                &mut violations,
+            );
         }
         for (key, claim) in &self.claims {
             check_key(*key == claim.id, "claim", &mut violations);
             check_campaign(expected, claim.campaign_id, "claim", &mut violations);
-            check_exists(self.entities.contains_key(&claim.speaker), "claim", "speaker entity", &mut violations);
-            self.validate_proposition_refs(&claim.proposition.subject, &claim.proposition.value, &mut violations);
+            check_exists(
+                self.entities.contains_key(&claim.speaker),
+                "claim",
+                "speaker entity",
+                &mut violations,
+            );
+            self.validate_proposition_refs(
+                &claim.proposition.subject,
+                &claim.proposition.value,
+                &mut violations,
+            );
         }
         for (key, belief) in &self.beliefs {
             check_key(*key == belief.id, "belief", &mut violations);
             check_campaign(expected, belief.campaign_id, "belief", &mut violations);
-            check_exists(self.entities.contains_key(&belief.holder), "belief", "holder entity", &mut violations);
-            self.validate_proposition_refs(&belief.proposition.subject, &belief.proposition.value, &mut violations);
+            check_exists(
+                self.entities.contains_key(&belief.holder),
+                "belief",
+                "holder entity",
+                &mut violations,
+            );
+            self.validate_proposition_refs(
+                &belief.proposition.subject,
+                &belief.proposition.value,
+                &mut violations,
+            );
         }
         for knowledge in &self.knowledge {
             check_campaign(
@@ -214,14 +265,29 @@ impl CampaignState {
                 &mut violations,
             );
             if let KnowledgeHolder::Entity(entity_id) = knowledge.holder {
-                check_exists(self.entities.contains_key(&entity_id), "knowledge", "holder entity", &mut violations);
+                check_exists(
+                    self.entities.contains_key(&entity_id),
+                    "knowledge",
+                    "holder entity",
+                    &mut violations,
+                );
             }
             match knowledge.target {
                 KnowledgeTarget::Fact(fact_id) => {
-                    check_exists(self.facts.contains_key(&fact_id), "knowledge", "fact", &mut violations);
+                    check_exists(
+                        self.facts.contains_key(&fact_id),
+                        "knowledge",
+                        "fact",
+                        &mut violations,
+                    );
                 }
                 KnowledgeTarget::Claim(claim_id) => {
-                    check_exists(self.claims.contains_key(&claim_id), "knowledge", "claim", &mut violations);
+                    check_exists(
+                        self.claims.contains_key(&claim_id),
+                        "knowledge",
+                        "claim",
+                        &mut violations,
+                    );
                 }
             }
         }
@@ -233,9 +299,19 @@ impl CampaignState {
                 "directive",
                 &mut violations,
             );
-            check_exists(self.scenes.contains_key(&directive.scene_id), "directive", "scene", &mut violations);
+            check_exists(
+                self.scenes.contains_key(&directive.scene_id),
+                "directive",
+                "scene",
+                &mut violations,
+            );
             for actor in &directive.actors {
-                check_exists(self.entities.contains_key(actor), "directive", "actor entity", &mut violations);
+                check_exists(
+                    self.entities.contains_key(actor),
+                    "directive",
+                    "actor entity",
+                    &mut violations,
+                );
             }
         }
 
@@ -309,7 +385,10 @@ impl CampaignState {
                 "value item",
                 violations,
             ),
-            FactValue::Boolean(_) | FactValue::Integer(_) | FactValue::Text(_) | FactValue::Time(_) => {}
+            FactValue::Boolean(_)
+            | FactValue::Integer(_)
+            | FactValue::Text(_)
+            | FactValue::Time(_) => {}
         }
     }
 }
