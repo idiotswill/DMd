@@ -4,7 +4,7 @@
 
 ## Decision
 
-Authoritative campaign state is stored locally in SQLite. A material game action is resolved and committed as one database transaction that updates normalized current state and appends an immutable event record.
+Authoritative campaign state is stored locally in SQLite. A material game action is resolved and committed as one database transaction that updates normalized current state and appends immutable event records.
 
 ## Required properties
 
@@ -19,6 +19,10 @@ Authoritative campaign state is stored locally in SQLite. A material game action
 ## Event role
 
 Events answer “what changed, why, and from which inputs?” They do not replace efficient current-state tables.
+
+An event may record zero, one, or several direct causal parent events. Consequence history is therefore a causal graph rather than a forced single-parent chain. This matters when an outcome is jointly caused by several prior developments—for example, disrupted trade plus military pressure producing a shortage.
+
+The event journal remains append-only. Causal parents must refer to earlier material events in the same campaign; persistence/replay will enforce sequence and campaign constraints.
 
 Physical dice are external inputs recorded in the resolution event. Procedural RNG must use explicit deterministic streams/seeds when reproducibility matters.
 
