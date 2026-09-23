@@ -196,11 +196,12 @@ CREATE TABLE projection_directives (
 );
 CREATE INDEX ix_projection_directives_scene_active ON projection_directives(campaign_id, scene_id, active);
 
--- Rebuild the complete derivative image whenever authoritative materialized state is inserted or
--- advanced. These triggers execute inside the caller's SQLite transaction, so projection failure
+-- Rebuild the complete derivative image whenever valid authoritative materialized state is inserted
+-- or advanced. These triggers execute inside the caller's SQLite transaction, so projection failure
 -- aborts the same authoritative transition rather than allowing drift.
 CREATE TRIGGER tr_projection_state_insert
 AFTER INSERT ON campaign_state_current
+WHEN json_valid(NEW.state_json)
 BEGIN
     INSERT INTO projection_heads VALUES (
         NEW.campaign_id, NEW.schema_version, NEW.applied_event_sequence,
@@ -239,6 +240,7 @@ END;
 
 CREATE TRIGGER tr_projection_state_update
 AFTER UPDATE OF schema_version, applied_event_sequence, state_json ON campaign_state_current
+WHEN json_valid(NEW.state_json)
 BEGIN
     DELETE FROM projection_heads WHERE campaign_id = NEW.campaign_id;
     INSERT INTO projection_heads VALUES (
@@ -273,7 +275,17 @@ BEGIN
     INSERT INTO projection_directives SELECT NEW.campaign_id, json_extract(value,'$.id'), json_extract(value,'$.scene_id'), json_extract(value,'$.summary'), json_extract(value,'$.created_at'), CASE json_extract(value,'$.active') WHEN 1 THEN 1 ELSE 0 END, value FROM json_each(NEW.state_json,'$.directives');
 END;
 
--- Backfill existing campaigns after installing the triggers. Touching only state_json leaves journal and
--- snapshot history unchanged; the AFTER UPDATE trigger derives the projection image from the already
--- accepted current state in this migration transaction.
+-- A malformed materialized recovery artifact must not prevent snapshot+journal replay from doing its
+-- job. Invalidate the derivative image without attempting to parse bad JSON. A later replay-backed
+-- repair writes valid materialized state and the valid-state trigger rebuilds projections atomically.
+CREATE TRIGGER tr_projection_state_invalid
+AFTER UPDATE OF schema_version, applied_event_sequence, state_json ON campaign_state_current
+WHEN NOT json_valid(NEW.state_json)
+BEGIN
+    DELETE FROM projection_heads WHERE campaign_id = NEW.campaign_id;
+END;
+
+-- Backfill existing campaigns after installing the triggers. Valid accepted materialized state derives
+-- a projection image; corrupt materialized rows merely remain projection-less and recoverable through
+-- snapshot+journal replay. This update does not append, delete, or rewrite authoritative history.
 UPDATE campaign_state_current SET state_json = state_json;
