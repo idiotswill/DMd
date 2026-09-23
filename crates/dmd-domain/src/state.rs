@@ -3,11 +3,11 @@ use std::collections::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    Belief, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim, ClaimId, Custody,
-    DirectiveId, EntityId, EntityKind, Fact, FactId, FactValue, Faction, FactionId, ItemId,
-    ItemInstance, KnowledgeHolder, KnowledgeRecord, KnowledgeTarget, Location, LocationId,
-    Ownership, Player, PlayerId, PresenceRole, Scene, SceneId, SceneStatus, StandingDirective,
-    SubjectRef, WorldClock, WorldEntity,
+    AgentRef, Belief, BeliefBasis, BeliefId, Campaign, CampaignId, Character, CharacterId, Claim,
+    ClaimId, ClaimSource, Custody, DirectiveId, EntityId, EntityKind, Fact, FactId, FactValue,
+    Faction, FactionId, ItemId, ItemInstance, KnowledgeHolder, KnowledgeRecord, KnowledgeTarget,
+    Location, LocationId, Ownership, Player, PlayerId, PresenceRole, Scene, SceneId, SceneStatus,
+    StandingDirective, SubjectRef, WorldClock, WorldEntity,
 };
 
 pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
@@ -258,12 +258,7 @@ impl CampaignState {
         for (key, claim) in &self.claims {
             check_key(*key == claim.id, "claim", &mut violations);
             check_campaign(expected, claim.campaign_id, "claim", &mut violations);
-            check_exists(
-                self.entities.contains_key(&claim.speaker),
-                "claim",
-                "speaker entity",
-                &mut violations,
-            );
+            self.validate_claim_source(claim.source, &mut violations);
             self.validate_proposition_refs(
                 &claim.proposition.subject,
                 &claim.proposition.value,
@@ -273,17 +268,15 @@ impl CampaignState {
         for (key, belief) in &self.beliefs {
             check_key(*key == belief.id, "belief", &mut violations);
             check_campaign(expected, belief.campaign_id, "belief", &mut violations);
-            check_exists(
-                self.entities.contains_key(&belief.holder),
-                "belief",
-                "holder entity",
-                &mut violations,
-            );
+            self.validate_agent_ref(belief.holder, "belief", "holder", &mut violations);
             self.validate_proposition_refs(
                 &belief.proposition.subject,
                 &belief.proposition.value,
                 &mut violations,
             );
+            for basis in &belief.basis {
+                self.validate_belief_basis(basis, &mut violations);
+            }
         }
         for knowledge in &self.knowledge {
             check_campaign(
@@ -292,13 +285,8 @@ impl CampaignState {
                 "knowledge",
                 &mut violations,
             );
-            if let KnowledgeHolder::Entity(entity_id) = knowledge.holder {
-                check_exists(
-                    self.entities.contains_key(&entity_id),
-                    "knowledge",
-                    "holder entity",
-                    &mut violations,
-                );
+            if let KnowledgeHolder::Agent(agent) = knowledge.holder {
+                self.validate_agent_ref(agent, "knowledge", "holder", &mut violations);
             }
             match knowledge.target {
                 KnowledgeTarget::Fact(fact_id) => {
@@ -344,6 +332,83 @@ impl CampaignState {
         }
 
         violations
+    }
+
+    fn validate_agent_ref(
+        &self,
+        agent: AgentRef,
+        owner: &str,
+        target: &str,
+        violations: &mut Vec<StateInvariantViolation>,
+    ) {
+        match agent {
+            AgentRef::Entity(entity_id) => check_exists(
+                self.entities.contains_key(&entity_id),
+                owner,
+                &format!("{target} entity"),
+                violations,
+            ),
+            AgentRef::Faction(faction_id) => check_exists(
+                self.factions.contains_key(&faction_id),
+                owner,
+                &format!("{target} faction"),
+                violations,
+            ),
+        }
+    }
+
+    fn validate_claim_source(
+        &self,
+        source: ClaimSource,
+        violations: &mut Vec<StateInvariantViolation>,
+    ) {
+        match source {
+            ClaimSource::Agent(agent) => {
+                self.validate_agent_ref(agent, "claim", "source", violations);
+            }
+            ClaimSource::Item(item_id) => check_exists(
+                self.items.contains_key(&item_id),
+                "claim",
+                "source item",
+                violations,
+            ),
+            ClaimSource::Location(location_id) => check_exists(
+                self.locations.contains_key(&location_id),
+                "claim",
+                "source location",
+                violations,
+            ),
+            ClaimSource::Unknown => {}
+        }
+    }
+
+    fn validate_belief_basis(
+        &self,
+        basis: &BeliefBasis,
+        violations: &mut Vec<StateInvariantViolation>,
+    ) {
+        match basis {
+            BeliefBasis::Fact(fact_id) => check_exists(
+                self.facts.contains_key(fact_id),
+                "belief basis",
+                "fact",
+                violations,
+            ),
+            BeliefBasis::Claim(claim_id) => check_exists(
+                self.claims.contains_key(claim_id),
+                "belief basis",
+                "claim",
+                violations,
+            ),
+            BeliefBasis::DirectObservation(_) => {
+                // Event IDs are validated against the append-only journal by persistence/replay.
+            }
+            BeliefBasis::Inference(nested) => {
+                for nested_basis in nested {
+                    self.validate_belief_basis(nested_basis, violations);
+                }
+            }
+        }
     }
 
     fn validate_proposition_refs(
