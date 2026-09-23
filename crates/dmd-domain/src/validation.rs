@@ -151,11 +151,7 @@ impl CampaignState {
         }
     }
 
-    fn validate_scenes(
-        &self,
-        expected: CampaignId,
-        violations: &mut Vec<StateInvariantViolation>,
-    ) {
+    fn validate_scenes(&self, expected: CampaignId, violations: &mut Vec<StateInvariantViolation>) {
         let mut active_scene_participants = HashSet::new();
 
         for (key, scene) in &self.scenes {
@@ -208,11 +204,7 @@ impl CampaignState {
         }
     }
 
-    fn validate_items(
-        &self,
-        expected: CampaignId,
-        violations: &mut Vec<StateInvariantViolation>,
-    ) {
+    fn validate_items(&self, expected: CampaignId, violations: &mut Vec<StateInvariantViolation>) {
         for (key, item) in &self.items {
             check_key(*key == item.id, "item", violations);
             check_campaign(expected, item.campaign_id, "item", violations);
@@ -666,12 +658,10 @@ mod tests {
         };
         state.players.insert(player.id, player);
 
-        assert!(
-            state
-                .validate()
-                .iter()
-                .any(|violation| matches!(violation, StateInvariantViolation::CampaignMismatch { .. }))
-        );
+        assert!(state.validate().iter().any(|violation| matches!(
+            violation,
+            StateInvariantViolation::CampaignMismatch { .. }
+        )));
     }
 
     #[test]
