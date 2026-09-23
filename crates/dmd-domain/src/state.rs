@@ -143,6 +143,11 @@ impl CampaignState {
                 }
             }
         }
+        if self.location_hierarchy_has_cycle() {
+            violations.push(StateInvariantViolation::CyclicReference(
+                "location hierarchy".into(),
+            ));
+        }
 
         let mut active_scene_participants = HashSet::new();
         for (key, scene) in &self.scenes {
@@ -245,6 +250,11 @@ impl CampaignState {
                 Custody::Missing | Custody::Destroyed => {}
             }
         }
+        if self.item_containment_has_cycle() {
+            violations.push(StateInvariantViolation::CyclicReference(
+                "item containment".into(),
+            ));
+        }
 
         for (key, fact) in &self.facts {
             check_key(*key == fact.id, "fact", &mut violations);
@@ -332,6 +342,41 @@ impl CampaignState {
         }
 
         violations
+    }
+
+    fn location_hierarchy_has_cycle(&self) -> bool {
+        for start in self.locations.keys().copied() {
+            let mut seen = HashSet::new();
+            let mut current = Some(start);
+            while let Some(location_id) = current {
+                if !seen.insert(location_id) {
+                    return true;
+                }
+                current = self
+                    .locations
+                    .get(&location_id)
+                    .and_then(|location| location.parent_location_id)
+                    .filter(|parent_id| *parent_id != location_id);
+            }
+        }
+        false
+    }
+
+    fn item_containment_has_cycle(&self) -> bool {
+        for start in self.items.keys().copied() {
+            let mut seen = HashSet::new();
+            let mut current = Some(start);
+            while let Some(item_id) = current {
+                if !seen.insert(item_id) {
+                    return true;
+                }
+                current = self.items.get(&item_id).and_then(|item| match item.custody {
+                    Custody::Container(container_id) if container_id != item_id => Some(container_id),
+                    _ => None,
+                });
+            }
+        }
+        false
     }
 
     fn validate_agent_ref(
@@ -503,6 +548,7 @@ pub enum StateInvariantViolation {
         target: String,
     },
     SelfReference(String),
+    CyclicReference(String),
     WrongEntityKind {
         owner: String,
         expected: String,
