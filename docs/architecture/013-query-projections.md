@@ -34,9 +34,9 @@ Future combat, simulation, economy, world-generation, opportunity, and UI schema
 
 ### Atomic maintenance
 
-SQLite triggers derive the complete projection image whenever `campaign_state_current` is inserted or updated. The triggers execute in the same SQLite transaction/statement context as authoritative campaign initialization or an accepted journal transition. A projection constraint or write failure therefore aborts the authoritative change rather than committing projection drift.
+SQLite triggers derive the complete projection image whenever valid `campaign_state_current` state is inserted or updated. The triggers execute in the same SQLite transaction/statement context as authoritative campaign initialization or an accepted journal transition. A projection constraint or write failure therefore aborts the authoritative change rather than committing projection drift.
 
-Existing databases are backfilled by touching the already-accepted `campaign_state_current.state_json` during the projection migration after the triggers exist. This does not append, delete, or rewrite command/event history. Snapshot creation remains governed by the existing sequence-advance policy.
+Malformed materialized JSON is treated differently because that row is itself a recoverable artifact, not authoritative history: the projection image is invalidated without parsing the malformed JSON so snapshot+journal replay remains able to repair it. Existing databases are backfilled by touching the already-accepted `campaign_state_current.state_json` during the projection migration after the triggers exist. Valid rows derive projections; corrupt rows remain projection-less until replay recovery. Neither path appends, deletes, or rewrites command/event history. Snapshot creation remains governed by the existing sequence-advance policy.
 
 Whole-image replacement is deliberate for the current Gate 1 scale because it makes drift prevention and deletion semantics mechanically simple. Incremental projectors may replace it later only after measured gameplay volume justifies the additional complexity and equivalent atomic/rebuild guarantees are preserved.
 
@@ -46,9 +46,9 @@ Every projection primary key is campaign-scoped. Projection tables reference the
 
 ### Rebuild and corruption recovery
 
-`rebuild_campaign_projections` first reconstructs state through the accepted snapshot+journal replay boundary. It then refreshes the materialized recovery row only if its sequence still equals the replayed journal head; this compare-and-swap condition prevents a concurrent accepted transition from being overwritten by an older replay result. The SQLite projection trigger regenerates the derivative image from that replayed state.
+`rebuild_campaign_projections` records the current materialized sequence, reconstructs state through the accepted snapshot+journal replay boundary, and then replaces the materialized recovery row only if its sequence is unchanged from the value observed before replay. That compare-and-swap condition prevents a concurrent accepted transition from being overwritten while still allowing replay to repair a stale or corrupted materialized sequence. The SQLite projection trigger regenerates the derivative image from the replayed state.
 
-Rebuild never edits command audit rows, event journal rows, causal edges, or immutable snapshots. If the authoritative materialized sequence moved while rebuild was prepared, rebuild fails and must be retried from the newer journal head.
+Rebuild never edits command audit rows, event journal rows, causal edges, or immutable snapshots. If the materialized row moved while rebuild was prepared, rebuild fails and must be retried against the newer state.
 
 ## Consequences
 
