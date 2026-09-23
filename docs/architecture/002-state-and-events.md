@@ -15,6 +15,7 @@ Authoritative campaign state is stored locally in SQLite. A material game action
 - Versioned schema migrations
 - Crash-safe recovery to the last committed transaction
 - Human-readable resolution/provenance records for debugging
+- Durable command/resolution provenance that preserves trusted issuer metadata separately from the optional in-world actor
 
 ## Event role
 
@@ -24,6 +25,8 @@ An event may record zero, one, or several direct causal parent events. Consequen
 
 The event journal remains append-only. Causal parents must refer to earlier material events in the same campaign; persistence/replay will enforce sequence and campaign constraints.
 
+When an event records an originating `CommandId`, the durable command/resolution audit data must preserve the corresponding trusted `CommandIssuer`, campaign/session context, actor when applicable, and validated input needed to explain the ruling later. The language/provider layer is not an authority source and must not be able to rewrite issuer identity in persisted provenance.
+
 Physical dice are external inputs recorded in the resolution event. Procedural RNG must use explicit deterministic streams/seeds when reproducibility matters.
 
 ## Explicitly rejected
@@ -32,3 +35,4 @@ Physical dice are external inputs recorded in the resolution event. Procedural R
 - Google Drive documents as runtime state authority
 - Pure event sourcing with no materialized current state
 - Silent direct writes from language/AI components
+- Event records that preserve the world actor but discard who/what authorized the originating command
