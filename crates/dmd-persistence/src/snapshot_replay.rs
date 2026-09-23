@@ -166,6 +166,11 @@ pub enum SnapshotReplayError {
         state_sequence: u64,
         row_sequence: u64,
     },
+    #[error("journal head is inconsistent: count={event_count}, max={max_sequence}")]
+    CorruptJournalHead {
+        event_count: u64,
+        max_sequence: u64,
+    },
     #[error(
         "journal prefix through {target} is inconsistent: count={event_count}, max={max_sequence}"
     )]
@@ -379,16 +384,32 @@ async fn load_campaign_head(
     connection: &mut SqliteConnection,
     campaign_id: CampaignId,
 ) -> Result<u64, SnapshotReplayError> {
-    let value = sqlx::query_scalar::<_, i64>(
-        "SELECT applied_event_sequence FROM campaign_state_current WHERE campaign_id = ?",
+    let row = sqlx::query(
+        r#"
+        SELECT COUNT(journal.sequence) AS event_count,
+               COALESCE(MAX(journal.sequence), 0) AS max_sequence
+        FROM campaign_state_current AS current
+        LEFT JOIN event_journal AS journal
+          ON journal.campaign_id = current.campaign_id
+        WHERE current.campaign_id = ?
+        GROUP BY current.campaign_id
+        "#,
     )
     .bind(campaign_id.0.to_string())
     .fetch_optional(&mut *connection)
     .await?;
-    let Some(value) = value else {
+    let Some(row) = row else {
         return Err(SnapshotReplayError::CampaignNotInitialized);
     };
-    stored_u64(value, "campaign_state_current.applied_event_sequence")
+    let event_count = stored_u64(row.try_get("event_count")?, "event_journal.count")?;
+    let max_sequence = stored_u64(row.try_get("max_sequence")?, "event_journal.max_sequence")?;
+    if event_count != max_sequence {
+        return Err(SnapshotReplayError::CorruptJournalHead {
+            event_count,
+            max_sequence,
+        });
+    }
+    Ok(max_sequence)
 }
 
 async fn load_snapshot(
