@@ -1,6 +1,19 @@
-use dmd_domain::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId};
+use dmd_domain::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId, PlayerId};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+
+/// Trusted authority context attached by the application/input layer.
+///
+/// A language/STT provider may propose an actor or action, but it must never infer or overwrite
+/// who is authorized to issue the command. Player identity comes from the trusted table/client
+/// channel (for example a player-specific push-to-talk client), not from generated text.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CommandIssuer {
+    Player(PlayerId),
+    System,
+    Admin,
+    Import,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CommandMeta {
@@ -8,6 +21,9 @@ pub struct CommandMeta {
     pub campaign_id: CampaignId,
     /// None is valid for between-session simulation, imports, and maintenance commands.
     pub session_id: Option<PlaySessionId>,
+    /// Trusted authority principal. This is distinct from the in-world actor.
+    pub issuer: CommandIssuer,
+    /// Entity/faction attempting the in-world action, if the command has one.
     pub actor: Option<AgentRef>,
     /// Journal sequence observed when the command was constructed.
     pub expected_event_sequence: u64,
@@ -70,11 +86,13 @@ mod tests {
     fn typed_command_mapping_preserves_authority_metadata() {
         let command_id = CommandId::new();
         let campaign_id = CampaignId::new();
+        let player_id = PlayerId::new();
         let command = GameCommand {
             meta: CommandMeta {
                 id: command_id,
                 campaign_id,
                 session_id: None,
+                issuer: CommandIssuer::Player(player_id),
                 actor: None,
                 expected_event_sequence: 41,
             },
@@ -85,6 +103,7 @@ mod tests {
 
         assert_eq!(mapped.meta.id, command_id);
         assert_eq!(mapped.meta.campaign_id, campaign_id);
+        assert_eq!(mapped.meta.issuer, CommandIssuer::Player(player_id));
         assert_eq!(mapped.meta.expected_event_sequence, 41);
         assert_eq!(mapped.payload, 3);
     }
