@@ -1,0 +1,30 @@
+# ADR 002 — State, Transactions, and Event Journal
+
+**Status:** Accepted for Gate 0
+
+## Decision
+
+Authoritative campaign state is stored locally in SQLite. A material game action is resolved and committed as one database transaction that updates normalized current state and appends an immutable event record.
+
+## Required properties
+
+- Atomic state mutation
+- Foreign-key and domain-invariant validation
+- Append-only event journal for material changes
+- Periodic snapshots for fast recovery/replay
+- Versioned schema migrations
+- Crash-safe recovery to the last committed transaction
+- Human-readable resolution/provenance records for debugging
+
+## Event role
+
+Events answer “what changed, why, and from which inputs?” They do not replace efficient current-state tables.
+
+Physical dice are external inputs recorded in the resolution event. Procedural RNG must use explicit deterministic streams/seeds when reproducibility matters.
+
+## Explicitly rejected
+
+- Git commits as live save transactions
+- Google Drive documents as runtime state authority
+- Pure event sourcing with no materialized current state
+- Silent direct writes from language/AI components
