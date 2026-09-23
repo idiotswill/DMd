@@ -69,7 +69,12 @@ impl CampaignState {
 
         for (key, character) in &self.characters {
             check_key(*key == character.id, "character", &mut violations);
-            check_campaign(expected, character.campaign_id, "character", &mut violations);
+            check_campaign(
+                expected,
+                character.campaign_id,
+                "character",
+                &mut violations,
+            );
             if !self.entities.contains_key(&character.entity_id) {
                 violations.push(StateInvariantViolation::MissingReference {
                     owner: "character".into(),
@@ -140,11 +145,21 @@ impl CampaignState {
             check_campaign(expected, belief.campaign_id, "belief", &mut violations);
         }
         for knowledge in &self.knowledge {
-            check_campaign(expected, knowledge.campaign_id, "knowledge", &mut violations);
+            check_campaign(
+                expected,
+                knowledge.campaign_id,
+                "knowledge",
+                &mut violations,
+            );
         }
         for (key, directive) in &self.directives {
             check_key(*key == directive.id, "directive", &mut violations);
-            check_campaign(expected, directive.campaign_id, "directive", &mut violations);
+            check_campaign(
+                expected,
+                directive.campaign_id,
+                "directive",
+                &mut violations,
+            );
             if !self.scenes.contains_key(&directive.scene_id) {
                 violations.push(StateInvariantViolation::MissingReference {
                     owner: "directive".into(),
@@ -243,9 +258,11 @@ mod tests {
         };
         state.players.insert(player.id, player);
 
-        assert!(state
-            .validate()
-            .iter()
-            .any(|v| matches!(v, StateInvariantViolation::CampaignMismatch { .. })));
+        assert!(
+            state
+                .validate()
+                .iter()
+                .any(|v| matches!(v, StateInvariantViolation::CampaignMismatch { .. }))
+        );
     }
 }
