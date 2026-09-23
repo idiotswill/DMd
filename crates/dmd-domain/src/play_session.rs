@@ -40,6 +40,7 @@ pub struct PlaySession {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlaySessionShapeViolation {
     DuplicatePlayer(PlayerId),
+    DuplicateCharacter(CharacterId),
     ActiveSessionHasEndTime,
     ClosedSessionMissingEndTime,
     EndBeforeStart,
@@ -50,12 +51,18 @@ impl PlaySession {
     pub fn validate_shape(&self) -> Vec<PlaySessionShapeViolation> {
         let mut violations = Vec::new();
         let mut players = HashSet::new();
+        let mut characters = HashSet::new();
 
         for participant in &self.participants {
             if !players.insert(participant.player_id) {
                 violations.push(PlaySessionShapeViolation::DuplicatePlayer(
                     participant.player_id,
                 ));
+            }
+            if let Some(character_id) = participant.character_id {
+                if !characters.insert(character_id) {
+                    violations.push(PlaySessionShapeViolation::DuplicateCharacter(character_id));
+                }
             }
         }
 
@@ -107,5 +114,35 @@ mod tests {
         };
 
         assert!(session.validate_shape().is_empty());
+    }
+
+    #[test]
+    fn one_character_cannot_be_assigned_to_two_players() {
+        let character_id = CharacterId::new();
+        let session = PlaySession {
+            id: PlaySessionId::new(),
+            campaign_id: CampaignId::new(),
+            display_name: "Test Session".into(),
+            status: PlaySessionStatus::Active,
+            started_at_world: WorldInstant(10),
+            ended_at_world: None,
+            participants: vec![
+                SessionParticipant {
+                    player_id: PlayerId::new(),
+                    character_id: Some(character_id),
+                    attendance: AttendanceStatus::Present,
+                },
+                SessionParticipant {
+                    player_id: PlayerId::new(),
+                    character_id: Some(character_id),
+                    attendance: AttendanceStatus::Present,
+                },
+            ],
+        };
+
+        assert!(session.validate_shape().iter().any(|violation| matches!(
+            violation,
+            PlaySessionShapeViolation::DuplicateCharacter(id) if *id == character_id
+        )));
     }
 }
