@@ -1,6 +1,6 @@
 use dmd_domain::{
-    AttendanceStatus, CampaignId, CharacterId, PlaySession, PlaySessionId, PlaySessionStatus,
-    PlayerId, SessionParticipant, WorldInstant,
+    AttendanceStatus, CampaignId, CampaignState, CharacterId, PlaySession, PlaySessionId,
+    PlaySessionStatus, PlayerId, SessionParticipant, WorldInstant,
 };
 use sqlx::{Row, SqlitePool};
 use thiserror::Error;
@@ -10,8 +10,12 @@ use uuid::Uuid;
 pub enum SessionStoreError {
     #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
-    #[error("play session violates domain shape invariants")]
-    InvalidShape,
+    #[error("cannot persist a play session against invalid world state")]
+    InvalidWorldState,
+    #[error("play session violates shape or world-reference invariants")]
+    InvalidSession,
+    #[error("play session has too many participants to persist an ordinal")]
+    ParticipantOrdinalOverflow,
     #[error("invalid UUID stored in {field}: {source}")]
     InvalidUuid {
         field: &'static str,
@@ -24,67 +28,16 @@ pub enum SessionStoreError {
     InvalidAttendanceStatus(String),
 }
 
-pub async fn ensure_session_schema(pool: &SqlitePool) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        r#"
-        CREATE TABLE IF NOT EXISTS play_sessions (
-            id TEXT PRIMARY KEY NOT NULL,
-            campaign_id TEXT NOT NULL,
-            display_name TEXT NOT NULL,
-            status TEXT NOT NULL CHECK (status IN ('active', 'closed')),
-            started_at_world INTEGER NOT NULL,
-            ended_at_world INTEGER NULL
-        )
-        "#,
-    )
-    .execute(pool)
-    .await?;
-
-    sqlx::query(
-        r#"
-        CREATE UNIQUE INDEX IF NOT EXISTS ux_play_sessions_one_active_per_campaign
-        ON play_sessions(campaign_id)
-        WHERE status = 'active'
-        "#,
-    )
-    .execute(pool)
-    .await?;
-
-    sqlx::query(
-        r#"
-        CREATE TABLE IF NOT EXISTS play_session_participants (
-            session_id TEXT NOT NULL,
-            ordinal INTEGER NOT NULL,
-            player_id TEXT NOT NULL,
-            character_id TEXT NULL,
-            attendance TEXT NOT NULL CHECK (attendance IN ('present', 'absent')),
-            PRIMARY KEY (session_id, player_id),
-            FOREIGN KEY (session_id) REFERENCES play_sessions(id) ON DELETE CASCADE
-        )
-        "#,
-    )
-    .execute(pool)
-    .await?;
-
-    sqlx::query(
-        r#"
-        CREATE UNIQUE INDEX IF NOT EXISTS ux_play_session_character_assignment
-        ON play_session_participants(session_id, character_id)
-        WHERE character_id IS NOT NULL
-        "#,
-    )
-    .execute(pool)
-    .await?;
-
-    Ok(())
-}
-
 pub async fn save_play_session(
     pool: &SqlitePool,
+    state: &CampaignState,
     session: &PlaySession,
 ) -> Result<(), SessionStoreError> {
-    if !session.validate_shape().is_empty() {
-        return Err(SessionStoreError::InvalidShape);
+    if !state.validate().is_empty() {
+        return Err(SessionStoreError::InvalidWorldState);
+    }
+    if !session.validate_against_state(state).is_empty() {
+        return Err(SessionStoreError::InvalidSession);
     }
 
     let mut transaction = pool.begin().await?;
@@ -116,6 +69,8 @@ pub async fn save_play_session(
         .await?;
 
     for (ordinal, participant) in session.participants.iter().enumerate() {
+        let ordinal = i64::try_from(ordinal)
+            .map_err(|_| SessionStoreError::ParticipantOrdinalOverflow)?;
         sqlx::query(
             r#"
             INSERT INTO play_session_participants (
@@ -124,7 +79,7 @@ pub async fn save_play_session(
             "#,
         )
         .bind(session.id.0.to_string())
-        .bind(i64::try_from(ordinal).expect("participant ordinal must fit in i64"))
+        .bind(ordinal)
         .bind(participant.player_id.0.to_string())
         .bind(participant.character_id.map(|id| id.0.to_string()))
         .bind(encode_attendance(participant.attendance))
@@ -252,49 +207,114 @@ fn parse_uuid(value: &str, field: &'static str) -> Result<Uuid, SessionStoreErro
 #[cfg(test)]
 mod tests {
     use super::*;
-    use sqlx::sqlite::SqlitePoolOptions;
+    use crate::migrate_sqlite;
+    use dmd_domain::{
+        Campaign, CampaignStatus, Character, CharacterStatus, EntityExistence, EntityId, EntityKind,
+        Player, VersionedRef, WorldClock, WorldEntity,
+    };
+    use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+    use std::str::FromStr;
 
     async fn test_pool() -> SqlitePool {
+        let options = SqliteConnectOptions::from_str("sqlite::memory:")
+            .expect("valid SQLite URL")
+            .foreign_keys(true);
         let pool = SqlitePoolOptions::new()
             .max_connections(1)
-            .connect("sqlite::memory:")
+            .connect_with(options)
             .await
             .expect("in-memory SQLite should open");
-        ensure_session_schema(&pool)
+        migrate_sqlite(&pool)
             .await
-            .expect("session schema should initialize");
+            .expect("session migration should initialize");
         pool
     }
 
-    fn active_session(campaign_id: CampaignId, label: &str) -> PlaySession {
+    fn empty_state() -> CampaignState {
+        let campaign_id = CampaignId::new();
+        CampaignState::empty(
+            Campaign {
+                id: campaign_id,
+                display_name: "Persistence Test Campaign".into(),
+                status: CampaignStatus::Active,
+                world_seed: 99,
+                ruleset: VersionedRef {
+                    id: "test.rules".into(),
+                    version: "1".into(),
+                },
+                content_packs: vec![],
+            },
+            WorldClock {
+                now: WorldInstant(100),
+                calendar_id: "test.calendar".into(),
+            },
+        )
+    }
+
+    fn add_participant(state: &mut CampaignState, with_character: bool) -> SessionParticipant {
+        let player = Player {
+            id: PlayerId::new(),
+            campaign_id: state.campaign_id(),
+            display_name: "Test Player".into(),
+        };
+        state.players.insert(player.id, player.clone());
+
+        let character_id = if with_character {
+            let entity = WorldEntity {
+                id: EntityId::new(),
+                campaign_id: state.campaign_id(),
+                display_name: "Test Character".into(),
+                kind: EntityKind::Character,
+                existence: EntityExistence::Present,
+                location_id: None,
+            };
+            state.entities.insert(entity.id, entity.clone());
+            let character = Character {
+                id: CharacterId::new(),
+                entity_id: entity.id,
+                campaign_id: state.campaign_id(),
+                controlling_player_id: Some(player.id),
+                display_name: "Test Character".into(),
+                status: CharacterStatus::Active,
+            };
+            state.characters.insert(character.id, character.clone());
+            Some(character.id)
+        } else {
+            None
+        };
+
+        SessionParticipant {
+            player_id: player.id,
+            character_id,
+            attendance: if with_character {
+                AttendanceStatus::Present
+            } else {
+                AttendanceStatus::Absent
+            },
+        }
+    }
+
+    fn active_session(state: &mut CampaignState, label: &str) -> PlaySession {
+        let present = add_participant(state, true);
+        let absent = add_participant(state, false);
         PlaySession {
             id: PlaySessionId::new(),
-            campaign_id,
+            campaign_id: state.campaign_id(),
             display_name: label.into(),
             status: PlaySessionStatus::Active,
-            started_at_world: WorldInstant(100),
+            started_at_world: state.clock.now,
             ended_at_world: None,
-            participants: vec![
-                SessionParticipant {
-                    player_id: PlayerId::new(),
-                    character_id: Some(CharacterId::new()),
-                    attendance: AttendanceStatus::Present,
-                },
-                SessionParticipant {
-                    player_id: PlayerId::new(),
-                    character_id: None,
-                    attendance: AttendanceStatus::Absent,
-                },
-            ],
+            participants: vec![present, absent],
         }
     }
 
     #[tokio::test]
     async fn session_round_trips_through_sqlite() {
         let pool = test_pool().await;
-        let session = active_session(CampaignId::new(), "Session 1");
+        let mut state = empty_state();
+        let session = active_session(&mut state, "Session 1");
 
-        save_play_session(&pool, &session)
+        save_play_session(&pool, &state, &session)
             .await
             .expect("session should save");
         let loaded = load_play_session(&pool, session.id)
@@ -306,39 +326,63 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn invalid_session_references_are_rejected_before_sql() {
+        let pool = test_pool().await;
+        let state = empty_state();
+        let session = PlaySession {
+            id: PlaySessionId::new(),
+            campaign_id: state.campaign_id(),
+            display_name: "Invalid".into(),
+            status: PlaySessionStatus::Active,
+            started_at_world: state.clock.now,
+            ended_at_world: None,
+            participants: vec![SessionParticipant {
+                player_id: PlayerId::new(),
+                character_id: Some(CharacterId::new()),
+                attendance: AttendanceStatus::Present,
+            }],
+        };
+
+        assert!(matches!(
+            save_play_session(&pool, &state, &session).await,
+            Err(SessionStoreError::InvalidSession)
+        ));
+    }
+
+    #[tokio::test]
     async fn only_one_active_session_is_allowed_per_campaign() {
         let pool = test_pool().await;
-        let campaign_id = CampaignId::new();
-        let first = active_session(campaign_id, "First");
-        let second = active_session(campaign_id, "Second");
+        let mut state = empty_state();
+        let first = active_session(&mut state, "First");
+        let second = active_session(&mut state, "Second");
 
-        save_play_session(&pool, &first)
+        save_play_session(&pool, &state, &first)
             .await
             .expect("first active session should save");
-        assert!(save_play_session(&pool, &second).await.is_err());
+        assert!(save_play_session(&pool, &state, &second).await.is_err());
     }
 
     #[tokio::test]
     async fn closing_a_session_allows_the_next_one_to_start() {
         let pool = test_pool().await;
-        let campaign_id = CampaignId::new();
-        let mut first = active_session(campaign_id, "First");
-        save_play_session(&pool, &first)
+        let mut state = empty_state();
+        let mut first = active_session(&mut state, "First");
+        save_play_session(&pool, &state, &first)
             .await
             .expect("first active session should save");
 
         first.status = PlaySessionStatus::Closed;
         first.ended_at_world = Some(WorldInstant(150));
-        save_play_session(&pool, &first)
+        save_play_session(&pool, &state, &first)
             .await
             .expect("first session should close");
 
-        let second = active_session(campaign_id, "Second");
-        save_play_session(&pool, &second)
+        let second = active_session(&mut state, "Second");
+        save_play_session(&pool, &state, &second)
             .await
             .expect("next active session should save");
 
-        let loaded = load_active_play_session(&pool, campaign_id)
+        let loaded = load_active_play_session(&pool, state.campaign_id())
             .await
             .expect("active session lookup should succeed")
             .expect("second session should be active");
