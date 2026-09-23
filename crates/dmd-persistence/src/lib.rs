@@ -1,4 +1,4 @@
-use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
+use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
 use std::str::FromStr;
 
 pub async fn open_sqlite(database_url: &str) -> Result<SqlitePool, sqlx::Error> {
