@@ -1,6 +1,6 @@
 # ADR 013 — Derivative query projections
 
-Status: accepted for Gate 1
+Status: proposed for Gate 1
 
 ## Context
 
@@ -14,7 +14,7 @@ The current domain model already contains campaign/clock metadata, players, char
 
 Projection rows are derivative indexes only. They never authorize gameplay transitions and they are never replay input. Authoritative recovery remains the accepted snapshot plus contiguous append-only journal path defined by ADR 012, with `campaign_state_current` retained as the current materialized recovery artifact.
 
-Every campaign projection has a `projection_heads` row containing the campaign id, state schema version, applied event sequence, and expected row counts for each projected record family. Query entrypoints verify that the projection head matches the authoritative materialized head and that the record-family counts still match before returning projected results. Missing, stale, or count-corrupt projection state fails closed.
+Every campaign projection has a `projection_heads` row containing the campaign id, state schema version, applied event sequence, and expected row counts for each projected record family, including exactly one campaign/clock metadata row. Query entrypoints verify that the projection head matches the authoritative materialized head and that the record-family counts still match before returning projected results. Missing, stale, or count-corrupt projection state fails closed.
 
 ### Projected record families
 
