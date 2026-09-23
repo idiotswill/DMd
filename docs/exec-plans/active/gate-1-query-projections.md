@@ -82,8 +82,9 @@ Build the production-intended normalized/materialized query projection layer req
 - 2026-09-23 — Direct malformed `campaign_state_current.state_json` must not make authoritative snapshot/journal recovery impossible. Corrupt materialized JSON therefore invalidates projections without being parsed.
 - 2026-09-23 — Rebuild CAS compares against the materialized sequence observed before replay, not the replayed sequence, so stale materialized metadata is repairable while concurrent accepted movement still fails safely.
 - 2026-09-23 — A normalized `world_seed` column was removed during full-diff review because SQLite JSON numeric extraction cannot safely represent the complete Rust `u64` range; the exact seed remains in record JSON until there is a proven exact relational query requirement/storage contract.
-- 2026-09-23 — Coordination boundary held: no lifecycle or content-manifest implementation was introduced, and no cross-branch contract blocker was discovered.
+- 2026-09-23 — Coordination boundary held: no lifecycle or content-manifest implementation was introduced.
 - 2026-09-23 — Human review #5296159424 found that campaign/clock metadata was omitted from completeness counting and ADR 013 was prematurely marked accepted. The fix adds a checked `campaigns_count = 1`, validates the actual `projection_campaigns` row count, adds deletion/rebuild regression coverage, and returns ADR 013 to proposed status pending explicit approval.
+- 2026-09-23 — Review #5296159424 also identified an integration collision: parallel PR #9 currently uses migration `0006`, and PRs #9/#10/#11 currently introduce ADR 013. This branch will not privately renumber around other workers. Control recommends merging PR #10 first after approval, then rebasing/renumbering #9/#11 before their final review; duplicate migration/ADR identifiers must not merge independently.
 
 ## Validation
 
@@ -99,7 +100,7 @@ Build the production-intended normalized/materialized query projection layer req
 - Projection head/count validation catches missing rows, extra rows, stale heads, and malformed recovery invalidation. It does not checksum every record payload against replay history, so arbitrary manual same-count in-place SQLite tampering is not independently detected by query reads. Replay-backed rebuild remains the repair path; production application writes are constrained to the trigger-maintained path.
 - Exact unsigned `world_seed` remains record-local JSON rather than a lossy SQLite numeric projection until a concrete exact-query/storage requirement exists.
 - ADR 013 remains proposed and must not be marked accepted until explicit human approval.
-- No unresolved cross-branch blocker is known.
+- Cross-branch integration ordering is now explicit: PR #10 should land before #9/#11 are rebased and their colliding migration/ADR identifiers are renumbered.
 
 ## Next action
 
