@@ -9,7 +9,10 @@ use dmd_persistence::{
     JournalStoreError, commit_campaign_transition, initialize_campaign_state, load_command_audit,
     migrate_sqlite,
 };
-use sqlx::{Row, sqlite::{SqliteConnectOptions, SqlitePoolOptions}};
+use sqlx::{
+    Row,
+    sqlite::{SqliteConnectOptions, SqlitePoolOptions},
+};
 
 async fn test_pool() -> sqlx::SqlitePool {
     let options = SqliteConnectOptions::from_str("sqlite::memory:")
@@ -119,7 +122,9 @@ async fn transition_rejects_corrupt_current_state_provenance_before_writing() {
         source_event_id: missing_event,
     };
     corrupt.claims.insert(claim.id, claim);
-    let corrupt_json = corrupt.encode_json().expect("corrupt fixture should encode");
+    let corrupt_json = corrupt
+        .encode_json()
+        .expect("corrupt fixture should encode");
     sqlx::query("UPDATE campaign_state_current SET state_json = ? WHERE campaign_id = ?")
         .bind(corrupt_json)
         .bind(corrupt.campaign_id().0.to_string())
@@ -150,16 +155,17 @@ async fn transition_rejects_corrupt_current_state_provenance_before_writing() {
     .fetch_one(&pool)
     .await
     .expect("state head should remain readable");
-    let sequence: i64 = row.try_get("applied_event_sequence").expect("sequence column");
+    let sequence: i64 = row
+        .try_get("applied_event_sequence")
+        .expect("sequence column");
     assert_eq!(sequence, 1);
 
-    let event_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM event_journal WHERE campaign_id = ?",
-    )
-    .bind(after_first.campaign_id().0.to_string())
-    .fetch_one(&pool)
-    .await
-    .expect("event count should load");
+    let event_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM event_journal WHERE campaign_id = ?")
+            .bind(after_first.campaign_id().0.to_string())
+            .fetch_one(&pool)
+            .await
+            .expect("event count should load");
     assert_eq!(event_count, 1);
     assert!(
         load_command_audit(&pool, second_meta.id)
@@ -205,11 +211,12 @@ async fn journal_history_rejects_direct_deletes() {
     .await
     .expect("second event should commit");
 
-    let cause_delete = sqlx::query("DELETE FROM event_causes WHERE campaign_id = ? AND event_id = ?")
-        .bind(initial.campaign_id().0.to_string())
-        .bind(second_event.0.to_string())
-        .execute(&pool)
-        .await;
+    let cause_delete =
+        sqlx::query("DELETE FROM event_causes WHERE campaign_id = ? AND event_id = ?")
+            .bind(initial.campaign_id().0.to_string())
+            .bind(second_event.0.to_string())
+            .execute(&pool)
+            .await;
     assert!(cause_delete.is_err(), "causal history must be append-only");
 
     let event_delete = sqlx::query("DELETE FROM event_journal WHERE id = ?")
@@ -233,27 +240,24 @@ async fn journal_history_rejects_direct_deletes() {
         "campaign deletion must wait for an explicit aggregate-purge lifecycle path"
     );
 
-    let state_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM campaign_state_current WHERE campaign_id = ?",
-    )
-    .bind(initial.campaign_id().0.to_string())
-    .fetch_one(&pool)
-    .await
-    .expect("state count should load");
-    let event_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM event_journal WHERE campaign_id = ?",
-    )
-    .bind(initial.campaign_id().0.to_string())
-    .fetch_one(&pool)
-    .await
-    .expect("event count should load");
-    let cause_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM event_causes WHERE campaign_id = ?",
-    )
-    .bind(initial.campaign_id().0.to_string())
-    .fetch_one(&pool)
-    .await
-    .expect("cause count should load");
+    let state_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current WHERE campaign_id = ?")
+            .bind(initial.campaign_id().0.to_string())
+            .fetch_one(&pool)
+            .await
+            .expect("state count should load");
+    let event_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM event_journal WHERE campaign_id = ?")
+            .bind(initial.campaign_id().0.to_string())
+            .fetch_one(&pool)
+            .await
+            .expect("event count should load");
+    let cause_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM event_causes WHERE campaign_id = ?")
+            .bind(initial.campaign_id().0.to_string())
+            .fetch_one(&pool)
+            .await
+            .expect("cause count should load");
 
     assert_eq!(state_count, 1);
     assert_eq!(event_count, 2);
