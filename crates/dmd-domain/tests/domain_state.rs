@@ -57,6 +57,7 @@ fn add_character(state: &mut CampaignState, name: &str, status: CharacterStatus)
             CharacterStatus::Retired => EntityExistence::Retired,
             CharacterStatus::Active | CharacterStatus::Absent => EntityExistence::Present,
         },
+        location_id: None,
     };
     let entity_id = entity.id;
     state.entities.insert(entity_id, entity);
@@ -80,6 +81,8 @@ fn split_party_can_have_multiple_simultaneous_scenes() {
     let south = add_location(&mut state, "South Room");
     let first = add_character(&mut state, "First", CharacterStatus::Active);
     let second = add_character(&mut state, "Second", CharacterStatus::Active);
+    state.entities.get_mut(&first).unwrap().location_id = Some(north);
+    state.entities.get_mut(&second).unwrap().location_id = Some(south);
 
     for (location_id, entity_id) in [(north, first), (south, second)] {
         let scene = Scene {
@@ -120,6 +123,7 @@ fn a_claim_does_not_become_world_truth() {
         display_name: "Witness".into(),
         kind: EntityKind::Npc,
         existence: EntityExistence::Present,
+        location_id: Some(location_id),
     };
     let witness_id = witness.id;
     state.entities.insert(witness_id, witness);
@@ -148,6 +152,7 @@ fn campaign_state_snapshot_round_trips_without_identity_loss() {
     let mut state = new_state();
     let location_id = add_location(&mut state, "Harbor District");
     let entity_id = add_character(&mut state, "Traveler", CharacterStatus::Active);
+    state.entities.get_mut(&entity_id).unwrap().location_id = Some(location_id);
     let scene = Scene {
         id: SceneId::new(),
         campaign_id: state.campaign_id(),
