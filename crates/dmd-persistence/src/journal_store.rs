@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
 use dmd_domain::{
-    AgentRef, BeliefBasis, CampaignId, CampaignState, CommandId, CommandIssuer, CommandMeta,
-    EncodedPendingEvent, EntityId, EventId, EventMeta, EventSource, FactionId, PlaySessionId,
-    PlayerId, SerializedRecord, WorldInstant, CURRENT_STATE_SCHEMA_VERSION,
+    AgentRef, BeliefBasis, CURRENT_STATE_SCHEMA_VERSION, CampaignId, CampaignState, CommandId,
+    CommandIssuer, CommandMeta, EncodedPendingEvent, EntityId, EventId, EventMeta, EventSource,
+    FactionId, PlaySessionId, PlayerId, SerializedRecord, WorldInstant,
 };
 use sqlx::{Row, SqlitePool, sqlite::SqliteRow};
 use thiserror::Error;
@@ -106,13 +106,17 @@ pub enum JournalStoreError {
     },
     #[error("resulting state references missing journal event: {0:?}")]
     MissingStateEventReference(EventId),
-    #[error("resulting state event reference {event_id:?} belongs to campaign {actual:?}, not {expected:?}")]
+    #[error(
+        "resulting state event reference {event_id:?} belongs to campaign {actual:?}, not {expected:?}"
+    )]
     StateEventReferenceCampaignMismatch {
         event_id: EventId,
         expected: CampaignId,
         actual: CampaignId,
     },
-    #[error("journal head is inconsistent with materialized state: state={state_sequence}, count={event_count}, max={max_sequence}")]
+    #[error(
+        "journal head is inconsistent with materialized state: state={state_sequence}, count={event_count}, max={max_sequence}"
+    )]
     CorruptJournalHead {
         state_sequence: u64,
         event_count: u64,
@@ -146,14 +150,16 @@ pub async fn initialize_campaign_state(
             state.applied_event_sequence,
         ));
     }
+    if let Some(event_id) = collect_state_event_references(state).into_iter().next() {
+        return Err(JournalStoreError::MissingStateEventReference(event_id));
+    }
 
     let campaign_id = state.campaign_id().0.to_string();
-    let already_exists = sqlx::query_scalar::<_, i64>(
-        "SELECT 1 FROM campaign_state_current WHERE campaign_id = ?",
-    )
-    .bind(&campaign_id)
-    .fetch_optional(pool)
-    .await?;
+    let already_exists =
+        sqlx::query_scalar::<_, i64>("SELECT 1 FROM campaign_state_current WHERE campaign_id = ?")
+            .bind(&campaign_id)
+            .fetch_optional(pool)
+            .await?;
     if already_exists.is_some() {
         return Err(JournalStoreError::StateAlreadyInitialized);
     }
@@ -254,17 +260,17 @@ pub async fn commit_campaign_transition(
     validate_command_authority(&current_state, command_meta)?;
     validate_session(&mut transaction, command_meta).await?;
 
-    let duplicate_command = sqlx::query_scalar::<_, String>(
-        "SELECT campaign_id FROM command_audit WHERE id = ?",
-    )
-    .bind(command_meta.id.0.to_string())
-    .fetch_optional(&mut *transaction)
-    .await?;
+    let duplicate_command =
+        sqlx::query_scalar::<_, String>("SELECT campaign_id FROM command_audit WHERE id = ?")
+            .bind(command_meta.id.0.to_string())
+            .fetch_optional(&mut *transaction)
+            .await?;
     if duplicate_command.is_some() {
         return Err(JournalStoreError::DuplicateCommandId(command_meta.id));
     }
 
-    let event_count = u64::try_from(events.len()).map_err(|_| JournalStoreError::SequenceOverflow)?;
+    let event_count =
+        u64::try_from(events.len()).map_err(|_| JournalStoreError::SequenceOverflow)?;
     let target_sequence = current_state
         .applied_event_sequence
         .checked_add(event_count)
@@ -288,12 +294,11 @@ pub async fn commit_campaign_transition(
             return Err(JournalStoreError::MissingEventActor(actor));
         }
 
-        let existing = sqlx::query_scalar::<_, String>(
-            "SELECT campaign_id FROM event_journal WHERE id = ?",
-        )
-        .bind(event.id.0.to_string())
-        .fetch_optional(&mut *transaction)
-        .await?;
+        let existing =
+            sqlx::query_scalar::<_, String>("SELECT campaign_id FROM event_journal WHERE id = ?")
+                .bind(event.id.0.to_string())
+                .fetch_optional(&mut *transaction)
+                .await?;
         if existing.is_some() {
             return Err(JournalStoreError::EventAlreadyExists(event.id));
         }
@@ -324,17 +329,17 @@ pub async fn commit_campaign_transition(
                 continue;
             }
 
-            let parent = sqlx::query(
-                "SELECT campaign_id, sequence FROM event_journal WHERE id = ?",
-            )
-            .bind(cause.0.to_string())
-            .fetch_optional(&mut *transaction)
-            .await?;
+            let parent =
+                sqlx::query("SELECT campaign_id, sequence FROM event_journal WHERE id = ?")
+                    .bind(cause.0.to_string())
+                    .fetch_optional(&mut *transaction)
+                    .await?;
             let Some(parent) = parent else {
                 return Err(JournalStoreError::MissingCausalParent(*cause));
             };
             let parent_campaign: String = parent.try_get("campaign_id")?;
-            let parent_campaign = CampaignId(parse_uuid(&parent_campaign, "event_journal.campaign_id")?);
+            let parent_campaign =
+                CampaignId(parse_uuid(&parent_campaign, "event_journal.campaign_id")?);
             if parent_campaign != command_meta.campaign_id {
                 return Err(JournalStoreError::CausalParentCampaignMismatch {
                     event_id: *cause,
@@ -342,7 +347,8 @@ pub async fn commit_campaign_transition(
                     actual: parent_campaign,
                 });
             }
-            let parent_sequence = stored_u64(parent.try_get("sequence")?, "event_journal.sequence")?;
+            let parent_sequence =
+                stored_u64(parent.try_get("sequence")?, "event_journal.sequence")?;
             if parent_sequence >= child_sequence {
                 return Err(JournalStoreError::FutureCausalParent {
                     event_id: event.id,
@@ -422,7 +428,8 @@ pub async fn commit_campaign_transition(
         .await?;
 
         for (ordinal, cause) in event.caused_by_event_ids.iter().enumerate() {
-            let ordinal = i64::try_from(ordinal).map_err(|_| JournalStoreError::SequenceOverflow)?;
+            let ordinal =
+                i64::try_from(ordinal).map_err(|_| JournalStoreError::SequenceOverflow)?;
             sqlx::query(
                 "INSERT INTO event_causes (campaign_id, event_id, cause_event_id, ordinal) VALUES (?, ?, ?, ?)",
             )
@@ -481,7 +488,8 @@ pub async fn load_journal_events(
         }
 
         let stored_campaign: String = row.try_get("campaign_id")?;
-        let stored_campaign = CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
+        let stored_campaign =
+            CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
         let session_id = parse_optional_play_session(row.try_get("session_id")?)?;
         let actor = decode_agent(row.try_get("actor_kind")?, row.try_get("actor_id")?)?;
         let command_id: String = row.try_get("command_id")?;
@@ -497,7 +505,10 @@ pub async fn load_journal_events(
                 source: decode_event_source(&source)?,
                 actor,
                 caused_by_event_ids: causes,
-                command_id: Some(CommandId(parse_uuid(&command_id, "event_journal.command_id")?)),
+                command_id: Some(CommandId(parse_uuid(
+                    &command_id,
+                    "event_journal.command_id",
+                )?)),
             },
             payload: StoredPayload {
                 kind: row.try_get("event_kind")?,
@@ -599,7 +610,10 @@ fn ensure_supported_state(state: &CampaignState) -> Result<(), JournalStoreError
 
 fn decode_state_row(row: &SqliteRow) -> Result<CampaignState, JournalStoreError> {
     let campaign_id: String = row.try_get("campaign_id")?;
-    let campaign_id = CampaignId(parse_uuid(&campaign_id, "campaign_state_current.campaign_id")?);
+    let campaign_id = CampaignId(parse_uuid(
+        &campaign_id,
+        "campaign_state_current.campaign_id",
+    )?);
     let schema_version = stored_u32(
         row.try_get("schema_version")?,
         "campaign_state_current.schema_version",
@@ -712,25 +726,7 @@ async fn validate_state_event_references(
     state: &CampaignState,
     pending_events: &HashMap<EventId, usize>,
 ) -> Result<(), JournalStoreError> {
-    let mut references = HashSet::new();
-    for fact in state.facts.values() {
-        if let Some(event_id) = fact.source_event_id {
-            references.insert(event_id);
-        }
-    }
-    for claim in state.claims.values() {
-        references.insert(claim.source_event_id);
-    }
-    for belief in state.beliefs.values() {
-        for basis in &belief.basis {
-            collect_belief_event_references(basis, &mut references);
-        }
-    }
-    for knowledge in &state.knowledge {
-        references.insert(knowledge.source_event_id);
-    }
-
-    for event_id in references {
+    for event_id in collect_state_event_references(state) {
         if pending_events.contains_key(&event_id) {
             continue;
         }
@@ -753,6 +749,27 @@ async fn validate_state_event_references(
     }
 
     Ok(())
+}
+
+fn collect_state_event_references(state: &CampaignState) -> HashSet<EventId> {
+    let mut references = HashSet::new();
+    for fact in state.facts.values() {
+        if let Some(event_id) = fact.source_event_id {
+            references.insert(event_id);
+        }
+    }
+    for claim in state.claims.values() {
+        references.insert(claim.source_event_id);
+    }
+    for belief in state.beliefs.values() {
+        for basis in &belief.basis {
+            collect_belief_event_references(basis, &mut references);
+        }
+    }
+    for knowledge in &state.knowledge {
+        references.insert(knowledge.source_event_id);
+    }
+    references
 }
 
 fn collect_belief_event_references(basis: &BeliefBasis, references: &mut HashSet<EventId>) {
@@ -827,8 +844,8 @@ fn decode_issuer(kind: &str, player_id: Option<&str>) -> Result<CommandIssuer, J
 
 fn encode_agent(agent: Option<AgentRef>) -> (Option<&'static str>, Option<String>) {
     match agent {
-        Some(AgentRef::Entity(entity_id)) => ("entity".into(), Some(entity_id.0.to_string())),
-        Some(AgentRef::Faction(faction_id)) => ("faction".into(), Some(faction_id.0.to_string())),
+        Some(AgentRef::Entity(entity_id)) => (Some("entity"), Some(entity_id.0.to_string())),
+        Some(AgentRef::Faction(faction_id)) => (Some("faction"), Some(faction_id.0.to_string())),
         None => (None, None),
     }
 }
@@ -840,12 +857,10 @@ fn decode_agent(
     match (kind.as_deref(), id.as_deref()) {
         (None, None) => Ok(None),
         (Some("entity"), Some(id)) => Ok(Some(AgentRef::Entity(EntityId(parse_uuid(
-            id,
-            "actor_id",
+            id, "actor_id",
         )?)))),
         (Some("faction"), Some(id)) => Ok(Some(AgentRef::Faction(FactionId(parse_uuid(
-            id,
-            "actor_id",
+            id, "actor_id",
         )?)))),
         _ => Err(JournalStoreError::InvalidActor),
     }

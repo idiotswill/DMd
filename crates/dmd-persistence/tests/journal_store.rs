@@ -3,7 +3,8 @@ use std::{fs, path::Path};
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, Claim, ClaimId, ClaimSource, CommandId,
     CommandIssuer, CommandMeta, EventId, EventSource, FactValue, PendingEvent, PlaySessionId,
-    Proposition, SerializedRecord, SubjectRef, VersionedRef, WorldClock, WorldDuration, WorldInstant,
+    Proposition, SerializedRecord, SubjectRef, VersionedRef, WorldClock, WorldDuration,
+    WorldInstant,
 };
 use dmd_persistence::{
     JournalStoreError, commit_campaign_transition, initialize_campaign_state, load_campaign_state,
@@ -99,10 +100,45 @@ async fn initializes_and_loads_clean_campaign_state() {
         .expect("state should exist");
 
     assert_eq!(loaded, state);
-    assert!(load_journal_events(&pool, state.campaign_id(), 0)
-        .await
-        .expect("journal should load")
-        .is_empty());
+    assert!(
+        load_journal_events(&pool, state.campaign_id(), 0)
+            .await
+            .expect("journal should load")
+            .is_empty()
+    );
+}
+
+#[tokio::test]
+async fn initial_state_cannot_reference_nonexistent_journal_event() {
+    let pool = test_pool().await;
+    let mut initial = state();
+    let missing_event = EventId::new();
+    let claim = Claim {
+        id: ClaimId::new(),
+        campaign_id: initial.campaign_id(),
+        source: ClaimSource::Unknown,
+        proposition: Proposition {
+            subject: SubjectRef::Campaign(initial.campaign_id()),
+            predicate: "preexisting_claim".into(),
+            value: FactValue::Boolean(true),
+        },
+        made_at: initial.clock.now,
+        source_event_id: missing_event,
+    };
+    initial.claims.insert(claim.id, claim);
+
+    let result = initialize_campaign_state(&pool, &initial).await;
+
+    assert!(matches!(
+        result,
+        Err(JournalStoreError::MissingStateEventReference(event_id)) if event_id == missing_event
+    ));
+    assert!(
+        load_campaign_state(&pool, initial.campaign_id())
+            .await
+            .expect("lookup should succeed")
+            .is_none()
+    );
 }
 
 #[tokio::test]
@@ -282,10 +318,12 @@ async fn future_causal_parent_rejects_whole_batch() {
         .expect("state should load")
         .expect("state should exist");
     assert_eq!(loaded, current);
-    assert!(load_journal_events(&pool, current.campaign_id(), 0)
-        .await
-        .expect("journal should load")
-        .is_empty());
+    assert!(
+        load_journal_events(&pool, current.campaign_id(), 0)
+            .await
+            .expect("journal should load")
+            .is_empty()
+    );
 }
 
 #[tokio::test]
@@ -437,10 +475,12 @@ async fn rollback_and_reopen_exposes_only_last_committed_state() {
         .expect("state should recover")
         .expect("state should exist");
     assert_eq!(loaded, current);
-    assert!(load_journal_events(&reopened, current.campaign_id(), 0)
-        .await
-        .expect("journal should load")
-        .is_empty());
+    assert!(
+        load_journal_events(&reopened, current.campaign_id(), 0)
+            .await
+            .expect("journal should load")
+            .is_empty()
+    );
     reopened.close().await;
     cleanup_sqlite_files(&path);
 }

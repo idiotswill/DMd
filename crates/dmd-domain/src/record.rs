@@ -65,7 +65,9 @@ impl fmt::Display for RecordCodecError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::EmptyKind => formatter.write_str("record kind must not be empty"),
-            Self::ZeroSchemaVersion => formatter.write_str("record schema version must be positive"),
+            Self::ZeroSchemaVersion => {
+                formatter.write_str("record schema version must be positive")
+            }
             Self::Json(error) => write!(formatter, "record JSON codec failed: {error}"),
         }
     }
