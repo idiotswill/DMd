@@ -268,7 +268,11 @@ impl fmt::Display for CatalogLoadError {
                 write!(formatter, "I/O error at {}: {message}", path.display())
             }
             Self::SymlinkNotAllowed(path) => {
-                write!(formatter, "content paths do not follow symlink {}", path.display())
+                write!(
+                    formatter,
+                    "content paths do not follow symlink {}",
+                    path.display()
+                )
             }
             Self::MalformedManifest { path, message } => {
                 write!(

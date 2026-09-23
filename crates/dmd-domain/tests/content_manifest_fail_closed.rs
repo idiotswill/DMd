@@ -1,4 +1,7 @@
-use std::{env, fs, path::{Path, PathBuf}};
+use std::{
+    env, fs,
+    path::{Path, PathBuf},
+};
 
 use dmd_domain::{
     CONTENT_MANIFEST_FILENAME, CURRENT_CONTENT_CONTRACT_VERSION,
