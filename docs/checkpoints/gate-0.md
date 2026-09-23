@@ -18,6 +18,7 @@ Gate 0 exists to prevent expensive architectural rewrites before gameplay implem
 - The generic domain/state model is documented and represented by serializable Rust types.
 - Tabletop play-session history is documented as a durable ledger separate from the materialized world snapshot.
 - Conversation/provider output must become typed intent candidates and typed core commands before authoritative resolution.
+- trusted command issuer identity is separate from the optional in-world actor; language/STT providers cannot establish player authority by naming an actor.
 
 ### Genericity
 A clean campaign can be created without imported campaign content. Production types use stable generated IDs rather than character names as identifiers.
@@ -36,6 +37,7 @@ The following must hold:
 - durable events contain campaign, sequence, world time, source, and causal/correlation metadata where relevant;
 - language/AI output cannot directly become authoritative state without command validation/resolution;
 - core command handlers receive typed payloads rather than dispatching on string command names or arbitrary JSON;
+- every command carries trusted `CommandIssuer` authority metadata (`Player`, `System`, `Admin`, or `Import`) independently of its optional world actor;
 - historical tabletop sessions do not accumulate inside `CampaignState` snapshots;
 - commands/events may correlate to a stable `PlaySessionId`, while between-session simulation remains valid without a session ID.
 
@@ -59,6 +61,7 @@ The following must hold:
 - a claim does not become a fact merely because an NPC said it;
 - beliefs carry a basis and confidence;
 - durable materialized knowledge records have stable `KnowledgeId` identity rather than being addressed by display text or collection position;
+- duplicate `KnowledgeId` values are invalid even though repeated holder/target merge semantics remain intentionally deferred;
 - knowledge can belong to one entity/faction or be explicitly shared with the table;
 - out-of-character chatter is not implicitly promoted to character knowledge.
 
@@ -70,7 +73,7 @@ The following must hold:
 ### Conversation requirements
 The transcript regression corpus must cover messy natural tabletop interaction, including compound declarations, corrections, roll results, split scenes, macro travel instructions, and genuine ambiguity.
 
-Provider-specific JSON or grammar output is adapter data. It must be parsed into application-defined typed candidates before core validation; a provider schema is not the authoritative game-command schema.
+Provider-specific JSON or grammar output is adapter data. It must be parsed into application-defined typed candidates before core validation; a provider schema is not the authoritative game-command schema. Speaker/issuer identity comes from trusted application/session metadata, not from provider interpretation of names or text.
 
 ### Human review
 Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
@@ -90,6 +93,7 @@ Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 13. Can a long-running campaign accumulate many tabletop sessions without making every world snapshot carry that historical session ledger?
 14. Can the language provider be replaced without forcing core handlers to understand a provider's JSON shape or magic command strings?
 15. Can durable information/knowledge records be migrated or corrected by stable identity rather than relying on vector position or display text?
+16. Can the system distinguish who authorized a command from which entity/faction acts in-world, so a provider cannot gain control of another player's PC by merely naming it?
 
 The current risk/status assessment is maintained in `docs/checkpoints/gate-0-review.md`.
 
