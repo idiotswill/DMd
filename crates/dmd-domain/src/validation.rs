@@ -189,15 +189,15 @@ impl CampaignState {
                         ));
                     }
 
-                    if let Some(entity) = entity {
-                        if entity.location_id != Some(scene.location_id) {
-                            violations.push(StateInvariantViolation::SceneLocationMismatch {
-                                entity_id: presence.entity_id,
-                                scene_id: scene.id,
-                                scene_location_id: scene.location_id,
-                                entity_location_id: entity.location_id,
-                            });
-                        }
+                    if let Some(entity) = entity
+                        && entity.location_id != Some(scene.location_id)
+                    {
+                        violations.push(StateInvariantViolation::SceneLocationMismatch {
+                            entity_id: presence.entity_id,
+                            scene_id: scene.id,
+                            scene_location_id: scene.location_id,
+                            entity_location_id: entity.location_id,
+                        });
                     }
                 }
             }
