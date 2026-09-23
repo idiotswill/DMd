@@ -5,6 +5,7 @@ CREATE TABLE projection_heads (
     campaign_id TEXT PRIMARY KEY NOT NULL,
     state_schema_version INTEGER NOT NULL CHECK (state_schema_version > 0),
     applied_event_sequence INTEGER NOT NULL CHECK (applied_event_sequence >= 0),
+    campaigns_count INTEGER NOT NULL CHECK (campaigns_count = 1),
     players_count INTEGER NOT NULL CHECK (players_count >= 0),
     characters_count INTEGER NOT NULL CHECK (characters_count >= 0),
     entities_count INTEGER NOT NULL CHECK (entities_count >= 0),
@@ -203,7 +204,7 @@ AFTER INSERT ON campaign_state_current
 WHEN json_valid(NEW.state_json)
 BEGIN
     INSERT INTO projection_heads VALUES (
-        NEW.campaign_id, NEW.schema_version, NEW.applied_event_sequence,
+        NEW.campaign_id, NEW.schema_version, NEW.applied_event_sequence, 1,
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.players')),
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.characters')),
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.entities')),
@@ -243,7 +244,7 @@ WHEN json_valid(NEW.state_json)
 BEGIN
     DELETE FROM projection_heads WHERE campaign_id = NEW.campaign_id;
     INSERT INTO projection_heads VALUES (
-        NEW.campaign_id, NEW.schema_version, NEW.applied_event_sequence,
+        NEW.campaign_id, NEW.schema_version, NEW.applied_event_sequence, 1,
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.players')),
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.characters')),
         (SELECT COUNT(*) FROM json_each(NEW.state_json, '$.entities')),
