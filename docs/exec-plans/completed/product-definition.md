@@ -1,10 +1,11 @@
 # Product definition hardening
 
-Status: in progress
+Status: complete
 Branch: `lab0/product-definition`
-PR: pending
+PR: #3
 Base: `lab0/dev-lab` @ `1b393f7f3c4e6cf7f5634276835eaa5a86339338`
-Verified head: pending
+Verified implementation head: `fc3ea9fba97e4eef61d475561cd25478b4683926`
+Verified CI: run 126 — pass
 
 ## Objective
 
@@ -27,6 +28,7 @@ Make the repository unambiguous that DMd must become a fully functioning, produc
 
 ## Relevant durable context
 
+- `docs/product-definition.md`
 - `AGENTS.md`
 - `README.md`
 - `docs/checkpoints/gate-0.md`
@@ -41,15 +43,16 @@ Make the repository unambiguous that DMd must become a fully functioning, produc
 - [x] Off-screen actors/processes can advance when justified; the world does not freeze awaiting player triggers.
 - [x] The Director may surface/select meaningful developments but may not invent unsupported world truth merely for pacing.
 - [x] A campaign remains capable of meaningful new play after authored starting material is exhausted.
-- [x] Endurance acceptance covers multi-session persistence, unscripted divergence, PC death/replacement, prolonged in-world time, explainable world changes, and a second unrelated campaign.
+- [x] Endurance acceptance covers multi-session persistence, unscripted divergence, PC death/replacement, prolonged in-world time, explainable world changes, natural voice/table interaction, physical dice, and a second unrelated campaign.
 - [x] Experiments/prototypes are permitted only as isolated research; production gates cannot be satisfied by throwaway paths.
-- [ ] Final branch passes CI on the exact head.
+- [x] Complete PR diff inspected; no existing Gate 0 domain semantics changed.
+- [x] Implementation head passed fast verification, Clippy, tests, Rust 1.88 MSRV, and genericity guard in CI run 126.
 
 ## Planned slices
 
 1. Add product definition and final/endurance acceptance contract. — complete
 2. Strengthen `AGENTS.md` and README navigation. — complete
-3. Inspect complete diff, verify CI, update PR/plan. — in progress
+3. Inspect complete diff, verify CI, update PR/plan. — complete
 
 ## Decision log
 
@@ -57,18 +60,21 @@ Make the repository unambiguous that DMd must become a fully functioning, produc
 - 2026-09-23 — No numbered future gate document is added yet; `docs/product-definition.md` is the cross-gate contract and later gates must trace acceptance back to it.
 - 2026-09-23 — Quests are not required to originate as scripted quest records; player-facing quests/leads may emerge from simulated situations and information propagation.
 - 2026-09-23 — Code/tests define current implementation truth; the product definition defines the required end-state. An incomplete build cannot redefine the finish line.
+- 2026-09-23 — Physical dice and natural voice/table interaction are explicit final endurance requirements, not optional release-target caveats.
 
 ## Validation
 
-- `./scripts/verify-fast` — pending
-- `./scripts/verify` — pending
-- CI — pending
+- `./scripts/verify-fast` equivalent — pass in CI run 126
+- `./scripts/verify` equivalent (fast verification + Clippy + tests + genericity) — pass in CI run 126
+- Rust 1.88 MSRV — pass in CI run 126
+- CI — pass on implementation head `fc3ea9fba97e4eef61d475561cd25478b4683926`
 
 ## Risks / blockers
 
 - Product acceptance is intentionally demanding; later gate plans must decompose it without weakening the end-state contract.
 - Some living-world mechanisms remain architecturally deferred; this document defines required behavior, not a premature implementation schema.
+- The product-definition change itself requires explicit human acceptance before merge.
 
 ## Next action
 
-Open a stacked PR against `lab0/dev-lab`, inspect the complete diff, and verify CI on the exact head.
+Human review/acceptance of PR #3. After acceptance, preserve this product contract as the cross-gate finish line and require future gate plans to trace against it.
