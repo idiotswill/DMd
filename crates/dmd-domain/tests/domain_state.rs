@@ -1,8 +1,9 @@
 use dmd_domain::{
-    Campaign, CampaignId, CampaignState, CampaignStatus, Character, CharacterId, CharacterStatus,
-    Claim, ClaimId, EntityExistence, EntityId, EntityKind, EventId, FactValue, Location,
-    LocationId, Player, PlayerId, PresenceRole, Proposition, Scene, SceneId, SceneMode,
-    ScenePresence, SceneStatus, SubjectRef, VersionedRef, WorldClock, WorldEntity, WorldInstant,
+    AgentRef, Campaign, CampaignId, CampaignState, CampaignStatus, Character, CharacterId,
+    CharacterStatus, Claim, ClaimId, ClaimSource, EntityExistence, EntityId, EntityKind, EventId,
+    FactValue, Location, LocationId, Player, PlayerId, PresenceRole, Proposition, Scene, SceneId,
+    SceneMode, ScenePresence, SceneStatus, SubjectRef, VersionedRef, WorldClock, WorldEntity,
+    WorldInstant,
 };
 
 fn new_state() -> CampaignState {
@@ -131,7 +132,7 @@ fn a_claim_does_not_become_world_truth() {
     let claim = Claim {
         id: ClaimId::new(),
         campaign_id: state.campaign_id(),
-        speaker: witness_id,
+        source: ClaimSource::Agent(AgentRef::Entity(witness_id)),
         proposition: Proposition {
             subject: SubjectRef::Location(location_id),
             predicate: "destroyed".into(),
