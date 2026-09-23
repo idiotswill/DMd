@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+if grep -RniE 'Sylvara|Torrek|Milo|Cassian|Eirenhold|Veyrath|Asterra' crates/; then
+  echo 'Campaign-specific current-campaign terms are forbidden in production Rust crates.' >&2
+  exit 1
+fi
+
+echo 'Genericity guard passed.'
