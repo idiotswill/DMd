@@ -5,9 +5,14 @@ use dmd_domain::{
     CommandIssuer, CommandMeta, EncodedPendingEvent, EntityId, EventId, EventMeta, EventSource,
     FactionId, PlaySessionId, PlayerId, SerializedRecord, WorldInstant,
 };
-use sqlx::{Row, SqlitePool, sqlite::SqliteRow};
+use sqlx::{
+    Row, SqlitePool,
+    sqlite::{SqliteConnection, SqliteRow},
+};
 use thiserror::Error;
 use uuid::Uuid;
+
+const EVENT_LOOKUP_BATCH_SIZE: usize = 400;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CommitReceipt {
@@ -37,6 +42,12 @@ pub struct StoredCommandAudit {
     pub resolution_explanation: String,
     pub resulting_event_sequence: u64,
     pub emitted_event_ids: Vec<EventId>,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct ExistingEventMetadata {
+    campaign_id: CampaignId,
+    sequence: u64,
 }
 
 #[derive(Debug, Error)]
@@ -294,24 +305,29 @@ pub async fn commit_campaign_transition(
         {
             return Err(JournalStoreError::MissingEventActor(actor));
         }
+    }
 
-        let existing =
-            sqlx::query_scalar::<_, String>("SELECT campaign_id FROM event_journal WHERE id = ?")
-                .bind(event.id.0.to_string())
-                .fetch_optional(&mut *transaction)
-                .await?;
-        if existing.is_some() {
-            return Err(JournalStoreError::EventAlreadyExists(event.id));
-        }
+    let pending_ids = event_positions.keys().copied().collect::<HashSet<_>>();
+    let existing_pending = load_existing_event_metadata(&mut *transaction, &pending_ids).await?;
+    if let Some(event_id) = existing_pending.keys().next() {
+        return Err(JournalStoreError::EventAlreadyExists(*event_id));
     }
 
     validate_state_event_references(
         &mut transaction,
         command_meta.campaign_id,
         next_state,
-        &event_positions,
+        &pending_ids,
     )
     .await?;
+
+    let external_causes = events
+        .iter()
+        .flat_map(|event| event.caused_by_event_ids.iter().copied())
+        .filter(|event_id| !event_positions.contains_key(event_id))
+        .collect::<HashSet<_>>();
+    let external_cause_metadata =
+        load_existing_event_metadata(&mut *transaction, &external_causes).await?;
 
     for (index, event) in events.iter().enumerate() {
         let child_sequence = sequence_at(current_state.applied_event_sequence, index)?;
@@ -330,27 +346,17 @@ pub async fn commit_campaign_transition(
                 continue;
             }
 
-            let parent =
-                sqlx::query("SELECT campaign_id, sequence FROM event_journal WHERE id = ?")
-                    .bind(cause.0.to_string())
-                    .fetch_optional(&mut *transaction)
-                    .await?;
-            let Some(parent) = parent else {
+            let Some(parent) = external_cause_metadata.get(cause) else {
                 return Err(JournalStoreError::MissingCausalParent(*cause));
             };
-            let parent_campaign: String = parent.try_get("campaign_id")?;
-            let parent_campaign =
-                CampaignId(parse_uuid(&parent_campaign, "event_journal.campaign_id")?);
-            if parent_campaign != command_meta.campaign_id {
+            if parent.campaign_id != command_meta.campaign_id {
                 return Err(JournalStoreError::CausalParentCampaignMismatch {
                     event_id: *cause,
                     expected: command_meta.campaign_id,
-                    actual: parent_campaign,
+                    actual: parent.campaign_id,
                 });
             }
-            let parent_sequence =
-                stored_u64(parent.try_get("sequence")?, "event_journal.sequence")?;
-            if parent_sequence >= child_sequence {
+            if parent.sequence >= child_sequence {
                 return Err(JournalStoreError::FutureCausalParent {
                     event_id: event.id,
                     parent_id: *cause,
@@ -457,6 +463,7 @@ pub async fn load_journal_events(
     campaign_id: CampaignId,
     after_sequence: u64,
 ) -> Result<Vec<StoredJournalEvent>, JournalStoreError> {
+    let after_sequence = sequence_to_i64(after_sequence)?;
     let rows = sqlx::query(
         r#"
         SELECT id, campaign_id, sequence, session_id, occurred_at_world, source,
@@ -467,27 +474,43 @@ pub async fn load_journal_events(
         "#,
     )
     .bind(campaign_id.0.to_string())
-    .bind(sequence_to_i64(after_sequence)?)
+    .bind(after_sequence)
     .fetch_all(pool)
     .await?;
+
+    let cause_rows = sqlx::query(
+        r#"
+        SELECT causes.event_id, causes.cause_event_id
+        FROM event_causes AS causes
+        JOIN event_journal AS child
+          ON child.campaign_id = causes.campaign_id
+         AND child.id = causes.event_id
+        WHERE causes.campaign_id = ? AND child.sequence > ?
+        ORDER BY child.sequence ASC, causes.ordinal ASC
+        "#,
+    )
+    .bind(campaign_id.0.to_string())
+    .bind(after_sequence)
+    .fetch_all(pool)
+    .await?;
+
+    let mut causes_by_event = HashMap::<EventId, Vec<EventId>>::new();
+    for row in cause_rows {
+        let event_id: String = row.try_get("event_id")?;
+        let cause_event_id: String = row.try_get("cause_event_id")?;
+        causes_by_event
+            .entry(EventId(parse_uuid(&event_id, "event_causes.event_id")?))
+            .or_default()
+            .push(EventId(parse_uuid(
+                &cause_event_id,
+                "event_causes.cause_event_id",
+            )?));
+    }
 
     let mut events = Vec::with_capacity(rows.len());
     for row in rows {
         let event_id_string: String = row.try_get("id")?;
         let event_id = EventId(parse_uuid(&event_id_string, "event_journal.id")?);
-        let cause_rows = sqlx::query(
-            "SELECT cause_event_id FROM event_causes WHERE campaign_id = ? AND event_id = ? ORDER BY ordinal ASC",
-        )
-        .bind(campaign_id.0.to_string())
-        .bind(&event_id_string)
-        .fetch_all(pool)
-        .await?;
-        let mut causes = Vec::with_capacity(cause_rows.len());
-        for cause_row in cause_rows {
-            let value: String = cause_row.try_get("cause_event_id")?;
-            causes.push(EventId(parse_uuid(&value, "event_causes.cause_event_id")?));
-        }
-
         let stored_campaign: String = row.try_get("campaign_id")?;
         let stored_campaign =
             CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
@@ -505,7 +528,7 @@ pub async fn load_journal_events(
                 occurred_at: WorldInstant(row.try_get("occurred_at_world")?),
                 source: decode_event_source(&source)?,
                 actor,
-                caused_by_event_ids: causes,
+                caused_by_event_ids: causes_by_event.remove(&event_id).unwrap_or_default(),
                 command_id: Some(CommandId(parse_uuid(
                     &command_id,
                     "event_journal.command_id",
@@ -675,25 +698,14 @@ async fn verify_loaded_state_event_references(
     campaign_id: CampaignId,
     state: &CampaignState,
 ) -> Result<(), JournalStoreError> {
-    for event_id in collect_state_event_references(state) {
-        let row = sqlx::query("SELECT campaign_id FROM event_journal WHERE id = ?")
-            .bind(event_id.0.to_string())
-            .fetch_optional(pool)
-            .await?;
-        let Some(row) = row else {
-            return Err(JournalStoreError::MissingStateEventReference(event_id));
-        };
-        let stored_campaign: String = row.try_get("campaign_id")?;
-        let actual = CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
-        if actual != campaign_id {
-            return Err(JournalStoreError::StateEventReferenceCampaignMismatch {
-                event_id,
-                expected: campaign_id,
-                actual,
-            });
-        }
+    let references = collect_state_event_references(state);
+    if references.is_empty() {
+        return Ok(());
     }
-    Ok(())
+
+    let mut connection = pool.acquire().await?;
+    let metadata = load_existing_event_metadata(&mut *connection, &references).await?;
+    validate_reference_campaigns(campaign_id, &references, &metadata)
 }
 
 fn validate_command_authority(
@@ -751,30 +763,73 @@ async fn validate_state_event_references(
     transaction: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
     campaign_id: CampaignId,
     state: &CampaignState,
-    pending_events: &HashMap<EventId, usize>,
+    pending_events: &HashSet<EventId>,
 ) -> Result<(), JournalStoreError> {
-    for event_id in collect_state_event_references(state) {
-        if pending_events.contains_key(&event_id) {
-            continue;
+    let references = collect_state_event_references(state)
+        .into_iter()
+        .filter(|event_id| !pending_events.contains(event_id))
+        .collect::<HashSet<_>>();
+    if references.is_empty() {
+        return Ok(());
+    }
+
+    let metadata = load_existing_event_metadata(&mut **transaction, &references).await?;
+    validate_reference_campaigns(campaign_id, &references, &metadata)
+}
+
+async fn load_existing_event_metadata(
+    connection: &mut SqliteConnection,
+    event_ids: &HashSet<EventId>,
+) -> Result<HashMap<EventId, ExistingEventMetadata>, JournalStoreError> {
+    let ids = event_ids.iter().copied().collect::<Vec<_>>();
+    let mut metadata = HashMap::with_capacity(ids.len());
+
+    for chunk in ids.chunks(EVENT_LOOKUP_BATCH_SIZE) {
+        let placeholders = vec!["?"; chunk.len()].join(", ");
+        let sql = format!(
+            "SELECT id, campaign_id, sequence FROM event_journal WHERE id IN ({placeholders})"
+        );
+        let mut query = sqlx::query(&sql);
+        for event_id in chunk {
+            query = query.bind(event_id.0.to_string());
         }
-        let row = sqlx::query("SELECT campaign_id FROM event_journal WHERE id = ?")
-            .bind(event_id.0.to_string())
-            .fetch_optional(&mut **transaction)
-            .await?;
-        let Some(row) = row else {
-            return Err(JournalStoreError::MissingStateEventReference(event_id));
-        };
-        let stored_campaign: String = row.try_get("campaign_id")?;
-        let actual = CampaignId(parse_uuid(&stored_campaign, "event_journal.campaign_id")?);
-        if actual != campaign_id {
-            return Err(JournalStoreError::StateEventReferenceCampaignMismatch {
-                event_id,
-                expected: campaign_id,
-                actual,
-            });
+
+        for row in query.fetch_all(&mut *connection).await? {
+            let id: String = row.try_get("id")?;
+            let campaign_id: String = row.try_get("campaign_id")?;
+            metadata.insert(
+                EventId(parse_uuid(&id, "event_journal.id")?),
+                ExistingEventMetadata {
+                    campaign_id: CampaignId(parse_uuid(
+                        &campaign_id,
+                        "event_journal.campaign_id",
+                    )?),
+                    sequence: stored_u64(row.try_get("sequence")?, "event_journal.sequence")?,
+                },
+            );
         }
     }
 
+    Ok(metadata)
+}
+
+fn validate_reference_campaigns(
+    expected: CampaignId,
+    references: &HashSet<EventId>,
+    metadata: &HashMap<EventId, ExistingEventMetadata>,
+) -> Result<(), JournalStoreError> {
+    for event_id in references {
+        let Some(found) = metadata.get(event_id) else {
+            return Err(JournalStoreError::MissingStateEventReference(*event_id));
+        };
+        if found.campaign_id != expected {
+            return Err(JournalStoreError::StateEventReferenceCampaignMismatch {
+                event_id: *event_id,
+                expected,
+                actual: found.campaign_id,
+            });
+        }
+    }
     Ok(())
 }
 
