@@ -16,6 +16,7 @@ Gate 0 exists to prevent expensive architectural rewrites before gameplay implem
 - Current campaign material is explicitly research/regression input only.
 - The generic domain/state model is documented and represented by serializable Rust types.
 - Tabletop play-session history is documented as a durable ledger separate from the materialized world snapshot.
+- Conversation/provider output must become typed intent candidates and typed core commands before authoritative resolution.
 
 ### Genericity
 A clean campaign can be created without imported campaign content. Production types use stable generated IDs rather than character names as identifiers.
@@ -33,6 +34,7 @@ The following must hold:
 - world time is setting-agnostic and not hardcoded to one calendar;
 - durable events contain campaign, sequence, world time, source, and causal/correlation metadata where relevant;
 - language/AI output cannot directly become authoritative state without command validation/resolution;
+- core command handlers receive typed payloads rather than dispatching on string command names or arbitrary JSON;
 - historical tabletop sessions do not accumulate inside `CampaignState` snapshots;
 - commands/events may correlate to a stable `PlaySessionId`, while between-session simulation remains valid without a session ID.
 
@@ -66,6 +68,8 @@ The following must hold:
 ### Conversation requirements
 The transcript regression corpus must cover messy natural tabletop interaction, including compound declarations, corrections, roll results, split scenes, macro travel instructions, and genuine ambiguity.
 
+Provider-specific JSON or grammar output is adapter data. It must be parsed into application-defined typed candidates before core validation; a provider schema is not the authoritative game-command schema.
+
 ### Human review
 Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 
@@ -82,5 +86,6 @@ Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 11. Can two simultaneous scenes be represented without pretending the whole party has one location?
 12. Can an item be owned by one entity while physically carried by another?
 13. Can a long-running campaign accumulate many tabletop sessions without making every world snapshot carry that historical session ledger?
+14. Can the language provider be replaced without forcing core handlers to understand a provider's JSON shape or magic command strings?
 
 Gate 0 should not be marked complete merely because the code compiles.
