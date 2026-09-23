@@ -36,6 +36,7 @@ id_type!(EffectId);
 id_type!(FactId);
 id_type!(ClaimId);
 id_type!(BeliefId);
+id_type!(KnowledgeId);
 id_type!(EvidenceId);
 id_type!(EventId);
 id_type!(CommandId);
