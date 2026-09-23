@@ -190,3 +190,14 @@ fn campaign_state_snapshot_round_trips_without_identity_loss() {
     assert_eq!(decoded.applied_event_sequence, 17);
     assert!(decoded.validate().is_empty());
 }
+
+#[test]
+fn campaign_state_snapshot_excludes_play_session_history() {
+    let state = new_state();
+    let encoded = serde_json::to_value(&state).expect("campaign snapshot should serialize");
+    let object = encoded
+        .as_object()
+        .expect("campaign snapshot root should be a JSON object");
+
+    assert!(!object.contains_key("sessions"));
+}
