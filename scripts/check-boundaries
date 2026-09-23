@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$repo_root"
+
+fail_dependency() {
+  local manifest="$1"
+  local dependency="$2"
+  if grep -Eq "^[[:space:]]*${dependency}[[:space:]]*=" "$manifest"; then
+    echo "Architecture boundary violation: $manifest must not depend on $dependency." >&2
+    exit 1
+  fi
+}
+
+# Domain is the innermost shared contract and must not acquire dependencies on higher layers.
+for dependency in dmd-core dmd-rules dmd-persistence dmd-conversation; do
+  fail_dependency crates/dmd-domain/Cargo.toml "$dependency"
+done
+
+# Conversation interprets input into candidates; it does not validate rules or write state.
+for dependency in dmd-core dmd-rules dmd-persistence sqlx; do
+  fail_dependency crates/dmd-conversation/Cargo.toml "$dependency"
+done
+
+# Core may eventually orchestrate rules, but authoritative persistence stays behind the app boundary.
+for dependency in dmd-persistence dmd-conversation sqlx; do
+  fail_dependency crates/dmd-core/Cargo.toml "$dependency"
+done
+
+# Rules resolution is deterministic/domain-facing and must not reach infrastructure or conversation.
+for dependency in dmd-persistence dmd-conversation sqlx; do
+  fail_dependency crates/dmd-rules/Cargo.toml "$dependency"
+done
+
+# Persistence consumes domain contracts; it must not import interpretation or rule/application logic.
+for dependency in dmd-core dmd-rules dmd-conversation; do
+  fail_dependency crates/dmd-persistence/Cargo.toml "$dependency"
+done
+
+if grep -RniE '(^|[^[:alnum:]_])dmd_persistence(::|[^[:alnum:]_])' \
+  crates/dmd-domain/src crates/dmd-conversation/src crates/dmd-core/src crates/dmd-rules/src; then
+  echo 'Architecture boundary violation: non-persistence production crates must not import dmd_persistence.' >&2
+  exit 1
+fi
+
+echo 'Architecture boundary guard passed.'

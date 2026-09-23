@@ -1,6 +1,9 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId, WorldInstant};
+use crate::{
+    AgentRef, CampaignId, CommandId, EventId, PlaySessionId, RecordCodecError, SerializedRecord,
+    WorldInstant,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum EventSource {
@@ -10,6 +13,48 @@ pub enum EventSource {
     ProceduralGeneration,
     AdminCorrection,
     Import,
+}
+
+/// Event produced by a resolver before persistence allocates its campaign sequence.
+///
+/// Campaign/session/command correlation is inherited from the trusted command at commit time, so
+/// a resolver cannot accidentally persist an event under a different campaign or authority path.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PendingEvent<T> {
+    pub id: EventId,
+    pub occurred_at: WorldInstant,
+    pub source: EventSource,
+    pub actor: Option<AgentRef>,
+    pub caused_by_event_ids: Vec<EventId>,
+    pub payload: T,
+}
+
+impl<T: Serialize> PendingEvent<T> {
+    pub fn encode(
+        &self,
+        kind: impl Into<String>,
+        schema_version: u32,
+    ) -> Result<EncodedPendingEvent, RecordCodecError> {
+        Ok(EncodedPendingEvent {
+            id: self.id,
+            occurred_at: self.occurred_at,
+            source: self.source.clone(),
+            actor: self.actor,
+            caused_by_event_ids: self.caused_by_event_ids.clone(),
+            payload: SerializedRecord::encode(kind, schema_version, &self.payload)?,
+        })
+    }
+}
+
+/// Persistence-ready event whose payload was serialized from a typed value.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct EncodedPendingEvent {
+    pub id: EventId,
+    pub occurred_at: WorldInstant,
+    pub source: EventSource,
+    pub actor: Option<AgentRef>,
+    pub caused_by_event_ids: Vec<EventId>,
+    pub payload: SerializedRecord,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -68,5 +113,25 @@ mod tests {
 
         assert_eq!(meta.caused_by_event_ids, vec![first, second]);
         assert!(matches!(meta.actor, Some(AgentRef::Faction(_))));
+    }
+
+    #[test]
+    fn pending_event_encodes_typed_payload_without_assigning_sequence() {
+        let event = PendingEvent {
+            id: EventId::new(),
+            occurred_at: WorldInstant(20),
+            source: EventSource::RuleResolution,
+            actor: None,
+            caused_by_event_ids: vec![],
+            payload: 7_i64,
+        };
+
+        let encoded = event
+            .encode("test.value_changed", 1)
+            .expect("typed payload should encode");
+
+        assert_eq!(encoded.id, event.id);
+        assert_eq!(encoded.payload.kind(), "test.value_changed");
+        assert_eq!(encoded.payload.schema_version(), 1);
     }
 }

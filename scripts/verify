@@ -15,4 +15,7 @@ cargo test --locked --workspace
 echo '==> genericity guard'
 ./scripts/check-genericity
 
+echo '==> architecture boundary guard'
+./scripts/check-boundaries
+
 echo 'Full verification passed.'

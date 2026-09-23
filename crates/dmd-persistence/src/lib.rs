@@ -1,5 +1,7 @@
+pub mod journal_store;
 pub mod session_store;
 
+pub use journal_store::*;
 pub use session_store::*;
 
 use sqlx::{

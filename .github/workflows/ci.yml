@@ -41,3 +41,10 @@ jobs:
       - uses: actions/checkout@v7
       - name: Prevent campaign-specific production assumptions
         run: ./scripts/check-genericity
+
+  architecture-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Enforce authoritative dependency boundaries
+        run: ./scripts/check-boundaries

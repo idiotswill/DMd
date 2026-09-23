@@ -1,33 +1,8 @@
-use dmd_domain::{AgentRef, CampaignId, CommandId, EventId, PlaySessionId, PlayerId};
+pub use dmd_domain::{CommandIssuer, CommandMeta};
+
+use dmd_domain::{CommandId, EventId, RecordCodecError, SerializedRecord};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-
-/// Trusted authority context attached by the application/input layer.
-///
-/// A language/STT provider may propose an actor or action, but it must never infer or overwrite
-/// who is authorized to issue the command. Player identity comes from the trusted table/client
-/// channel (for example a player-specific push-to-talk client), not from generated text.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum CommandIssuer {
-    Player(PlayerId),
-    System,
-    Admin,
-    Import,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct CommandMeta {
-    pub id: CommandId,
-    pub campaign_id: CampaignId,
-    /// None is valid for between-session simulation, imports, and maintenance commands.
-    pub session_id: Option<PlaySessionId>,
-    /// Trusted authority principal. This is distinct from the in-world actor.
-    pub issuer: CommandIssuer,
-    /// Entity/faction attempting the in-world action, if the command has one.
-    pub actor: Option<AgentRef>,
-    /// Journal sequence observed when the command was constructed.
-    pub expected_event_sequence: u64,
-}
 
 /// A typed request to mutate or resolve authoritative game state.
 ///
@@ -47,6 +22,20 @@ impl<C> GameCommand<C> {
             meta: self.meta,
             payload: f(self.payload),
         }
+    }
+}
+
+impl<C: Serialize> GameCommand<C> {
+    /// Serialize an already-typed command payload for durable audit storage.
+    ///
+    /// The provider layer cannot use this to bypass typing: it first has to construct `C` through
+    /// the application/core validation boundary.
+    pub fn encode_payload(
+        &self,
+        kind: impl Into<String>,
+        schema_version: u32,
+    ) -> Result<SerializedRecord, RecordCodecError> {
+        SerializedRecord::encode(kind, schema_version, &self.payload)
     }
 }
 
@@ -76,35 +65,53 @@ pub trait CommandHandler<C> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use dmd_domain::{CampaignId, PlayerId};
 
     #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
     struct TestMove {
         steps: u32,
     }
 
-    #[test]
-    fn typed_command_mapping_preserves_authority_metadata() {
-        let command_id = CommandId::new();
-        let campaign_id = CampaignId::new();
-        let player_id = PlayerId::new();
-        let command = GameCommand {
+    fn command() -> GameCommand<TestMove> {
+        GameCommand {
             meta: CommandMeta {
-                id: command_id,
-                campaign_id,
+                id: CommandId::new(),
+                campaign_id: CampaignId::new(),
                 session_id: None,
-                issuer: CommandIssuer::Player(player_id),
+                issuer: CommandIssuer::Player(PlayerId::new()),
                 actor: None,
                 expected_event_sequence: 41,
             },
             payload: TestMove { steps: 3 },
-        };
+        }
+    }
+
+    #[test]
+    fn typed_command_mapping_preserves_authority_metadata() {
+        let command = command();
+        let command_id = command.meta.id;
+        let campaign_id = command.meta.campaign_id;
+        let issuer = command.meta.issuer;
 
         let mapped = command.map_payload(|payload| payload.steps);
 
         assert_eq!(mapped.meta.id, command_id);
         assert_eq!(mapped.meta.campaign_id, campaign_id);
-        assert_eq!(mapped.meta.issuer, CommandIssuer::Player(player_id));
+        assert_eq!(mapped.meta.issuer, issuer);
         assert_eq!(mapped.meta.expected_event_sequence, 41);
         assert_eq!(mapped.payload, 3);
+    }
+
+    #[test]
+    fn typed_command_payload_can_be_encoded_for_audit() {
+        let command = command();
+        let encoded = command
+            .encode_payload("test.move", 1)
+            .expect("typed command should encode");
+        let decoded: TestMove = encoded.decode().expect("payload should decode");
+
+        assert_eq!(encoded.kind(), "test.move");
+        assert_eq!(encoded.schema_version(), 1);
+        assert_eq!(decoded, command.payload);
     }
 }
