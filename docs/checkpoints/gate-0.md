@@ -15,6 +15,7 @@ Gate 0 exists to prevent expensive architectural rewrites before gameplay implem
 - AI is an adapter and never authoritative state.
 - Current campaign material is explicitly research/regression input only.
 - The generic domain/state model is documented and represented by serializable Rust types.
+- Tabletop play-session history is documented as a durable ledger separate from the materialized world snapshot.
 
 ### Genericity
 A clean campaign can be created without imported campaign content. Production types use stable generated IDs rather than character names as identifiers.
@@ -31,11 +32,21 @@ The following must hold:
 - A snapshot records the last applied event sequence.
 - world time is setting-agnostic and not hardcoded to one calendar;
 - durable events contain campaign, sequence, world time, source, and causal/correlation metadata where relevant;
-- language/AI output cannot directly become authoritative state without command validation/resolution.
+- language/AI output cannot directly become authoritative state without command validation/resolution;
+- historical tabletop sessions do not accumulate inside `CampaignState` snapshots;
+- commands/events may correlate to a stable `PlaySessionId`, while between-session simulation remains valid without a session ID.
+
+### Tabletop session model
+- attendance is session-scoped rather than a permanent character lifecycle status;
+- a player may be present without an assigned character during creation/death/replacement flows;
+- duplicate player and duplicate character assignment within one session are invalid;
+- at most one active tabletop session exists per campaign in persistence;
+- session records can be persisted/reloaded without changing world-state serialization.
 
 ### World and scene model
 - character build identity and world-entity identity are separate;
 - dead/retired characters can remain historical entities rather than being deleted;
+- a retired character may remain alive in the world;
 - more than one scene can coexist for split-party play;
 - standing directives can represent macro play such as “continue until danger/decision/discovery” without repeated micro-prompts;
 - locations use stable IDs and can form a containment hierarchy without relying on display names.
@@ -65,10 +76,11 @@ Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 5. Can the language model be replaced without rewriting rules or persistence?
 6. Is there a clear place for rules, persistence, conversation, simulation, Director, audio, and UI responsibilities without circular ownership?
 7. Are correctness and table enjoyment both explicit test concerns?
-8. Can two unrelated campaigns coexist without sharing IDs, state, knowledge, inventory, or event history?
+8. Can two unrelated campaigns coexist without sharing IDs, state, knowledge, inventory, event history, or play-session history?
 9. Can a witness lie, a character believe the lie, and the world truth remain unchanged?
 10. Can a player character die and a replacement character join without deleting or mutating the dead character's history?
 11. Can two simultaneous scenes be represented without pretending the whole party has one location?
 12. Can an item be owned by one entity while physically carried by another?
+13. Can a long-running campaign accumulate many tabletop sessions without making every world snapshot carry that historical session ledger?
 
 Gate 0 should not be marked complete merely because the code compiles.
