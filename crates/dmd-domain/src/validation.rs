@@ -3,7 +3,7 @@ use std::collections::HashSet;
 use crate::{
     AgentRef, BeliefBasis, CampaignId, CampaignState, CharacterId, CharacterStatus, ClaimSource,
     Custody, EntityExistence, EntityId, EntityKind, FactValue, KnowledgeHolder, KnowledgeTarget,
-    LocationId, Ownership, PlayerId, PresenceRole, SceneId, SceneStatus, SubjectRef,
+    LocationId, Ownership, PresenceRole, SceneId, SceneStatus, SubjectRef,
 };
 
 impl CampaignState {
@@ -565,8 +565,8 @@ fn check_exists(
 mod tests {
     use super::*;
     use crate::{
-        Campaign, CampaignStatus, Character, EntityId, Location, Player, VersionedRef, WorldClock,
-        WorldInstant,
+        Campaign, CampaignStatus, Character, EntityId, Location, Player, PlayerId, VersionedRef,
+        WorldClock, WorldInstant,
     };
 
     fn campaign(id: CampaignId) -> Campaign {
