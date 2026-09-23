@@ -1,6 +1,6 @@
 # ADR 011 — Atomic campaign-state and event-journal persistence
 
-Status: **Proposed for Gate 1 — PR #6**
+Status: **Accepted for Gate 1 Slice A — PR #6, merged as `1230fe89829eeb6c2047c75b22dfb8c4b2c39eb8`**
 
 ## Context
 
@@ -112,4 +112,4 @@ This ADR does **not** claim completion of:
 - rules/content-pack schema migration;
 - gameplay resolvers that produce the transitions.
 
-Those remain Gate 1/later production work. This slice establishes the durable transaction contract they must use.
+Those remain Gate 1/later production work. Slice B owns snapshot migration/replay without changing the atomic authority contract established here.

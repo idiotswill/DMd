@@ -12,35 +12,51 @@ Voice/table UX, complete rules, living-world simulation, procedural materializat
 
 ## Slice A — atomic authoritative commit and journal
 
-PR #6 is the final review path for this slice. PR #4 was the original draft branch and was superseded after repeated concurrent branch movement violated the one-writer-per-branch execution invariant.
+Status: **Accepted and merged**
+
+PR #6 was explicitly approved and merged to `main` as squash commit `1230fe89829eeb6c2047c75b22dfb8c4b2c39eb8`. PR #4 was the original draft path and was closed as superseded.
+
+Accepted properties:
+
+- valid clean campaign initialization at journal sequence 0;
+- atomic material transition commit of resulting state, trusted command audit, immutable events, and causal edges;
+- persistence-owned contiguous per-campaign event sequences;
+- stale-state rejection;
+- campaign/session/issuer/actor validation;
+- same-campaign earlier-event causal constraints;
+- fail-closed state-held event provenance validation;
+- recovery reads state/head/provenance from one SQLite snapshot;
+- later transitions cannot silently heal corrupt current-state provenance;
+- trusted command issuer persists separately from optional in-world actor;
+- direct update/delete of command/event/causal history is rejected at the database layer;
+- conversation/core/rules layers have no direct SQLite/persistence write dependency;
+- full repository verification passed on the exact approved PR head.
+
+Slice A establishes the trustworthy atomic persistence primitive. It does **not** complete save-format evolution, replay, projections, or campaign lifecycle management.
+
+## Slice B — snapshot migration and replay
+
+Status: **Active on `gate1/snapshot-replay`**
 
 Acceptance requires:
 
-- a valid clean campaign can be initialized at journal sequence 0;
-- material transitions commit resulting state, trusted command audit, immutable events, and causal edges atomically;
-- persistence—not resolvers/providers—allocates contiguous per-campaign event sequences;
-- stale `expected_event_sequence` values cannot overwrite newer state;
-- campaign/session/issuer/actor references are validated before commit;
-- causal parents must exist in the same campaign and precede their child;
-- event provenance referenced by materialized state cannot dangle or cross campaigns;
-- recovery reads state/head/provenance from one SQLite snapshot and rejects detectable corruption;
-- a later transition cannot silently heal corrupt current-state provenance;
-- trusted command issuer is persisted separately from optional in-world actor;
-- direct update/delete of command/event/causal history is rejected at the database layer;
-- the conversation/core/rules layers have no direct SQLite/persistence write dependency;
-- existing session-ledger behavior remains green;
-- full repository verification and CI pass on the exact reviewed head.
+- immutable per-campaign snapshots keyed by journal sequence;
+- migration-time backfill of a snapshot at the current materialized head for pre-Slice-B databases;
+- sequence-0 snapshot creation for new campaigns;
+- bounded periodic snapshot creation inside the authoritative transaction path;
+- explicit version-aware `CampaignState` snapshot codec/migration chaining;
+- distinct failure behavior for unsupported future snapshot versions and legacy versions lacking a migration path;
+- replay from the latest snapshot at or before a target sequence using contiguous same-campaign journal events;
+- event semantics delegated to an injected typed applier contract rather than inferred by persistence from arbitrary JSON;
+- fail-closed handling of unsupported event kinds/versions, invalid payloads/transitions, sequence gaps, target/head mismatch, campaign identity changes, schema changes, or invalid final provenance;
+- snapshot rows reject direct update/delete;
+- restart/recovery and failure-mode tests pass through the real persistence path;
+- full repository verification and CI pass on the exact reviewed head;
+- explicit human approval before merge because this extends the save-format compatibility surface.
 
-Completion of Slice A means the production path has a trustworthy atomic persistence primitive. It does **not** mean save-format evolution, replay, or complete campaign lifecycle management is complete.
+Slice B does not claim complete gameplay replay until gameplay subsystems have defined their durable event kinds and typed appliers.
 
-## Remaining Gate 1 blockers after Slice A
-
-### Snapshot migration and replay
-
-- define explicit codecs/migrations between future materialized-state schema versions;
-- load a snapshot at sequence N and replay later events safely;
-- verify recovery when snapshots are old, missing, or rejected;
-- define compatibility/error behavior for unsupported future/legacy save versions.
+## Remaining Gate 1 blockers after Slice B
 
 ### Query/materialized projections
 
