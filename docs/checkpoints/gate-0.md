@@ -14,9 +14,43 @@ Gate 0 exists to prevent expensive architectural rewrites before gameplay implem
 - SQLite transactional persistence + append-only event journal is documented.
 - AI is an adapter and never authoritative state.
 - Current campaign material is explicitly research/regression input only.
+- The generic domain/state model is documented and represented by serializable Rust types.
 
 ### Genericity
-A clean campaign can be created conceptually without any imported campaign content. Production types use stable generated IDs rather than character names as identifiers.
+A clean campaign can be created without imported campaign content. Production types use stable generated IDs rather than character names as identifiers.
+
+The following must hold:
+- duplicate human-readable character names remain legal and distinct;
+- no production type assumes a four-person party;
+- every mutable runtime record is campaign-scoped;
+- cross-campaign records are detected as invalid state;
+- ruleset and content-pack identity/version are campaign data, not engine constants.
+
+### State and provenance
+- `CampaignState` has an explicit schema version.
+- A snapshot records the last applied event sequence.
+- world time is setting-agnostic and not hardcoded to one calendar;
+- durable events contain campaign, sequence, world time, source, and causal/correlation metadata where relevant;
+- language/AI output cannot directly become authoritative state without command validation/resolution.
+
+### World and scene model
+- character build identity and world-entity identity are separate;
+- dead/retired characters can remain historical entities rather than being deleted;
+- more than one scene can coexist for split-party play;
+- standing directives can represent macro play such as “continue until danger/decision/discovery” without repeated micro-prompts;
+- locations use stable IDs and can form a containment hierarchy without relying on display names.
+
+### Knowledge and mystery model
+- world facts, NPC/player claims, beliefs, and knowledge are separate record types;
+- a claim does not become a fact merely because an NPC said it;
+- beliefs carry a basis and confidence;
+- knowledge can belong to one entity or be explicitly shared with the table;
+- out-of-character chatter is not implicitly promoted to character knowledge.
+
+### Inventory model
+- item instance identity is distinct from item definition/content identity;
+- ownership and physical custody are separate facts;
+- borrowed, stolen, hidden, dropped, container-held, missing, and destroyed states do not require a global `Party` inventory bucket.
 
 ### Conversation requirements
 The transcript regression corpus must cover messy natural tabletop interaction, including compound declarations, corrections, roll results, split scenes, macro travel instructions, and genuine ambiguity.
@@ -31,5 +65,10 @@ Before Gate 0 is accepted, a human reviewer should be able to answer yes to:
 5. Can the language model be replaced without rewriting rules or persistence?
 6. Is there a clear place for rules, persistence, conversation, simulation, Director, audio, and UI responsibilities without circular ownership?
 7. Are correctness and table enjoyment both explicit test concerns?
+8. Can two unrelated campaigns coexist without sharing IDs, state, knowledge, inventory, or event history?
+9. Can a witness lie, a character believe the lie, and the world truth remain unchanged?
+10. Can a player character die and a replacement character join without deleting or mutating the dead character's history?
+11. Can two simultaneous scenes be represented without pretending the whole party has one location?
+12. Can an item be owned by one entity while physically carried by another?
 
 Gate 0 should not be marked complete merely because the code compiles.
