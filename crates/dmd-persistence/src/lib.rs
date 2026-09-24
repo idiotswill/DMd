@@ -1,8 +1,10 @@
 pub mod journal_store;
+pub mod projection_store;
 pub mod session_store;
 pub mod snapshot_replay;
 
 pub use journal_store::*;
+pub use projection_store::*;
 pub use session_store::*;
 pub use snapshot_replay::*;
 
