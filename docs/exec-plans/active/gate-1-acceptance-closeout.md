@@ -41,7 +41,7 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - [x] Five stale completed worker plans were archived with zero content changes.
 - [x] Accepted cross-gate technical debt is durably recorded in `docs/tech-debt.md` for carry-forward.
 - [x] Complete PR #14 substantive diff through checkpoint-correction head `0b2b460c460de96f50132e7083f6091f686bf656` was inspected; comparison shows only checkpoint/plan/debt edits plus five zero-change renames and no production/test/schema files.
-- [x] All changes after that substantive review were verified as execution-plan-only reconciliations; no further substantive branch changes are planned before the human decision.
+- [x] Every later branch delta through `1e48a904772f4fac602d7a56c67f069e2b5b4bac` was directly compared and verified as execution-plan-only reconciliation.
 - [ ] Exact-current-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard.
 - [ ] ADR 012 receives explicit human acceptance and its stale status is reconciled.
 - [ ] Gate 1 receives explicit human acceptance of the final evidence.
@@ -70,7 +70,8 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Root `AGENTS.md`, product definition, Gate 1 checkpoint, ADRs 011/012, merged PR records, production boundary code, architecture guard, and relevant integration/regression tests were directly re-read.
 - Post-ADR-reconciliation `main` CI #279 was directly/durably verified green on the base commit.
 - Compare `33bf7b2… → 0b2b460…` shows checkpoint + plan + technical-debt edits and five exact renames with zero additions/deletions; no production, test, schema, migration, Cargo, or script file changed.
-- Every branch delta after `0b2b460…` has been verified as this execution plan only. Exact-head PR #14 CI on the immutable pre-approval head is the remaining technical validation gate.
+- All subsequent pre-approval commits through `1e48a904772f4fac602d7a56c67f069e2b5b4bac` were directly compared as plan-only reconciliation. This commit only freezes that verified review state; no additional branch writes are planned before the human decision.
+- Exact-head PR #14 CI on the resulting immutable pre-approval head is the remaining technical validation gate.
 
 ## Blockers / risks
 - No technical implementation blocker is known.
