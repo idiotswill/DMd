@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 mod rules_runtime;
+mod rules_restore;
 pub use rules_runtime::*;
 
 use dmd_domain::{
@@ -123,6 +124,11 @@ impl CampaignRuntime {
         let catalog = self.load_catalog()?;
         let content = catalog.resolve_campaign(&preflight_state.campaign)?;
         Self::validate_rules(&preflight_state, &content)?;
+        if preflight_state.rules.is_some() || preflight_state.campaign.ruleset.id == "srd-5.2" {
+            let pack = rules_runtime::load_rules_pack(&content)?;
+            rules_restore::validate_rules_export(&upgraded, &pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+        }
 
         // Content preflight happens before raw restore opens its write transaction. Persistence then
         // revalidates the full export and restores atomically; resolution is repeated on the exact

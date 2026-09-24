@@ -250,6 +250,13 @@ impl Fixture {
                 .unwrap(),
             actual.state()
         );
+        let backup = export_campaign(pool, self.state.campaign_id()).await.unwrap();
+        let target = open_sqlite("sqlite::memory:").await.unwrap();
+        let restored = CampaignRuntime::from_content_root(target.clone(), &self.content);
+        assert_eq!(restored.restore_campaign(&backup).await.unwrap().state(), actual.state());
+        assert_eq!(&restored.replay_rules(self.state.campaign_id()).await.unwrap(), actual.state());
+        drop(restored);
+        target.close().await;
     }
 }
 
