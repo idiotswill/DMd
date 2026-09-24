@@ -662,6 +662,20 @@ fn condition_program_retains_source_duration_repeat_save_and_stable_effect_ident
     let effect = spell_condition_effect(&state, &record, at)
         .unwrap()
         .unwrap();
+    let crate::tactical_effects::EffectLifecycleOperation::SetCastingDuration {
+        group,
+        source,
+        expires,
+    } = spell_casting_duration_operation(&record, WorldInstant(106)).unwrap()
+    else {
+        panic!()
+    };
+    assert_eq!(Some(group), record.cast.plan.concentration_group);
+    assert_eq!(source, effect.source);
+    assert_eq!(expires, TacticalEffectExpiry::AtTime(WorldInstant(166)));
+    let mut uncommitted = record.clone();
+    uncommitted.cast.phase = SpellCastPhase::Casting;
+    assert!(spell_casting_duration_operation(&uncommitted, WorldInstant(106)).is_err());
     assert_eq!(
         effect.expires,
         TacticalEffectExpiry::AtTime(WorldInstant(160))
@@ -728,5 +742,43 @@ fn condition_program_retains_source_duration_repeat_save_and_stable_effect_ident
         spell_condition_effect(&state, &record, at)
             .unwrap()
             .is_none()
+    );
+}
+
+#[test]
+fn readied_concentration_duration_starts_at_actual_release_not_at_ready_payment() {
+    let (state, initial, target) = scene("hold-person", 2, "cultist-fanatic");
+    let mut choice = initial.choice.clone();
+    choice.mode = SpellCastMode::Ready {
+        trigger: "The guard draws a weapon".into(),
+    };
+    let plan = plan_spell_cast_at(&state, &initial.origin, &choice, initial.occurrence).unwrap();
+    let selection = SpellTargetChoice::Entities(vec![target]);
+    let bound = bind_spell(&state, &plan, &selection).unwrap();
+    let started = begin_cast(&plan, &context(&plan)).unwrap();
+    let held = step(&started.cast, &context(&plan), SpellCastAdvance::Commit).cast;
+    let record = retain_spell_cast(held.clone(), &bound, selection.clone(), None).unwrap();
+    assert!(spell_casting_duration_operation(&record, WorldInstant(100)).is_err());
+
+    let mut release_context = context(&plan);
+    release_context.now = WorldInstant(106);
+    release_context.current_actor = target;
+    release_context.turn_number += 1;
+    let released = step(&held, &release_context, SpellCastAdvance::ReleaseReady).cast;
+    let record = retain_spell_cast(released, &bound, selection, None).unwrap();
+    let operation = spell_casting_duration_operation(&record, release_context.now).unwrap();
+    assert!(matches!(
+        operation,
+        crate::tactical_effects::EffectLifecycleOperation::SetCastingDuration {
+            group,
+            expires: TacticalEffectExpiry::AtTime(WorldInstant(166)),
+            ..
+        } if Some(group) == plan.concentration_group
+    ));
+    let restored: TacticalCasting =
+        serde_json::from_slice(&serde_json::to_vec(&record).unwrap()).unwrap();
+    assert_eq!(
+        operation,
+        spell_casting_duration_operation(&restored, release_context.now).unwrap()
     );
 }

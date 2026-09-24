@@ -1,6 +1,6 @@
 # Gate 4 — Casting in the shared tactical resolution
 
-Status: **Active; source binding and program leaves drafted, shared queue wiring pending.**
+Status: **Active; source binding and program leaves verified, shared queue wiring pending.**
 Branch: `codex/gate4-casting-integration`; base `37d80442c0f8463040427d483df714e937ee9176`.
 Writer: bootstrap_audit. Root owns application, UI, recovery integration and gate acceptance.
 
@@ -46,9 +46,10 @@ implementation boundary, never a change to gate acceptance.
 
 ## Validation and risks
 
-The forty source casting tests pass on the current helper implementation, including
-sixteen new binding/retention/execution regressions. Strict domain/rules all-target
-Clippy, `cargo fmt --check` and `git diff --check` pass. Logs are retained outside the repository under
+The helper checkpoint `accb95eca478999b80fc4f35707302164f77c708` passed forty source
+casting tests, including sixteen new binding/retention/execution regressions, strict
+domain/rules all-target Clippy, formatting and diff checks. The duration follow-up below
+records its separate results. Logs are retained outside the repository under
 `research/gate4-casting/`. All Rust build use requires the shared build-slot handoff.
 Main risks are double payment, retained reservation
 drift, hidden-target leaks, mismatched shared roll semantics, and pausing outside the
@@ -94,7 +95,39 @@ spell child modules, new records and their exports/tests, not the shared schedul
   Self-location must remain known while sight-dependent self-targets use real senses.
 - Reserved roll tags: physical attacks 7/8; movement falling/landing 9/10; casting 11+.
 
-Next action: obtain the final independent delta review for this helper checkpoint,
-then integrate the coherent movement/opportunity-attack checkpoint and wire actual
-casting stages into the one tactical resolution. The Rust slot has been released to
-root for its application checks; no further builds without the next explicit handoff.
+## Casting-duration follow-up
+
+Root authorized a bounded lifecycle `SetCastingDuration` operation while the shared
+movement/attack checkpoint is completed. It updates only the exact immutable source's
+existing Casting-stage group; active groups, missing groups, a different source, pending
+expiry, infinite expiry and already-due times are rejected unchanged. The canonical
+spell program derives the operation after Commit or Ready release. Installation still
+activates the group, and a cast with no affected targets still needs shared-driver cleanup.
+Two lifecycle regression cases, canonical helper assertions, and a genuine
+Ready/Commit/Release regression now pass: all 41 source spell tests and all 21 lifecycle
+tests passed on this follow-up. Strict domain/rules all-target Clippy, `cargo fmt --check`
+and `git diff --check` passed as well. Logs: `duration-spell-tests.txt`,
+`duration-effect-tests.txt` and `duration-clippy.txt` under the external research directory.
+The earlier helper checkpoint's forty-test evidence is separate from this delta.
+Independent read-only review by environment_audit found no source blocker. The
+shared driver must invoke the duration update exactly once at its journaled
+Commit/Release transition; this internal leaf is not itself an idempotent command.
+
+Nested source-cast provenance remains an explicit integration concern: the existing
+effect source validator equates accepted command actor and actual caster. A truthful
+Player A cause that internally triggers NPC B cannot be rewritten as an invented System
+command. Direct casts are supported by existing provenance; a sealed distinction between
+invocation and actual source caster is required before enabling that nested path.
+
+Root also assigned the inherited Check/Save house-rule inconsistency to shared
+integration: effect and concentration completion and Legendary Resistance failure
+admission currently compare totals directly, ignoring the table's explicit
+`ability_test_natural_extremes` choice. A shared kept-d20 outcome helper must preserve
+default source behavior, honor that opt-in consistently, and leave the distinct
+death-save natural-1/20 rules intact. Add explicit opt-in and default regressions;
+the falling writer will use the same policy for landing checks. No scheduler file
+is changed before the coordinated movement/attack handoff.
+
+Next action: commit this verified duration leaf and release the compiler to root's
+source-catalog verification. Then integrate the coherent movement/opportunity-
+attack checkpoint and wire actual casting stages into the one tactical resolution.

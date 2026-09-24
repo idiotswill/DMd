@@ -129,6 +129,39 @@ pub fn spell_effect_expiry(
     }
 }
 
+/// Canonical casting plan supplies the only duration, source and group identity.
+/// Call after Commit/ReleaseReady, before installing any failed-save target effect.
+pub fn spell_casting_duration_operation(
+    record: &TacticalCasting,
+    now: WorldInstant,
+) -> Result<crate::tactical_effects::EffectLifecycleOperation, RulesError> {
+    validate_retained_spell(record)?;
+    let plan = &record.cast.plan;
+    if !matches!(
+        record.cast.phase,
+        SpellCastPhase::Committed | SpellCastPhase::Released
+    ) || !plan.program.concentration
+    {
+        return Err(invalid(
+            "only a committed concentration program sets its duration",
+        ));
+    }
+    Ok(
+        crate::tactical_effects::EffectLifecycleOperation::SetCastingDuration {
+            group: plan
+                .concentration_group
+                .ok_or_else(|| invalid("concentration program has no group"))?,
+            source: EffectSource {
+                definition_id: plan.program.source.spell_id.clone(),
+                actor: plan.choice.actor,
+                command: plan.origin.clone(),
+                ordinal: plan.occurrence,
+            },
+            expires: spell_effect_expiry(record, now)?,
+        },
+    )
+}
+
 fn effect_id(
     record: &TacticalCasting,
     at: SpellProgramOccurrence,
