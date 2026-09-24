@@ -66,3 +66,11 @@ independent review of this stronger continuation assertion found no defect. The 
 hidden-target attack regression and strict workspace Clippy are running next. Evidence:
 `tooling/gate4-attack-table-tests.log` outside the repository. This is focused integration
 evidence; full canonical verification and packaged encounter acceptance remain pending.
+
+Next table increment: expose Light/Nick follow-up choices from the actor's accepted
+current-turn weapon history and source mastery selection. The visible choice retains
+the actual triggering CommandId; it must survive an already spent ordinary action and
+vanish when its one shared extra attack is used. The resolver remains authoritative for
+hands, target and all resource checks. Add a real table sequence plus a UI regression
+for the spent-action state, explicit choice and stale-option removal. No arbitrary
+trigger ID or caller-provided additional-attack allowance is introduced.
