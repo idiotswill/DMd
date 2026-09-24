@@ -90,6 +90,20 @@ class BoundaryTests(unittest.TestCase):
         with self.assertRaisesRegex(BoundaryError, "Cannot read manifest"):
             check_repository(self.root)
 
+    def test_linked_source_directories_are_rejected_instead_of_silently_skipped(self):
+        outside = self.root / "shared-source"
+        outside.mkdir()
+        (outside / "storage.rs").write_text("use dmd_persistence::open_campaign;\n", encoding="utf-8")
+        link = self.manifest().parent / "src" / "linked"
+        try:
+            link.symlink_to(outside, target_is_directory=True)
+        except OSError as error:
+            if getattr(error, "winerror", None) == 1314:
+                self.skipTest("Windows user lacks symbolic-link privilege; CI exercises this fixture")
+            raise
+        with self.assertRaisesRegex(BoundaryError, "Linked production source directory"):
+            check_repository(self.root)
+
 
 if __name__ == "__main__":
     unittest.main()

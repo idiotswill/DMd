@@ -6,6 +6,7 @@ Uses only Python 3.11+ standard-library modules; no Cargo resolution or network 
 import os
 from pathlib import Path
 import re
+import stat
 import sys
 import tomllib
 
@@ -74,6 +75,15 @@ def fail_read(error):
     raise error
 
 
+def reject_linked_directory(path):
+    metadata = path.lstat()
+    if stat.S_ISLNK(metadata.st_mode) or (
+        getattr(metadata, "st_file_attributes", 0)
+        & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    ):
+        raise BoundaryError(f"Linked production source directory is not supported: {path}")
+
+
 def check_sources(root, crate, names):
     source_dir = root / "crates" / crate / "src"
     if not source_dir.is_dir():
@@ -81,7 +91,10 @@ def check_sources(root, crate, names):
     pattern = re.compile(r"(?<![a-zA-Z0-9_])(?:" + "|".join(names) + r")(?![a-zA-Z0-9_])")
     try:
         # Included files count as production sources too; traversal/read errors fail closed.
-        for directory, _, files in os.walk(source_dir, onerror=fail_read):
+        reject_linked_directory(source_dir)
+        for directory, directories, files in os.walk(source_dir, onerror=fail_read):
+            for name in directories:
+                reject_linked_directory(Path(directory) / name)
             for name in sorted(files):
                 path = Path(directory) / name
                 for line, text in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):

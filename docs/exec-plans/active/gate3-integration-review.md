@@ -66,3 +66,18 @@ terms. Full local `./scripts/verify` passes with `CARGO_BUILD_JOBS=1`; the prior
 attempt exhausted host compiler memory and is not a passing result. Linux CI run
 `36017036464` is green. Windows run `36017036314` passed the full Rust 1.88 native check;
 stable lint/host tests and packaging remain in progress. No native UI acceptance yet.
+
+At desktop head `f4f1ad2e2049aecbc2323252d290dfbf2893de02`, full local verification
+again passes 207 Windows/GNU tests, and Linux CI run `36020516060` is green. The prior
+Windows run completed native lint/three host tests and built executable/installer, but
+packaging failed because Tauri rewrote its manifest's checkout line endings. A narrow
+LF attribute preserves a clean fresh checkout. Independent review also fixed real
+dependency-notice omissions (underscore filenames, LICENSES directories and declared
+license files); all three copying/containment regressions pass, including a Windows
+junction escape. New Windows run `36020516064` must produce the tested artifact.
+
+Closeout review strengthened the mechanical boundary guard to parse Cargo package
+identities, including renamed, inherited and target-specific dependencies. All seven
+regressions and both foundation/desktop tree checks pass under Python 3.11.9. CI now
+provisions Python 3.11 explicitly; local verification can set `PYTHON` to a working
+3.11+ executable when Windows exposes a nonfunctional python3 Store alias.
