@@ -13,12 +13,13 @@ const records = [];
 async function collect(kind, name, version, license, root, licenseFile = null) {
   const destination = path.join(output, kind, `${name.replaceAll('/', '__')}-${version}`);
   const files = await copyNoticeFiles(root, destination, licenseFile, output);
-  files.push(...await copySupplementalNotices(kind, name, version, license, root, destination));
+  files.push(...await copySupplementalNotices(kind, name, version, license, root, destination, lockfile));
   records.push({ kind, name, version, license: license ?? null, notices: files.map((file) => path.relative(output, path.join(destination, file)).replaceAll('\\', '/')) });
 }
 
 const cargo = spawnSync('cargo', ['metadata', '--format-version', '1', '--locked'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 if (cargo.status !== 0) throw new Error(cargo.stderr || 'Cargo metadata failed.');
+const lockfile = await readFile('Cargo.lock', 'utf8');
 for (const pkg of JSON.parse(cargo.stdout).packages) {
   await collect('rust', pkg.name, pkg.version, pkg.license, path.dirname(pkg.manifest_path), pkg.license_file);
 }

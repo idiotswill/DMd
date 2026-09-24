@@ -80,20 +80,21 @@ test('preparation removes stale generated notices and refuses unrelated or linke
 
 test('packages the pinned upstream copyright text for each WebView2 crate', async () => {
   const manifest = JSON.parse(await readFile(new URL('../third-party-notices/supplements.json', import.meta.url), 'utf8'));
+  const lockfile = await readFile(new URL('../Cargo.lock', import.meta.url), 'utf8');
   for (const entry of manifest.packages) {
     const root = await mkdtemp(path.join(os.tmpdir(), 'dmd-supplement-'));
     const destination = path.join(root, 'output');
-    await writeFile(path.join(root, '.cargo-checksum.json'), JSON.stringify({ package: entry.crate_sha256 }));
     await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: entry.revision } }));
-    assert.deepEqual(await copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), ['LICENSE.upstream', 'NOTICE.source.json']);
+    assert.deepEqual(await copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination, lockfile), ['LICENSE.upstream', 'NOTICE.source.json']);
     assert.match(await readFile(path.join(destination, 'LICENSE.upstream'), 'utf8'), /Copyright \(c\) 2021 Bill Avery/);
     assert.deepEqual(JSON.parse(await readFile(path.join(destination, 'NOTICE.source.json'), 'utf8')), entry);
-    await assert.rejects(copySupplementalNotices('rust', entry.name, '99.0.0', 'MIT', root, destination), /requires review/);
+    await assert.rejects(copySupplementalNotices('rust', entry.name, '99.0.0', 'MIT', root, destination, lockfile), /requires review/);
     await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: 'unreviewed' } }));
-    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), /source pin/);
+    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination, lockfile), /source pin/);
     await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: entry.revision } }));
-    await writeFile(path.join(root, '.cargo-checksum.json'), JSON.stringify({ package: 'unreviewed' }));
-    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), /source pin/);
+    const wrongPin = lockfile.replace(entry.crate_sha256, '0'.repeat(64));
+    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination, wrongPin), /source pin/);
+    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination, ''), /source pin/);
   }
 });
 

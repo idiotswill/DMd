@@ -381,6 +381,10 @@ async fn normal_scene_corrects_pending_accepts_raw_faces_and_retries_without_dup
         .await
         .unwrap();
     assert_eq!(requested.roll.as_ref().unwrap().modifier, 5);
+    assert_eq!(
+        requested.roll.as_ref().unwrap().reason,
+        "Strength (Athletics) check"
+    );
     let before_invalid = f
         .runtime
         .open_campaign(f.campaign)
@@ -777,6 +781,10 @@ async fn second_wind_pending_roll_resources_and_transcript_survive_database_reop
         .table_view(f.campaign, TableViewer::Player(f.players[0]))
         .await
         .unwrap();
+    assert_eq!(
+        expected.roll.as_ref().unwrap().reason,
+        "Second Wind healing"
+    );
     assert_eq!(
         expected
             .characters
