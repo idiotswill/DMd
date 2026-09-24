@@ -71,6 +71,18 @@ Then fix findings on the implementation branch and rerun verification.
 
 ## Completion
 
+### Rules content integrity
+
+Content under `content/` has pinned LF line endings so Windows and Linux checkouts share
+the same manifest bytes. After a reviewed edit to the pinned SRD definitions, notice or
+source metadata, run `python scripts/update-rules-manifest.py`, inspect the content and
+manifest diff, then run normal verification. Python is developer tooling only; gameplay
+loads the checked-in manifest offline. The distribution test verifies all declared bytes
+through the production content catalog. A changed source/version needs its own provenance
+and compatibility decision; regenerating checksums is not approval of changed rules.
+
+### Final checks
+
 Do not call work complete until:
 
 - acceptance criteria are checked against actual behavior;

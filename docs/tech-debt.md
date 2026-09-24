@@ -26,6 +26,30 @@ Exit criteria:
 
 ## Open debt
 
+### TD-007 — mechanical provenance is retained in whole campaign images
+
+Status: open
+Introduced: Gate 2 rules foundation
+Owner area: rules/persistence; measurements in Gates 7 and 13, endurance confirmation in Gate 14
+Severity: medium
+
+Why accepted:
+Pending and completed rolls retain typed causes, raw faces, rulings and command metadata
+inside authoritative state as well as immutable journal events. This makes suspension,
+request validation and deterministic recovery explicit at the initial playable scale.
+
+Risk:
+State images and validation cost grow with play history, while periodic snapshots repeat
+that history. Complete restore verification deliberately replays from the earliest available
+anchor and checks intervening snapshots; this can be expensive for long campaigns.
+
+Exit criteria:
+- measure real campaign growth, command latency, restore cost and snapshot storage;
+- compact/index archival mechanics only with equivalent pending-request, provenance,
+  visibility, replay and rollback guarantees;
+- retain the original accepted raw dice and ruling history; never replace it with summaries
+  used as authoritative mechanics.
+
 ### TD-001 — durable gameplay replay coverage grows with event families
 
 Status: open
