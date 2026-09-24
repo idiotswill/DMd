@@ -1,6 +1,6 @@
 # ADR 014 — Versioned rules/content manifests
 
-Status: **Proposed for Gate 1 content-manifest blocker — PR #11**
+Status: **Accepted — human-approved 2026-09-24 after implementation in PR #11.**
 
 ## Context
 
