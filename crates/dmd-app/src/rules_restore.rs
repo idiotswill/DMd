@@ -303,7 +303,11 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
         | RulesAction::SpendResource { .. }
         | RulesAction::SpendHitDie { .. }
         | RulesAction::EndTurn { .. }
-        | RulesAction::EndConcentration { .. } => None,
+        | RulesAction::EndConcentration { .. }
+        | RulesAction::CreateCharacter { .. }
+        | RulesAction::SecondWind { .. }
+        | RulesAction::ResolveInspirationTransfer { .. }
+        | RulesAction::SubmitSavageAttacker { .. } => None,
     }
 }
 
@@ -458,6 +462,7 @@ mod tests {
             },
             play_sessions: vec![],
             play_session_participants: vec![],
+            observations: vec![],
             command_audit: vec![CommandAuditRow {
                 id: meta.id.0.to_string(),
                 campaign_id: campaign_id.0.to_string(),

@@ -198,7 +198,8 @@ fn pending_with_recency(
                         } else {
                             0
                         }
-                        - i32::from(e.exhaustion) * 2,
+                        - i32::from(e.exhaustion) * 2
+                        + archery_bonus(e, a.ranged),
                 )
             };
             let (roll_mode, critical) =
@@ -342,6 +343,25 @@ fn pending_with_recency(
                     sides: e.hit_dice.sides,
                 }],
                 ability_modifier(e.ability_scores[2]),
+                RollMode::Normal,
+            )?;
+        }
+        PendingPurpose::SecondWind => {
+            ready(rules, actor)?;
+            let features = e
+                .character_features
+                .as_ref()
+                .ok_or_else(|| invalid("Second Wind not granted"))?;
+            if features.second_wind_remaining >= 2 {
+                return Err(invalid("Second Wind cost was not consumed"));
+            }
+            request_equals(
+                &p.request,
+                &[DieSpec {
+                    count: 1,
+                    sides: 10,
+                }],
+                i32::from(features.fighter_level),
                 RollMode::Normal,
             )?;
         }

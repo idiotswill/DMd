@@ -1,8 +1,8 @@
 use dmd_domain::{
-    AttendanceStatus, CampaignId, CampaignState, CharacterId, PlaySession, PlaySessionId,
-    PlaySessionStatus, PlayerId, SessionParticipant, WorldInstant,
+    AttendanceStatus, CampaignId, CampaignState, CharacterId, CommandIssuer, PlaySession,
+    PlaySessionId, PlaySessionStatus, PlayerId, SessionParticipant, WorldInstant,
 };
-use sqlx::{Row, SqlitePool};
+use sqlx::{Row, SqliteConnection, SqlitePool};
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -26,6 +26,114 @@ pub enum SessionStoreError {
     InvalidSessionStatus(String),
     #[error("invalid stored attendance status: {0}")]
     InvalidAttendanceStatus(String),
+    #[error("session transitions require a trusted host issuer")]
+    Unauthorized,
+    #[error("session state changed or the requested identity already exists")]
+    Conflict,
+    #[error("a closed session cannot be rewritten or reopened")]
+    ClosedSessionImmutable,
+}
+
+/// A session projection update committed with the authoritative command/event transaction.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum SessionChange {
+    Start {
+        session: PlaySession,
+    },
+    Replace {
+        expected: PlaySession,
+        next: PlaySession,
+    },
+}
+
+pub(crate) async fn validate_table_session_projection(
+    connection: &mut SqliteConnection,
+    state: &CampaignState,
+) -> Result<(), SessionStoreError> {
+    let Some(table) = &state.table else {
+        return Ok(());
+    };
+    let active_id = sqlx::query_scalar::<_, String>(
+        "SELECT id FROM play_sessions WHERE campaign_id = ? AND status = 'active'",
+    )
+    .bind(state.campaign_id().0.to_string())
+    .fetch_optional(&mut *connection)
+    .await?;
+    match (&table.active_session, active_id) {
+        (None, None) => Ok(()),
+        (Some(binding), Some(id)) if binding.session_id.0.to_string() == id => {
+            if load_play_session_on(connection, binding.session_id).await?
+                == Some(binding.as_session(state.campaign_id()))
+            {
+                Ok(())
+            } else {
+                Err(SessionStoreError::Conflict)
+            }
+        }
+        _ => Err(SessionStoreError::Conflict),
+    }
+}
+
+pub(crate) async fn apply_session_change(
+    connection: &mut SqliteConnection,
+    issuer: CommandIssuer,
+    current_state: &CampaignState,
+    next_state: &CampaignState,
+    change: &SessionChange,
+) -> Result<(), SessionStoreError> {
+    if !matches!(issuer, CommandIssuer::Admin | CommandIssuer::System) {
+        return Err(SessionStoreError::Unauthorized);
+    }
+    let session = match change {
+        SessionChange::Start { session } => {
+            if session.status != PlaySessionStatus::Active
+                || session.started_at_world != next_state.clock.now
+                || load_play_session_on(connection, session.id)
+                    .await?
+                    .is_some()
+                || sqlx::query_scalar::<_, i64>(
+                    "SELECT 1 FROM play_sessions WHERE campaign_id = ? AND status = 'active'",
+                )
+                .bind(current_state.campaign_id().0.to_string())
+                .fetch_optional(&mut *connection)
+                .await?
+                .is_some()
+            {
+                return Err(SessionStoreError::Conflict);
+            }
+            session
+        }
+        SessionChange::Replace { expected, next } => {
+            if expected.status == PlaySessionStatus::Closed {
+                return Err(SessionStoreError::ClosedSessionImmutable);
+            }
+            if expected.id != next.id
+                || expected.campaign_id != next.campaign_id
+                || expected.started_at_world != next.started_at_world
+                || !expected.validate_against_state(current_state).is_empty()
+                || load_play_session_on(connection, expected.id)
+                    .await?
+                    .as_ref()
+                    != Some(expected)
+            {
+                return Err(SessionStoreError::Conflict);
+            }
+            if next.status == PlaySessionStatus::Closed
+                && next.ended_at_world != Some(next_state.clock.now)
+            {
+                return Err(SessionStoreError::InvalidSession);
+            }
+            next
+        }
+    };
+    if session.display_name.trim().is_empty()
+        || session.display_name.len() > 200
+        || session.started_at_world > next_state.clock.now
+        || !session.validate_against_state(next_state).is_empty()
+    {
+        return Err(SessionStoreError::InvalidSession);
+    }
+    save_play_session_on(connection, session).await
 }
 
 pub async fn save_play_session(
@@ -41,6 +149,15 @@ pub async fn save_play_session(
     }
 
     let mut transaction = pool.begin().await?;
+    save_play_session_on(&mut transaction, session).await?;
+    transaction.commit().await?;
+    Ok(())
+}
+
+async fn save_play_session_on(
+    connection: &mut SqliteConnection,
+    session: &PlaySession,
+) -> Result<(), SessionStoreError> {
     sqlx::query(
         r#"
         INSERT INTO play_sessions (
@@ -60,12 +177,12 @@ pub async fn save_play_session(
     .bind(encode_session_status(session.status))
     .bind(session.started_at_world.0)
     .bind(session.ended_at_world.map(|instant| instant.0))
-    .execute(&mut *transaction)
+    .execute(&mut *connection)
     .await?;
 
     sqlx::query("DELETE FROM play_session_participants WHERE session_id = ?")
         .bind(session.id.0.to_string())
-        .execute(&mut *transaction)
+        .execute(&mut *connection)
         .await?;
 
     for (ordinal, participant) in session.participants.iter().enumerate() {
@@ -83,16 +200,25 @@ pub async fn save_play_session(
         .bind(participant.player_id.0.to_string())
         .bind(participant.character_id.map(|id| id.0.to_string()))
         .bind(encode_attendance(participant.attendance))
-        .execute(&mut *transaction)
+        .execute(&mut *connection)
         .await?;
     }
 
-    transaction.commit().await?;
     Ok(())
 }
 
 pub async fn load_play_session(
     pool: &SqlitePool,
+    session_id: PlaySessionId,
+) -> Result<Option<PlaySession>, SessionStoreError> {
+    let mut transaction = pool.begin().await?;
+    let result = load_play_session_on(&mut transaction, session_id).await?;
+    transaction.commit().await?;
+    Ok(result)
+}
+
+pub(crate) async fn load_play_session_on(
+    connection: &mut SqliteConnection,
     session_id: PlaySessionId,
 ) -> Result<Option<PlaySession>, SessionStoreError> {
     let Some(row) = sqlx::query(
@@ -103,7 +229,7 @@ pub async fn load_play_session(
         "#,
     )
     .bind(session_id.0.to_string())
-    .fetch_optional(pool)
+    .fetch_optional(&mut *connection)
     .await?
     else {
         return Ok(None);
@@ -118,7 +244,7 @@ pub async fn load_play_session(
         "#,
     )
     .bind(session_id.0.to_string())
-    .fetch_all(pool)
+    .fetch_all(&mut *connection)
     .await?;
 
     let mut participants = Vec::with_capacity(participant_rows.len());
@@ -157,17 +283,22 @@ pub async fn load_active_play_session(
     pool: &SqlitePool,
     campaign_id: CampaignId,
 ) -> Result<Option<PlaySession>, SessionStoreError> {
+    let mut transaction = pool.begin().await?;
     let id = sqlx::query_scalar::<_, String>(
         "SELECT id FROM play_sessions WHERE campaign_id = ? AND status = 'active'",
     )
     .bind(campaign_id.0.to_string())
-    .fetch_optional(pool)
+    .fetch_optional(&mut *transaction)
     .await?;
 
-    match id {
-        Some(id) => load_play_session(pool, PlaySessionId(parse_uuid(&id, "id")?)).await,
-        None => Ok(None),
-    }
+    let session = match id {
+        Some(id) => {
+            load_play_session_on(&mut transaction, PlaySessionId(parse_uuid(&id, "id")?)).await?
+        }
+        None => None,
+    };
+    transaction.commit().await?;
+    Ok(session)
 }
 
 fn encode_session_status(status: PlaySessionStatus) -> &'static str {

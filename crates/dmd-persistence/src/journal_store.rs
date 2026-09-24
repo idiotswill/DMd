@@ -53,6 +53,8 @@ struct ExistingEventMetadata {
 #[derive(Debug, Error)]
 pub enum JournalStoreError {
     #[error(transparent)]
+    Session(#[from] crate::SessionStoreError),
+    #[error(transparent)]
     Sqlx(#[from] sqlx::Error),
     #[error("campaign state is structurally invalid")]
     InvalidState,
@@ -156,6 +158,15 @@ pub async fn initialize_campaign_state(
     state: &CampaignState,
 ) -> Result<(), JournalStoreError> {
     ensure_supported_state(state)?;
+    if state
+        .table
+        .as_ref()
+        .is_some_and(|table| table.active_session.is_some())
+    {
+        return Err(JournalStoreError::Session(
+            crate::SessionStoreError::InvalidSession,
+        ));
+    }
     if state.applied_event_sequence != 0 {
         return Err(JournalStoreError::InitialSequenceNotZero(
             state.applied_event_sequence,
@@ -219,6 +230,7 @@ pub async fn load_campaign_state(
     .await?;
     verify_journal_head(&state, &head)?;
     verify_loaded_state_event_references(&mut transaction, campaign_id, &state).await?;
+    crate::session_store::validate_table_session_projection(&mut transaction, &state).await?;
     transaction.commit().await?;
 
     Ok(Some(state))
@@ -231,6 +243,28 @@ pub async fn commit_campaign_transition(
     next_state: &CampaignState,
     events: &[EncodedPendingEvent],
     resolution_explanation: &str,
+) -> Result<CommitReceipt, JournalStoreError> {
+    commit_campaign_transition_with_session(
+        pool,
+        command_meta,
+        command_payload,
+        next_state,
+        events,
+        resolution_explanation,
+        None,
+    )
+    .await
+}
+
+/// A session projection and the command's authoritative state/history succeed or roll back together.
+pub async fn commit_campaign_transition_with_session(
+    pool: &SqlitePool,
+    command_meta: &CommandMeta,
+    command_payload: &SerializedRecord,
+    next_state: &CampaignState,
+    events: &[EncodedPendingEvent],
+    resolution_explanation: &str,
+    session_change: Option<&crate::SessionChange>,
 ) -> Result<CommitReceipt, JournalStoreError> {
     ensure_supported_state(next_state)?;
     if command_meta.campaign_id != next_state.campaign_id() {
@@ -284,6 +318,28 @@ pub async fn commit_campaign_transition(
     }
 
     validate_command_authority(&current_state, command_meta)?;
+    crate::session_store::validate_table_session_projection(&mut transaction, &current_state)
+        .await?;
+    if let Some(change) = session_change {
+        let changed_id = match change {
+            crate::SessionChange::Start { session } => session.id,
+            crate::SessionChange::Replace { next, .. } => next.id,
+        };
+        if command_meta.session_id != Some(changed_id) {
+            return Err(JournalStoreError::Session(
+                crate::SessionStoreError::InvalidSession,
+            ));
+        }
+        crate::session_store::apply_session_change(
+            &mut transaction,
+            command_meta.issuer,
+            &current_state,
+            next_state,
+            change,
+        )
+        .await?;
+    }
+    crate::session_store::validate_table_session_projection(&mut transaction, next_state).await?;
     validate_session(&mut transaction, command_meta).await?;
 
     let duplicate_command =

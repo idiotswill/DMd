@@ -180,11 +180,13 @@ dependencies = [
 name = "dmd-app"
 version = "0.1.0"
 dependencies = [
+ "dmd-conversation",
  "dmd-core",
  "dmd-domain",
  "dmd-persistence",
  "dmd-rules",
  "rand",
+ "serde",
  "serde_json",
  "sqlx",
  "thiserror",

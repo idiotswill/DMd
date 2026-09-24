@@ -21,13 +21,67 @@ pub fn resolve(
             action,
             RulesAction::SubmitRoll { .. }
                 | RulesAction::SubmitRollWithInspiration { .. }
+                | RulesAction::SubmitSavageAttacker { .. }
                 | RulesAction::CancelRoll { .. }
         )
     {
         return Err(RulesError::Pending);
     }
+    if state.rules.as_ref().is_some_and(|r| {
+        r.entities.values().any(|e| {
+            e.character_features
+                .as_ref()
+                .is_some_and(|f| f.inspiration_transfer_pending)
+        })
+    }) && !matches!(action, RulesAction::ResolveInspirationTransfer { .. })
+    {
+        return Err(prerequisite(
+            "an Inspiration transfer choice awaits its controller",
+        ));
+    }
     let mut next = state.clone();
-    let outcome = if let RulesAction::Initialize {
+    let outcome = if let RulesAction::CreateCharacter { entity_id, input } = action {
+        authorize(state, meta, *entity_id)?;
+        if !state
+            .characters
+            .values()
+            .any(|c| c.entity_id == *entity_id && c.status == CharacterStatus::Active)
+        {
+            return Err(prerequisite(
+                "creation requires an existing active character identity",
+            ));
+        }
+        let built = crate::build_character(input, *entity_id, pack)?;
+        if let Some(rules) = &mut next.rules {
+            if rules.entities.contains_key(entity_id) {
+                return Err(prerequisite("character mechanics already exist"));
+            }
+            rules.entities.insert(*entity_id, built.mechanics);
+            rules.permission = None;
+        } else {
+            next.rules = Some(RulesState {
+                pack_id: pack.id.clone(),
+                pack_version: pack.version.clone(),
+                entities: std::collections::HashMap::from([(*entity_id, built.mechanics)]),
+                house_rules: state
+                    .table
+                    .as_ref()
+                    .map_or_else(HouseRules::default, |table| {
+                        table.contract.house_rules.clone()
+                    }),
+                effects: vec![],
+                pending: None,
+                rolls: vec![],
+                cancelled_roll_ids: vec![],
+                rulings: vec![],
+                timing: None,
+                rests: vec![],
+                completed_short_rests: vec![],
+                permission: None,
+            });
+        }
+        RulesOutcome::Changed
+    } else if let RulesAction::Initialize {
         entities,
         house_rules,
         ruling,
@@ -205,6 +259,9 @@ fn apply(
         rules.completed_short_rests.clear();
     }
     match action {
+        RulesAction::CreateCharacter { .. } => {
+            Err(prerequisite("creation is handled at the entity boundary"))
+        }
         RulesAction::Initialize { .. } => Err(prerequisite("already initialized")),
         RulesAction::RequestTest {
             actor,
@@ -355,6 +412,7 @@ fn apply(
                 }
                 - i32::from(e.exhaustion) * 2;
             let (roll_mode, critical) = attack_context(rules, *actor, *target, &p, attack.ranged)?;
+            let total_modifier = total_modifier + archery_bonus(e, attack.ranged);
             spend_action(rules, *actor)?;
             interrupt_rest(rules, *actor, state.clock.now);
             rules.completed_short_rests.retain(|id| id != actor);
@@ -407,6 +465,127 @@ fn apply(
             permission,
         ),
         RulesAction::SubmitRoll { result } => submit(state, rules, meta, result),
+        RulesAction::SecondWind { actor, request_id } => {
+            authorize(state, meta, *actor)?;
+            ready(rules, *actor)?;
+            if let Some(t) = &mut rules.timing {
+                if t.order[t.index].actor != *actor || t.bonus_action_spent {
+                    return Err(prerequisite("Second Wind bonus action unavailable"));
+                }
+                t.bonus_action_spent = true;
+            }
+            let features = entity_mut(rules, *actor)?
+                .character_features
+                .as_mut()
+                .ok_or_else(|| prerequisite("Second Wind is not granted"))?;
+            if features.second_wind_remaining == 0 {
+                return Err(prerequisite("Second Wind exhausted"));
+            }
+            features.second_wind_remaining -= 1;
+            let modifier = i32::from(features.fighter_level);
+            set_pending(
+                rules,
+                meta,
+                RollRequest {
+                    id: *request_id,
+                    roller: Some(*actor),
+                    dice: vec![DieSpec {
+                        count: 1,
+                        sides: 10,
+                    }],
+                    modifier,
+                    mode: RollMode::Normal,
+                    visibility: RollVisibility::Public,
+                    reason: "second-wind".into(),
+                },
+                PendingPurpose::SecondWind,
+                srd(48, "Fighter Second Wind"),
+            )
+        }
+        RulesAction::ResolveInspirationTransfer { actor, recipient } => {
+            authorize(state, meta, *actor)?;
+            if !entity(rules, *actor)?
+                .character_features
+                .as_ref()
+                .is_some_and(|f| f.inspiration_transfer_pending)
+            {
+                return Err(prerequisite("no Inspiration transfer is pending"));
+            }
+            if let Some(recipient) = recipient {
+                if recipient == actor
+                    || !state.characters.values().any(|c| {
+                        c.entity_id == *recipient
+                            && c.status == CharacterStatus::Active
+                            && c.controlling_player_id.is_some()
+                    })
+                    || entity(rules, *recipient)?.heroic_inspiration
+                    || entity(rules, *recipient)?.death.dead
+                {
+                    return Err(prerequisite(
+                        "recipient must be another eligible group PC lacking Inspiration",
+                    ));
+                }
+                entity_mut(rules, *recipient)?.heroic_inspiration = true;
+            }
+            entity_mut(rules, *actor)?
+                .character_features
+                .as_mut()
+                .unwrap()
+                .inspiration_transfer_pending = false;
+            Ok(RulesOutcome::Changed)
+        }
+        RulesAction::SubmitSavageAttacker { roll } => {
+            let pending = rules.pending.as_ref().ok_or(RulesError::NoPending)?;
+            let actor = pending
+                .request
+                .roller
+                .ok_or_else(|| invalid("missing roller"))?;
+            let PendingPurpose::Damage { attack_roll_id, .. } = pending.purpose else {
+                return Err(prerequisite("Savage Attacker requires weapon damage"));
+            };
+            let attack = rules
+                .rolls
+                .iter()
+                .find(|r| r.request.id == attack_roll_id)
+                .ok_or_else(|| invalid("missing damage origin"))?;
+            if !matches!(&attack.purpose, PendingPurpose::Attack { permission, .. } if !permission.spell)
+            {
+                return Err(prerequisite(
+                    "Savage Attacker applies only to weapon damage dice",
+                ));
+            }
+            let turn = rules
+                .timing
+                .as_ref()
+                .ok_or_else(|| prerequisite("Savage Attacker needs recorded turn timing"))?
+                .turn_number;
+            let features = entity(rules, actor)?
+                .character_features
+                .as_ref()
+                .ok_or_else(|| prerequisite("Savage Attacker is not granted"))?;
+            if !features.savage_attacker || features.savage_attacker_turn == Some(turn) {
+                return Err(prerequisite("Savage Attacker unavailable this turn"));
+            }
+            let result = savage_result(&pending.request, roll)?;
+            if roll.inspiration.is_some() {
+                if !entity(rules, actor)?.heroic_inspiration {
+                    return Err(prerequisite("Heroic Inspiration unavailable"));
+                }
+                entity_mut(rules, actor)?.heroic_inspiration = false;
+            }
+            entity_mut(rules, actor)?
+                .character_features
+                .as_mut()
+                .unwrap()
+                .savage_attacker_turn = Some(turn);
+            let outcome = submit(state, rules, meta, &result)?;
+            rules
+                .rolls
+                .last_mut()
+                .ok_or_else(|| invalid("missing damage record"))?
+                .savage_attacker = Some(roll.clone());
+            Ok(outcome)
+        }
         RulesAction::SubmitRollWithInspiration {
             result,
             die_index,
@@ -736,6 +915,11 @@ fn apply(
                 return Err(prerequisite("no combat timing"));
             }
             remove_effects(rules, |e| matches!(e.expires, Expiry::AtTurn { .. }));
+            for e in rules.entities.values_mut() {
+                if let Some(f) = &mut e.character_features {
+                    f.savage_attacker_turn = None;
+                }
+            }
             Ok(RulesOutcome::Changed)
         }
         RulesAction::UseReaction {
@@ -1125,6 +1309,7 @@ fn submit(
         issued_by: pending.issued_by.clone(),
         accepted_by: meta.clone(),
         original_result: None,
+        savage_attacker: None,
         request: pending.request.clone(),
         result: result.clone(),
         resolved: roll.clone(),
@@ -1246,6 +1431,9 @@ fn submit(
         }
         PendingPurpose::RestHitDie => {
             amount = Some(heal(rules, actor, roll.total.max(1) as u32)?);
+        }
+        PendingPurpose::SecondWind => {
+            amount = Some(heal(rules, actor, roll.total.max(0) as u32)?);
         }
     }
     Ok(RulesOutcome::RollResolved {
@@ -1448,6 +1636,13 @@ fn sync_deaths(state: &mut CampaignState) {
     }
 }
 fn recover(e: &mut MechanicalEntity, kind: RestKind) {
+    if let Some(f) = &mut e.character_features {
+        f.second_wind_remaining = if kind == RestKind::Long {
+            2
+        } else {
+            f.second_wind_remaining.saturating_add(1).min(2)
+        };
+    }
     for pool in e.resources.values_mut() {
         if pool.recovery == Recovery::ShortOrLongRest
             || (kind == RestKind::Long && pool.recovery == Recovery::LongRest)
@@ -1510,6 +1705,15 @@ fn finish_rest(
         e.last_long_rest_finished = Some(state.clock.now);
         if let Some(c) = &mut e.spellcasting {
             c.slots = c.slot_maxima;
+        }
+        if let Some(f) = &mut e.character_features
+            && f.human_resourceful
+        {
+            if e.heroic_inspiration {
+                f.inspiration_transfer_pending = true;
+            } else {
+                e.heroic_inspiration = true;
+            }
         }
     } else if !rules.completed_short_rests.contains(&actor) {
         rules.completed_short_rests.push(actor);

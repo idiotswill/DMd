@@ -9,7 +9,7 @@ pub fn proficiency_bonus(level: u8) -> i32 {
     2 + (i32::from(level.saturating_sub(1)) / 4)
 }
 pub fn armor_class(entity: &MechanicalEntity) -> i32 {
-    match entity.armor {
+    let base = match entity.armor {
         ArmorClass::Fixed(ac) => i32::from(ac),
         ArmorClass::HeavyArmor { base, shield } => i32::from(base) + if shield { 2 } else { 0 },
         ArmorClass::Armor {
@@ -23,7 +23,59 @@ pub fn armor_class(entity: &MechanicalEntity) -> i32 {
                 })
                 + if shield { 2 } else { 0 }
         }
+    };
+    base + if entity
+        .character_features
+        .as_ref()
+        .is_some_and(|f| f.wearing_armor && f.fighting_style == FightingStyle::Defense)
+    {
+        1
+    } else {
+        0
     }
+}
+pub(super) fn archery_bonus(entity: &MechanicalEntity, ranged: bool) -> i32 {
+    if ranged
+        && entity
+            .character_features
+            .as_ref()
+            .is_some_and(|f| f.fighting_style == FightingStyle::Archery)
+    {
+        2
+    } else {
+        0
+    }
+}
+pub(super) fn savage_result(
+    request: &RollRequest,
+    roll: &SavageAttackerRoll,
+) -> Result<RollResult, RulesError> {
+    request.resolve(&roll.first)?;
+    request.resolve(&roll.second)?;
+    if roll.first.source != roll.second.source {
+        return Err(invalid("Savage Attacker source differs between sets"));
+    }
+    let mut first = roll.first.clone();
+    let mut second = roll.second.clone();
+    if let Some(inspiration) = &roll.inspiration {
+        let result = match inspiration.roll {
+            DamageRollChoice::First => &mut first,
+            DamageRollChoice::Second => &mut second,
+        };
+        let die = result
+            .dice
+            .get_mut(inspiration.die_index)
+            .ok_or_else(|| invalid("replacement die index is invalid"))?;
+        if inspiration.replacement.sides != die.sides {
+            return Err(invalid("replacement die sides differ"));
+        }
+        *die = inspiration.replacement;
+        request.resolve(result)?;
+    }
+    Ok(match roll.chosen {
+        DamageRollChoice::First => first,
+        DamageRollChoice::Second => second,
+    })
 }
 pub(super) fn entity(rules: &RulesState, id: EntityId) -> Result<&MechanicalEntity, RulesError> {
     rules
@@ -267,6 +319,24 @@ pub(super) fn validate_entity(
     {
         return Err(invalid("invalid resource pool"));
     }
+    if let Some(f) = &e.character_features
+        && (f.fighter_level != 1
+            || e.level != 1
+            || f.second_wind_remaining > 2
+            || (f.inspiration_transfer_pending && (!f.human_resourceful || !e.heroic_inspiration))
+            || (f.savage_attacker_turn.is_some() && !f.savage_attacker)
+            || (f.wearing_armor != matches!(e.armor, ArmorClass::Armor { base: 11, .. }))
+            || !matches!(
+                e.armor,
+                ArmorClass::Armor {
+                    base: 10 | 11,
+                    dexterity_cap: None,
+                    ..
+                }
+            ))
+    {
+        return Err(invalid("invalid supported character feature state"));
+    }
     for id in &e.attacks {
         pack.attack(id)?;
     }
@@ -373,6 +443,17 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         }
     }
     for e in rules.entities.values() {
+        if let Some(turn) = e
+            .character_features
+            .as_ref()
+            .and_then(|f| f.savage_attacker_turn)
+            && rules
+                .timing
+                .as_ref()
+                .is_none_or(|t| turn == 0 || turn > t.turn_number)
+        {
+            return Err(invalid("Savage Attacker references no valid combat turn"));
+        }
         if let Some(effect_id) = e.concentration
             && (!rules
                 .effects
@@ -445,6 +526,13 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             || roll.request.visibility == RollVisibility::Secret
         {
             privileged(roll.accepted_by.issuer)?;
+        }
+        if let Some(savage) = &roll.savage_attacker
+            && (roll.original_result.is_some()
+                || !matches!(roll.purpose, PendingPurpose::Damage { .. })
+                || savage_result(&roll.request, savage)? != roll.result)
+        {
+            return Err(invalid("invalid Savage Attacker raw choice record"));
         }
     }
     for id in &rules.cancelled_roll_ids {

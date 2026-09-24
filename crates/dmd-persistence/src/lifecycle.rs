@@ -2,8 +2,9 @@ use std::collections::{HashMap, HashSet};
 
 use dmd_domain::{
     AttendanceStatus, BeliefBasis, CURRENT_STATE_SCHEMA_VERSION, CampaignId, CampaignState,
-    CharacterId, CommandIssuer, EntityId, EventId, FactionId, PlaySession, PlaySessionId,
-    PlaySessionStatus, PlayerId, SessionParticipant, WorldInstant,
+    CharacterId, CommandIssuer, EntityId, EventId, FactionId, ObservationAudience, PlaySession,
+    PlaySessionId, PlaySessionStatus, PlayerId, SessionObservation, SessionParticipant,
+    WorldInstant,
 };
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, Sqlite, SqlitePool, Transaction, sqlite::SqliteRow};
@@ -11,10 +12,10 @@ use thiserror::Error;
 
 use crate::{
     CampaignStateSnapshotCodec, JournalStoreError, initialize_campaign_state, load_campaign_state,
-    snapshot_replay::upgrade_state_schema_one,
+    observation_store::{decode_observation, insert_observation},
 };
 
-pub const CAMPAIGN_EXPORT_FORMAT_VERSION: u32 = 1;
+pub const CAMPAIGN_EXPORT_FORMAT_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -87,6 +88,8 @@ pub struct CampaignExport {
     pub event_journal: Vec<EventJournalRow>,
     pub event_causes: Vec<EventCauseRow>,
     pub snapshots: Vec<SnapshotRow>,
+    #[serde(default)]
+    pub observations: Vec<SessionObservation>,
 }
 
 impl CampaignExport {
@@ -103,34 +106,45 @@ impl CampaignExport {
     /// Validate and upgrade a portable export without mutating the source or its immutable history.
     ///
     /// Application restore preflight must use this before resolving the exported campaign's
-    /// content. Schema-1 current state gains only an explicit null rules field. Original snapshot
-    /// bytes, journal records, audit records, and their metadata remain unchanged.
+    /// content. Legacy current images gain null optional state via explicit migrations. Original
+    /// snapshot bytes, journal records, audit records and their metadata remain unchanged.
     pub fn upgraded(&self) -> Result<Self, LifecycleError> {
-        if self.state_schema_version == CURRENT_STATE_SCHEMA_VERSION {
-            validate_export(self)?;
-            return Ok(self.clone());
+        if !matches!(self.format_version, 1 | CAMPAIGN_EXPORT_FORMAT_VERSION) {
+            return Err(LifecycleError::IncompatibleExportFormat {
+                actual: self.format_version,
+                supported: CAMPAIGN_EXPORT_FORMAT_VERSION,
+            });
         }
-        if self.state_schema_version != 1 {
+        if self.format_version == 1
+            && (!self.observations.is_empty() || self.state_schema_version > 2)
+        {
+            return Err(LifecycleError::CorruptExport(
+                "format-1 export cannot contain observations or schema-3 table state".into(),
+            ));
+        }
+        if !(1..=CURRENT_STATE_SCHEMA_VERSION).contains(&self.state_schema_version) {
             return Err(LifecycleError::IncompatibleStateSchema {
                 actual: self.state_schema_version,
                 supported: CURRENT_STATE_SCHEMA_VERSION,
             });
         }
-        validate_export_metadata_version(self, 1)?;
+        validate_export_metadata_version(self, self.state_schema_version, self.format_version)?;
         if self
             .snapshots
             .iter()
-            .any(|snapshot| snapshot.state_schema_version > 1)
+            .any(|snapshot| snapshot.state_schema_version > i64::from(self.state_schema_version))
         {
             return Err(LifecycleError::CorruptExport(
-                "schema-1 export contains a newer snapshot".into(),
+                "export contains a snapshot newer than its current state".into(),
             ));
         }
         let mut upgraded = self.clone();
-        upgraded.current_state.state_json =
-            upgrade_state_schema_one(&self.current_state.state_json).map_err(|message| {
-                LifecycleError::CorruptExport(format!("schema-1 state: {message}"))
+        upgraded.current_state.state_json = CampaignStateSnapshotCodec::new()
+            .upgraded_json(self.state_schema_version, &self.current_state.state_json)
+            .map_err(|message| {
+                LifecycleError::CorruptExport(format!("current state: {message}"))
             })?;
+        upgraded.format_version = CAMPAIGN_EXPORT_FORMAT_VERSION;
         upgraded.state_schema_version = CURRENT_STATE_SCHEMA_VERSION;
         upgraded.current_state.schema_version = i64::from(CURRENT_STATE_SCHEMA_VERSION);
         upgraded.lifecycle.state_schema_version = CURRENT_STATE_SCHEMA_VERSION;
@@ -223,6 +237,8 @@ pub enum LifecycleError {
     Sqlx(#[from] sqlx::Error),
     #[error(transparent)]
     Journal(#[from] JournalStoreError),
+    #[error(transparent)]
+    Observation(#[from] crate::ObservationStoreError),
     #[error("campaign does not exist")]
     CampaignNotFound,
     #[error("campaign already exists")]
@@ -412,6 +428,14 @@ async fn export_campaign_in_transaction(
     let exported_at_utc: String = sqlx::query_scalar("SELECT CURRENT_TIMESTAMP")
         .fetch_one(&mut **tx)
         .await?;
+    let observations =
+        sqlx::query("SELECT * FROM session_observations WHERE campaign_id = ? ORDER BY ordinal")
+            .bind(&campaign_id_text)
+            .fetch_all(&mut **tx)
+            .await?
+            .into_iter()
+            .map(decode_observation)
+            .collect::<Result<Vec<_>, _>>()?;
     let export = CampaignExport {
         format_version: CAMPAIGN_EXPORT_FORMAT_VERSION,
         state_schema_version: u32::try_from(current_state.schema_version)
@@ -426,6 +450,7 @@ async fn export_campaign_in_transaction(
         event_journal,
         event_causes,
         snapshots,
+        observations,
     };
     validate_export(&export)?;
     Ok(export)
@@ -493,6 +518,7 @@ fn same_export_payload(left: &CampaignExport, right: &CampaignExport) -> bool {
         && left.event_journal == right.event_journal
         && left.event_causes == right.event_causes
         && left.snapshots == right.snapshots
+        && left.observations == right.observations
 }
 
 pub async fn restore_campaign(
@@ -546,6 +572,9 @@ pub async fn restore_campaign(
     }
     for row in &export.play_session_participants {
         insert_participant(&mut tx, row).await?;
+    }
+    for observation in &export.observations {
+        insert_observation(&mut tx, observation).await?;
     }
     for row in &export.command_audit {
         insert_command_audit(&mut tx, row).await?;
@@ -817,6 +846,7 @@ fn validate_export(export: &CampaignExport) -> Result<(), LifecycleError> {
     }
 
     let session_ids = validate_sessions(export, &state)?;
+    validate_observations(export, &state, &session_ids)?;
     let event_sequences = validate_journal(export, head, &state, &session_ids)?;
     validate_snapshots(export, &event_sequences)?;
     validate_state_provenance(
@@ -828,14 +858,19 @@ fn validate_export(export: &CampaignExport) -> Result<(), LifecycleError> {
 }
 
 fn validate_export_metadata(export: &CampaignExport) -> Result<(), LifecycleError> {
-    validate_export_metadata_version(export, CURRENT_STATE_SCHEMA_VERSION)
+    validate_export_metadata_version(
+        export,
+        CURRENT_STATE_SCHEMA_VERSION,
+        CAMPAIGN_EXPORT_FORMAT_VERSION,
+    )
 }
 
 fn validate_export_metadata_version(
     export: &CampaignExport,
     expected_state_version: u32,
+    expected_format_version: u32,
 ) -> Result<(), LifecycleError> {
-    if export.format_version != CAMPAIGN_EXPORT_FORMAT_VERSION {
+    if export.format_version != expected_format_version {
         return Err(LifecycleError::IncompatibleExportFormat {
             actual: export.format_version,
             supported: CAMPAIGN_EXPORT_FORMAT_VERSION,
@@ -1118,6 +1153,7 @@ fn validate_sessions(
     state: &CampaignState,
 ) -> Result<HashSet<String>, LifecycleError> {
     let mut session_ids = HashSet::with_capacity(export.play_sessions.len());
+    let mut active_sessions = Vec::new();
     let mut participants_by_session =
         HashMap::<&str, Vec<&PlaySessionParticipantRow>>::with_capacity(export.play_sessions.len());
     for participant in &export.play_session_participants {
@@ -1204,13 +1240,82 @@ fn validate_sessions(
                 "play session violates world-reference invariants".into(),
             ));
         }
+        if session.status == PlaySessionStatus::Active {
+            active_sessions.push(session);
+        }
     }
     if !participants_by_session.is_empty() {
         return Err(LifecycleError::CorruptExport(
             "participant references missing session".into(),
         ));
     }
+    if active_sessions.len() > 1
+        || state.table.as_ref().is_some_and(|table| {
+            let expected = table
+                .active_session
+                .as_ref()
+                .map(|binding| binding.as_session(state.campaign_id()));
+            active_sessions.first() != expected.as_ref()
+        })
+    {
+        return Err(LifecycleError::CorruptExport(
+            "current table/session projection mismatch".into(),
+        ));
+    }
     Ok(session_ids)
+}
+
+fn validate_observations(
+    export: &CampaignExport,
+    state: &CampaignState,
+    session_ids: &HashSet<String>,
+) -> Result<(), LifecycleError> {
+    let mut identities = HashSet::new();
+    for (index, observation) in export.observations.iter().enumerate() {
+        let record = &observation.record;
+        let expected = u64::try_from(index)
+            .ok()
+            .and_then(|value| value.checked_add(1));
+        if Some(observation.ordinal) != expected
+            || observation.ordinal > i64::MAX as u64
+            || !identities.insert(record.id)
+            || record.campaign_id != state.campaign_id()
+            || record.observed_event_sequence > state.applied_event_sequence
+            || !record.valid_shape()
+        {
+            return Err(LifecycleError::CorruptExport(
+                "invalid observation metadata".into(),
+            ));
+        }
+        validate_session_reference(
+            record.session_id.map(|id| id.0.to_string()).as_deref(),
+            session_ids,
+            "observation",
+        )?;
+        if let ObservationAudience::Player(id) = record.audience
+            && !state.players.contains_key(&id)
+        {
+            return Err(LifecycleError::CorruptExport(
+                "observation audience is missing".into(),
+            ));
+        }
+        match record.issuer {
+            CommandIssuer::Admin | CommandIssuer::System => (),
+            CommandIssuer::Player(id)
+                if state.players.contains_key(&id)
+                    && record.session_id.is_some()
+                    && !matches!(record.audience, ObservationAudience::Player(other) if id != other) =>
+                {}
+            _ => {
+                return Err(LifecycleError::CorruptExport(
+                    "invalid observation issuer".into(),
+                ));
+            }
+        }
+        // Attendance is checked at append time. Historical observations survive later absence
+        // and session closure; the current projection must not retroactively invalidate them.
+    }
+    Ok(())
 }
 
 fn validate_session_reference(

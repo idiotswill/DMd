@@ -140,6 +140,8 @@ pub struct DeathState {
 #[serde(deny_unknown_fields)]
 pub struct MechanicalEntity {
     pub entity_id: EntityId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub character_features: Option<crate::CharacterFeatureState>,
     pub level: u8,
     pub ability_scores: [u8; 6],
     pub armor: ArmorClass,
@@ -296,6 +298,7 @@ pub enum PendingPurpose {
         damage_taken: u32,
     },
     RestHitDie,
+    SecondWind,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -311,6 +314,8 @@ pub struct RecordedRoll {
     pub issued_by: CommandMeta,
     pub accepted_by: CommandMeta,
     pub original_result: Option<RollResult>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub savage_attacker: Option<crate::SavageAttackerRoll>,
     pub request: RollRequest,
     pub result: RollResult,
     pub resolved: ResolvedRoll,
@@ -359,6 +364,7 @@ impl MechanicalEntity {
     pub fn basic(entity_id: EntityId) -> Self {
         Self {
             entity_id,
+            character_features: None,
             level: 1,
             ability_scores: [10; 6],
             armor: ArmorClass::Armor {

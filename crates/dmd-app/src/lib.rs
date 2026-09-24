@@ -3,6 +3,10 @@ use std::path::{Path, PathBuf};
 mod rules_restore;
 mod rules_runtime;
 pub use rules_runtime::*;
+mod table_protocol;
+pub use table_protocol::*;
+mod table_engine;
+mod table_runtime;
 
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,
@@ -55,6 +59,8 @@ impl RunnableCampaign {
 
 #[derive(Debug, Error)]
 pub enum RunnableCampaignError {
+    #[error("{0}")]
+    Table(String),
     #[error("content catalog could not be loaded: {0}")]
     Catalog(#[from] CatalogLoadError),
     #[error("campaign content could not be resolved: {0}")]
@@ -158,7 +164,7 @@ impl CampaignRuntime {
         // operation reloads content normally, so this reuse cannot authorize a future command.
         let content = catalog.resolve_campaign(&raw.state.campaign)?;
         if let Some(pack) = pack {
-            dmd_rules::validate_state(&raw.state, pack)?;
+            table_engine::validate_table(&raw.state, pack).map_err(RunnableCampaignError::Table)?;
         } else if Self::uses_rules(&raw.state) {
             return Err(RunnableCampaignError::RulesContent(
                 "returned state requires rules that were not validated before the operation".into(),
@@ -177,7 +183,7 @@ impl CampaignRuntime {
     ) -> Result<Option<RulesPack>, RunnableCampaignError> {
         if Self::uses_rules(state) {
             let pack = rules_runtime::load_rules_pack(content)?;
-            dmd_rules::validate_state(state, &pack)?;
+            table_engine::validate_table(state, &pack).map_err(RunnableCampaignError::Table)?;
             return Ok(Some(pack));
         }
         Ok(None)

@@ -21,6 +21,11 @@ impl CampaignState {
         self.validate_items(expected, &mut violations);
         self.validate_information(expected, &mut violations);
         self.validate_directives(expected, &mut violations);
+        if let Some(table) = &self.table
+            && let Err(message) = table.validate(self)
+        {
+            violations.push(StateInvariantViolation::InvalidTableState(message));
+        }
 
         violations
     }
@@ -550,6 +555,7 @@ impl CampaignState {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StateInvariantViolation {
+    InvalidTableState(String),
     CampaignMismatch {
         record_kind: String,
         expected: CampaignId,
