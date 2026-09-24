@@ -7,7 +7,7 @@ members = [
   "crates/dmd-persistence",
   "crates/dmd-conversation",
   "crates/dmd-app",
-    "crates/dmd-desktop",
+  "crates/dmd-desktop",
 ]
 
 [workspace.package]

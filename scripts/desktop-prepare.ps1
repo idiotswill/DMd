@@ -16,3 +16,8 @@ try {
     & (Join-Path $dmdFrontend 'node_modules/.bin/tauri.cmd') icon '../../crates/dmd-desktop/icons/app.svg' --output '../../crates/dmd-desktop/icons'
     if ($LASTEXITCODE -ne 0) { throw 'Desktop icon generation failed.' }
 } finally { Pop-Location }
+Push-Location $dmdRoot
+try {
+    & node (Join-Path $PSScriptRoot 'desktop-notices.mjs') (Join-Path $dmdRoot 'crates/dmd-desktop/licenses/dependencies')
+    if ($LASTEXITCODE -ne 0) { throw 'Dependency notice collection failed.' }
+} finally { Pop-Location }
