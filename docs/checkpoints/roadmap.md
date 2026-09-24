@@ -20,7 +20,8 @@ Only the active gate receives a detailed execution plan.
 table loop following foundation PR #20, desktop PR #21 and closeout PR #22. Its checkpoint
 records packaged play, physical dice, correction, ambiguity/crash recovery and session
 continuation evidence. Completed plans are archived under `docs/exec-plans/completed/`.
-Development is paused for owner review. **Gate 4 has not started and requires continuation.**
+The owner authorized continuation on 2026-09-24. **Gate 4 is active; acceptance is pending.**
+Its bounded work is tracked in the [active execution plan](../exec-plans/active/gate-4-tactical-encounters.md).
 
 ## Preconditions before Gate 2
 

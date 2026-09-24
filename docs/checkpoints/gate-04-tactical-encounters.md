@@ -1,6 +1,6 @@
 # Gate 4 — Tactical encounters
 
-Status: **Planned**
+Status: **Active — owner authorized after Gate 3 on 2026-09-24; acceptance pending.**
 
 ## Product requirements advanced
 
