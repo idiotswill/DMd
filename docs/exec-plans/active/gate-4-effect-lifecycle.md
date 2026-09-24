@@ -1,11 +1,13 @@
 # Gate 4 — Typed effect lifecycle
 
-Status: **Implementation verified; independent review and production integration pending.**
+Status: **Focused implementation verified; exact-main review/full verification pending.**
 
 ## Objective and branch
 
 Implement reusable, deterministic effect identity, concentration grouping, overlap,
-expiry and trigger scheduling on `codex/gate4-effect-lifecycle`, based on `325369b`.
+expiry and trigger scheduling on `codex/gate4-effects-verified`, based on merged
+foundation main `580f487`. The original `codex/gate4-effect-lifecycle` source branch is
+retained. Root is the sole writer of this verification branch.
 The root encounter resolver will authorize source-defined actions, call this reducer,
 persist its state in `RulesState` and pending trigger consequences atomically, and supply application
 and desktop acceptance. This slice alone does not complete a spell or Gate 4.
@@ -84,7 +86,7 @@ identity, groups, expiry, suppression and trigger scheduling in the relevant row
 | Casting transaction | Components/hands, effective slot level, spending phase, one slot per turn, interruptible casting; 105–106 |
 | Ordered effects | Hit/miss/save branches, independent rays, simultaneous damage, actual-damage references, bounded extra dice; Acid Arrow107, Scorching Ray159, Sorcerous Burst163, Vampiric Touch171 |
 | Effect identity | Shared concentration, target-local endings, strongest/latest overlap, hidden invalid-target behavior; 106,179 |
-| Trigger lifecycle | Start/end/damage/movement/attack/casting/interaction triggers, staged saves, owner-relative expiry; Hypnotic Pattern141, Sleep162 |
+| Trigger lifecycle | Start/end/damage/movement/attack/casting/interaction triggers, staged saves, owner-relative expiry; Hypnotic Pattern141, Sleep163 |
 | Interruptions | Shield, Constitution-save Counterspell with unspent slot, fall response, retargeting/redirecting defenses, accepted order; 120,130,150,159,161–162 |
 | Ready | Pay for and concentrate on held spell, perceivable trigger, reaction release after trigger, expiry; 186–187 |
 | Persistent zones | Fixed/attached origin, exclusions, moving-zone contact, once per target per turn; 117–118,164–165 |
@@ -133,8 +135,14 @@ definition-derived effect/trigger payloads against pinned content before accepti
 restored initial anchor; this module's structural validation cannot prove that a
 well-formed custom damage/DC record was authorized by its named source.
 
-Next: finish independent delta review, commit this coherent slice, and supply its exact
-head to root for integration. Root must add the optional RulesState field/legacy-input
-guards, maintain group concentration pointers, bridge condition queries, validate
-content-derived payloads and persist/resolve the due-ticket continuation. Do not push
-or claim gate acceptance.
+The source reducer is isolated into a six-file PR so it can be reviewed and verified
+without bundling every developing tactical subsystem. Its four new source/test/plan
+files match the original reviewed source commit `5942d326`; only export placement is
+reconciled with merged main. Canonical `./scripts/verify`, current-head independent
+review and CI are required before merge; none are claimed from the earlier focused run.
+
+Next: finish exact-head review and full verification, merge this bounded reducer slice,
+then refresh the integration branch onto current main. That integration must attach the
+optional RulesState field/legacy-input guards, group concentration pointers, condition
+queries, authenticated replay and due-ticket continuation. All eighteen effect-family
+obligations and packaged encounter acceptance above remain active Gate 4 work.
