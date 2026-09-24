@@ -78,6 +78,9 @@ pub struct TacticalOpportunityWindow {
 pub enum TacticalOpportunityDecisionKind {
     Declined,
     Attack,
+    /// Derived consequences made the crossing/attack unavailable before its offer;
+    /// preserves the actual causing command without inventing a player's decline.
+    Unavailable,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
