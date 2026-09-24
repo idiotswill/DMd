@@ -186,6 +186,7 @@ pub(super) fn begin(
         failed_save: None,
         legendary_window: None,
         attack: Some(attack),
+        movement: None,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

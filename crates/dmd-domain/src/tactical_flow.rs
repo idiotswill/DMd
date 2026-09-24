@@ -10,6 +10,13 @@ use serde::{Deserialize, Serialize};
 pub struct TacticalTurnBudget {
     /// Shared expenditure across movement modes, measured in half-foot units.
     pub movement_spent: u32,
+    /// Continuous run-up/jump context; source movement derives it and intervening
+    /// non-movement actions/displacements end it. Absent in earlier schema-4 saves.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub movement_progress: Option<crate::TacticalMovementProgress>,
+    /// Original accepted mover command for the most recently committed progress.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub movement_origin: Option<CommandMeta>,
     pub dash_grants: Vec<DashGrant>,
     /// Unresolved attacks granted by the current Attack action, not additional actions.
     pub attacks_remaining: u8,
