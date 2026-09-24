@@ -48,7 +48,7 @@ fn visibility(state: &CampaignState, actor: EntityId) -> RollVisibility {
         RollVisibility::Secret
     }
 }
-fn save_request(
+pub(super) fn save_request(
     state: &CampaignState,
     actor: EntityId,
     key: TacticalRollKey,
@@ -84,7 +84,21 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if matches!(
+        work.kind,
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage
+    ) {
+        return super::attacks::key(state, work);
+    }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement choice has no raw roll key"));
+        }
+        TacticalWorkKind::AttackRoll
+        | TacticalWorkKind::AttackDamage
+        | TacticalWorkKind::FinishAttack => {
+            return Err(invalid("attack work has no ordinary save key"));
+        }
         TacticalWorkKind::DeathSave { actor } => (TacticalRollRole::DeathSave, *actor),
         TacticalWorkKind::StableRecovery { actor, .. } => {
             (TacticalRollRole::StableRecovery, *actor)
@@ -120,6 +134,8 @@ pub(super) fn key(
 }
 pub(super) fn ruling(role: TacticalRollRole) -> Ruling {
     let (page, reason) = match role {
+        TacticalRollRole::Attack => (15, "Source weapon attack against the selected target."),
+        TacticalRollRole::AttackDamage => (16, "Source weapon damage after a confirmed hit."),
         TacticalRollRole::CreatureRecharge => (
             257,
             "Source recharge at the start of the creature's own turn.",
@@ -151,6 +167,13 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            Err(invalid("movement choice has no raw roll"))
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
+            super::attacks::request(state, work, key)
+        }
+        TacticalWorkKind::FinishAttack => Err(invalid("attack completion has no raw roll")),
         TacticalWorkKind::DeathSave { actor } => {
             let context = crate::tactical_vitality_adapter::context(
                 state,
@@ -227,7 +250,18 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::movement::start(state, meta, &work)? {
+        return Ok(());
+    }
+    if super::attacks::start(state, meta, &work)? {
+        return Ok(());
+    }
     match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement work was not handled"));
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => (),
+        TacticalWorkKind::FinishAttack => return Err(invalid("attack completion was not handled")),
         TacticalWorkKind::LegendaryWindow { actor } => {
             let actor = *actor;
             return super::creature_bridge::offer(state, meta, work, actor);
@@ -451,6 +485,18 @@ pub(super) fn finish(
         .transpose()?;
     resolution_mut(state)?.pending = None;
     match pending.work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement is not a raw roll continuation"));
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => super::attacks::resolved(
+            state,
+            meta,
+            &pending,
+            result.ok_or_else(|| invalid("attack requires raw dice"))?,
+        )?,
+        TacticalWorkKind::FinishAttack => {
+            return Err(invalid("attack completion is not pending dice"));
+        }
         TacticalWorkKind::DeathSave { actor } => {
             let operation = if forced_success {
                 VitalityOperation::SucceedDeathSave
@@ -595,6 +641,7 @@ pub(super) fn apply_vitality(
         },
         &operation,
     )?;
+    let knockout_rest = transition.recovery.knockout_rest.clone();
     let mut work = Vec::new();
     for followup in transition.followups {
         match followup {
@@ -619,6 +666,21 @@ pub(super) fn apply_vitality(
             }
             VitalityFollowup::StartKnockoutShortRest { started_at } => {
                 let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+                let proof = knockout_rest
+                    .clone()
+                    .ok_or_else(|| invalid("knockout rest has no source authorization"))?;
+                if proof.started_at != started_at {
+                    return Err(invalid("knockout rest initiation differs"));
+                }
+                let recovery = rules
+                    .tactical_recovery
+                    .as_mut()
+                    .and_then(|records| records.get_mut(&actor))
+                    .ok_or_else(|| invalid("knockout recovery absent"))?;
+                recovery.knockout_rest = Some(proof);
+                if let Some(knockout) = &mut recovery.knockout {
+                    knockout.short_rest_started_at = Some(started_at);
+                }
                 rules.rests.retain(|r| r.actor != actor);
                 rules.rests.push(RestProgress {
                     actor,

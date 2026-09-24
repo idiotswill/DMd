@@ -14,6 +14,8 @@ pub enum TacticalRollRole {
     Concentration,
     StableRecovery,
     CreatureRecharge,
+    Attack,
+    AttackDamage,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -37,6 +39,8 @@ impl TacticalRollKey {
             TacticalRollRole::Concentration => 4,
             TacticalRollRole::StableRecovery => 5,
             TacticalRollRole::CreatureRecharge => 6,
+            TacticalRollRole::Attack => 7,
+            TacticalRollRole::AttackDamage => 8,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -49,6 +53,13 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    MoveSegment,
+    MovementOpportunity {
+        reactor: EntityId,
+    },
+    AttackRoll,
+    AttackDamage,
+    FinishAttack,
     DeathSave {
         actor: EntityId,
     },
@@ -126,6 +137,10 @@ pub struct TacticalResolution {
     pub failed_save: Option<TacticalFailedSave>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub legendary_window: Option<TacticalLegendaryWindow>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack: Option<crate::TacticalAttack>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub movement: Option<Box<crate::TacticalMovement>>,
     pub next_occurrence: u16,
 }
 

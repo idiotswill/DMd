@@ -70,6 +70,21 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::MoveSegment => {
+            r.movement
+                .as_ref()
+                .ok_or_else(|| invalid("movement work lacks accepted intent"))?
+                .actor
+        }
+        TacticalWorkKind::MovementOpportunity { reactor } => *reactor,
+        TacticalWorkKind::AttackRoll
+        | TacticalWorkKind::AttackDamage
+        | TacticalWorkKind::FinishAttack => {
+            r.attack
+                .as_ref()
+                .ok_or_else(|| invalid("attack work lacks declaration"))?
+                .target
+        }
         TacticalWorkKind::DeathSave { actor } => {
             if *actor != r.turn_actor || r.boundary != TurnBoundary::Start {
                 return Err(invalid("death save outside owner's start boundary"));
@@ -187,6 +202,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         if usize::from(r.pending.is_some())
             + usize::from(r.failed_save.is_some())
             + usize::from(r.legendary_window.is_some())
+            + usize::from(r.movement.as_ref().is_some_and(|m| m.opportunity.is_some()))
             > 1
         {
             return Err(invalid("multiple selected tactical continuations"));
@@ -252,6 +268,19 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     .as_ref()
                     .ok_or_else(|| invalid("selected work lacks dice request"))?,
             )?;
+        } else if r.movement.as_ref().is_some_and(|m| m.opportunity.is_some()) {
+            if rules.pending.is_some() {
+                return Err(invalid("movement opportunity has competing dice"));
+            }
+        } else if r.attack.as_ref().is_some_and(|a| {
+            matches!(
+                a.stage,
+                TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+            )
+        }) {
+            if rules.pending.is_some() {
+                return Err(invalid("attack decision has competing dice"));
+            }
         } else if rules.pending.is_some() || r.frames.last().is_none_or(|frame| frame.len() < 2) {
             return Err(invalid(
                 "continuation was not suspended at a material choice",
@@ -266,6 +295,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         ));
     }
     super::creature_bridge::validate(state)?;
+    super::attacks::validate(state)?;
+    super::movement::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20
         || f.budget.weapon_history.len() > 512

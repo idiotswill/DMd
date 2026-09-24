@@ -1,4 +1,19 @@
-import type { Id } from './table-api';
+import type { Ability, Id } from './table-api';
+
+export type Hand = 'Left' | 'Right';
+export type WeaponGrip = 'TwoHands' | { OneHand: Hand };
+export type WeaponDelivery = 'Melee' | 'Thrown' | 'Shot';
+export interface WeaponUseChoice {
+  weapon: Id; target: Id; delivery: WeaponDelivery; ability: Ability; grip: WeaponGrip;
+  purpose: 'Normal' | { LightBonus: { trigger: Id } } | { Nick: { trigger: Id } } | { Cleave: { trigger: Id } };
+  ammunition: Id | null;
+  equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } } | null;
+}
+export interface AttackOptions {
+  actor: Id; hands: { hands: ('Free' | { Item: Id })[] };
+  weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[] }[];
+  targets: { actor: Id; label: string }[];
+}
 
 export interface Point { x: number; y: number; z: number }
 export interface Volume { min: Point; max: Point }
@@ -17,6 +32,9 @@ export interface BattlefieldSetup {
 export type TacticalAction =
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
+  | { Attack: { choice: WeaponUseChoice } }
+  | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
+  | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { occurrence: number } }
   | { Begin: { combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
@@ -34,5 +52,7 @@ export interface TacticalView {
   may_fail_save: Id | null;
   legendary_resistance: Id | null;
   legendary_action: Id | null;
+  attack_options?: AttackOptions | null;
+  attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }
