@@ -1343,11 +1343,35 @@ fn close_spell_attacks_use_explicit_threat_and_target_distance() {
         },
         ruling: ruling(),
     });
-    blinded.spell("fire-bolt", 0);
-    assert_eq!(
-        blinded.rules().pending.as_ref().unwrap().request.mode,
-        RollMode::Advantage
-    );
+    for (ranged_threat, expected_mode) in [(false, RollMode::Advantage), (true, RollMode::Normal)] {
+        blinded.admin(RulesAction::AuthorizeSpell {
+            actor: blinded.actor,
+            target: blinded.target,
+            spell_id: "fire-bolt".into(),
+            circumstances: Circumstances {
+                ranged_threat,
+                ..Circumstances::default()
+            },
+            within_five_feet: true,
+            ruling: ruling(),
+        });
+        blinded.player(RulesAction::CastSpell {
+            actor: blinded.actor,
+            target: blinded.target,
+            spell_id: "fire-bolt".into(),
+            slot_level: 0,
+            request_id: RollRequestId::new(),
+            effect_id: EffectId::new(),
+        });
+        assert_eq!(
+            blinded.rules().pending.as_ref().unwrap().request.mode,
+            expected_mode
+        );
+        // The adjacent blinded target cannot see the caster. Only a separately
+        // adjudicated seeing enemy cancels the advantage against that target.
+        blinded.faces(if ranged_threat { &[1] } else { &[1, 1] });
+    }
+    blinded.replay();
 }
 
 #[test]
@@ -1398,10 +1422,19 @@ fn initiative_conditions_and_rest_interruptions_follow_srd() {
     );
     assert!(t.rules().rests.is_empty());
     t.faces(&[12]);
-    for condition in [Condition::Invisible, Condition::Incapacitated] {
+    let invisible_id = EffectId::new();
+    for (condition, effect_id, expected_mode) in [
+        (Condition::Invisible, invisible_id, RollMode::Advantage),
+        (
+            Condition::Incapacitated,
+            EffectId::new(),
+            RollMode::Disadvantage,
+        ),
+        (Condition::Invisible, EffectId::new(), RollMode::Normal),
+    ] {
         t.admin(RulesAction::ApplyEffect {
             effect: ActiveEffect {
-                id: EffectId::new(),
+                id: effect_id,
                 source: t.target,
                 target: t.actor,
                 condition: Some(condition),
@@ -1411,15 +1444,25 @@ fn initiative_conditions_and_rest_interruptions_follow_srd() {
             },
             ruling: ruling(),
         });
+        let request = t.request(
+            TestKind::Initiative,
+            0,
+            Circumstances::default(),
+            RollVisibility::Public,
+        );
+        assert_eq!(request.mode, expected_mode);
+        t.faces(if expected_mode == RollMode::Normal {
+            &[12]
+        } else {
+            &[3, 12]
+        });
+        if effect_id == invisible_id {
+            t.admin(RulesAction::RemoveEffect {
+                effect_id,
+                ruling: ruling(),
+            });
+        }
     }
-    let request = t.request(
-        TestKind::Initiative,
-        0,
-        Circumstances::default(),
-        RollVisibility::Public,
-    );
-    assert_eq!(request.mode, RollMode::Normal);
-    t.faces(&[12]);
     t.replay();
 }
 
