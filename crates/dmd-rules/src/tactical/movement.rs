@@ -309,11 +309,13 @@ pub(super) fn validate_opportunity(
         .opportunity
         .as_ref()
         .ok_or_else(|| prerequisite("No opportunity attack is due."))?;
+    validate_equipment_change_origin(state, &window.origin, reactor).map_err(|e| invalid(&e))?;
     if window.reactor != reactor
         || window.mover != mover
         || mover != movement.actor
         || window.step_index != movement.next_step
         || !movement.offered.contains(&reactor)
+        || window.origin.expected_event_sequence < movement.origin.expected_event_sequence
         || resolution(state)?.attack.is_some()
         || resolution(state)?.pending.is_some()
         || resolution(state)?.failed_save.is_some()
@@ -482,8 +484,6 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
     }
     if let Some(window) = &movement.opportunity {
-        validate_equipment_change_origin(state, &window.origin, window.reactor)
-            .map_err(|e| invalid(&e))?;
         validate_opportunity(state, window.reactor, window.mover)?;
     }
     let next_steps = resolution

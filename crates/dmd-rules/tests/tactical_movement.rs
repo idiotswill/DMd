@@ -763,7 +763,7 @@ fn malformed_saved_crossing_cannot_change_reactor_reach_cost_or_cursor() {
     f.arm("longsword", false, false);
     f.begin_mover_turn();
     f.run(Some(1), walk(&[point(30, 10, 0)]));
-    for mutation in 0..8 {
+    for mutation in 0..10 {
         let mut corrupt = f.state.clone();
         let movement = corrupt
             .encounter
@@ -787,6 +787,19 @@ fn malformed_saved_crossing_cannot_change_reactor_reach_cost_or_cursor() {
             5 => movement.initial_progress.walked_runup = 20,
             6 => movement.origin.actor = Some(AgentRef::Entity(f.actors[0])),
             7 => movement.offered.clear(),
+            8 => movement.opportunity.as_mut().unwrap().origin.campaign_id = CampaignId::new(),
+            9 => {
+                movement
+                    .opportunity
+                    .as_mut()
+                    .unwrap()
+                    .origin
+                    .expected_event_sequence = movement
+                    .origin
+                    .expected_event_sequence
+                    .checked_sub(1)
+                    .unwrap();
+            }
             _ => unreachable!(),
         }
         assert!(

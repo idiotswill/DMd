@@ -162,3 +162,11 @@ Liquid landing retains the explicit Reaction/check choice. A dead flyer physical
 lands without attempting to revive or damage a corpse through a living vitality API.
 Roll role tags 9 (`FallDamage`) and 10 (`LiquidLandingCheck`) are reserved with the
 casting author, whose new tags begin at 11. No falling execution is claimed yet.
+
+Independent OA adapter review found that its copied crossing origin outlives the live
+`movement.opportunity` field. The common `validate_opportunity` now checks provenance
+and rejects a crossing cause predating its movement command, so both live decisions
+and reconstructed accepted attack admissions receive those checks. Two additional
+malformed-anchor cases cover foreign campaign and pre-movement origin. They remain
+unrun pending the same serialized combined build; the attack adapter retains its
+separate upper bound against the actual accepted reaction command.
