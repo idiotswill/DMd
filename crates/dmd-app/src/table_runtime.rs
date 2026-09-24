@@ -19,6 +19,27 @@ fn invalid(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
 }
 
+pub(crate) fn validate_table_observation(
+    record: &NewSessionObservation,
+) -> Result<TableObservationBody, String> {
+    if record.kind != "table.conversation" || record.payload_schema_version != 1 {
+        return Err("Unsupported table observation.".into());
+    }
+    let body: TableObservationBody =
+        serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?;
+    if body.meta.id.0 != record.id.0
+        || body.meta.campaign_id != record.campaign_id
+        || body.meta.issuer != record.issuer
+        || body.meta.session_id != record.session_id
+        || body.meta.expected_event_sequence != record.observed_event_sequence
+    {
+        return Err("Table observation body and provenance disagree.".into());
+    }
+    bounded_text(&body.text, 8000)?;
+    bounded_text(&body.answer, 20000)?;
+    Ok(body)
+}
+
 impl CampaignRuntime {
     pub async fn character_creation_options(
         &self,
@@ -251,9 +272,9 @@ impl CampaignRuntime {
             .await
             .map_err(invalid)?
         {
-            let body: TableObservationBody =
-                serde_json::from_str(&saved.record.payload_json).map_err(invalid)?;
-            if saved.record.issuer != meta.issuer
+            let body = validate_table_observation(&saved.record).map_err(invalid)?;
+            if body.meta != meta
+                || saved.record.issuer != meta.issuer
                 || saved.record.session_id != meta.session_id
                 || saved.record.observed_event_sequence != meta.expected_event_sequence
                 || body.text != text
@@ -329,6 +350,7 @@ impl CampaignRuntime {
             }
         };
         let body = TableObservationBody {
+            meta: meta.clone(),
             text: text.into(),
             answer,
         };
@@ -510,8 +532,7 @@ impl CampaignRuntime {
                 if record.kind != "table.conversation" || record.payload_schema_version != 1 {
                     continue;
                 }
-                let body: TableObservationBody =
-                    serde_json::from_str(&record.payload_json).map_err(invalid)?;
+                let body = validate_table_observation(record).map_err(invalid)?;
                 let speaker = match record.issuer {
                     CommandIssuer::Player(player) => state
                         .players

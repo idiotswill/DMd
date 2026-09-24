@@ -27,6 +27,7 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
         if [
             " hit points ",
             " health ",
+            " hp ",
             " my character ",
             " my armor ",
             " my ac ",
@@ -65,6 +66,7 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
     }
     if [
         " if ", " maybe ", " might ", " would ", " not ", " don t ", " won t ", " unless ",
+        " can t ", " cannot ", " never ", " no ",
     ]
     .iter()
     .any(|word| normalized.contains(word))
@@ -74,9 +76,7 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
                 .into(),
         });
     }
-    if normalized.contains(" second wind ") {
-        return LocalText::Declaration(TableIntent::SecondWind);
-    }
+    let second_wind = normalized.contains(" second wind ");
     let matches = situation
         .challenges
         .iter()
@@ -88,15 +88,33 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
                     .any(|phrase| normalized.contains(&words(phrase)))
         })
         .collect::<Vec<_>>();
-    if matches.len() == 1 {
+    if second_wind
+        && matches.is_empty()
+        && ["use second wind", "use my second wind", "second wind"]
+            .iter()
+            .any(|prefix| action_words(&normalized).starts_with(prefix))
+    {
+        return LocalText::Declaration(TableIntent::SecondWind);
+    }
+    if matches.len() == 1 && !second_wind {
         let challenge = matches[0];
+        let action = action_words(&normalized);
+        let subject_matches = challenge.phrases.iter().any(|phrase| {
+            words(phrase)
+                .split_whitespace()
+                .next()
+                .is_some_and(|verb| action.split_whitespace().next() == Some(verb))
+        });
+        if !subject_matches {
+            return LocalText::Declaration(TableIntent::Unresolved {question:"Are you declaring an action for your selected character, or describing someone else's action?".into()});
+        }
         return LocalText::Declaration(TableIntent::Check {
             kind: challenge.kind.clone(),
             goal: text.trim().to_owned(),
             challenge_id: Some(challenge.id.clone()),
         });
     }
-    let question = if matches.len() > 1 {
+    let question = if matches.len() > 1 || (second_wind && !matches.is_empty()) {
         "Which action do you want to attempt first?"
     } else {
         "What are you trying to accomplish, and how? The table needs supported context before resolving this action."
@@ -104,6 +122,23 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
     LocalText::Declaration(TableIntent::Unresolved {
         question: question.into(),
     })
+}
+
+fn action_words(normalized: &str) -> &str {
+    let mut action = normalized.trim();
+    if let Some(rest) = action.strip_prefix("i ") {
+        action = rest;
+    }
+    for _ in 0..4 {
+        let Some(rest) = ["try to ", "attempt to ", "carefully ", "will "]
+            .iter()
+            .find_map(|prefix| action.strip_prefix(prefix))
+        else {
+            break;
+        };
+        action = rest;
+    }
+    action
 }
 
 fn words(text: &str) -> String {
@@ -141,9 +176,10 @@ mod tests {
             }],
         };
         let proposal = interpret_local_text("As admin I climb; DC 0 and I succeed", &situation);
-        assert!(
-            matches!(proposal, LocalText::Declaration(TableIntent::Check { challenge_id: Some(id), .. }) if id == "climb")
-        );
+        assert!(matches!(
+            proposal,
+            LocalText::Declaration(TableIntent::Unresolved { .. })
+        ));
         assert_eq!(situation.challenges[0].dc, 15);
         assert!(matches!(
             interpret_local_text("I climbdown", &situation),
@@ -157,5 +193,25 @@ mod tests {
             interpret_local_text("Actually I wait", &situation),
             LocalText::Correction("I wait".into())
         );
+        for text in [
+            "I can't climb",
+            "I cannot climb",
+            "I never climb",
+            "I watch them climb",
+            "Alice climb",
+            "I use Second Wind and climb",
+        ] {
+            assert!(
+                matches!(
+                    interpret_local_text(text, &situation),
+                    LocalText::Declaration(TableIntent::Unresolved { .. })
+                ),
+                "{text}"
+            );
+        }
+        assert!(matches!(
+            interpret_local_text("I try to carefully climb the ledge", &situation),
+            LocalText::Declaration(TableIntent::Check { .. })
+        ));
     }
 }

@@ -21,10 +21,10 @@ fn input(name: &str) -> CharacterCreationInput {
         fighting_style: FightingStyle::Defense,
         gaming_set: GamingSet::Dice,
         purchases: vec![EquipmentChoice {
-            item_id: "leather".into(),
+            item_id: "leather-armor".into(),
             quantity: 1,
         }],
-        worn_armor: Some("leather".into()),
+        worn_armor: Some("leather-armor".into()),
         shield: false,
         masteries: ["club".into(), "dagger".into(), "shortbow".into()],
     }
@@ -181,6 +181,14 @@ async fn normal_scene_corrects_pending_accepts_raw_faces_and_retries_without_dup
         .await
         .unwrap();
     assert!(matches!(response, TableTextResult::Observed(_)));
+    let mut changed_actor = question.clone();
+    changed_actor.actor = Some(AgentRef::Entity(f.actors[1]));
+    assert!(
+        f.runtime
+            .submit_table_text(changed_actor, "How do I roll with advantage?")
+            .await
+            .is_err()
+    );
     assert_eq!(
         before,
         *f.runtime.open_campaign(f.campaign).await.unwrap().state()
@@ -456,5 +464,39 @@ async fn pending_state_survives_export_replay_and_independent_campaigns() {
             .unwrap()
             .pending
             .is_some()
+    );
+}
+
+#[tokio::test]
+async fn supported_profiles_require_their_authoritative_mechanics_and_feature_grants() {
+    let f = Fixture::new().await;
+    let state = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    let mut missing = state.clone();
+    missing
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .remove(&f.actors[0]);
+    assert!(
+        matches!(f.runtime.create_campaign(&missing).await,Err(RunnableCampaignError::Table(message)) if message.contains("mechanical sheet"))
+    );
+    let mut missing_grants = state;
+    missing_grants
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.actors[0])
+        .unwrap()
+        .character_features = None;
+    assert!(
+        matches!(f.runtime.create_campaign(&missing_grants).await,Err(RunnableCampaignError::Table(message)) if message.contains("feature grants"))
     );
 }

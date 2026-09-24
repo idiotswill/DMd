@@ -489,6 +489,35 @@ pub(crate) fn validate_table(state: &CampaignState, pack: &RulesPack) -> Result<
         for profile in table.character_profiles.values() {
             dmd_rules::validate_character_profile(profile, pack)
                 .map_err(|error| error.to_string())?;
+            let entity = state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.entities.get(&profile.entity_id))
+                .ok_or("A table character has no authoritative mechanical sheet.")?;
+            let features = entity
+                .character_features
+                .as_ref()
+                .ok_or("A table character is missing its source feature grants.")?;
+            if entity.level != profile.level
+                || features.fighter_level != profile.level
+                || features.fighting_style != profile.fighting_style
+                || features.wearing_armor != profile.worn_armor.is_some()
+                || !features.human_resourceful
+                || !features.savage_attacker
+                || entity
+                    .ability_scores
+                    .iter()
+                    .enumerate()
+                    .any(|(index, score)| {
+                        profile.base_ability_scores[index]
+                            .checked_add(profile.background_boosts[index])
+                            != Some(*score)
+                    })
+            {
+                return Err(
+                    "A table character's source choices disagree with its mechanical sheet.".into(),
+                );
+            }
         }
     }
     Ok(())
