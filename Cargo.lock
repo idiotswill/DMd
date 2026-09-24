@@ -177,6 +177,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "dmd-app"
+version = "0.1.0"
+dependencies = [
+ "dmd-domain",
+ "dmd-persistence",
+ "sqlx",
+ "thiserror",
+ "tokio",
+]
+
+[[package]]
 name = "dmd-conversation"
 version = "0.1.0"
 dependencies = [
