@@ -2,7 +2,7 @@
 
 ## Objective and scope
 
-Verification branch `codex/gate4-damage-verified`, based on merged main `580f487`;
+Verification branch `codex/gate4-damage-verified`, based on merged main `405112f`;
 the original `codex/gate4-damage-resolution` source branch is retained. Root is the
 sole writer of the verification branch. Implement an internal,
 pure, source-derived HP/damage/death reducer and durable recovery contracts without
@@ -54,10 +54,10 @@ the complete source reducer and tests. Their same-command future-occurrence find
 corrected, with immutable same-ID metadata and valid later-command history regressions.
 The scheduler review also requested explicit voluntary death-save failure (SRD187); it
 now records exactly one failure without inventing a natural die, and retains normal
-eligibility/death-at-three checks. Final follow-up delta signoff remains pending. The
+eligibility/death-at-three checks. Final source delta review found no blocker. The
 public contract was shared with the parent and turn-scheduler author before integration.
 
-Verified on the final code tree in the agreed serial build slot:
+Original source-slice checks in the agreed serial build slot:
 
 - `cargo test -p dmd-rules tactical_damage --lib`: 30 passed.
 - `cargo clippy -p dmd-domain -p dmd-rules --all-targets -- -D warnings`: passed.
@@ -87,3 +87,23 @@ Exact next action: run canonical full verification and exact-head CI on this mai
 branch, verify the complete final diff, and merge with expected-head protection. Then
 refresh the parent integration onto main. This reducer slice does not claim end-user
 damage support or Gate 4 acceptance before the production integration above.
+
+## Exact integration evidence
+
+The complete six-file `405112f..2a446b9` diff received a fresh independent review,
+including all 31 source regressions and SRD17–18: no blocking finding. Implementation
+and test files are byte-identical to the reviewed original source checkpoint `fdd272d`.
+The merge from current main adds the already accepted effect reducer alongside damage.
+
+Canonical `./scripts/verify` passed on `2a446b977d5cb0065819d2f4428a239db34621e2`:
+296 Rust tests, formatting/checks, strict workspace Clippy, genericity guard and
+architecture guard (8 tests, one platform-specific skip). Local log:
+`tooling/gate4-damage-2a446b9-verify.log` outside the checkout.
+Exact-head [Linux CI342](https://github.com/idiotswill/DMd/actions/runs/36055375075)
+passed all four jobs, and [Windows desktop22](https://github.com/idiotswill/DMd/actions/runs/36055375134)
+passed the Rust1.88/stable jobs, frontend checks/tests/build, and stable release/installer
+packaging. These checks apply to the named code head, not a later documentation commit.
+
+Next: review this evidence-only delta, repeat canonical verification and CI on its exact
+commit, then merge PR25 with expected-head protection. Root retains the integration
+obligations above; this bounded reducer PR does not close Gate4 or its tactical playtest.
