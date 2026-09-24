@@ -27,8 +27,11 @@ frontend mocks and kernel tests alone cannot satisfy the gate.
    request/report physical dice through the appropriate local channels. Check the outcome,
    sheet, transcript and recap without exposing the host's hidden check context.
 4. Propose an unsupported or alternative action; preserve it unresolved across quit/restart.
-   Withdraw or clarify it explicitly. Quit/restart again with a pending Second Wind roll,
-   report the raw face, and verify the resource count and accepted history survive.
+   Withdraw or clarify it explicitly. Terminate only the tested application's process
+   with a pending Second Wind roll to simulate a crash; relaunch through its normal UI,
+   report the raw face, and verify the resource count, bindings and accepted history survive
+   without duplicate expenditure or outcomes. Process termination is fault injection,
+   not a gameplay or save-state bypass.
 5. End the session, quit/reopen the campaign, and resume with correct bindings/history.
    Create/open a second independent campaign and verify state does not leak between them.
 6. Check recoverable invalid input, keyboard operation, and duplicate launch behavior. All
