@@ -1,10 +1,28 @@
 //! Source-derived attack receipts inside the shared tactical resolution.
 //! These are internal durable work, never player-supplied mechanical permissions.
 use crate::{
-    ActorEquipmentLoadout, CommandMeta, DamageType, DieSpec, EntityId, ItemId, RollMode,
+    Ability, ActorEquipmentLoadout, CommandMeta, DamageType, DieSpec, EntityId, ItemId, RollMode,
     RollRequestId, WeaponActionWindow, WeaponAttackOutcome, WeaponUseChoice,
 };
 use serde::{Deserialize, Serialize};
+
+/// Controller choice for one retained opportunity. Actor and target come from the
+/// live movement window; this does not grant a reaction or a source capability.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalMeleeChoice {
+    Weapon(WeaponUseChoice),
+    /// The damage form of an Unarmed Strike. Grapple/Shove keep their distinct
+    /// source save/size/hand choices and are not silently treated as damage here.
+    UnarmedDamage {
+        ability: Ability,
+    },
+    CreatureFeature {
+        feature_id: String,
+        /// Only an attack whose canonical Gear requires it accepts an ItemId.
+        weapon: Option<ItemId>,
+    },
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

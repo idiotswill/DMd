@@ -118,3 +118,27 @@ the new attack allocation. Movement then owns shared dispatcher/pump/work additi
 this slice owns new source/OA adapters under attacks and tactical_attacks. Consume verified
 NPC equipment/live-AC and movement contracts before compiling those next adapters; no
 competing queues, fake item identities or discarded mandatory source riders are permitted.
+
+## Next adapter contract
+
+Ordinary checkpoint `334d82b` received exact independent source review with no remaining
+bounded findings. Root integrated it and supplied `624c642`; this branch's dependency
+merge `d8f5e3f` has an identical tree, including the heap-backed cursor and NPC equipment.
+The movement author now owns shared dispatch/work/pump edits. The attack author retains
+attack modules and source work types; adapters consume that movement checkpoint next.
+
+`TacticalMeleeChoice` carries a physical `WeaponUseChoice`, damage-only Unarmed Strike
+ability choice, or a canonical creature feature plus its optional real Gear ItemId.
+Live movement determines the reactor, mover, crossing and source options. The source
+query must sort options canonically, use actual held implements and source reach, and
+include real unarmed capability. Reaction acceptance must validate that live window,
+spend once, retain the movement decision and resume its existing lower frames after
+attack/concentration/effect children. No public fake adapter is provided by this contract.
+
+Next retained attack refactor separates common actor/target/melee-or-ranged semantics
+from Weapon, Unarmed, CreatureFeature and sealed Spell source data. Physical delivery,
+equipment and ammo stay weapon-specific. Source profiles, current raw inputs and
+accepted invocation receipts rederive bonuses/damage/riders. Spell occurrence proof
+retains cast/node/target ordinals; no invented physical item stands in for a spell.
+Source Charge predicates, nested counterattacks and additional mastery decisions remain
+explicit same-gate work until their full retained continuations execute and are tested.
