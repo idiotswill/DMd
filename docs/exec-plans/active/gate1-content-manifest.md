@@ -1,12 +1,13 @@
 # Gate 1 versioned rules/content manifest
 
-Status: post-#10 integration prepared; current-head CI is required before re-review
+Status: post-#10 integration complete; ready for short final re-review when PR checks are green on the current head
 Branch: gate1/content-manifest
 PR: #11 (draft)
 Base at start: main @ d450766b1b834d739c586db5594de6dd23dd9722
 Integration target: main @ f4473745bb44e6fa112ae87833c9336553304c20 (merged PR #10 projections)
 Reviewed head: 8542c93802b65df2af3dab74686d2ef2e43e7c9f
 Pre-integration validated head: cb26ef1996390e27f6f71a37500f10a38425f59e
+Post-integration implementation head: 3c531482e45539363b948d1cb0a1bd40b709e4c4
 
 ## Objective
 Make campaign `ruleset` and `content_packs` references resolve against explicit, versioned, validated, local content manifests so existing saves cannot silently change meaning or run against missing/incompatible content.
@@ -54,8 +55,8 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - [x] Every component of a declared content path is checked without following symlinks; intermediate symlink escape regression passes.
 - [x] Current `main` at `f4473745bb44e6fa112ae87833c9336553304c20` is incorporated while retaining PR #10 projection changes.
 - [x] Content-manifest architecture document is renumbered from ADR 013 to ADR 014; projections retain ADR 013.
-- [ ] PR CI is green on the exact post-integration branch head.
-- [ ] Complete post-integration diff is inspected against task acceptance criteria and relevant ADRs.
+- [x] Post-integration implementation CI run #240 is green on `3c531482e45539363b948d1cb0a1bd40b709e4c4`.
+- [x] Complete post-integration seven-file diff was inspected against task acceptance criteria and ADRs 013/014 on implementation head `3c531482e45539363b948d1cb0a1bd40b709e4c4`.
 
 ## Implemented slices
 1. Added typed manifest/catalog/resolution infrastructure in `dmd-domain` with exact versions, deterministic local discovery, explicit compatibility/dependency checks, and stable non-security file integrity metadata without introducing campaign content.
@@ -76,13 +77,14 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - 2026-09-24 — Integrate `main` with a merge commit rather than force-rebasing published branch history. The merge tree uses current `main` as its baseline and adds only #11-owned content-manifest files plus the domain export, ADR 014, and this plan.
 
 ## Validation
-- CI run #220 on pre-integration head `cb26ef1996390e27f6f71a37500f10a38425f59e` was fully green, including both fail-closed blocker regressions, but is explicitly **not** post-#10 integration evidence.
-- Post-integration exact-head CI is required before re-review. Per `AGENTS.md`, green checks on an older SHA do not establish correctness for a moved branch head.
+- CI run #220 on pre-integration head `cb26ef1996390e27f6f71a37500f10a38425f59e` was fully green, including both fail-closed blocker regressions, but is historical evidence only and is **not** used as post-#10 integration evidence.
+- CI run #240 on post-integration implementation head `3c531482e45539363b948d1cb0a1bd40b709e4c4` is fully green: `verify-fast`, Clippy with warnings denied, workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard all passed.
+- The complete post-integration seven-file PR diff against `main` was inspected after integration. `main` was rechecked and remained at `f4473745bb44e6fa112ae87833c9336553304c20` during closeout.
 - `./scripts/verify` is not invoked as one wrapper by CI; CI executes its constituent commands plus the Rust 1.88 MSRV check. Do not claim the wrapper itself was directly run unless it is run directly.
-- Final readiness is determined by PR #11 checks on the current branch head; any branch movement invalidates readiness until CI is green again.
+- Final readiness is determined by PR #11 checks on the **current branch head**. This plan-only bookkeeping commit moves the head after run #240, so current-head CI must be green again before handoff; no further branch writes are planned.
 
 ## Risks / blockers / deferred debt
-- Merge remains blocked until current-head CI is green after the PR #10 integration and control/human review confirms the integration/renumber only.
+- The reviewed implementation and post-#10 integration are complete. Merge remains subject to current-head green CI and the requested short final control/human review; this worker will not merge.
 - No application/lifecycle composition crate currently owns “open runnable campaign”. ADR 014 requires the separate campaign-lifecycle work to resolve campaign content before create/open/resume/restore is considered runnable.
 - A future manifest schema may need cryptographic digests, publisher signatures, or trust stores for authenticity. Gate 1 provides deterministic local authority and corruption detection only.
 - Content installation/distribution UX and source provenance are not implemented here.
@@ -90,4 +92,4 @@ Make campaign `ruleset` and `content_packs` references resolve against explicit,
 - Licensing/proprietary-content policy remains unresolved. No third-party rules corpus or licensing entitlement assumption was added; any future policy must be verified from authoritative current sources first.
 
 ## Next action
-Run PR CI on the exact post-integration head, inspect the complete diff against `main` and ADRs 013/014, update the PR summary without moving the branch head, and return #11 for short final control/human review without merging.
+Once PR #11 checks are green on this plan-only current head, update PR metadata without moving the branch and return #11 for short final control/human review without merging.
