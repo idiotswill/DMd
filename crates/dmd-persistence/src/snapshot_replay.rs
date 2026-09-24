@@ -30,6 +30,7 @@ impl Default for CampaignStateSnapshotCodec {
         let mut migrations: HashMap<u32, Box<dyn SnapshotMigration>> = HashMap::new();
         migrations.insert(1, Box::new(StateSchemaOneToTwo));
         migrations.insert(2, Box::new(StateSchemaTwoToThree));
+        migrations.insert(3, Box::new(StateSchemaThreeToFour));
         Self { migrations }
     }
 }
@@ -38,6 +39,39 @@ struct StateSchemaOneToTwo;
 
 struct StateSchemaTwoToThree;
 
+struct StateSchemaThreeToFour;
+
+impl SnapshotMigration for StateSchemaThreeToFour {
+    fn source_version(&self) -> u32 {
+        3
+    }
+
+    fn migrate_json(&self, json: &str) -> Result<String, String> {
+        let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
+        reject_legacy_encounter(&legacy)?;
+        if legacy.schema_version != 3 || !legacy.validate().is_empty() {
+            return Err("schema-3 state is structurally invalid".into());
+        }
+        let mut value: serde_json::Value =
+            serde_json::from_str(json).map_err(|error| error.to_string())?;
+        let object = value
+            .as_object_mut()
+            .ok_or("schema-3 state must be an object")?;
+        object.insert("schema_version".into(), serde_json::json!(4));
+        object.insert("encounter".into(), serde_json::Value::Null);
+        serde_json::to_string(&value).map_err(|error| error.to_string())
+    }
+}
+
+/// Legacy versions must not acquire future authority merely because their JSON has extra fields.
+/// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
+fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
+    if legacy.encounter.is_some() {
+        return Err("legacy state unexpectedly contains tactical encounter data".into());
+    }
+    Ok(())
+}
+
 impl SnapshotMigration for StateSchemaTwoToThree {
     fn source_version(&self) -> u32 {
         2
@@ -45,6 +79,7 @@ impl SnapshotMigration for StateSchemaTwoToThree {
 
     fn migrate_json(&self, json: &str) -> Result<String, String> {
         let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
+        reject_legacy_encounter(&legacy)?;
         if legacy.schema_version != 2 || !legacy.validate().is_empty() {
             return Err("schema-2 state is structurally invalid".into());
         }
@@ -78,6 +113,7 @@ pub(crate) fn upgrade_state_schema_one(json: &str) -> Result<String, String> {
     // Decode the original typed shape before going through Value: a map conversion alone would
     // silently collapse duplicate fields and could conceal malformed legacy authoritative input.
     let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
+    reject_legacy_encounter(&legacy)?;
     if !legacy.validate().is_empty() {
         return Err("schema-1 state is structurally invalid".into());
     }

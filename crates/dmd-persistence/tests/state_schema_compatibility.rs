@@ -73,7 +73,638 @@ fn legacy_json(current: &str) -> String {
     object.insert("schema_version".into(), json!(1));
     object.remove("rules");
     object.remove("table");
+    object.remove("encounter");
     serde_json::to_string(&value).expect("legacy JSON")
+}
+
+fn schema_three_json(current: &str) -> String {
+    let mut value: Value = serde_json::from_str(current).expect("state JSON");
+    let object = value.as_object_mut().expect("state object");
+    object.insert("schema_version".into(), json!(3));
+    object.remove("encounter");
+    serde_json::to_string_pretty(&value).expect("schema-3 JSON")
+}
+
+fn table_state() -> CampaignState {
+    let mut initial = state();
+    let contract = dmd_domain::TableContract::default();
+    initial.campaign.ruleset = contract.ruleset.clone();
+    let mut table = dmd_domain::TableState::new(contract);
+    table.situation.title = "An unfinished journey".into();
+    table.situation.description = "The table's established situation survives the upgrade.".into();
+    initial.table = Some(table);
+    initial
+}
+
+fn encounter_state() -> CampaignState {
+    use dmd_domain::*;
+    let mut initial = state();
+    let campaign_id = initial.campaign_id();
+    let location_id = LocationId::new();
+    let scene_id = SceneId::new();
+    let actor = EntityId::new();
+    initial.locations.insert(
+        location_id,
+        Location {
+            id: location_id,
+            campaign_id,
+            display_name: "Encounter location".into(),
+            parent_location_id: None,
+        },
+    );
+    initial.entities.insert(
+        actor,
+        WorldEntity {
+            id: actor,
+            campaign_id,
+            display_name: "Encounter participant".into(),
+            kind: EntityKind::Creature,
+            existence: EntityExistence::Present,
+            location_id: Some(location_id),
+        },
+    );
+    initial.scenes.insert(
+        scene_id,
+        Scene {
+            id: scene_id,
+            campaign_id,
+            location_id,
+            mode: SceneMode::Combat,
+            status: SceneStatus::Active,
+            started_at: initial.clock.now,
+            presences: vec![ScenePresence {
+                entity_id: actor,
+                role: PresenceRole::Participant,
+            }],
+        },
+    );
+    initial.rules = Some(RulesState {
+        pack_id: initial.campaign.ruleset.id.clone(),
+        pack_version: initial.campaign.ruleset.version.clone(),
+        entities: [(actor, MechanicalEntity::basic(actor))]
+            .into_iter()
+            .collect(),
+        house_rules: HouseRules::default(),
+        effects: vec![],
+        pending: None,
+        rolls: vec![],
+        cancelled_roll_ids: vec![],
+        rulings: vec![],
+        timing: Some(CombatTiming {
+            order: vec![InitiativeEntry {
+                actor,
+                total: 15,
+                tie_break: 1,
+            }],
+            index: 0,
+            round: 2,
+            turn_number: 2,
+            action_spent: true,
+            bonus_action_spent: false,
+            slot_spent_this_turn: false,
+            reactions_spent: vec![actor],
+        }),
+        rests: vec![],
+        completed_short_rests: vec![],
+        permission: None,
+    });
+    let origin = CommandMeta {
+        id: CommandId::new(),
+        campaign_id,
+        session_id: None,
+        issuer: CommandIssuer::Admin,
+        actor: None,
+        expected_event_sequence: 0,
+    };
+    let position = SpatialPoint { x: 10, y: 10, z: 0 };
+    initial.encounter = Some(TacticalEncounter {
+        id: EncounterId::new(),
+        scene_id,
+        battlefield: Battlefield {
+            bounds: SpatialBox {
+                min: SpatialPoint { x: 0, y: 0, z: 0 },
+                max: SpatialPoint {
+                    x: 100,
+                    y: 100,
+                    z: 40,
+                },
+            },
+            floor_z: 0,
+            floor_surface: "stone".into(),
+            ambient_light: LightLevel::Dim,
+            terrain: vec![],
+            obstacles: vec![],
+            lights: vec![],
+        },
+        participants: vec![TacticalParticipant {
+            entity_id: actor,
+            public_label: "A traveler".into(),
+            position,
+            size: CreatureSize::Medium,
+            height: 12,
+            reach: 10,
+            movement: MovementProfile {
+                walk: 60,
+                climb: None,
+                swim: None,
+                fly: None,
+                burrow: None,
+                hover: false,
+            },
+            senses: Senses {
+                darkvision: 120,
+                ..Senses::default()
+            },
+            allies: vec![],
+            enemies: vec![],
+        }],
+        knowledge: vec![ActorKnowledge {
+            observer: actor,
+            contacts: vec![],
+            terrain: vec![RememberedCell {
+                position,
+                difficult: false,
+                blocked: false,
+                origin: origin.clone(),
+            }],
+        }],
+        origin,
+        geometry_ruling: Ruling {
+            basis: RulingBasis::GmAdjudication,
+            reason: "The host established this room.".into(),
+        },
+    });
+    assert!(initial.validate().is_empty());
+    initial
+}
+
+#[tokio::test]
+async fn atomic_migration_and_open_futures_remain_send_for_native_commands() {
+    let db = tokio::spawn(dmd_persistence::open_sqlite("sqlite::memory:"))
+        .await
+        .unwrap()
+        .unwrap();
+    tokio::spawn(async move {
+        dmd_persistence::migrate_sqlite(&db).await.unwrap();
+        db.close().await;
+    })
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
+async fn typed_encounter_round_trip_preserves_geometry_knowledge_and_existing_timing() {
+    let source = pool(false).await;
+    let initial = encounter_state();
+    create_campaign(&source, &initial)
+        .await
+        .expect("valid encounter creates");
+    let export = export_campaign(&source, initial.campaign_id())
+        .await
+        .expect("export");
+    let original_json = export.to_json().expect("portable JSON");
+    let destination = pool(false).await;
+    let decoded = CampaignExport::from_json(&original_json).expect("decode");
+    restore_campaign(&destination, &decoded)
+        .await
+        .expect("restore encounter");
+    assert_eq!(
+        open_campaign(&destination, initial.campaign_id())
+            .await
+            .expect("open")
+            .state,
+        initial
+    );
+    assert_eq!(
+        replay_campaign_to_head(&destination, initial.campaign_id(), &ClockApplier)
+            .await
+            .expect("replay anchor"),
+        initial
+    );
+    let after = export_campaign(&destination, initial.campaign_id())
+        .await
+        .expect("export again");
+    assert_eq!(after.current_state, export.current_state);
+    assert_eq!(after.snapshots, export.snapshots);
+    for corruption in [
+        "unknown_pending",
+        "missing_scene",
+        "foreign_origin",
+        "future_origin",
+        "duplicate_participant",
+    ] {
+        for owner in ["current", "anchor"] {
+            let mut corrupt = export.clone();
+            let json = if owner == "current" {
+                &mut corrupt.current_state.state_json
+            } else {
+                &mut corrupt.snapshots[0].state_json
+            };
+            let mut value: Value = serde_json::from_str(json).expect("state JSON");
+            match corruption {
+                "unknown_pending" => value["encounter"]["pending"] = json!({"raw_after_state": {}}),
+                "missing_scene" => {
+                    value["encounter"]["scene_id"] = json!(dmd_domain::SceneId::new())
+                }
+                "foreign_origin" => {
+                    value["encounter"]["origin"]["campaign_id"] = json!(CampaignId::new())
+                }
+                "future_origin" => {
+                    value["encounter"]["origin"]["expected_event_sequence"] = json!(1)
+                }
+                "duplicate_participant" => {
+                    let duplicate = value["encounter"]["participants"][0].clone();
+                    value["encounter"]["participants"]
+                        .as_array_mut()
+                        .expect("participants")
+                        .push(duplicate);
+                }
+                _ => unreachable!(),
+            }
+            *json = value.to_string();
+            let empty = pool(false).await;
+            assert!(
+                restore_campaign(&empty, &corrupt).await.is_err(),
+                "{owner}/{corruption} must fail closed"
+            );
+            assert!(
+                dmd_persistence::list_campaigns(&empty)
+                    .await
+                    .expect("list")
+                    .is_empty()
+            );
+        }
+    }
+}
+
+async fn gate_three_pool() -> SqlitePool {
+    let options = SqliteConnectOptions::from_str("sqlite::memory:")
+        .expect("valid SQLite URL")
+        .foreign_keys(true);
+    let pool = SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect_with(options)
+        .await
+        .expect("database opens");
+    Migrator {
+        migrations: Cow::Owned(
+            MIGRATOR
+                .iter()
+                .filter(|migration| migration.version < 10)
+                .cloned()
+                .collect(),
+        ),
+        ..Migrator::DEFAULT
+    }
+    .run(&pool)
+    .await
+    .expect("Gate 3 migrations apply");
+    pool
+}
+
+async fn insert_gate_three(pool: &SqlitePool, initial: &CampaignState) -> String {
+    let json = schema_three_json(&initial.encode_json().expect("state encodes"));
+    sqlx::query(
+        "INSERT INTO campaign_state_current (campaign_id, schema_version, applied_event_sequence, state_json) VALUES (?, 3, 0, ?)",
+    )
+    .bind(initial.campaign_id().0.to_string())
+    .bind(&json)
+    .execute(pool)
+    .await
+    .expect("Gate 3 row and anchor insert");
+    json
+}
+
+#[tokio::test]
+async fn schema_three_migration_preserves_table_and_exact_anchor_metadata() {
+    let pool = gate_three_pool().await;
+    let initial = table_state();
+    let original_json = insert_gate_three(&pool, &initial).await;
+    let anchor_before: (i64, String, String) = sqlx::query_as(
+        "SELECT state_schema_version, state_json, created_at_utc FROM campaign_snapshots WHERE campaign_id = ?",
+    )
+    .bind(initial.campaign_id().0.to_string())
+    .fetch_one(&pool).await.expect("original anchor");
+
+    migrate_sqlite(&pool).await.expect("schema 4 migration");
+
+    let opened = open_campaign(&pool, initial.campaign_id())
+        .await
+        .expect("open");
+    assert_eq!(
+        opened.state, initial,
+        "only the optional encounter field and schema change"
+    );
+    assert_eq!(
+        opened.lifecycle.state_schema_version,
+        CURRENT_STATE_SCHEMA_VERSION
+    );
+    let summary = load_campaign_projection_summary(&pool, initial.campaign_id())
+        .await
+        .expect("projection");
+    assert_eq!(summary.state_schema_version, CURRENT_STATE_SCHEMA_VERSION);
+    let anchor_after: (i64, String, String) = sqlx::query_as(
+        "SELECT state_schema_version, state_json, created_at_utc FROM campaign_snapshots WHERE campaign_id = ?",
+    )
+    .bind(initial.campaign_id().0.to_string())
+    .fetch_one(&pool).await.expect("unchanged anchor");
+    assert_eq!(anchor_before, anchor_after);
+    assert_eq!(anchor_after.0, 3);
+    assert_eq!(anchor_after.1, original_json);
+    assert_eq!(
+        replay_campaign_to_head(&pool, initial.campaign_id(), &ClockApplier)
+            .await
+            .expect("replay"),
+        initial
+    );
+    let exported = export_campaign(&pool, initial.campaign_id())
+        .await
+        .expect("export");
+    assert_eq!(exported.format_version, 2);
+    assert_eq!(exported.snapshots[0].state_schema_version, 3);
+    assert_eq!(exported.snapshots[0].state_json, original_json);
+    let restored = self::pool(false).await;
+    restore_campaign(&restored, &exported)
+        .await
+        .expect("mixed-version restore");
+    assert_eq!(
+        export_campaign(&restored, initial.campaign_id())
+            .await
+            .expect("restored export")
+            .snapshots,
+        exported.snapshots
+    );
+}
+
+#[tokio::test]
+async fn schema_three_export_upgrades_only_current_image_and_keeps_accepted_history() {
+    let mut legacy = legacy_export().await;
+    // The immutable generic time event is valid under either state schema. Keep its exact bytes.
+    legacy.format_version = 2;
+    legacy.state_schema_version = 3;
+    legacy.lifecycle.state_schema_version = 3;
+    legacy.current_state.schema_version = 3;
+    let upgraded_current = CampaignStateSnapshotCodec::new()
+        .decode_state(1, &legacy.current_state.state_json)
+        .expect("legacy current decodes");
+    legacy.current_state.state_json =
+        schema_three_json(&upgraded_current.encode_json().expect("JSON"));
+    for snapshot in &mut legacy.snapshots {
+        let state = CampaignStateSnapshotCodec::new()
+            .decode_state(1, &snapshot.state_json)
+            .expect("anchor decodes");
+        snapshot.state_schema_version = 3;
+        snapshot.state_json = schema_three_json(&state.encode_json().expect("JSON"));
+    }
+    let original = legacy.clone();
+    let upgraded = legacy.upgraded().expect("format 2 schema 3 upgrades");
+    assert_eq!(legacy, original);
+    assert_eq!(upgraded.state_schema_version, CURRENT_STATE_SCHEMA_VERSION);
+    assert_eq!(upgraded.snapshots, original.snapshots);
+    assert_eq!(upgraded.command_audit, original.command_audit);
+    assert_eq!(upgraded.event_journal, original.event_journal);
+    assert_eq!(upgraded.event_causes, original.event_causes);
+    assert_eq!(upgraded.play_sessions, original.play_sessions);
+    assert_eq!(
+        upgraded.play_session_participants,
+        original.play_session_participants
+    );
+    assert_eq!(upgraded.observations, original.observations);
+    let destination = pool(false).await;
+    restore_campaign(&destination, &legacy)
+        .await
+        .expect("restore original schema 3 export");
+    let campaign_id = upgraded_current.campaign_id();
+    assert_eq!(
+        replay_campaign_to_head(&destination, campaign_id, &ClockApplier)
+            .await
+            .expect("replay"),
+        upgraded_current
+    );
+    assert_eq!(
+        export_campaign(&destination, campaign_id)
+            .await
+            .expect("export")
+            .event_journal,
+        original.event_journal
+    );
+}
+
+#[tokio::test]
+async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
+    for corruption in [
+        "malformed",
+        "schema",
+        "numeric_schema",
+        "identity",
+        "sequence",
+        "encounter",
+        "duplicate",
+        "duplicate_encounter",
+        "lifecycle",
+    ] {
+        let pool = gate_three_pool().await;
+        let valid = table_state();
+        let valid_json = insert_gate_three(&pool, &valid).await;
+        let invalid = table_state();
+        let invalid_json = insert_gate_three(&pool, &invalid).await;
+        let mut value: Value = serde_json::from_str(&invalid_json).expect("JSON");
+        match corruption {
+            "schema" => value["schema_version"] = json!(2),
+            "numeric_schema" => value["schema_version"] = json!(3.0),
+            "identity" => value["campaign"]["id"] = json!(CampaignId::new()),
+            "sequence" => value["applied_event_sequence"] = json!(1),
+            "encounter" => {
+                value["encounter"] = json!({"unknown_pending_action": "must not be erased"})
+            }
+            _ => (),
+        }
+        let corrupted = match corruption {
+            "malformed" => "{".to_owned(),
+            "duplicate" => value.to_string().replacen('{', "{\"schema_version\":3,", 1),
+            "duplicate_encounter" => {
+                value
+                    .to_string()
+                    .replacen('{', "{\"encounter\":null,\"encounter\":null,", 1)
+            }
+            _ => value.to_string(),
+        };
+        sqlx::query("UPDATE campaign_state_current SET state_json = ? WHERE campaign_id = ?")
+            .bind(&corrupted)
+            .bind(invalid.campaign_id().0.to_string())
+            .execute(&pool)
+            .await
+            .expect("corrupt fixture");
+        if corruption == "lifecycle" {
+            sqlx::query(
+                "UPDATE campaign_lifecycle SET state_schema_version = 2 WHERE campaign_id = ?",
+            )
+            .bind(invalid.campaign_id().0.to_string())
+            .execute(&pool)
+            .await
+            .expect("lifecycle fixture");
+        }
+        assert!(
+            migrate_sqlite(&pool).await.is_err(),
+            "{corruption} must block migration"
+        );
+        for (id, expected_json) in [
+            (valid.campaign_id(), valid_json),
+            (invalid.campaign_id(), corrupted),
+        ] {
+            let actual: (i64, String) = sqlx::query_as("SELECT schema_version, state_json FROM campaign_state_current WHERE campaign_id = ?")
+                .bind(id.0.to_string()).fetch_one(&pool).await.expect("surviving current image");
+            assert_eq!(
+                actual,
+                (3, expected_json),
+                "{corruption}: no partial upgrade or repair"
+            );
+        }
+        let unchanged_schema: i64 = sqlx::query_scalar(
+            "SELECT state_schema_version FROM campaign_lifecycle WHERE campaign_id = ?",
+        )
+        .bind(valid.campaign_id().0.to_string())
+        .fetch_one(&pool)
+        .await
+        .expect("lifecycle");
+        assert_eq!(unchanged_schema, 3);
+        let migrated: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM _sqlx_migrations WHERE version = 10")
+                .fetch_one(&pool)
+                .await
+                .expect("migration history");
+        assert_eq!(migrated, 0);
+    }
+}
+
+#[tokio::test]
+async fn late_encounter_preflight_failure_rolls_back_the_entire_older_migration_chain() {
+    for stored_schema in [1, 2] {
+        let pool = pool(true).await;
+        if stored_schema == 2 {
+            Migrator {
+                migrations: Cow::Owned(
+                    MIGRATOR
+                        .iter()
+                        .filter(|migration| migration.version < 9)
+                        .cloned()
+                        .collect(),
+                ),
+                ..Migrator::DEFAULT
+            }
+            .run(&pool)
+            .await
+            .expect("Gate 2 migrations apply");
+        }
+        let valid = state();
+        let invalid = state();
+        let mut originals = Vec::new();
+        for (initial, corrupted) in [(&valid, false), (&invalid, true)] {
+            let mut value: Value =
+                serde_json::from_str(&legacy_json(&initial.encode_json().expect("JSON")))
+                    .expect("value");
+            value["schema_version"] = json!(stored_schema);
+            if stored_schema == 2 {
+                value["rules"] = Value::Null;
+            }
+            if corrupted {
+                value["encounter"] = json!({"pending": "future authority must survive rejection"});
+            }
+            let json = value.to_string();
+            sqlx::query("INSERT INTO campaign_state_current (campaign_id, schema_version, applied_event_sequence, state_json) VALUES (?, ?, 0, ?)")
+                .bind(initial.campaign_id().0.to_string()).bind(stored_schema).bind(&json).execute(&pool).await.expect("older fixture");
+            originals.push((initial.campaign_id(), json));
+        }
+        let anchors_before: Vec<(String, i64, String, String)> = sqlx::query_as(
+            "SELECT campaign_id, state_schema_version, state_json, created_at_utc FROM campaign_snapshots ORDER BY campaign_id",
+        ).fetch_all(&pool).await.expect("anchors");
+        let migrations_before: Vec<i64> =
+            sqlx::query_scalar("SELECT version FROM _sqlx_migrations ORDER BY version")
+                .fetch_all(&pool)
+                .await
+                .expect("migration versions");
+        assert!(matches!(
+            migrate_sqlite(&pool).await,
+            Err(sqlx::migrate::MigrateError::ExecuteMigration(_, 10))
+        ));
+        for (id, original) in originals {
+            let actual: (i64, String) = sqlx::query_as("SELECT schema_version, state_json FROM campaign_state_current WHERE campaign_id = ?")
+                .bind(id.0.to_string()).fetch_one(&pool).await.expect("unchanged current");
+            assert_eq!(actual, (i64::from(stored_schema), original));
+            let lifecycle: i64 = sqlx::query_scalar(
+                "SELECT state_schema_version FROM campaign_lifecycle WHERE campaign_id = ?",
+            )
+            .bind(id.0.to_string())
+            .fetch_one(&pool)
+            .await
+            .expect("lifecycle");
+            assert_eq!(lifecycle, i64::from(stored_schema));
+        }
+        let anchors_after: Vec<(String, i64, String, String)> = sqlx::query_as(
+            "SELECT campaign_id, state_schema_version, state_json, created_at_utc FROM campaign_snapshots ORDER BY campaign_id",
+        ).fetch_all(&pool).await.expect("anchors");
+        assert_eq!(anchors_before, anchors_after);
+        let migrations_after: Vec<i64> =
+            sqlx::query_scalar("SELECT version FROM _sqlx_migrations ORDER BY version")
+                .fetch_all(&pool)
+                .await
+                .expect("migration versions");
+        assert_eq!(
+            migrations_before, migrations_after,
+            "no earlier pending migration can commit alone"
+        );
+        let observation_tables: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'session_observations'")
+            .fetch_one(&pool).await.expect("schema inventory");
+        assert_eq!(
+            observation_tables, 0,
+            "migration 9's new table also rolls back"
+        );
+    }
+}
+
+#[test]
+fn every_legacy_snapshot_path_rejects_future_encounter_authority() {
+    let codec = CampaignStateSnapshotCodec::new();
+    for version in 1..=3 {
+        let mut value: Value =
+            serde_json::from_str(&state().encode_json().expect("JSON")).expect("value");
+        value["schema_version"] = json!(version);
+        assert!(codec.decode_state(version, &value.to_string()).is_ok());
+        for encounter in [
+            json!({"pending": {"raw": "invented authority"}}),
+            json!([]),
+            json!(true),
+            json!(7),
+            json!("unsupported"),
+        ] {
+            value["encounter"] = encounter;
+            assert!(
+                codec.decode_state(version, &value.to_string()).is_err(),
+                "schema {version} must reject future encounter data"
+            );
+        }
+        value["encounter"] = Value::Null;
+        let duplicate = value.to_string().replacen('{', "{\"encounter\":null,", 1);
+        assert!(codec.decode_state(version, &duplicate).is_err());
+    }
+    let mut malformed_current: Value =
+        serde_json::from_str(&state().encode_json().expect("JSON")).expect("value");
+    malformed_current["encounter"] = json!({"pending": {"raw": "invented authority"}});
+    assert!(
+        codec
+            .decode_state(CURRENT_STATE_SCHEMA_VERSION, &malformed_current.to_string())
+            .is_err()
+    );
+    // Even a well-formed, otherwise valid encounter cannot be smuggled through a legacy version.
+    let current = encounter_state();
+    for version in 1..=3 {
+        let mut legacy = current.clone();
+        legacy.schema_version = version;
+        assert!(matches!(
+            codec.decode_state(version, &legacy.encode_json().expect("JSON")),
+            Err(SnapshotCodecError::MigrationFailed { message, .. }) if message.contains("tactical encounter")
+        ));
+    }
 }
 
 async fn insert_legacy(pool: &SqlitePool, state: &CampaignState) -> String {
@@ -215,6 +846,7 @@ async fn gate_one_database_upgrades_current_rows_and_replays_unchanged_anchor() 
     expected["schema_version"] = json!(CURRENT_STATE_SCHEMA_VERSION);
     expected["rules"] = Value::Null;
     expected["table"] = Value::Null;
+    expected["encounter"] = Value::Null;
     assert_eq!(current, expected);
     let snapshot_after: (String, String) = sqlx::query_as(
         "SELECT state_json, created_at_utc FROM campaign_snapshots WHERE campaign_id = ?",

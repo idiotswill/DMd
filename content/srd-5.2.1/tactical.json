@@ -1,0 +1,2912 @@
+{
+  "schema_version": 1,
+  "ruleset_id": "srd-5.2",
+  "ruleset_version": "5.2.1",
+  "weapon_properties": [
+    {
+      "property": "Ammunition",
+      "source_page": 89
+    },
+    {
+      "property": "Finesse",
+      "source_page": 89
+    },
+    {
+      "property": "Heavy",
+      "source_page": 89
+    },
+    {
+      "property": "Light",
+      "source_page": 89
+    },
+    {
+      "property": "Loading",
+      "source_page": 90
+    },
+    {
+      "property": "Range",
+      "source_page": 90
+    },
+    {
+      "property": "Reach",
+      "source_page": 90
+    },
+    {
+      "property": "Thrown",
+      "source_page": 90
+    },
+    {
+      "property": "TwoHanded",
+      "source_page": 90
+    },
+    {
+      "property": "Versatile",
+      "source_page": 90
+    }
+  ],
+  "masteries": [
+    {
+      "mastery": "Cleave",
+      "source_page": 90
+    },
+    {
+      "mastery": "Graze",
+      "source_page": 90
+    },
+    {
+      "mastery": "Nick",
+      "source_page": 90
+    },
+    {
+      "mastery": "Push",
+      "source_page": 90
+    },
+    {
+      "mastery": "Sap",
+      "source_page": 90
+    },
+    {
+      "mastery": "Slow",
+      "source_page": 90
+    },
+    {
+      "mastery": "Topple",
+      "source_page": 90
+    },
+    {
+      "mastery": "Vex",
+      "source_page": 90
+    }
+  ],
+  "weapons": [
+    {
+      "id": "club",
+      "name": "Club",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Light"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "dagger",
+      "name": "Dagger",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Finesse",
+        "Light",
+        "Thrown",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Nick",
+      "source_page": 91
+    },
+    {
+      "id": "greatclub",
+      "name": "Greatclub",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Push",
+      "source_page": 91
+    },
+    {
+      "id": "handaxe",
+      "name": "Handaxe",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Light",
+        "Thrown",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "javelin",
+      "name": "Javelin",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Thrown",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 30,
+        "long_feet": 120
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "light-hammer",
+      "name": "Light Hammer",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Light",
+        "Thrown",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Nick",
+      "source_page": 91
+    },
+    {
+      "id": "mace",
+      "name": "Mace",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "quarterstaff",
+      "name": "Quarterstaff",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Versatile"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Topple",
+      "source_page": 91
+    },
+    {
+      "id": "sickle",
+      "name": "Sickle",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Light"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Nick",
+      "source_page": 91
+    },
+    {
+      "id": "spear",
+      "name": "Spear",
+      "category": "Simple",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Thrown",
+        "Versatile",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "dart",
+      "name": "Dart",
+      "category": "Simple",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Finesse",
+        "Thrown",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "light-crossbow",
+      "name": "Light Crossbow",
+      "category": "Simple",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Loading",
+        "TwoHanded",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 80,
+        "long_feet": 320
+      },
+      "ammunition": "Bolt",
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "shortbow",
+      "name": "Shortbow",
+      "category": "Simple",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "TwoHanded",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 80,
+        "long_feet": 320
+      },
+      "ammunition": "Arrow",
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "sling",
+      "name": "Sling",
+      "category": "Simple",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Ammunition",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 30,
+        "long_feet": 120
+      },
+      "ammunition": "Bullet",
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "battleaxe",
+      "name": "Battleaxe",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Versatile"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Topple",
+      "source_page": 91
+    },
+    {
+      "id": "flail",
+      "name": "Flail",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "glaive",
+      "name": "Glaive",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 5,
+      "versatile_damage": null,
+      "mastery": "Graze",
+      "source_page": 91
+    },
+    {
+      "id": "greataxe",
+      "name": "Greataxe",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 12
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Heavy",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Cleave",
+      "source_page": 91
+    },
+    {
+      "id": "greatsword",
+      "name": "Greatsword",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 2,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Heavy",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Graze",
+      "source_page": 91
+    },
+    {
+      "id": "halberd",
+      "name": "Halberd",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 5,
+      "versatile_damage": null,
+      "mastery": "Cleave",
+      "source_page": 91
+    },
+    {
+      "id": "lance",
+      "name": "Lance",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "TwoUnlessMounted",
+      "reach_bonus_feet": 5,
+      "versatile_damage": null,
+      "mastery": "Topple",
+      "source_page": 91
+    },
+    {
+      "id": "longsword",
+      "name": "Longsword",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Versatile"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "maul",
+      "name": "Maul",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 2,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Heavy",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Topple",
+      "source_page": 91
+    },
+    {
+      "id": "morningstar",
+      "name": "Morningstar",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "pike",
+      "name": "Pike",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Heavy",
+        "Reach",
+        "TwoHanded"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "Two",
+      "reach_bonus_feet": 5,
+      "versatile_damage": null,
+      "mastery": "Push",
+      "source_page": 91
+    },
+    {
+      "id": "rapier",
+      "name": "Rapier",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Finesse"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "scimitar",
+      "name": "Scimitar",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Finesse",
+        "Light"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Nick",
+      "source_page": 91
+    },
+    {
+      "id": "shortsword",
+      "name": "Shortsword",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Finesse",
+        "Light"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "trident",
+      "name": "Trident",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Thrown",
+        "Versatile",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 20,
+        "long_feet": 60
+      },
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Topple",
+      "source_page": 91
+    },
+    {
+      "id": "warhammer",
+      "name": "Warhammer",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Bludgeoning",
+      "properties": [
+        "Versatile"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Push",
+      "source_page": 91
+    },
+    {
+      "id": "war-pick",
+      "name": "War Pick",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Versatile"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "mastery": "Sap",
+      "source_page": 91
+    },
+    {
+      "id": "whip",
+      "name": "Whip",
+      "category": "Martial",
+      "kind": "Melee",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 4
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Slashing",
+      "properties": [
+        "Finesse",
+        "Reach"
+      ],
+      "range": null,
+      "ammunition": null,
+      "hands": "One",
+      "reach_bonus_feet": 5,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "blowgun",
+      "name": "Blowgun",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [],
+        "fixed": 1
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Loading",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 25,
+        "long_feet": 100
+      },
+      "ammunition": "Needle",
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "hand-crossbow",
+      "name": "Hand Crossbow",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 6
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Light",
+        "Loading",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 30,
+        "long_feet": 120
+      },
+      "ammunition": "Bolt",
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    },
+    {
+      "id": "heavy-crossbow",
+      "name": "Heavy Crossbow",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Heavy",
+        "Loading",
+        "TwoHanded",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 100,
+        "long_feet": 400
+      },
+      "ammunition": "Bolt",
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Push",
+      "source_page": 91
+    },
+    {
+      "id": "longbow",
+      "name": "Longbow",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 8
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Heavy",
+        "TwoHanded",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 150,
+        "long_feet": 600
+      },
+      "ammunition": "Arrow",
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "musket",
+      "name": "Musket",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 12
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Loading",
+        "TwoHanded",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 40,
+        "long_feet": 120
+      },
+      "ammunition": "Bullet",
+      "hands": "Two",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Slow",
+      "source_page": 91
+    },
+    {
+      "id": "pistol",
+      "name": "Pistol",
+      "category": "Martial",
+      "kind": "Ranged",
+      "damage": {
+        "dice": [
+          {
+            "count": 1,
+            "sides": 10
+          }
+        ],
+        "fixed": 0
+      },
+      "damage_type": "Piercing",
+      "properties": [
+        "Ammunition",
+        "Loading",
+        "Range"
+      ],
+      "range": {
+        "normal_feet": 30,
+        "long_feet": 90
+      },
+      "ammunition": "Bullet",
+      "hands": "One",
+      "reach_bonus_feet": 0,
+      "versatile_damage": null,
+      "mastery": "Vex",
+      "source_page": 91
+    }
+  ],
+  "spells": [
+    {
+      "id": "burning-hands",
+      "name": "Burning Hands",
+      "level": 1,
+      "casting_time": "Action",
+      "range": "Caster",
+      "targets": {
+        "Area": {
+          "shape": {
+            "Cone": {
+              "length_feet": 15
+            }
+          }
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "SaveDamage": {
+            "ability": "Dexterity",
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 3,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Fire"
+            },
+            "half_on_success": true,
+            "push_on_failure_feet": 0
+          }
+        },
+        "IgniteUnwornUncarriedObjects"
+      ],
+      "upcast": {
+        "ExtraDamageDie": {
+          "die": {
+            "count": 1,
+            "sides": 6
+          }
+        }
+      },
+      "source_pages": [
+        114
+      ]
+    },
+    {
+      "id": "fog-cloud",
+      "name": "Fog Cloud",
+      "level": 1,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 120
+        }
+      },
+      "targets": {
+        "Area": {
+          "shape": {
+            "Sphere": {
+              "radius_feet": 20
+            }
+          }
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": {
+        "Seconds": {
+          "seconds": 3600,
+          "concentration": true
+        }
+      },
+      "effects": [
+        {
+          "HeavilyObscured": {
+            "dispersed_by_strong_wind": true
+          }
+        }
+      ],
+      "upcast": {
+        "AdditionalRadius": {
+          "feet": 20
+        }
+      },
+      "source_pages": [
+        133
+      ]
+    },
+    {
+      "id": "hold-person",
+      "name": "Hold Person",
+      "level": 2,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 60
+        }
+      },
+      "targets": {
+        "Creatures": {
+          "maximum": 1,
+          "creature_type": "Humanoid",
+          "requires_sight": true
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": {
+          "description": "a straight piece of iron",
+          "minimum_cost_cp": 0,
+          "consumed": false
+        }
+      },
+      "duration": {
+        "Seconds": {
+          "seconds": 60,
+          "concentration": true
+        }
+      },
+      "effects": [
+        {
+          "SaveCondition": {
+            "ability": "Wisdom",
+            "condition": "Paralyzed",
+            "repeat": "EndOfTargetsTurnEndsOnSuccess"
+          }
+        }
+      ],
+      "upcast": {
+        "AdditionalTargets": {
+          "count": 1
+        }
+      },
+      "source_pages": [
+        141
+      ]
+    },
+    {
+      "id": "shield",
+      "name": "Shield",
+      "level": 1,
+      "casting_time": {
+        "Reaction": {
+          "trigger": "HitByAttackOrTargetedByMagicMissile"
+        }
+      },
+      "range": "Caster",
+      "targets": "Caster",
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "UntilStartOfCastersNextTurn",
+      "effects": [
+        {
+          "ArmorClassBonus": {
+            "bonus": 5,
+            "includes_triggering_attack": true
+          }
+        },
+        {
+          "PreventSpellDamage": {
+            "spell_id": "magic-missile"
+          }
+        }
+      ],
+      "upcast": null,
+      "source_pages": [
+        161,
+        162
+      ]
+    },
+    {
+      "id": "shield-of-faith",
+      "name": "Shield of Faith",
+      "level": 1,
+      "casting_time": "BonusAction",
+      "range": {
+        "Distance": {
+          "feet": 60
+        }
+      },
+      "targets": {
+        "Creatures": {
+          "maximum": 1,
+          "creature_type": null,
+          "requires_sight": false
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": {
+          "description": "a prayer scroll",
+          "minimum_cost_cp": 0,
+          "consumed": false
+        }
+      },
+      "duration": {
+        "Seconds": {
+          "seconds": 600,
+          "concentration": true
+        }
+      },
+      "effects": [
+        {
+          "ArmorClassBonus": {
+            "bonus": 2,
+            "includes_triggering_attack": false
+          }
+        }
+      ],
+      "upcast": null,
+      "source_pages": [
+        162
+      ]
+    },
+    {
+      "id": "thunderwave",
+      "name": "Thunderwave",
+      "level": 1,
+      "casting_time": "Action",
+      "range": "Caster",
+      "targets": {
+        "Area": {
+          "shape": {
+            "Cube": {
+              "side_feet": 15
+            }
+          }
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "SaveDamage": {
+            "ability": "Constitution",
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 8
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Thunder"
+            },
+            "half_on_success": true,
+            "push_on_failure_feet": 10
+          }
+        },
+        {
+          "PushUnsecuredObjectsEntirelyInArea": {
+            "feet": 10
+          }
+        },
+        {
+          "Audible": {
+            "feet": 300
+          }
+        }
+      ],
+      "upcast": {
+        "ExtraDamageDie": {
+          "die": {
+            "count": 1,
+            "sides": 8
+          }
+        }
+      },
+      "source_pages": [
+        169
+      ]
+    },
+    {
+      "id": "magic-missile",
+      "name": "Magic Missile",
+      "level": 1,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 120
+        }
+      },
+      "targets": {
+        "Darts": {
+          "count": 3,
+          "requires_sight": true
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "Damage": {
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 4
+                  }
+                ],
+                "fixed": 1
+              },
+              "damage_type": "Force"
+            }
+          }
+        }
+      ],
+      "upcast": {
+        "AdditionalDarts": {
+          "count": 1
+        }
+      },
+      "source_pages": [
+        146
+      ]
+    },
+    {
+      "id": "cure-wounds",
+      "name": "Cure Wounds",
+      "level": 1,
+      "casting_time": "Action",
+      "range": "Touch",
+      "targets": {
+        "Creatures": {
+          "maximum": 1,
+          "creature_type": null,
+          "requires_sight": false
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "Healing": {
+            "dice": [
+              {
+                "count": 2,
+                "sides": 8
+              }
+            ],
+            "add_spellcasting_modifier": true
+          }
+        }
+      ],
+      "upcast": {
+        "ExtraHealingDice": {
+          "dice": [
+            {
+              "count": 2,
+              "sides": 8
+            }
+          ]
+        }
+      },
+      "source_pages": [
+        121
+      ]
+    },
+    {
+      "id": "fire-bolt",
+      "name": "Fire Bolt",
+      "level": 0,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 120
+        }
+      },
+      "targets": "CreatureOrObject",
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "RangedSpellAttack": {
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 10
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Fire"
+            },
+            "extra_die_at_levels": [
+              5,
+              11,
+              17
+            ],
+            "ignite_unworn_uncarried_target": true
+          }
+        }
+      ],
+      "upcast": null,
+      "source_pages": [
+        132
+      ]
+    },
+    {
+      "id": "dancing-lights",
+      "name": "Dancing Lights",
+      "level": 0,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 120
+        }
+      },
+      "targets": {
+        "LightPoints": {
+          "maximum": 4,
+          "may_combine_as_medium_form": true
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": {
+          "description": "a bit of phosphorus",
+          "minimum_cost_cp": 0,
+          "consumed": false
+        }
+      },
+      "duration": {
+        "Seconds": {
+          "seconds": 60,
+          "concentration": true
+        }
+      },
+      "effects": [
+        {
+          "MovableDimLights": {
+            "radius_feet": 10,
+            "bonus_action_move_feet": 60,
+            "maximum_separation_feet": 20,
+            "vanish_outside_casting_range": true
+          }
+        }
+      ],
+      "upcast": null,
+      "source_pages": [
+        121,
+        122
+      ]
+    }
+  ],
+  "creatures": [
+    {
+      "id": "goblin-warrior",
+      "name": "Goblin Warrior",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Small",
+        "allowed_sizes": [
+          "Small"
+        ],
+        "creature_type": "Fey",
+        "alignment": "Chaotic Neutral",
+        "armor_class": 15,
+        "hit_points": 10,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 3,
+              "sides": 6
+            }
+          ],
+          "fixed": 0
+        },
+        "ability_scores": [
+          8,
+          15,
+          10,
+          10,
+          8,
+          8
+        ],
+        "saving_throw_modifiers": [
+          -1,
+          2,
+          0,
+          0,
+          -1,
+          -1
+        ],
+        "initiative_modifier": 2,
+        "proficiency_bonus": 2,
+        "challenge_rating": "1/4",
+        "experience_points": 50,
+        "speeds": {
+          "walk": 30,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Stealth",
+            "modifier": 6
+          }
+        ],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 60,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 9
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [
+          "Common",
+          "Goblin"
+        ],
+        "additional_languages": 0,
+        "can_speak": true,
+        "gear": [
+          "leather-armor",
+          "scimitar",
+          "shield",
+          "shortbow"
+        ],
+        "creature_tags": [
+          "Goblinoid"
+        ]
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "scimitar",
+          "name": "Scimitar",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 4,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 2
+                  },
+                  "damage_type": "Slashing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 4
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Slashing"
+                }
+              ],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 290
+        },
+        {
+          "id": "shortbow",
+          "name": "Shortbow",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 4,
+              "delivery": {
+                "Ranged": {
+                  "range": {
+                    "normal_feet": 80,
+                    "long_feet": 320
+                  }
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 2
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 4
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 290
+        },
+        {
+          "id": "nimble-escape",
+          "name": "Nimble Escape",
+          "activation": "BonusAction",
+          "feature": {
+            "BasicActionChoice": {
+              "options": [
+                "Disengage",
+                "Hide"
+              ]
+            }
+          },
+          "source_page": 290
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        290
+      ]
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Medium",
+        "allowed_sizes": [
+          "Medium"
+        ],
+        "creature_type": "Undead",
+        "alignment": "Lawful Evil",
+        "armor_class": 14,
+        "hit_points": 13,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 2,
+              "sides": 8
+            }
+          ],
+          "fixed": 4
+        },
+        "ability_scores": [
+          10,
+          16,
+          15,
+          6,
+          8,
+          5
+        ],
+        "saving_throw_modifiers": [
+          0,
+          3,
+          2,
+          -2,
+          -1,
+          -3
+        ],
+        "initiative_modifier": 3,
+        "proficiency_bonus": 2,
+        "challenge_rating": "1/4",
+        "experience_points": 50,
+        "speeds": {
+          "walk": 30,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 60,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 9
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [
+          "Bludgeoning"
+        ],
+        "damage_immunities": [
+          "Poison"
+        ],
+        "condition_immunities": [
+          "Poisoned"
+        ],
+        "exhaustion_immune": true,
+        "languages": [
+          "Common"
+        ],
+        "additional_languages": 1,
+        "can_speak": false,
+        "gear": [
+          "shortbow",
+          "shortsword"
+        ],
+        "creature_tags": []
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "shortsword",
+          "name": "Shortsword",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 5,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 3
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 326
+        },
+        {
+          "id": "shortbow",
+          "name": "Shortbow",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 5,
+              "delivery": {
+                "Ranged": {
+                  "range": {
+                    "normal_feet": 80,
+                    "long_feet": 320
+                  }
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 3
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 326
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        325,
+        326
+      ]
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Medium",
+        "allowed_sizes": [
+          "Medium"
+        ],
+        "creature_type": "Beast",
+        "alignment": "Unaligned",
+        "armor_class": 12,
+        "hit_points": 11,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 2,
+              "sides": 8
+            }
+          ],
+          "fixed": 2
+        },
+        "ability_scores": [
+          14,
+          15,
+          12,
+          3,
+          12,
+          6
+        ],
+        "saving_throw_modifiers": [
+          2,
+          2,
+          1,
+          -4,
+          1,
+          -2
+        ],
+        "initiative_modifier": 2,
+        "proficiency_bonus": 2,
+        "challenge_rating": "1/4",
+        "experience_points": 50,
+        "speeds": {
+          "walk": 40,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Perception",
+            "modifier": 5
+          },
+          {
+            "skill": "Stealth",
+            "modifier": 4
+          }
+        ],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 60,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 15
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [],
+        "additional_languages": 0,
+        "can_speak": false,
+        "gear": [],
+        "creature_tags": []
+      },
+      "traits": [
+        {
+          "PackTactics": {
+            "ally_distance_feet": 5
+          }
+        }
+      ],
+      "features": [
+        {
+          "id": "bite",
+          "name": "Bite",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 4,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 2
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": [
+                {
+                  "requirement": {
+                    "TargetSizeAtMost": {
+                      "size": "Medium"
+                    }
+                  },
+                  "effects": [
+                    {
+                      "Condition": {
+                        "condition": "Prone"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "source_page": 364
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        364
+      ]
+    },
+    {
+      "id": "warhorse",
+      "name": "Warhorse",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Large",
+        "allowed_sizes": [
+          "Large"
+        ],
+        "creature_type": "Beast",
+        "alignment": "Unaligned",
+        "armor_class": 11,
+        "hit_points": 19,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 3,
+              "sides": 10
+            }
+          ],
+          "fixed": 3
+        },
+        "ability_scores": [
+          18,
+          12,
+          13,
+          2,
+          12,
+          7
+        ],
+        "saving_throw_modifiers": [
+          4,
+          1,
+          1,
+          -4,
+          3,
+          -2
+        ],
+        "initiative_modifier": 1,
+        "proficiency_bonus": 2,
+        "challenge_rating": "1/2",
+        "experience_points": 100,
+        "speeds": {
+          "walk": 60,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 0,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 11
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [],
+        "additional_languages": 0,
+        "can_speak": false,
+        "gear": [],
+        "creature_tags": []
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "hooves",
+          "name": "Hooves",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 6,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 4
+                      }
+                    ],
+                    "fixed": 4
+                  },
+                  "damage_type": "Bludgeoning"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": [
+                {
+                  "requirement": {
+                    "Charge": {
+                      "straight_feet": 20,
+                      "target_size_at_most": "Large"
+                    }
+                  },
+                  "effects": [
+                    {
+                      "Damage": {
+                        "damage": {
+                          "amount": {
+                            "dice": [
+                              {
+                                "count": 2,
+                                "sides": 4
+                              }
+                            ],
+                            "fixed": 0
+                          },
+                          "damage_type": "Bludgeoning"
+                        }
+                      }
+                    },
+                    {
+                      "Condition": {
+                        "condition": "Prone"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "source_page": 364
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        364
+      ]
+    },
+    {
+      "id": "young-red-dragon",
+      "name": "Young Red Dragon",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Large",
+        "allowed_sizes": [
+          "Large"
+        ],
+        "creature_type": "Dragon",
+        "alignment": "Chaotic Evil",
+        "armor_class": 18,
+        "hit_points": 178,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 17,
+              "sides": 10
+            }
+          ],
+          "fixed": 85
+        },
+        "ability_scores": [
+          23,
+          10,
+          21,
+          14,
+          11,
+          19
+        ],
+        "saving_throw_modifiers": [
+          6,
+          4,
+          5,
+          2,
+          4,
+          4
+        ],
+        "initiative_modifier": 4,
+        "proficiency_bonus": 4,
+        "challenge_rating": "10",
+        "experience_points": 5900,
+        "speeds": {
+          "walk": 40,
+          "burrow": 0,
+          "climb": 40,
+          "fly": 80,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Perception",
+            "modifier": 8
+          },
+          {
+            "skill": "Stealth",
+            "modifier": 4
+          }
+        ],
+        "senses": {
+          "blindsight": 30,
+          "darkvision": 120,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 18
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [
+          "Fire"
+        ],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [
+          "Common",
+          "Draconic"
+        ],
+        "additional_languages": 0,
+        "can_speak": true,
+        "gear": [],
+        "creature_tags": [
+          "Chromatic"
+        ]
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "activation": "Action",
+          "feature": {
+            "Multiattack": {
+              "count": 3,
+              "attack_options": [
+                "rend"
+              ]
+            }
+          },
+          "source_page": 318
+        },
+        {
+          "id": "rend",
+          "name": "Rend",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 10,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 10
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 6
+                  },
+                  "damage_type": "Slashing"
+                },
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Fire"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 318
+        },
+        {
+          "id": "fire-breath",
+          "name": "Fire Breath",
+          "activation": "Action",
+          "feature": {
+            "SaveArea": {
+              "dc": 17,
+              "area": {
+                "Cone": {
+                  "length_feet": 30
+                }
+              },
+              "effect": {
+                "SaveDamage": {
+                  "ability": "Dexterity",
+                  "damage": {
+                    "amount": {
+                      "dice": [
+                        {
+                          "count": 16,
+                          "sides": 6
+                        }
+                      ],
+                      "fixed": 0
+                    },
+                    "damage_type": "Fire"
+                  },
+                  "half_on_success": true,
+                  "push_on_failure_feet": 0
+                }
+              },
+              "recharge": {
+                "die_sides": 6,
+                "minimum": 5,
+                "maximum": 6
+              }
+            }
+          },
+          "source_page": 318
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        318
+      ]
+    },
+    {
+      "id": "adult-red-dragon",
+      "name": "Adult Red Dragon",
+      "coverage": {
+        "SelectedFeatures": {
+          "omitted": [
+            "multiattack",
+            "spellcasting",
+            "commanding-presence",
+            "fiery-rays",
+            "experience-points-in-lair"
+          ]
+        }
+      },
+      "statistics": {
+        "size": "Huge",
+        "allowed_sizes": [
+          "Huge"
+        ],
+        "creature_type": "Dragon",
+        "alignment": "Chaotic Evil",
+        "armor_class": 19,
+        "hit_points": 256,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 19,
+              "sides": 12
+            }
+          ],
+          "fixed": 133
+        },
+        "ability_scores": [
+          27,
+          10,
+          25,
+          16,
+          13,
+          23
+        ],
+        "saving_throw_modifiers": [
+          8,
+          6,
+          7,
+          3,
+          7,
+          6
+        ],
+        "initiative_modifier": 12,
+        "proficiency_bonus": 6,
+        "challenge_rating": "17",
+        "experience_points": 18000,
+        "speeds": {
+          "walk": 40,
+          "burrow": 0,
+          "climb": 40,
+          "fly": 80,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Perception",
+            "modifier": 13
+          },
+          {
+            "skill": "Stealth",
+            "modifier": 6
+          }
+        ],
+        "senses": {
+          "blindsight": 60,
+          "darkvision": 120,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 23
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [
+          "Fire"
+        ],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [
+          "Common",
+          "Draconic"
+        ],
+        "additional_languages": 0,
+        "can_speak": true,
+        "gear": [],
+        "creature_tags": [
+          "Chromatic"
+        ]
+      },
+      "traits": [
+        {
+          "LegendaryResistance": {
+            "uses_per_long_rest": 3,
+            "uses_in_lair": 4
+          }
+        }
+      ],
+      "features": [
+        {
+          "id": "rend",
+          "name": "Rend",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 14,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 10
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 10
+                      }
+                    ],
+                    "fixed": 8
+                  },
+                  "damage_type": "Slashing"
+                },
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 4
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Fire"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 318
+        },
+        {
+          "id": "fire-breath",
+          "name": "Fire Breath",
+          "activation": "Action",
+          "feature": {
+            "SaveArea": {
+              "dc": 21,
+              "area": {
+                "Cone": {
+                  "length_feet": 60
+                }
+              },
+              "effect": {
+                "SaveDamage": {
+                  "ability": "Dexterity",
+                  "damage": {
+                    "amount": {
+                      "dice": [
+                        {
+                          "count": 17,
+                          "sides": 6
+                        }
+                      ],
+                      "fixed": 0
+                    },
+                    "damage_type": "Fire"
+                  },
+                  "half_on_success": true,
+                  "push_on_failure_feet": 0
+                }
+              },
+              "recharge": {
+                "die_sides": 6,
+                "minimum": 5,
+                "maximum": 6
+              }
+            }
+          },
+          "source_page": 319
+        },
+        {
+          "id": "pounce",
+          "name": "Pounce",
+          "activation": {
+            "Legendary": {
+              "cost": 1
+            }
+          },
+          "feature": {
+            "MoveThenAttack": {
+              "speed_divisor": 2,
+              "attack_id": "rend"
+            }
+          },
+          "source_page": 319
+        }
+      ],
+      "legendary_budget": {
+        "uses": 3,
+        "uses_in_lair": 4
+      },
+      "source_pages": [
+        318,
+        319
+      ]
+    },
+    {
+      "id": "cultist-fanatic",
+      "name": "Cultist Fanatic",
+      "coverage": {
+        "SelectedFeatures": {
+          "omitted": [
+            "light",
+            "thaumaturgy",
+            "command",
+            "spiritual-weapon"
+          ]
+        }
+      },
+      "statistics": {
+        "size": "Medium",
+        "allowed_sizes": [
+          "Medium",
+          "Small"
+        ],
+        "creature_type": "Humanoid",
+        "alignment": "Neutral",
+        "armor_class": 13,
+        "hit_points": 44,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 8,
+              "sides": 8
+            }
+          ],
+          "fixed": 8
+        },
+        "ability_scores": [
+          11,
+          14,
+          12,
+          10,
+          14,
+          13
+        ],
+        "saving_throw_modifiers": [
+          0,
+          2,
+          1,
+          0,
+          4,
+          1
+        ],
+        "initiative_modifier": 2,
+        "proficiency_bonus": 2,
+        "challenge_rating": "2",
+        "experience_points": 450,
+        "speeds": {
+          "walk": 30,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Deception",
+            "modifier": 3
+          },
+          {
+            "skill": "Persuasion",
+            "modifier": 3
+          },
+          {
+            "skill": "Religion",
+            "modifier": 2
+          }
+        ],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 0,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 12
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [
+          "Common"
+        ],
+        "additional_languages": 0,
+        "can_speak": true,
+        "gear": [
+          "holy-symbol",
+          "leather-armor"
+        ],
+        "creature_tags": []
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "pact-blade",
+          "name": "Pact Blade",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 4,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 8
+                      }
+                    ],
+                    "fixed": 2
+                  },
+                  "damage_type": "Slashing"
+                },
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Necrotic"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 278
+        },
+        {
+          "id": "spellcasting",
+          "name": "Spellcasting",
+          "activation": "Action",
+          "feature": {
+            "Spellcasting": {
+              "ability": "Wisdom",
+              "save_dc": 12,
+              "attack_bonus": 4,
+              "spells": [
+                {
+                  "spell_id": "hold-person",
+                  "cast_level": 2,
+                  "uses_per_long_rest": 1
+                }
+              ]
+            }
+          },
+          "source_page": 278
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        278
+      ]
+    }
+  ]
+}

@@ -32,7 +32,8 @@ fn distributed_srd_manifest_verifies_kernel_source_and_license_bytes() {
             "NOTICE.md",
             "source.json",
             "kernel.json",
-            "character-creation.json"
+            "character-creation.json",
+            "tactical.json"
         ])
     );
 }

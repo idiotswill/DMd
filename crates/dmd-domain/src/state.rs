@@ -8,10 +8,13 @@ use crate::{
     LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
 };
 
-pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 3;
+pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
+    /// Authoritative tactical encounter state; absent before an encounter is established.
+    #[serde(default)]
+    pub encounter: Option<crate::TacticalEncounter>,
     /// Current table contract, binding and unresolved decision; absent in legacy saves.
     #[serde(default)]
     pub table: Option<crate::TableState>,
@@ -40,6 +43,7 @@ impl CampaignState {
     #[must_use]
     pub fn empty(campaign: Campaign, clock: WorldClock) -> Self {
         Self {
+            encounter: None,
             table: None,
             rules: None,
             schema_version: CURRENT_STATE_SCHEMA_VERSION,
