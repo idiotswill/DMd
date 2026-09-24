@@ -40,8 +40,10 @@ Relevant contract: product-definition commercial boundary, faithful selected rul
 
 ## Validation and risks
 
-Official source selection verified; source PDF legal/contents pages inspected visually. Required tests and final review pending. No commercial-source blocker found; non-SRD protected content remains excluded. Future source updates require explicit version/provenance review, not silent replacement of pinned campaign content.
+Official source selection verified; source PDF legal/contents pages inspected visually. The ledger covers 55 families and every substantive source chapter, plus 155 glossary entries, 338 top-level spell headings, 258 magic-item headings, 330 creature stat blocks, all 12 classes/subclasses, four backgrounds, nine species and 17 feats. Subentries/variants remain obligations of their parent family; no gameplay completion is claimed.
+
+Local `cargo test --locked -p dmd-domain --test rules_coverage_ledger` passes all four positive/negative integration checks using the isolated portable Windows GNU toolchain and `target-source-ledger` build directory. `cargo fmt --all` completed; exact-head workspace CI and independent final review remain pending. No commercial-source blocker found; non-SRD protected content remains excluded. Future source updates require explicit version/provenance review, not silent replacement of pinned campaign content.
 
 ## Exact next action
 
-Create provenance/attribution and the source-derived ledger, then validate the complete inventory and open the PR for exact-head CI/review.
+Open the source/ledger PR, verify exact-head workspace CI, request independent full-diff review, resolve findings and archive this slice plan with evidence before merge. The main Gate 2 implementation plan continues separately.
