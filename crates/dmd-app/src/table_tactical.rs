@@ -6,6 +6,8 @@ use crate::{TableBattlefieldSetup, table_engine::table};
 
 #[path = "table_tactical_choices.rs"]
 mod choices;
+#[path = "table_attacks.rs"]
+mod attacks;
 
 pub(crate) fn view(
     state: &CampaignState,
@@ -165,6 +167,16 @@ pub(crate) fn view(
                 _ => None,
             })
             .filter(|actor| host || own.contains(actor)),
+        attack_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state.rules.as_ref().is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                attacks::options(state, actor)?
+            }
+            _ => None,
+        },
         budget: flow
             .filter(|_| host || active.is_some_and(|actor| own.contains(&actor)))
             .and_then(|flow| {

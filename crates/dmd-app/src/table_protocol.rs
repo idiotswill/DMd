@@ -279,6 +279,33 @@ pub struct TableTacticalView {
     pub may_fail_save: Option<EntityId>,
     pub legendary_resistance: Option<EntityId>,
     pub legendary_action: Option<EntityId>,
+    /// Physical choices for an authorized current actor; no target combat statistics.
+    pub attack_options: Option<TableAttackOptions>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAttackOptions {
+    pub actor: EntityId,
+    pub hands: WeaponLoadout,
+    pub weapons: Vec<TableWeaponChoice>,
+    pub targets: Vec<TableAttackTarget>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableWeaponChoice {
+    pub item: ItemId,
+    pub name: String,
+    pub deliveries: Vec<WeaponDelivery>,
+    pub abilities: Vec<Ability>,
+    pub grips: Vec<WeaponGrip>,
+    pub ammunition_required: bool,
+    pub ammunition: Vec<TableItemView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAttackTarget {
+    pub actor: EntityId,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
