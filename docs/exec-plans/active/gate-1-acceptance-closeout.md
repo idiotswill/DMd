@@ -1,6 +1,6 @@
 # Gate 1 acceptance closeout
 
-Status: active
+Status: integrated acceptance review complete; documentation/CI/human gates pending
 Branch: `gate1/acceptance-closeout`
 Base: `main` @ `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639`
 PR: `#14` (draft)
@@ -9,66 +9,70 @@ PR: `#14` (draft)
 Perform the final integrated Gate 1 acceptance review against the merged production-intended persistence/application path, reconcile durable Gate 1 documentation with verified repository state, archive completed Gate 1 execution plans, and prepare Gate 1 for explicit human acceptance without weakening the product definition or beginning Gate 2.
 
 ## Scope
-- Re-read the merged Gate 1 checkpoint, accepted persistence/content/application ADRs, relevant production code, and verification evidence only as needed for final acceptance.
-- Verify the integrated Gate 1 path covers atomic authoritative journal persistence, snapshot migration/replay, derivative query projections, campaign lifecycle/export/restore/purge, exact versioned content manifests, and the runnable-campaign composition boundary.
-- Verify restart/recovery, projection rebuild, campaign isolation, lifecycle portability/destructive-safety behavior, content-resolution failure behavior, and runnable-vs-raw access through the real production-intended path and executable tests.
-- Update `docs/checkpoints/gate-1.md` from its stale pre-merge state to current acceptance evidence, accepted properties, known limitations/debt, and product-definition traceability.
-- Move completed Gate 1 execution plans from `docs/exec-plans/active/` to `docs/exec-plans/completed/` once their work is verified complete, including the ADR reconciliation plan and this closeout plan at final completion.
-- Inspect the complete closeout diff and verify repository CI on the exact final PR head.
+- Verify atomic journal persistence, snapshot migration/replay, derivative projections, lifecycle/export/restore/purge, exact manifests, and runnable-campaign composition against current code/tests and durable ADRs.
+- Verify restart/recovery, projection rebuild, campaign isolation, destructive safety, content failure behavior, and raw-vs-runnable access through the real merged path.
+- Reconcile `docs/checkpoints/gate-1.md` with verified evidence, limitations, and deferred product scope.
+- Archive completed Gate 1 worker plans from `active/` to `completed/` without rewriting their historical contents.
+- Record accepted Gate 1 technical debt/limitations explicitly.
+- Inspect the complete PR diff and require exact-final-head repository CI before requesting human closeout approval.
 
 ## Non-goals
-- Do not implement Gate 2 gameplay mechanics, voice/UI, living-world simulation, procedural generation, Director behavior, or endurance-play features.
-- Do not change production architecture, schemas, save formats, migrations, rules/content contracts, or runtime behavior unless the acceptance review discovers a concrete Gate 1 defect that must be fixed before acceptance.
-- Do not weaken `docs/product-definition.md` or redefine unfinished product requirements as Gate 1-complete.
-- Do not mark Gate 1 accepted or merge this checkpoint closeout without explicit human approval under `AGENTS.md`.
+- No Gate 2 implementation.
+- No product-definition weakening.
+- No production architecture, schema, migration, save-format, rules/content, or runtime changes unless a concrete Gate 1 correctness blocker is discovered.
+- No final Gate 1 `Accepted` status or merge without explicit human approval.
 
 ## Relevant durable context
 - `AGENTS.md` — repository authority, verification, review, and human-approval boundaries.
-- `docs/product-definition.md` — finished-product contract; Gate 1 advances persistence/recovery/isolation only and does not imply a playable finished game.
-- `docs/checkpoints/gate-1.md` — current Gate 1 checkpoint, presently stale and still marked In progress.
-- Accepted ADRs 011/012 — authoritative journal integrity, snapshots, migration, and replay.
-- Accepted ADR 013 — derivative query projections remain non-authoritative and rebuildable.
-- Accepted ADR 014 — exact local versioned content manifest resolution.
-- Accepted ADR 015 — campaign lifecycle, export/restore, archive, and controlled whole-aggregate purge.
-- Accepted ADR 016 — outer `dmd-app` runnable-campaign composition boundary.
-- Merged Gate 1 implementation PRs: #6, #7, #10, #11, #9, #12; ADR status reconciliation PR #13.
+- `docs/product-definition.md` — finished-product contract; Gate 1 advances persistence/recovery/isolation and does not imply a playable finished game.
+- `docs/checkpoints/gate-1.md` — Gate 1 checkpoint being reconciled by this branch.
+- ADR 011 — atomic journal persistence (accepted).
+- ADR 012 — snapshot migration/replay; implementation merged and checkpoint historically accepted, but the ADR status line is still `Proposed` and requires explicit reconciliation.
+- ADRs 013–016 — accepted after explicit human approval through PR #13.
+- Merged implementation PRs #6, #7, #10, #11, #9, #12; architecture reconciliation PR #13.
 
 ## Acceptance criteria
-- [ ] Current `main` and this branch head are verified before each write phase; unexpected movement is reconciled before continuing.
-- [ ] Integrated Gate 1 architecture and persistence behavior are reviewed against the checkpoint and accepted ADR invariants rather than inferred from prior chat summaries.
-- [ ] Acceptance evidence directly covers restart/recovery, journal integrity, snapshot migration/replay, projection consistency/rebuild, campaign isolation, lifecycle/export/restore/purge, exact manifest resolution, and runnable-campaign gating.
-- [ ] No known Gate 1 correctness, integrity, replay, isolation, destructive-operation, content-resolution, or architecture-boundary blocker remains unresolved.
-- [ ] `docs/checkpoints/gate-1.md` accurately records implemented slices, integrated acceptance evidence, known limitations/debt, and the product requirements explicitly deferred to later gates.
-- [ ] Completed Gate 1 execution plans are moved from `active/` to `completed/` without losing durable history.
-- [ ] Full PR diff is inspected against the acceptance criteria and accepted ADRs.
-- [ ] Exact-final-head repository CI is green, including verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard.
-- [ ] PR summary records acceptance evidence, unresolved debt, and any remaining human merge/acceptance gate.
-- [ ] Gate 1 is marked Accepted and the PR merged only after explicit human approval of the final acceptance evidence.
+- [x] Current `main` and acceptance-branch heads were re-fetched and verified before substantive review/writes.
+- [x] Integrated Gate 1 architecture/persistence behavior was reviewed against current code/tests and ADR invariants rather than inferred from chat summaries.
+- [x] Direct evidence covers journal integrity, restart/recovery, snapshot migration/replay, projection consistency/rebuild, campaign isolation, lifecycle/export/restore/purge, exact manifest resolution, and runnable-campaign gating.
+- [x] No technical Gate 1 correctness, integrity, replay, isolation, destructive-operation, content-resolution, or architecture-boundary blocker was found.
+- [x] Prior worker PR merge/exact-head evidence was re-verified for projections (#10), manifests (#11), lifecycle (#9), runnable composition (#12), and snapshot/replay (#7).
+- [x] `docs/checkpoints/gate-1.md` has a prepared reconciliation that records implemented slices, integrated evidence, limitations/debt, and explicitly deferred product scope without marking the gate Accepted early.
+- [x] The five stale completed worker plans are prepared for archival without altering their historical content.
+- [ ] Accepted cross-gate technical debt is durably recorded for carry-forward.
+- [ ] Complete PR #14 diff is inspected after documentation/plan archival changes.
+- [ ] Exact-final-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard.
+- [ ] ADR 012 receives explicit human acceptance and its stale status is reconciled.
+- [ ] Gate 1 receives explicit human acceptance of the final evidence.
+- [ ] Final acceptance commit marks Gate 1/ADR 012 Accepted, archives this closeout plan, and is itself validated on an exact green head before merge.
 
-## Planned slices
-1. Establish this plan and draft PR from verified post-ADR-reconciliation `main`.
-2. Inventory the merged Gate 1 implementation and current executable acceptance evidence; identify any stale claims or uncovered checkpoint criteria.
-3. Inspect only the production code/tests needed to verify each Gate 1 acceptance area; surface any defect immediately and fix only if required for Gate 1 correctness.
-4. Reconcile the Gate 1 checkpoint with evidence and explicit deferred product scope.
-5. Archive completed Gate 1 execution plans and reconcile this plan/PR summary.
-6. Inspect the full final diff, verify exact-head CI, and stop for explicit human Gate 1 acceptance/merge approval.
+## Completed review slices
+1. **Journal authority/provenance:** verified atomic state/audit/event persistence, stale-state rejection, causal/provenance fail-closed behavior, and immutable-history guards through current regression tests.
+2. **Snapshot/replay:** verified immutable snapshots, migration backfill at real materialized head, typed replay, recovery from corrupt current-state materialization, and fail-closed gaps/version/identity/schema handling.
+3. **Derivative projections:** verified campaign isolation, queryability, same-transaction rollback, corruption detection, replay-backed rebuild, stale materialized-sequence repair, and close/reopen behavior.
+4. **Lifecycle/portability:** verified multi-campaign archive/export/purge/restore, restart reopen, invalid restore rejection-before-write, rollback on collisions, selective-delete resistance, complete root purge, and stale-backup detection.
+5. **Content manifests:** verified exact identity/version behavior, unrelated systems, dependencies/compatibility, malformed/duplicate/corrupt content, closed schema, unsafe path, and symlink fail-closed behavior.
+6. **Runnable composition:** verified private capability construction, fresh exact catalog resolution on create/open/resume/restore, preflight-before-mutation behavior, raw recovery distinction, and mechanical dependency guard.
+7. **Historical plan/PR reconciliation:** final merged PR records establish the stale worker-plan validation gaps: #10 CI #221, #11 CI #249, #9 CI #259, #12 CI #274; combined post-ADR `main` CI #279 was green.
 
 ## Decisions
-- This is an acceptance/evidence branch, not a feature-development branch. Documentation changes must reflect verified implementation rather than create new claims.
-- The product definition remains unchanged; Gate 1 acceptance means the durable campaign persistence foundation is production-intended and verified, not that DMd is a complete or playable end product.
-- Accepted ADRs are treated as enforceable invariants during this review.
-- Existing completed worker plans remain active only as stale repository bookkeeping until this closeout verifies and archives them.
+- This remains an evidence/closeout branch, not a feature branch.
+- Gate 1 acceptance means the durable campaign persistence foundation is production-intended and verified; it does not mean DMd is a complete game.
+- Historical worker plans will be moved unchanged to `completed/`; their stale top-line merge-gate wording is retained as historical state rather than rewritten after the fact.
+- ADR 012 is not silently marked Accepted. PR #7 was explicitly human-approval-gated and its merge commit says “Accept Gate 1 Slice B”, but durable architecture status still says Proposed; final closeout will request explicit human confirmation.
+- Exact-head CI is external authoritative evidence. The final human-approval/status commit will create a new head and must be validated before merge.
 
 ## Validation status
-- Base `main` verified at `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639` after merge of PR #13.
-- Post-merge CI #279 on that base was previously verified green before branch creation.
-- Root `AGENTS.md`, `docs/product-definition.md`, `docs/checkpoints/gate-1.md`, and the current active-plan inventory were read from that exact base.
-- Draft PR #14 is open against `main`; no acceptance conclusion has yet been drawn on this branch.
+- Base `main` verified unchanged at `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639`.
+- Acceptance branch verified unchanged at `652f4cb1b7d814ac7223d8b6c23c1426efc29289` before this documentation write phase.
+- Root `AGENTS.md`, product definition, Gate 1 checkpoint, ADRs 011/012, merged PR records, production boundary code, architecture guard, and relevant integration/regression tests were directly re-read.
+- Post-ADR-reconciliation `main` CI #279 was previously and durably verified green on the base commit.
+- Exact-head PR #14 CI is still required after the closeout documentation commit.
 
 ## Blockers / risks
-- The Gate 1 checkpoint is materially stale and must not be marked Accepted until integrated evidence is re-verified.
-- Five prior Gate 1 plans remain under `docs/exec-plans/active/` and require archival only after their completion state is confirmed during closeout.
-- Any newly discovered correctness or integrity defect blocks acceptance and must be recorded immediately rather than papered over in documentation.
+- No technical implementation blocker is known.
+- Governance: ADR 012’s status is stale and requires explicit human acceptance before formal Gate 1 closure.
+- Governance: the Gate 1 checkpoint is a high-impact acceptance boundary and requires explicit human approval before it is marked Accepted/merged.
 
 ## Next action
-Inventory the merged Gate 1 implementation and executable acceptance evidence area by area before changing the checkpoint status or moving completed plans.
+Commit the reconciled checkpoint, accepted-debt ledger entries, and archival moves for the five completed worker plans in one coherent documentation commit. Inspect the complete PR diff and run/verify exact-head CI. If green, stop for explicit human approval of ADR 012 and Gate 1 acceptance before the final status/plan-archival commit and merge.
