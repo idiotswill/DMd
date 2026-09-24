@@ -252,3 +252,4 @@ mod tests {
 pub mod tactical;
 pub mod tactical_budget;
 pub mod tactical_conditions;
+pub mod tactical_damage;
