@@ -1,6 +1,6 @@
 # Gate 1 ADR acceptance reconciliation
 
-Status: implementation complete; merge validation pending
+Status: implementation and diff review complete; exact-head CI merge gate pending
 Branch: `gate1/adr-acceptance-reconciliation`
 PR: `#13` (draft)
 Base: `main` @ `cc71e9e16c3e420842c5d13518ef7c20837aed1d`
@@ -38,14 +38,16 @@ Record the explicit human architecture approvals already granted for Gate 1 ADRs
 - [x] ADRs 013–016 each show `Status: Accepted` with concise human-approval provenance.
 - [x] No ADR decision text or implementation semantics change beyond status/provenance bookkeeping.
 - [x] Implementation diff is limited to the four ADR status lines plus this execution-plan reconciliation.
-- [ ] Complete PR diff inspected against the approvals above.
+- [x] Complete PR diff inspected against the approvals above.
 - [ ] Exact-current-head CI is green. This is an external PR merge gate and should not be echoed by another plan-only commit solely to record it.
-- [ ] PR summary records scope, approvals, validation, and that Gate 1 acceptance remains separate.
+- [x] PR summary records scope, approvals, validation state, and that Gate 1 acceptance remains separate.
 - [ ] PR is merged to `main` before the Gate 1 acceptance branch starts.
 
 ## Completed slices
 1. Created this checked-in execution plan and draft PR #13 before architecture status changes.
 2. Reconciled ADRs 013–016 to Accepted with explicit approval date and implementation PR provenance; no decision text or behavior was changed.
+3. Inspected the complete PR diff: ADR 013–016 each change only their `Status:` line; the only other changed file is this execution plan.
+4. Updated the PR summary to record the approval basis, diff review, validation gate, and separation from Gate 1 acceptance.
 
 ## Decisions
 - Architecture content is already implemented and reviewed; this task records explicit human acceptance rather than redesigning it.
@@ -56,11 +58,12 @@ Record the explicit human architecture approvals already granted for Gate 1 ADRs
 ## Validation
 - Base `main` verified at `cc71e9e16c3e420842c5d13518ef7c20837aed1d` before branch creation.
 - ADR source text and Gate 1 checkpoint were read from that exact base.
-- Status reconciliation changes only acceptance/provenance text; complete PR diff inspection and exact-head CI remain pending.
+- Complete PR diff inspected after implementation; no non-status ADR changes or production-code changes are present.
+- Exact-current-head CI remains the final merge-validation gate.
 
 ## Blockers / risks
-- No implementation blocker is known.
-- Merge is blocked until the complete diff is inspected and exact-current-head CI is green.
+- No implementation or review blocker is known.
+- Merge is blocked only until exact-current-head CI is green.
 
 ## Next action
-Inspect the complete PR #13 diff. If it contains only the intended documentation reconciliation, verify exact-head CI, update the PR summary, mark ready, and merge with expected-head protection. Then stop and report back before creating the separate Gate 1 acceptance branch.
+Verify GitHub CI on the immutable current PR head. If green, update the PR summary with that exact SHA/run, mark ready, and merge with expected-head protection. Then stop and report back before creating the separate Gate 1 acceptance branch.
