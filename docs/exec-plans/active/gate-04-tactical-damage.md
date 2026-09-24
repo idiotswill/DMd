@@ -2,14 +2,17 @@
 
 ## Objective and scope
 
-Branch `codex/gate4-damage-resolution`, based on `9faaf04`. Implement an internal,
+Verification branch `codex/gate4-damage-verified`, based on merged main `580f487`;
+the original `codex/gate4-damage-resolution` source branch is retained. Root is the
+sole writer of the verification branch. Implement an internal,
 pure, source-derived HP/damage/death reducer and durable recovery contracts without
 changing legacy kernel event semantics. The parent encounter slice owns authority,
 continuation storage, atomic journal/application integration and effect-group removal.
 
 Relevant contracts: product-definition rules fidelity and durable authoritative state;
-Gate 4 damage/death, conditions and concentration criteria; ADR 026 interruptible
-encounter resolution. Source: pinned SRD 5.2.1 pp. 16–18, 179, 187, 191.
+Gate 4 damage/death, conditions and concentration criteria; accepted ADR 025 and
+the integration branch's proposed ADR 026 interruptible encounter resolution.
+Source: pinned SRD 5.2.1 pp. 16–18, 179, 187, 191.
 
 ## Acceptance criteria
 
@@ -75,6 +78,12 @@ world death; project only active recovery conditions; retain Prone after awakeni
 apply narrowly scoped tactical validation for source-valid dead maximum-HP-zero and
 condition immunity. The parent owns full verification and production-path evidence.
 
-Exact next action: commit the verified review follow-up, obtain final delta signoff, then let
-the parent integrate the records/reducer and run canonical verification. This slice does
-not claim end-user damage support or Gate 4 acceptance before that integration.
+The isolated six-file PR contains the reviewed `dbe8cf7` source plus reviewed `b21f2eb`
+ordinary death-save success operation (31 focused damage tests passed on its source branch).
+Successful/failed saves chosen by a rule do not fabricate a natural die face. No optional
+RulesState attachment or old event/save interpretation changes are included in this PR.
+
+Exact next action: run canonical full verification and exact-head CI on this main-based
+branch, verify the complete final diff, and merge with expected-head protection. Then
+refresh the parent integration onto main. This reducer slice does not claim end-user
+damage support or Gate 4 acceptance before the production integration above.
