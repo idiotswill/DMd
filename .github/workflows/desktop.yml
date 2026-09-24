@@ -1,0 +1,68 @@
+name: Windows desktop
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows ${{ matrix.rust }}
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: ['1.88.0', stable]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: x86_64-pc-windows-msvc
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-${{ matrix.rust }}
+          cache-workspace-crates: false
+          cache-on-failure: true
+      - name: Frontend checks, tests, static build and application icons
+        shell: pwsh
+        run: ./scripts/desktop-prepare.ps1
+      - name: Check Windows workspace including the desktop at the declared MSRV
+        shell: pwsh
+        run: cargo check --locked --workspace --all-targets --target x86_64-pc-windows-msvc
+      - name: Check desktop Rust formatting and lint
+        if: matrix.rust == 'stable'
+        shell: pwsh
+        run: |
+          cargo fmt --all -- --check
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo clippy --locked -p dmd-desktop --all-targets --target x86_64-pc-windows-msvc -- -D warnings
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cargo test --locked -p dmd-desktop --target x86_64-pc-windows-msvc
+      - name: Build and package fresh release application and offline installer
+        if: matrix.rust == 'stable'
+        shell: pwsh
+        run: ./scripts/desktop-package.ps1
+      - uses: actions/upload-artifact@v7
+        if: matrix.rust == 'stable'
+        with:
+          name: dmd-windows-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/desktop/
+          if-no-files-found: error
+          retention-days: 14

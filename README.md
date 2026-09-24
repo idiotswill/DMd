@@ -13,3 +13,10 @@ This repository starts from a generic engine architecture. Existing Asterra camp
 Gate 0 — architecture, repository foundation, test strategy, and development-lab/product-contract hardening.
 
 No gameplay implementation is considered stable yet.
+
+## Software and content licenses
+
+DMd's original software uses the [MIT License](LICENSE), as declared by the Rust
+workspace. Licensed rules adaptations retain their separate [SRD attribution and
+CC BY 4.0 terms](content/srd-5.2.1/NOTICE.md). Bundled third-party dependencies retain
+their own license notices.

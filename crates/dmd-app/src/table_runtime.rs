@@ -22,6 +22,57 @@ fn recovery(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
 }
 
+fn roll_label(purpose: &PendingPurpose) -> String {
+    let ability_name = |ability: &Ability| match ability {
+        Ability::Strength => "Strength",
+        Ability::Dexterity => "Dexterity",
+        Ability::Constitution => "Constitution",
+        Ability::Intelligence => "Intelligence",
+        Ability::Wisdom => "Wisdom",
+        Ability::Charisma => "Charisma",
+    };
+    let skill_name = |skill: &Skill| match skill {
+        Skill::Acrobatics => "Acrobatics",
+        Skill::AnimalHandling => "Animal Handling",
+        Skill::Arcana => "Arcana",
+        Skill::Athletics => "Athletics",
+        Skill::Deception => "Deception",
+        Skill::History => "History",
+        Skill::Insight => "Insight",
+        Skill::Intimidation => "Intimidation",
+        Skill::Investigation => "Investigation",
+        Skill::Medicine => "Medicine",
+        Skill::Nature => "Nature",
+        Skill::Perception => "Perception",
+        Skill::Performance => "Performance",
+        Skill::Persuasion => "Persuasion",
+        Skill::Religion => "Religion",
+        Skill::SleightOfHand => "Sleight of Hand",
+        Skill::Stealth => "Stealth",
+        Skill::Survival => "Survival",
+    };
+    match purpose {
+        PendingPurpose::Test { kind, .. } => match kind {
+            TestKind::Check { ability, skill } => match skill {
+                Some(skill) => format!("{} ({}) check", ability_name(ability), skill_name(skill)),
+                None => format!("{} check", ability_name(ability)),
+            },
+            TestKind::Save { ability } => format!("{} saving throw", ability_name(ability)),
+            TestKind::Initiative => "Initiative".into(),
+            TestKind::DeathSave => "Death saving throw".into(),
+        },
+        PendingPurpose::Attack { .. } => "Attack roll".into(),
+        PendingPurpose::Damage { critical: true, .. } => "Critical hit damage".into(),
+        PendingPurpose::Damage { .. } => "Damage".into(),
+        PendingPurpose::Healing { .. } => "Healing".into(),
+        PendingPurpose::Concentration { .. } => {
+            "Constitution saving throw to maintain concentration".into()
+        }
+        PendingPurpose::RestHitDie => "Short rest healing".into(),
+        PendingPurpose::SecondWind => "Second Wind healing".into(),
+    }
+}
+
 fn sheet_details(rules: &RulesState, entity: &MechanicalEntity) -> TableSheetDetails {
     let mut conditions = dmd_rules::active_conditions(rules, entity.entity_id)
         .into_iter()
@@ -539,7 +590,17 @@ impl CampaignRuntime {
         characters.sort_by_key(|character| character.character_id.0);
         let roll = if state.rules.is_some() {
             match dmd_rules::query(state, issuer, &RulesQuery::PendingRoll, &pack)? {
-                RulesAnswer::PendingRoll(roll) => roll,
+                RulesAnswer::PendingRoll(Some(mut request)) => {
+                    let pending = state
+                        .rules
+                        .as_ref()
+                        .and_then(|rules| rules.pending.as_ref())
+                        .filter(|pending| pending.request.id == request.id)
+                        .ok_or_else(|| recovery("Visible roll has no matching pending purpose."))?;
+                    // Presentation only: leave the persisted request and its replay inputs intact.
+                    request.reason = roll_label(&pending.purpose);
+                    Some(request)
+                }
                 _ => None,
             }
         } else {
