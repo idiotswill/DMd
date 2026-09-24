@@ -16,5 +16,8 @@ tauri = { version = "=2.11.6", default-features = false, features = ["wry", "com
 [target.'cfg(all(windows, target_env = "msvc"))'.build-dependencies]
 tauri-build = { version = "=2.6.3", features = [] }
 
+[target.'cfg(all(windows, target_env = "msvc"))'.dev-dependencies]
+serde_json.workspace = true
+
 [features]
 custom-protocol = ["tauri/custom-protocol"]

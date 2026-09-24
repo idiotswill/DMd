@@ -747,6 +747,7 @@ dependencies = [
  "dmd-app",
  "dmd-domain",
  "serde",
+ "serde_json",
  "tauri",
  "tauri-build",
  "tokio",

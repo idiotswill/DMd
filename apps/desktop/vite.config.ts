@@ -3,7 +3,8 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { svelteTesting } from '@testing-library/svelte/vite';
 
 export default defineConfig({
-  plugins: [svelte(), svelteTesting()],
+  // Keep cleanup in our local setup module, including when npm dependencies are junctioned.
+  plugins: [svelte(), svelteTesting({ autoCleanup: false })],
   clearScreen: false,
   build: { target: 'es2022', sourcemap: false },
   test: {

@@ -319,3 +319,194 @@ pub async fn desktop_table_text(
     .await?;
     Ok(runtime.submit_table_text(meta, &request.text).await?)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dmd_domain::{AttendanceStatus, EntityId, SessionParticipant};
+    use serde_json::json;
+
+    #[test]
+    fn renderer_cannot_supply_issuer_or_actor() {
+        let request = json!({
+            "command_id": CommandId::new(), "campaign_id": CampaignId::new(),
+            "expected_event_sequence": 0, "session_id": null, "channel": "Host",
+            "action": "EndSession"
+        });
+        assert!(serde_json::from_value::<TableActionRequest>(request.clone()).is_ok());
+        for (field, value) in [
+            ("issuer", json!("System")),
+            ("actor", json!({"Entity": EntityId::new()})),
+        ] {
+            let mut forged = request.clone();
+            forged[field] = value;
+            assert!(serde_json::from_value::<TableActionRequest>(forged).is_err());
+        }
+        let mut forged = request;
+        forged["channel"] = json!({"Player": {"player_id": PlayerId::new(), "character_id": CharacterId::new(), "actor": EntityId::new()}});
+        assert!(serde_json::from_value::<TableActionRequest>(forged).is_err());
+    }
+
+    #[tokio::test]
+    async fn controller_selection_and_original_context_survive_session_end_retry() {
+        let database =
+            std::env::temp_dir().join(format!("dmd-desktop-test-{}.sqlite", CampaignId::new().0));
+        let runtime = CampaignRuntime::open_local(
+            &database,
+            PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+        )
+        .await
+        .unwrap();
+        let campaign = CampaignId::new();
+        let player = PlayerId::new();
+        let stranger = PlayerId::new();
+        let character = CharacterId::new();
+        let entity = EntityId::new();
+        let session = PlaySessionId::new();
+        runtime
+            .create_table_campaign(campaign, "Desktop boundary test", TableContract::default())
+            .await
+            .unwrap();
+        for (id, name) in [(player, "Controller"), (stranger, "Other player")] {
+            host_action(
+                &runtime,
+                campaign,
+                None,
+                TableAction::AddPlayer {
+                    id,
+                    name: name.into(),
+                },
+            )
+            .await;
+        }
+        // Enter source choices through the same deserialized application action accepted over IPC.
+        let create = serde_json::from_value(json!({"CreateCharacter": {
+            "character_id": character, "entity_id": entity, "player_id": player,
+            "input": {
+                "name": "Traveler", "pronouns": "they/them", "description": "A traveler",
+                "alignment": "Neutral Good", "backstory": "A private aspiration",
+                "ability_scores": [15,14,13,8,10,12], "background_boosts": [2,0,1,0,0,0],
+                "fighter_skills": ["Perception","Survival"], "human_skill": "Insight",
+                "skilled_skills": ["Acrobatics","Stealth","Investigation"], "size": "Medium",
+                "languages": ["dwarvish","elvish"], "fighting_style": "Defense", "gaming_set": "Dice",
+                "purchases": [{"item_id":"leather-armor","quantity":1}], "worn_armor":"leather-armor",
+                "shield": false, "masteries": ["club","dagger","shortbow"]
+            }
+        }})).unwrap();
+        host_action(&runtime, campaign, None, create).await;
+        host_action(
+            &runtime,
+            campaign,
+            Some(session),
+            TableAction::StartSession {
+                id: session,
+                name: "An evening".into(),
+                participants: vec![SessionParticipant {
+                    player_id: player,
+                    character_id: Some(character),
+                    attendance: AttendanceStatus::Present,
+                }],
+            },
+        )
+        .await;
+        let head = runtime
+            .table_view(campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .event_sequence;
+        let id = CommandId::new();
+        assert!(
+            command_meta(
+                &runtime,
+                id,
+                campaign,
+                head,
+                Some(session),
+                LocalChannel::Player {
+                    player_id: stranger,
+                    character_id: character,
+                }
+            )
+            .await
+            .is_err()
+        );
+        let original = command_meta(
+            &runtime,
+            id,
+            campaign,
+            head,
+            Some(session),
+            LocalChannel::Player {
+                player_id: player,
+                character_id: character,
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(original.issuer, CommandIssuer::Player(player));
+        assert_eq!(original.actor, Some(AgentRef::Entity(entity)));
+        let result = runtime
+            .submit_table_text(original.clone(), "How do I roll with advantage?")
+            .await
+            .unwrap();
+        host_action(&runtime, campaign, Some(session), TableAction::EndSession).await;
+        let ended_head = runtime
+            .table_view(campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .event_sequence;
+        let retry = command_meta(
+            &runtime,
+            id,
+            campaign,
+            head,
+            Some(session),
+            LocalChannel::Player {
+                player_id: player,
+                character_id: character,
+            },
+        )
+        .await
+        .unwrap();
+        assert_eq!(retry, original);
+        assert_eq!(
+            runtime
+                .submit_table_text(retry, "How do I roll with advantage?")
+                .await
+                .unwrap(),
+            result
+        );
+        assert_eq!(
+            runtime
+                .table_view(campaign, TableViewer::Host)
+                .await
+                .unwrap()
+                .event_sequence,
+            ended_head
+        );
+    }
+
+    async fn host_action(
+        runtime: &CampaignRuntime,
+        campaign: CampaignId,
+        session: Option<PlaySessionId>,
+        action: TableAction,
+    ) {
+        let head = runtime
+            .table_view(campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .event_sequence;
+        let meta = command_meta(
+            runtime,
+            CommandId::new(),
+            campaign,
+            head,
+            session,
+            LocalChannel::Host,
+        )
+        .await
+        .unwrap();
+        runtime.execute_table(meta, action).await.unwrap();
+    }
+}
