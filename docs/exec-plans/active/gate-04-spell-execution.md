@@ -53,12 +53,28 @@ scheduling and enduring noncombat consequences retain Gate 5 ownership.
   a single payment boundary rather than duplicate its resource state.
 - Source-definition/catalog additions belong to environment_audit. New files, exports,
   tests and this plan are this writer's only scope.
+- Cast identity uses the original command, caster and a checked `u16` occurrence
+  allocated by the shared resolution. The direct-entry convenience function uses zero;
+  nested work must call `plan_spell_cast_at` with a distinct central allocation below
+  32,768. The same identity derives its concentration group and queued program.
+- This first program vocabulary covers the currently pinned sample descriptors. It
+  does not execute targets, geometry, reaction offers or program nodes independently.
+  Root must bind those to the shared scheduler and retain source creature invocation
+  separately from its enclosing prepaid activation. Source component evidence is
+  internal and checked against actual item identity, custody and hand access.
+- Counterspell defers slot expenditure until the interruption window closes. Reaction
+  admission must also account for outstanding same-turn slot commitments, so nested
+  casting cannot promise a second slot and fail only after the reaction has resolved.
+  Shared frame admission owns this reservation; no duplicate resource pool is added.
 
 ## Validation, risks and next action
 
-No implementation or build result yet. Root's global serialized build-slot rule applies.
+Typed plans, source compilation, phase transitions and 18 focused regressions are drafted.
+Formatting and whitespace checks pass; compilation/tests have not run yet. Root's global
+serialized build-slot rule applies (environment_audit precedes this slice).
 Primary risks are premature resource commits, hidden-target leaks, source context drift,
 duplicate spending on resume, and a plan-only implementation misrepresented as completed
-gameplay. Next: publish domain API, implement source plan and transaction reducer, then
-request focused review and the build slot. Root must attach new durable authority with
+gameplay. Next: use the handed-off build slot for focused tests and strict lint, fix
+observed failures, obtain independent review, then commit the coherent slice. Root must
+attach new durable authority with
 legacy future-field rejection and semantic replay before any production acceptance.
