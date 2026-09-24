@@ -7,7 +7,7 @@ Status: **Active**
 Deliver the commercial fifth-edition rules kernel through `dmd-app::CampaignRuntime`, with deterministic adjudication, durable roll requests/results and replay. Gate 2 ends only after integrated acceptance and exact-head verification; do not begin Gate 3.
 
 - Baseline: `414040b33d58701cec81e6d73b791347c6d43ca1`, roadmap bootstrap PR #15 merged after exact-head CI #297 on `5a6aab55aa83a156c48feeab45a9c634f9b78f78`.
-- Branch: `codex/gate2-rules-foundation`; source/ledger slice on isolated `codex/gate2-source-ledger` with a separate writer.
+- Foundation: `codex/gate2-rules-foundation`, [PR #17](https://github.com/idiotswill/DMd/pull/17). Application integration: `codex/gate2-rules-runtime`. Source/ledger slice used isolated `codex/gate2-source-ledger` with a separate writer.
 - Source decision verified 2026-09-24: official English SRD 5.2.1, published 2025-05-01, Creative Commons Attribution 4.0. Official landing page https://www.dndbeyond.com/srd identifies it as the current release. PDF https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf, SHA256 `8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87`. The source/provenance slice records attribution and the complete source-derived inventory before content ships.
 
 ## Scope and non-goals
@@ -49,8 +49,12 @@ Each slice receives complete diff review and exact-head green CI before expected
 
 No Gate 2 completion claim yet. The portable Rust GNU toolchain is installed outside the repository under `../tooling`. Baseline full verification passed after correcting Windows-only unused test helpers and reducing a platform-dependent large error variant. Shell guards now fail closed if their required host utilities are missing; an empty-PATH negative run exited unsuccessfully as intended. Content text uses pinned LF bytes for cross-platform manifest integrity.
 
-Source/inventory PR #16 accounts for 55 rules families and the source catalogs, with explicit gate ownership. Schema 2 compatibility has passed 119 workspace tests (including five new migration/restore regressions); it will land atomically with the optional typed rules state. The deterministic kernel and application composition are being integrated on separate reviewable slices. No owner decision blocker is currently known.
+Source/inventory [PR #16](https://github.com/idiotswill/DMd/pull/16) merged as `a0fb8762f3256e384c9bd1ee1e20b0d4acd4d4c3` after final full/delta review and [CI #300](https://github.com/idiotswill/DMd/actions/runs/35998593520) passed on `bbf4d78f052bb9d6ec35553dc5a020ea1021defd`. It accounts for 55 rules families and the source catalogs with explicit gate ownership.
+
+Schema 2 compatibility passed 119 workspace tests before integration (including five new migration/restore regressions). Its typed rules field is now integrated atomically on the foundation branch. The independent migration review found no blocking defect. Kernel/source review produced fixes for authority, retained request derivation, rest interruption, condition interactions and effect timing; final review remains required.
+
+The first integrated app run passed 13 real runtime scenarios, five restore-preflight unit tests and all eight existing runnable-campaign tests. Further review fixes and complete exact-head verification remain outstanding. Foundation CI #302 on `3c16455` passed MSRV and guards but failed formatting of the newly added bonus-action primitive; its actual diff output was inspected. Local full verification also identified three Clippy collapsible-if failures. The mechanics follow-up owns these fixes; neither failed run is counted as acceptance. No owner decision blocker is currently known.
 
 ## Exact next action
 
-Merge the exact-head-verified source inventory; review and integrate typed kernel plus schema compatibility; exercise application actions, queries, restart and deterministic replay. Keep this plan current as evidence changes.
+Integrate the reviewed kernel follow-up, run full foundation verification and CI, then merge PR #17 after exact-head review. Refresh main and finalize application/restore integration, including final production scenarios, ledger statuses and gate closeout. Keep this plan current as evidence changes.
