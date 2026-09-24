@@ -14,6 +14,8 @@ Manifest resolution proves local content integrity and exact version availabilit
 
 Existing generic recovery/lifecycle composition remains available for campaigns without mechanical state. No unknown rules identity may execute mechanics. A rules state attached to an unsupported identity fails at the runnable boundary. Content unavailability never triggers a fallback to another rules version.
 
+Create and restore retain their verified catalog/pack across the database await and validate the returned state with those same in-memory definitions. They do not reread mutable files after a successful commit and incorrectly report failure. Each later open/action/query reloads content normally; the returned campaign grants no cached authority for a subsequent operation.
+
 ## Pending and completed rolls
 
 Rule resolution creates the authoritative request (ID, dice, modifier, advantage/disadvantage, visibility and purpose). The pending action is committed before asking for physical dice and survives suspension/restart. Physical submission supplies only raw faces for the saved request. Digital dice use the same result validation and record their raw outcomes; replay never rolls again.

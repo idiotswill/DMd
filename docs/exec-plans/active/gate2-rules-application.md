@@ -43,7 +43,15 @@ retain enough origin data for the kernel to rederive their authoritative dice an
 
 ## Verification and next step
 
-The application scenarios are drafted and formatted; compilation awaits the reviewed
-kernel foundation. No integration success is claimed yet. Incorporate foundation and
-export preflight, generate/verify the distributed content manifest, execute tests, repair
-findings, then update this plan with actual head and CI evidence. No owner blocker known.
+The reviewed foundation and restore helper are integrated. The initial application run
+passed 13 runtime scenarios, six restore-helper tests and eight existing runnable-campaign
+tests. Independent review then found two boundary defects: historical rules lineage could
+be bypassed by relabeling current/event data, and create/restore reread content after commit.
+Both are fixed in `ce5b67e`/`916ca49`, with regression coverage for audit/snapshot lineage,
+post-resolution session rejection and deterministic content changes during a database wait.
+The isolated fixes passed 15 runtime, six helper and eight existing application tests.
+
+Next: refresh/rebase onto merged foundation main, run complete repository verification,
+finish independent application review, open the application PR and inspect exact-head CI.
+Only then merge, update Gate 2 ledger/checkpoint evidence and archive plans. No owner blocker
+is known; later-gate UI, geometry, complete content and measured endurance remain deferred.

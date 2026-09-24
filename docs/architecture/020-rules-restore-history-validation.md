@@ -56,5 +56,7 @@ trust anchor is not disproved by unavailable earlier history.
 `dmd-app::rules_restore::validate_rules_export` receives an already upgraded export
 and validated exact `RulesPack`. The application invokes it before raw restore for
 rules-enabled campaigns; generic campaigns continue their existing lifecycle path.
-Compilation and integrated production tests are required when the kernel, helper,
-and application wiring land together.
+Rules lineage is detected from current state, rules command/event namespaces and
+every version-aware historical snapshot. Relabeling only current content or event
+kinds cannot bypass semantic validation. Compilation and integrated production
+tests are required when the kernel, helper, and application wiring land together.
