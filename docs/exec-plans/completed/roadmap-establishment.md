@@ -1,6 +1,6 @@
 # Execution plan — post-Gate-1 product roadmap bootstrap
 
-Status: **Active — baseline verified 2026-09-24**
+Status: **Implementation complete — final documentation head must pass CI before merge**
 
 ## Objective
 
@@ -8,11 +8,11 @@ On a dedicated docs/governance branch from current `main`, install the owner-app
 
 After exact-head validation, Codex may merge this bootstrap PR itself, refresh `main`, and begin Gate 2 on a fresh branch without pausing for routine approval.
 
-## Suggested branch / PR
+## Branch / PR
 
 - Branch: `codex/post-gate1-roadmap`
-- PR: docs/governance only, base `main`
-- Pack refresh baseline: `056b788364029f74afd15c9dcb592920308998fa` (must be refreshed)
+- PR: [#15](https://github.com/idiotswill/DMd/pull/15), docs/governance only, base `main`
+- Verified baseline: `056b788364029f74afd15c9dcb592920308998fa`
 
 ## Verified baseline when pack was refreshed
 
@@ -20,7 +20,7 @@ After exact-head validation, Codex may merge this bootstrap PR itself, refresh `
 - `docs/exec-plans/active/` no longer existed because completed Gate 1 plans were archived.
 - no open PRs were present.
 
-Verified live on 2026-09-24: a fresh clone of `main` is exactly the baseline above; GitHub reports PR #14 merged to that commit and no open PRs. Gate 1 remains accepted. Its checkpoint still describes the completed merge as pending; bootstrap will correct only that stale wording.
+Verified live on 2026-09-24: a fresh clone of `main` is exactly the baseline above; GitHub reports PR #14 merged to that commit and no open PRs at entry. Gate 1 remains accepted. Bootstrap corrects its stale merge-pending wording using directly re-verified PR #14 metadata and exact-head CI #294.
 
 ## Scope
 
@@ -107,15 +107,20 @@ Inspect full diff, run verification, resolve contradictions, update plan/PR, mer
 - Fresh clone and GitHub PR metadata verify baseline `056b788364029f74afd15c9dcb592920308998fa`, merged PR #14, and no open PRs.
 - Product expansion is appended in full after the existing contract; no existing requirement is removed.
 - Read-only independent input audit identified stale runbook governance, a circular Gate 6 playtest prerequisite, and missing explicit traceability rows; all are reconciled in bootstrap.
-- `git diff --check` passes during preparation. Full exact-head review and CI are pending.
-- This Windows environment has Git Bash but no installed Rust/C++ toolchain. Local toolchain setup is in progress outside the repository; CI must directly verify the canonical equivalent checks before merge.
+- Independent full-diff review of `fb28aa6` plus protocol whitespace correction found no blockers. Its final suggestion to spell out every handoff gate-summary field is incorporated in the final documentation bookkeeping.
+- Mechanical text comparison verifies the original product contract is preserved as an unchanged prefix and every substantive expansion requirement is integrated as an unchanged suffix.
+- Local `bash -lc './scripts/check-genericity && ./scripts/check-boundaries'` passes. An earlier invocation without a login shell lacked `grep`/`dirname` and is not counted as verification; use the initialized Git Bash environment.
+- `git diff --check` passes after removing a trailing blank line from the supplied protocol.
+- [CI #296](https://github.com/idiotswill/DMd/actions/runs/35995172146) passed on implementation head `fb28aa64f242ee3f2accab8876a3f2179f68524c`: verify-fast (format/check), Clippy, workspace tests, Rust 1.88 MSRV, genericity guard and architecture guard. These directly cover the canonical `./scripts/verify` commands.
+- Local Rust/C++ setup is being prepared outside the repository. Bootstrap does not claim local Rust verification.
+- Final plan archival/whitespace bookkeeping creates a new head. That exact head must pass all repository CI checks and a final diff review before expected-head-protected merge; final SHA/run evidence is recorded in PR #15 to avoid a self-referential commit hash.
 
 ## Blockers/risks
 
-- Repository may have moved after the pack refresh; fetch/reconcile before writing.
+- No unresolved bootstrap blocker. Repository movement must still be checked before merge.
 - Licensing details must be verified from current official sources before becoming implementation assumptions.
 - Future physical playtest/reference-hardware acceptance may require evidence outside Codex's cloud environment.
 
 ## Next action
 
-Install the approved product/checkpoint inputs, reconcile current governance, review the complete diff, and verify the exact PR head before merge. Gate 2 follows on a fresh branch after refreshed `main`.
+Verify the final PR #15 head and complete diff, merge with expected-head protection, fetch merged `main`, then create a fresh Gate 2 branch and active plan. Gate 2 starts with current official rules-source/licensing verification and a complete source-derived ledger. Bootstrap is not a gate-end pause.

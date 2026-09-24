@@ -41,9 +41,10 @@ After the gate's final integration review, Codex must stop and report:
 - capabilities delivered;
 - architecture decisions;
 - verification evidence;
-- unresolved debt/blockers;
+- unresolved debt/blockers and the receiving gate for each debt;
+- any acceptance criterion not fully satisfied;
 - external human/hardware acceptance still required;
-- proposed next-gate objective.
+- proposed next-gate objective and first likely workstreams.
 
 Codex must not begin the next gate until the owner says to continue.
 
@@ -65,4 +66,3 @@ Stop before the gate-end checkpoint only when a real owner decision is required,
 - security/privacy issue requiring a policy choice;
 - required physical playtest/hardware evidence unavailable to Codex;
 - repository movement/conflict that cannot be safely reconciled.
-
