@@ -7,7 +7,7 @@ import { loadDesktopStatus } from './bridge';
 // Renderer failure handling only. These mocks are never packaged or gameplay acceptance.
 vi.mock('./bridge', () => ({ loadDesktopStatus: vi.fn() }));
 const load = vi.mocked(loadDesktopStatus);
-beforeEach(() => load.mockReset());
+beforeEach(() => { load.mockReset(); });
 
 test('connection failure remains recoverable through a keyboard-operable button', async () => {
   load.mockRejectedValueOnce(new Error('IPC disconnected'));
