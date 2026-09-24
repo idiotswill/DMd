@@ -16,6 +16,21 @@ pub struct VitalityOrigin {
 pub struct TacticalRecovery {
     pub knockout: Option<KnockoutRecovery>,
     pub stable: Option<StableRecovery>,
+    /// Why a Short Rest was allowed to begin during combat. Healing can end the
+    /// knockout condition without ending this rest; RestProgress owns its clock.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub knockout_rest: Option<KnockoutRestAuthorization>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct KnockoutRestAuthorization {
+    pub knockout_origin: VitalityOrigin,
+    /// A restarted rest has its actual later accepted command, not a fabricated
+    /// replacement of the original knockout's provenance.
+    pub started_by: VitalityOrigin,
+    /// Immutable initiation evidence, matched to the authoritative RestProgress.
+    pub started_at: WorldInstant,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -69,5 +69,52 @@ resources. This source slice alone does not claim an end-user feature or complet
 Existing weapon/equipment/history/mastery, spatial cover/perception, tactical conditions,
 turn bridge, vitality and grouped concentration APIs inspected. Turn bridge exact-head
 read-only signoff complete; author reports20turn+14creature+31damage tests and strictClippy.
-No new build has run. Next: implement the domain work contract and ordinary attack reducer,
-then source hooks after root supplies verified NPC equipment/live-AC integration.
+The first ordinary-weapon draft now retains one source-reconstructed attack in the shared
+resolution. Action/attack/bonus budgets and ammo are reserved once; after-attack equipment
+and history settle atomically with damage before concentration/effect children execute.
+That ordering prevents later unconsciousness from being followed by an accidental re-equip.
+Thrown weapons retain their physical ItemId and move to the target's recorded position
+in the encounter scene. This is a coarse landing convention under the encounter's
+explicit geometry adjudication, not an SRD rule prescribing an exact landing square.
+Precise trajectories, interception and hazardous landing surfaces require the later
+geometry/adjudication continuation; no item destruction or recovery is inferred here.
+Knockout and Graze pause before consequences and retain controller-owned decisions.
+All persisted stages rederive range/cover/perception/hit facts; a review-found malformed
+Graze anchor could otherwise reinterpret a successful attack as a miss, now covered by
+a dedicated corruption regression. Every test helper serializes and replays each accepted
+command, then runs domain, rules and tactical validation.
+
+The first checkpoint supports ordinary weapons, Light/Nick and Graze. Other masteries,
+source creature attack features, guessed-location attacks, partial-submersion adjudication,
+mounted weapons, Savage Attacker choice and attack-trigger reactions remain explicit next
+Gate4 work. They are not represented as complete by this checkpoint. Unsupported derived
+masteries reject before any expenditure; no second effect authority is introduced.
+
+The first integration run exposed a real knockout/rest conflict: a source-mandated Short
+Rest can begin during combat, whereas the legacy kernel prohibited all such rests. The
+new optional `TacticalRecovery.knockout_rest` authorization retains the original knockout
+and actual rest-start command plus its start instant. It must match the existing sole
+`RestProgress`; it is not another resource or rest clock. Healing/first aid can remove
+Unconscious without cancelling that rest. Damage, initiative, or accepted strenuous actions
+clear the authorization and rest; waking, rejected proposals and EndTurn do not. Finishing
+early rejects even after waking. Legacy rests without this source evidence keep their prior
+restrictions. Application restore audit must authenticate both nested command origins.
+
+Focused verification: 19 attack scenarios and 20 existing turn scenarios pass, including
+raw/replay/corruption boundaries and a woken rest interrupted only by accepted activity.
+All 33 pure vitality tests pass, including new recovery provenance, restart, waking and
+early-completion cases. The two incorrect initial expectations were corrected against source:
+fixed Blowgun damage remains 1 even on a critical hit, and an adjacent thrown attack under
+Disadvantage supplies two d20 faces. The rest-validation defect was fixed in production code.
+Strict domain/rules all-target Clippy, formatting and diff whitespace checks pass.
+Independent movement/turn review closed the forged Graze anchor, automatic-miss pause,
+rest activity and awake early-completion findings; final committed-head review follows.
+No full-workspace,
+SQLite, desktop or gate-completion claim is made for this isolated checkpoint.
+
+Next: obtain exact source review, then hand the coherent ordinary attack
+checkpoint to root. Root's independent Box<TacticalResolution> change needs Box::new at
+the new attack allocation. Movement then owns shared dispatcher/pump/work additions while
+this slice owns new source/OA adapters under attacks and tactical_attacks. Consume verified
+NPC equipment/live-AC and movement contracts before compiling those next adapters; no
+competing queues, fake item identities or discarded mandatory source riders are permitted.
