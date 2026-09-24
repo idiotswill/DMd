@@ -195,20 +195,20 @@ async fn create_open_restart_and_restore_use_the_runnable_boundary() {
         .create_campaign(&expected)
         .await
         .expect("resolved campaign should create");
-    assert_eq!(created.state, expected);
-    assert_eq!(created.content.ruleset.manifest.id, "rules.alpha");
-    assert_eq!(created.content.content_packs.len(), 1);
+    assert_eq!(created.state(), &expected);
+    assert_eq!(created.content().ruleset.manifest.id, "rules.alpha");
+    assert_eq!(created.content().content_packs.len(), 1);
 
     let opened = runtime
         .open_campaign(expected.campaign_id())
         .await
         .expect("resolved campaign should open");
-    assert_eq!(opened.state, expected);
+    assert_eq!(opened.state(), &expected);
     let resumed = runtime
         .resume_campaign(expected.campaign_id())
         .await
         .expect("resume should share runnable resolution path");
-    assert_eq!(resumed.state, expected);
+    assert_eq!(resumed.state(), &expected);
 
     let export = export_campaign(&pool, expected.campaign_id())
         .await
@@ -223,8 +223,8 @@ async fn create_open_restart_and_restore_use_the_runnable_boundary() {
             .open_campaign(expected.campaign_id())
             .await
             .expect("restart should reopen through content resolution")
-            .state,
-        expected
+            .state(),
+        &expected
     );
     drop(restarted);
     drop(restarted_pool);
@@ -236,7 +236,7 @@ async fn create_open_restart_and_restore_use_the_runnable_boundary() {
         .restore_campaign(&export)
         .await
         .expect("resolved export should restore");
-    assert_eq!(restored.state, expected);
+    assert_eq!(restored.state(), &expected);
     assert_eq!(
         raw_open_campaign(&restored_pool, expected.campaign_id())
             .await
@@ -474,8 +474,8 @@ async fn one_campaigns_missing_content_does_not_make_an_unrelated_campaign_unrun
             .open_campaign(beta.campaign_id())
             .await
             .expect("beta should remain runnable")
-            .state,
-        beta
+            .state(),
+        &beta
     );
     assert_eq!(
         raw_open_campaign(&pool, alpha.campaign_id())

@@ -26,9 +26,26 @@ pub struct CampaignRuntime {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct RunnableCampaign {
-    pub lifecycle: CampaignLifecycleSummary,
-    pub state: CampaignState,
-    pub content: ResolvedCampaignContent,
+    lifecycle: CampaignLifecycleSummary,
+    state: CampaignState,
+    content: ResolvedCampaignContent,
+}
+
+impl RunnableCampaign {
+    #[must_use]
+    pub fn lifecycle(&self) -> &CampaignLifecycleSummary {
+        &self.lifecycle
+    }
+
+    #[must_use]
+    pub fn state(&self) -> &CampaignState {
+        &self.state
+    }
+
+    #[must_use]
+    pub fn content(&self) -> &ResolvedCampaignContent {
+        &self.content
+    }
 }
 
 #[derive(Debug, Error)]
