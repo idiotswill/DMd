@@ -160,17 +160,21 @@ fn perceive_with_work(
     let target_volume = subject.volume().map_err(invalid)?;
     let actor_conditions = conditions(state, observer);
     let target_conditions = conditions(state, target);
-    work.charge(encounter.battlefield.obstacles.len() * 17 + encounter.participants.len() * 9)?;
-    let cover = geometry::cover_unchecked(encounter, from, target_volume, &[observer, target])?;
     let mut dim_visible = false;
     for point in geometry::samples(target_volume) {
-        if cover.degree != CoverDegree::Total && within(from, point, actor.senses.blindsight)? {
-            return Ok(PerceptionResult {
-                sees: true,
-                precisely_located: true,
-                modality: Some(PerceptionModality::Blindsight),
-                sight_disadvantage: false,
-            });
+        if within(from, point, actor.senses.blindsight)? {
+            work.charge(encounter.battlefield.obstacles.len())?;
+            // Composite cover may require adjudication without proving Total.
+            // Absence of that proof is not proof of an opening: Blindsight needs
+            // an actual unobstructed candidate ray (SRD177).
+            if geometry::clear_effect(&encounter.battlefield, from, point)? {
+                return Ok(PerceptionResult {
+                    sees: true,
+                    precisely_located: true,
+                    modality: Some(PerceptionModality::Blindsight),
+                    sight_disadvantage: false,
+                });
+            }
         }
         work.sight(&encounter.battlefield)?;
         if actor_conditions.contains(&Condition::Blinded)

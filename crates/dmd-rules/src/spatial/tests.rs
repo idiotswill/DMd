@@ -1084,6 +1084,70 @@ fn composite_sampled_cover_cannot_claim_total_across_an_unsampled_gap() {
 }
 
 #[test]
+fn blindsight_requires_a_clear_ray_through_composite_cover() {
+    let mut f = Fixture::new();
+    f.encounter.battlefield.bounds = volume(point(-200, -200, -200), point(200, 200, 200));
+    f.encounter.battlefield.ambient_light = LightLevel::Darkness;
+    f.actor(f.a).position = point(-10, -10, 0);
+    f.actor(f.a).senses.blindsight = 300;
+    f.condition(f.a, Condition::Blinded);
+    f.actor(f.b).position = point(100, 0, 0);
+    f.actor(f.b).size = CreatureSize::Large;
+    f.actor(f.b).height = 20;
+    f.wall(
+        "lower",
+        volume(point(50, -100, -100), point(51, 2, 100)),
+        CoverDegree::Total,
+        true,
+    );
+    f.wall(
+        "upper",
+        volume(point(50, 2, -100), point(51, 100, 100)),
+        CoverDegree::Total,
+        true,
+    );
+    let from = f.encounter.participant(f.a).unwrap().center().unwrap();
+    let target = f.encounter.participant(f.b).unwrap().volume().unwrap();
+    // Neither panel proves complete cover on its own; together they are a solid wall.
+    let cover = cover_from(&f.encounter, from, target, &[f.a, f.b, f.c]).unwrap();
+    assert_ne!(cover.degree, CoverDegree::Total);
+    assert!(cover.requires_adjudication);
+    let blocked = perceive(&f.encounter, &f.state, f.a, f.b).unwrap();
+    assert!(!blocked.sees && !blocked.precisely_located);
+    assert_eq!(blocked.modality, None);
+    assert!(
+        !project_actor_view(&f.encounter, &f.state, f.a)
+            .unwrap()
+            .contacts
+            .iter()
+            .any(|contact| contact.entity_id == f.b)
+    );
+
+    // Opening a gap crossed by the target-center ray establishes actual visibility.
+    // An unsampled opening remains uncertain; no contact is fabricated from that.
+    f.encounter.battlefield.obstacles[0].volume.max.y = 1;
+    f.encounter.battlefield.obstacles[1].volume.min.y = 4;
+    assert!(
+        geometry::clear_effect(
+            &f.encounter.battlefield,
+            from,
+            f.encounter.participant(f.b).unwrap().center().unwrap()
+        )
+        .unwrap()
+    );
+    let visible = perceive(&f.encounter, &f.state, f.a, f.b).unwrap();
+    assert!(visible.sees && visible.precisely_located);
+    assert_eq!(visible.modality, Some(PerceptionModality::Blindsight));
+    assert!(
+        project_actor_view(&f.encounter, &f.state, f.a)
+            .unwrap()
+            .contacts
+            .iter()
+            .any(|contact| contact.entity_id == f.b)
+    );
+}
+
+#[test]
 fn magical_darkness_blocks_crossing_rays_but_truesight_does_not_bypass_fog() {
     let mut f = Fixture::new();
     f.terrain("darkness", volume(point(30, 0, -20), point(40, 100, 80)))

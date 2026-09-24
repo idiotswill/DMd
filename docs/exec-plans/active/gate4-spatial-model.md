@@ -128,3 +128,14 @@ passes, and formatting/diff whitespace checks pass. The first test run found two
 identifiers containing unsupported spaces; those fixtures were corrected before the
 successful run. No full-workspace verification was rerun here. Build slot is released.
 Next: independent exact-commit review, then root integration/combined runtime verification.
+
+### Composite-cover review followup
+
+Independent review of `bedc6c1` found a regression: Blindsight interpreted an uncertain
+composite cover grade as proof of an opening. It now requires an actual clear effect ray
+for each candidate target point. A regression distinguishes a closed two-panel wall from
+a sampled opening; an unsampled opening still requires adjudication and cannot justify
+revealing an actor. The change also removes an unnecessary aggregate cover calculation
+from perception. Independent working-diff review found no remaining blocker. After the
+serialized build slot was released, all 26 focused spatial tests, strict focused Clippy,
+and formatting checks passed. Root retains full integration/CI verification ownership.
