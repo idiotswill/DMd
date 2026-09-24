@@ -496,6 +496,7 @@ fn schema_two_json(state: &CampaignState) -> String {
         serde_json::from_str(&state.encode_json().expect("JSON")).expect("value");
     value["schema_version"] = json!(2);
     value.as_object_mut().expect("object").remove("table");
+    value.as_object_mut().expect("object").remove("encounter");
     value.to_string()
 }
 
