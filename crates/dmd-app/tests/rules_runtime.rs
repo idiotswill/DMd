@@ -907,6 +907,7 @@ async fn inspiration_advantage_passive_queries_and_house_rulings_are_durable() {
             Circumstances {
                 advantage: true,
                 disadvantage: false,
+                ranged_threat: false,
             },
             11,
         ),
@@ -1071,7 +1072,7 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
     )
     .await;
     let original = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
-    for mutation in 0..9 {
+    for mutation in 0..11 {
         let mut export = original.clone();
         match mutation {
             0 => {
@@ -1134,7 +1135,7 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
                 state.rules.as_mut().unwrap().rulings[0].command.id = CommandId::new();
                 export.current_state.state_json = state.encode_json().unwrap();
             }
-            8 => {
+            8..=10 => {
                 // Re-labeling a rules history as a generic campaign must not bypass preflight.
                 let mut state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
                 state.rules = None;
@@ -1144,6 +1145,16 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
                 let mut manifest: serde_json::Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
                 manifest["id"] = serde_json::json!("generic-test");
                 fs::write(path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+                if mutation >= 9 {
+                    for event in &mut export.event_journal {
+                        event.event_kind = "generic.changed".into();
+                    }
+                }
+                if mutation == 10 {
+                    for audit in &mut export.command_audit {
+                        audit.command_kind = "generic.action".into();
+                    }
+                }
             }
             _ => unreachable!(),
         }
@@ -1172,6 +1183,75 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
     );
     drop(runtime);
     pool.close().await;
+}
+
+#[tokio::test]
+async fn persistence_session_rejection_preserves_resolved_rules_state_and_history() {
+    let f = Fixture::new();
+    let (pool, runtime) = f.runtime().await;
+    f.initialize(&runtime).await;
+    let before = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+    let missing_session = PlaySessionId::new();
+    let mut context = f.context(CommandIssuer::Player(f.player), Some(f.actor), 1);
+    context.session_id = Some(missing_session);
+    let rejected = runtime.execute_rules(context, RulesAction::SpendResource {
+        actor: f.actor,
+        resource_id: "resolve".into(),
+        amount: 1,
+    }).await;
+    assert!(matches!(rejected,
+        Err(RunnableCampaignError::Journal(error))
+        if matches!(*error, dmd_persistence::JournalStoreError::MissingSession(id) if id == missing_session)
+    ));
+    let after = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+    assert_eq!(after.current_state, before.current_state);
+    assert_eq!(after.command_audit, before.command_audit);
+    assert_eq!(after.event_journal, before.event_journal);
+    assert_eq!(after.snapshots, before.snapshots);
+    drop(runtime);
+    pool.close().await;
+}
+
+#[tokio::test]
+async fn create_and_restore_reuse_preflight_content_after_waiting_for_database() {
+    use std::{future::{Future, poll_fn}, task::Poll};
+
+    for restore in [false, true] {
+        let f = Fixture::new();
+        let (source_pool, source_runtime) = f.runtime().await;
+        f.initialize(&source_runtime).await;
+        let backup = export_campaign(&source_pool, f.state.campaign_id()).await.unwrap();
+        let pool = open_sqlite("sqlite::memory:").await.unwrap();
+        let runtime = CampaignRuntime::from_content_root(pool.clone(), &f.content);
+        let mut connections = Vec::new();
+        for _ in 0..pool.options().get_max_connections() {
+            connections.push(pool.acquire().await.unwrap());
+        }
+        let mut operation = Box::pin(async {
+            if restore {
+                runtime.restore_campaign(&backup).await
+            } else {
+                runtime.create_campaign(&f.state).await
+            }
+        });
+        // Poll exactly through synchronous content preflight and block on the exhausted pool.
+        // This gives a deterministic content change during the persistence await, without sleeps.
+        poll_fn(|cx| {
+            assert!(operation.as_mut().poll(cx).is_pending());
+            Poll::Ready(())
+        }).await;
+        fs::write(f.content.join("kernel.json"), b"{}").unwrap();
+        drop(connections);
+        let completed = operation.await.expect("validated operation must report its commit");
+        assert_eq!(completed.state().campaign_id(), f.state.campaign_id());
+        let persisted = dmd_persistence::open_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        assert_eq!(completed.state(), &persisted.state);
+        // Reusing preflight bytes for this response grants no capability to a later operation.
+        assert!(runtime.open_campaign(f.state.campaign_id()).await.is_err());
+        drop((runtime, source_runtime));
+        pool.close().await;
+        source_pool.close().await;
+    }
 }
 
 #[tokio::test]
