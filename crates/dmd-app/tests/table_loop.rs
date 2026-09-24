@@ -486,7 +486,7 @@ async fn supported_profiles_require_their_authoritative_mechanics_and_feature_gr
     assert!(
         matches!(f.runtime.create_campaign(&missing).await,Err(RunnableCampaignError::Table(message)) if message.contains("mechanical sheet"))
     );
-    let mut missing_grants = state;
+    let mut missing_grants = state.clone();
     missing_grants
         .rules
         .as_mut()
@@ -498,6 +498,60 @@ async fn supported_profiles_require_their_authoritative_mechanics_and_feature_gr
     assert!(
         matches!(f.runtime.create_campaign(&missing_grants).await,Err(RunnableCampaignError::Table(message)) if message.contains("feature grants"))
     );
+    // Earliest imported/backfilled anchors have no earlier creation event to replay.
+    // Their source profile must still constrain every immutable mechanical grant.
+    let changes: [fn(&mut MechanicalEntity); 10] = [
+        |entity| {
+            entity.max_hp = 100;
+            entity.hp = 100;
+        },
+        |entity| entity.hit_dice.sides = 12,
+        |entity| entity.hit_dice.maximum = 2,
+        |entity| {
+            entity.saving_proficiencies.insert(Ability::Wisdom);
+        },
+        |entity| {
+            entity
+                .skill_proficiencies
+                .insert(Skill::Athletics, Proficiency::Expertise);
+        },
+        |entity| {
+            entity.armor = ArmorClass::Armor {
+                base: 18,
+                dexterity_cap: Some(0),
+                shield: true,
+            }
+        },
+        |entity| {
+            entity.attacks.insert("club".into());
+        },
+        |entity| {
+            entity.attack_proficiencies.insert("club".into());
+        },
+        |entity| {
+            entity.resistances.insert(DamageType::Fire);
+        },
+        |entity| entity.uses_death_saves = false,
+    ];
+    for (index, change) in changes.into_iter().enumerate() {
+        let mut malformed = state.clone();
+        change(
+            malformed
+                .rules
+                .as_mut()
+                .unwrap()
+                .entities
+                .get_mut(&f.actors[0])
+                .unwrap(),
+        );
+        assert!(
+            matches!(
+                f.runtime.create_campaign(&malformed).await,
+                Err(RunnableCampaignError::Table(_))
+            ),
+            "source grant mutation {index} must fail before persistence"
+        );
+    }
 }
 
 #[tokio::test]

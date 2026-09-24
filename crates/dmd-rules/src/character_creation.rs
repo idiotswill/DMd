@@ -102,6 +102,48 @@ pub fn validate_character_profile(
     profile: &CharacterProfile,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
+    character_from_profile(profile, pack).map(|_| ())
+}
+
+/// Check retained source grants while allowing only the sheet's mutable play state.
+/// New equipment/advancement rules must explicitly extend this boundary when supported.
+pub fn validate_character_mechanics(
+    profile: &CharacterProfile,
+    entity: &MechanicalEntity,
+    pack: &RulesPack,
+) -> Result<(), RulesError> {
+    let mut expected = character_from_profile(profile, pack)?.mechanics;
+    expected.hp = entity.hp;
+    expected.temporary_hp = entity.temporary_hp;
+    expected.hit_dice.remaining = entity.hit_dice.remaining;
+    expected.death = entity.death.clone();
+    expected.exhaustion = entity.exhaustion;
+    expected.heroic_inspiration = entity.heroic_inspiration;
+    expected.prone = entity.prone;
+    expected.last_long_rest_finished = entity.last_long_rest_finished;
+    let actual_features = entity
+        .character_features
+        .as_ref()
+        .ok_or_else(|| invalid("character is missing its source feature grants"))?;
+    let features = expected
+        .character_features
+        .as_mut()
+        .expect("source features");
+    features.second_wind_remaining = actual_features.second_wind_remaining;
+    features.inspiration_transfer_pending = actual_features.inspiration_transfer_pending;
+    features.savage_attacker_turn = actual_features.savage_attacker_turn;
+    if expected != *entity {
+        return Err(invalid(
+            "character source choices disagree with its mechanical sheet",
+        ));
+    }
+    Ok(())
+}
+
+fn character_from_profile(
+    profile: &CharacterProfile,
+    pack: &RulesPack,
+) -> Result<BuiltCharacter, RulesError> {
     if profile.languages.len() != 3
         || profile.languages[0] != "common"
         || profile.tool_proficiencies.len() != 1
@@ -144,12 +186,13 @@ pub fn validate_character_profile(
         shield: profile.shield,
         masteries: profile.masteries.clone(),
     };
-    if build_character(&input, profile.entity_id, pack)?.profile != *profile {
+    let built = build_character(&input, profile.entity_id, pack)?;
+    if built.profile != *profile {
         return Err(invalid(
             "profile derived grants/equipment differ from source creation",
         ));
     }
-    Ok(())
+    Ok(built)
 }
 fn invalid(message: &str) -> RulesError {
     RulesError::Invalid(message.into())

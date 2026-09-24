@@ -57,6 +57,10 @@ source kernel rebuilds those profiles for validation; the table cannot supply HP
 proficiency or other arbitrary starting totals. Player-authored backstory is descriptive
 input and does not enter world facts. Installed creation catalog bytes must match the
 exact compiled source catalog in addition to ordinary manifest integrity checks.
+Restored earliest anchors must also match every immutable source-derived mechanical grant.
+Only explicit mutable play fields (health, resource counters, death/condition state and
+rest/Inspiration history) may differ from the reconstructed initial sheet. Future
+advancement/equipment features must deliberately extend this supported-state boundary.
 
 ## Verification and consequences
 
