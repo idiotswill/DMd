@@ -164,6 +164,58 @@ impl Fixture {
 }
 
 #[tokio::test]
+async fn alternatives_and_unsupported_extra_actions_wait_without_spending_resources() {
+    let f = Fixture::new().await;
+    for text in [
+        "I use Second Wind or drink a potion",
+        "I climb the ledge or wait here",
+        "I use Second Wind and attack the guard",
+    ] {
+        f.runtime
+            .submit_table_text(f.player_meta(0).await, text)
+            .await
+            .unwrap();
+        let before = f
+            .runtime
+            .open_campaign(f.campaign)
+            .await
+            .unwrap()
+            .state()
+            .clone();
+        let pending = before.table.as_ref().unwrap().pending.as_ref().unwrap();
+        assert!(matches!(pending.intent, TableIntent::Unresolved { .. }));
+        let action = TableAction::Adjudicate {
+            pending_id: pending.id,
+            revision: pending.revision,
+            request_id: RollRequestId::new(),
+        };
+        assert!(matches!(
+            f.runtime
+                .execute_table(
+                    f.meta(CommandIssuer::Admin, None, Some(f.session)).await,
+                    action
+                )
+                .await,
+            Err(RunnableCampaignError::TableRejected(_))
+        ));
+        assert_eq!(
+            &before,
+            f.runtime.open_campaign(f.campaign).await.unwrap().state()
+        );
+        f.runtime
+            .execute_table(
+                f.player_meta(0).await,
+                TableAction::CancelDecision {
+                    pending_id: pending.id,
+                    revision: pending.revision,
+                },
+            )
+            .await
+            .unwrap();
+    }
+}
+
+#[tokio::test]
 async fn observation_storage_failure_keeps_request_retryable_and_recovers_exactly_once() {
     let f = Fixture::new().await;
     let meta = f.player_meta(0).await;

@@ -11,7 +11,8 @@ pub enum LocalText {
     Declaration(TableIntent),
 }
 
-/// Matching is over normalized whole words. Multiple supported goals remain a material decision.
+/// Matching is over normalized whole words. Multiple goals remain a material decision,
+/// including an unsupported remainder beside one recognized goal.
 pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText {
     let normalized = words(text);
     let lower = text.trim().to_lowercase();
@@ -74,6 +75,18 @@ pub fn interpret_local_text(text: &str, situation: &TableSituation) -> LocalText
         return LocalText::Declaration(TableIntent::Unresolved {
             question: "Is this an action you are taking now, or a possibility you are discussing?"
                 .into(),
+        });
+    }
+    if [" and ", " or ", " then ", " also "]
+        .iter()
+        .any(|word| normalized.contains(word))
+        || text
+            .trim()
+            .trim_end_matches(['.', '!'])
+            .contains([';', '.', '!', '\n'])
+    {
+        return LocalText::Declaration(TableIntent::Unresolved {
+            question: "Which single action do you want to attempt first? Clarify the alternatives or additional steps before the table resolves it.".into(),
         });
     }
     let second_wind = normalized.contains(" second wind ");
@@ -200,6 +213,10 @@ mod tests {
             "I watch them climb",
             "Alice climb",
             "I use Second Wind and climb",
+            "I use Second Wind or drink a potion",
+            "I climb the ledge or wait here",
+            "I use Second Wind and attack the guard",
+            "I climb the ledge. I attack the guard.",
         ] {
             assert!(
                 matches!(
