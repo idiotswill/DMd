@@ -1,0 +1,29 @@
+name: Runnable Campaign Lock Cleanup
+
+on:
+  push:
+    branches: [gate1/runnable-campaign-integration]
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: gate1/runnable-campaign-integration
+          fetch-depth: 0
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Restore base lockfile and add only current workspace metadata
+        run: |
+          git fetch origin main
+          git checkout origin/main -- Cargo.lock
+          cargo check --workspace --all-targets
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add Cargo.lock
+          git commit -m 'chore: minimize runnable integration lockfile change'
+          git push origin HEAD:gate1/runnable-campaign-integration
