@@ -1,73 +1,29 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Missing host utilities must fail closed, including inside conditional grep calls below.
-command -v dirname >/dev/null
-command -v grep >/dev/null
-
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$repo_root"
 
-fail_dependency() {
-  local manifest="$1"
-  local dependency="$2"
-  if grep -Eq "^[[:space:]]*${dependency}[[:space:]]*=" "$manifest"; then
-    echo "Architecture boundary violation: $manifest must not depend on $dependency." >&2
+# A launcher on PATH (notably the Windows Store alias) is not proof of a usable Python.
+probe='import sys, tomllib; assert sys.version_info >= (3, 11)'
+if [[ -n "${PYTHON:-}" ]]; then
+  interpreter="$PYTHON"
+  if ! "$interpreter" -c "$probe" >/dev/null 2>&1; then
+    echo 'Architecture guard requires PYTHON to name a working Python 3.11+ executable.' >&2
     exit 1
   fi
-}
-
-# Domain is the innermost shared contract and must not acquire dependencies on higher layers.
-for dependency in dmd-core dmd-rules dmd-persistence dmd-conversation dmd-app; do
-  fail_dependency crates/dmd-domain/Cargo.toml "$dependency"
-done
-
-# The desktop is an outer application adapter, not another mechanics/storage entrypoint.
-if [[ -f crates/dmd-desktop/Cargo.toml ]]; then
-  for dependency in dmd-core dmd-rules dmd-persistence dmd-conversation sqlx; do
-    fail_dependency crates/dmd-desktop/Cargo.toml "$dependency"
+else
+  interpreter=''
+  for candidate in python3 python; do
+    if command -v "$candidate" >/dev/null && "$candidate" -c "$probe" >/dev/null 2>&1; then
+      interpreter="$candidate"
+      break
+    fi
   done
-  if grep -RniE '(^|[^[:alnum:]_])(dmd_persistence|dmd_rules|sqlx)(::|[^[:alnum:]_])' crates/dmd-desktop/src; then
-    echo 'Architecture boundary violation: desktop gameplay must use dmd-app.' >&2
+  if [[ -z "$interpreter" ]]; then
+    echo 'Architecture guard requires Python 3.11+. Install it or set PYTHON to its executable.' >&2
     exit 1
   fi
 fi
 
-# Conversation interprets input into candidates; it does not validate rules or write state.
-for dependency in dmd-core dmd-rules dmd-persistence dmd-app sqlx; do
-  fail_dependency crates/dmd-conversation/Cargo.toml "$dependency"
-done
-
-# Core may eventually orchestrate rules, but authoritative persistence stays behind the app boundary.
-for dependency in dmd-persistence dmd-conversation dmd-app sqlx; do
-  fail_dependency crates/dmd-core/Cargo.toml "$dependency"
-done
-
-# Rules resolution is deterministic/domain-facing and must not reach infrastructure or conversation.
-for dependency in dmd-persistence dmd-conversation dmd-app sqlx; do
-  fail_dependency crates/dmd-rules/Cargo.toml "$dependency"
-done
-
-# Persistence consumes domain contracts; it must not import interpretation or rule/application logic.
-for dependency in dmd-core dmd-rules dmd-conversation dmd-app; do
-  fail_dependency crates/dmd-persistence/Cargo.toml "$dependency"
-done
-
-# dmd-app is the outer composition boundary. Lower layers must never point back into it, while the
-# application is intentionally allowed to compose persistence with domain/content policy.
-for manifest in \
-  crates/dmd-domain/Cargo.toml \
-  crates/dmd-conversation/Cargo.toml \
-  crates/dmd-core/Cargo.toml \
-  crates/dmd-rules/Cargo.toml \
-  crates/dmd-persistence/Cargo.toml; do
-  fail_dependency "$manifest" dmd-app
-done
-
-if grep -RniE '(^|[^[:alnum:]_])dmd_persistence(::|[^[:alnum:]_])' \
-  crates/dmd-domain/src crates/dmd-conversation/src crates/dmd-core/src crates/dmd-rules/src; then
-  echo 'Architecture boundary violation: inner production crates must not import dmd_persistence.' >&2
-  exit 1
-fi
-
-echo 'Architecture boundary guard passed.'
+"$interpreter" -B -m unittest discover -s "$repo_root/scripts/tests" -p test_check_boundaries.py -q
+"$interpreter" -B "$repo_root/scripts/check_boundaries.py" "$repo_root"
