@@ -94,6 +94,32 @@ pub struct TableCharacterView {
     pub profile: Option<CharacterProfile>,
     pub sheet: Option<dmd_rules::RulesAnswer>,
     pub second_wind_remaining: Option<u8>,
+    pub details: Option<TableSheetDetails>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSheetDetails {
+    pub ability_scores: [u8; 6],
+    pub hit_dice: HitDice,
+    pub heroic_inspiration: bool,
+    pub saving_throws: Vec<TableSaveBonus>,
+    pub skills: Vec<TableSkillBonus>,
+    pub conditions: Vec<Condition>,
+    pub exhaustion: u8,
+    pub death: DeathState,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSaveBonus {
+    pub ability: Ability,
+    pub modifier: i32,
+    pub proficient: bool,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSkillBonus {
+    pub skill: Skill,
+    pub ability: Ability,
+    pub modifier: i32,
+    pub proficiency: Option<Proficiency>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

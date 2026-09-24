@@ -529,6 +529,43 @@ async fn selected_house_rule_is_inherited_by_creation_and_explained_as_a_house_r
 }
 
 #[tokio::test]
+async fn campaign_creation_retry_recovers_existing_progress_without_reinitializing() {
+    let f = Fixture::new().await;
+    let before = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let retried = f
+        .runtime
+        .create_table_campaign(
+            f.campaign,
+            "An independent campaign",
+            TableContract::default(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(before, retried);
+    assert!(
+        f.runtime
+            .create_table_campaign(
+                f.campaign,
+                "A different creation request",
+                TableContract::default()
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(
+        before,
+        f.runtime
+            .table_view(f.campaign, TableViewer::Host)
+            .await
+            .unwrap()
+    );
+}
+
+#[tokio::test]
 async fn second_wind_pending_roll_resources_and_transcript_survive_database_reopen() {
     let f = Fixture::new().await;
     f.runtime

@@ -2,8 +2,8 @@
 use crate::{
     CampaignRuntime, CharacterCreationOptions, RunnableCampaignError, TABLE_EVENT_KIND,
     TABLE_EVENT_VERSION, TableAction, TableCampaignSummary, TableCharacterView, TableEvent,
-    TableObservationBody, TableReceipt, TableTextResult, TableTranscriptEntry, TableView,
-    TableViewer,
+    TableObservationBody, TableReceipt, TableSaveBonus, TableSheetDetails, TableSkillBonus,
+    TableTextResult, TableTranscriptEntry, TableView, TableViewer,
     rules_runtime::load_rules_pack,
     table_engine::{player_channel, resolve_table, table},
 };
@@ -17,6 +17,44 @@ use dmd_rules::{RulesAnswer, RulesQuery};
 
 fn invalid(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
+}
+
+fn sheet_details(rules: &RulesState, entity: &MechanicalEntity) -> TableSheetDetails {
+    let mut conditions = dmd_rules::active_conditions(rules, entity.entity_id)
+        .into_iter()
+        .collect::<Vec<_>>();
+    conditions.sort();
+    TableSheetDetails {
+        ability_scores: entity.ability_scores,
+        hit_dice: entity.hit_dice.clone(),
+        heroic_inspiration: entity.heroic_inspiration,
+        saving_throws: Ability::ALL
+            .into_iter()
+            .map(|ability| TableSaveBonus {
+                ability,
+                modifier: dmd_rules::test_modifier(entity, &TestKind::Save { ability }),
+                proficient: entity.saving_proficiencies.contains(&ability),
+            })
+            .collect(),
+        skills: dmd_rules::STANDARD_SKILL_ABILITIES
+            .into_iter()
+            .map(|(skill, ability)| TableSkillBonus {
+                skill,
+                ability,
+                modifier: dmd_rules::test_modifier(
+                    entity,
+                    &TestKind::Check {
+                        ability,
+                        skill: Some(skill),
+                    },
+                ),
+                proficiency: entity.skill_proficiencies.get(&skill).copied(),
+            })
+            .collect(),
+        conditions,
+        exhaustion: entity.exhaustion,
+        death: entity.death.clone(),
+    }
 }
 
 pub(crate) fn validate_table_observation(
@@ -139,6 +177,9 @@ impl CampaignRuntime {
     ) -> Result<TableView, RunnableCampaignError> {
         bounded_text(name, 200).map_err(invalid)?;
         contract.validate().map_err(invalid)?;
+        if self.matches_existing_creation(id, name, &contract).await? {
+            return self.table_view(id, TableViewer::Host).await;
+        }
         let mut state = CampaignState::empty(
             Campaign {
                 id,
@@ -154,8 +195,47 @@ impl CampaignRuntime {
             },
         );
         state.table = Some(TableState::new(contract));
-        self.create_campaign(&state).await?;
+        if let Err(error) = self.create_campaign(&state).await {
+            if self
+                .matches_existing_creation(
+                    id,
+                    name,
+                    &state.table.as_ref().expect("new table").contract,
+                )
+                .await?
+            {
+                return self.table_view(id, TableViewer::Host).await;
+            }
+            return Err(error);
+        }
         self.table_view(id, TableViewer::Host).await
+    }
+
+    async fn matches_existing_creation(
+        &self,
+        id: CampaignId,
+        name: &str,
+        contract: &TableContract,
+    ) -> Result<bool, RunnableCampaignError> {
+        let initial = dmd_persistence::load_campaign_snapshot_at_or_before(
+            &self.pool,
+            id,
+            0,
+            &dmd_persistence::CampaignStateSnapshotCodec::new(),
+        )
+        .await
+        .map_err(invalid)?;
+        let Some(initial) = initial else {
+            return Ok(false);
+        };
+        if initial.campaign.display_name != name.trim()
+            || initial.table.as_ref().map(|table| &table.contract) != Some(contract)
+        {
+            return Err(invalid(
+                "That campaign identity was already created with different setup. Open the existing campaign or start a new one.",
+            ));
+        }
+        Ok(true)
     }
 
     pub async fn list_table_campaigns(
@@ -436,6 +516,16 @@ impl CampaignRuntime {
                         .and_then(|r| r.entities.get(&character.entity_id))
                         .and_then(|e| e.character_features.as_ref())
                         .map(|f| f.second_wind_remaining)
+                } else {
+                    None
+                },
+                details: if may_see {
+                    state.rules.as_ref().and_then(|rules| {
+                        rules
+                            .entities
+                            .get(&character.entity_id)
+                            .map(|entity| sheet_details(rules, entity))
+                    })
                 } else {
                     None
                 },
