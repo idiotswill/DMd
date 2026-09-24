@@ -167,7 +167,7 @@ fn monster_source_bonuses_recharge_and_partial_support_are_explicit() {
     ));
     let adult = p.creature("adult-red-dragon").unwrap();
     assert!(
-        matches!(&adult.coverage, DefinitionCoverage::SelectedFeatures { omitted } if omitted.contains(&"spellcasting".into()))
+        matches!(&adult.coverage, DefinitionCoverage::SelectedFeatures { omitted } if omitted.contains(&"spellcasting-detect-magic".into()))
     );
     assert_eq!(
         adult.legendary_budget,
@@ -276,4 +276,96 @@ fn manifest_declares_exact_tactical_bytes_and_definitions_round_trip() {
         p,
         TacticalDefinitions::from_json(&serde_json::to_string(&p).unwrap()).unwrap()
     );
+}
+
+#[test]
+fn chimera_and_dragon_mixed_routines_retain_real_substitution_limits() {
+    let p = pack();
+    let chimera = p.creature("chimera").unwrap();
+    assert_eq!(chimera.statistics.hit_points, 114);
+    assert_eq!(
+        chimera.statistics.hit_point_formula.dice,
+        vec![DieSpec {
+            count: 12,
+            sides: 10
+        }]
+    );
+    let MonsterFeature::MultiattackRoutine { slots, limits } = &chimera.features[0].feature else {
+        panic!("mixed source routine")
+    };
+    assert_eq!(
+        slots.iter().map(|s| s.options.len()).collect::<Vec<_>>(),
+        vec![1, 1, 2]
+    );
+    assert_eq!(slots[2].options[1].feature_id, "fire-breath");
+    assert!(limits.is_empty());
+    let MonsterFeature::Attack {
+        damage,
+        extra_damage_if_attack_had_advantage,
+        ..
+    } = &chimera
+        .features
+        .iter()
+        .find(|f| f.id == "bite")
+        .unwrap()
+        .feature
+    else {
+        panic!("bite")
+    };
+    assert_eq!(damage[0].amount.dice, vec![DieSpec { count: 2, sides: 6 }]);
+    assert_eq!(
+        extra_damage_if_attack_had_advantage[0].amount.dice,
+        vec![DieSpec { count: 2, sides: 6 }]
+    );
+    let dragon = p.creature("adult-red-dragon").unwrap();
+    let MonsterFeature::MultiattackRoutine { slots, limits } = &dragon.features[0].feature else {
+        panic!("replacement routine")
+    };
+    assert_eq!(slots.len(), 3);
+    assert_eq!(limits[0].maximum, 1);
+    assert_eq!(
+        limits[0].selection.spell_id.as_deref(),
+        Some("scorching-ray")
+    );
+    for id in ["commanding-presence", "fiery-rays"] {
+        let f = dragon.features.iter().find(|f| f.id == id).unwrap();
+        assert_eq!(f.usage, Some(FeatureUsage::OnceUntilOwnTurnStart));
+        assert_eq!(
+            f.spell_component_waivers,
+            Some(SpellComponentWaivers {
+                verbal: false,
+                somatic: false,
+                material: true
+            })
+        );
+    }
+    let command = p.spell("command").unwrap();
+    assert_eq!(command.source_pages, vec![116]);
+    assert!(
+        matches!(&command.effects[0],EffectDescriptor::SaveCommand{choices,..} if choices.len()==5)
+    );
+    assert_eq!(
+        p.spell("scorching-ray").unwrap().targets,
+        TargetSelection::Rays { count: 3 }
+    );
+    let fireball = p.spell("fireball").unwrap();
+    assert_eq!(fireball.source_pages, vec![131]);
+    assert_eq!(fireball.range, SpellRange::Distance { feet: 150 });
+    assert_eq!(
+        fireball.targets,
+        TargetSelection::Area {
+            shape: AreaShape::Sphere { radius_feet: 20 }
+        }
+    );
+    assert!(
+        matches!(&fireball.effects[0],EffectDescriptor::SaveDamage{ability:Ability::Dexterity,damage,half_on_success:true,..} if damage.amount.dice==vec![DieSpec{count:8,sides:6}])
+    );
+    rejects(|v| {
+        v["creatures"][5]["features"][0]["feature"]["MultiattackRoutine"]["limits"][0]["maximum"] =
+            json!(0)
+    });
+    rejects(|v| {
+        v["creatures"][7]["features"][0]["feature"]["MultiattackRoutine"]["slots"][2]["options"]
+            [1]["feature_id"] = json!("multiattack")
+    });
 }

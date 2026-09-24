@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 1747,
+      "byte_len": 2256,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "2b7d21cf12b9ef05"
+        "value": "d6ad2fff38740cd1"
       }
     },
     {
@@ -41,10 +41,10 @@
     },
     {
       "path": "tactical.json",
-      "byte_len": 62423,
+      "byte_len": 77533,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "aae2467522ae62d9"
+        "value": "06aecb24f871037c"
       }
     }
   ]
