@@ -5,11 +5,15 @@ const noticeName = /^(licen[cs]es?|copying|notices?|copyright)([._-]|$)/i;
 const thirdPartyNotice = /^third[-_ ]?party(?:notices?|licenses?)[\w .-]*$/i;
 
 export async function prepareNoticeOutput(repositoryRoot, requestedOutput) {
-  const root = await realpath(repositoryRoot);
-  const expected = path.join(root, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
-  if (path.relative(expected, path.resolve(requestedOutput)) !== '') {
+  const requestedRoot = path.resolve(repositoryRoot);
+  const expectedRequested = path.join(requestedRoot, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
+  if (path.relative(expectedRequested, path.resolve(requestedOutput)) !== '') {
     throw new Error('Notice output must be the repository generated dependency-notice directory.');
   }
+  // Windows can expose a checkout or temporary directory through an 8.3 alias.
+  // Compare the caller's paths together, then use the canonical root for deletion.
+  const root = await realpath(requestedRoot);
+  const expected = path.join(root, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
   await mkdir(expected, { recursive: true });
   const resolved = await realpath(expected);
   if (path.relative(expected, resolved) !== '') throw new Error('Generated notice output must not resolve through a link.');

@@ -96,3 +96,18 @@ test('packages the pinned upstream copyright text for each WebView2 crate', asyn
     await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), /source pin/);
   }
 });
+
+test('accepts an aliased repository root while clearing only its canonical generated output', async (context) => {
+  const temporary = await mkdtemp(path.join(os.tmpdir(), 'dmd-notice-alias-'));
+  const root = path.join(temporary, 'checkout');
+  const alias = path.join(temporary, 'checkout-alias');
+  await mkdir(root);
+  try { await symlink(root, alias, process.platform === 'win32' ? 'junction' : 'dir'); }
+  catch (error) { if (error.code === 'EPERM') { context.skip('Host does not permit directory links.'); return; } throw error; }
+  const output = path.join(alias, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
+  const canonicalOutput = path.join(root, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
+  await prepareNoticeOutput(alias, output);
+  await writeFile(path.join(output, 'LICENSE.stale'), 'old generated output');
+  await prepareNoticeOutput(alias, output);
+  assert.deepEqual(await readdir(canonicalOutput), []);
+});
