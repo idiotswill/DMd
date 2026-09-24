@@ -795,6 +795,54 @@ async fn supported_manifest_is_not_sufficient_for_an_unsupported_kernel_version(
 }
 
 #[tokio::test]
+async fn rehashed_or_undeclared_tactical_catalog_cannot_authorize_campaign_mutation() {
+    for undeclared in [false, true] {
+        let f = Fixture::new();
+        let (pool, runtime) = f.runtime().await;
+        f.initialize(&runtime).await;
+        let before = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        let manifest_path = f.content.join("manifest.json");
+        let mut manifest: serde_json::Value =
+            serde_json::from_str(&fs::read_to_string(&manifest_path).unwrap()).unwrap();
+        let files = manifest["files"].as_array_mut().unwrap();
+        if undeclared {
+            files.retain(|file| file["path"] != "tactical.json");
+        } else {
+            // Even equivalent JSON with a correctly recomputed checksum is not the
+            // exact catalog whose executable definitions this build implements.
+            let path = f.content.join("tactical.json");
+            let mut bytes = fs::read(&path).unwrap();
+            bytes.push(b' ');
+            fs::write(path, &bytes).unwrap();
+            let tactical = files
+                .iter_mut()
+                .find(|file| file["path"] == "tactical.json")
+                .unwrap();
+            tactical["byte_len"] = serde_json::json!(bytes.len());
+            tactical["checksum"]["value"] = serde_json::json!(fnv1a64_hex(&bytes));
+        }
+        fs::write(manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+        assert!(matches!(
+            runtime
+                .execute_rules(
+                    f.context(CommandIssuer::System, None, 1),
+                    RulesAction::AdvanceTime {
+                        seconds: 1,
+                        ruling: ruling()
+                    },
+                )
+                .await,
+            Err(RunnableCampaignError::RulesContent(_))
+        ));
+        let mut after = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        after.exported_at_utc = before.exported_at_utc.clone();
+        assert_eq!(after, before);
+        drop(runtime);
+        pool.close().await;
+    }
+}
+
+#[tokio::test]
 async fn invalid_mechanical_initialization_and_stale_competing_action_leave_no_partial_writes() {
     let f = Fixture::new();
     let (pool, runtime) = f.runtime().await;

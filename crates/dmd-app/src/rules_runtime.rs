@@ -224,6 +224,24 @@ pub(crate) fn load_rules_pack(
     {
         return Err(RunnableCampaignError::RulesContent("installed character creation catalog does not match this exact supported rules version".into()));
     }
+    let tactical = installed
+        .manifest
+        .files
+        .iter()
+        .find(|file| file.path == "tactical.json")
+        .ok_or_else(|| {
+            RunnableCampaignError::RulesContent("tactical.json is not declared".into())
+        })?;
+    let tactical_bytes = fs::read(base.join("tactical.json"))
+        .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
+    if tactical_bytes.len() as u64 != tactical.byte_len
+        || fnv1a64_hex(&tactical_bytes) != tactical.checksum.value
+        || tactical_bytes != include_bytes!("../../../content/srd-5.2.1/tactical.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "installed tactical catalog does not match this exact supported rules version".into(),
+        ));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {

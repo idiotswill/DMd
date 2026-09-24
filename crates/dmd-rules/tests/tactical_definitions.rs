@@ -1,10 +1,6 @@
-// This slice does not edit the shared lib.rs; the root integration exports this module.
-#[path = "../src/tactical_definitions.rs"]
-mod tactical_definitions;
-
 use dmd_domain::{Ability, Condition, DamageType, DieSpec};
+use dmd_rules::tactical_definitions::*;
 use serde_json::{Value, json};
-use tactical_definitions::*;
 
 fn pack() -> TacticalDefinitions {
     TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON).expect("reviewed source definitions")

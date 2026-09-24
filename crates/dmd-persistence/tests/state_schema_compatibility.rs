@@ -198,9 +198,11 @@ fn encounter_state() -> CampaignState {
         },
         participants: vec![TacticalParticipant {
             entity_id: actor,
+            public_label: "A traveler".into(),
             position,
             size: CreatureSize::Medium,
             height: 12,
+            reach: 10,
             movement: MovementProfile {
                 walk: 60,
                 climb: None,
