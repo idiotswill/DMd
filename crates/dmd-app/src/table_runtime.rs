@@ -52,6 +52,7 @@ fn roll_label(purpose: &PendingPurpose) -> String {
         Skill::Survival => "Survival",
     };
     match purpose {
+        PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::Test { kind, .. } => match kind {
             TestKind::Check { ability, skill } => match skill {
                 Some(skill) => format!("{} ({}) check", ability_name(ability), skill_name(skill)),

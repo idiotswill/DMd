@@ -299,6 +299,8 @@ pub struct TacticalEncounter {
     pub knowledge: Vec<ActorKnowledge>,
     pub origin: CommandMeta,
     pub geometry_ruling: Ruling,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub flow: Option<crate::TacticalFlow>,
 }
 
 fn identifier(value: &str) -> Result<(), String> {

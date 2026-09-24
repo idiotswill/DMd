@@ -473,7 +473,8 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             .ok_or_else(|| invalid("recorded roll without actor"))?;
         entity(rules, roller)?;
         match &roll.purpose {
-            PendingPurpose::Test { .. }
+            PendingPurpose::TacticalInitiative { .. }
+            | PendingPurpose::Test { .. }
             | PendingPurpose::Attack { .. }
             | PendingPurpose::Concentration { .. }
                 if roll.request.dice
@@ -582,7 +583,13 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     let mut rests = HashSet::new();
     for r in &rules.rests {
         entity(rules, r.actor)?;
-        if !rests.insert(r.actor) || r.started_at > state.clock.now || rules.timing.is_some() {
+        let participant_in_combat = rules.timing.as_ref().is_some_and(|timing| {
+            // Tactical encounters may involve only part of the campaign. Legacy
+            // event semantics retain their original campaign-wide restriction.
+            state.encounter.as_ref().is_none_or(|e| e.flow.is_none())
+                || timing.order.iter().any(|entry| entry.actor == r.actor)
+        });
+        if !rests.insert(r.actor) || r.started_at > state.clock.now || participant_in_combat {
             return Err(invalid("invalid rest state"));
         }
     }
@@ -611,5 +618,6 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             pack.attack(&p.content_id)?;
         }
     }
+    crate::tactical::validate_tactical_state(state)?;
     Ok(())
 }

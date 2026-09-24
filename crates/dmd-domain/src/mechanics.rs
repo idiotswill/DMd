@@ -268,6 +268,10 @@ pub enum TestKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum PendingPurpose {
+    TacticalInitiative {
+        encounter: crate::EncounterId,
+        group_index: usize,
+    },
     Test {
         kind: TestKind,
         dc: i32,

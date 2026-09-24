@@ -178,6 +178,7 @@ fn encounter_state() -> CampaignState {
     };
     let position = SpatialPoint { x: 10, y: 10, z: 0 };
     initial.encounter = Some(TacticalEncounter {
+        flow: None,
         id: EncounterId::new(),
         scene_id,
         battlefield: Battlefield {

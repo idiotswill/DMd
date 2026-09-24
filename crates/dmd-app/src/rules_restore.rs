@@ -9,6 +9,9 @@ use dmd_domain::{
 use dmd_persistence::{
     CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow, SessionChange,
 };
+use dmd_rules::tactical::{
+    TACTICAL_EVENT_KIND, TACTICAL_EVENT_VERSION, TacticalAction, TacticalEvent, TacticalOutcome,
+};
 use dmd_rules::{RULES_EVENT_KIND, RULES_EVENT_VERSION, RulesAction, RulesEvent, RulesPack};
 
 use crate::table_engine::{replay_table, validate_table};
@@ -16,6 +19,7 @@ use crate::{TABLE_EVENT_KIND, TABLE_EVENT_VERSION, TableAction, TableEvent, Tabl
 
 enum RecoveryEvent {
     Rules(Box<RulesEvent>),
+    Tactical(Box<TacticalEvent>),
     Table(Box<TableEvent>),
 }
 
@@ -23,6 +27,7 @@ impl RecoveryEvent {
     fn meta(&self) -> &CommandMeta {
         match self {
             Self::Rules(event) => &event.meta,
+            Self::Tactical(event) => &event.meta,
             Self::Table(event) => &event.meta,
         }
     }
@@ -30,6 +35,7 @@ impl RecoveryEvent {
     fn rules_event(&self) -> Option<&RulesEvent> {
         match self {
             Self::Rules(event) => Some(event),
+            Self::Tactical(_) => None,
             Self::Table(event) => event.rules_event.as_ref(),
         }
     }
@@ -37,6 +43,7 @@ impl RecoveryEvent {
     fn command_kind(&self) -> &'static str {
         match self {
             Self::Rules(_) => "rules.action",
+            Self::Tactical(_) => "tactical.action",
             Self::Table(_) => "table.action",
         }
     }
@@ -90,10 +97,14 @@ pub(crate) fn validate_rules_export(
     let mut rules_commands = HashSet::new();
     for row in &export.event_journal {
         let sequence = nonnegative(row.sequence, "event sequence")?;
-        if row.event_kind != RULES_EVENT_KIND && row.event_kind != TABLE_EVENT_KIND {
+        if row.event_kind != RULES_EVENT_KIND
+            && row.event_kind != TABLE_EVENT_KIND
+            && row.event_kind != TACTICAL_EVENT_KIND
+        {
             if sequence > anchor_sequence
                 || row.event_kind.starts_with("rules.")
                 || row.event_kind.starts_with("table.")
+                || row.event_kind.starts_with("tactical.")
             {
                 return Err(format!(
                     "unsupported rules recovery event {}@{} at {sequence}",
@@ -106,6 +117,8 @@ pub(crate) fn validate_rules_export(
         }
         let expected_version = if row.event_kind == RULES_EVENT_KIND {
             RULES_EVENT_VERSION
+        } else if row.event_kind == TACTICAL_EVENT_KIND {
+            TACTICAL_EVENT_VERSION
         } else {
             TABLE_EVENT_VERSION
         };
@@ -119,6 +132,11 @@ pub(crate) fn validate_rules_export(
             RecoveryEvent::Rules(
                 serde_json::from_str(&row.payload_json)
                     .map_err(|error| format!("rules event {sequence}: {error}"))?,
+            )
+        } else if row.event_kind == TACTICAL_EVENT_KIND {
+            RecoveryEvent::Tactical(
+                serde_json::from_str(&row.payload_json)
+                    .map_err(|error| format!("tactical event {sequence}: {error}"))?,
             )
         } else {
             RecoveryEvent::Table(
@@ -143,9 +161,13 @@ pub(crate) fn validate_rules_export(
         }
     }
     for (id, (audit, _)) in &audits {
-        if (audit.command_kind.starts_with("rules.") || audit.command_kind.starts_with("table."))
-            && (!matches!(audit.command_kind.as_str(), "rules.action" | "table.action")
-                || audit.command_schema_version != 1
+        if (audit.command_kind.starts_with("rules.")
+            || audit.command_kind.starts_with("table.")
+            || audit.command_kind.starts_with("tactical."))
+            && (!matches!(
+                audit.command_kind.as_str(),
+                "rules.action" | "table.action" | "tactical.action"
+            ) || audit.command_schema_version != 1
                 || !rules_commands.contains(id))
         {
             return Err("rules command audit lacks its supported typed event".into());
@@ -221,6 +243,14 @@ pub(crate) fn validate_rules_export(
             ));
         }
         replayed = match event {
+            RecoveryEvent::Tactical(event) => {
+                if replayed.table.is_some() {
+                    return Err("raw tactical event bypasses the table command boundary".into());
+                }
+                dmd_rules::tactical::replay_tactical(&replayed, event, pack)
+                    .map_err(|error| format!("tactical replay at {sequence}: {error}"))?
+                    .next_state
+            }
             RecoveryEvent::Rules(event) => {
                 if replayed.table.is_some() {
                     return Err("raw rules event bypasses the table command boundary".into());
@@ -357,6 +387,17 @@ fn validate_event(
         ));
     }
     match event {
+        RecoveryEvent::Tactical(event) => {
+            let action: TacticalAction = serde_json::from_str(&audit.payload_json)
+                .map_err(|e| format!("invalid tactical command action: {e}"))?;
+            let outcome: TacticalOutcome = serde_json::from_str(&audit.resolution_explanation)
+                .map_err(|e| format!("invalid tactical audit outcome: {e}"))?;
+            if action != event.action || outcome != event.outcome {
+                return Err(format!(
+                    "tactical event action/outcome disagrees with audit at {sequence}"
+                ));
+            }
+        }
         RecoveryEvent::Rules(event) => {
             let action: RulesAction = serde_json::from_str(&audit.payload_json)
                 .map_err(|error| format!("invalid rules command action: {error}"))?;
@@ -622,6 +663,16 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    if let Some(encounter) = &state.encounter {
+        origins.push(&encounter.origin);
+        if let Some(flow) = &encounter.flow {
+            origins.push(&flow.origin);
+        }
+        for knowledge in &encounter.knowledge {
+            origins.extend(knowledge.contacts.iter().map(|c| &c.origin));
+            origins.extend(knowledge.terrain.iter().map(|c| &c.origin));
+        }
+    }
     let Some(rules) = &state.rules else {
         return origins;
     };
@@ -675,9 +726,15 @@ fn validate_origins(
         if let Some((audit, meta)) = audits.get(&origin.id) {
             if origin != meta
                 || audit.accepted != 1
-                || !matches!(audit.command_kind.as_str(), "rules.action" | "table.action")
+                || !matches!(
+                    audit.command_kind.as_str(),
+                    "rules.action" | "table.action" | "tactical.action"
+                )
                 || !commands.contains_key(&origin.id)
                 || (pending.map(|pending| &pending.origin) != Some(origin)
+                    && !commands
+                        .get(&origin.id)
+                        .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())
@@ -717,7 +774,7 @@ fn validate_origins(
                 }
                 _ => false,
             },
-            RecoveryEvent::Rules(_) => false,
+            RecoveryEvent::Rules(_) | RecoveryEvent::Tactical(_) => false,
         };
         if !matches {
             return Err("table pending decision disagrees with its originating action".into());

@@ -1,0 +1,254 @@
+//! Versioned tactical transitions. The application supplies trusted command metadata;
+//! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod initiative;
+mod validation;
+use crate::{ResolveRoll, RulesError, RulesPack};
+use dmd_domain::*;
+use serde::{Deserialize, Serialize};
+pub use validation::{validate_tactical_pending, validate_tactical_state};
+
+pub const TACTICAL_EVENT_KIND: &str = "tactical.action_resolved";
+pub const TACTICAL_EVENT_VERSION: u32 = 1;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalAction {
+    Establish {
+        encounter: Box<TacticalEncounter>,
+    },
+    Begin {
+        combatants: Vec<TacticalCombatant>,
+        groups: Vec<InitiativeGroup>,
+    },
+    SubmitRoll {
+        result: RollResult,
+    },
+    SubmitRollWithInspiration {
+        result: RollResult,
+        die_index: usize,
+        replacement: DieResult,
+    },
+    ProposeInitiativeTie {
+        order: Vec<EntityId>,
+    },
+    AcceptInitiativeTie {
+        total: i32,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalOutcome {
+    pub next_roll: Option<RollRequest>,
+    pub awaiting_initiative_ties: bool,
+    pub active_actor: Option<EntityId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalEvent {
+    pub meta: CommandMeta,
+    pub action: TacticalAction,
+    pub outcome: TacticalOutcome,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct TacticalTransition {
+    pub next_state: CampaignState,
+    pub event: TacticalEvent,
+}
+
+fn invalid(message: &str) -> RulesError {
+    RulesError::Invalid(message.into())
+}
+fn prerequisite(message: &str) -> RulesError {
+    RulesError::Prerequisite(message.into())
+}
+fn privileged(meta: &CommandMeta) -> Result<(), RulesError> {
+    if matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) && meta.actor.is_none() {
+        Ok(())
+    } else {
+        Err(RulesError::Unauthorized)
+    }
+}
+fn controller(state: &CampaignState, actor: EntityId) -> Option<PlayerId> {
+    state
+        .characters
+        .values()
+        .find(|c| c.entity_id == actor && c.status == CharacterStatus::Active)
+        .and_then(|c| c.controlling_player_id)
+}
+fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
+    let accepted = match meta.issuer {
+        CommandIssuer::Admin | CommandIssuer::System => {
+            meta.actor.is_none() || meta.actor == Some(AgentRef::Entity(actor))
+        }
+        CommandIssuer::Player(id) => {
+            controller(state, actor) == Some(id) && meta.actor == Some(AgentRef::Entity(actor))
+        }
+        CommandIssuer::Import => false,
+    };
+    if accepted {
+        Ok(())
+    } else {
+        Err(RulesError::Unauthorized)
+    }
+}
+fn encounter(state: &CampaignState) -> Result<&TacticalEncounter, RulesError> {
+    state
+        .encounter
+        .as_ref()
+        .ok_or_else(|| prerequisite("no tactical encounter"))
+}
+fn flow(state: &CampaignState) -> Result<&TacticalFlow, RulesError> {
+    encounter(state)?
+        .flow
+        .as_ref()
+        .ok_or_else(|| prerequisite("initiative has not begun"))
+}
+fn flow_mut(state: &mut CampaignState) -> Result<&mut TacticalFlow, RulesError> {
+    state
+        .encounter
+        .as_mut()
+        .and_then(|e| e.flow.as_mut())
+        .ok_or_else(|| prerequisite("initiative has not begun"))
+}
+fn definitions() -> Result<crate::tactical_definitions::TacticalDefinitions, RulesError> {
+    crate::tactical_definitions::TacticalDefinitions::from_json(
+        crate::tactical_definitions::TACTICAL_DEFINITIONS_JSON,
+    )
+    .map_err(|e| RulesError::Incompatible(e.to_string()))
+}
+
+pub fn resolve_tactical(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &TacticalAction,
+    pack: &RulesPack,
+) -> Result<TacticalTransition, RulesError> {
+    if meta.campaign_id != state.campaign_id() {
+        return Err(RulesError::Unauthorized);
+    }
+    if meta.expected_event_sequence != state.applied_event_sequence {
+        return Err(RulesError::Stale);
+    }
+    crate::validate_state(state, pack)?;
+    validate_tactical_state(state)?;
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    if rules.pending.is_some()
+        && !matches!(
+            action,
+            TacticalAction::SubmitRoll { .. } | TacticalAction::SubmitRollWithInspiration { .. }
+        )
+    {
+        return Err(RulesError::Pending);
+    }
+    let mut next = state.clone();
+    match action {
+        TacticalAction::Establish {
+            encounter: authored,
+        } => {
+            privileged(meta)?;
+            if state.encounter.is_some() || rules.timing.is_some() || authored.flow.is_some() {
+                return Err(prerequisite(
+                    "an encounter already exists or carries unsolicited execution state",
+                ));
+            }
+            let mut authored = authored.as_ref().clone();
+            authored.origin = meta.clone();
+            authored
+                .validate(state)
+                .map_err(|e| RulesError::Invalid(e.to_string()))?;
+            next.encounter = Some(authored);
+        }
+        TacticalAction::Begin { combatants, groups } => {
+            privileged(meta)?;
+            if rules.entities.values().any(|e| {
+                e.character_features
+                    .as_ref()
+                    .is_some_and(|f| f.inspiration_transfer_pending)
+            }) {
+                return Err(prerequisite(
+                    "an Inspiration transfer awaits its controller before initiative",
+                ));
+            }
+            if encounter(state)?.flow.is_some() || rules.timing.is_some() {
+                return Err(prerequisite("initiative is already established"));
+            }
+            let initial = TacticalFlow {
+                version: 1,
+                origin: meta.clone(),
+                combatants: combatants.clone(),
+                initiative_groups: groups.clone(),
+                initiative_decisions: vec![],
+                phase: TacticalPhase::Initiative { next_group: 0 },
+                budget: TacticalTurnBudget::default(),
+            };
+            next.encounter
+                .as_mut()
+                .ok_or_else(|| prerequisite("no encounter"))?
+                .flow = Some(initial);
+            validation::validate_groups(&next)?;
+            let rules = next.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+            for c in combatants {
+                if rules.entities[&c.actor].death.dead {
+                    return Err(prerequisite("dead creatures cannot enter initiative"));
+                }
+                crate::kernel::interrupt_rest(rules, c.actor, next.clock.now);
+                rules.completed_short_rests.retain(|id| *id != c.actor);
+            }
+            rules.permission = None;
+            initiative::issue(&mut next, meta)?;
+        }
+        TacticalAction::SubmitRoll { result } => initiative::submit(&mut next, meta, result)?,
+        TacticalAction::SubmitRollWithInspiration {
+            result,
+            die_index,
+            replacement,
+        } => {
+            initiative::submit_with_inspiration(&mut next, meta, result, *die_index, *replacement)?;
+        }
+        TacticalAction::ProposeInitiativeTie { order } => {
+            initiative::propose_tie(&mut next, meta, order)?
+        }
+        TacticalAction::AcceptInitiativeTie { total } => {
+            initiative::accept_tie(&mut next, meta, *total)?
+        }
+    }
+    crate::validate_state(&next, pack)?;
+    validate_tactical_state(&next)?;
+    let rules = next.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let outcome = TacticalOutcome {
+        next_roll: rules.pending.as_ref().map(|p| p.request.clone()),
+        awaiting_initiative_ties: next
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .is_some_and(|f| matches!(f.phase, TacticalPhase::InitiativeTies { .. })),
+        active_actor: rules
+            .timing
+            .as_ref()
+            .and_then(|t| t.order.get(t.index))
+            .map(|e| e.actor),
+    };
+    Ok(TacticalTransition {
+        next_state: next,
+        event: TacticalEvent {
+            meta: meta.clone(),
+            action: action.clone(),
+            outcome,
+        },
+    })
+}
+
+pub fn replay_tactical(
+    state: &CampaignState,
+    event: &TacticalEvent,
+    pack: &RulesPack,
+) -> Result<TacticalTransition, RulesError> {
+    let transition = resolve_tactical(state, &event.meta, &event.action, pack)?;
+    if transition.event != *event {
+        return Err(RulesError::ReplayMismatch);
+    }
+    Ok(transition)
+}

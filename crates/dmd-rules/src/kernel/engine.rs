@@ -16,6 +16,11 @@ pub fn resolve(
         return Err(RulesError::Stale);
     }
     validate_state(state, pack)?;
+    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some()) {
+        return Err(prerequisite(
+            "active tactical state requires the tactical command path",
+        ));
+    }
     if state.rules.as_ref().is_some_and(|r| r.pending.is_some())
         && !matches!(
             action,
@@ -1317,6 +1322,11 @@ fn submit(
     });
     let (mut success, mut critical, mut amount) = (None, false, None);
     match &pending.purpose {
+        PendingPurpose::TacticalInitiative { .. } => {
+            return Err(prerequisite(
+                "tactical rolls require their recorded continuation",
+            ));
+        }
         PendingPurpose::Test { kind, dc, .. } => {
             let face = roll.kept_dice[0].value;
             if matches!(kind, TestKind::DeathSave) {
@@ -1651,7 +1661,7 @@ fn recover(e: &mut MechanicalEntity, kind: RestKind) {
         }
     }
 }
-fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: WorldInstant) {
+pub(crate) fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: WorldInstant) {
     if rules.rests.iter().any(|r| {
         r.actor == actor && r.kind == RestKind::Long && now.0.saturating_sub(r.started_at.0) >= 3600
     }) {
