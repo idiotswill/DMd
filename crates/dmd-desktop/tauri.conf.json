@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "DMd",
+  "version": "0.1.0",
+  "identifier": "org.dmd.desktop",
+  "build": {
+    "beforeBuildCommand": {
+      "script": "npm run build",
+      "cwd": "../../apps/desktop"
+    },
+    "frontendDist": "../../apps/desktop/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "DMd",
+        "width": 1160,
+        "height": 800,
+        "minWidth": 720,
+        "minHeight": 560,
+        "resizable": true
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src ipc: http://ipc.localhost; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'",
+      "capabilities": []
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "category": "Game",
+    "shortDescription": "A local tabletop campaign application",
+    "license": "MIT",
+    "licenseFile": "../../LICENSE",
+    "icon": ["icons/32x32.png", "icons/128x128.png", "icons/icon.ico"],
+    "resources": {
+      "../../content/srd-5.2.1/": "content/srd-5.2.1/",
+      "../../LICENSE": "licenses/DMd-LICENSE.txt",
+      "licenses/dependencies/": "licenses/dependencies/"
+    },
+    "windows": {
+      "webviewInstallMode": { "type": "offlineInstaller" },
+      "nsis": {
+        "installMode": "currentUser",
+        "displayLanguageSelector": false,
+        "languages": ["English"]
+      }
+    }
+  }
+}
