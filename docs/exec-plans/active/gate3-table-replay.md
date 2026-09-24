@@ -52,3 +52,40 @@ audit/event/observation lineage as well as rules lineage so stripping current/hi
 images cannot bypass preflight. Root was notified and owns that `lib.rs` guard/regression.
 Next action: root cherry-picks the owned commit, reviews it, completes the lineage guard and
 performs integrated repository verification. No owner decision is required.
+
+## Source review follow-up: suspended Second Wind
+
+Root integrated the composed recovery slice as `172883e`. A separate source review
+found that the new Second Wind pending-request validator reconstructed its die and
+remaining use but did not preserve the issuing controller/actor authority or the
+already-spent combat Bonus Action. An earliest/imported anchor has no preceding
+derivable image, so canonical later-event replay cannot repair this local gap.
+
+The bounded follow-up owns only `kernel/request_integrity.rs`, character-creation
+rules regressions, and this plan. Require authorized issuing metadata; when combat
+exists, require the pending roller to remain the current actor with a spent Bonus
+Action. Use checked initiative lookup because cursor validation runs later. Test
+serialized real-command anchors with altered markers, actor, issuer and invalid
+cursor, while preserving valid combat and noncombat requests. This does not add
+features or weaken the earliest-anchor trust boundary. Root separately owns the
+source-derived immutable mechanical-grant comparison in the table application.
+
+Local dependency merge uses root-supplied `b9dbf7c` (merge `d10dc5a`, identical tree).
+Remote fetch was unavailable in this subagent environment; root owns fresh remote
+and final integrated-head verification. Both new regression tests failed before
+the fix, confirming acceptance of a false Bonus Action marker and foreign issuer.
+The guard now rejects all six serialized-anchor mutations: false marker, different
+current combat actor, invalid initiative index, foreign issuing player, different
+issuing actor and missing player actor. Valid combat/noncombat anchors still pass
+serialization and deterministic replay. All 43 rules tests passed (4 unit, 12
+character-creation and 27 mechanics); strict all-targets rules Clippy, formatting
+and whitespace checks passed. No full-workspace verification is claimed by this
+bounded follow-up; root will verify the integrated application head.
+
+Independent source review checked the pinned SRD's creation choices, Fighter
+47–48, Soldier83, Human86, feats87–88 and starter-equipment prices. No further
+source mismatch was found. Savage Attacker's raw sets, chosen result, critical dice
+and optional Inspiration reroll remain replayed deterministically; recorded turns
+and mastery/tool/catalog deferrals are explicit in ADR023. Next: root cherry-picks
+the isolated fix, reviews it together with the immutable-grants fix, then performs
+integrated-head verification. Do not cherry-pick dependency merge `d10dc5a`.

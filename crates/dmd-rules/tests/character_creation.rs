@@ -468,6 +468,74 @@ fn second_wind_preserves_raw_pending_rolls_and_partial_rest_recovery() {
 }
 
 #[test]
+fn restored_second_wind_requires_the_reserved_combat_bonus_action() {
+    let mut t = Table::new();
+    t.begin_combat();
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.verify();
+    let encoded = serde_json::to_string(&t.state).unwrap();
+    for mutation in 0..3 {
+        // The earliest imported anchor has no earlier state to replay. Its local
+        // checks must retain the resource reservation for this outstanding roll.
+        let mut anchor: CampaignState = serde_json::from_str(&encoded).unwrap();
+        let timing = anchor.rules.as_mut().unwrap().timing.as_mut().unwrap();
+        match mutation {
+            0 => timing.bonus_action_spent = false,
+            1 => timing.index = 1,
+            2 => timing.index = usize::MAX,
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_state(&anchor, &pack()).is_err(),
+            "accepted Second Wind combat anchor mutation {mutation}"
+        );
+    }
+}
+
+#[test]
+fn restored_second_wind_retains_authorized_issuer_and_actor_identity() {
+    let mut t = Table::new();
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.verify();
+    let encoded = serde_json::to_string(&t.state).unwrap();
+    for mutation in 0..3 {
+        let mut anchor: CampaignState = serde_json::from_str(&encoded).unwrap();
+        let meta = &mut anchor
+            .rules
+            .as_mut()
+            .unwrap()
+            .pending
+            .as_mut()
+            .unwrap()
+            .issued_by;
+        match mutation {
+            0 => meta.issuer = CommandIssuer::Player(t.other_player),
+            1 => meta.actor = Some(AgentRef::Entity(t.other)),
+            2 => meta.actor = None,
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_state(&anchor, &pack()).is_err(),
+            "accepted Second Wind authority anchor mutation {mutation}"
+        );
+    }
+}
+
+#[test]
 fn inspiration_overflow_waits_for_its_controller_and_survives_serialization() {
     let mut t = Table::new();
     t.admin(RulesAction::GrantInspiration {
