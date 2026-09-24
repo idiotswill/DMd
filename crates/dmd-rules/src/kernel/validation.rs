@@ -275,7 +275,16 @@ pub(super) fn validate_entity(
     {
         return Err(invalid("mechanical entity is unavailable in this campaign"));
     }
-    if !(1..=20).contains(&e.level)
+    let creature_profile = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_creatures.as_ref())
+        .and_then(|creatures| creatures.profile(e.entity_id));
+    if let Some(profile) = creature_profile {
+        crate::tactical_creatures::validate_creature_profile(state, profile, e)
+            .map_err(|error| invalid(&error.to_string()))?;
+    }
+    if (creature_profile.is_none() && !(1..=20).contains(&e.level))
         || e.ability_scores.iter().any(|s| !(1..=30).contains(s))
         || (e.max_hp == 0
             && !(e.death.dead
@@ -332,9 +341,10 @@ pub(super) fn validate_entity(
         }
         _ => (),
     }
-    if ![6, 8, 10, 12].contains(&e.hit_dice.sides)
-        || e.hit_dice.maximum != e.level
-        || e.hit_dice.remaining > e.hit_dice.maximum
+    if creature_profile.is_none()
+        && (![6, 8, 10, 12].contains(&e.hit_dice.sides)
+            || e.hit_dice.maximum != e.level
+            || e.hit_dice.remaining > e.hit_dice.maximum)
     {
         return Err(invalid("invalid hit dice pool"));
     }
@@ -409,6 +419,17 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     }
     crate::tactical_effect_adapter::validate_effect_attachment(state)?;
     crate::tactical_vitality_adapter::validate_attachment(state)?;
+    if let Some(creatures) = &rules.tactical_creatures {
+        creatures.validate(state).map_err(|error| invalid(&error))?;
+        for profile in &creatures.profiles {
+            let entity = rules
+                .entities
+                .get(&profile.actor)
+                .ok_or_else(|| invalid("source creature has no mechanics"))?;
+            crate::tactical_creatures::validate_creature_profile(state, profile, entity)
+                .map_err(|error| invalid(&error.to_string()))?;
+        }
+    }
     if let Some(inventory) = &rules.tactical_inventory {
         crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
             .map_err(|error| invalid(&error.to_string()))?;

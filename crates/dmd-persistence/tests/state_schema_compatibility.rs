@@ -148,6 +148,8 @@ fn encounter_state() -> CampaignState {
         effects: vec![],
         tactical_effects: None,
         tactical_inventory: None,
+        tactical_creatures: None,
+        tactical_recovery: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -506,6 +508,8 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "duplicate_encounter",
         "tactical_effects",
         "tactical_inventory",
+        "tactical_recovery",
+        "tactical_creatures",
         "duplicate_inventory",
         "lifecycle",
     ] {
@@ -531,6 +535,15 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_inventory"] =
                     json!(dmd_domain::TacticalInventory::default());
+            }
+            "tactical_recovery" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_recovery"] = json!({});
+            }
+            "tactical_creatures" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_creatures"] =
+                    json!(dmd_domain::TacticalCreatures::default());
             }
             _ => (),
         }
@@ -730,13 +743,19 @@ fn every_legacy_snapshot_path_rejects_future_encounter_authority() {
 #[test]
 fn old_saves_reject_even_empty_well_formed_tactical_authority() {
     let codec = CampaignStateSnapshotCodec::new();
-    for inventory in [false, true] {
+    for authority in ["effects", "inventory", "recovery", "creatures"] {
         let mut current = encounter_state();
         current.encounter = None;
         current.rules.as_mut().unwrap().timing = None;
-        if inventory {
+        if authority == "inventory" {
             current.rules.as_mut().unwrap().tactical_inventory =
                 Some(dmd_domain::TacticalInventory::default());
+        } else if authority == "creatures" {
+            current.rules.as_mut().unwrap().tactical_creatures =
+                Some(dmd_domain::TacticalCreatures::default());
+        } else if authority == "recovery" {
+            current.rules.as_mut().unwrap().tactical_recovery =
+                Some(std::collections::HashMap::new());
         } else {
             current.rules.as_mut().unwrap().tactical_effects =
                 Some(dmd_domain::TacticalEffects::default());

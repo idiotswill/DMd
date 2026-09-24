@@ -53,6 +53,16 @@ fn roll_label(purpose: &PendingPurpose) -> String {
     };
     match purpose {
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
+        PendingPurpose::TacticalResolution { key, .. } => match key.role {
+            TacticalRollRole::DeathSave => "Death saving throw",
+            TacticalRollRole::EffectSave => "Saving throw",
+            TacticalRollRole::EffectDamage => "Effect damage",
+            TacticalRollRole::Concentration => {
+                "Constitution saving throw to maintain concentration"
+            }
+            TacticalRollRole::StableRecovery => "Stable recovery time",
+        }
+        .into(),
         PendingPurpose::Test { kind, .. } => match kind {
             TestKind::Check { ability, skill } => match skill {
                 Some(skill) => format!("{} ({}) check", ability_name(ability), skill_name(skill)),

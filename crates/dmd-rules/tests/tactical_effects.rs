@@ -55,6 +55,7 @@ impl Fixture {
             effects: Vec::new(),
             tactical_effects: None,
             tactical_inventory: None,
+            tactical_creatures: None,
             pending: None,
             rolls: Vec::new(),
             cancelled_roll_ids: Vec::new(),

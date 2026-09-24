@@ -122,7 +122,24 @@ async fn roll(f: &Fixture, index: usize, face: u16) -> TableAction {
 
 #[tokio::test]
 async fn session_bound_tactical_rolls_restart_and_restore_without_hidden_map_truth() {
-    let f = Fixture::new().await;
+    let mut f = Fixture::new().await;
+    f.host(TableAction::EndSession, Some(f.session)).await;
+    f.session = PlaySessionId::new();
+    f.host(
+        TableAction::StartSession {
+            id: f.session,
+            name: "Both players present".into(),
+            participants: (0..2)
+                .map(|index| SessionParticipant {
+                    player_id: f.players[index],
+                    character_id: Some(f.characters[index]),
+                    attendance: AttendanceStatus::Present,
+                })
+                .collect(),
+        },
+        Some(f.session),
+    )
+    .await;
     prepare(&f).await;
     let host = f
         .runtime

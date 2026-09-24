@@ -45,6 +45,16 @@ truth stays in the host view. Budget presentation excludes other actors' private
 Ending the session during initiative is rejected while ordinary quit/resume remains valid.
 A real SQLite test covers pending initiative export/restore, continuation equality,
 wrong-channel rejection, hidden map filtering and forged nested provenance. This checkpoint
-has not compiled yet; the serial compiler is running the independent turn scheduler.
-Next: integrate reviewed damage/turn types, compile and fix the table test, then connect UI
-and source creature setup. Full gate acceptance remains pending.
+now compiles and that integration test passes. Its first run correctly rejected an absent
+fixture player; the test now starts a real session with both players attending. No attendance
+rule was weakened. The 13 schema compatibility tests also pass with recovery/creature
+authority rejection for old saves and retained atomic migration rollback.
+
+Damage `dbe8cf7`, turn domain `615676a`, compiling turn reducer `4d2704f` and source creature
+construction `9f5527a` are integrated. Turn focused tests and creature scheduler/deep resource
+validation remain under independent development. Optional recovery/creature state uses the
+same pre-tactical anchor, typed legacy preflight and audited retained-command checks. Only
+source-pinned creatures receive the level-zero/real-Hit-Dice validation exception.
+
+Next: review/check the combined runtime, connect source creature setup and complete turn
+choices/UI and spell/movement/reaction execution. Full gate acceptance remains pending.

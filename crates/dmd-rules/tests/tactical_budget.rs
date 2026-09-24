@@ -94,6 +94,7 @@ fn rules(a: EntityId, b: EntityId) -> RulesState {
         effects: vec![],
         tactical_effects: None,
         tactical_inventory: None,
+        tactical_creatures: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],

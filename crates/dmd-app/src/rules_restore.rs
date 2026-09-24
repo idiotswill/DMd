@@ -93,7 +93,10 @@ pub(crate) fn validate_rules_export(
         .as_ref()
         .is_some_and(|encounter| encounter.flow.is_some())
         || anchor.rules.as_ref().is_some_and(|rules| {
-            rules.tactical_effects.is_some() || rules.tactical_inventory.is_some()
+            rules.tactical_effects.is_some()
+                || rules.tactical_inventory.is_some()
+                || rules.tactical_recovery.is_some()
+                || rules.tactical_creatures.is_some()
         })
     {
         return Err("tactical recovery requires its original pre-tactical anchor".into());
@@ -723,6 +726,24 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(resolution) = &flow.resolution {
+                origins.push(&resolution.origin);
+            }
+            origins.extend(flow.dodges.iter().map(|dodge| &dodge.origin));
+            origins.extend(flow.ground_items.iter().map(|item| &item.origin));
+            if let Some(origin) = &flow.budget.disengaged {
+                origins.push(origin);
+            }
+            for decision in &flow.save_decisions {
+                origins.push(&decision.issued_by);
+                origins.push(&decision.resolved_by);
+            }
+            origins.extend(
+                flow.budget
+                    .weapon_history
+                    .iter()
+                    .map(|receipt| &receipt.origin),
+            );
         }
         for knowledge in &encounter.knowledge {
             origins.extend(knowledge.contacts.iter().map(|c| &c.origin));
@@ -732,6 +753,41 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let Some(rules) = &state.rules else {
         return origins;
     };
+    if let Some(recovery) = &rules.tactical_recovery {
+        for record in recovery.values() {
+            if let Some(knockout) = &record.knockout {
+                origins.push(&knockout.origin.command);
+            }
+            if let Some(stable) = &record.stable {
+                origins.push(&stable.origin.command);
+            }
+        }
+    }
+    if let Some(creatures) = &rules.tactical_creatures {
+        origins.extend(creatures.profiles.iter().map(|profile| &profile.origin));
+        for runtime in &creatures.runtime {
+            origins.extend([
+                &runtime.control_origin,
+                &runtime.lair_origin,
+                &runtime.last_operation,
+            ]);
+            if let Some(routine) = &runtime.routine {
+                origins.push(&routine.origin);
+            }
+            if let Some(rest) = &runtime.last_rest {
+                origins.push(&rest.origin);
+            }
+            for recharge in &runtime.recharge {
+                if let Some(ticket) = &recharge.pending {
+                    origins.push(&ticket.origin);
+                }
+                if let Some(record) = &recharge.last_roll {
+                    origins.push(&record.ticket.origin);
+                    origins.push(&record.accepted_by);
+                }
+            }
+        }
+    }
     if let Some(inventory) = &rules.tactical_inventory {
         origins.extend(inventory.receipts.iter().map(|receipt| &receipt.command));
         origins.extend(inventory.loadouts.iter().map(|loadout| &loadout.command));
