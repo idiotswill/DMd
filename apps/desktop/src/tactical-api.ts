@@ -53,5 +53,6 @@ export interface TacticalView {
   legendary_resistance: Id | null;
   legendary_action: Id | null;
   attack_options?: AttackOptions | null;
+  attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }

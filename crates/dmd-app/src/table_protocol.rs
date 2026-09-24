@@ -281,6 +281,19 @@ pub struct TableTacticalView {
     pub legendary_action: Option<EntityId>,
     /// Physical choices for an authorized current actor; no target combat statistics.
     pub attack_options: Option<TableAttackOptions>,
+    pub attack_decision: Option<TableAttackDecision>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAttackDecision {
+    pub actor: EntityId,
+    pub kind: TableAttackDecisionKind,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TableAttackDecisionKind {
+    Knockout,
+    Graze,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

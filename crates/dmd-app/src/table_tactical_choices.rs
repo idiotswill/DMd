@@ -49,6 +49,12 @@ pub(super) fn continuation(
                             TacticalWorkKind::LegendaryWindow { actor } => {
                                 (Some(*actor), "Legendary Action opportunity")
                             }
+                            TacticalWorkKind::AttackRoll
+                            | TacticalWorkKind::AttackDamage
+                            | TacticalWorkKind::FinishAttack => (
+                                resolution.attack.as_ref().map(|attack| attack.actor),
+                                "Attack consequence",
+                            ),
                         };
                         // Owning the turn grants ordering authority, not knowledge of another
                         // actor's health, concentration, hidden source, DC or location.
@@ -190,6 +196,7 @@ mod tests {
             pending: None,
             failed_save: None,
             legendary_window: None,
+            attack: None,
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);

@@ -37,3 +37,19 @@ recovery, turn, spell and lint checks are green. The attack author is validating
 shared resolver and compulsory-rest consequences on its own branch. Inspect that exact
 checkpoint before integrating it; develop only independent table projection/UI contracts
 until then. Rust builds remain globally serialized.
+
+The independently reviewed ordinary attack checkpoint `334d82b` is integrated by
+`1325da9`. Its own focused 19 attack, 20 turn and 33 vitality tests and strict rules/domain
+Clippy passed. Root adapted its allocation to the verified boxed cursor, added generic
+attack/damage roll labels and retained attack/equipment/knockout-rest origins to the
+restore audit. Owned knockout and Graze controls are projected without damage/AC values.
+
+The first physical form uses canonical weapon/ability/grip/delivery choices, real carried
+ammunition and explicit equipment changes. Its targets come from only the acting
+creature's current perception, including when viewed by the host. Three initial UI tests
+passed; Svelte caught four unsupported test-query typing options, which were corrected
+and now check cleanly. A fourth choice/channel regression is added for the next run.
+These UI checks do not verify backend integration yet. Root's Rust build is queued after
+inventory and casting; real SQLite attack/concentration/knockout replay and NPC shield
+drop coverage remain next work. Light/Nick follow-up choices and source feature controls
+remain active work; the first form currently submits the ordinary Attack action only.

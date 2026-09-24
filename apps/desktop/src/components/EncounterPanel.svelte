@@ -37,6 +37,17 @@
   {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.budget && (!tactical.budget.action_spent || tactical.budget.attacks_remaining>0)}
     {#key tactical.attack_options.actor}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
   {/if}
+  {#if tactical.attack_decision && (host || actor===tactical.attack_decision.actor)}
+    <fieldset disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>
+      {#if tactical.attack_decision.kind==='Knockout'}
+        <p>This melee attack can knock the creature out. Choose how to resolve the damage.</p>
+        <button onclick={()=>onAction({ChooseAttackKnockout:{choice:'KnockOut'}})}>Knock out</button><button class="secondary" onclick={()=>onAction({ChooseAttackKnockout:{choice:'NormalDamage'}})}>Apply normal damage</button>
+      {:else}
+        <p>The attack missed. You may apply Graze damage.</p>
+        <button onclick={()=>onAction({ChooseAttackMastery:{choice:'Graze'}})}>Use Graze</button><button class="secondary" onclick={()=>onAction({ChooseAttackMastery:{choice:'Decline'}})}>Decline Graze</button>
+      {/if}
+    </fieldset>
+  {/if}
   {#if tactical.continuation && (host || actor===tactical.continuation.actor)}
     {#if tactical.continuation.choices.length}
       <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>

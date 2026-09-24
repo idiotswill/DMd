@@ -743,6 +743,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             origins.push(&flow.origin);
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(attack) = &resolution.attack {
+                    origins.push(&attack.origin);
+                    origins.push(&attack.equipment_before.command);
+                }
                 if let Some(window) = &resolution.legendary_window {
                     origins.push(&window.origin);
                 }
@@ -779,6 +783,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         for record in recovery.values() {
             if let Some(knockout) = &record.knockout {
                 origins.push(&knockout.origin.command);
+            }
+            if let Some(rest) = &record.knockout_rest {
+                origins.push(&rest.knockout_origin.command);
+                origins.push(&rest.started_by.command);
             }
             if let Some(stable) = &record.stable {
                 origins.push(&stable.origin.command);

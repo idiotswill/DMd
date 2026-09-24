@@ -4,10 +4,10 @@ use dmd_rules::{RulesPack, tactical::*};
 
 use crate::{TableBattlefieldSetup, table_engine::table};
 
-#[path = "table_tactical_choices.rs"]
-mod choices;
 #[path = "table_attacks.rs"]
 mod attacks;
+#[path = "table_tactical_choices.rs"]
+mod choices;
 
 pub(crate) fn view(
     state: &CampaignState,
@@ -171,12 +171,30 @@ pub(crate) fn view(
             Some(actor)
                 if flow.is_some_and(|flow| {
                     flow.phase == TacticalPhase::Active && flow.resolution.is_none()
-                }) && state.rules.as_ref().is_some_and(|rules| rules.pending.is_none()) =>
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 attacks::options(state, actor)?
             }
             _ => None,
         },
+        attack_decision: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.attack.as_ref())
+            .filter(|attack| host || own.contains(&attack.actor))
+            .and_then(|attack| {
+                let kind = match attack.stage {
+                    TacticalAttackStage::KnockoutChoice => crate::TableAttackDecisionKind::Knockout,
+                    TacticalAttackStage::MasteryChoice => crate::TableAttackDecisionKind::Graze,
+                    _ => return None,
+                };
+                Some(crate::TableAttackDecision {
+                    actor: attack.actor,
+                    kind,
+                })
+            }),
         budget: flow
             .filter(|_| host || active.is_some_and(|actor| own.contains(&actor)))
             .and_then(|flow| {

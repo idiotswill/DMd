@@ -50,3 +50,21 @@ it('removes a previous actor weapon form when the viewing channel changes',async
   expect(screen.queryByText('Weapon attack')).toBeNull();
   expect(screen.queryByText('Visible guard')).toBeNull();
 });
+
+it('sends owned knockout and Graze decisions and removes them on a channel change',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:{actor:'actor',host_adjudication:false,choices:[]},may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,attack_decision:{actor:'actor',kind:'Knockout'}};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  await user.click(screen.getByRole('button',{name:'Knock out'}));
+  expect(onAction).toHaveBeenLastCalledWith({ChooseAttackKnockout:{choice:'KnockOut'}});
+  await user.click(screen.getByRole('button',{name:'Apply normal damage'}));
+  expect(onAction).toHaveBeenLastCalledWith({ChooseAttackKnockout:{choice:'NormalDamage'}});
+  await component.rerender({tactical:{...tactical,attack_decision:{actor:'actor',kind:'Graze'}}});
+  expect(screen.queryByRole('button',{name:'Knock out'})).toBeNull();
+  await user.click(screen.getByRole('button',{name:'Use Graze'}));
+  expect(onAction).toHaveBeenLastCalledWith({ChooseAttackMastery:{choice:'Graze'}});
+  await user.click(screen.getByRole('button',{name:'Decline Graze'}));
+  expect(onAction).toHaveBeenLastCalledWith({ChooseAttackMastery:{choice:'Decline'}});
+  await component.rerender({actor:'other',player:'other-player'});
+  expect(screen.queryByText('Graze mastery')).toBeNull();
+});
