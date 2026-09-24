@@ -63,7 +63,12 @@ pub fn resolve(
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
                 entities: std::collections::HashMap::from([(*entity_id, built.mechanics)]),
-                house_rules: HouseRules::default(),
+                house_rules: state
+                    .table
+                    .as_ref()
+                    .map_or_else(HouseRules::default, |table| {
+                        table.contract.house_rules.clone()
+                    }),
                 effects: vec![],
                 pending: None,
                 rolls: vec![],

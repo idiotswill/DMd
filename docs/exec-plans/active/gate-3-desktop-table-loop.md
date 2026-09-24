@@ -61,9 +61,18 @@ verification and expected-head-protected merge. Refresh main for dependent integ
 
 Repository inspection confirms no desktop crate/frontend exists yet. The accepted Tauri
 stack will be used unless concrete build evidence requires a documented in-scope revision.
-Parallel read-only audits cover desktop/toolchain feasibility, durable state/replay design,
-and the licensed supported character subset. Gate 2 event restoration currently understands
-only rules events; table events must compose with that path rather than bypassing it.
+Parallel writer branches now implement Windows packaging, schema-3/session/observation
+persistence, and the licensed Human/Fighter/Soldier creation subset. Root implements
+application table commands, safe views, bounded local text and integration tests. The
+root domain contracts (current session, profile references, pending intent and linked
+rolls) compile; the local text tests pass. No integrated runtime or desktop acceptance
+is claimed at this stage. Gate 2 event restoration still needs the composed table replay
+adapter before exports containing these events can be accepted.
+
+The accepted Tauri/Svelte path will build on Windows CI using MSVC because the local
+Rust toolchain is GNU. Portable Node tooling stays outside the repository. WebView2 is
+available on this host; packaging must also support an offline prerequisite installer.
+ADR 024 records the current table authority/visibility decisions pending verification.
 
 Inherited TD-001/004 affect this gate directly: new events need semantic replay and desktop
 entrypoints must use the runtime instead of raw persistence. TD-002/005/006/007 measured
@@ -72,6 +81,8 @@ minimal prerequisite is demonstrated. No new implementation or acceptance is cla
 
 ## Exact next action
 
-Finish bounded architecture/source/build audits, choose and document concrete state and
-IPC contracts, then implement the durable table foundation on isolated writer branches.
-Update this plan with actual PR/head/check evidence as slices land. No owner blocker known.
+Integrate the source and persistence commits, compile the application service and run
+the table-loop integration tests. Delegate composed replay/restore validation, then
+review the complete foundation diff. In parallel obtain early Windows packaging CI and
+wire the desktop to the typed application DTOs. Record actual PR/head/check evidence
+before any merge. No owner blocker is known.

@@ -1,5 +1,8 @@
 use serde::{Deserialize, Serialize};
 
+mod local_text;
+pub use local_text::*;
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum UtteranceKind {
     InWorldAction,

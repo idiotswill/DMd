@@ -62,6 +62,11 @@ impl CampaignRuntime {
         action: RulesAction,
     ) -> Result<RulesReceipt, RunnableCampaignError> {
         let runnable = self.open_campaign(context.campaign_id).await?;
+        if runnable.state().table.is_some() {
+            return Err(RunnableCampaignError::Table(
+                "This campaign uses the table command path so pending decisions and mechanics commit together.".into(),
+            ));
+        }
         let pack = load_rules_pack(runnable.content())?;
         let meta = CommandMeta {
             id: CommandId::new(),
@@ -203,6 +208,22 @@ pub(crate) fn load_rules_pack(
     let base = installed.manifest_path.parent().ok_or_else(|| {
         RunnableCampaignError::RulesContent("rules manifest has no parent directory".into())
     })?;
+    let creation = installed
+        .manifest
+        .files
+        .iter()
+        .find(|file| file.path == "character-creation.json")
+        .ok_or_else(|| {
+            RunnableCampaignError::RulesContent("character-creation.json is not declared".into())
+        })?;
+    let creation_bytes = fs::read(base.join("character-creation.json"))
+        .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
+    if creation_bytes.len() as u64 != creation.byte_len
+        || fnv1a64_hex(&creation_bytes) != creation.checksum.value
+        || creation_bytes != include_bytes!("../../../content/srd-5.2.1/character-creation.json")
+    {
+        return Err(RunnableCampaignError::RulesContent("installed character creation catalog does not match this exact supported rules version".into()));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {
