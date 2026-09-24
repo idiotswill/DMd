@@ -1,41 +1,27 @@
 pub mod journal_store;
+pub mod lifecycle;
 pub mod projection_store;
 pub mod session_store;
 pub mod snapshot_replay;
 
 pub use journal_store::*;
+pub use lifecycle::*;
 pub use projection_store::*;
 pub use session_store::*;
 pub use snapshot_replay::*;
 
-use sqlx::{
-    SqlitePool,
-    migrate::{MigrateError, Migrator},
-    sqlite::SqliteConnectOptions,
-};
-use std::str::FromStr;
-use thiserror::Error;
+pub async fn open_sqlite(database_url: &str) -> Result<sqlx::SqlitePool, sqlx::Error> {
+    use std::str::FromStr;
 
-pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
+    use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
-#[derive(Debug, Error)]
-pub enum PersistenceError {
-    #[error(transparent)]
-    Sqlx(#[from] sqlx::Error),
-    #[error(transparent)]
-    Migration(#[from] MigrateError),
+    let options = SqliteConnectOptions::from_str(database_url)?.foreign_keys(true);
+    SqlitePoolOptions::new()
+        .max_connections(1)
+        .connect_with(options)
+        .await
 }
 
-pub async fn migrate_sqlite(pool: &SqlitePool) -> Result<(), MigrateError> {
-    MIGRATOR.run(pool).await
-}
-
-pub async fn open_sqlite(database_url: &str) -> Result<SqlitePool, PersistenceError> {
-    let options = SqliteConnectOptions::from_str(database_url)?
-        .create_if_missing(true)
-        .foreign_keys(true);
-
-    let pool = SqlitePool::connect_with(options).await?;
-    migrate_sqlite(&pool).await?;
-    Ok(pool)
+pub async fn migrate_sqlite(pool: &sqlx::SqlitePool) -> Result<(), sqlx::migrate::MigrateError> {
+    sqlx::migrate!("./migrations").run(pool).await
 }
