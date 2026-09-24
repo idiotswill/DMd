@@ -1,11 +1,14 @@
 //! Closed physical attack work. All requests and costs are derived from source data;
 //! this sibling composes with the existing turn pump, never a second command queue.
+mod intrinsic;
+mod opportunity;
 mod planning;
 mod validation;
 use super::turns::*;
 use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
+pub(super) use opportunity::{begin_opportunity_attack, opportunity_options};
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     validation::validate(state)
 }
@@ -107,10 +110,19 @@ pub(super) fn begin(
     let attack = TacticalAttack {
         origin: meta.clone(),
         actor,
-        choice: choice.clone(),
-        window,
-        equipment_before: equipment,
-        ammunition,
+        target: choice.target,
+        delivery: if choice.delivery == WeaponDelivery::Melee {
+            TacticalAttackDelivery::Melee
+        } else {
+            TacticalAttackDelivery::Ranged
+        },
+        source: TacticalAttackSource::Weapon(Box::new(TacticalWeaponAttack {
+            choice: choice.clone(),
+            window,
+            equipment_before: equipment,
+            ammunition,
+        })),
+        admission: TacticalAttackAdmission::OwnTurn,
         attack_modifier: plan.attack_modifier,
         mode,
         armor_class,
@@ -127,6 +139,8 @@ pub(super) fn begin(
         outcome: None,
     };
     let mut budget = flow(state)?.budget.clone();
+    budget.movement_progress = None;
+    budget.movement_origin = None;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     match choice.purpose {
         WeaponAttackPurpose::Normal => {
@@ -186,6 +200,7 @@ pub(super) fn begin(
         failed_save: None,
         legendary_window: None,
         attack: Some(attack),
+        movement: None,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
@@ -205,7 +220,7 @@ pub(super) fn key(
     Ok(TacticalRollKey {
         origin: attack.origin.id,
         role,
-        subject: attack.choice.target,
+        subject: attack.target,
         occurrence: work.occurrence,
     })
 }
@@ -223,7 +238,7 @@ pub(super) fn request(
             }],
             attack.attack_modifier,
             attack.mode,
-            "Weapon attack",
+            "Attack",
         ),
         TacticalWorkKind::AttackDamage => {
             let critical = matches!(
@@ -247,7 +262,7 @@ pub(super) fn request(
             if dice.is_empty() {
                 return Ok(None);
             }
-            (dice, 0, RollMode::Normal, "Weapon damage")
+            (dice, 0, RollMode::Normal, "Attack damage")
         }
         _ => return Err(invalid("not attack dice work")),
     };
@@ -356,7 +371,7 @@ fn packet(state: &CampaignState) -> Result<DamagePacket, RulesError> {
         })
         .transpose()?;
     let mut faces = raw.into_iter().flat_map(|r| r.resolved.kept_dice.iter());
-    let mut components = Vec::new();
+    let mut components: Vec<DamageComponent> = Vec::new();
     for component in &attack.damage {
         let mut amount = i64::from(component.modifier);
         for die in &component.dice {
@@ -368,13 +383,21 @@ fn packet(state: &CampaignState) -> Result<DamagePacket, RulesError> {
                 amount += i64::from(face.value);
             }
         }
-        components.push(DamageComponent {
-            damage_type: component.damage_type,
-            amounts: vec![
-                u32::try_from(amount.max(0)).map_err(|_| invalid("damage amount overflow"))?,
-            ],
-            adjustments: vec![],
-        });
+        let amount = u32::try_from(amount.max(0)).map_err(|_| invalid("damage amount overflow"))?;
+        if let Some(existing) = components
+            .iter_mut()
+            .find(|c| c.damage_type == component.damage_type)
+        {
+            // One hit can add several source dice pools of the same type. Sum
+            // them within that type before a single resistance/vulnerability step.
+            existing.amounts.push(amount);
+        } else {
+            components.push(DamageComponent {
+                damage_type: component.damage_type,
+                amounts: vec![amount],
+                adjustments: vec![],
+            });
+        }
     }
     if faces.next().is_some() {
         return Err(invalid("surplus damage faces"));
@@ -382,7 +405,7 @@ fn packet(state: &CampaignState) -> Result<DamagePacket, RulesError> {
     Ok(DamagePacket {
         cause: DamageCause::Attack {
             attacker: attack.actor,
-            melee: attack.choice.delivery == WeaponDelivery::Melee,
+            melee: attack.delivery == TacticalAttackDelivery::Melee,
             critical,
         },
         components,
@@ -402,7 +425,7 @@ fn apply_damage(
     };
     let context = crate::tactical_vitality_adapter::context(
         state,
-        attack.choice.target,
+        attack.target,
         VitalityOrigin {
             command: meta.clone(),
             occurrence,
@@ -412,11 +435,11 @@ fn apply_damage(
     let recovery = rules
         .tactical_recovery
         .as_ref()
-        .and_then(|r| r.get(&attack.choice.target))
+        .and_then(|r| r.get(&attack.target))
         .cloned()
         .unwrap_or_default();
     let preview = crate::tactical_damage::reduce_vitality(
-        &rules.entities[&attack.choice.target],
+        &rules.entities[&attack.target],
         &recovery,
         &context,
         &operation,
@@ -433,15 +456,18 @@ fn apply_damage(
         ),
         damage_dealt: preview.outcome.damage_taken,
     };
-    let plan = planning::reconstruct(state, &attack)?;
+    let plan = attack
+        .weapon()
+        .map(|_| planning::reconstruct(state, &attack))
+        .transpose()?;
     // Finish this attack's physical equipment/history atomically with its damage,
     // before pumping resulting concentration/effect work. Those consequences may
     // incapacitate the attacker and drop equipment; never re-equip it afterward.
-    complete(state, meta, &attack, &plan, outcome)?;
+    complete(state, meta, &attack, plan.as_ref(), outcome)?;
     super::continuations::apply_vitality(
         state,
         meta,
-        attack.choice.target,
+        attack.target,
         occurrence,
         operation,
         Some(attack.actor),
@@ -470,60 +496,71 @@ fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErro
     let outcome = attack
         .outcome
         .ok_or_else(|| invalid("attack outcome absent"))?;
-    let plan = planning::reconstruct(state, &attack)?;
-    if plan.mastery == Some(WeaponMastery::Graze) && outcome == WeaponAttackOutcome::Miss {
+    let plan = attack
+        .weapon()
+        .map(|_| planning::reconstruct(state, &attack))
+        .transpose()?;
+    if plan
+        .as_ref()
+        .is_some_and(|p| p.mastery == Some(WeaponMastery::Graze))
+        && outcome == WeaponAttackOutcome::Miss
+    {
         current_mut(state)?.stage = TacticalAttackStage::MasteryChoice;
         return Ok(());
     }
-    complete(state, meta, &attack, &plan, outcome)
+    complete(state, meta, &attack, plan.as_ref(), outcome)
 }
 fn complete(
     state: &mut CampaignState,
     meta: &CommandMeta,
     attack: &TacticalAttack,
-    plan: &WeaponAttackPlan,
+    plan: Option<&WeaponAttackPlan>,
     outcome: WeaponAttackOutcome,
 ) -> Result<(), RulesError> {
-    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
-    let loadout = rules
-        .tactical_inventory
-        .as_mut()
-        .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
-        .ok_or_else(|| invalid("equipment absent"))?;
-    loadout.hands = plan.loadout_after_attack.clone();
-    loadout.command = meta.clone();
-    if let Some(item) = plan.thrown_weapon {
-        let encounter = encounter(state)?;
-        let position = encounter
-            .participant(attack.choice.target)
-            .ok_or_else(|| invalid("target absent"))?
-            .position;
-        let location = state
-            .scenes
-            .get(&encounter.scene_id)
-            .ok_or_else(|| invalid("scene absent"))?
-            .location_id;
-        state
-            .items
-            .get_mut(&item)
-            .ok_or_else(|| invalid("thrown item absent"))?
-            .custody = Custody::Location(location);
-        flow_mut(state)?
-            .ground_items
-            .retain(|entry| entry.item != item);
-        flow_mut(state)?.ground_items.push(TacticalGroundItem {
-            item,
-            position,
-            origin: meta.clone(),
-        });
+    if let Some(plan) = plan {
+        let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+        let loadout = rules
+            .tactical_inventory
+            .as_mut()
+            .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
+            .ok_or_else(|| invalid("equipment absent"))?;
+        loadout.hands = plan.loadout_after_attack.clone();
+        loadout.command = meta.clone();
+        if let Some(item) = plan.thrown_weapon {
+            let encounter = encounter(state)?;
+            let position = encounter
+                .participant(attack.target)
+                .ok_or_else(|| invalid("target absent"))?
+                .position;
+            let location = state
+                .scenes
+                .get(&encounter.scene_id)
+                .ok_or_else(|| invalid("scene absent"))?
+                .location_id;
+            state
+                .items
+                .get_mut(&item)
+                .ok_or_else(|| invalid("thrown item absent"))?
+                .custody = Custody::Location(location);
+            flow_mut(state)?
+                .ground_items
+                .retain(|entry| entry.item != item);
+            flow_mut(state)?.ground_items.push(TacticalGroundItem {
+                item,
+                position,
+                origin: meta.clone(),
+            });
+        }
+        let receipt = flow_mut(state)?
+            .budget
+            .weapon_history
+            .iter_mut()
+            .find(|r| r.origin.id == attack.origin.id)
+            .ok_or_else(|| invalid("attack receipt absent"))?;
+        receipt.outcome = outcome;
+    } else {
+        intrinsic::complete(state, attack, outcome)?;
     }
-    let receipt = flow_mut(state)?
-        .budget
-        .weapon_history
-        .iter_mut()
-        .find(|r| r.origin.id == attack.origin.id)
-        .ok_or_else(|| invalid("attack receipt absent"))?;
-    receipt.outcome = outcome;
     resolution_mut(state)?.attack = None;
     Ok(())
 }
@@ -539,7 +576,7 @@ pub(super) fn choose_mastery(
     authorize(state, meta, attack.actor)?;
     let plan = planning::reconstruct(state, &attack)?;
     let target = encounter(state)?
-        .participant(attack.choice.target)
+        .participant(attack.target)
         .ok_or_else(|| invalid("target absent"))?;
     let mastery = weapon_mastery_resolution(
         &plan,
@@ -559,7 +596,7 @@ pub(super) fn choose_mastery(
         choice,
     )
     .map_err(weapon_error)?;
-    complete(state, meta, &attack, &plan, WeaponAttackOutcome::Miss)?;
+    complete(state, meta, &attack, Some(&plan), WeaponAttackOutcome::Miss)?;
     if let Some(WeaponMasteryConsequence::GrazeDamage {
         source,
         target,

@@ -63,6 +63,7 @@ pub struct MovementSegment {
     pub mode: MovementMode,
     pub cost: u32,
     pub opportunities: Vec<OpportunityCrossing>,
+    pub progress_after: TacticalMovementProgress,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MovementPlan {
@@ -70,6 +71,137 @@ pub struct MovementPlan {
     pub total_cost: u32,
     pub destination: SpatialPoint,
     pub falls_at_end: bool,
+    pub progress: TacticalMovementProgress,
+}
+
+pub fn append_straight_movement(
+    previous: Option<TacticalStraightMovement>,
+    from: SpatialPoint,
+    to: SpatialPoint,
+) -> Result<TacticalStraightMovement, SpatialError> {
+    from.validate().map_err(invalid)?;
+    to.validate().map_err(invalid)?;
+    if from == to {
+        return Err(invalid("straight movement requires a displacement"));
+    }
+    let fresh = TacticalStraightMovement {
+        start: from,
+        end: to,
+    };
+    let Some(previous) = previous else {
+        return Ok(fresh);
+    };
+    previous.start.validate().map_err(invalid)?;
+    previous.end.validate().map_err(invalid)?;
+    if previous.end != from || previous.start == from {
+        return Ok(fresh);
+    }
+    let a = [
+        from.x - previous.start.x,
+        from.y - previous.start.y,
+        from.z - previous.start.z,
+    ]
+    .map(i128::from);
+    let b = [to.x - from.x, to.y - from.y, to.z - from.z].map(i128::from);
+    let same_direction = a[0] * b[1] == a[1] * b[0]
+        && a[0] * b[2] == a[2] * b[0]
+        && a[1] * b[2] == a[2] * b[1]
+        && a.iter().zip(b).map(|(a, b)| *a * b).sum::<i128>() > 0;
+    Ok(if same_direction {
+        TacticalStraightMovement {
+            start: previous.start,
+            end: to,
+        }
+    } else {
+        fresh
+    })
+}
+
+/// Geometry convention: the forward continuation of the moving footprint must
+/// intersect the target's occupied space, and actual occupied-space distance must
+/// have decreased. Merely spending distance, approaching then turning back, or
+/// traveling parallel to a nearby target cannot authorize a source Charge rider.
+pub fn straight_movement_toward(
+    actor: &TacticalParticipant,
+    target: &TacticalParticipant,
+    straight: &TacticalStraightMovement,
+) -> Result<bool, SpatialError> {
+    straight.start.validate().map_err(invalid)?;
+    straight.end.validate().map_err(invalid)?;
+    if straight.end != actor.position || straight.start == straight.end {
+        return Err(invalid("straight movement differs from current position"));
+    }
+    let mut before = actor.clone();
+    before.position = straight.start;
+    if participant_distance(actor, target)? >= participant_distance(&before, target)? {
+        return Ok(false);
+    }
+    let mut delta = [
+        straight.end.x - straight.start.x,
+        straight.end.y - straight.start.y,
+        straight.end.z - straight.start.z,
+    ];
+    let divisor = delta.iter().fold(0u32, |mut a, b| {
+        let mut b = b.unsigned_abs();
+        while b != 0 {
+            (a, b) = (b, a % b);
+        }
+        a
+    });
+    let divisor = i32::try_from(divisor).map_err(|_| invalid("straight direction overflow"))?;
+    for component in &mut delta {
+        *component /= divisor;
+    }
+    let end = [straight.end.x, straight.end.y, straight.end.z];
+    let scale = delta
+        .iter()
+        .zip(end)
+        .filter_map(|(delta, end)| match delta.cmp(&0) {
+            std::cmp::Ordering::Greater => {
+                Some((i64::from(MAX_SPATIAL_COORDINATE) - i64::from(end)) / i64::from(*delta))
+            }
+            std::cmp::Ordering::Less => {
+                Some((i64::from(-MAX_SPATIAL_COORDINATE) - i64::from(end)) / i64::from(*delta))
+            }
+            std::cmp::Ordering::Equal => None,
+        })
+        .min()
+        .ok_or_else(|| invalid("straight direction absent"))?;
+    if scale == 0 {
+        return Ok(false);
+    }
+    let projected = std::array::from_fn::<_, 3, _>(|axis| {
+        i64::from(end[axis]) + i64::from(delta[axis]) * scale
+    });
+    let ray_end = SpatialPoint {
+        x: i32::try_from(projected[0]).map_err(|_| invalid("straight ray overflow"))?,
+        y: i32::try_from(projected[1]).map_err(|_| invalid("straight ray overflow"))?,
+        z: i32::try_from(projected[2]).map_err(|_| invalid("straight ray overflow"))?,
+    };
+    let target = target.volume().map_err(invalid)?;
+    let footprint = actor.size.footprint_units();
+    let height = i32::try_from(actor.height).map_err(|_| invalid("body height overflow"))?;
+    let expanded = SpatialBox {
+        min: SpatialPoint {
+            x: target
+                .min
+                .x
+                .saturating_sub(footprint)
+                .max(-MAX_SPATIAL_COORDINATE),
+            y: target
+                .min
+                .y
+                .saturating_sub(footprint)
+                .max(-MAX_SPATIAL_COORDINATE),
+            z: target
+                .min
+                .z
+                .saturating_sub(height)
+                .max(-MAX_SPATIAL_COORDINATE),
+        },
+        max: target.max,
+    };
+    geometry::segment_intersects(straight.end, ray_end, expanded)
 }
 
 fn interval_distance(min_a: i32, max_a: i32, min_b: i32, max_b: i32) -> u32 {
@@ -277,15 +409,46 @@ pub fn evaluate_path(
     path: &SpatialPath,
     allowance: &MovementAllowance,
 ) -> Result<MovementPlan, SpatialError> {
+    evaluate_path_progress(
+        encounter,
+        state,
+        actor_id,
+        path,
+        allowance,
+        &TacticalMovementProgress {
+            walked_runup: allowance.runup,
+            jump: None,
+            straight: None,
+        },
+        true,
+    )
+}
+
+/// Resume source movement without resetting an unfinished jump or falsely treating
+/// a transit segment as the chosen final space. Context is derived by the resolver,
+/// never accepted as a player's allowance or permission.
+pub fn evaluate_path_progress(
+    encounter: &TacticalEncounter,
+    state: &CampaignState,
+    actor_id: EntityId,
+    path: &SpatialPath,
+    allowance: &MovementAllowance,
+    progress: &TacticalMovementProgress,
+    ends_move: bool,
+) -> Result<MovementPlan, SpatialError> {
     validate_encounter(encounter, state)?;
     if path.steps.is_empty()
         || path.steps.len() > 1024
-        || allowance.dash.total() > 4
+        || allowance.dash.total() > 20
         || allowance.spent > 10_000
         || allowance.runup > 10_000
+        || progress.walked_runup > 10_000
         || allowance.teleport_range.is_some_and(|r| r == 0 || r > 4000)
     {
         return Err(invalid("invalid bounded movement query"));
+    }
+    if let Some(jump) = progress.jump {
+        jump.start.validate().map_err(invalid)?;
     }
     let mut working = encounter.clone();
     let index = working
@@ -299,8 +462,9 @@ pub fn evaluate_path(
     }
     let mut segments = Vec::new();
     let mut cost = 0u32;
-    let mut runup = allowance.runup;
-    let mut jump_start = None;
+    let mut runup = progress.walked_runup;
+    let mut jump_start = progress.jump.map(|jump| (jump.start, jump.had_runup));
+    let mut straight = progress.straight;
     let strength = state
         .rules
         .as_ref()
@@ -374,7 +538,7 @@ pub fn evaluate_path(
                 }
             }
         }
-        let last = step_index + 1 == path.steps.len();
+        let last = ends_move && step_index + 1 == path.steps.len();
         let occupied_difficult = if allowance.forced {
             false
         } else {
@@ -420,13 +584,16 @@ pub fn evaluate_path(
                     return Err(illegal("jump exceeds Strength-derived distance or height"));
                 }
             } else {
+                if jump_start.is_some() {
+                    runup = 0;
+                }
                 jump_start = None;
             }
             for effect in state
                 .rules
                 .as_ref()
                 .into_iter()
-                .flat_map(|r| &r.effects)
+                .flat_map(crate::tactical_effect_adapter::condition_effects)
                 .filter(|e| e.target == actor_id && e.condition == Some(Condition::Frightened))
             {
                 let fear = participant(encounter, effect.source)?;
@@ -452,6 +619,13 @@ pub fn evaluate_path(
         cost = cost
             .checked_add(step_cost)
             .ok_or_else(|| invalid("movement cost overflow"))?;
+        if allowance
+            .spent
+            .checked_add(cost)
+            .is_none_or(|spent| spent > 10_000)
+        {
+            return Err(SpatialError::Capacity);
+        }
         if !teleport && !allowance.forced {
             let maximum = speed(&moving, state, step.mode)?
                 .checked_mul(1 + u32::from(allowance.dash.for_mode(&moving.movement, step.mode)))
@@ -490,18 +664,35 @@ pub fn evaluate_path(
             }
         }
         opportunities.sort_by_key(|o| o.actor.0);
+        if step.mode == MovementMode::Walk && moving.position.z == next.position.z {
+            runup = runup.saturating_add(distance).min(10_000);
+        } else if step.mode != MovementMode::Jump {
+            runup = 0;
+        }
+        if teleport || allowance.forced {
+            runup = 0;
+            jump_start = None;
+            straight = None;
+        } else {
+            straight = Some(append_straight_movement(
+                straight,
+                moving.position,
+                next.position,
+            )?);
+        }
+        let progress_after = TacticalMovementProgress {
+            walked_runup: runup,
+            jump: jump_start.map(|(start, had_runup)| TacticalJumpProgress { start, had_runup }),
+            straight,
+        };
         segments.push(MovementSegment {
             from: moving.position,
             to: next.position,
             mode: step.mode,
             cost: step_cost,
             opportunities,
+            progress_after,
         });
-        if step.mode == MovementMode::Walk && moving.position.z == next.position.z {
-            runup = runup.saturating_add(distance);
-        } else if step.mode != MovementMode::Jump {
-            runup = 0;
-        }
         moving = next;
         working.participants[index] = moving.clone();
     }
@@ -511,7 +702,21 @@ pub fn evaluate_path(
         && !region_at(encounter, moving.volume().map_err(invalid)?, |t| {
             t.water || t.climbable || t.burrowable
         });
+    if ends_move && final_mode == MovementMode::Jump && !falls_at_end {
+        // The declared jump has landed. A later jump needs its own immediate run-up,
+        // but a suspended intermediate segment preserves the unfinished jump instead.
+        let last = segments
+            .last_mut()
+            .ok_or_else(|| invalid("empty movement result"))?;
+        last.progress_after.walked_runup = 0;
+        last.progress_after.jump = None;
+    }
     Ok(MovementPlan {
+        progress: segments
+            .last()
+            .ok_or_else(|| invalid("empty movement result"))?
+            .progress_after
+            .clone(),
         segments,
         total_cost: cost,
         destination: moving.position,

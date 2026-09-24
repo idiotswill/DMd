@@ -1,10 +1,28 @@
 //! Source-derived attack receipts inside the shared tactical resolution.
 //! These are internal durable work, never player-supplied mechanical permissions.
 use crate::{
-    ActorEquipmentLoadout, CommandMeta, DamageType, DieSpec, EntityId, ItemId, RollMode,
+    Ability, ActorEquipmentLoadout, CommandMeta, DamageType, DieSpec, EntityId, ItemId, RollMode,
     RollRequestId, WeaponActionWindow, WeaponAttackOutcome, WeaponUseChoice,
 };
 use serde::{Deserialize, Serialize};
+
+/// Controller choice for one retained opportunity. Actor and target come from the
+/// live movement window; this does not grant a reaction or a source capability.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalMeleeChoice {
+    Weapon(WeaponUseChoice),
+    /// The damage form of an Unarmed Strike. Grapple/Shove keep their distinct
+    /// source save/size/hand choices and are not silently treated as damage here.
+    UnarmedDamage {
+        ability: Ability,
+    },
+    CreatureFeature {
+        feature_id: String,
+        /// Only an attack whose canonical Gear requires it accepts an ItemId.
+        weapon: Option<ItemId>,
+    },
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -30,6 +48,46 @@ pub enum TacticalAttackStage {
     MasteryChoice,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TacticalAttackDelivery {
+    Melee,
+    Ranged,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalWeaponAttack {
+    pub choice: WeaponUseChoice,
+    pub window: WeaponActionWindow,
+    pub equipment_before: ActorEquipmentLoadout,
+    pub ammunition: Option<AttackAmmunitionReservation>,
+}
+
+/// Physical custody and item rules belong only to the weapon variant. Intrinsic
+/// sources retain canonical identity/choices, never placeholder items.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalAttackSource {
+    Weapon(Box<TacticalWeaponAttack>),
+    Unarmed {
+        ability: Ability,
+    },
+    CreatureFeature {
+        source: crate::CreatureSourcePin,
+        feature_id: String,
+        weapon: Option<ItemId>,
+    },
+}
+
+/// The original crossing is retained while its selected reaction's rolls run.
+/// The live movement decision and spent reaction must agree with this record.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalAttackAdmission {
+    OwnTurn,
+    Opportunity(Box<crate::TacticalOpportunityWindow>),
+}
+
 /// Reconstructed against canonical source and original choices before damage changes
 /// the target. Completed hit facts remain tied to accepted raw history and journal
 /// replay; they cannot authenticate an imported after-state snapshot by themselves.
@@ -38,10 +96,10 @@ pub enum TacticalAttackStage {
 pub struct TacticalAttack {
     pub origin: CommandMeta,
     pub actor: EntityId,
-    pub choice: WeaponUseChoice,
-    pub window: WeaponActionWindow,
-    pub equipment_before: ActorEquipmentLoadout,
-    pub ammunition: Option<AttackAmmunitionReservation>,
+    pub target: EntityId,
+    pub delivery: TacticalAttackDelivery,
+    pub source: TacticalAttackSource,
+    pub admission: TacticalAttackAdmission,
     pub attack_modifier: i32,
     pub mode: RollMode,
     pub armor_class: i32,
@@ -52,4 +110,19 @@ pub struct TacticalAttack {
     pub attack_roll: Option<RollRequestId>,
     pub damage_roll: Option<RollRequestId>,
     pub outcome: Option<WeaponAttackOutcome>,
+}
+
+impl TacticalAttack {
+    pub fn weapon(&self) -> Option<&TacticalWeaponAttack> {
+        match &self.source {
+            TacticalAttackSource::Weapon(weapon) => Some(weapon),
+            _ => None,
+        }
+    }
+    pub fn weapon_mut(&mut self) -> Option<&mut TacticalWeaponAttack> {
+        match &mut self.source {
+            TacticalAttackSource::Weapon(weapon) => Some(weapon),
+            _ => None,
+        }
+    }
 }

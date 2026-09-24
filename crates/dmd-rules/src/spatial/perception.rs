@@ -148,14 +148,6 @@ fn perceive_with_work(
             sight_disadvantage: false,
         });
     }
-    if observer == target {
-        return Ok(PerceptionResult {
-            sees: true,
-            precisely_located: true,
-            modality: Some(PerceptionModality::Sight),
-            sight_disadvantage: false,
-        });
-    }
     let from = actor.center().map_err(invalid)?;
     let target_volume = subject.volume().map_err(invalid)?;
     let actor_conditions = conditions(state, observer);
@@ -230,6 +222,16 @@ fn perceive_with_work(
             precisely_located: true,
             modality: Some(PerceptionModality::Sight),
             sight_disadvantage: true,
+        });
+    }
+    if observer == target {
+        // Awareness of one's own body is enough for a self/touch target, but it
+        // cannot satisfy an effect which explicitly requires a target one can see.
+        return Ok(PerceptionResult {
+            sees: false,
+            precisely_located: true,
+            modality: None,
+            sight_disadvantage: false,
         });
     }
     work.charge(encounter.battlefield.terrain.len() * 2)?;

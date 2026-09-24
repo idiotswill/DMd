@@ -1,6 +1,8 @@
 use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, tactical_inventory::*, *};
 use std::collections::HashMap;
+#[path = "tactical_attacks/opportunity.rs"]
+mod opportunity;
 
 struct Fixture {
     state: CampaignState,
@@ -884,7 +886,7 @@ fn restored_pending_attack_rejects_forged_modifiers_equipment_outcomes_and_damag
     let choice = f.arm("shortbow", false, true);
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    for mutation in 0..7 {
+    for mutation in 0..9 {
         let mut bad = f.state.clone();
         let attack = bad
             .encounter
@@ -904,14 +906,24 @@ fn restored_pending_attack_rejects_forged_modifiers_equipment_outcomes_and_damag
             1 => attack.damage[0].modifier += 20,
             2 => attack.mode = RollMode::Advantage,
             3 => attack.armor_class -= 10,
-            4 => attack.ammunition.as_mut().unwrap().quantity_before += 1,
-            5 => attack.equipment_before.hands = WeaponLoadout::default(),
+            4 => {
+                attack
+                    .weapon_mut()
+                    .unwrap()
+                    .ammunition
+                    .as_mut()
+                    .unwrap()
+                    .quantity_before += 1
+            }
+            5 => attack.weapon_mut().unwrap().equipment_before.hands = WeaponLoadout::default(),
             6 => {
                 attack.outcome = Some(WeaponAttackOutcome::Hit {
                     critical: true,
                     damage_dealt: 999,
                 })
             }
+            7 => attack.target = f.actors[0],
+            8 => attack.delivery = TacticalAttackDelivery::Melee,
             _ => unreachable!(),
         }
         assert!(

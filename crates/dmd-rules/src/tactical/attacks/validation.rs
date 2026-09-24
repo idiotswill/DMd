@@ -24,9 +24,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         return Ok(());
     };
     validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
-    validate_equipment_change_origin(state, &attack.equipment_before.command, attack.actor)
-        .map_err(|e| invalid(&e))?;
     authorize(state, &attack.origin, attack.actor)?;
+    opportunity::validate_admission(state, attack)?;
     if attack.automatic_miss {
         return Err(invalid(
             "an automatic miss must finish without accepting an attack roll",
@@ -77,115 +76,16 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         _ => (),
     }
-    if attack.origin != resolution.origin
-        || attack.actor != resolution.turn_actor
-        || attack.actor == attack.choice.target
-        || attack.equipment_before.actor != attack.actor
-        || attack.equipment_before.command.expected_event_sequence
-            > attack.origin.expected_event_sequence
-        || attack.damage.len() != 1
+    if attack.actor == attack.target
+        || attack.damage.is_empty()
+        || attack.damage.len() > 16
         || !(-1000..=1000).contains(&attack.attack_modifier)
         || !(-1000..=1000).contains(&attack.armor_class)
     {
         return Err(invalid("invalid retained attack identity/bounds"));
     }
-    let plan = planning::reconstruct(state, attack)?;
-    if plan
-        .mastery
-        .is_some_and(|m| !matches!(m, WeaponMastery::Nick | WeaponMastery::Graze))
-        || (attack.stage == TacticalAttackStage::MasteryChoice
-            && plan.mastery != Some(WeaponMastery::Graze))
-    {
-        return Err(invalid(
-            "retained attack has no supported source mastery continuation",
-        ));
-    }
+    validate_source(state, attack)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
-    let timing = rules
-        .timing
-        .as_ref()
-        .ok_or_else(|| invalid("attack timing absent"))?;
-    match attack.choice.purpose {
-        WeaponAttackPurpose::Normal | WeaponAttackPurpose::Nick { .. }
-            if !timing.action_spent || flow(state)?.budget.attack_window != Some(attack.window) =>
-        {
-            return Err(invalid("attack lacks its spent action opportunity"));
-        }
-        WeaponAttackPurpose::LightBonus { .. }
-            if !timing.bonus_action_spent
-                || attack.window
-                    != (WeaponActionWindow {
-                        id: attack.origin.id,
-                        kind: WeaponActionKind::BonusAction,
-                    }) =>
-        {
-            return Err(invalid("Light attack lacks its spent bonus action"));
-        }
-        WeaponAttackPurpose::Cleave { .. } => {
-            return Err(invalid("Cleave continuation is not yet supported"));
-        }
-        _ => (),
-    }
-    let inventory = rules
-        .tactical_inventory
-        .as_ref()
-        .ok_or_else(|| invalid("attack equipment absent"))?;
-    let equipped = inventory
-        .loadout(attack.actor)
-        .ok_or_else(|| invalid("attack loadout absent"))?;
-    if equipped.hands != plan.loadout_for_attack
-        || equipped.worn_armor != attack.equipment_before.worn_armor
-        || equipped.shield != attack.equipment_before.shield
-        || equipped.command != attack.origin
-        || attack.attack_modifier != plan.attack_modifier
-        || attack.automatic_miss != plan.automatic_miss
-        || attack.damage
-            != [AttackDamageComponent {
-                damage_type: plan.damage.damage_type,
-                dice: plan.damage.dice.clone(),
-                modifier: plan.damage.modifier,
-            }]
-    {
-        return Err(invalid("attack source or reserved equipment differs"));
-    }
-    match (&attack.ammunition, &plan.ammunition) {
-        (Some(reserved), Some(spend)) => {
-            let item = state
-                .items
-                .get(&reserved.stack)
-                .ok_or_else(|| invalid("reserved ammunition missing"))?;
-            if reserved.stack != spend.stack
-                || reserved.quantity_before == 0
-                || reserved.quantity_before.checked_sub(spend.quantity) != Some(item.quantity)
-                || item.state
-                    != if item.quantity == 0 {
-                        ItemState::Spent
-                    } else {
-                        ItemState::Intact
-                    }
-            {
-                return Err(invalid("ammunition reservation differs"));
-            }
-        }
-        (None, None) => (),
-        _ => return Err(invalid("ammunition source differs")),
-    }
-    let receipts = flow(state)?
-        .budget
-        .weapon_history
-        .iter()
-        .filter(|r| r.origin.id == attack.origin.id)
-        .collect::<Vec<_>>();
-    if receipts.len() != 1 || *receipts[0] != plan.receipt {
-        return Err(invalid("pending attack receipt differs"));
-    }
-    {
-        let (mode, armor, critical) =
-            planning::hit_facts(state, attack.actor, &attack.choice, &plan)?;
-        if (attack.mode, attack.armor_class, attack.critical_on_hit) != (mode, armor, critical) {
-            return Err(invalid("pending attack circumstances differ"));
-        }
-    }
     if let Some(id) = attack.attack_roll {
         let record = rules
             .rolls
@@ -287,7 +187,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     if attack.stage == TacticalAttackStage::KnockoutChoice {
         let context = crate::tactical_vitality_adapter::context(
             state,
-            attack.choice.target,
+            attack.target,
             VitalityOrigin {
                 command: attack.origin.clone(),
                 occurrence: 0,
@@ -296,7 +196,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let recovery = rules
             .tactical_recovery
             .as_ref()
-            .and_then(|r| r.get(&attack.choice.target))
+            .and_then(|r| r.get(&attack.target))
             .cloned()
             .unwrap_or_default();
         let operation = VitalityOperation::Damage {
@@ -304,7 +204,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             knockout: None,
         };
         let preview = crate::tactical_damage::reduce_vitality(
-            &rules.entities[&attack.choice.target],
+            &rules.entities[&attack.target],
             &recovery,
             &context,
             &operation,
@@ -347,9 +247,161 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     ) && (resolution.pending.is_some()
         || resolution.failed_save.is_some()
         || resolution.legendary_window.is_some()
-        || !resolution.frames.is_empty())
+        || resolution.frames.iter().flatten().any(|w| {
+            !matches!(
+                w.kind,
+                TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. }
+            )
+        }))
     {
         return Err(invalid("attack decision competes with pending work"));
+    }
+    Ok(())
+}
+
+fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(), RulesError> {
+    let Some(weapon) = attack.weapon() else {
+        let plan = intrinsic::plan(state, attack)?;
+        if attack.stage == TacticalAttackStage::MasteryChoice
+            || attack.automatic_miss
+            || attack.attack_modifier != plan.modifier
+            || attack.damage != plan.damage
+            || (attack.mode, attack.armor_class, attack.critical_on_hit)
+                != (plan.mode, plan.armor, plan.critical)
+        {
+            return Err(invalid(
+                "intrinsic attack differs from canonical live source",
+            ));
+        }
+        return Ok(());
+    };
+    if attack.target != weapon.choice.target
+        || (attack.delivery == TacticalAttackDelivery::Melee)
+            != (weapon.choice.delivery == WeaponDelivery::Melee)
+        || weapon.equipment_before.actor != attack.actor
+        || weapon.equipment_before.command.expected_event_sequence
+            > attack.origin.expected_event_sequence
+    {
+        return Err(invalid(
+            "attack target/delivery/equipment differs from its physical choice",
+        ));
+    }
+    validate_equipment_change_origin(state, &weapon.equipment_before.command, attack.actor)
+        .map_err(|e| invalid(&e))?;
+    let plan = planning::reconstruct(state, attack)?;
+    if plan
+        .mastery
+        .is_some_and(|m| !matches!(m, WeaponMastery::Nick | WeaponMastery::Graze))
+        || (attack.stage == TacticalAttackStage::MasteryChoice
+            && plan.mastery != Some(WeaponMastery::Graze))
+    {
+        return Err(invalid(
+            "retained attack has no supported source mastery continuation",
+        ));
+    }
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let timing = rules
+        .timing
+        .as_ref()
+        .ok_or_else(|| invalid("attack timing absent"))?;
+    if matches!(attack.admission, TacticalAttackAdmission::Opportunity(_)) {
+        if weapon.window
+            != (WeaponActionWindow {
+                id: attack.origin.id,
+                kind: WeaponActionKind::Reaction,
+            })
+            || weapon.choice.purpose != WeaponAttackPurpose::Normal
+            || weapon.choice.delivery != WeaponDelivery::Melee
+            || weapon.choice.equipment_change.is_some()
+            || weapon.ammunition.is_some()
+        {
+            return Err(invalid(
+                "reaction source differs from its one melee opportunity",
+            ));
+        }
+    } else {
+        match weapon.choice.purpose {
+            WeaponAttackPurpose::Normal | WeaponAttackPurpose::Nick { .. }
+                if !timing.action_spent
+                    || flow(state)?.budget.attack_window != Some(weapon.window) =>
+            {
+                return Err(invalid("attack lacks its spent action opportunity"));
+            }
+            WeaponAttackPurpose::LightBonus { .. }
+                if !timing.bonus_action_spent
+                    || weapon.window
+                        != (WeaponActionWindow {
+                            id: attack.origin.id,
+                            kind: WeaponActionKind::BonusAction,
+                        }) =>
+            {
+                return Err(invalid("Light attack lacks its spent bonus action"));
+            }
+            WeaponAttackPurpose::Cleave { .. } => {
+                return Err(invalid("Cleave continuation is not yet supported"));
+            }
+            _ => (),
+        }
+    }
+    let inventory = rules
+        .tactical_inventory
+        .as_ref()
+        .ok_or_else(|| invalid("attack equipment absent"))?;
+    let equipped = inventory
+        .loadout(attack.actor)
+        .ok_or_else(|| invalid("attack loadout absent"))?;
+    if equipped.hands != plan.loadout_for_attack
+        || equipped.worn_armor != weapon.equipment_before.worn_armor
+        || equipped.shield != weapon.equipment_before.shield
+        || equipped.command != attack.origin
+        || attack.attack_modifier != plan.attack_modifier
+        || attack.automatic_miss != plan.automatic_miss
+        || attack.damage
+            != [AttackDamageComponent {
+                damage_type: plan.damage.damage_type,
+                dice: plan.damage.dice.clone(),
+                modifier: plan.damage.modifier,
+            }]
+    {
+        return Err(invalid("attack source or reserved equipment differs"));
+    }
+    match (&weapon.ammunition, &plan.ammunition) {
+        (Some(reserved), Some(spend)) => {
+            let item = state
+                .items
+                .get(&reserved.stack)
+                .ok_or_else(|| invalid("reserved ammunition missing"))?;
+            if reserved.stack != spend.stack
+                || reserved.quantity_before == 0
+                || reserved.quantity_before.checked_sub(spend.quantity) != Some(item.quantity)
+                || item.state
+                    != if item.quantity == 0 {
+                        ItemState::Spent
+                    } else {
+                        ItemState::Intact
+                    }
+            {
+                return Err(invalid("ammunition reservation differs"));
+            }
+        }
+        (None, None) => (),
+        _ => return Err(invalid("ammunition source differs")),
+    }
+    let receipts = flow(state)?
+        .budget
+        .weapon_history
+        .iter()
+        .filter(|r| r.origin.id == attack.origin.id)
+        .collect::<Vec<_>>();
+    if receipts.len() != 1 || *receipts[0] != plan.receipt {
+        return Err(invalid("pending attack receipt differs"));
+    }
+    {
+        let (mode, armor, critical) =
+            planning::hit_facts(state, attack.actor, &weapon.choice, &plan)?;
+        if (attack.mode, attack.armor_class, attack.critical_on_hit) != (mode, armor, critical) {
+            return Err(invalid("pending attack circumstances differ"));
+        }
     }
     Ok(())
 }

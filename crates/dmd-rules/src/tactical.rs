@@ -5,6 +5,7 @@ mod continuations;
 mod creature_bridge;
 mod failed_save;
 mod initiative;
+mod movement;
 mod turn_validation;
 mod turns;
 mod validation;
@@ -21,6 +22,13 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    Move {
+        path: Vec<TacticalMoveStep>,
+    },
+    DeclineOpportunity,
+    OpportunityAttack {
+        choice: TacticalMeleeChoice,
+    },
     Attack {
         choice: WeaponUseChoice,
     },
@@ -194,6 +202,19 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::Move { path } => movement::begin(&mut next, meta, path)?,
+        TacticalAction::DeclineOpportunity => movement::decline(&mut next, meta)?,
+        TacticalAction::OpportunityAttack { choice } => {
+            let window = movement::selected_opportunity(&next)?.clone();
+            attacks::begin_opportunity_attack(
+                &mut next,
+                meta,
+                window.reactor,
+                window.mover,
+                choice,
+                pack,
+            )?;
+        }
         TacticalAction::Attack { choice } => attacks::begin(&mut next, meta, choice, pack)?,
         TacticalAction::ChooseAttackKnockout { choice } => {
             attacks::choose_knockout(&mut next, meta, *choice)?
