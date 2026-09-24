@@ -6,12 +6,12 @@ use std::{
 
 use dmd_app::{CampaignRuntime, RunnableCampaignError};
 use dmd_domain::{
-    Campaign, CampaignId, CampaignState, CampaignStatus, CatalogLoadError,
-    ContentResolutionError, VersionedRef, WorldClock, WorldInstant,
+    Campaign, CampaignId, CampaignState, CampaignStatus, CatalogLoadError, ContentResolutionError,
+    VersionedRef, WorldClock, WorldInstant,
 };
 use dmd_persistence::{
-    CampaignPurgeAuthorization, LifecycleError, export_campaign, open_campaign as raw_open_campaign,
-    open_sqlite, purge_campaign,
+    CampaignPurgeAuthorization, LifecycleError, export_campaign,
+    open_campaign as raw_open_campaign, open_sqlite, purge_campaign,
 };
 
 static NEXT_TEST_DIR: AtomicU64 = AtomicU64::new(0);
@@ -124,7 +124,8 @@ fn write_ruleset_with_file(
   "files": {files}
 }}"#
     );
-    fs::write(directory.join("manifest.json"), manifest).expect("ruleset manifest should be written");
+    fs::write(directory.join("manifest.json"), manifest)
+        .expect("ruleset manifest should be written");
     directory
 }
 
@@ -188,12 +189,7 @@ async fn create_open_restart_and_restore_use_the_runnable_boundary() {
     let db = test.path().join("campaign.sqlite");
     let pool = file_pool(&db).await;
     let runtime = CampaignRuntime::from_content_root(pool.clone(), &content);
-    let expected = state(
-        "Alpha",
-        11,
-        ("rules.alpha", "1"),
-        &[("pack.alpha", "1")],
-    );
+    let expected = state("Alpha", 11, ("rules.alpha", "1"), &[("pack.alpha", "1")]);
 
     let created = runtime
         .create_campaign(&expected)
