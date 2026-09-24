@@ -1040,6 +1040,118 @@ fn physical(id: RollRequestId, value: u16) -> RulesAction {
 }
 
 #[tokio::test]
+async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() {
+    let f = Fixture::new();
+    let (pool, runtime) = f.runtime().await;
+    f.initialize(&runtime).await;
+    let initialized = runtime
+        .open_campaign(f.state.campaign_id())
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    let id = RollRequestId::new();
+    f.step(
+        &runtime,
+        CommandIssuer::System,
+        Some(f.actor),
+        f.request(id, RollVisibility::Public),
+    )
+    .await;
+    let original = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+    for mutation in 0..8 {
+        let mut export = original.clone();
+        match mutation {
+            0 => {
+                let mut state =
+                    CampaignState::decode_json(&export.current_state.state_json).unwrap();
+                state
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .pending
+                    .as_mut()
+                    .unwrap()
+                    .request
+                    .modifier = 999;
+                export.current_state.state_json = state.encode_json().unwrap();
+            }
+            1 => {
+                let mut state = initialized.clone();
+                state
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .entities
+                    .get_mut(&f.actor)
+                    .unwrap()
+                    .hp -= 1;
+                export.snapshots.push(dmd_persistence::SnapshotRow {
+                    campaign_id: export.campaign_id.clone(),
+                    event_sequence: 1,
+                    state_schema_version: i64::from(CURRENT_STATE_SCHEMA_VERSION),
+                    state_json: state.encode_json().unwrap(),
+                    created_at_utc: export.exported_at_utc.clone(),
+                });
+            }
+            2 => export.command_audit[0].issuer_kind = "system".into(),
+            3 => {
+                let mut event: dmd_rules::RulesEvent =
+                    serde_json::from_str(&export.event_journal[0].payload_json).unwrap();
+                event.outcome = RulesOutcome::Healed { regained: 1 };
+                export.event_journal[0].payload_json = serde_json::to_string(&event).unwrap();
+            }
+            4 => {
+                let mut state =
+                    CampaignState::decode_json(&export.current_state.state_json).unwrap();
+                state
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .entities
+                    .get_mut(&f.actor)
+                    .unwrap()
+                    .hp -= 1;
+                export.current_state.state_json = state.encode_json().unwrap();
+            }
+            5 => export.event_journal[0].event_kind = "rules.future_action".into(),
+            6 => export.event_journal[0].event_schema_version = 2,
+            7 => {
+                let mut state =
+                    CampaignState::decode_json(&export.current_state.state_json).unwrap();
+                state.rules.as_mut().unwrap().rulings[0].command.id = CommandId::new();
+                export.current_state.state_json = state.encode_json().unwrap();
+            }
+            _ => unreachable!(),
+        }
+        // The outer persistence format is valid; only the rules owner can detect these defects.
+        assert!(export.upgraded().is_ok(), "structural fixture {mutation}");
+        let target = open_sqlite("sqlite::memory:").await.unwrap();
+        let restored = CampaignRuntime::from_content_root(target.clone(), &f.content);
+        assert!(
+            restored.restore_campaign(&export).await.is_err(),
+            "mutation {mutation}"
+        );
+        let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current")
+            .fetch_one(&target)
+            .await
+            .unwrap();
+        assert_eq!(count, 0);
+        drop(restored);
+        target.close().await;
+    }
+    assert_eq!(
+        export_campaign(&pool, f.state.campaign_id())
+            .await
+            .unwrap()
+            .current_state,
+        original.current_state
+    );
+    drop(runtime);
+    pool.close().await;
+}
+
+#[tokio::test]
 async fn pending_physical_roll_survives_shutdown_and_replay_matches_committed_mechanics() {
     let f = Fixture::new();
     let (pool, runtime) = f.runtime().await;

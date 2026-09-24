@@ -26,6 +26,12 @@ Rules questions use an immutable query API with a trusted viewer. They construct
 
 `rules.action_resolved@1` stores the typed action, trusted command metadata and derived outcome. The application replay adapter rejects unknown kind/version and mismatched journal metadata, then asks the pure kernel to re-resolve the recorded authoritative inputs and compare the outcome. It does not assign an arbitrary serialized after-state. Persistence retains responsibility for immutable snapshot anchors, contiguous sequences, causal references and final domain invariants.
 
+The kernel is sequence-neutral. The app supplies the proposed next sequence to the atomic
+one-event commit, while persistence assigns the event sequence after validating the locked
+head. During replay only persistence advances that sequence. `CampaignRuntime::replay_rules`
+resolves installed content and validates the resulting mechanics, including when recovery
+starts at an exact-head snapshot and applies no events.
+
 ## Compatibility and scope
 
 ADR 017 defines schema-2 state compatibility; old recovery anchors remain immutable. Rules data is part of the same current state/snapshot/export path, not a parallel store. Whole-state mechanical queries are deliberate at Gate 2; projection/performance tuning remains owned by later measured workloads (TD-002/005/006).
