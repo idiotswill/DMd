@@ -1,0 +1,18 @@
+[package]
+name = "dmd-desktop"
+version = "0.1.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+description = "DMd Windows desktop application"
+
+[target.'cfg(all(windows, target_env = "msvc"))'.dependencies]
+dmd-app = { path = "../dmd-app" }
+serde.workspace = true
+tauri = { version = "=2.11.6", default-features = false, features = ["wry", "compression", "common-controls-v6"] }
+
+[target.'cfg(all(windows, target_env = "msvc"))'.build-dependencies]
+tauri-build = { version = "=2.6.3", features = [] }
+
+[features]
+custom-protocol = ["tauri/custom-protocol"]

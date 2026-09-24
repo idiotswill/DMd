@@ -3,6 +3,16 @@
 /dist/
 /.svelte-kit/
 /apps/desktop/src-tauri/target/
+/apps/desktop/node_modules/
+/apps/desktop/dist/
+/apps/desktop/coverage/
+/artifacts/desktop/
+/crates/dmd-desktop/icons/*.png
+/crates/dmd-desktop/icons/*.ico
+/crates/dmd-desktop/icons/*.icns
+/crates/dmd-desktop/icons/android/
+/crates/dmd-desktop/icons/ios/
+/crates/dmd-desktop/licenses/
 *.db
 *.db-shm
 *.db-wal
