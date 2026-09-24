@@ -241,6 +241,246 @@ impl Fixture {
 }
 
 #[test]
+fn resumed_segments_preserve_jump_distance_and_transit_occupancy() {
+    let mut f = Fixture::new();
+    let path = |destination, mode| SpatialPath {
+        steps: vec![MovementStep { destination, mode }],
+    };
+    let first = evaluate_path_progress(
+        &f.encounter,
+        &f.state,
+        f.a,
+        &path(point(20, 10, 0), MovementMode::Jump),
+        &MovementAllowance::default(),
+        &TacticalMovementProgress::default(),
+        false,
+    )
+    .unwrap();
+    assert_eq!(first.progress.jump.unwrap().start, point(10, 10, 0));
+    f.actor(f.a).position = first.destination;
+    // Strength 16 allows a standing long jump of 8ft, not 8ft after every pause.
+    assert!(
+        evaluate_path_progress(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &path(point(30, 10, 0), MovementMode::Jump),
+            &MovementAllowance {
+                spent: first.total_cost,
+                ..Default::default()
+            },
+            &first.progress,
+            true,
+        )
+        .is_err()
+    );
+    let running = TacticalMovementProgress {
+        walked_runup: 20,
+        jump: Some(TacticalJumpProgress {
+            start: point(10, 10, 0),
+            had_runup: true,
+        }),
+    };
+    let landed = evaluate_path_progress(
+        &f.encounter,
+        &f.state,
+        f.a,
+        &path(point(30, 10, 0), MovementMode::Jump),
+        &MovementAllowance {
+            spent: 20 + first.total_cost,
+            ..Default::default()
+        },
+        &running,
+        true,
+    )
+    .unwrap();
+    assert_eq!(landed.progress, TacticalMovementProgress::default());
+
+    f.actor(f.a).position = point(40, 10, 0);
+    let ally = f.b;
+    f.actor(f.a).allies.push(ally);
+    let destination = path(point(50, 10, 0), MovementMode::Walk);
+    let transit = evaluate_path_progress(
+        &f.encounter,
+        &f.state,
+        f.a,
+        &destination,
+        &MovementAllowance::default(),
+        &TacticalMovementProgress::default(),
+        false,
+    )
+    .unwrap();
+    assert_eq!(transit.total_cost, 10);
+    assert!(
+        evaluate_path_progress(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &destination,
+            &MovementAllowance::default(),
+            &TacticalMovementProgress::default(),
+            true,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn displacement_ends_runup_and_progress_queries_remain_immutable_and_bounded() {
+    let f = Fixture::new();
+    let before = f.encounter.clone();
+    let progress = TacticalMovementProgress {
+        walked_runup: 20,
+        jump: Some(TacticalJumpProgress {
+            start: point(0, 10, 0),
+            had_runup: true,
+        }),
+    };
+    for (mode, allowance) in [
+        (
+            MovementMode::Walk,
+            MovementAllowance {
+                forced: true,
+                ..Default::default()
+            },
+        ),
+        (
+            MovementMode::Teleport,
+            MovementAllowance {
+                teleport_range: Some(40),
+                ..Default::default()
+            },
+        ),
+    ] {
+        let plan = evaluate_path_progress(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &SpatialPath {
+                steps: vec![MovementStep {
+                    destination: point(20, 10, 0),
+                    mode,
+                }],
+            },
+            &allowance,
+            &progress,
+            true,
+        )
+        .unwrap();
+        assert_eq!(plan.total_cost, 0);
+        assert_eq!(plan.progress, TacticalMovementProgress::default());
+        assert!(plan.segments[0].opportunities.is_empty());
+        assert_eq!(f.encounter, before);
+    }
+    let invalid = TacticalMovementProgress {
+        walked_runup: 10_001,
+        jump: None,
+    };
+    assert!(
+        evaluate_path_progress(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &SpatialPath {
+                steps: vec![MovementStep {
+                    destination: point(20, 10, 0),
+                    mode: MovementMode::Walk
+                }]
+            },
+            &MovementAllowance::default(),
+            &invalid,
+            true,
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn cumulative_movement_cap_is_checked_even_with_remaining_source_speed() {
+    let mut f = Fixture::new();
+    f.actor(f.a).movement.walk = 2000;
+    let allowance = MovementAllowance {
+        spent: 9990,
+        dash: DashGrants {
+            speed: 5,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let steps = [(point(20, 10, 0), MovementMode::Walk)];
+    assert_eq!(f.path(&steps, allowance.clone()).unwrap().total_cost, 10);
+    // Six times the selected 2000-unit Speed permits 12000; this rejection is
+    // specifically the runtime's cumulative capacity, not exhausted source Speed.
+    assert_eq!(
+        f.path(
+            &steps,
+            MovementAllowance {
+                spent: 9991,
+                ..allowance
+            }
+        ),
+        Err(SpatialError::Capacity)
+    );
+}
+
+#[test]
+fn lifecycle_frightened_blocks_approach_without_a_duplicate_legacy_effect() {
+    use crate::tactical_effects::{EffectLifecycleAction, EffectLifecycleOperation};
+    let mut f = Fixture::new();
+    let meta = CommandMeta {
+        id: CommandId::new(),
+        expected_event_sequence: f.state.applied_event_sequence,
+        ..f.encounter.origin.clone()
+    };
+    let fear = TacticalEffect {
+        id: EffectId::new(),
+        source: EffectSource {
+            definition_id: "source-fear-clause".into(),
+            actor: f.b,
+            command: meta.clone(),
+            ordinal: 0,
+        },
+        established_at: None,
+        target: TacticalEffectTarget::Creature(f.a),
+        concentration_group: None,
+        expires: TacticalEffectExpiry::Never,
+        overlap: None,
+        conditions: vec![EffectCondition {
+            id: EffectId::new(),
+            condition: Condition::Frightened,
+        }],
+        triggers: vec![],
+    };
+    f.state = crate::tactical_effect_adapter::apply_effect_operation(
+        &f.state,
+        &meta,
+        &EffectLifecycleAction {
+            step: 0,
+            operation: EffectLifecycleOperation::Install {
+                effects: vec![fear],
+            },
+        },
+    )
+    .unwrap()
+    .0;
+    assert!(f.state.rules.as_ref().unwrap().effects.is_empty());
+    assert!(
+        f.path(
+            &[(point(20, 10, 0), MovementMode::Walk)],
+            MovementAllowance::default()
+        )
+        .is_err()
+    );
+    assert!(
+        f.path(
+            &[(point(0, 10, 0), MovementMode::Walk)],
+            MovementAllowance::default()
+        )
+        .is_ok()
+    );
+}
+
+#[test]
 fn model_rejects_foreign_missing_duplicated_and_unbounded_truth() {
     let f = Fixture::new();
     let mut copy = f.encounter.clone();

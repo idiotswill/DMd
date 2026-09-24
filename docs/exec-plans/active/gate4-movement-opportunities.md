@@ -80,7 +80,52 @@ separate subsequent slice; no raw force/teleport permission is a player command.
 
 ## Verification and next action
 
-No Rust build has run for this slice. Builds are globally serialized; root NPC checks
-and the attack author's focused checks precede this branch. Formatting is permitted.
-Next: commit this plan, add the new movement contracts and resumable evaluator, then
-integrate only the coordinated attack checkpoint. No Gate 4 acceptance claim.
+Builds are globally serialized. The resumable spatial evaluator passed all 30 focused
+tests (four added regressions); strict domain/rules library Clippy passed. The tactical
+movement adapter and its reducer scenarios are not yet linked or compiled.
+Next: finish focused geometry verification, integrate the coordinated ordinary attack
+checkpoint, then attach movement to its shared cursor and actual opportunity adapter.
+No Gate 4 acceptance claim.
+
+## Implementation checkpoint
+
+Plan `1423e10`; early domain contracts `5a013ed` include source melee options agreed
+with the attack author and optional/default/skip-None turn movement progress. No shared
+resolution or dispatcher file has changed. The spatial follow-up draft resumes jump
+origin/run-up, distinguishes transit occupancy from a chosen endpoint, clears completed
+jump/displacement context and queries lifecycle Frightened sources. Its Dash capacity
+matches the existing bounded twenty-grant turn record; this is a capacity limit, not a
+source grant. Internal admission/segment/history helpers are drafted but not attached
+until shared queue ownership transfers. Their reducer tests remain unrun.
+
+Opportunity response provenance is retained by `5eadf61`; `7efda05` distinguishes an
+automatic source cancellation from a controller's decline. Root's wire-transparent
+boxed cursor `1237c3a` is integrated as `8f6631c`. The attack author has now handed
+shared dispatcher/work/pump ownership to this branch after ordinary checkpoint
+`334d82b`; that author retains `tactical/attacks/**` and its melee choice contract.
+Agreed actions are `Move { path }`, `DeclineOpportunity` and `OpportunityAttack {
+choice }`. The reactor and target derive from the live selected crossing.
+
+Ten reducer scenarios are drafted, including source reach versus unarmed reach,
+multi-controller ordering, raw attack/damage/concentration, incapacitation before a
+crossing, stale/foreign commands and malformed saved decisions. They remain unlinked
+and unverified until the actual adapter exists. The spatial delta received an
+independent read-only review with no concrete blocker. The review's additional
+cumulative-cap boundary fixture passes alongside the three initial regressions.
+
+Accepted movement will interrupt a retained knockout Short Rest only when a segment
+actually commits. Merely querying, offering or declining a reaction does not invent
+activity. The attack checkpoint owns the matching accepted strenuous-action hook.
+
+Root approved a coherent falling follow-up: the first movement checkpoint rejects an
+unsupported planned endpoint before expenditure. Full movement acceptance additionally
+requires actual queued falling damage/vitality, including death/incapacitation during
+airborne interruption; no production path may leave a dead flyer suspended. This is
+incomplete Gate 4 work, not a narrowed product requirement or silent exception.
+
+Falling will retain a source-derived landing and use the same vitality/continuation
+path: 1d6 Bludgeoning per 10 feet, capped at 20d6; Prone depends on actual damage.
+Liquid landing retains the explicit Reaction/check choice. A dead flyer physically
+lands without attempting to revive or damage a corpse through a living vitality API.
+Roll role tags 9 (`FallDamage`) and 10 (`LiquidLandingCheck`) are reserved with the
+casting author, whose new tags begin at 11. No falling execution is claimed yet.
