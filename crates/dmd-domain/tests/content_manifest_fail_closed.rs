@@ -1,17 +1,23 @@
+#[cfg(unix)]
 use std::{
     env, fs,
     path::{Path, PathBuf},
 };
 
+use dmd_domain::ContentManifest;
+#[cfg(unix)]
 use dmd_domain::{
     CONTENT_MANIFEST_FILENAME, CURRENT_CONTENT_CONTRACT_VERSION,
     CURRENT_CONTENT_MANIFEST_SCHEMA_VERSION, CatalogLoadError, ChecksumAlgorithm, ContentCatalog,
-    ContentChecksum, ContentManifest, ManifestFile, ManifestKind, VersionedRef, fnv1a64_hex,
+    ContentChecksum, ManifestFile, ManifestKind, VersionedRef, fnv1a64_hex,
 };
+#[cfg(unix)]
 use uuid::Uuid;
 
+#[cfg(unix)]
 struct TempContentRoot(PathBuf);
 
+#[cfg(unix)]
 impl TempContentRoot {
     fn new() -> Self {
         let path = env::temp_dir().join(format!("dmd-content-fail-closed-{}", Uuid::new_v4()));
@@ -24,12 +30,14 @@ impl TempContentRoot {
     }
 }
 
+#[cfg(unix)]
 impl Drop for TempContentRoot {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
     }
 }
 
+#[cfg(unix)]
 fn reference(id: &str, version: &str) -> VersionedRef {
     VersionedRef {
         id: id.into(),
@@ -37,6 +45,7 @@ fn reference(id: &str, version: &str) -> VersionedRef {
     }
 }
 
+#[cfg(unix)]
 fn pack_with_file(path: &str, bytes: &[u8]) -> ContentManifest {
     ContentManifest {
         manifest_schema_version: CURRENT_CONTENT_MANIFEST_SCHEMA_VERSION,

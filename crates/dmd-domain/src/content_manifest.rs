@@ -235,26 +235,26 @@ pub enum CatalogLoadError {
         violations: Vec<ManifestViolation>,
     },
     DuplicateIdentity {
-        identity: ManifestIdentity,
+        identity: Box<ManifestIdentity>,
         first_path: PathBuf,
         second_path: PathBuf,
     },
     MissingContentFile {
-        identity: ManifestIdentity,
+        identity: Box<ManifestIdentity>,
         path: PathBuf,
     },
     NonRegularContentFile {
-        identity: ManifestIdentity,
+        identity: Box<ManifestIdentity>,
         path: PathBuf,
     },
     ContentFileLengthMismatch {
-        identity: ManifestIdentity,
+        identity: Box<ManifestIdentity>,
         path: PathBuf,
         expected: u64,
         actual: u64,
     },
     ContentFileChecksumMismatch {
-        identity: ManifestIdentity,
+        identity: Box<ManifestIdentity>,
         path: PathBuf,
         expected: Box<str>,
         actual: Box<str>,
@@ -453,7 +453,7 @@ impl ContentCatalog {
             let identity = manifest.identity();
             if let Some(existing) = catalog.manifests.get(&identity) {
                 return Err(CatalogLoadError::DuplicateIdentity {
-                    identity,
+                    identity: Box::new(identity),
                     first_path: existing.manifest_path.clone(),
                     second_path: path,
                 });
@@ -675,7 +675,7 @@ fn verify_manifest_files(
         let (path, metadata) = verified_content_file(&identity, base, &declared.path)?;
         if metadata.len() != declared.byte_len {
             return Err(CatalogLoadError::ContentFileLengthMismatch {
-                identity: identity.clone(),
+                identity: Box::new(identity.clone()),
                 path,
                 expected: declared.byte_len,
                 actual: metadata.len(),
@@ -685,7 +685,7 @@ fn verify_manifest_files(
         let actual = fnv1a64_hex(&bytes);
         if actual != declared.checksum.value {
             return Err(CatalogLoadError::ContentFileChecksumMismatch {
-                identity: identity.clone(),
+                identity: Box::new(identity.clone()),
                 path,
                 expected: declared.checksum.value.clone().into_boxed_str(),
                 actual: actual.into_boxed_str(),
@@ -713,7 +713,7 @@ fn verified_content_file(
             Ok(metadata) => metadata,
             Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
                 return Err(CatalogLoadError::MissingContentFile {
-                    identity: identity.clone(),
+                    identity: Box::new(identity.clone()),
                     path,
                 });
             }
@@ -726,7 +726,7 @@ fn verified_content_file(
         if components.peek().is_none() {
             if !metadata.is_file() {
                 return Err(CatalogLoadError::NonRegularContentFile {
-                    identity: identity.clone(),
+                    identity: Box::new(identity.clone()),
                     path: current,
                 });
             }
@@ -735,7 +735,7 @@ fn verified_content_file(
 
         if !metadata.is_dir() {
             return Err(CatalogLoadError::NonRegularContentFile {
-                identity: identity.clone(),
+                identity: Box::new(identity.clone()),
                 path: current,
             });
         }

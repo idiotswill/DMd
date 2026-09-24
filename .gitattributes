@@ -1,0 +1,2 @@
+# Manifest integrity is calculated over bytes, independent of checkout platform.
+/content/** text eol=lf

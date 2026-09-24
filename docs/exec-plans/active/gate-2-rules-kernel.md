@@ -47,8 +47,10 @@ Each slice receives complete diff review and exact-head green CI before expected
 
 ## Validation / risks
 
-No Gate 2 completion claim yet. The portable Rust GNU toolchain is installed outside the repository under `../tooling`; baseline verification is next. Official source selection has a clear CC BY commercial path. Detailed schema/API choices are under review. No owner decision blocker is currently known.
+No Gate 2 completion claim yet. The portable Rust GNU toolchain is installed outside the repository under `../tooling`. Baseline full verification passed after correcting Windows-only unused test helpers and reducing a platform-dependent large error variant. Shell guards now fail closed if their required host utilities are missing; an empty-PATH negative run exited unsuccessfully as intended. Content text uses pinned LF bytes for cross-platform manifest integrity.
+
+Source/inventory PR #16 accounts for 55 rules families and the source catalogs, with explicit gate ownership. Schema 2 compatibility has passed 119 workspace tests (including five new migration/restore regressions); it will land atomically with the optional typed rules state. The deterministic kernel and application composition are being integrated on separate reviewable slices. No owner decision blocker is currently known.
 
 ## Exact next action
 
-Finish source-derived ledger/provenance slice; finalize typed state/versioning design; implement and test the mechanics slice through the agreed boundaries, then integrate application persistence. Keep this plan current as evidence changes.
+Merge the exact-head-verified source inventory; review and integrate typed kernel plus schema compatibility; exercise application actions, queries, restart and deterministic replay. Keep this plan current as evidence changes.
