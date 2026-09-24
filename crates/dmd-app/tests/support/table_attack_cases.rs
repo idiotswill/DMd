@@ -239,6 +239,27 @@ async fn assert_restore(f: &Fixture) {
     pool.close().await;
 }
 
+async fn execute_after_restore(f: &Fixture, meta: CommandMeta, action: TableAction) {
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let restored = CampaignRuntime::from_content_root(
+        pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    restored.restore_campaign(&export).await.unwrap();
+    restored.resume_campaign(f.campaign).await.unwrap();
+    restored
+        .execute_table(meta.clone(), action.clone())
+        .await
+        .unwrap();
+    f.runtime.execute_table(meta, action).await.unwrap();
+    assert_eq!(
+        restored.open_campaign(f.campaign).await.unwrap().state(),
+        f.runtime.open_campaign(f.campaign).await.unwrap().state()
+    );
+    pool.close().await;
+}
+
 async fn check_knockout(f: &Fixture, target: EntityId, attack: CommandMeta) {
     let view = f
         .runtime
@@ -259,17 +280,13 @@ async fn check_knockout(f: &Fixture, target: EntityId, attack: CommandMeta) {
         .await
         .unwrap();
     assert!(unrelated.tactical.unwrap().attack_decision.is_none());
-    assert_restore(f).await;
     let action = TableAction::Tactical {
         action: TacticalAction::ChooseAttackKnockout {
             choice: KnockoutChoice::KnockOut,
         },
     };
     let meta = f.player_meta(0).await;
-    f.runtime
-        .execute_table(meta.clone(), action.clone())
-        .await
-        .unwrap();
+    execute_after_restore(f, meta.clone(), action.clone()).await;
     assert!(
         f.runtime
             .execute_table(meta.clone(), action)

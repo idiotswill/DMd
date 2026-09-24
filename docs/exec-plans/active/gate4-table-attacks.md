@@ -58,3 +58,11 @@ drop and live AC, outsider rejection, truthful player labels, host-versus-NPC pe
 and loss of a thrown weapon from subsequent physical choices. They are not yet compiled.
 Concentration follow-up through table spell casting remains pending. Light/Nick follow-up choices and source feature controls
 remain active work; the first form currently submits the ordinary Attack action only.
+
+Both new SQLite scenarios now pass with all 15 `table_loop` tests on the normal test
+thread stack. The knockout case also executes the identical pending choice after a fresh
+database restore and compares the complete resulting state against uninterrupted play;
+independent review of this stronger continuation assertion found no defect. The focused
+hidden-target attack regression and strict workspace Clippy are running next. Evidence:
+`tooling/gate4-attack-table-tests.log` outside the repository. This is focused integration
+evidence; full canonical verification and packaged encounter acceptance remain pending.
