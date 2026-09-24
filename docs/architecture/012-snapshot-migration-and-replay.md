@@ -1,6 +1,6 @@
 # ADR 012 — Snapshot migration and replay
 
-Status: **Proposed for acceptance in Gate 1 Slice B — PR #7**
+Status: **Accepted — human-approved 2026-09-24 after implementation in PR #7 and reconfirmed during Gate 1 closeout PR #14.**
 
 ## Context
 
@@ -121,4 +121,4 @@ Rejected. Recovery anchors must not become an alternate path for rewriting accep
 - Campaign backup/export/restore and controlled whole-campaign purge remain lifecycle work.
 - Rules/content-pack manifest compatibility remains a separate Gate 1 concern.
 - Snapshot interval and replay performance require endurance measurement before final tuning.
-- This ADR extends the save-format compatibility surface and must not be accepted/merged without explicit human approval of PR #7.
+- This ADR extends the save-format compatibility surface and was accepted only after explicit human approval of the implemented PR #7 behavior, reconfirmed during final Gate 1 closeout.
