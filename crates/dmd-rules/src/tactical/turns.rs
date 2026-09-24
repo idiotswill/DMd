@@ -192,6 +192,7 @@ fn begin_boundary_from(
         failed_save: None,
         legendary_window: None,
         attack: None,
+        movement: None,
         next_occurrence: first_occurrence,
     }));
     state
@@ -249,19 +250,29 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if resolution(state)?.attack.as_ref().is_some_and(|a| {
-            matches!(
-                a.stage,
-                TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
-            )
-        }) {
+        if resolution(state)?
+            .movement
+            .as_ref()
+            .is_some_and(|m| m.opportunity.is_some())
+            || resolution(state)?.attack.as_ref().is_some_and(|a| {
+                matches!(
+                    a.stage,
+                    TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+                )
+            })
+        {
             while resolution(state)?.frames.last().is_some_and(Vec::is_empty) {
                 resolution_mut(state)?.frames.pop();
             }
         }
+        super::movement::prune(state, meta)?;
         if resolution(state)?.pending.is_some()
             || resolution(state)?.failed_save.is_some()
             || resolution(state)?.legendary_window.is_some()
+            || resolution(state)?
+                .movement
+                .as_ref()
+                .is_some_and(|m| m.opportunity.is_some())
             || resolution(state)?.attack.as_ref().is_some_and(|a| {
                 matches!(
                     a.stage,
@@ -343,6 +354,10 @@ pub(super) fn choose(
     if resolution(state)?.pending.is_some()
         || resolution(state)?.failed_save.is_some()
         || resolution(state)?.legendary_window.is_some()
+        || resolution(state)?
+            .movement
+            .as_ref()
+            .is_some_and(|m| m.opportunity.is_some())
         || resolution(state)?.attack.as_ref().is_some_and(|a| {
             matches!(
                 a.stage,
@@ -463,6 +478,8 @@ pub(super) fn core_action(
             .get_mut(&actor)
             .ok_or_else(|| invalid("actor absent"))?
             .prone = false;
+        flow_mut(state)?.budget.movement_progress = None;
+        flow_mut(state)?.budget.movement_origin = None;
         return Ok(());
     }
     let mut turn_budget = flow(state)?.budget.clone();
@@ -501,6 +518,8 @@ pub(super) fn core_action(
         }
         _ => return Err(invalid("not a core turn action")),
     }
+    turn_budget.movement_progress = None;
+    turn_budget.movement_origin = None;
     flow_mut(state)?.budget = turn_budget;
     // These accepted combat actions exceed the Short Rest's permitted downtime
     // (SRD187). EndTurn and standing alone take their earlier paths unchanged.

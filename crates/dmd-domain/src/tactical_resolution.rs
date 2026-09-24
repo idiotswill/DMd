@@ -53,6 +53,10 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    MoveSegment,
+    MovementOpportunity {
+        reactor: EntityId,
+    },
     AttackRoll,
     AttackDamage,
     FinishAttack,
@@ -135,6 +139,8 @@ pub struct TacticalResolution {
     pub legendary_window: Option<TacticalLegendaryWindow>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attack: Option<crate::TacticalAttack>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub movement: Option<Box<crate::TacticalMovement>>,
     pub next_occurrence: u16,
 }
 

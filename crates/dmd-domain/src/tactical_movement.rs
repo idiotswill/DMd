@@ -17,6 +17,14 @@ pub struct TacticalJumpProgress {
     pub had_runup: bool,
 }
 
+/// Consecutive collinear forward travel, independent of terrain expenditure.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalStraightMovement {
+    pub start: SpatialPoint,
+    pub end: SpatialPoint,
+}
+
 /// Continuous movement context, measured in half-feet. The spatial evaluator derives
 /// this; the turn budget retains it across accepted path segments and reactions.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -24,6 +32,8 @@ pub struct TacticalJumpProgress {
 pub struct TacticalMovementProgress {
     pub walked_runup: u32,
     pub jump: Option<TacticalJumpProgress>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub straight: Option<TacticalStraightMovement>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -103,6 +113,8 @@ pub struct TacticalMovement {
     pub initial_position: SpatialPoint,
     pub initial_spent: u32,
     pub initial_progress: TacticalMovementProgress,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial_progress_origin: Option<CommandMeta>,
     pub next_step: u16,
     pub traversed: Vec<TacticalMovementReceipt>,
     /// Actors whose opportunity at this crossing has already been offered. Clearing

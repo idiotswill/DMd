@@ -113,6 +113,39 @@ and unverified until the actual adapter exists. The spatial delta received an
 independent read-only review with no concrete blocker. The review's additional
 cumulative-cap boundary fixture passes alongside the three initial regressions.
 
+## Shared integration draft after the verified geometry checkpoint
+
+The ordinary attack checkpoint is integrated as `4c96a42` and its melee choice
+contract as `336b2fe`. The movement cursor is now attached to the same boxed
+resolution, with source work dispatch, material-choice validation, automatic removal
+of canceled opportunities and preserved parent frames. This source checkpoint
+requires the attack author's real `opportunity_options` and
+`begin_opportunity_attack` adapters; it is not compiled or merge-ready on its own.
+No placeholder adapter or second queue has been added.
+
+Parent approved retained straight travel for source Charge: optional `straight {
+start,end }` records only contiguous collinear forward actual movement, and optional
+`budget.movement_origin` retains the original accepted mover command. A direction
+change, reversal or external displacement cannot add old traveled distance. Source
+attack admission snapshots the proof before clearing it. The geometry convention for
+"toward" requires decreasing occupied-space distance and the forward continuation of
+the moving footprint to cross the target's occupied space. This is an explicit
+integer geometry interpretation, not a verbatim source algorithm. Additional source
+tests cover turn-back, direction change, parallel/away targets and displacement.
+
+Root must collect these CommandMeta origins in restore audit comparison:
+`budget.movement_origin`, `resolution.movement.origin`,
+`resolution.movement.initial_progress_origin`, `traversed[].cause`,
+`decisions[].origin` and `opportunity.origin`. These fields remain optional/default
+where older saves can omit the new feature.
+
+The casting reviewer found and this draft fixes a self-perception shortcut: aware
+self-location no longer implies sight. Blinded, Invisible, darkness and special senses
+use the same perception path as another target; self/touch effects can still use
+precise self-location. Unaware observers still learn no fresh location. The new sight
+and straight-travel regressions await the next combined compile, so the earlier
+30-test result applies only to `b498865`, not this expanded draft.
+
 Accepted movement will interrupt a retained knockout Short Rest only when a segment
 actually commits. Merely querying, offering or declining a reaction does not invent
 activity. The attack checkpoint owns the matching accepted strenuous-action hook.

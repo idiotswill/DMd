@@ -48,7 +48,7 @@ fn visibility(state: &CampaignState, actor: EntityId) -> RollVisibility {
         RollVisibility::Secret
     }
 }
-fn save_request(
+pub(super) fn save_request(
     state: &CampaignState,
     actor: EntityId,
     key: TacticalRollKey,
@@ -91,6 +91,9 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement choice has no raw roll key"));
+        }
         TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
         | TacticalWorkKind::FinishAttack => {
@@ -164,6 +167,9 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            Err(invalid("movement choice has no raw roll"))
+        }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
             super::attacks::request(state, work, key)
         }
@@ -244,10 +250,16 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::movement::start(state, meta, &work)? {
+        return Ok(());
+    }
     if super::attacks::start(state, meta, &work)? {
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement work was not handled"));
+        }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => (),
         TacticalWorkKind::FinishAttack => return Err(invalid("attack completion was not handled")),
         TacticalWorkKind::LegendaryWindow { actor } => {
@@ -473,6 +485,9 @@ pub(super) fn finish(
         .transpose()?;
     resolution_mut(state)?.pending = None;
     match pending.work.kind {
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement is not a raw roll continuation"));
+        }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => super::attacks::resolved(
             state,
             meta,

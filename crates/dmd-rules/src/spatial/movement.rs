@@ -74,6 +74,136 @@ pub struct MovementPlan {
     pub progress: TacticalMovementProgress,
 }
 
+pub fn append_straight_movement(
+    previous: Option<TacticalStraightMovement>,
+    from: SpatialPoint,
+    to: SpatialPoint,
+) -> Result<TacticalStraightMovement, SpatialError> {
+    from.validate().map_err(invalid)?;
+    to.validate().map_err(invalid)?;
+    if from == to {
+        return Err(invalid("straight movement requires a displacement"));
+    }
+    let fresh = TacticalStraightMovement {
+        start: from,
+        end: to,
+    };
+    let Some(previous) = previous else {
+        return Ok(fresh);
+    };
+    previous.start.validate().map_err(invalid)?;
+    previous.end.validate().map_err(invalid)?;
+    if previous.end != from || previous.start == from {
+        return Ok(fresh);
+    }
+    let a = [
+        from.x - previous.start.x,
+        from.y - previous.start.y,
+        from.z - previous.start.z,
+    ]
+    .map(i128::from);
+    let b = [to.x - from.x, to.y - from.y, to.z - from.z].map(i128::from);
+    let same_direction = a[0] * b[1] == a[1] * b[0]
+        && a[0] * b[2] == a[2] * b[0]
+        && a[1] * b[2] == a[2] * b[1]
+        && a.iter().zip(b).map(|(a, b)| *a * b).sum::<i128>() > 0;
+    Ok(if same_direction {
+        TacticalStraightMovement {
+            start: previous.start,
+            end: to,
+        }
+    } else {
+        fresh
+    })
+}
+
+/// Geometry convention: the forward continuation of the moving footprint must
+/// intersect the target's occupied space, and actual occupied-space distance must
+/// have decreased. Merely spending distance, approaching then turning back, or
+/// traveling parallel to a nearby target cannot authorize a source Charge rider.
+pub fn straight_movement_toward(
+    actor: &TacticalParticipant,
+    target: &TacticalParticipant,
+    straight: &TacticalStraightMovement,
+) -> Result<bool, SpatialError> {
+    straight.start.validate().map_err(invalid)?;
+    straight.end.validate().map_err(invalid)?;
+    if straight.end != actor.position || straight.start == straight.end {
+        return Err(invalid("straight movement differs from current position"));
+    }
+    let mut before = actor.clone();
+    before.position = straight.start;
+    if participant_distance(actor, target)? >= participant_distance(&before, target)? {
+        return Ok(false);
+    }
+    let mut delta = [
+        straight.end.x - straight.start.x,
+        straight.end.y - straight.start.y,
+        straight.end.z - straight.start.z,
+    ];
+    let divisor = delta.iter().fold(0u32, |mut a, b| {
+        let mut b = b.unsigned_abs();
+        while b != 0 {
+            (a, b) = (b, a % b);
+        }
+        a
+    });
+    let divisor = i32::try_from(divisor).map_err(|_| invalid("straight direction overflow"))?;
+    for component in &mut delta {
+        *component /= divisor;
+    }
+    let end = [straight.end.x, straight.end.y, straight.end.z];
+    let scale = delta
+        .iter()
+        .zip(end)
+        .filter_map(|(delta, end)| match delta.cmp(&0) {
+            std::cmp::Ordering::Greater => {
+                Some((i64::from(MAX_SPATIAL_COORDINATE) - i64::from(end)) / i64::from(*delta))
+            }
+            std::cmp::Ordering::Less => {
+                Some((i64::from(-MAX_SPATIAL_COORDINATE) - i64::from(end)) / i64::from(*delta))
+            }
+            std::cmp::Ordering::Equal => None,
+        })
+        .min()
+        .ok_or_else(|| invalid("straight direction absent"))?;
+    if scale == 0 {
+        return Ok(false);
+    }
+    let projected = std::array::from_fn::<_, 3, _>(|axis| {
+        i64::from(end[axis]) + i64::from(delta[axis]) * scale
+    });
+    let ray_end = SpatialPoint {
+        x: i32::try_from(projected[0]).map_err(|_| invalid("straight ray overflow"))?,
+        y: i32::try_from(projected[1]).map_err(|_| invalid("straight ray overflow"))?,
+        z: i32::try_from(projected[2]).map_err(|_| invalid("straight ray overflow"))?,
+    };
+    let target = target.volume().map_err(invalid)?;
+    let footprint = actor.size.footprint_units();
+    let height = i32::try_from(actor.height).map_err(|_| invalid("body height overflow"))?;
+    let expanded = SpatialBox {
+        min: SpatialPoint {
+            x: target
+                .min
+                .x
+                .saturating_sub(footprint)
+                .max(-MAX_SPATIAL_COORDINATE),
+            y: target
+                .min
+                .y
+                .saturating_sub(footprint)
+                .max(-MAX_SPATIAL_COORDINATE),
+            z: target
+                .min
+                .z
+                .saturating_sub(height)
+                .max(-MAX_SPATIAL_COORDINATE),
+        },
+        max: target.max,
+    };
+    geometry::segment_intersects(straight.end, ray_end, expanded)
+}
+
 fn interval_distance(min_a: i32, max_a: i32, min_b: i32, max_b: i32) -> u32 {
     if max_a < min_b {
         min_b.abs_diff(max_a)
@@ -288,6 +418,7 @@ pub fn evaluate_path(
         &TacticalMovementProgress {
             walked_runup: allowance.runup,
             jump: None,
+            straight: None,
         },
         true,
     )
@@ -333,6 +464,7 @@ pub fn evaluate_path_progress(
     let mut cost = 0u32;
     let mut runup = progress.walked_runup;
     let mut jump_start = progress.jump.map(|jump| (jump.start, jump.had_runup));
+    let mut straight = progress.straight;
     let strength = state
         .rules
         .as_ref()
@@ -540,10 +672,18 @@ pub fn evaluate_path_progress(
         if teleport || allowance.forced {
             runup = 0;
             jump_start = None;
+            straight = None;
+        } else {
+            straight = Some(append_straight_movement(
+                straight,
+                moving.position,
+                next.position,
+            )?);
         }
         let progress_after = TacticalMovementProgress {
             walked_runup: runup,
             jump: jump_start.map(|(start, had_runup)| TacticalJumpProgress { start, had_runup }),
+            straight,
         };
         segments.push(MovementSegment {
             from: moving.position,
@@ -568,7 +708,8 @@ pub fn evaluate_path_progress(
         let last = segments
             .last_mut()
             .ok_or_else(|| invalid("empty movement result"))?;
-        last.progress_after = TacticalMovementProgress::default();
+        last.progress_after.walked_runup = 0;
+        last.progress_after.jump = None;
     }
     Ok(MovementPlan {
         progress: segments

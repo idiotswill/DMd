@@ -13,6 +13,7 @@ pub mod tactical_definitions;
 pub mod tactical_effect_adapter;
 pub mod tactical_effects;
 pub mod tactical_inventory;
+mod tactical_movement;
 mod tactical_vitality_adapter;
 pub mod tactical_weapons;
 

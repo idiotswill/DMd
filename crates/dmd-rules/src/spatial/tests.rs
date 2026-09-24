@@ -276,6 +276,7 @@ fn resumed_segments_preserve_jump_distance_and_transit_occupancy() {
     );
     let running = TacticalMovementProgress {
         walked_runup: 20,
+        straight: first.progress.straight,
         jump: Some(TacticalJumpProgress {
             start: point(10, 10, 0),
             had_runup: true,
@@ -294,7 +295,15 @@ fn resumed_segments_preserve_jump_distance_and_transit_occupancy() {
         true,
     )
     .unwrap();
-    assert_eq!(landed.progress, TacticalMovementProgress::default());
+    assert_eq!(landed.progress.walked_runup, 0);
+    assert_eq!(landed.progress.jump, None);
+    assert_eq!(
+        landed.progress.straight,
+        Some(TacticalStraightMovement {
+            start: point(10, 10, 0),
+            end: point(30, 10, 0),
+        })
+    );
 
     f.actor(f.a).position = point(40, 10, 0);
     let ally = f.b;
@@ -331,6 +340,7 @@ fn displacement_ends_runup_and_progress_queries_remain_immutable_and_bounded() {
     let before = f.encounter.clone();
     let progress = TacticalMovementProgress {
         walked_runup: 20,
+        straight: None,
         jump: Some(TacticalJumpProgress {
             start: point(0, 10, 0),
             had_runup: true,
@@ -375,6 +385,7 @@ fn displacement_ends_runup_and_progress_queries_remain_immutable_and_bounded() {
     let invalid = TacticalMovementProgress {
         walked_runup: 10_001,
         jump: None,
+        straight: None,
     };
     assert!(
         evaluate_path_progress(
@@ -421,6 +432,89 @@ fn cumulative_movement_cap_is_checked_even_with_remaining_source_speed() {
         ),
         Err(SpatialError::Capacity)
     );
+}
+
+#[test]
+fn source_charge_geometry_requires_continuous_forward_travel_toward_the_target() {
+    let mut f = Fixture::new();
+    let mut straight = None;
+    for x in [20, 30, 40, 50] {
+        straight = Some(
+            append_straight_movement(straight, point(x - 10, 10, 0), point(x, 10, 0)).unwrap(),
+        );
+    }
+    let straight = straight.unwrap();
+    assert_eq!(grid_distance(straight.start, straight.end).unwrap(), 40); // 20ft, regardless of terrain cost.
+    f.actor(f.a).position = straight.end;
+    f.actor(f.b).position = point(80, 10, 0);
+    assert!(
+        straight_movement_toward(
+            f.encounter.participant(f.a).unwrap(),
+            f.encounter.participant(f.b).unwrap(),
+            &straight
+        )
+        .unwrap()
+    );
+    // A turn or reversal begins a new streak: accumulated distance cannot grant Charge.
+    for destination in [point(50, 20, 0), point(40, 10, 0)] {
+        let changed = append_straight_movement(Some(straight), straight.end, destination).unwrap();
+        assert_eq!(changed.start, straight.end);
+        assert_eq!(grid_distance(changed.start, changed.end).unwrap(), 10);
+    }
+    f.actor(f.b).position = point(80, 30, 0);
+    assert!(
+        !straight_movement_toward(
+            f.encounter.participant(f.a).unwrap(),
+            f.encounter.participant(f.b).unwrap(),
+            &straight
+        )
+        .unwrap()
+    );
+    f.actor(f.b).position = point(0, 10, 0);
+    assert!(
+        !straight_movement_toward(
+            f.encounter.participant(f.a).unwrap(),
+            f.encounter.participant(f.b).unwrap(),
+            &straight
+        )
+        .unwrap()
+    );
+    // An externally changed starting point cannot reuse the earlier segment chain.
+    let displaced =
+        append_straight_movement(Some(straight), point(60, 20, 0), point(70, 20, 0)).unwrap();
+    assert_eq!(displaced.start, point(60, 20, 0));
+}
+
+#[test]
+fn self_location_does_not_bypass_source_sight_requirements() {
+    let mut f = Fixture::new();
+    f.condition(f.a, Condition::Blinded);
+    let self_view = perceive(&f.encounter, &f.state, f.a, f.a).unwrap();
+    assert!(!self_view.sees);
+    assert!(self_view.precisely_located); // A self/touch effect does not require sight.
+    assert_eq!(self_view.modality, None);
+    f.actor(f.a).senses.truesight = 60;
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.a).unwrap().sees);
+    f.actor(f.a).senses.blindsight = 10;
+    assert_eq!(
+        perceive(&f.encounter, &f.state, f.a, f.a).unwrap().modality,
+        Some(PerceptionModality::Blindsight)
+    );
+
+    f.state.rules.as_mut().unwrap().effects.clear();
+    f.actor(f.a).senses = Senses::default();
+    f.encounter.battlefield.ambient_light = LightLevel::Darkness;
+    let dark = perceive(&f.encounter, &f.state, f.a, f.a).unwrap();
+    assert!(!dark.sees && dark.precisely_located);
+    f.actor(f.a).senses.darkvision = 60;
+    assert!(perceive(&f.encounter, &f.state, f.a, f.a).unwrap().sees);
+    f.condition(f.a, Condition::Invisible);
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.a).unwrap().sees);
+    f.actor(f.a).senses.truesight = 60;
+    assert!(perceive(&f.encounter, &f.state, f.a, f.a).unwrap().sees);
+    f.condition(f.a, Condition::Unconscious);
+    let unaware = perceive(&f.encounter, &f.state, f.a, f.a).unwrap();
+    assert!(!unaware.sees && !unaware.precisely_located);
 }
 
 #[test]
