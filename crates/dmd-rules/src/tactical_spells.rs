@@ -1,8 +1,12 @@
 //! Internal source-derived casting primitives. The tactical scheduler applies every
 //! returned obligation in the same atomic command as the returned cast record. None
 //! of these operations is a public command or a second resource/turn authority.
+mod binding;
 mod creature;
+mod execution;
 mod program;
+mod reservations;
+mod retained;
 #[cfg(test)]
 mod tests;
 
@@ -10,8 +14,14 @@ use crate::{RulesError, ability_modifier, proficiency_bonus, tactical_definition
 use dmd_domain::*;
 use serde::Serialize;
 
+pub use binding::*;
 pub use creature::plan_spell_from_feature;
+pub use execution::{
+    spell_amount_operation, spell_amount_request, spell_condition_effect, spell_effect_expiry,
+};
 pub use program::compile_spell_program;
+pub use reservations::validate_spell_slot_reservation;
+pub use retained::{retain_spell_cast, retained_spell_binding, validate_retained_spell};
 
 /// This is an internal fact from a source-backed material registry. It intentionally
 /// cannot be deserialized as a public player request. Physical identity/custody are

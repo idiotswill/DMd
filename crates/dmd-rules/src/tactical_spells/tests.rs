@@ -1,4 +1,5 @@
 use super::*;
+mod binding_tests;
 
 fn fixture(
     spell_id: &str,
