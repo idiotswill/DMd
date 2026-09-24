@@ -86,7 +86,7 @@ impl DesktopError {
 impl From<RunnableCampaignError> for DesktopError {
     fn from(error: RunnableCampaignError) -> Self {
         match error {
-            RunnableCampaignError::Table(message) => Self { code: "table_action", message, retryable: false },
+            RunnableCampaignError::TableRejected(message) => Self { code: "table_action", message, retryable: false },
             RunnableCampaignError::Catalog(_) | RunnableCampaignError::Content(_)
                 | RunnableCampaignError::RulesContent(_) => Self {
                     code: "campaign_content",
@@ -325,6 +325,21 @@ mod tests {
     use super::*;
     use dmd_domain::{AttendanceStatus, EntityId, SessionParticipant};
     use serde_json::json;
+
+    #[test]
+    fn only_proven_input_rejections_release_the_original_request() {
+        let rejected = DesktopError::from(RunnableCampaignError::TableRejected(
+            "Choose a present player.".into(),
+        ));
+        assert!(!rejected.retryable);
+        assert_eq!(rejected.message, "Choose a present player.");
+        let uncertain = DesktopError::from(RunnableCampaignError::Table(
+            "database error at a private path".into(),
+        ));
+        assert!(uncertain.retryable);
+        assert_eq!(uncertain.code, "campaign_operation");
+        assert!(!uncertain.message.contains("private path"));
+    }
 
     #[test]
     fn renderer_cannot_supply_issuer_or_actor() {
