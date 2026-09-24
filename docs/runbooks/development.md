@@ -80,4 +80,4 @@ Do not call work complete until:
 - the PR summary is current;
 - the execution plan contains final validation and no hidden blockers.
 
-High-impact architecture/save-format work still requires explicit human acceptance before merge.
+The owner delegates in-scope active-gate PR merges, including architecture/save-format/content decisions, after exact-head review, required green checks, documented rationale, and expected-head protection. Follow `../checkpoints/gate-execution-protocol.md`: pause for the owner at gate end; surface scope reductions, waived acceptance, or destructive changes outside gate intent immediately.

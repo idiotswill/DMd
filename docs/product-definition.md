@@ -198,3 +198,593 @@ Every future gate/checkpoint should state which portions of this product definit
 Passing an intermediate gate means its scoped acceptance criteria are production-intended and verified. It does **not** mean the overall product is complete.
 
 No later plan may silently weaken this product definition in order to make a checkpoint easier to pass. A deliberate product-scope change requires explicit human approval and an update to this document.
+
+
+## Product identity
+
+DMd is a local-first autonomous tabletop Dungeon Master for sustained fifth-edition fantasy RPG campaigns.
+
+The primary intended experience is a group of human players sitting together and playing a tabletop RPG naturally.
+
+The computer replaces most of the work normally performed by the human DM. It does not replace tabletop play with a conventional computer RPG interface.
+
+Players should normally interact through natural speech, physical dice, character sheets, occasional tactical/map displays, direct questions to the DM, and ordinary tabletop conversation.
+
+The desktop DMd application is the central campaign runtime.
+
+Companion player devices may later provide character sheets, maps, notes, private information and player-specific interfaces, but the initial production path must not depend on them.
+
+A successful session should feel primarily like people playing D&D with a competent DM rather than people operating an AI application.
+
+---
+
+## First rules identity and commercial boundary
+
+The first complete production game is fifth-edition D&D-style play based only on official material that is legally reusable in a commercially distributed product.
+
+The engine may remain capable of supporting other rulesets later. That genericity must not make the first game vague or incomplete.
+
+Where legally reusable official material exists, the implementation should follow it faithfully.
+
+Where desired official D&D content is not legally distributable:
+
+- do not copy or embed it;
+- do not silently substitute proprietary material;
+- either omit it or use clearly original compatible content that is legally distributable.
+
+Every shipped rules/content asset must have traceable licensing/provenance.
+
+Legal-to-sell is a product invariant, not a release cleanup task.
+
+A complete Rules Coverage Ledger must pin the selected legal rules source/version and account for every gameplay/content family DMd claims to support.
+
+---
+
+## Character experience
+
+Players should interact with recognizable tabletop character sheets.
+
+A character is not merely an internal entity record.
+
+The player-facing model must eventually expose all information required by the selected rules, including identity, descriptive information, species/ancestry where legal, class/level, abilities, proficiency, saves, skills, armor class, hit points, hit dice, speed, attacks, equipment, money, features, spellcasting where relevant, conditions, temporary effects, resources, and lifecycle state.
+
+Character creation must happen through supported product flows. Players must not edit JSON, SQLite, source or internal state.
+
+A character may survive, advance, change equipment, become injured, fall unconscious, die, retire or be replaced. Campaign history continues through replacement.
+
+Character creation may also capture optional backstory, goals, beliefs, relationships, fears, obligations, organizations and meaningful possessions.
+
+Player-provided backstory cannot unilaterally overwrite incompatible prebuilt-world facts. World-integrated backstory claims must be explicitly accepted before becoming world truth.
+
+---
+
+## Session Zero and table contract
+
+Campaign creation must support a persistent table contract.
+
+At minimum it should be able to establish:
+
+- tone;
+- seriousness/comedy balance;
+- tactical-combat preference;
+- exploration preference;
+- social-roleplay preference;
+- expected lethality;
+- rules version;
+- permitted character content;
+- advancement method;
+- optional rules;
+- explicit house rules;
+- PvP policy;
+- PC theft/secret-action policy;
+- retcon policy;
+- content boundaries;
+- preferred rules-explanation depth;
+- beginner/experienced/mixed table;
+- absent-player policy.
+
+These settings persist with the campaign and must not silently change after software updates.
+
+The default should remain as close as practical to the selected official rules rather than quietly adding DMd-specific house rules.
+
+---
+
+## Core table interaction philosophy
+
+### Natural input
+
+DMd must accept realistic player speech.
+
+Players are not required to speak in formal command syntax.
+
+Inputs may contain incomplete sentences, wrong names, speech-recognition errors, slang, profanity, table jokes, rules questions, dialogue, action declarations, several actions, statements from multiple characters, corrections, hypotheticals, false assumptions and changes of mind.
+
+The conversation system should infer ordinary intent when doing so is safe.
+
+The finished product must not require an artificial commitment keyword.
+
+### Clarification policy
+
+Ask for clarification when missing information would materially affect legality, target, player authority, movement, resource consumption, risk, tactical state, another PC's agency, irreversible consequences, or what is actually being attempted.
+
+Do not ask merely because wording is imperfect.
+
+### Player control
+
+The DM never chooses a player's meaningful PC decision merely to keep play moving.
+
+Another player cannot volunteer a PC for an important action without that controller's consent.
+
+NPCs, world systems and the Director may act autonomously. PC agency remains with players.
+
+### Rules questions are not actions
+
+Players may ask whether an action is possible, what modifier applies, what a spell would affect, whether movement is legal, or what a rule means.
+
+Answering a hypothetical/rules question does not commit the discussed action.
+
+### Corrections
+
+Before authoritative resolution, a player may correct mishearing, target, number, name or declared intent without creating a false historical event.
+
+After authoritative state changes, correction uses an explicit provenance-preserving path rather than silent history rewrite.
+
+---
+
+## DM personality and adjudication standard
+
+The target autonomous DM is grounded, reactive, rules-competent, evidence-conservative, dryly humorous when appropriate, permissive toward creative intent, unwilling to fabricate unsupported facts, willing to let players fail, and willing to let foolish decisions have consequences.
+
+It runs the world rather than steering players through a predetermined plot.
+
+Humor should usually follow player behavior, established NPC personality, consequences and recurring table jokes. It should not turn every scene into comedy.
+
+### When to roll
+
+Not everything requires a check.
+
+A check normally exists because the outcome is meaningfully uncertain, success/failure are both plausible, and the distinction matters.
+
+A roll cannot create facts the available evidence could not contain.
+
+Natural 20 does not make an impossible action possible unless the selected rules specifically say otherwise.
+
+### Evidence and repeated checks
+
+A high roll improves what can be learned from available evidence; it does not conjure inaccessible truth.
+
+Unchanged method + unchanged evidence + unchanged vantage should not permit unlimited rerolls.
+
+A materially different tool, method, vantage, spell, helper, source or changed environment may justify another attempt.
+
+### Unknown remains unknown
+
+Uncertainty is legitimate campaign state.
+
+Examples include unknown exact time, identity, provenance, motive, route, ownership, enemy capability and unverified NPC claims.
+
+Narrative convenience is not sufficient reason to resolve an unknown.
+
+### Rules hierarchy
+
+The rules authority hierarchy is:
+
+1. selected legal rules/content version;
+2. explicit campaign house rules;
+3. established campaign-specific precedent where applicable;
+4. situation-specific adjudication where genuine discretion remains.
+
+Language-model opinion is not an authoritative fifth source.
+
+Substantially identical circumstances should receive consistent rulings unless a materially different fact changes the result.
+
+---
+
+## Passive, hidden and private information
+
+Not every uncertainty should announce itself to players.
+
+DMd must support passive and hidden resolution where the selected rules or good DM practice require it, including hidden Stealth opposition, NPC Insight, secret information checks and hidden enemy/world process outcomes.
+
+The system must distinguish actual world truth, party-known information and individual character knowledge.
+
+Player-facing surfaces must not leak hidden state.
+
+A player may receive private discoveries, NPC messages, visions, knowledge, goals or handouts without automatically teaching the whole party.
+
+---
+
+## Table flow, listening and spotlight
+
+Four humans do not politely issue one command at a time.
+
+The system must handle interruptions, laughter, side conversations, rules questions, simultaneous declarations, PC-to-PC dialogue, out-of-character planning, changed minds, long quiet stretches, dominant speakers and split parties.
+
+The DM must know when not to speak.
+
+When players are actively planning or roleplaying with each other, DMd should usually listen rather than inserting itself after every sentence.
+
+It should not repeatedly ask "What do you do?" when play is already occurring.
+
+It should not offer action menus unless players ask for guidance or circumstances genuinely call for it.
+
+Across a session, the Director should remain aware of spotlight distribution without enforcing artificial equal-time quotas.
+
+---
+
+## Speaker, player, character and authority identity
+
+The runtime must distinguish human speaker, player identity, controlled PC/entity, in-character speech, out-of-character speech, DM-directed question and ordinary table chatter.
+
+Misrecognized names must not transfer authority.
+
+Session setup binds attending humans to player identities and controlled characters.
+
+Support absent players, guest players, replacement characters, allowed controlled companions/summons and table-contract policies for absent PCs.
+
+---
+
+## PvP and inter-PC conflict
+
+Session Zero defines whether and how PvP, PC theft, secret actions and inter-PC contests are allowed.
+
+An attempted action against another PC does not silently determine that PC's voluntary response.
+
+Where rules legitimately call for contested resolution, distinguish attempt, affected-player response, resolution and outcome.
+
+---
+
+## Player narrative ownership
+
+Players may describe the cosmetic form of already-resolved outcomes.
+
+Examples include a killing blow, spell appearance, celebration, mannerism, outfit, toast or inconsequential flourish.
+
+Flavor may not silently grant extra mechanics or unsupported world facts.
+
+PC thoughts, emotions and voluntary speech belong primarily to the player.
+
+---
+
+## Emotional register
+
+The DM should recognize comedy, suspense, fear, grief, anger, triumph, uncertainty, intimacy, solemnity, relief and ordinary relaxed conversation.
+
+Running jokes may persist, but must not be injected indiscriminately.
+
+A serious moment should be allowed to remain serious.
+
+---
+
+## Difficulty and world fairness
+
+DMd does not guarantee success.
+
+PCs may die. Players may enter situations beyond their capability.
+
+The world does not continuously rescale itself to make every encounter fair.
+
+The world is also not an adversarial machine trying to defeat the players.
+
+Consequences arise from causality, what actors know, evidence, relationships, resources, jurisdiction and willingness to act.
+
+There must not be a hidden universal moral score that spawns level-appropriate punishment.
+
+---
+
+## Tactical philosophy
+
+DMd must maintain enough spatial truth to adjudicate the selected fifth-edition tactical rules.
+
+A grid/map should exist and may represent positions, distance, movement, reach, range, areas, obstacles, terrain, cover, elevation, line of sight and occupied spaces.
+
+Players should not normally need to manually manipulate tokens for routine actions.
+
+A player may say "I run up to him and stab him." DMd determines whether movement/range/path/rules permit it and either executes the legal action or explains the meaningful restriction.
+
+The map supports rules; the map is not the primary command language.
+
+### Complete tactical timing
+
+The runtime must eventually handle applicable initiative, ties, surprise, turns, rounds, actions, bonus actions, reactions, reaction triggers, readying, movement interruption, opportunity attacks, concentration, durations, start/end-turn effects, ongoing saves, death saves, triggered features, controlled/summoned creatures, temporary effects and rule-required ordering.
+
+### Enemy behavior
+
+Combatants act according to perception, knowledge, intelligence, training, goals, morale, loyalty, self-preservation, relationships, orders and available capabilities.
+
+Enemies may flee, surrender, negotiate, hide, raise alarms, protect allies, retreat, call reinforcements or refuse pursuit.
+
+Combat AI must not be omniscient and not every opponent fights to the death.
+
+### Tactical visibility
+
+The runtime distinguishes actual battlefield truth from what each participant can currently see/know, including light, darkness, obscuration, hiding, unseen actors and fog of war.
+
+---
+
+## Environment and object interaction
+
+Tabletop play allows attempts no UI designer predicted.
+
+The runtime needs a general interaction/adjudication model for actions such as open, close, lock, unlock, break, push, pull, lift, drag, climb, jump, crawl, swim, dig, burn, extinguish, wedge, tie, cut, throw, hide, search, listen, smell, inspect, carry, drop, spill, barricade and improvise.
+
+Relevant world objects need enough state/properties for rules and consequences.
+
+DMd does not need molecular physics. It needs to avoid rejecting ordinary creativity because there is no dedicated button.
+
+---
+
+## World structure
+
+Initial campaign creation uses prebuilt world templates.
+
+The first production release does not need to invent an entire setting from nothing.
+
+A world template may provide macro geography, settlements, cultures, factions, institutions, major NPCs, history, roads, political relationships, important locations, economic parameters, world rules and generation constraints.
+
+Asterra is intended to become the first substantial real-world port after the generic world/content systems are mature.
+
+Asterra remains content using the engine, never an engine assumption.
+
+---
+
+## Adventure structure and starter vertical slice
+
+A world is not automatically an adventure.
+
+The first production content must contain actual playable situations: motivated NPCs, locations, a settlement/base, travel/wilderness, a dangerous bounded location, investigation, social conflict, combat, treasure, secrets, discoverable information, interested factions and consequences.
+
+Prepared material provides situations, not a mandatory script.
+
+Players may cooperate, refuse, negotiate, flee, attack unexpected people, approach from another direction, overlook content, create their own objective or abandon the apparent adventure.
+
+Before living-world/voice work is considered mature, DMd must have one small but complete legally distributable vertical-slice adventure that proves campaign creation, character creation, social play, exploration, investigation, tactical combat, inventory/loot, rest/resources, NPC consequences, save/restart and more than one plausible route.
+
+At least one human playtest participant must attempt something the adventure author did not specifically anticipate.
+
+---
+
+## Procedural materialization
+
+Prebuilt worlds cannot author every detail players may encounter.
+
+DMd therefore needs procedural materialization for incidental farms, travelers, shopkeepers, interiors, alleys, employees, goods, wilderness detail and similar needs.
+
+Procedural generation may initially create candidates.
+
+Once players observe, interact with or otherwise canonize important detail, it becomes persistent campaign truth.
+
+Returning later must not reroll contradictory reality.
+
+Materialization must support mundane details, not only "interesting quest content."
+
+---
+
+## Living world
+
+The world continues to exist when players are not observing it.
+
+Relevant actors and processes may continue according to time, goals, knowledge, capabilities, relationships, geography, resources and previous events.
+
+Not everything requires maximal simulation fidelity, but important developments need explainable causes.
+
+World simulation should support meaningful schedules/travel where important, commitments, promises, debts, investigations, local law/enforcement, witness/evidence consequences, off-screen recovery and player-created projects where relevant.
+
+---
+
+## Opportunity and information model
+
+A changing world produces information the players can perceive: rumors, gossip, letters, witnesses, prices, shortages, visible damage, construction, disappearances, guards, refugees, notices, requests and changed behavior.
+
+Information may be true, false, incomplete, biased, outdated or manipulated.
+
+Underlying world truth remains distinct from claims, beliefs and knowledge.
+
+A quest is generally a player-facing framing of a situation rather than a hidden recurring `generate_quest()` result.
+
+---
+
+## Director
+
+The Director controls attention, pacing and presentation, not reality.
+
+Conceptually:
+
+WORLD SIMULATOR
+→ INFORMATION / OPPORTUNITY LAYER
+→ DIRECTOR
+→ NARRATION / TABLE
+
+The Director may choose which supported developments deserve attention, delay presentation, combine compatible information, vary pacing, manage split-scene spotlight and allow quiet periods.
+
+It may not invent convenient crimes/enemies, rewrite dice, change established facts, retroactively create causes, force outcomes or rescue players from their decisions.
+
+### Campaign rhythm
+
+The Director should avoid accidental repetition such as every town opening in a tavern, every road producing combat, every faction offering extermination work or every quiet period being interrupted by danger.
+
+Variety must still be causally supported.
+
+Quiet ordinary life is valid.
+
+---
+
+## Scene framing, zoom and time compression
+
+Tabletop RPGs continuously change resolution.
+
+DMd must support compression requests such as "we walk until something important happens", "we follow them to the inn", "we travel until nightfall" and "we spend the afternoon preparing."
+
+It resolves ordinary intermediate activity and stops at the next meaningful decision/interruption.
+
+Compression may not skip time, resource costs, world simulation, watches, triggered danger or consequences.
+
+Free roleplay, exploration, tactical movement, combat, travel, downtime, rest, shopping and preparation are different resolutions of the same authoritative campaign, not disconnected toy modes.
+
+---
+
+## Preparation, rest, travel, downtime and economy
+
+Preparation is gameplay.
+
+Support choosing/preparing spells where applicable, acquiring supplies, replacing ammunition, buying equipment, identifying items, deciding what to carry, planning for weather/travel, lodging, information gathering, transport and loot division.
+
+Tables may play these activities in detail or compress routine portions while retaining real costs and meaningful decisions.
+
+Travel/rest must support applicable travel time, pace, route choice, navigation, food/water, light, exhaustion, weather, camp, watches, interrupted rest, short/long rest, resource recovery, spell preparation, hazards and encounters.
+
+A long rest advances the world.
+
+Economic play should support earning/spending money, barter, selling loot, unusual buyers, services, lodging, supplies, commissions, transport, negotiated prices, debts and receivables.
+
+Availability derives from actual settlement/world state rather than a universal item catalog.
+
+---
+
+## Maps, clues, handouts and evidence
+
+Important evidence may become a durable campaign object: maps, letters, notes, sketches, contracts, notices, diagrams, cargo records, inscriptions, clues and discovered documents.
+
+Track actual contents, known provenance, carrier/custody, who has seen it, claims about it and unresolved questions.
+
+Players may later inspect the same artifact again.
+
+---
+
+## Recaps and player-facing memory
+
+Provide a durable player-safe memory layer derived from authoritative history.
+
+Players should eventually be able to ask what happened last session, who an NPC was, what they know about a symbol, who owes money, what an inn was called, which situations remain unresolved, when an NPC was last seen and whether a route is known.
+
+Answers are restricted to appropriate player/party knowledge.
+
+Support session recap/transcript, NPC directory, known locations, clues, unresolved situations, commitments, important possessions and player-visible chronology.
+
+This layer is derivative, never competing truth.
+
+---
+
+## Session start/end and exact suspension
+
+Session start identifies attending players, binds characters, resolves content, restores exact state and offers a concise player-safe recap/immediate situation.
+
+Session end does not invent a clean narrative endpoint.
+
+Players may stop mid-dungeon, travel, town, pre-combat, mid-combat, negotiation or split scene.
+
+Save/resume must preserve all authoritative transient state needed for exact continuation, including active initiative, current turn, remaining movement where applicable, reactions, concentration, durations, unresolved roll requests, pending material clarifications, split scenes, temporary effects, prepared resources, carried items, hidden actors, active negotiations and standing directives.
+
+Already accepted events must not replay; unresolved actions must not disappear.
+
+---
+
+## Player-created plans may become the adventure
+
+Players may decide to start a business, organize a performance, recruit informants, investigate a random shopkeeper, fortify a building, hunt an unexpected person, trade, join a faction, create a festival, start a feud, build a home or found an organization.
+
+If possible within rules/world, the game should support consequences instead of responding "that isn't part of the quest."
+
+Not every idea needs a bespoke subsystem immediately, but improvised goals must be able to become persistent situations.
+
+---
+
+## Failure without script rescue
+
+Allow failed investigation, negotiation, lost targets, missed clues, lost fights, escaped enemies, wasted money, destroyed items, offended NPCs, failed missions and character death.
+
+The Director must not secretly repair failure to preserve an expected plot.
+
+Failure may create new circumstances, but not a hidden funnel back to predetermined success.
+
+---
+
+## NPC continuity and presentation identity
+
+Important recurring NPCs should retain recognizable pronunciation, speaking style, vocabulary, temperament, relationships, attitudes, memories and relevant recurring mannerisms where established.
+
+TTS may eventually support stable voice identity.
+
+Presentation is not memory or authority; decisions still derive from authoritative state, beliefs, goals and rules.
+
+---
+
+## Local-first and reference hardware
+
+The production gameplay loop works without cloud services.
+
+Core play may not require GitHub, Drive, OpenAI, Anthropic, another external LLM or internet connectivity.
+
+Optional cloud providers may exist.
+
+The default supported local configuration should run comfortably on the reference machine:
+
+- AMD Ryzen 5 8645HS;
+- 16 GB RAM;
+- NVIDIA RTX 4050 Laptop GPU;
+- 6 GB VRAM;
+- Windows x64.
+
+Performance testing must include sustained multi-hour sessions and measure memory, VRAM, speech latency, DM response latency, TTS responsiveness and degradation/fallback behavior.
+
+Model choice follows product experience + hardware constraints, not the reverse.
+
+---
+
+## Main desktop application
+
+The desktop application is the central DM/session runtime.
+
+Early production UI prioritizes usability over visual spectacle.
+
+Core surfaces eventually include campaign selection/creation, session start/end, transcript, DM output, input state, roll requests/results, player decisions, character/session identity, tactical map when needed, campaign status and recovery/admin controls.
+
+The first version does not need cinematic graphics.
+
+---
+
+## Companion application
+
+Companion phone clients are later.
+
+They may expose player identity, character sheet, HP/resources, inventory, abilities/spells, conditions, maps, logs/notes, private knowledge, advancement choices and player-specific rules reference.
+
+Phones are clients of the authoritative central runtime, never independent sources of truth.
+
+The main application remains playable when companions are unavailable.
+
+---
+
+## Rules explanation and learning support
+
+The autonomous DM can answer rules questions quickly from the selected rules version.
+
+It can explain what a player can do, why an action is invalid, concentration, advantage, movement and modifiers.
+
+Experienced players should not receive constant unsolicited tutorials.
+
+Explanation depth may be a player/table preference.
+
+---
+
+## Behavioral evaluation corpus
+
+Maintain an autonomous-DM evaluation suite containing realistic messy inputs: transcription errors, missing punctuation, incorrect names, combined dialogue/actions, several PCs in one declaration, corrections, hypotheticals, jokes, profanity, repeated actions, impossible assumptions, unsupported information requests, split parties, PvP, chatter, vague pronouns, rules questions and interrupted speech.
+
+The existing Asterra transcripts are valuable private/reference material.
+
+Public actual-play may be studied for behavioral patterns, but copyrighted transcripts must not simply be copied into distributable content/training material without legal basis.
+
+The goal is not to imitate a celebrity DM. It is to prove useful tabletop behavior.
+
+---
+
+## Finished-game acceptance principle
+
+The final question is not only "Can DMd execute the rules?"
+
+It is:
+
+"Can people forget about the software for long stretches and simply play D&D?"
+
+Memorable moments should routinely arise because players had strange ideas, rules gave them structure, dice introduced uncertainty, NPCs reacted according to circumstances, the world remembered, consequences accumulated, and the DM knew when to adjudicate, describe, ask, listen, or stay silent.
