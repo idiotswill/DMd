@@ -16,6 +16,10 @@ pub const RULES_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum RulesAction {
+    CreateCharacter {
+        entity_id: EntityId,
+        input: crate::CharacterCreationInput,
+    },
     Initialize {
         entities: Vec<MechanicalEntity>,
         house_rules: HouseRules,
@@ -63,6 +67,17 @@ pub enum RulesAction {
     },
     SubmitRoll {
         result: RollResult,
+    },
+    SecondWind {
+        actor: EntityId,
+        request_id: RollRequestId,
+    },
+    ResolveInspirationTransfer {
+        actor: EntityId,
+        recipient: Option<EntityId>,
+    },
+    SubmitSavageAttacker {
+        roll: SavageAttackerRoll,
     },
     SubmitRollWithInspiration {
         result: RollResult,

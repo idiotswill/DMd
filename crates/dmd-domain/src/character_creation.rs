@@ -109,3 +109,24 @@ pub struct CharacterFeatureState {
     /// Combat turn used, cleared when combat ends. No free repeated use in the same turn.
     pub savage_attacker_turn: Option<u64>,
 }
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum DamageRollChoice {
+    First,
+    Second,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SavageInspiration {
+    pub roll: DamageRollChoice,
+    pub die_index: usize,
+    pub replacement: crate::DieResult,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SavageAttackerRoll {
+    pub first: crate::RollResult,
+    pub second: crate::RollResult,
+    pub chosen: DamageRollChoice,
+    pub inspiration: Option<SavageInspiration>,
+}

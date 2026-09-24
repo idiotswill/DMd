@@ -298,6 +298,7 @@ pub enum PendingPurpose {
         damage_taken: u32,
     },
     RestHitDie,
+    SecondWind,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -313,6 +314,8 @@ pub struct RecordedRoll {
     pub issued_by: CommandMeta,
     pub accepted_by: CommandMeta,
     pub original_result: Option<RollResult>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub savage_attacker: Option<crate::SavageAttackerRoll>,
     pub request: RollRequest,
     pub result: RollResult,
     pub resolved: ResolvedRoll,
