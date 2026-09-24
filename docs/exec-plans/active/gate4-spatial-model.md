@@ -41,6 +41,54 @@ global gate plan. Timing and HP remain solely in RulesState. The schema writer w
 
 ## Verification and next action
 
-No builds or implementation tests run yet. Existing main was read at
-`afcbe108c57d13322a32260325a5fc0133c7240c`; the gate plan creates base `14a94d6`.
-Next: implement the model and communicate its exact API to the schema writer.
+Standalone model plus pure implementation passes `cargo check --locked -p dmd-rules`.
+After correcting two test fixture compilation errors, all 15 focused tests pass:
+`cargo test --locked -p dmd-rules spatial::tests --lib`. Strict
+`cargo clippy --locked -p dmd-rules --lib --tests -- -D warnings` passes. Formatting
+and diff whitespace checks pass. Builds were serialized with the other gate writers.
+No full workspace/desktop verification or production acceptance is claimed here.
+Existing main was read at `afcbe108c57d13322a32260325a5fc0133c7240c`; the gate plan
+creates base `14a94d6`. Next: independent review and root integration, then integrate
+accepted encounter transitions and exact suspension through the real application.
+
+## Geometry and information decisions
+
+- All coordinates/lengths use half-feet, with 5ft grid squares; Small and larger
+  anchors align to full squares and Tiny anchors to half squares. Integer i128
+  products/rational segment intervals avoid platform-dependent floating point.
+- AABB volumes are half-open for occupancy. Line traversal through their interiors
+  blocks; merely touching their boundary does not. Movement separately rejects
+  solid diagonal corners. Vertical grid steps use the same declared grid metric.
+- Source cover bonuses are exact (+2/+5, highest only). Authored partial-cover
+  volumes carry a grade. Partly clipped Total-Cover geometry returns an explicit
+  adjudication requirement; ray counts do not invent an SRD percentage rule.
+- All six source area shapes have continuous point predicates; 26 grid directions
+  are normalized algebraically. Cube origins may lie anywhere on a selected face.
+  The spatial grid uses an explicit square line-prism and voxel-center rasterization
+  convention. A point predicate remains available for boundary adjudication.
+- Perception separates physical cover, opaque terrain, ambient/emitted light,
+  magical darkness, invisibility and special senses. Tremorsense locates; it does
+  not provide sight. Remembered contacts keep old positions and never gain current
+  HP, true names, positions or unknown entity identities through projection.
+  Concealed terrain and invisible obstacles have explicit observability separate from
+  their physical properties; the actor view cannot reveal those properties by sight.
+- Enemy/UI view DTOs are capability-limited. The host-only geometry/path validator
+  may use truth; planners must not query it repeatedly to infer unknown obstacles.
+  The runtime must validate an accepted attempt and reveal only its observable result.
+- MovementAllowance is a query input derived by the runtime, not player authority
+  or a second saved budget. MovementPlan proposes segments/costs and reaction
+  boundaries; the runtime must suspend before a reaction and rederive the remainder.
+- Hide/Search dice/DCs, noise/contact acquisition, spell-origin clipping, source
+  feature grants, timing/interruptions, falling/check resolution and audience-aware
+  transcript integration remain the next encounter slices. Pure geometry alone
+  does not claim these accepted gameplay transitions exist.
+
+## Source anchors
+
+Pinned SRD 5.2.1: vision/light p.11; grid p.13; movement, creature occupancy and
+unseen targets p.14; cover/range/opportunity attacks p.15; spell target path p.106;
+area blocking and Blindsight p.177; climb p.178; Cone/Cube p.179; Cylinder/Darkvision
+p.180; Emanation p.181; Frightened/Grappled/Flying p.182; Hide p.183; Invisible/Line
+p.184; Passive Perception/Prone p.186; Search p.187; Speed/Sphere p.188;
+Stunned p.189; Tremorsense/Truesight p.190. Stunned/Incapacitated do not themselves
+reduce ordinary movement to zero; unsupported flight still cannot continue.

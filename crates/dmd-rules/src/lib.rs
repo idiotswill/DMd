@@ -7,6 +7,7 @@ pub mod kernel;
 pub use kernel::*;
 pub mod character_creation;
 pub use character_creation::*;
+pub mod spatial;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {
