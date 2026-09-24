@@ -1,6 +1,6 @@
 # Gate 4 — Typed effect lifecycle
 
-Status: **Focused implementation verified; exact-main review/full verification pending.**
+Status: **Bounded reducer reviewed and fully verified; Gate 4 integration remains active.**
 
 ## Objective and branch
 
@@ -124,8 +124,8 @@ Verified on this slice's final source tree with workspace-local Rust GNU, one bu
 
 Shared-target metadata initially reused another worktree's domain export artifact;
 refreshing this branch's domain `lib.rs` timestamp forced the correct rebuild. No source
-workaround or shared-cache deletion was used. Canonical full verification and actual
-save/restore/desktop acceptance remain root integration work, not claimed by these tests.
+workaround or shared-cache deletion was used. Actual save/restore/desktop acceptance
+remains root integration work, not claimed by these reducer tests.
 
 Parent owns the global build slot. Risk: a structurally
 valid initial snapshot cannot authenticate its own history; application journal/audit
@@ -136,12 +136,20 @@ restored initial anchor; this module's structural validation cannot prove that a
 well-formed custom damage/DC record was authorized by its named source.
 
 The source reducer is isolated into a six-file PR so it can be reviewed and verified
-without bundling every developing tactical subsystem. Its four new source/test/plan
-files match the original reviewed source commit `5942d326`; only export placement is
-reconciled with merged main. Canonical `./scripts/verify`, current-head independent
-review and CI are required before merge; none are claimed from the earlier focused run.
+without bundling every developing tactical subsystem. Its three implementation/test
+files match the original reviewed source commit `5942d326`; exports and this plan are
+reconciled with merged main.
 
-Next: finish exact-head review and full verification, merge this bounded reducer slice,
+PR #24 implementation head `99d4548f4ac360b8823d47380820e98d4f358087` passed canonical
+`./scripts/verify` on Windows GNU (format/check, strict workspace Clippy, workspace
+tests and both guards). Independent full-diff review of that exact head found no code
+blockers and requested only the plan-parity correction above. All six jobs passed in
+Linux CI run `36052478357` and Windows desktop run `36052478319`, including declared
+MSRV and the fresh Windows installer build. This documentation-only evidence update
+must also pass canonical verification and current-head CI before expected-head merge;
+the PR retains those final check links.
+
+Next: verify the evidence-only head and merge this bounded reducer slice,
 then refresh the integration branch onto current main. That integration must attach the
 optional RulesState field/legacy-input guards, group concentration pointers, condition
 queries, authenticated replay and due-ticket continuation. All eighteen effect-family
