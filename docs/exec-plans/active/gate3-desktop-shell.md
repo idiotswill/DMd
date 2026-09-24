@@ -43,18 +43,27 @@ JavaScript syntax and diff whitespace checks pass. The first portable Node downl
 was blocked awaiting network escalation and aborted; root subsequently provisioned
 the verified Node 24.19.0/npm 11.17.0 ZIP. npm registry access also fails in this agent's
 sandbox, so root supplied dependencies separately. The Node/npm and Cargo lockfiles
-are now copied from root's isolated provisioning workspace. Root ran frontend check
-(zero errors/warnings) and production build successfully. Initial component tests
-resolved Svelte's server export and failed; the official `svelteTesting()` Vite plugin
-now selects browser exports, pending the repeat test result.
+are now copied from root's isolated provisioning workspace. The official
+`svelteTesting({autoCleanup:false})` Vite plugin selects browser exports while local
+test setup performs cleanup; the integrated frontend now passes check (zero
+errors/warnings), all 12 tests and the production static build.
 
 The shell branch incorporates the production table runtime through `b9dbf7c` and
 exposes the agreed typed commands. Runtime startup uses app-owned `open_local` with
 native paths; player authority is derived from the selected persistent character and
 controller, preserving the original request's command/head/session metadata. Storage
-initialization errors remain recoverable. This adapter has not yet been compiled on
-MSVC or exercised through a packaged UI. GNU's target-gated crate check passes; that
-only verifies unsupported-target compatibility, not the production host.
+initialization errors remain recoverable. At exact head `51d2962`, Windows workflow
+`36017036314` passed the full native workspace check on Rust 1.88 and stable, desktop
+strict Clippy and three native host tests. The release executable and offline NSIS
+installer built successfully, but the packaging source guard rejected Tauri's CRLF
+to LF rewrite of its manifest. A detached reproduction confirmed the normalized Git
+blob was unchanged; a fresh checkout with the narrow LF attribute remains clean
+after the same CLI rewrite. The guard remains enabled and now prints diagnostics.
+Independent review also found omitted upstream license filename/directory variants;
+the collector now preserves those files and declared Cargo license files, with three
+copying/fail-closed regressions passing locally. A fresh exact-head package run and
+actual packaged UI acceptance remain required. Root's full GNU verification at
+`51d2962` passed 207 tests, formatting, check, strict Clippy and both guards.
 
 Verification planned: frontend `npm ci`, check/test/build; existing
 fast/full checks as applicable; Windows MSRV/check/release/package CI; artifact hash
@@ -63,7 +72,7 @@ remain explicit. No implementation success is claimed at plan creation.
 
 ## Risks and next action
 
-Tauri/transitive dependency MSRV, first Windows build and downloaded artifact local
-materialization are unverified. Root authorized an early draft infrastructure PR to
-obtain this feedback. Next: finish frontend test configuration, run Windows CI and
-integrate the separately authored table UI before real packaged-app acceptance.
+The actual Windows MSRV and release compilation now pass. Artifact packaging after
+the source-cleanliness fix, local materialization and real packaged-app acceptance
+remain unverified. Next: rerun PR 21's Windows workflow on the corrected head and
+hand the verified artifact to root for native launch, table play and restart tests.

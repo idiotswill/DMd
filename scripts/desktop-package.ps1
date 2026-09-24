@@ -19,7 +19,12 @@ try {
     $dmdAfterBuild = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0 -or $dmdAfterBuild -ne $dmdCommit) { throw 'Source commit changed during the build; package cancelled.' }
     $dmdChanges = @(& git status --porcelain --untracked-files=normal)
-    if ($LASTEXITCODE -ne 0 -or $dmdChanges.Count -ne 0) { throw 'Source changed during the build; package cancelled.' }
+    if ($LASTEXITCODE -ne 0 -or $dmdChanges.Count -ne 0) {
+        $dmdChanges | Write-Output
+        & git diff --stat
+        & git diff -- crates/dmd-desktop/Cargo.toml
+        throw 'Source changed during the build; package cancelled.'
+    }
     $dmdTarget = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $dmdRoot 'target' }
     $dmdRelease = Join-Path $dmdTarget 'x86_64-pc-windows-msvc/release'
     $dmdExe = Join-Path $dmdRelease 'dmd-desktop.exe'

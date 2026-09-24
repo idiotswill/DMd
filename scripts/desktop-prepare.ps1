@@ -18,6 +18,8 @@ try {
 } finally { Pop-Location }
 Push-Location $dmdRoot
 try {
+    & node --test (Join-Path $PSScriptRoot 'desktop-notices.test.mjs')
+    if ($LASTEXITCODE -ne 0) { throw 'Dependency notice collector tests failed.' }
     & node (Join-Path $PSScriptRoot 'desktop-notices.mjs') (Join-Path $dmdRoot 'crates/dmd-desktop/licenses/dependencies')
     if ($LASTEXITCODE -ne 0) { throw 'Dependency notice collection failed.' }
 } finally { Pop-Location }

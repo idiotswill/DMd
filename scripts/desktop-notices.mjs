@@ -1,29 +1,24 @@
 // Collect upstream notice files from the exact installed/locked dependency trees.
 import { spawnSync } from 'node:child_process';
-import { mkdir, readdir, readFile, copyFile, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
+import { copyNoticeFiles } from './desktop-notice-files.mjs';
 
 const output = process.argv[2];
 if (!output) throw new Error('A notice output directory is required.');
 await mkdir(output, { recursive: true });
 const records = [];
-const noticePattern = /^(licen[cs]e|copying|notice|copyright)([.-]|$)/i;
 
-async function collect(kind, name, version, license, root) {
+async function collect(kind, name, version, license, root, licenseFile = null) {
   const destination = path.join(output, kind, `${name.replaceAll('/', '__')}-${version}`);
-  const files = (await readdir(root, { withFileTypes: true }))
-    .filter((entry) => entry.isFile() && noticePattern.test(entry.name));
-  if (files.length) {
-    await mkdir(destination, { recursive: true });
-    for (const file of files) await copyFile(path.join(root, file.name), path.join(destination, file.name));
-  }
-  records.push({ kind, name, version, license: license ?? null, notices: files.map((file) => path.relative(output, path.join(destination, file.name)).replaceAll('\\', '/')) });
+  const files = await copyNoticeFiles(root, destination, licenseFile);
+  records.push({ kind, name, version, license: license ?? null, notices: files.map((file) => path.relative(output, path.join(destination, file)).replaceAll('\\', '/')) });
 }
 
 const cargo = spawnSync('cargo', ['metadata', '--format-version', '1', '--locked'], { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
 if (cargo.status !== 0) throw new Error(cargo.stderr || 'Cargo metadata failed.');
 for (const pkg of JSON.parse(cargo.stdout).packages) {
-  await collect('rust', pkg.name, pkg.version, pkg.license, path.dirname(pkg.manifest_path));
+  await collect('rust', pkg.name, pkg.version, pkg.license, path.dirname(pkg.manifest_path), pkg.license_file);
 }
 
 async function visitModules(directory) {
