@@ -428,3 +428,74 @@ fn off_map_frightened_source_does_not_block_or_penalize_liquid_landing() {
     .unwrap();
     assert_eq!(request.mode, RollMode::Disadvantage);
 }
+
+#[test]
+fn liquid_landing_preserves_the_campaigns_opted_in_natural_extremes_policy() {
+    let mut f = falling_fixture();
+    f.terrain("water", volume(point(0, 0, 0), point(100, 100, 20)))
+        .water = true;
+    let path = fall_destination(&f.encounter, f.a).unwrap().unwrap();
+    let id = RollRequestId::new();
+    let mut raw = RollResult {
+        request_id: id,
+        source: RollSource::Physical,
+        dice: vec![DieResult {
+            sides: 20,
+            value: 1,
+        }],
+    };
+    let entity = f
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.a)
+        .unwrap();
+    entity.ability_scores[Ability::Strength.index()] = 30;
+    entity
+        .skill_proficiencies
+        .insert(Skill::Athletics, Proficiency::Expertise);
+    let outcome = |state: &CampaignState, raw: &RollResult| {
+        resolve_liquid_landing(
+            state,
+            f.a,
+            &path,
+            LiquidLandingChoice::Athletics,
+            id,
+            RollVisibility::Public,
+            raw,
+        )
+        .unwrap()
+        .successful()
+    };
+    assert!(outcome(&f.state, &raw)); // RAW natural1 +14 still meets DC15.
+    f.state
+        .rules
+        .as_mut()
+        .unwrap()
+        .house_rules
+        .ability_test_natural_extremes = true;
+    assert!(!outcome(&f.state, &raw));
+    let entity = f
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.a)
+        .unwrap();
+    entity.ability_scores[Ability::Strength.index()] = 1;
+    entity.skill_proficiencies.clear();
+    entity.exhaustion = 5;
+    raw.dice[0].value = 20;
+    assert!(outcome(&f.state, &raw));
+    f.state
+        .rules
+        .as_mut()
+        .unwrap()
+        .house_rules
+        .ability_test_natural_extremes = false;
+    assert!(!outcome(&f.state, &raw)); // RAW 20-5-10 fails; no rewritten natural face.
+    assert_eq!(raw.dice[0].value, 20);
+}

@@ -169,10 +169,22 @@ pub fn resolve_liquid_landing(
         return Err(invalid("landing Reaction requires liquid"));
     }
     let request = liquid_landing_request(state, actor, choice, request_id, visibility)?;
+    let resolved = request.resolve(result)?;
+    let house_extremes = state
+        .rules
+        .as_ref()
+        .ok_or(RulesError::Uninitialized)?
+        .house_rules
+        .ability_test_natural_extremes;
+    let successful = match resolved.kept_dice[0].value {
+        20 if house_extremes => true,
+        1 if house_extremes => false,
+        _ => resolved.total >= 15,
+    };
     Ok(LiquidLandingOutcome {
         actor,
         path: path.clone(),
-        successful: request.resolve(result)?.total >= 15,
+        successful,
     })
 }
 

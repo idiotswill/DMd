@@ -463,3 +463,18 @@ now test encounter participation before asking spatial sight, matching attack
 admission. A regression checks off-map Normal versus visible-source Disadvantage.
 The reviewer found no other blocker in the bounded geometry/source leaf; eight new
 falling tests remain unrun and runtime attachment remains incomplete.
+
+Parent approved a bounded optional `last_movement` receipt when falling is attached:
+retain the original accepted Move command, actual resolving cause, endpoint, completed
+steps and source-derived completion/interruption/fall reason. Both commands must join
+restore audit comparison. Cancel only this movement's remaining segment/opportunity
+frames on actual falling displacement; preserve unrelated attack, concentration,
+casting and other consequence work. An OA causing a fall is required regression
+evidence. The explicit stop outcome is not yet implemented by this leaf checkpoint.
+
+Landing outcome now preserves the campaign's existing opted-in
+`ability_test_natural_extremes` policy. Default RAW still compares the actual total
+with DC15; the explicit house rule changes natural1/20 outcomes without rewriting
+faces. A ninth leaf regression covers both policies at totals that distinguish them.
+Parent assigned the matching shared tactical-save/failed-save/LR consistency fix to
+casting integration; that broader change is outside this leaf's ownership.
