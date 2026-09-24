@@ -40,8 +40,8 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - [x] `docs/checkpoints/gate-1.md` records implemented slices, integrated evidence, limitations/debt, and explicitly deferred product scope without marking the gate Accepted early.
 - [x] Five stale completed worker plans were archived with zero content changes.
 - [x] Accepted cross-gate technical debt is durably recorded in `docs/tech-debt.md` for carry-forward.
-- [x] Complete PR #14 diff through acceptance-evidence commit `6968d94c515f47ac188f60d84605bb967f5bad61` was inspected; comparison shows only checkpoint/plan/debt edits plus five zero-change renames and no production/test/schema files.
-- [ ] Exact-current-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard. The current head includes this plan-only diff-review reconciliation.
+- [x] Complete PR #14 substantive diff through checkpoint-correction head `0b2b460c460de96f50132e7083f6091f686bf656` was inspected; comparison shows only checkpoint/plan/debt edits plus five zero-change renames and no production/test/schema files.
+- [ ] Exact-current-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard. This final plan reconciliation is plan-only; no further branch mutation is planned before the human decision.
 - [ ] ADR 012 receives explicit human acceptance and its stale status is reconciled.
 - [ ] Gate 1 receives explicit human acceptance of the final evidence.
 - [ ] Final acceptance commit marks Gate 1/ADR 012 Accepted, archives this closeout plan, and is itself validated on an exact green head before merge.
@@ -54,7 +54,7 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 5. **Content manifests:** verified exact identity/version behavior, unrelated systems, dependencies/compatibility, malformed/duplicate/corrupt content, closed schema, unsafe path, and symlink fail-closed behavior.
 6. **Runnable composition:** verified private capability construction, fresh exact catalog resolution on create/open/resume/restore, preflight-before-mutation behavior, raw recovery distinction, and mechanical dependency guard.
 7. **Historical plan/PR reconciliation:** final merged PR records establish the stale worker-plan validation gaps: #10 CI #221, #11 CI #249, #9 CI #259, #12 CI #274; combined post-ADR `main` CI #279 was green.
-8. **Documentation reconciliation:** checkpoint rewritten from stale post-Slice-B state; six deliberate Gate 1 debts recorded; five completed worker plans moved unchanged to `completed/`; complete compare confirms no code/test/schema changes.
+8. **Documentation reconciliation:** checkpoint rewritten from stale post-Slice-B state; six deliberate Gate 1 debts recorded; five completed worker plans moved unchanged to `completed/`; complete compare confirms no code/test/schema changes. A follow-up checkpoint wording correction explicitly defers player-facing recovery/admin UX instead of overstating Gate 1.
 
 ## Decisions
 - This remains an evidence/closeout branch, not a feature branch.
@@ -68,8 +68,8 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Acceptance branch verified unchanged at `652f4cb1b7d814ac7223d8b6c23c1426efc29289` before the substantive documentation write phase.
 - Root `AGENTS.md`, product definition, Gate 1 checkpoint, ADRs 011/012, merged PR records, production boundary code, architecture guard, and relevant integration/regression tests were directly re-read.
 - Post-ADR-reconciliation `main` CI #279 was directly/durably verified green on the base commit.
-- Compare `33bf7b2… → 6968d94…` shows checkpoint + plan + technical-debt edits and five exact renames with zero additions/deletions; no production, test, schema, migration, Cargo, or script file changed.
-- Exact-head PR #14 CI is required on the current head after this plan-only reconciliation.
+- Compare `33bf7b2… → 0b2b460…` shows checkpoint + plan + technical-debt edits and five exact renames with zero additions/deletions; no production, test, schema, migration, Cargo, or script file changed.
+- The only change after that complete substantive compare is this execution-plan reconciliation. Exact-head PR #14 CI on the resulting immutable head is the remaining technical validation gate.
 
 ## Blockers / risks
 - No technical implementation blocker is known.
