@@ -1,6 +1,9 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod continuations;
 mod initiative;
+mod turn_validation;
+mod turns;
 mod validation;
 use crate::{ResolveRoll, RulesError, RulesPack};
 use dmd_domain::*;
@@ -34,6 +37,18 @@ pub enum TacticalAction {
     AcceptInitiativeTie {
         total: i32,
     },
+    ChooseTurnWork {
+        occurrence: u16,
+    },
+    VoluntarilyFailSave,
+    EndTurn,
+    Dash {
+        speed: DashSpeed,
+    },
+    Disengage,
+    Dodge,
+    StandProne,
+    StartAttackAction,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -42,6 +57,7 @@ pub struct TacticalOutcome {
     pub next_roll: Option<RollRequest>,
     pub awaiting_initiative_ties: bool,
     pub active_actor: Option<EntityId>,
+    pub awaiting_turn_work: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -138,7 +154,9 @@ pub fn resolve_tactical(
     if rules.pending.is_some()
         && !matches!(
             action,
-            TacticalAction::SubmitRoll { .. } | TacticalAction::SubmitRollWithInspiration { .. }
+            TacticalAction::SubmitRoll { .. }
+                | TacticalAction::SubmitRollWithInspiration { .. }
+                | TacticalAction::VoluntarilyFailSave
         )
     {
         return Err(RulesError::Pending);
@@ -183,6 +201,10 @@ pub fn resolve_tactical(
                 initiative_decisions: vec![],
                 phase: TacticalPhase::Initiative { next_group: 0 },
                 budget: TacticalTurnBudget::default(),
+                resolution: None,
+                dodges: vec![],
+                save_decisions: vec![],
+                ground_items: vec![],
             };
             next.encounter
                 .as_mut()
@@ -200,13 +222,29 @@ pub fn resolve_tactical(
             rules.permission = None;
             initiative::issue(&mut next, meta)?;
         }
-        TacticalAction::SubmitRoll { result } => initiative::submit(&mut next, meta, result)?,
+        TacticalAction::SubmitRoll { result } => {
+            if flow(state)?.resolution.is_some() {
+                continuations::submit(&mut next, meta, result, None)?;
+            } else {
+                initiative::submit(&mut next, meta, result)?;
+            }
+        }
         TacticalAction::SubmitRollWithInspiration {
             result,
             die_index,
             replacement,
         } => {
-            initiative::submit_with_inspiration(&mut next, meta, result, *die_index, *replacement)?;
+            if flow(state)?.resolution.is_some() {
+                continuations::submit(&mut next, meta, result, Some((*die_index, *replacement)))?;
+            } else {
+                initiative::submit_with_inspiration(
+                    &mut next,
+                    meta,
+                    result,
+                    *die_index,
+                    *replacement,
+                )?;
+            }
         }
         TacticalAction::ProposeInitiativeTie { order } => {
             initiative::propose_tie(&mut next, meta, order)?
@@ -214,11 +252,27 @@ pub fn resolve_tactical(
         TacticalAction::AcceptInitiativeTie { total } => {
             initiative::accept_tie(&mut next, meta, *total)?
         }
+        TacticalAction::ChooseTurnWork { occurrence } => {
+            turns::choose(&mut next, meta, *occurrence)?
+        }
+        TacticalAction::VoluntarilyFailSave => continuations::voluntarily_fail(&mut next, meta)?,
+        TacticalAction::EndTurn
+        | TacticalAction::Dash { .. }
+        | TacticalAction::Disengage
+        | TacticalAction::Dodge
+        | TacticalAction::StandProne
+        | TacticalAction::StartAttackAction => turns::core_action(&mut next, meta, action)?,
     }
     crate::validate_state(&next, pack)?;
     validate_tactical_state(&next)?;
     let rules = next.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let outcome = TacticalOutcome {
+        awaiting_turn_work: next
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .and_then(|f| f.resolution.as_ref())
+            .is_some_and(|r| r.pending.is_none()),
         next_roll: rules.pending.as_ref().map(|p| p.request.clone()),
         awaiting_initiative_ties: next
             .encounter

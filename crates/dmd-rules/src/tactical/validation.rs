@@ -135,6 +135,9 @@ pub fn validate_tactical_pending(
     state: &CampaignState,
     pending: &PendingRoll,
 ) -> Result<(), RulesError> {
+    if matches!(pending.purpose, PendingPurpose::TacticalResolution { .. }) {
+        return super::turn_validation::pending(state, pending);
+    }
     let PendingPurpose::TacticalInitiative {
         encounter: id,
         group_index,
@@ -335,5 +338,5 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
             }
         }
     }
-    Ok(())
+    super::turn_validation::validate(state)
 }

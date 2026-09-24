@@ -222,7 +222,7 @@ pub(super) fn submit(
         })
         .collect();
     flow_mut(state)?.phase = TacticalPhase::InitiativeTies { ties };
-    finish_if_agreed(state)
+    finish_if_agreed(state, meta)
 }
 
 pub(super) fn entries(state: &CampaignState) -> Result<Vec<InitiativeEntry>, RulesError> {
@@ -299,7 +299,7 @@ pub(super) fn propose_tie(
         vec![]
     };
     ties[index].host_decided = !players;
-    finish_if_agreed(state)
+    finish_if_agreed(state, meta)
 }
 pub(super) fn accept_tie(
     state: &mut CampaignState,
@@ -330,9 +330,9 @@ pub(super) fn accept_tie(
         unreachable!()
     };
     ties[index].accepted_by.push(player);
-    finish_if_agreed(state)
+    finish_if_agreed(state, meta)
 }
-fn finish_if_agreed(state: &mut CampaignState) -> Result<(), RulesError> {
+fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     let TacticalPhase::InitiativeTies { ties } = &flow(state)?.phase else {
         return Err(invalid("initiative tie phase is missing"));
     };
@@ -368,5 +368,5 @@ fn finish_if_agreed(state: &mut CampaignState) -> Result<(), RulesError> {
     });
     flow_mut(state)?.initiative_decisions = accepted_ties;
     flow_mut(state)?.phase = TacticalPhase::Active;
-    Ok(())
+    super::turns::begin_boundary(state, meta, TurnBoundary::Start)
 }

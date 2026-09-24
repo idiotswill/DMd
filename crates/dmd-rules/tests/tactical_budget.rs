@@ -83,6 +83,7 @@ fn switching_speeds_subtracts_all_previous_expenditure_and_dash_tracks_current_s
 
 fn rules(a: EntityId, b: EntityId) -> RulesState {
     RulesState {
+        tactical_recovery: None,
         pack_id: "srd-5.2".into(),
         pack_version: "5.2.1".into(),
         entities: std::collections::HashMap::from([

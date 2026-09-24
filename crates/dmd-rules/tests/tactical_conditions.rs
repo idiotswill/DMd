@@ -8,6 +8,7 @@ fn fixture() -> (RulesState, EntityId, EntityId, EntityId) {
     let c = EntityId::new();
     (
         RulesState {
+            tactical_recovery: None,
             pack_id: "srd-5.2".into(),
             pack_version: "5.2.1".into(),
             entities: HashMap::from([

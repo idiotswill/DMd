@@ -155,8 +155,21 @@ pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
         .filter(|e| e.target == id)
         .filter_map(|e| e.condition)
         .collect();
-    if rules.entities.get(&id).is_some_and(|e| e.hp == 0) {
+    if rules.entities.get(&id).is_some_and(|e| {
+        e.hp == 0
+            && (rules.tactical_recovery.is_none()
+                || !e.condition_immunities.contains(&Condition::Unconscious))
+    }) {
         result.insert(Condition::Unconscious);
+    }
+    if let Some((entity, recovery)) = rules
+        .entities
+        .get(&id)
+        .zip(rules.tactical_recovery.as_ref().and_then(|r| r.get(&id)))
+    {
+        result.extend(crate::tactical_damage::recovery_conditions(
+            entity, recovery,
+        ));
     }
     if result.contains(&Condition::Unconscious) {
         result.insert(Condition::Prone);
@@ -264,7 +277,12 @@ pub(super) fn validate_entity(
     }
     if !(1..=20).contains(&e.level)
         || e.ability_scores.iter().any(|s| !(1..=30).contains(s))
-        || e.max_hp == 0
+        || (e.max_hp == 0
+            && !(e.death.dead
+                && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|r| r.tactical_recovery.is_some())))
         || e.max_hp > 1_000_000
         || e.hp > e.max_hp
         || e.temporary_hp > 1_000_000
@@ -284,7 +302,16 @@ pub(super) fn validate_entity(
     {
         return Err(invalid("inconsistent death state"));
     }
-    if (e.hp == 0 && !e.death.dead && (!e.prone || !e.uses_death_saves))
+    if (e.hp == 0
+        && !e.death.dead
+        && ((!e.prone
+            && !(state
+                .rules
+                .as_ref()
+                .is_some_and(|r| r.tactical_recovery.is_some())
+                && (e.condition_immunities.contains(&Condition::Unconscious)
+                    || e.condition_immunities.contains(&Condition::Prone))))
+            || !e.uses_death_saves))
         || (e.death.dead && (e.death.stable || e.death.successes != 0 || e.death.failures != 0))
     {
         return Err(invalid("inconsistent zero-HP/death conditions"));
@@ -381,6 +408,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         return Err(invalid("empty mechanical state"));
     }
     crate::tactical_effect_adapter::validate_effect_attachment(state)?;
+    crate::tactical_vitality_adapter::validate_attachment(state)?;
     if let Some(inventory) = &rules.tactical_inventory {
         crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
             .map_err(|error| invalid(&error.to_string()))?;
@@ -494,6 +522,21 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 return Err(invalid("recorded d20 test has invalid dice"));
             }
             _ => (),
+        }
+        if let PendingPurpose::TacticalResolution { key, .. } = &roll.purpose {
+            if key.request_id() != roll.request.id || !rules.entities.contains_key(&key.subject) {
+                return Err(invalid("invalid tactical roll identity"));
+            }
+            let expected = match key.role {
+                TacticalRollRole::DeathSave
+                | TacticalRollRole::EffectSave
+                | TacticalRollRole::Concentration => Some(20),
+                TacticalRollRole::StableRecovery => Some(4),
+                TacticalRollRole::EffectDamage => None,
+            };
+            if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {
+                return Err(invalid("invalid tactical roll dice"));
+            }
         }
         match &roll.purpose {
             PendingPurpose::Attack { target, .. }

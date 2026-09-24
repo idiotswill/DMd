@@ -88,6 +88,7 @@ pub fn resolve(
             rules.permission = None;
         } else {
             next.rules = Some(RulesState {
+                tactical_recovery: None,
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
                 entities: std::collections::HashMap::from([(*entity_id, built.mechanics)]),
@@ -130,6 +131,7 @@ pub fn resolve(
             return Err(invalid("duplicate/empty mechanical initialization"));
         }
         next.rules = Some(RulesState {
+            tactical_recovery: None,
             pack_id: pack.id.clone(),
             pack_version: pack.version.clone(),
             entities: map,
@@ -1349,7 +1351,7 @@ fn submit(
     });
     let (mut success, mut critical, mut amount) = (None, false, None);
     match &pending.purpose {
-        PendingPurpose::TacticalInitiative { .. } => {
+        PendingPurpose::TacticalInitiative { .. } | PendingPurpose::TacticalResolution { .. } => {
             return Err(prerequisite(
                 "tactical rolls require their recorded continuation",
             ));
