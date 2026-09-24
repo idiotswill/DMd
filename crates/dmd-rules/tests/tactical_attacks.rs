@@ -1283,6 +1283,51 @@ fn hidden_truth_id_does_not_authorize_an_unlocated_target_or_spend_ammunition() 
 }
 
 #[test]
+fn hidden_target_range_cannot_be_probed_through_attack_rejection() {
+    let mut f = Fixture::new();
+    let choice = f.arm("shortbow", false, true);
+    let encounter = f.state.encounter.as_mut().unwrap();
+    encounter.battlefield.ambient_light = LightLevel::Darkness;
+    encounter.battlefield.bounds.max.x = 2000;
+    f.begin();
+    let mut errors = vec![];
+    for position in [60, 1000] {
+        f.state.encounter.as_mut().unwrap().participants[1]
+            .position
+            .x = position;
+        let before = f.state.clone();
+        errors.push(
+            resolve_tactical(
+                &f.state,
+                &f.meta(Some(0)),
+                &TacticalAction::Attack {
+                    choice: choice.clone(),
+                },
+                &f.pack,
+            )
+            .unwrap_err()
+            .to_string(),
+        );
+        assert_eq!(f.state, before);
+    }
+    let mut absent = choice.clone();
+    absent.target = EntityId::new();
+    let absent_error = resolve_tactical(
+        &f.state,
+        &f.meta(Some(0)),
+        &TacticalAction::Attack { choice: absent },
+        &f.pack,
+    )
+    .unwrap_err()
+    .to_string();
+    assert_eq!(errors[0], errors[1]);
+    assert_eq!(errors[0], absent_error);
+    assert!(errors[0].contains("currently located target"));
+    assert_eq!(f.state.items[&choice.ammunition.unwrap()].quantity, 20);
+    assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+}
+
+#[test]
 fn nearby_paralyzed_target_makes_hits_critical_without_making_every_attack_hit() {
     for face in [3, 5] {
         let mut f = Fixture::new();

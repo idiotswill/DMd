@@ -5,6 +5,24 @@ use crate::tactical_conditions::{AttackPerception, attack_conditions};
 fn spatial(error: crate::spatial::SpatialError) -> RulesError {
     invalid(&error.to_string())
 }
+
+pub(super) fn require_located_target(
+    state: &CampaignState,
+    actor: EntityId,
+    target: EntityId,
+) -> Result<(), RulesError> {
+    let encounter = encounter(state)?;
+    if encounter.participant(target).is_none()
+        || !perceive(encounter, state, actor, target)
+            .is_ok_and(|knowledge| knowledge.precisely_located)
+    {
+        return Err(prerequisite(
+            "choose a currently located target; an unlocated target needs a guessed-location action",
+        ));
+    }
+    Ok(())
+}
+
 pub(super) fn weapon_plan(
     state: &CampaignState,
     meta: &CommandMeta,

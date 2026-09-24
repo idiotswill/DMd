@@ -118,3 +118,15 @@ the new attack allocation. Movement then owns shared dispatcher/pump/work additi
 this slice owns new source/OA adapters under attacks and tactical_attacks. Consume verified
 NPC equipment/live-AC and movement contracts before compiling those next adapters; no
 competing queues, fake item identities or discarded mandatory source riders are permitted.
+
+## Target-knowledge follow-up
+
+Root's integration review found a privacy ordering defect after the ordinary checkpoint:
+weapon range planning ran before the unlocated-target rejection. A retained hidden entity
+ID could therefore distinguish in-range and out-of-range positions by rejection text.
+The isolated fix checks current actor knowledge before source/geometry planning and gives
+one non-disclosing error for missing and unlocated targets. A regression submits the same
+hidden ID near and far, then an absent ID, and requires identical errors without action or
+ammo changes. Formatting/diff checks pass; this follow-up's test and Clippy are pending in
+root's queued integration batch, not represented by the prior 19-test evidence. New source,
+opportunity and spell admission must preserve the same knowledge-before-geometry boundary.
