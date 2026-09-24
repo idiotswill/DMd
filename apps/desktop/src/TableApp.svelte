@@ -6,7 +6,7 @@
   import SessionForm from './components/SessionForm.svelte';
   import SituationForm from './components/SituationForm.svelte';
   import RollForm from './components/RollForm.svelte';
-  import { clearRequest, loadRequest, loadSelection, newId, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
+  import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
   let campaigns = $state<{ id: string; name: string }[]>([]);
   let defaults = $state<TableContract | null>(null);
@@ -47,7 +47,7 @@
   }
   async function selectPlayer(id: string) {
     busy = true; error = ''; message = ''; playerId = id; page = 'play'; text = ''; view = null;
-    try { await refresh(); } catch (reason) { await showError(reason); } finally { busy = false; }
+    try { await refresh(); busy = false; await tick(); document.getElementById('table-channel')?.focus(); } catch (reason) { await showError(reason); } finally { busy = false; }
   }
   async function refreshAll() {
     busy = true; error = '';
@@ -126,11 +126,11 @@
   </div>
   {#if error}<div bind:this={errorElement} tabindex="-1" role="alert" class="error"><h2>Unable to complete the request</h2><p>{error}</p>{#if !retry && !unreadableRetry}<button disabled={busy} onclick={refreshAll}>Try refreshing</button>{/if}</div>{/if}
   {#if message}<p class="notice preserve" role="status" aria-live="polite">{message}</p>{/if}
-  {#if retry || unreadableRetry}<section class="retry" aria-labelledby="retry-title"><h2 id="retry-title">A request is awaiting confirmation</h2><p>DMd kept the original request. Retry it to recover its saved result without duplicating the action. Review the refreshed table before releasing the retry.</p>{#if retry}<p>{retry.kind === 'text' ? `Your text: ${retry.request.text}` : retry.kind === 'create' ? `Create campaign: ${retry.request.name}` : `Table request: ${typeof retry.request.action === 'string' ? retry.request.action : Object.keys(retry.request.action)[0]}`}</p>{/if}<div class="actions">{#if retry}<button disabled={busy} onclick={() => retry && send(retry, true)}>Retry original request</button>{/if}<button disabled={busy} class="secondary" onclick={releaseRetry}>Refresh and release local retry</button></div></section>{/if}
+  {#if retry || unreadableRetry}<section class="retry" aria-labelledby="retry-title"><h2 id="retry-title">A request is awaiting confirmation</h2><p>DMd kept the original request. Retry it to recover its saved result without duplicating the action. Review the refreshed table before releasing the retry.</p>{#if retry}<p>{requestLabel(retry)}</p>{/if}<div class="actions">{#if retry}<button disabled={busy} onclick={() => retry && send(retry, true)}>Retry original request</button>{/if}<button disabled={busy} class="secondary" onclick={releaseRetry}>Refresh and release local retry</button></div></section>{/if}
   {#if creating && defaults}<section class="panel"><h1>Create a campaign</h1><label>Campaign name<input required maxlength="200" bind:value={campaignName} /></label>{#key defaults}<ContractForm value={defaults} disabled={locked || !campaignName.trim()} submitLabel="Create campaign with this agreement" onSave={(contract) => send({ kind: 'create', request: { id: newId(), name: campaignName, contract } })} />{/key}</section>{/if}
   {#if view}
     <section class="table-heading"><div><p class="eyebrow">{view.active_session ? 'Session in progress' : 'Between sessions'}</p><h1>{view.name}</h1><p>{view.active_session?.display_name ?? 'Set up your table, then begin play.'}</p></div>
-      <label>Local viewing and input channel<select value={playerId} onchange={(event) => selectPlayer(event.currentTarget.value)} disabled={busy || retry !== null}><option value="">Host — setup and adjudication</option>{#each view.players as player}<option value={player.id}>{player.display_name}</option>{/each}</select></label>
+      <label>Local viewing and input channel<select id="table-channel" value={playerId} onchange={(event) => selectPlayer(event.currentTarget.value)} disabled={busy || retry !== null}><option value="">Host — setup and adjudication</option>{#each view.players as player}<option value={player.id}>{player.display_name}</option>{/each}</select></label>
     </section>
     <p class="muted">This shared computer trusts the selected local channel. Player text cannot change who is speaking or controlling a character.</p>
     <nav class="actions" aria-label="Campaign sections"><button class:secondary={page !== 'play'} onclick={() => { page = 'play'; }}>Table and sheets</button>{#if host}<button class:secondary={page !== 'setup'} onclick={() => { page = 'setup'; }}>Setup and host controls</button>{/if}</nav>

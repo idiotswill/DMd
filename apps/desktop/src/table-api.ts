@@ -73,20 +73,51 @@ export function label(value: string): string { return value.replace(/([a-z])([A-
 export function money(cp: number): string { return `${(cp / 100).toFixed(2)} GP`; }
 export function signed(value: number): string { return value >= 0 ? `+${value}` : String(value); }
 export function rawDice(request: RollRequest): number[] { return request.dice.flatMap(die => Array.from({ length: request.mode === 'Normal' ? die.count : 2 }, () => die.sides)); }
-export function saveRequest(request: UnconfirmedRequest): void { localStorage.setItem(REQUEST_KEY, JSON.stringify(request)); }
+export function saveRequest(request: UnconfirmedRequest): void {
+  try { localStorage.setItem(REQUEST_KEY, JSON.stringify(request)); }
+  catch { throw new Error('The window could not retain this request, so no action was sent. Free local storage or reopen DMd, then try again.'); }
+}
 export function clearRequest(): void { localStorage.removeItem(REQUEST_KEY); }
+function object(value: unknown): value is Record<string, unknown> { return typeof value === 'object' && value !== null && !Array.isArray(value); }
+function id(value: unknown): value is string { return typeof value === 'string' && value.trim().length > 0; }
+function validSavedRequest(value: unknown): value is UnconfirmedRequest {
+  if (!object(value) || !object(value.request)) return false;
+  const request = value.request;
+  if (value.kind === 'create') return id(request.id) && id(request.name) && object(request.contract) && object(request.contract.ruleset);
+  if (!['action', 'text'].includes(String(value.kind)) || !id(request.command_id) || !id(request.campaign_id)
+    || !Number.isSafeInteger(request.expected_event_sequence) || Number(request.expected_event_sequence) < 0
+    || !(request.session_id === null || id(request.session_id))) return false;
+  const channel = request.channel;
+  if (channel !== 'Host' && (!object(channel) || !object(channel.Player) || !id(channel.Player.player_id) || !id(channel.Player.character_id))) return false;
+  if (value.kind === 'text') return channel !== 'Host' && typeof request.text === 'string' && request.text.trim().length > 0 && request.text.length <= 8000;
+  if (request.action === 'EndSession') return true;
+  if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
+  const [kind, payload] = Object.entries(request.action)[0];
+  return ['UpdateContract','AddPlayer','CreateCharacter','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
+}
 export function loadRequest(): UnconfirmedRequest | null {
   const value = localStorage.getItem(REQUEST_KEY);
   if (!value) return null;
-  const record = JSON.parse(value) as UnconfirmedRequest;
-  if (!record || !['action', 'text', 'create'].includes(record.kind) || !record.request || (record.kind !== 'create' && (!record.request.command_id || !record.request.campaign_id))) throw new Error('The saved retry could not be read. Review the saved campaign before clearing this request.');
+  let record: unknown;
+  try { record = JSON.parse(value); } catch { throw new Error('The saved retry could not be read. Review the saved campaign before clearing this request.'); }
+  if (!validSavedRequest(record)) throw new Error('The saved retry is incomplete or incompatible. Review the saved campaign before clearing this request.');
   return record;
 }
 export function loadSelection(): Selection {
-  try { return JSON.parse(localStorage.getItem(SELECTION_KEY) ?? 'null') ?? { campaignId: null, playerId: null }; }
+  try {
+    const value: unknown = JSON.parse(localStorage.getItem(SELECTION_KEY) ?? 'null');
+    if (!object(value)) return { campaignId: null, playerId: null };
+    return { campaignId: id(value.campaignId) ? value.campaignId : null, playerId: id(value.playerId) ? value.playerId : null };
+  }
   catch { return { campaignId: null, playerId: null }; }
 }
 export function saveSelection(selection: Selection): void { localStorage.setItem(SELECTION_KEY, JSON.stringify(selection)); }
+export function requestLabel(request: UnconfirmedRequest): string {
+  if (request.kind === 'text') return `Your text: ${request.request.text}`;
+  if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
+  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
+  return labels[typeof request.request.action === 'string' ? request.request.action : Object.keys(request.request.action)[0]];
+}
 
 // The desktop adapter supplies trusted channels independently of natural-language text.
 export const tableApi = {

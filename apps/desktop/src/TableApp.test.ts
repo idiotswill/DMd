@@ -32,6 +32,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup(); const host=emptyView();host.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
     vi.mocked(tableApi.view).mockResolvedValue(host);localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     render(TableApp); await screen.findByRole('combobox',{name:'Local viewing and input channel'});
+    await waitFor(()=>expect(screen.getByRole('combobox',{name:'Local viewing and input channel'}).hasAttribute('disabled')).toBe(false));
     await user.selectOptions(screen.getByRole('combobox',{name:'Local viewing and input channel'}),'player');
     await waitFor(()=>expect(tableApi.view).toHaveBeenLastCalledWith('campaign',{Player:'player'}));
     expect(screen.queryByRole('button',{name:'Setup and host controls'})).toBeNull();
@@ -42,5 +43,25 @@ describe('durable UI retry',()=>{
     render(TableApp);await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
     await screen.findByText('Correct this input.');expect(localStorage.getItem(REQUEST_KEY)).toBeNull();expect(screen.queryByText('A request is awaiting confirmation')).toBeNull();
+  });
+  it('contains malformed saved input without invoking it or losing campaign navigation',async()=>{
+    localStorage.setItem(REQUEST_KEY,JSON.stringify({kind:'action',request:{command_id:'broken',campaign_id:'campaign'}}));
+    render(TableApp);await screen.findByText('The saved retry is incomplete or incompatible. Review the saved campaign before clearing this request.');
+    await waitFor(()=>expect(tableApi.list).toHaveBeenCalledOnce());
+    expect(tableApi.action).not.toHaveBeenCalled();expect(screen.queryByRole('button',{name:'Retry original request'})).toBeNull();
+    expect(screen.getByRole('button',{name:'Refresh and release local retry'})).toBeTruthy();
+  });
+  it('clears private transient answers before changing the selected player',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'one',campaign_id:'campaign',display_name:'One'},{id:'two',campaign_id:'campaign',display_name:'Two'}];
+    view.characters=[{character_id:'pc',player_id:'one',entity_id:'actor',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'session',display_name:'Evening',started_at_world:0,participants:[{player_id:'one',character_id:'pc',attendance:'Present'}]};
+    vi.mocked(tableApi.view).mockResolvedValue(view);localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'one'}));
+    vi.mocked(tableApi.text).mockResolvedValue({Observed:{meta:{id:'question',campaign_id:'campaign',session_id:'session',issuer:{Player:'one'},actor:{Entity:'actor'},expected_event_sequence:19},text:'What is my health?',answer:'Private answer for One'}});
+    render(TableApp);await waitFor(()=>expect(screen.getByRole('button',{name:'Send to the table'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.type(screen.getByLabelText('Your declaration, question or correction'),'What is my health?');await user.click(screen.getByRole('button',{name:'Send to the table'}));
+    await screen.findByText('Private answer for One');await waitFor(()=>expect(screen.getByRole('combobox',{name:'Local viewing and input channel'}).hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByRole('combobox',{name:'Local viewing and input channel'}),'two');
+    await waitFor(()=>expect(tableApi.view).toHaveBeenLastCalledWith('campaign',{Player:'two'}));expect(screen.queryByText('Private answer for One')).toBeNull();
   });
 });
