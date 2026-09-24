@@ -10,18 +10,34 @@ pub use projection_store::*;
 pub use session_store::*;
 pub use snapshot_replay::*;
 
-pub async fn open_sqlite(database_url: &str) -> Result<sqlx::SqlitePool, sqlx::Error> {
-    use std::str::FromStr;
+use sqlx::{
+    SqlitePool,
+    migrate::{MigrateError, Migrator},
+    sqlite::SqliteConnectOptions,
+};
+use std::str::FromStr;
+use thiserror::Error;
 
-    use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+pub static MIGRATOR: Migrator = sqlx::migrate!("./migrations");
 
-    let options = SqliteConnectOptions::from_str(database_url)?.foreign_keys(true);
-    SqlitePoolOptions::new()
-        .max_connections(1)
-        .connect_with(options)
-        .await
+#[derive(Debug, Error)]
+pub enum PersistenceError {
+    #[error(transparent)]
+    Sqlx(#[from] sqlx::Error),
+    #[error(transparent)]
+    Migration(#[from] MigrateError),
 }
 
-pub async fn migrate_sqlite(pool: &sqlx::SqlitePool) -> Result<(), sqlx::migrate::MigrateError> {
-    sqlx::migrate!("./migrations").run(pool).await
+pub async fn migrate_sqlite(pool: &SqlitePool) -> Result<(), MigrateError> {
+    MIGRATOR.run(pool).await
+}
+
+pub async fn open_sqlite(database_url: &str) -> Result<SqlitePool, PersistenceError> {
+    let options = SqliteConnectOptions::from_str(database_url)?
+        .create_if_missing(true)
+        .foreign_keys(true);
+
+    let pool = SqlitePool::connect_with(options).await?;
+    migrate_sqlite(&pool).await?;
+    Ok(pool)
 }
