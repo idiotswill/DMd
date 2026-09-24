@@ -13,9 +13,14 @@
         1
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-domain/tests/rules_coverage_ledger.rs::pinned_source_has_complete_owned_inventory @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::supported_manifest_is_not_sufficient_for_an_unsupported_kernel_version @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::pending_rules_export_restores_and_content_changes_fail_before_mutation @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Pin source and retain CC BY attribution; release packaging audit belongs to Gate 13.",
       "final_acceptance_gate": 14
@@ -47,9 +52,15 @@
         176
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::derived_modifiers_and_armor_round_negative_scores_correctly @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::healing_preserves_prone_and_heavy_armor_ignores_negative_dexterity @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::rejected_rolls_and_questions_leave_durable_state_and_history_unchanged @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::invalid_mechanical_initialization_and_stale_competing_action_leave_no_partial_writes @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Validated score/modifier foundations, not complete character-option implementation.",
       "final_acceptance_gate": 14
@@ -68,9 +79,14 @@
         188
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::checks_and_saves_do_not_treat_natural_extremes_as_attacks @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::pending_physical_roll_survives_shutdown_and_replay_matches_committed_mechanics @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::spells_concentration_damage_healing_and_rests_survive_reopen_and_replay @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Core checks/saves/proficiency through rule-driven roll requests; optional contests use explicit source rules or house-rule provenance.",
       "final_acceptance_gate": 14
@@ -85,9 +101,13 @@
         181
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::poison_and_advantage_cancel_and_keep_raw_faces_when_uncancelled @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::inspiration_advantage_passive_queries_and_house_rulings_are_durable @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Deterministic dice selection and cancellation.",
       "final_acceptance_gate": 14
@@ -103,9 +123,15 @@
         186
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::derived_modifiers_and_armor_round_negative_scores_correctly @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::checks_and_saves_do_not_treat_natural_extremes_as_attacks @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::pending_physical_roll_survives_shutdown_and_replay_matches_committed_mechanics @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::rejected_rolls_and_questions_leave_durable_state_and_history_unchanged @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Derived bonuses and training validation; actual class/species grants tracked by content families.",
       "final_acceptance_gate": 14
@@ -119,9 +145,14 @@
         183
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::inspiration_replaces_one_die_before_resolution_and_records_both_inputs @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::restored_cancelled_and_reroll_records_reject_inconsistent_input @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::inspiration_advantage_passive_queries_and_house_rulings_are_durable @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Explicit authorized resource expenditure; no automatic narrator grants.",
       "final_acceptance_gate": 14
@@ -141,9 +172,14 @@
         191
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::attacks_require_context_critical_doubles_only_dice_and_natural_one_misses @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::close_spell_attacks_use_explicit_threat_and_target_distance @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::initiative_attack_damage_reaction_and_effect_timing_use_the_durable_path @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Deterministic attack/AC and critical foundations; targeting, reach and encounter legality complete at Gate 4.",
       "final_acceptance_gate": 14
@@ -165,9 +201,17 @@
         191
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::resistance_then_vulnerability_temporary_hp_and_healing_are_distinct @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::zero_damage_does_not_interrupt_rest_and_old_rest_cannot_heal_later @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::death_saves_and_massive_damage_update_world_lifecycle @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::initiative_attack_damage_reaction_and_effect_timing_use_the_durable_path @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::spells_concentration_damage_healing_and_rests_survive_reopen_and_replay @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::dead_character_remains_readable_to_its_controller_and_cannot_act @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Atomic HP changes and damage traits; complete content-specific interactions remain Gates 4 and 6.",
       "final_acceptance_gate": 14
@@ -190,9 +234,17 @@
         191
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::poison_and_advantage_cancel_and_keep_raw_faces_when_uncancelled @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::petrification_rejects_poisoned_and_expiry_is_tied_to_real_turn_boundaries @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::rests_recover_resources_and_hit_dice_without_free_healing_or_repeated_long_rest @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::initiative_attack_damage_reaction_and_effect_timing_use_the_durable_path @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::inspiration_advantage_passive_queries_and_house_rulings_are_durable @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::spells_concentration_damage_healing_and_rests_survive_reopen_and_replay @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Typed conditions/effects with provenance and duration primitives; complete condition consequences belong to tactical/noncombat integration.",
       "final_acceptance_gate": 14
@@ -212,9 +264,14 @@
         187
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::initiative_orders_recorded_rolls_and_refreshes_reactions_and_action_budget @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::initiative_conditions_and_rest_interruptions_follow_srd @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::initiative_attack_damage_reaction_and_effect_timing_use_the_durable_path @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Durable timing/resource primitives; full encounter scheduling and trigger ordering at Gate 4.",
       "final_acceptance_gate": 14
@@ -230,16 +287,22 @@
         187
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::rests_recover_resources_and_hit_dice_without_free_healing_or_repeated_long_rest @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::attack_and_damage_interrupt_rest_and_invalid_context_cannot_be_reused @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::zero_damage_does_not_interrupt_rest_and_old_rest_cannot_heal_later @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::spells_concentration_damage_healing_and_rests_survive_reopen_and_replay @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Validated recovery primitives; actual elapsed-time/interruption/camp simulation belongs to Gate 5.",
       "final_acceptance_gate": 14
     },
     {
       "id": "spell-primitives",
-      "family": "Spellcasting, cantrips, slots, ritual, concentration and components",
+      "family": "Spellcasting, cantrip, slot, concentration and component primitives",
       "primary_gate": 2,
       "source_pages": [
         104,
@@ -252,11 +315,18 @@
         188
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::spellcasting_derives_healing_upcast_and_cantrip_damage_with_slot_cost @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::spell_components_and_slots_fail_without_cost_or_mutation @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::concentration_requires_a_save_uses_damage_before_temporary_hp_and_expires @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::raw_dice_and_support_metadata_reject_hidden_behavior_and_name_partial_spells @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::spells_concentration_damage_healing_and_rests_survive_reopen_and_replay @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
-      "scope": "Typed casting/concentration/resource primitives; full spell-specific effects, geometry and prepared-spell gameplay at Gates 4/5/6.",
+      "scope": "Typed casting/concentration/resource primitives. Ritual execution and longer casting-time orchestration remain Gate 5; full preparation, spell-specific effects, geometry and content integration remain Gates 4/5/6. The Ritual inventory entry is accounted for here without claiming ritual execution is implemented.",
       "final_acceptance_gate": 14
     },
     {
@@ -267,9 +337,15 @@
         186
       ],
       "legal_to_ship": true,
-      "status": "planned",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/mechanics.rs::secret_rolls_and_queries_preserve_visibility_and_do_not_change_state @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-rules/tests/mechanics.rs::derived_modifiers_and_armor_round_negative_scores_correctly @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/rules_runtime.rs::secret_digital_rolls_do_not_leak_and_replay_never_rerolls @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)",
+        "crates/dmd-app/tests/rules_runtime.rs::inspiration_advantage_passive_queries_and_house_rulings_are_durable @ 3346699d5b8047ad5232199c4ad1c2c3e8d5c72c (PR #18)"
+      ],
       "player_acceptance": [],
       "scope": "Private authoritative result representation; full stealth/visibility Gate 4 and evidence-conservative narration Gate 9.",
       "final_acceptance_gate": 14

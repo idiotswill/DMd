@@ -252,7 +252,11 @@ fn completion_needs_mechanical_application_and_player_evidence() {
         "player_accepted",
     ] {
         let (mut ledger, inventory) = fixtures();
-        ledger.families[0].status = status.into();
+        let family = &mut ledger.families[0];
+        family.status = status.into();
+        family.mechanical_tests.clear();
+        family.production_integration.clear();
+        family.player_acceptance.clear();
         assert!(validate(&ledger, &inventory).is_err());
     }
     let (mut ledger, inventory) = fixtures();
@@ -263,4 +267,33 @@ fn completion_needs_mechanical_application_and_player_evidence() {
         vec!["real application scenario and exact verified head".into()];
     family.player_acceptance = vec!["human acceptance report and build".into()];
     assert_eq!(validate(&ledger, &inventory), Ok(()));
+}
+
+#[test]
+fn completion_stages_reject_missing_evidence_even_when_other_stages_have_it() {
+    for (status, missing) in [
+        ("mechanically_tested", "mechanical"),
+        ("production_integrated", "mechanical"),
+        ("production_integrated", "production"),
+        ("player_accepted", "mechanical"),
+        ("player_accepted", "production"),
+        ("player_accepted", "player"),
+    ] {
+        let (mut ledger, inventory) = fixtures();
+        let family = &mut ledger.families[0];
+        family.status = status.into();
+        family.mechanical_tests = vec!["mechanical test and verified head".into()];
+        family.production_integration = vec!["application scenario and verified head".into()];
+        family.player_acceptance = vec!["human acceptance report and build".into()];
+        match missing {
+            "mechanical" => family.mechanical_tests.clear(),
+            "production" => family.production_integration.clear(),
+            "player" => family.player_acceptance.clear(),
+            _ => unreachable!(),
+        }
+        assert!(
+            validate(&ledger, &inventory).is_err(),
+            "{status}: {missing}"
+        );
+    }
 }
