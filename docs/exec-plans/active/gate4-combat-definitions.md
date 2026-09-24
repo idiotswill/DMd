@@ -41,7 +41,7 @@ Full catalog population belongs to Gate 6; tactical mechanics remain Gate 4.
   fixed-damage Blowgun and mounted Lance) are represented. Prices/weight are not duplicated.
 - The ten spells are Burning Hands (114), Fog Cloud (133), Hold Person (141), Shield
   (161–162), Shield of Faith (162), Thunderwave (169), Magic Missile (146), Cure Wounds
-  (121), Fire Bolt (131), and Dancing Lights (121–122). Their descriptors preserve source
+  (121), Fire Bolt (132), and Dancing Lights (121–122). Their descriptors preserve source
   target/area/visibility, timing, material, duration, ongoing saves and object clauses.
 - Five represented stat blocks are Goblin Warrior (290), Skeleton (325–326), Wolf and
   Warhorse (364), and Young Red Dragon (318). Adult Red Dragon (318–319) and Cultist
