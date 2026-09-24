@@ -29,6 +29,7 @@ id_type!(CharacterId);
 id_type!(EntityId);
 id_type!(LocationId);
 id_type!(SceneId);
+id_type!(EncounterId);
 id_type!(ItemId);
 id_type!(FactionId);
 id_type!(QuestId);
