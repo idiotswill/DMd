@@ -7,7 +7,11 @@ rust-version.workspace = true
 
 [dependencies]
 dmd-domain = { path = "../dmd-domain" }
+dmd-core = { path = "../dmd-core" }
+dmd-rules = { path = "../dmd-rules" }
 dmd-persistence = { path = "../dmd-persistence" }
+serde_json.workspace = true
+rand = "0.8"
 sqlx.workspace = true
 thiserror.workspace = true
 

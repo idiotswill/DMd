@@ -1,5 +1,8 @@
 use std::path::{Path, PathBuf};
 
+mod rules_runtime;
+pub use rules_runtime::*;
+
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,
     ResolvedCampaignContent,
@@ -58,6 +61,14 @@ pub enum RunnableCampaignError {
     Lifecycle(#[from] LifecycleError),
     #[error("campaign export current state could not be decoded: {0}")]
     ExportStateDecode(String),
+    #[error(transparent)]
+    Rules(#[from] dmd_rules::RulesError),
+    #[error("rules content is unavailable or incompatible: {0}")]
+    RulesContent(String),
+    #[error(transparent)]
+    Journal(Box<dmd_persistence::JournalStoreError>),
+    #[error(transparent)]
+    Replay(Box<dmd_persistence::SnapshotReplayError>),
 }
 
 impl CampaignRuntime {
@@ -79,7 +90,8 @@ impl CampaignRuntime {
         state: &CampaignState,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
         let catalog = self.load_catalog()?;
-        catalog.resolve_campaign(&state.campaign)?;
+        let content = catalog.resolve_campaign(&state.campaign)?;
+        Self::validate_rules(state, &content)?;
 
         let raw = create_campaign(&self.pool, state).await?;
         Self::make_runnable(raw, &catalog)
@@ -105,15 +117,17 @@ impl CampaignRuntime {
         &self,
         export: &CampaignExport,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
-        let preflight_state = CampaignState::decode_json(&export.current_state.state_json)
+        let upgraded = export.upgraded()?;
+        let preflight_state = CampaignState::decode_json(&upgraded.current_state.state_json)
             .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
         let catalog = self.load_catalog()?;
-        catalog.resolve_campaign(&preflight_state.campaign)?;
+        let content = catalog.resolve_campaign(&preflight_state.campaign)?;
+        Self::validate_rules(&preflight_state, &content)?;
 
         // Content preflight happens before raw restore opens its write transaction. Persistence then
         // revalidates the full export and restores atomically; resolution is repeated on the exact
         // state returned from persistence before it can cross the runnable boundary.
-        let raw = restore_campaign(&self.pool, export).await?;
+        let raw = restore_campaign(&self.pool, &upgraded).await?;
         Self::make_runnable(raw, &catalog)
     }
 
@@ -126,10 +140,22 @@ impl CampaignRuntime {
         catalog: &ContentCatalog,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
         let content = catalog.resolve_campaign(&raw.state.campaign)?;
+        Self::validate_rules(&raw.state, &content)?;
         Ok(RunnableCampaign {
             lifecycle: raw.lifecycle,
             state: raw.state,
             content,
         })
+    }
+
+    fn validate_rules(
+        state: &CampaignState,
+        content: &ResolvedCampaignContent,
+    ) -> Result<(), RunnableCampaignError> {
+        if state.rules.is_some() || state.campaign.ruleset.id == "srd-5.2" {
+            let pack = rules_runtime::load_rules_pack(content)?;
+            dmd_rules::validate_state(state, &pack)?;
+        }
+        Ok(())
     }
 }
