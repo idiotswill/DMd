@@ -41,7 +41,7 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - [x] Five stale completed worker plans were archived with zero content changes.
 - [x] Accepted cross-gate technical debt is durably recorded in `docs/tech-debt.md` for carry-forward.
 - [x] Complete PR #14 substantive diff through checkpoint-correction head `0b2b460c460de96f50132e7083f6091f686bf656` was inspected; comparison shows only checkpoint/plan/debt edits plus five zero-change renames and no production/test/schema files.
-- [x] Subsequent diff from `0b2b460…` through plan-reconciliation head `6c0b953c503a86b54e11d336199694a3d2477d67` was verified plan-only. This final pinning commit is also plan-only; no substantive branch changes remain planned before the human decision.
+- [x] All changes after that substantive review were verified as execution-plan-only reconciliations; no further substantive branch changes are planned before the human decision.
 - [ ] Exact-current-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard.
 - [ ] ADR 012 receives explicit human acceptance and its stale status is reconciled.
 - [ ] Gate 1 receives explicit human acceptance of the final evidence.
@@ -70,8 +70,7 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Root `AGENTS.md`, product definition, Gate 1 checkpoint, ADRs 011/012, merged PR records, production boundary code, architecture guard, and relevant integration/regression tests were directly re-read.
 - Post-ADR-reconciliation `main` CI #279 was directly/durably verified green on the base commit.
 - Compare `33bf7b2… → 0b2b460…` shows checkpoint + plan + technical-debt edits and five exact renames with zero additions/deletions; no production, test, schema, migration, Cargo, or script file changed.
-- Compare `0b2b460… → 6c0b953…` shows only this execution plan changed. This final pinning commit also changes only this execution plan.
-- Exact-head PR #14 CI on the resulting immutable head is the remaining technical validation gate.
+- Every branch delta after `0b2b460…` has been verified as this execution plan only. Exact-head PR #14 CI on the immutable pre-approval head is the remaining technical validation gate.
 
 ## Blockers / risks
 - No technical implementation blocker is known.
@@ -79,4 +78,4 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Governance: the Gate 1 checkpoint is a high-impact acceptance boundary and requires explicit human approval before it is marked Accepted/merged.
 
 ## Next action
-Verify GitHub CI on the immutable current PR head. If green, update PR #14 metadata with the exact SHA/run without mutating the branch, then stop for explicit human approval of ADR 012 and Gate 1 acceptance. After approval, make the final status-only/plan-archival commit, validate that exact head, and merge with expected-head protection.
+Verify GitHub CI on the immutable pre-approval PR head. If green, update PR #14 metadata with the exact SHA/run without mutating the branch, then stop for explicit human approval of ADR 012 and Gate 1 acceptance. After approval, make the final status-only/plan-archival commit, validate that exact head, and merge with expected-head protection.
