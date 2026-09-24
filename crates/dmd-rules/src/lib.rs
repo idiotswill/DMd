@@ -246,3 +246,4 @@ mod tests {
         );
     }
 }
+pub mod tactical_damage;
