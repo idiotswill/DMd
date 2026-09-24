@@ -246,7 +246,14 @@ pub(super) fn entries(state: &CampaignState) -> Result<Vec<InitiativeEntry>, Rul
 }
 
 fn player_only(state: &CampaignState, tie: &InitiativeTie) -> bool {
-    tie.actors.iter().all(|id| controller(state, *id).is_some())
+    tie.actors.iter().all(|id| {
+        controller(state, *id).is_some()
+            && flow(state).is_ok_and(|f| {
+                f.combatants
+                    .iter()
+                    .any(|c| c.actor == *id && c.source == TacticalSource::Character)
+            })
+    })
 }
 fn approved(state: &CampaignState, tie: &InitiativeTie) -> bool {
     tie.proposed_order.is_some()

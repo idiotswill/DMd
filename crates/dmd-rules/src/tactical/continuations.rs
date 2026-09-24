@@ -103,6 +103,12 @@ pub(super) fn key(
                 ticket.target,
             )
         }
+        TacticalWorkKind::CreatureRecharge { actor, .. } => {
+            (TacticalRollRole::CreatureRecharge, *actor)
+        }
+        TacticalWorkKind::LegendaryWindow { .. } => {
+            return Err(invalid("Legendary Action choice has no roll"));
+        }
         TacticalWorkKind::RecoverStable { .. } => return Err(invalid("wake-up has no roll")),
     };
     Ok(TacticalRollKey {
@@ -114,6 +120,10 @@ pub(super) fn key(
 }
 pub(super) fn ruling(role: TacticalRollRole) -> Ruling {
     let (page, reason) = match role {
+        TacticalRollRole::CreatureRecharge => (
+            257,
+            "Source recharge at the start of the creature's own turn.",
+        ),
         TacticalRollRole::DeathSave => (
             17,
             "Death saving throw at the start of the creature's turn.",
@@ -151,7 +161,10 @@ pub(super) fn request(
                 },
             )?;
             let mut request = crate::tactical_damage::death_save_request(
-                &rules.entities[actor],
+                rules
+                    .entities
+                    .get(actor)
+                    .ok_or_else(|| invalid("death save actor missing"))?,
                 &context,
                 key.request_id(),
             )
@@ -191,6 +204,20 @@ pub(super) fn request(
                 _ => Err(invalid("selected effect has no raw roll")),
             }
         }
+        TacticalWorkKind::CreatureRecharge { actor, feature_id } => {
+            let request = super::creature_bridge::recharge(state, *actor, feature_id)?
+                .request
+                .clone();
+            if request.id != key.request_id() {
+                return Err(invalid(
+                    "source recharge differs from its deterministic occurrence",
+                ));
+            }
+            Ok(Some(request))
+        }
+        TacticalWorkKind::LegendaryWindow { .. } => {
+            Err(invalid("legendary decision has no raw roll"))
+        }
         TacticalWorkKind::RecoverStable { .. } => Err(invalid("stable wake-up has no raw roll")),
     }
 }
@@ -201,6 +228,11 @@ pub(super) fn start(
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
     match &work.kind {
+        TacticalWorkKind::LegendaryWindow { actor } => {
+            let actor = *actor;
+            return super::creature_bridge::offer(state, meta, work, actor);
+        }
+        TacticalWorkKind::CreatureRecharge { .. } => (),
         TacticalWorkKind::Effect { ticket: id } => {
             let trigger = ticket(state, *id)?;
             if !trigger_is_applicable(effects(state)?, trigger)
@@ -269,7 +301,7 @@ pub(super) fn start(
             resolved_by: meta.clone(),
             failure: TacticalSaveFailure::Automatic,
         });
-        finish(state, meta, pending, None)?;
+        super::failed_save::stage_or_finish(state, meta, pending, None)?;
         return Ok(());
     };
     let encounter = encounter(state)?.id;
@@ -353,7 +385,7 @@ pub(super) fn submit(
         savage_attacker: None,
     });
     rules.pending = None;
-    finish(state, meta, continuation, Some(&accepted))?;
+    super::failed_save::stage_or_finish(state, meta, continuation, Some(&accepted))?;
     pump(state, meta)
 }
 
@@ -397,15 +429,16 @@ pub(super) fn voluntarily_fail(
         resolved_by: meta.clone(),
         failure: TacticalSaveFailure::Voluntary,
     });
-    finish(state, meta, continuation, None)?;
+    super::failed_save::stage_or_finish(state, meta, continuation, None)?;
     pump(state, meta)
 }
 
-fn finish(
+pub(super) fn finish(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pending: TacticalPendingWork,
     result: Option<&RollResult>,
+    forced_success: bool,
 ) -> Result<(), RulesError> {
     // Derive the current request before removing the selected ticket/cause.
     let raw = result
@@ -419,12 +452,16 @@ fn finish(
     resolution_mut(state)?.pending = None;
     match pending.work.kind {
         TacticalWorkKind::DeathSave { actor } => {
-            let operation = result.map_or(VitalityOperation::FailDeathSave, |result| {
-                VitalityOperation::DeathSave {
-                    request_id: pending.key.request_id(),
-                    result: result.clone(),
-                }
-            });
+            let operation = if forced_success {
+                VitalityOperation::SucceedDeathSave
+            } else {
+                result.map_or(VitalityOperation::FailDeathSave, |result| {
+                    VitalityOperation::DeathSave {
+                        request_id: pending.key.request_id(),
+                        result: result.clone(),
+                    }
+                })
+            };
             apply_vitality(state, meta, actor, pending.work.occurrence, operation, None)?;
         }
         TacticalWorkKind::StableRecovery { actor, origin } => {
@@ -448,7 +485,7 @@ fn finish(
             damage_taken,
         } => {
             let dc = (damage_taken / 2).clamp(10, 30);
-            if raw.is_none_or(|r| i64::from(r.total) < i64::from(dc)) {
+            if !forced_success && raw.is_none_or(|r| i64::from(r.total) < i64::from(dc)) {
                 end_concentration(state, meta, actor, group)?;
             }
         }
@@ -460,7 +497,7 @@ fn finish(
                     meta,
                     id,
                     EffectTriggerResolution::SavingThrow {
-                        success: raw.is_some_and(|r| r.total >= i32::from(dc)),
+                        success: forced_success || raw.is_some_and(|r| r.total >= i32::from(dc)),
                     },
                 )?,
                 EffectTriggerPayload::Damage { damage_type, .. } => {
@@ -490,6 +527,18 @@ fn finish(
                 }
                 _ => return Err(invalid("pending effect is not roll-bearing")),
             }
+        }
+        TacticalWorkKind::CreatureRecharge { actor, feature_id } => {
+            super::creature_bridge::submit_recharge(
+                state,
+                meta,
+                actor,
+                &feature_id,
+                result.ok_or_else(|| invalid("recharge requires raw d6"))?,
+            )?
+        }
+        TacticalWorkKind::LegendaryWindow { .. } => {
+            return Err(invalid("legendary decision is not a die roll"));
         }
         TacticalWorkKind::RecoverStable { .. } => {
             return Err(invalid("wake-up cannot be pending dice"));

@@ -288,7 +288,7 @@ pub(super) fn validate_entity(
         .and_then(|creatures| creatures.profile(e.entity_id));
     if let Some(profile) = creature_profile {
         crate::tactical_creatures::validate_creature_profile(state, profile, e)
-            .map_err(|error| invalid(&error.to_string()))?;
+            .map_err(|error| invalid(error.to_string()))?;
     }
     if (creature_profile.is_none() && !(1..=20).contains(&e.level))
         || e.ability_scores.iter().any(|s| !(1..=30).contains(s))
@@ -427,11 +427,11 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     crate::tactical_vitality_adapter::validate_attachment(state)?;
     if let Some(creatures) = &rules.tactical_creatures {
         crate::tactical_creatures::validate_tactical_creatures(state, creatures)
-            .map_err(|error| invalid(&error.to_string()))?;
+            .map_err(|error| invalid(error.to_string()))?;
     }
     if let Some(inventory) = &rules.tactical_inventory {
         crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
-            .map_err(|error| invalid(&error.to_string()))?;
+            .map_err(|error| invalid(error.to_string()))?;
     }
     for (id, e) in &rules.entities {
         if *id != e.entity_id {
@@ -552,6 +552,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 | TacticalRollRole::EffectSave
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
+                TacticalRollRole::CreatureRecharge => Some(6),
                 TacticalRollRole::EffectDamage => None,
             };
             if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {

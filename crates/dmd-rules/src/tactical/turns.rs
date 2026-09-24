@@ -121,7 +121,7 @@ pub(super) fn push_frame(
 pub(super) fn new_effect_work(state: &CampaignState) -> Result<Vec<TacticalWorkKind>, RulesError> {
     let resolution = resolution(state)?;
     Ok(effects(state)?.pending.iter().filter(|ticket| {
-        !resolution.frames.iter().flatten().chain(resolution.pending.iter().map(|p| &p.work))
+        !resolution.frames.iter().flatten().chain(resolution.pending.iter().map(|p| &p.work)).chain(resolution.failed_save.iter().map(|f| &f.pending.work))
             .any(|work| matches!(work.kind, TacticalWorkKind::Effect { ticket: id } if id == ticket.id))
     }).map(|t| TacticalWorkKind::Effect { ticket: t.id }).collect())
 }
@@ -190,6 +190,7 @@ fn begin_boundary_from(
         frames: vec![],
         pending: None,
         failed_save: None,
+        legendary_window: None,
         next_occurrence: first_occurrence,
     });
     state
@@ -240,13 +241,17 @@ fn begin_boundary_from(
             work.push(TacticalWorkKind::RecoverStable { actor });
         }
     }
+    super::creature_bridge::boundary(state, meta, &mut work)?;
     push_frame(state, work)?;
     pump(state, meta)
 }
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if resolution(state)?.pending.is_some() || resolution(state)?.failed_save.is_some() {
+        if resolution(state)?.pending.is_some()
+            || resolution(state)?.failed_save.is_some()
+            || resolution(state)?.legendary_window.is_some()
+        {
             return Ok(());
         }
         // Ending a group can cancel sibling tickets. They cannot remain a phantom choice.
@@ -255,6 +260,11 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         for frame in &mut r.frames {
             frame.retain(|w| !matches!(w.kind, TacticalWorkKind::Effect { ticket } if !live.contains(&ticket)));
         }
+        while r.frames.last().is_some_and(Vec::is_empty) {
+            r.frames.pop();
+        }
+        super::creature_bridge::after_turn(state)?;
+        let r = resolution_mut(state)?;
         while r.frames.last().is_some_and(Vec::is_empty) {
             r.frames.pop();
         }
@@ -302,8 +312,21 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    authorize(state, meta, resolution(state)?.turn_actor)?;
-    if resolution(state)?.pending.is_some() || resolution(state)?.failed_save.is_some() {
+    let after_turn = resolution(state)?.frames.last().is_some_and(|frame| {
+        !frame.is_empty()
+            && frame
+                .iter()
+                .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
+    });
+    if after_turn {
+        privileged(meta)?;
+    } else {
+        authorize(state, meta, resolution(state)?.turn_actor)?;
+    }
+    if resolution(state)?.pending.is_some()
+        || resolution(state)?.failed_save.is_some()
+        || resolution(state)?.legendary_window.is_some()
+    {
         return Err(RulesError::Pending);
     }
     let frame = resolution_mut(state)?
@@ -333,15 +356,16 @@ pub(super) fn speeds(
         .clone();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     speeds.walk = crate::tactical_conditions::effective_speed(rules, actor, speeds.walk)?;
-    for speed in [
+    for value in [
         &mut speeds.climb,
         &mut speeds.swim,
         &mut speeds.fly,
         &mut speeds.burrow,
-    ] {
-        if let Some(value) = speed {
-            *value = crate::tactical_conditions::effective_speed(rules, actor, *value)?;
-        }
+    ]
+    .into_iter()
+    .flatten()
+    {
+        *value = crate::tactical_conditions::effective_speed(rules, actor, *value)?;
     }
     Ok(speeds)
 }
@@ -443,8 +467,9 @@ pub(super) fn core_action(
             });
         }
         TacticalAction::StartAttackAction => {
-            // Supported PC class is Fighter 1; stat-block Multiattack is its own source
-            // action and must not inherit this Attack-action Light/equipment permission.
+            // Supported PC class is Fighter 1. Source Multiattack also uses the Attack
+            // action (SRD257), but its pinned routine is selected through the creature
+            // feature path; this ordinary Attack choice grants one attack.
             budget::start_attack_action(rules, &mut turn_budget, actor, 1)?;
             turn_budget.attack_window = Some(WeaponActionWindow {
                 id: meta.id,

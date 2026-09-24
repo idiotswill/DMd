@@ -192,7 +192,14 @@ fn validate_ties(
             .iter()
             .filter_map(|id| controller(state, *id))
             .collect();
-        let player_only = tie.actors.iter().all(|id| controller(state, *id).is_some());
+        let player_only = tie.actors.iter().all(|id| {
+            controller(state, *id).is_some()
+                && flow(state).is_ok_and(|f| {
+                    f.combatants
+                        .iter()
+                        .any(|c| c.actor == *id && c.source == TacticalSource::Character)
+                })
+        });
         let accepted: HashSet<_> = tie.accepted_by.iter().copied().collect();
         if accepted.len() != tie.accepted_by.len()
             || !accepted.is_subset(&controllers)
