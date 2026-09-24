@@ -1,17 +1,19 @@
 // Collect upstream notice files from the exact installed/locked dependency trees.
 import { spawnSync } from 'node:child_process';
-import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
-import { copyNoticeFiles } from './desktop-notice-files.mjs';
+import { fileURLToPath } from 'node:url';
+import { copyNoticeFiles, prepareNoticeOutput } from './desktop-notice-files.mjs';
+import { copySupplementalNotices } from './desktop-notice-supplements.mjs';
 
-const output = process.argv[2];
-if (!output) throw new Error('A notice output directory is required.');
-await mkdir(output, { recursive: true });
+if (!process.argv[2]) throw new Error('A notice output directory is required.');
+const output = await prepareNoticeOutput(fileURLToPath(new URL('../', import.meta.url)), process.argv[2]);
 const records = [];
 
 async function collect(kind, name, version, license, root, licenseFile = null) {
   const destination = path.join(output, kind, `${name.replaceAll('/', '__')}-${version}`);
-  const files = await copyNoticeFiles(root, destination, licenseFile);
+  const files = await copyNoticeFiles(root, destination, licenseFile, output);
+  files.push(...await copySupplementalNotices(kind, name, version, license, root, destination));
   records.push({ kind, name, version, license: license ?? null, notices: files.map((file) => path.relative(output, path.join(destination, file)).replaceAll('\\', '/')) });
 }
 

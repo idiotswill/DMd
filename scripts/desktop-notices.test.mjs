@@ -3,7 +3,8 @@ import { mkdtemp, mkdir, readFile, readdir, symlink, writeFile } from 'node:fs/p
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { copyNoticeFiles } from './desktop-notice-files.mjs';
+import { copyNoticeFiles, prepareNoticeOutput } from './desktop-notice-files.mjs';
+import { copySupplementalNotices } from './desktop-notice-supplements.mjs';
 
 test('copies upstream license naming and directory layouts while excluding application source', async () => {
   const temporary = await mkdtemp(path.join(os.tmpdir(), 'dmd-notices-'));
@@ -39,4 +40,59 @@ test('rejects a declared license that escapes its package through a directory li
   try { await symlink(outside, path.join(root, 'legal'), process.platform === 'win32' ? 'junction' : 'dir'); }
   catch (error) { if (error.code === 'EPERM') { context.skip('Host does not permit directory links.'); return; } throw error; }
   await assert.rejects(copyNoticeFiles(root, path.join(temporary, 'output'), 'legal/grant.txt'), /resolve inside its package/);
+});
+
+test('repeated collection excludes its own generated output inside the desktop crate', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'dmd-repeat-notice-'));
+  const output = path.join(root, 'licenses', 'dependencies');
+  const destination = path.join(output, 'rust', 'dmd-desktop-0.1.0');
+  await mkdir(output, { recursive: true });
+  await writeFile(path.join(root, 'LICENSE'), 'source notice');
+  await writeFile(path.join(output, 'LICENSE.generated'), 'must not be recursively repackaged');
+  for (let pass = 0; pass < 3; pass += 1) {
+    assert.deepEqual(await copyNoticeFiles(root, destination, null, output), ['LICENSE']);
+    assert.deepEqual(await readdir(destination), ['LICENSE']);
+    assert.equal(await readFile(path.join(destination, 'LICENSE'), 'utf8'), 'source notice');
+  }
+});
+
+test('preparation removes stale generated notices and refuses unrelated or linked directories', async (context) => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'dmd-notice-output-'));
+  const output = path.join(root, 'crates', 'dmd-desktop', 'licenses', 'dependencies');
+  await prepareNoticeOutput(root, output);
+  await writeFile(path.join(output, 'LICENSE.stale'), 'old generated notice');
+  await prepareNoticeOutput(root, output);
+  assert.deepEqual(await readdir(output), []);
+  const unrelated = path.join(root, 'private');
+  await mkdir(unrelated);
+  await writeFile(path.join(unrelated, 'keep.txt'), 'keep');
+  await assert.rejects(prepareNoticeOutput(root, unrelated), /repository generated/);
+  assert.equal(await readFile(path.join(unrelated, 'keep.txt'), 'utf8'), 'keep');
+  const linkedRoot = await mkdtemp(path.join(os.tmpdir(), 'dmd-linked-output-'));
+  const licenses = path.join(linkedRoot, 'crates', 'dmd-desktop', 'licenses');
+  await mkdir(licenses, { recursive: true });
+  const linked = path.join(licenses, 'dependencies');
+  try { await symlink(unrelated, linked, process.platform === 'win32' ? 'junction' : 'dir'); }
+  catch (error) { if (error.code === 'EPERM') { context.skip('Host does not permit directory links.'); return; } throw error; }
+  await assert.rejects(prepareNoticeOutput(linkedRoot, linked), /must not resolve through a link/);
+  assert.equal(await readFile(path.join(unrelated, 'keep.txt'), 'utf8'), 'keep');
+});
+
+test('packages the pinned upstream copyright text for each WebView2 crate', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../third-party-notices/supplements.json', import.meta.url), 'utf8'));
+  for (const entry of manifest.packages) {
+    const root = await mkdtemp(path.join(os.tmpdir(), 'dmd-supplement-'));
+    const destination = path.join(root, 'output');
+    await writeFile(path.join(root, '.cargo-checksum.json'), JSON.stringify({ package: entry.crate_sha256 }));
+    await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: entry.revision } }));
+    assert.deepEqual(await copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), ['LICENSE.upstream', 'NOTICE.source.json']);
+    assert.match(await readFile(path.join(destination, 'LICENSE.upstream'), 'utf8'), /Copyright \(c\) 2021 Bill Avery/);
+    assert.deepEqual(JSON.parse(await readFile(path.join(destination, 'NOTICE.source.json'), 'utf8')), entry);
+    await assert.rejects(copySupplementalNotices('rust', entry.name, '99.0.0', 'MIT', root, destination), /requires review/);
+    await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: 'unreviewed' } }));
+    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), /source pin/);
+    await writeFile(path.join(root, '.cargo_vcs_info.json'), JSON.stringify({ git: { sha1: entry.revision } }));
+    await writeFile(path.join(root, '.cargo-checksum.json'), JSON.stringify({ package: 'unreviewed' }));
+    await assert.rejects(copySupplementalNotices('rust', entry.name, entry.version, 'MIT', root, destination), /source pin/);
+  }
 });

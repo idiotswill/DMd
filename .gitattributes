@@ -2,3 +2,4 @@
 /content/** text eol=lf
 # Tauri's CLI rewrites this manifest with LF during release builds.
 /crates/dmd-desktop/Cargo.toml text eol=lf
+/third-party-notices/** text eol=lf

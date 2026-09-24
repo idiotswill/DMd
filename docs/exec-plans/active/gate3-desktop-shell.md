@@ -65,6 +65,16 @@ copying/fail-closed regressions passing locally. A fresh exact-head package run 
 actual packaged UI acceptance remain required. Root's full GNU verification at
 `51d2962` passed 207 tests, formatting, check, strict Clippy and both guards.
 
+At `f4f1ad2`, Windows workflow `36020516064` passed both jobs including packaging
+and artifact upload; Linux CI `36020516060` also passed. Root verified all 3318
+artifact checksums and began native UI acceptance. Independent artifact inspection
+found WebView2's published crates omit the upstream MIT text and noticed repeated
+collection copied the desktop crate's generated output into itself. The followup
+adds exact archive/revision/license/hash-pinned upstream text for the three crates,
+clears only the validated generated output directory, excludes that subtree from
+collection, and tests copying, repetition, safe output cleanup and changed pins.
+The corrected final artifact still requires fresh CI and notice inspection.
+
 Verification planned: frontend `npm ci`, check/test/build; existing
 fast/full checks as applicable; Windows MSRV/check/release/package CI; artifact hash
 verification and real executable launch/restart. Failures and unexecuted checks must
