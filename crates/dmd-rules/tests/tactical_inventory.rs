@@ -745,3 +745,51 @@ fn holding_an_improvised_object_does_not_make_it_source_armor_or_a_weapon() {
     f.state.items.get_mut(&id).unwrap().custody = Custody::Entity(f.other);
     assert!(validate_tactical_inventory(&f.state, &f.inventory, &f.pack).is_err());
 }
+
+#[test]
+fn loose_npc_gear_requires_valid_physical_state_without_a_pc_grant_or_loadout() {
+    let mut f = Fixture::new();
+    let id = ItemId::new();
+    f.state.items.insert(
+        id,
+        ItemInstance {
+            id,
+            campaign_id: f.state.campaign_id(),
+            definition_id: "scimitar".into(),
+            display_name: "Recovered gear".into(),
+            quantity: 1,
+            owner: Ownership::Entity(f.other),
+            custody: Custody::Entity(f.other),
+            state: ItemState::Intact,
+        },
+    );
+    assert!(f.inventory.receipts.is_empty());
+    assert!(f.inventory.loadouts.is_empty());
+    f.valid();
+    for (definition, quantity, item_state) in [
+        ("scimitar", 2, ItemState::Intact),
+        ("arrows", 0, ItemState::Intact),
+        ("arrows", 4, ItemState::Spent),
+        ("holy-symbol", 1, ItemState::Custom("ready".into())),
+        ("spell-material:hold-person", 0, ItemState::Damaged),
+    ] {
+        let item = f.state.items.get_mut(&id).unwrap();
+        item.definition_id = definition.into();
+        item.quantity = quantity;
+        item.state = item_state;
+        assert!(
+            validate_tactical_inventory(&f.state, &f.inventory, &f.pack).is_err(),
+            "loose {definition} escaped physical validation"
+        );
+    }
+    let item = f.state.items.get_mut(&id).unwrap();
+    item.definition_id = "arrows".into();
+    item.quantity = 0;
+    item.state = ItemState::Spent;
+    f.valid();
+    let item = f.state.items.get_mut(&id).unwrap();
+    item.definition_id = "world.sealed-letter".into();
+    item.quantity = 1;
+    item.state = ItemState::Custom("sealed".into());
+    f.valid(); // Source equipment rules do not redefine unrelated campaign objects.
+}
