@@ -4,6 +4,8 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/table_attack_cases.rs"]
+mod table_attack_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 
@@ -47,6 +49,12 @@ impl Fixture {
         Self::with_contract(TableContract::default()).await
     }
     async fn with_contract(contract: TableContract) -> Self {
+        Self::with_creation(contract, None).await
+    }
+    async fn with_creation(
+        contract: TableContract,
+        first_character: Option<CharacterCreationInput>,
+    ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let runtime = CampaignRuntime::from_content_root(
             pool.clone(),
@@ -79,7 +87,13 @@ impl Fixture {
                     character_id: f.characters[i],
                     entity_id: f.actors[i],
                     player_id: f.players[i],
-                    input: input(&format!("Character {i}")),
+                    input: if i == 0 {
+                        first_character
+                            .clone()
+                            .unwrap_or_else(|| input("Character 0"))
+                    } else {
+                        input("Character 1")
+                    },
                 },
                 None,
             )

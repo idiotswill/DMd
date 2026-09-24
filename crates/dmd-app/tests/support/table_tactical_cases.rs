@@ -351,6 +351,14 @@ async fn verify_creature_scene(f: &mut Fixture, actor: EntityId) {
 }
 
 async fn prepare_source_scene(f: &mut Fixture, actor: EntityId) {
+    prepare_source_scene_at(f, actor, SpatialPoint { x: 30, y: 10, z: 0 }).await;
+}
+
+pub(super) async fn prepare_source_scene_at(
+    f: &mut Fixture,
+    actor: EntityId,
+    position: SpatialPoint,
+) {
     let view = f
         .runtime
         .table_view(f.campaign, TableViewer::Host)
@@ -407,7 +415,7 @@ async fn prepare_source_scene(f: &mut Fixture, actor: EntityId) {
                 creatures: vec![TableCreaturePlacement {
                     actor,
                     public_label: "Small armored figure".into(),
-                    position: SpatialPoint { x: 30, y: 10, z: 0 },
+                    position,
                     height: 8,
                     allies: vec![],
                     enemies: vec![f.actors[0]],

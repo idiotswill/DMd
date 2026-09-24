@@ -49,7 +49,12 @@ ammunition and explicit equipment changes. Its targets come from only the acting
 creature's current perception, including when viewed by the host. Three initial UI tests
 passed; Svelte caught four unsupported test-query typing options, which were corrected
 and now check cleanly. A fourth choice/channel regression is added for the next run.
-These UI checks do not verify backend integration yet. Root's Rust build is queued after
-inventory and casting; real SQLite attack/concentration/knockout replay and NPC shield
-drop coverage remain next work. Light/Nick follow-up choices and source feature controls
+All 25 frontend tests now pass together, with Svelte zero errors/warnings and a successful
+production build on `624c642`. Independent review of the physical projection, form and
+decision controls found no defect. These UI checks do not verify backend integration
+yet. Root's Rust build is queued after inventory and casting. Real SQLite scenarios are
+now drafted for physical attack/damage/knockout suspension and restore, source NPC shield
+drop and live AC, outsider rejection, truthful player labels, host-versus-NPC perception
+and loss of a thrown weapon from subsequent physical choices. They are not yet compiled.
+Concentration follow-up through table spell casting remains pending. Light/Nick follow-up choices and source feature controls
 remain active work; the first form currently submits the ordinary Attack action only.
