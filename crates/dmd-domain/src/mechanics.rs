@@ -355,6 +355,8 @@ pub struct RulesState {
     /// Absent on historical campaigns; projected condition views must never be stored above.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tactical_effects: Option<crate::TacticalEffects>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_inventory: Option<crate::TacticalInventory>,
     pub pending: Option<PendingRoll>,
     pub rolls: Vec<RecordedRoll>,
     pub cancelled_roll_ids: Vec<crate::RollRequestId>,

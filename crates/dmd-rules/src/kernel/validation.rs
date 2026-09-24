@@ -381,6 +381,10 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         return Err(invalid("empty mechanical state"));
     }
     crate::tactical_effect_adapter::validate_effect_attachment(state)?;
+    if let Some(inventory) = &rules.tactical_inventory {
+        crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
+            .map_err(|error| invalid(&error.to_string()))?;
+    }
     for (id, e) in &rules.entities {
         if *id != e.entity_id {
             return Err(invalid("mechanical entity key mismatch"));

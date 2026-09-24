@@ -92,10 +92,9 @@ pub(crate) fn validate_rules_export(
         .encounter
         .as_ref()
         .is_some_and(|encounter| encounter.flow.is_some())
-        || anchor
-            .rules
-            .as_ref()
-            .is_some_and(|rules| rules.tactical_effects.is_some())
+        || anchor.rules.as_ref().is_some_and(|rules| {
+            rules.tactical_effects.is_some() || rules.tactical_inventory.is_some()
+        })
     {
         return Err("tactical recovery requires its original pre-tactical anchor".into());
     }
@@ -690,6 +689,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let Some(rules) = &state.rules else {
         return origins;
     };
+    if let Some(inventory) = &rules.tactical_inventory {
+        origins.extend(inventory.receipts.iter().map(|receipt| &receipt.command));
+        origins.extend(inventory.loadouts.iter().map(|loadout| &loadout.command));
+    }
     if let Some(effects) = &rules.tactical_effects {
         origins.extend(effects.groups.iter().map(|g| &g.source.command));
         for effect in &effects.effects {

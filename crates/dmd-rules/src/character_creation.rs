@@ -64,6 +64,20 @@ pub fn starter_catalog() -> StarterCatalog {
     ))
     .expect("source-reviewed starter catalog is valid JSON")
 }
+/// Fighter level-one selections (SRD48), independent of owned/starting equipment.
+pub fn fighter_mastery_choices() -> Result<Vec<String>, RulesError> {
+    let catalog = crate::tactical_definitions::TacticalDefinitions::from_json(
+        crate::tactical_definitions::TACTICAL_DEFINITIONS_JSON,
+    )
+    .map_err(|error| RulesError::Invalid(error.to_string()))?;
+    let mut choices: Vec<_> = catalog
+        .weapons
+        .into_iter()
+        .map(|weapon| weapon.id)
+        .collect();
+    choices.sort_unstable();
+    Ok(choices)
+}
 pub const FIGHTER_SKILLS: [Skill; 9] = [
     Skill::Acrobatics,
     Skill::AnimalHandling,
@@ -112,7 +126,31 @@ pub fn validate_character_mechanics(
     entity: &MechanicalEntity,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
+    validate_character_components(profile, entity, pack, false)
+}
+
+/// Validate immutable source grants without treating starting armor as live inventory.
+/// The caller must independently derive and validate `armor` and `wearing_armor` from
+/// current equipment before using AC. Legacy kernel attack registrations remain source
+/// creation data; the tactical weapon planner derives weapon availability from ItemIds.
+pub fn validate_character_intrinsics(
+    profile: &CharacterProfile,
+    entity: &MechanicalEntity,
+    pack: &RulesPack,
+) -> Result<(), RulesError> {
+    validate_character_components(profile, entity, pack, true)
+}
+
+fn validate_character_components(
+    profile: &CharacterProfile,
+    entity: &MechanicalEntity,
+    pack: &RulesPack,
+    live_equipment: bool,
+) -> Result<(), RulesError> {
     let mut expected = character_from_profile(profile, pack)?.mechanics;
+    if live_equipment {
+        expected.armor = entity.armor.clone();
+    }
     expected.hp = entity.hp;
     expected.temporary_hp = entity.temporary_hp;
     expected.hit_dice.remaining = entity.hit_dice.remaining;
@@ -133,6 +171,9 @@ pub fn validate_character_mechanics(
     features.second_wind_remaining = actual_features.second_wind_remaining;
     features.inspiration_transfer_pending = actual_features.inspiration_transfer_pending;
     features.savage_attacker_turn = actual_features.savage_attacker_turn;
+    if live_equipment {
+        features.wearing_armor = actual_features.wearing_armor;
+    }
     if expected != *entity {
         return Err(invalid(
             "character source choices disagree with its mechanical sheet",
@@ -262,13 +303,15 @@ pub fn build_character(
         ));
     }
     let masteries: BTreeSet<_> = input.masteries.iter().map(String::as_str).collect();
-    if masteries != BTreeSet::from(["club", "dagger", "shortbow"]) {
+    let choices = fighter_mastery_choices()?;
+    if masteries.len() != 3
+        || masteries
+            .iter()
+            .any(|id| !choices.iter().any(|choice| choice == id))
+    {
         return Err(invalid(
-            "choose the three supported weapon mastery grants: club, dagger, shortbow",
+            "choose three distinct Simple or Martial weapon mastery grants",
         ));
-    }
-    for id in &input.masteries {
-        pack.attack(id)?;
     }
     let catalog = starter_catalog();
     let mut purchased = BTreeMap::new();

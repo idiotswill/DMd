@@ -18,6 +18,7 @@ fn fixture() -> (RulesState, EntityId, EntityId, EntityId) {
             house_rules: HouseRules::default(),
             effects: vec![],
             tactical_effects: None,
+            tactical_inventory: None,
             pending: None,
             rolls: vec![],
             cancelled_roll_ids: vec![],

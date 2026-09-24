@@ -103,3 +103,10 @@ of the new root adapter and canonical full verification remain pending.
 Next: integrate reviewed weapon/inventory/damage reducers, then turn-boundary scheduling
 with source-derived durable rolls/choices. Retain the original command and typed occurrence
 when deriving deterministic continuation identities; never generate dice or IDs on replay.
+
+Integration checkpoint: inventory reducer `c089e89` (11 tests/Clippy, independently reviewed)
+and weapon reducer `699cb0f` (17 weapon + 14 creation tests/Clippy, reviewed fixes for
+Exhaustion/current armor) are copied into this branch. Inventory now has an optional
+RulesState attachment, structural/source validation and codec/database/audit guards.
+The combined tree has not yet been compiled; its application provisioning/current-AC
+adapter and turn resolution remain active work. This checkpoint is not merge evidence.

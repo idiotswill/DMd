@@ -93,7 +93,13 @@ pub struct WeaponUseChoice {
 pub enum WeaponAttackOutcome {
     Pending,
     Miss,
-    Hit { critical: bool, damage_dealt: u32 },
+    Hit {
+        critical: bool,
+        /// Resolved damage after reductions, including temporary-HP absorption.
+        /// This is not merely HP lost: damaging-hit masteries still apply when
+        /// temporary HP absorbs all of the attack's damage.
+        damage_dealt: u32,
+    },
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
