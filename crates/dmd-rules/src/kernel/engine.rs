@@ -188,6 +188,22 @@ fn apply(
     pack: &RulesPack,
     permission: Option<ActionPermission>,
 ) -> Result<RulesOutcome, RulesError> {
+    let continues_rest_spending = matches!(
+        action,
+        RulesAction::ApplyDamage { .. }
+            | RulesAction::SpendHitDie { .. }
+            | RulesAction::FinishRest { .. }
+            | RulesAction::InterruptRest { .. }
+    ) || (matches!(
+        action,
+        RulesAction::SubmitRoll { .. } | RulesAction::SubmitRollWithInspiration { .. }
+    ) && rules
+        .pending
+        .as_ref()
+        .is_some_and(|p| matches!(p.purpose, PendingPurpose::RestHitDie)));
+    if !continues_rest_spending {
+        rules.completed_short_rests.clear();
+    }
     match action {
         RulesAction::Initialize { .. } => Err(prerequisite("already initialized")),
         RulesAction::RequestTest {
@@ -324,7 +340,7 @@ fn apply(
             ready(rules, *actor)?;
             let p = permission
                 .ok_or_else(|| prerequisite("attack needs authoritative contextual permission"))?;
-            permission_matches(&p, *actor, *target, attack_id, false)?;
+            permission_matches(&p, meta, *actor, *target, attack_id, false)?;
             if !entity(rules, *actor)?.attacks.contains(attack_id) {
                 return Err(prerequisite("weapon is not in the actor's granted loadout"));
             }
@@ -639,7 +655,7 @@ fn apply(
                 meta,
                 request,
                 PendingPurpose::RestHitDie,
-                srd(186, "Spend one hit die after a short rest"),
+                srd(187, "Spend one hit die after a short rest"),
             )
         }
         RulesAction::AdvanceTime { seconds, ruling } => {
@@ -742,12 +758,28 @@ fn apply(
             t.reactions_spent.push(*actor);
             Ok(RulesOutcome::Changed)
         }
-        RulesAction::UseBonusAction {actor,feature_id,ruling}=>{
-            adjudicate(rules,meta,ruling)?;ready(rules,*actor)?;
-            if !definitions::valid_id(feature_id){return Err(invalid("bonus action requires a supported feature identifier"));}
-            let t=rules.timing.as_mut().ok_or_else(||prerequisite("bonus action timing requires initiative"))?;
-            if t.order[t.index].actor!=*actor||t.bonus_action_spent{return Err(prerequisite("bonus action unavailable"));}t.bonus_action_spent=true;Ok(RulesOutcome::Changed)
-        },
+        RulesAction::UseBonusAction {
+            actor,
+            feature_id,
+            ruling,
+        } => {
+            adjudicate(rules, meta, ruling)?;
+            ready(rules, *actor)?;
+            if !definitions::valid_id(feature_id) {
+                return Err(invalid(
+                    "bonus action requires a supported feature identifier",
+                ));
+            }
+            let t = rules
+                .timing
+                .as_mut()
+                .ok_or_else(|| prerequisite("bonus action timing requires initiative"))?;
+            if t.order[t.index].actor != *actor || t.bonus_action_spent {
+                return Err(prerequisite("bonus action unavailable"));
+            }
+            t.bonus_action_spent = true;
+            Ok(RulesOutcome::Changed)
+        }
         RulesAction::EndConcentration { actor } => {
             authorize(state, meta, *actor)?;
             if entity(rules, *actor)?.concentration.is_none() {
@@ -780,11 +812,15 @@ fn srd(page: u16, reason: &str) -> Ruling {
 }
 fn permission_matches(
     p: &ActionPermission,
+    meta: &CommandMeta,
     actor: EntityId,
     target: EntityId,
     id: &str,
     spell: bool,
 ) -> Result<(), RulesError> {
+    if p.issued_by.expected_event_sequence.checked_add(1) != Some(meta.expected_event_sequence) {
+        return Err(prerequisite("contextual permission is stale"));
+    }
     if p.actor != actor || p.target != target || p.content_id != id || p.spell != spell {
         return Err(prerequisite(
             "context permission does not match selected action",
@@ -887,7 +923,7 @@ pub(super) fn attack_context(
             c.disadvantage = true;
         }
     }
-    if ranged && p.within_five_feet && !defender.contains(&Condition::Incapacitated) {
+    if ranged && p.circumstances.ranged_threat {
         c.disadvantage = true;
     }
     let critical = p.within_five_feet
@@ -909,7 +945,7 @@ fn cast_spell(
     entity(rules, target)?;
     let p = permission
         .ok_or_else(|| prerequisite("spell needs authoritative contextual permission"))?;
-    permission_matches(&p, actor, target, id, true)?;
+    permission_matches(&p, meta, actor, target, id, true)?;
     let definition = pack.spell(id)?;
     let e = entity(rules, actor)?;
     if !e.prepared_spells.contains(id) {
@@ -1275,6 +1311,7 @@ fn damage(
         e.hp -= hp_damage;
     }
     let incap = e.hp == 0 || e.death.dead;
+    rules.completed_short_rests.retain(|id| *id != target);
     interrupt_rest(rules, target, now);
     if incap {
         end_concentration(rules, target);

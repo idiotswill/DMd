@@ -24,12 +24,14 @@ pub enum RollSource {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DieSpec {
     pub count: u16,
     pub sides: u16,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct DieResult {
     pub sides: u16,
     pub value: u16,
@@ -40,6 +42,7 @@ pub struct DieResult {
 /// The modifier and roll mode belong to the request so a physical-dice result only supplies raw
 /// faces. Players/providers do not submit a precomputed authoritative total.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RollRequest {
     pub id: RollRequestId,
     pub roller: Option<EntityId>,
@@ -51,6 +54,7 @@ pub struct RollRequest {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RollResult {
     pub request_id: RollRequestId,
     pub source: RollSource,
@@ -58,6 +62,7 @@ pub struct RollResult {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ResolvedRoll {
     pub request_id: RollRequestId,
     pub source: RollSource,

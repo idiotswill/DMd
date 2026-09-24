@@ -9,10 +9,10 @@ pub(super) fn command(state: &CampaignState, meta: &CommandMeta) -> Result<(), R
     {
         return Err(invalid("invalid rules command provenance"));
     }
-    if let CommandIssuer::Player(id) = meta.issuer {
-        if !state.players.contains_key(&id) {
-            return Err(invalid("unknown rules issuer"));
-        }
+    if let CommandIssuer::Player(id) = meta.issuer
+        && !state.players.contains_key(&id)
+    {
+        return Err(invalid("unknown rules issuer"));
     }
     if let Some(actor) = meta.actor {
         match actor {
@@ -80,11 +80,21 @@ pub(super) fn pending(
     p: &PendingRoll,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
+    pending_with_recency(state, rules, p, pack, true)
+}
+fn pending_with_recency(
+    state: &CampaignState,
+    rules: &RulesState,
+    p: &PendingRoll,
+    pack: &RulesPack,
+    check_recency: bool,
+) -> Result<(), RulesError> {
     command(state, &p.issued_by)?;
-    if state
-        .applied_event_sequence
-        .saturating_sub(p.issued_by.expected_event_sequence)
-        > 1
+    if check_recency
+        && state
+            .applied_event_sequence
+            .saturating_sub(p.issued_by.expected_event_sequence)
+            > 1
     {
         return Err(invalid(
             "pending request was not suspended at the current rules command",
@@ -226,11 +236,18 @@ pub(super) fn pending(
                 damage_modifier,
                 damage_type: original_type,
                 automatic_critical,
-                ..
+                permission: auth,
             } = &previous.purpose
             else {
                 return Err(invalid("damage origin is not an attack"));
             };
+            let origin = PendingRoll {
+                issued_by: previous.issued_by.clone(),
+                request: previous.request.clone(),
+                purpose: previous.purpose.clone(),
+                ruling: auth.ruling.clone(),
+            };
+            pending_with_recency(state, rules, &origin, pack, false)?;
             let face = previous
                 .resolved
                 .kept_dice

@@ -1,0 +1,25 @@
+# Gate 2 mechanics slice
+
+Status: Mechanics implementation complete; root owns remaining integrated Gate 2 acceptance and exact-head CI. Sole writer: mechanics agent on `codex/gate2-mechanics-kernel`, baseline `90b0ec1` refreshed from origin before implementation.
+
+Objective: implement the typed domain mechanics and pure rules kernel consumed by the existing runnable-campaign application. Root integrates persistence and independently reviews this slice.
+
+Scope: all Gate 2 resolution primitives, pinned SRD 5.2.1 kernel definitions, deterministic dice requests/results, issuer ownership, validation, semantic action replay and read-only queries. No app/persistence edits; the compatibility slice owns schema-version changes. Gate 4 spatial/complete tactical systems, Gate 5 complete noncombat systems and Gate 6 complete character/content catalogs remain explicitly deferred, not redefined as completed.
+
+Contract: Gate 2 checkpoint; product rules fidelity, local authority, physical dice and exact suspension requirements; ADRs 002/004/005/009–012/014–016. Official source: SRD CC 5.2.1 PDF, SHA256 `8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87`; source inventory/attribution supplied by the separate ledger slice.
+
+Acceptance: pure validated transitions never mutate on error; players supply selected action IDs/raw faces, never authoritative DC/modifier/after-state; domain snapshots retain pending/resolved rolls, effects/resources/timing. Replay re-resolves recorded typed actions with exact metadata and compares outcomes. Tests cover arithmetic, rule distinctions, privilege/stale/pending failure, expiry/recovery and malformed definitions.
+
+Slices: (1) state/dice contracts, (2) data validation and resolver, (3) adversarial tests and full verification, (4) coherent commit for root review/cherry-pick.
+
+Decisions: domain holds serializable dice records; rules exports the `ResolveRoll` trait. One semantic event per accepted action (`rules.action_resolved`@1), containing original trusted metadata/action and independently recomputed outcome. Caller supplies stable request/effect identifiers. Trusted adjudication supplies contextual facts/DC with explicit provenance until spatial/noncombat owners implement those derivations.
+
+Validation: workspace-local Rust 1.98.1 GNU with a separate target directory. `./scripts/verify-fast` passed (full workspace/all targets). `./scripts/verify` was executed and reached Clippy; it stopped at five inherited Windows-only unused-import/dead-code diagnostics in `dmd-domain/tests/content_manifest_fail_closed.rs`, already fixed independently by root in the integration branch. No diagnostics were suppressed and this slice did not edit that independently owned test. Targeted rules tests and all-target Clippy are green; final evidence includes 27 mechanical/replay/adversarial tests plus the four original dice tests, and genericity/architecture guards. Root must run the full suite again after combining the portability fix, schema migration, content manifest and application integration.
+
+Implemented: derived sheet values; ability tests; condition-aware advantage cancellation; attacks and critical dice; damage/temporary HP/healing/death; concentration; effect expiry; resources/rest; spell primitives; initiative/action/bonus/reaction budgets; raw physical/digital dice; Inspiration replacement; safe query projections; explicit house configuration/ruling provenance; fail-closed restored pending requests and semantic action replay. ADR 018 records exact behavior and deferred clauses. `SupportedContent` exposes typed per-spell support so concentration-only data is not mistaken for a full spell.
+
+Review fixes: separate read/action ownership; reject a mismatching trusted actor on digital rolls; reconstruct pending dice/modifiers from content and recorded causes; bind contextual permissions/rulings to command provenance; reject canceled-ID reuse and malformed reroll history; distinguish nearby ranged threats from target distance; preserve Prone through healing; explicitly omit Dexterity from heavy armor; enforce initiative condition rules and rest interruption; preserve rests when damage is zero; close stale hit-die windows; validate actor/turn expiry mapping. Root's export/recovery preflight binds these locally validated records to audited history.
+
+Risks/debt: full SRD catalogs/class progression, spatial condition clauses, complete casting/ritual pipelines, long-rest resumption and full noncombat systems remain with their owning Gates 4/5/6. Roll/ruling history growth and snapshot cloning remain correctness-first debt for Gates 7/13/14. No Gate 2 or product completion is claimed by this slice alone.
+
+Exact next action: root cherry-picks the mechanics commits (first checkpoint `77b229cf2c5acd886585ef82aedb699c3bbaf25e`, then hardening follow-up), combines schema 2 atomically, completes full-diff review and exact-head full verification/CI, then integrates the existing application path. Do not start Gate 3 without the owner.

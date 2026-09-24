@@ -159,7 +159,11 @@ pub enum RulesAction {
         trigger: String,
         ruling: Ruling,
     },
-    UseBonusAction { actor: EntityId, feature_id: String, ruling: Ruling },
+    UseBonusAction {
+        actor: EntityId,
+        feature_id: String,
+        ruling: Ruling,
+    },
     EndConcentration {
         actor: EntityId,
     },

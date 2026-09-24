@@ -382,6 +382,7 @@ fn poison_and_advantage_cancel_and_keep_raw_faces_when_uncancelled() {
         Circumstances {
             advantage: true,
             disadvantage: false,
+            ranged_threat: false,
         },
         RollVisibility::Public,
     );
@@ -763,6 +764,7 @@ fn inspiration_replaces_one_die_before_resolution_and_records_both_inputs() {
         Circumstances {
             advantage: true,
             disadvantage: false,
+            ranged_threat: false,
         },
         RollVisibility::Public,
     );
@@ -949,6 +951,57 @@ fn initiative_orders_recorded_rolls_and_refreshes_reactions_and_action_budget() 
         ruling: ruling(),
     });
     assert_eq!(t.rules().timing.as_ref().unwrap().order[0].actor, t.actor);
+    let expiring = EffectId::new();
+    t.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: expiring,
+            source: t.actor,
+            target: t.actor,
+            condition: None,
+            label: "turn marker".into(),
+            expires: Expiry::AtTurn {
+                actor: t.actor,
+                boundary: TurnBoundary::Start,
+                turn_number: 3,
+            },
+            concentration_owner: None,
+        },
+        ruling: ruling(),
+    });
+    t.fails(
+        CommandIssuer::Admin,
+        None,
+        RulesAction::ApplyEffect {
+            effect: ActiveEffect {
+                id: EffectId::new(),
+                source: t.actor,
+                target: t.actor,
+                condition: None,
+                label: "wrong actor for turn".into(),
+                expires: Expiry::AtTurn {
+                    actor: t.actor,
+                    boundary: TurnBoundary::Start,
+                    turn_number: 2,
+                },
+                concentration_owner: None,
+            },
+            ruling: ruling(),
+        },
+    );
+    t.admin(RulesAction::UseBonusAction {
+        actor: t.actor,
+        feature_id: "adjudicated-feature".into(),
+        ruling: ruling(),
+    });
+    t.fails(
+        CommandIssuer::Admin,
+        None,
+        RulesAction::UseBonusAction {
+            actor: t.actor,
+            feature_id: "adjudicated-feature".into(),
+            ruling: ruling(),
+        },
+    );
     t.admin(RulesAction::UseReaction {
         actor: t.actor,
         trigger: "authoritative trigger".into(),
@@ -986,6 +1039,8 @@ fn initiative_orders_recorded_rolls_and_refreshes_reactions_and_action_budget() 
     t.player(RulesAction::EndTurn { actor: t.actor });
     t.admin(RulesAction::EndTurn { actor: t.target });
     assert_eq!(t.rules().timing.as_ref().unwrap().round, 2);
+    assert!(!t.rules().timing.as_ref().unwrap().bonus_action_spent);
+    assert!(!t.rules().effects.iter().any(|e| e.id == expiring));
     assert!(
         t.rules()
             .timing
@@ -1060,4 +1115,479 @@ fn cancelled_roll_ids_cannot_accept_old_faces_under_a_new_modifier() {
             request_id: request.id,
         },
     );
+}
+
+#[test]
+fn restored_requests_rederive_dice_modifiers_targets_and_causes() {
+    let mut t = Table::new();
+    t.request(
+        check(),
+        12,
+        Circumstances::default(),
+        RollVisibility::Public,
+    );
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .request
+        .modifier = 999;
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .purpose = PendingPurpose::Concentration {
+        dc: 10,
+        damage_taken: 4,
+    };
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .purpose = PendingPurpose::Test {
+        kind: TestKind::DeathSave,
+        dc: 10,
+        circumstances: Circumstances::default(),
+    };
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    let pending = bad.rules.as_mut().unwrap().pending.as_mut().unwrap();
+    pending.purpose = PendingPurpose::Damage {
+        target: t.target,
+        damage_type: DamageType::Force,
+        critical: false,
+        attack_roll_id: RollRequestId::new(),
+    };
+    assert!(validate_state(&bad, &t.pack).is_err());
+    t.faces(&[10]);
+    t.attack();
+    t.faces(&[20]);
+    let mut bad = t.state.clone();
+    let r = bad.rules.as_mut().unwrap();
+    r.pending.as_mut().unwrap().request.dice[0].count = 200;
+    if let PendingPurpose::Attack { damage, .. } = &mut r.rolls.last_mut().unwrap().purpose {
+        damage[0].count = 100;
+    }
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .issued_by
+        .issuer = CommandIssuer::Import;
+    assert!(validate_state(&bad, &t.pack).is_err());
+    t.faces(&[2, 2]);
+    t.replay();
+}
+
+#[test]
+fn restored_permissions_and_ruling_provenance_cannot_gain_privilege() {
+    let mut t = Table::new();
+    t.admin(RulesAction::AuthorizeAttack {
+        actor: t.actor,
+        target: t.target,
+        attack_id: "dagger".into(),
+        circumstances: Circumstances::default(),
+        within_five_feet: true,
+        ruling: ruling(),
+    });
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .permission
+        .as_mut()
+        .unwrap()
+        .issued_by
+        .issuer = CommandIssuer::Player(t.player);
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules.as_mut().unwrap().rulings[0]
+        .command
+        .expected_event_sequence = u64::MAX;
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    let old = bad.rules.as_ref().unwrap().rulings[0].clone();
+    bad.rules.as_mut().unwrap().rulings.push(old);
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&t.actor)
+        .unwrap()
+        .hp = 0;
+    assert!(validate_state(&bad, &t.pack).is_err());
+}
+
+#[test]
+fn restored_cancelled_and_reroll_records_reject_inconsistent_input() {
+    let mut t = Table::new();
+    t.admin(RulesAction::GrantInspiration {
+        actor: t.actor,
+        ruling: ruling(),
+    });
+    t.request(
+        check(),
+        12,
+        Circumstances {
+            advantage: true,
+            ..Circumstances::default()
+        },
+        RollVisibility::Public,
+    );
+    let result = t.result(&[3, 4], RollSource::Physical);
+    t.player(RulesAction::SubmitRollWithInspiration {
+        result,
+        die_index: 0,
+        replacement: DieResult {
+            sides: 20,
+            value: 10,
+        },
+    });
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .rolls
+        .last_mut()
+        .unwrap()
+        .original_result
+        .as_mut()
+        .unwrap()
+        .dice[1]
+        .value = 5;
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    let id = bad.rules.as_ref().unwrap().rolls.last().unwrap().request.id;
+    bad.rules.as_mut().unwrap().cancelled_roll_ids.push(id);
+    assert!(validate_state(&bad, &t.pack).is_err());
+    let mut bad = t.state.clone();
+    bad.rules
+        .as_mut()
+        .unwrap()
+        .rolls
+        .last_mut()
+        .unwrap()
+        .accepted_by
+        .actor = Some(AgentRef::Entity(t.target));
+    assert!(validate_state(&bad, &t.pack).is_err());
+}
+
+#[test]
+fn close_spell_attacks_use_explicit_threat_and_target_distance() {
+    let mut t = Table::new();
+    t.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: EffectId::new(),
+            source: t.actor,
+            target: t.target,
+            condition: Some(Condition::Paralyzed),
+            label: "paralysis".into(),
+            expires: Expiry::Never,
+            concentration_owner: None,
+        },
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::AuthorizeSpell {
+        actor: t.actor,
+        target: t.target,
+        spell_id: "fire-bolt".into(),
+        circumstances: Circumstances::default(),
+        within_five_feet: true,
+        ruling: ruling(),
+    });
+    t.player(RulesAction::CastSpell {
+        actor: t.actor,
+        target: t.target,
+        spell_id: "fire-bolt".into(),
+        slot_level: 0,
+        request_id: RollRequestId::new(),
+        effect_id: EffectId::new(),
+    });
+    assert_eq!(
+        t.rules().pending.as_ref().unwrap().request.mode,
+        RollMode::Advantage
+    );
+    assert!(matches!(
+        t.faces(&[15, 12]),
+        RulesOutcome::RollResolved { critical: true, .. }
+    ));
+    t.faces(&[1, 1, 1, 1]);
+    t.replay();
+    let mut blinded = Table::new();
+    blinded.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: EffectId::new(),
+            source: blinded.actor,
+            target: blinded.target,
+            condition: Some(Condition::Blinded),
+            label: "blindness".into(),
+            expires: Expiry::Never,
+            concentration_owner: None,
+        },
+        ruling: ruling(),
+    });
+    blinded.spell("fire-bolt", 0);
+    assert_eq!(
+        blinded.rules().pending.as_ref().unwrap().request.mode,
+        RollMode::Advantage
+    );
+}
+
+#[test]
+fn healing_preserves_prone_and_heavy_armor_ignores_negative_dexterity() {
+    let mut t = Table::custom(|pc, _| {
+        pc.ability_scores[1] = 8;
+        pc.armor = ArmorClass::HeavyArmor {
+            base: 16,
+            shield: true,
+        };
+    });
+    assert_eq!(armor_class(t.pc()), 18);
+    t.admin(RulesAction::ApplyDamage {
+        target: t.actor,
+        amount: 40,
+        damage_type: DamageType::Force,
+        critical: false,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::Heal {
+        target: t.actor,
+        amount: 2,
+        ruling: ruling(),
+    });
+    assert!(t.pc().prone);
+    t.admin(RulesAction::SetProne {
+        target: t.actor,
+        prone: false,
+        ruling: ruling(),
+    });
+    assert!(!t.pc().prone);
+    t.replay();
+}
+
+#[test]
+fn initiative_conditions_and_rest_interruptions_follow_srd() {
+    let mut t = Table::new();
+    t.admin(RulesAction::StartRest {
+        actor: t.actor,
+        kind: RestKind::Short,
+        ruling: ruling(),
+    });
+    t.request(
+        TestKind::Initiative,
+        0,
+        Circumstances::default(),
+        RollVisibility::Public,
+    );
+    assert!(t.rules().rests.is_empty());
+    t.faces(&[12]);
+    for condition in [Condition::Invisible, Condition::Incapacitated] {
+        t.admin(RulesAction::ApplyEffect {
+            effect: ActiveEffect {
+                id: EffectId::new(),
+                source: t.target,
+                target: t.actor,
+                condition: Some(condition),
+                label: "timing condition".into(),
+                expires: Expiry::Never,
+                concentration_owner: None,
+            },
+            ruling: ruling(),
+        });
+    }
+    let request = t.request(
+        TestKind::Initiative,
+        0,
+        Circumstances::default(),
+        RollVisibility::Public,
+    );
+    assert_eq!(request.mode, RollMode::Normal);
+    t.faces(&[12]);
+    t.replay();
+}
+
+#[test]
+fn zero_damage_does_not_interrupt_rest_and_old_rest_cannot_heal_later() {
+    let mut t = Table::custom(|pc, _| {
+        pc.hp = 10;
+        pc.damage_immunities.insert(DamageType::Fire);
+    });
+    t.admin(RulesAction::StartRest {
+        actor: t.actor,
+        kind: RestKind::Short,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::ApplyDamage {
+        target: t.actor,
+        amount: 40,
+        damage_type: DamageType::Fire,
+        critical: false,
+        ruling: ruling(),
+    });
+    assert_eq!(t.rules().rests.len(), 1);
+    t.admin(RulesAction::AdvanceTime {
+        seconds: 3600,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::FinishRest {
+        actor: t.actor,
+        slept_seconds: 0,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::AdvanceTime {
+        seconds: 1,
+        ruling: ruling(),
+    });
+    t.fails(
+        CommandIssuer::Player(t.player),
+        Some(t.actor),
+        RulesAction::SpendHitDie {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.replay();
+}
+
+#[test]
+fn petrification_rejects_poisoned_and_expiry_is_tied_to_real_turn_boundaries() {
+    let mut t = Table::new();
+    t.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: EffectId::new(),
+            source: t.target,
+            target: t.actor,
+            condition: Some(Condition::Petrified),
+            label: "stone".into(),
+            expires: Expiry::Never,
+            concentration_owner: None,
+        },
+        ruling: ruling(),
+    });
+    t.fails(
+        CommandIssuer::Admin,
+        None,
+        RulesAction::ApplyEffect {
+            effect: ActiveEffect {
+                id: EffectId::new(),
+                source: t.target,
+                target: t.actor,
+                condition: Some(Condition::Poisoned),
+                label: "poison".into(),
+                expires: Expiry::Never,
+                concentration_owner: None,
+            },
+            ruling: ruling(),
+        },
+    );
+    t.fails(
+        CommandIssuer::Admin,
+        None,
+        RulesAction::ApplyEffect {
+            effect: ActiveEffect {
+                id: EffectId::new(),
+                source: t.target,
+                target: t.actor,
+                condition: None,
+                label: "invalid turn".into(),
+                expires: Expiry::AtTurn {
+                    actor: t.actor,
+                    boundary: TurnBoundary::End,
+                    turn_number: 1,
+                },
+                concentration_owner: None,
+            },
+            ruling: ruling(),
+        },
+    );
+    t.replay();
+}
+
+#[test]
+fn house_rules_are_explicit_disabled_by_default_and_replayable() {
+    let mut t = Table::new();
+    let entities = t.rules().entities.values().cloned().collect();
+    t.state = t.origin.clone();
+    t.events.clear();
+    t.admin(RulesAction::Initialize {
+        entities,
+        house_rules: HouseRules {
+            ability_test_natural_extremes: true,
+        },
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::RequestTest {
+        actor: t.actor,
+        kind: check(),
+        dc: 100,
+        visibility: RollVisibility::Public,
+        circumstances: Circumstances::default(),
+        ruling: Ruling {
+            basis: RulingBasis::HouseRule {
+                id: "ability-test-natural-extremes".into(),
+            },
+            reason: "Campaign explicitly enabled natural extremes".into(),
+        },
+        request_id: RollRequestId::new(),
+    });
+    assert!(matches!(
+        t.faces(&[20]),
+        RulesOutcome::RollResolved {
+            success: Some(true),
+            critical: false,
+            ..
+        }
+    ));
+    t.replay();
+    let baseline = Table::new();
+    baseline.fails(
+        CommandIssuer::Admin,
+        None,
+        RulesAction::Heal {
+            target: baseline.actor,
+            amount: 1,
+            ruling: Ruling {
+                basis: RulingBasis::HouseRule {
+                    id: "unknown-house-rule".into(),
+                },
+                reason: "unregistered".into(),
+            },
+        },
+    );
+}
+
+#[test]
+fn raw_dice_and_support_metadata_reject_hidden_behavior_and_name_partial_spells() {
+    assert!(serde_json::from_str::<DieResult>(r#"{"sides":20,"value":10,"total":999}"#).is_err());
+    let t = Table::new();
+    let RulesAnswer::SupportedContent { spells, .. } = query(
+        &t.state,
+        CommandIssuer::Player(t.player),
+        &RulesQuery::SupportedContent,
+        &t.pack,
+    )
+    .unwrap() else {
+        panic!("wrong query result")
+    };
+    assert!(spells.contains(&SupportedSpell {
+        id: "dancing-lights".into(),
+        support: SpellSupport::ConcentrationDurationOnly
+    }));
 }

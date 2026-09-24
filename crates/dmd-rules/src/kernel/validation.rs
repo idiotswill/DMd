@@ -11,6 +11,7 @@ pub fn proficiency_bonus(level: u8) -> i32 {
 pub fn armor_class(entity: &MechanicalEntity) -> i32 {
     match entity.armor {
         ArmorClass::Fixed(ac) => i32::from(ac),
+        ArmorClass::HeavyArmor { base, shield } => i32::from(base) + if shield { 2 } else { 0 },
         ArmorClass::Armor {
             base,
             dexterity_cap,
@@ -233,7 +234,15 @@ pub(super) fn validate_entity(
     {
         return Err(invalid("inconsistent death state"));
     }
+    if (e.hp == 0 && !e.death.dead && (!e.prone || !e.uses_death_saves))
+        || (e.death.dead && (e.death.stable || e.death.successes != 0 || e.death.failures != 0))
+    {
+        return Err(invalid("inconsistent zero-HP/death conditions"));
+    }
     match e.armor {
+        ArmorClass::HeavyArmor { base, .. } if !(1..=30).contains(&base) => {
+            return Err(invalid("invalid heavy armor class"));
+        }
         ArmorClass::Fixed(ac) if !(1..=40).contains(&ac) => {
             return Err(invalid("invalid fixed armor class"));
         }
@@ -281,6 +290,11 @@ pub(super) fn validate_entity(
     Ok(())
 }
 pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
+    if state.schema_version != CURRENT_STATE_SCHEMA_VERSION {
+        return Err(RulesError::Incompatible(
+            "unsupported campaign state schema".into(),
+        ));
+    }
     pack.validate()?;
     if state.campaign.ruleset.id != pack.id || state.campaign.ruleset.version != pack.version {
         return Err(RulesError::Incompatible(
@@ -317,45 +331,88 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         {
             return Err(invalid("invalid active effect"));
         }
-        if let Some(owner) = effect.concentration_owner {
-            if entity(rules, owner)?.concentration != Some(effect.id) {
-                return Err(invalid("orphaned concentration effect"));
-            }
+        if let Some(owner) = effect.concentration_owner
+            && entity(rules, owner)?.concentration != Some(effect.id)
+        {
+            return Err(invalid("orphaned concentration effect"));
+        }
+        if effect.condition == Some(Condition::Unconscious) && !target.prone {
+            return Err(invalid("Unconscious creature must remain Prone"));
         }
         match effect.expires {
             Expiry::AtTime(time) if time <= state.clock.now => {
                 return Err(invalid("expired time effect"));
             }
             Expiry::AtTurn {
-                actor, turn_number, ..
+                actor,
+                turn_number,
+                boundary,
             } => {
                 entity(rules, actor)?;
-                if rules
+                let t = rules
                     .timing
                     .as_ref()
-                    .is_none_or(|t| turn_number < t.turn_number)
+                    .ok_or_else(|| invalid("turn expiry outside initiative"))?;
+                if t.order.is_empty()
+                    || t.index >= t.order.len()
+                    || turn_number < t.turn_number
+                    || (turn_number == t.turn_number && boundary == TurnBoundary::Start)
                 {
                     return Err(invalid("invalid turn expiry"));
+                }
+                let index = (t.index
+                    + ((turn_number - t.turn_number) % t.order.len() as u64) as usize)
+                    % t.order.len();
+                if t.order[index].actor != actor {
+                    return Err(invalid(
+                        "turn expiry actor does not match the specified turn",
+                    ));
                 }
             }
             _ => (),
         }
     }
     for e in rules.entities.values() {
-        if let Some(effect_id) = e.concentration {
-            if !rules
+        if let Some(effect_id) = e.concentration
+            && (!rules
                 .effects
                 .iter()
                 .any(|x| x.id == effect_id && x.concentration_owner == Some(e.entity_id))
                 || conditions(rules, e.entity_id).contains(&Condition::Incapacitated)
-                || e.death.dead
-            {
-                return Err(invalid("invalid concentration owner"));
-            }
+                || e.death.dead)
+        {
+            return Err(invalid("invalid concentration owner"));
         }
     }
     let mut rolls = HashSet::new();
     for roll in &rules.rolls {
+        let roller = roll
+            .request
+            .roller
+            .ok_or_else(|| invalid("recorded roll without actor"))?;
+        entity(rules, roller)?;
+        match &roll.purpose {
+            PendingPurpose::Test { .. }
+            | PendingPurpose::Attack { .. }
+            | PendingPurpose::Concentration { .. }
+                if roll.request.dice
+                    != [DieSpec {
+                        count: 1,
+                        sides: 20,
+                    }] =>
+            {
+                return Err(invalid("recorded d20 test has invalid dice"));
+            }
+            _ => (),
+        }
+        match &roll.purpose {
+            PendingPurpose::Attack { target, .. }
+            | PendingPurpose::Damage { target, .. }
+            | PendingPurpose::Healing { target, .. } => {
+                entity(rules, *target)?;
+            }
+            _ => (),
+        }
         request_integrity::command(state, &roll.issued_by)?;
         request_integrity::command(state, &roll.accepted_by)?;
         if roll.accepted_by.expected_event_sequence <= roll.issued_by.expected_event_sequence

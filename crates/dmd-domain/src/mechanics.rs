@@ -55,6 +55,10 @@ pub enum Proficiency {
 #[serde(deny_unknown_fields)]
 pub enum ArmorClass {
     Fixed(u16),
+    HeavyArmor {
+        base: u16,
+        shield: bool,
+    },
     Armor {
         base: u16,
         dexterity_cap: Option<i16>,
@@ -243,6 +247,8 @@ pub struct Ruling {
 pub struct Circumstances {
     pub advantage: bool,
     pub disadvantage: bool,
+    /// A hostile creature within 5 feet can see the attacker and is not incapacitated.
+    pub ranged_threat: bool,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
