@@ -21,9 +21,57 @@ pub trait SnapshotMigration: Send + Sync {
     fn migrate_json(&self, json: &str) -> Result<String, String>;
 }
 
-#[derive(Default)]
 pub struct CampaignStateSnapshotCodec {
     migrations: HashMap<u32, Box<dyn SnapshotMigration>>,
+}
+
+impl Default for CampaignStateSnapshotCodec {
+    fn default() -> Self {
+        let mut migrations: HashMap<u32, Box<dyn SnapshotMigration>> = HashMap::new();
+        migrations.insert(1, Box::new(StateSchemaOneToTwo));
+        Self { migrations }
+    }
+}
+
+struct StateSchemaOneToTwo;
+
+impl SnapshotMigration for StateSchemaOneToTwo {
+    fn source_version(&self) -> u32 {
+        1
+    }
+
+    fn migrate_json(&self, json: &str) -> Result<String, String> {
+        upgrade_state_schema_one(json)
+    }
+}
+
+/// Explicit schema-1 compatibility, shared by snapshot and portable-export decoding.
+/// Historical input is never edited, and unexpected mechanical data is never discarded.
+pub(crate) fn upgrade_state_schema_one(json: &str) -> Result<String, String> {
+    // Decode the original typed shape before going through Value: a map conversion alone would
+    // silently collapse duplicate fields and could conceal malformed legacy authoritative input.
+    let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
+    if !legacy.validate().is_empty() {
+        return Err("schema-1 state is structurally invalid".into());
+    }
+    let mut value: serde_json::Value =
+        serde_json::from_str(json).map_err(|error| error.to_string())?;
+    let object = value
+        .as_object_mut()
+        .ok_or_else(|| "schema-1 state must be a JSON object".to_owned())?;
+    if object
+        .get("schema_version")
+        .and_then(serde_json::Value::as_u64)
+        != Some(1)
+    {
+        return Err("schema-1 state metadata does not match its embedded schema".into());
+    }
+    if object.get("rules").is_some_and(|rules| !rules.is_null()) {
+        return Err("schema-1 state unexpectedly contains mechanical rules data".into());
+    }
+    object.insert("schema_version".into(), serde_json::json!(2));
+    object.insert("rules".into(), serde_json::Value::Null);
+    serde_json::to_string(&value).map_err(|error| error.to_string())
 }
 
 impl CampaignStateSnapshotCodec {

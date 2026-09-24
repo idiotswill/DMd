@@ -1,0 +1,35 @@
+{
+  "manifest_schema_version": 1,
+  "content_contract_version": 1,
+  "kind": "ruleset",
+  "id": "srd-5.2",
+  "version": "5.2.1",
+  "compatible_rulesets": [],
+  "dependencies": [],
+  "files": [
+    {
+      "path": "NOTICE.md",
+      "byte_len": 1292,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "51e54ac4f896bcef"
+      }
+    },
+    {
+      "path": "source.json",
+      "byte_len": 585,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "86adcd7ce8803f20"
+      }
+    },
+    {
+      "path": "kernel.json",
+      "byte_len": 1179,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "2d6934bd421a7f0a"
+      }
+    }
+  ]
+}

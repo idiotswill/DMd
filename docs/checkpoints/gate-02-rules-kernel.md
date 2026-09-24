@@ -1,6 +1,6 @@
 # Gate 2 — Commercial fifth-edition rules kernel
 
-Status: **Planned**
+Status: **Active — source inventory merged; mechanics/application verification in progress**
 
 ## Product requirements advanced
 

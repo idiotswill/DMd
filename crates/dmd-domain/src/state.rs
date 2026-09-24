@@ -8,10 +8,12 @@ use crate::{
     LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
 };
 
-pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
+pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
+    /// Authoritative mechanical state; absent before a rules kernel is initialized.
+    pub rules: Option<crate::RulesState>,
     pub schema_version: u32,
     pub campaign: Campaign,
     pub clock: WorldClock,
@@ -35,6 +37,7 @@ impl CampaignState {
     #[must_use]
     pub fn empty(campaign: Campaign, clock: WorldClock) -> Self {
         Self {
+            rules: None,
             schema_version: CURRENT_STATE_SCHEMA_VERSION,
             campaign,
             clock,
