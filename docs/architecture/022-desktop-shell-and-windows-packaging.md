@@ -1,6 +1,6 @@
 # ADR 022 — Desktop shell and Windows packaging
 
-Status: proposed for the owner-authorized Gate 3 desktop slice.
+Status: **Accepted — Gate 3; see the [integrated checkpoint](../checkpoints/gate-03-desktop-table-loop.md).**
 
 ## Decision
 

@@ -26,6 +26,27 @@ Exit criteria:
 
 ## Open debt
 
+### TD-009 — transcript retrieval scans retained campaign history
+
+Status: open
+Introduced: Gate 3 / PR #20
+Owner area: application/persistence; Gates 7 and 13, endurance confirmation in Gate 14
+Severity: medium
+
+Why accepted:
+The initial table runtime assembles retained events and observations before presenting
+the latest 500 transcript entries and eight accepted outcomes in the recap. This keeps
+ordering, visibility and immutable history explicit at the first playable scale.
+
+Risk:
+Read cost and temporary memory grow with campaign history despite bounded presentation.
+
+Exit criteria:
+- measure transcript/query latency and memory with realistic long campaigns;
+- introduce indexed/cursor reads preserving ordering, audience filtering, retained history
+  and original answers for exact retries;
+- verify the change under Gate 14 endurance workloads.
+
 ### TD-008 — lifecycle installation acknowledgement can fail after commit
 
 Status: open
@@ -38,6 +59,11 @@ Raw create/restore commits an atomic installation and then reads it back through
 open path. Gate 2 removes avoidable post-commit content-file reads, but an I/O or connection
 failure in the inherited persistence readback can still prevent acknowledgement of a committed
 installation. This is not a partially written campaign or an invalid-action commit.
+
+Gate 3 adds identity-based reconciliation for desktop campaign creation and retains the
+original request when acknowledgement is uncertain. Regression tests cover observation
+write/readback failures and failed accepted-receipt lookup without duplicate effects.
+This mitigates the table path; raw restore/lifecycle acknowledgement remains open.
 
 Risk:
 A caller may see an error after installation succeeded. Blindly retrying the same identity
@@ -83,6 +109,10 @@ Severity: medium
 Why accepted:
 Gate 1 establishes the mechanical snapshot/journal replay boundary and requires typed `ReplayEventApplier` semantics. It deliberately does not invent replay semantics for gameplay systems whose durable event contracts do not yet exist.
 
+Gate 3 adds `table.action_resolved@1`, composed rules/table replay, schema-3 current-state
+and format-2 export coverage, including pending decisions, observations and session
+projection agreement. This entry remains open for future event families.
+
 Risk:
 A future durable event family is not fully recoverable from snapshot+journal history until its owning gameplay subsystem defines stable kind/version semantics and a compatible typed applier.
 
@@ -126,15 +156,20 @@ Exit criteria:
 - if required, introduce versioned cryptographic digests/signatures/trust metadata without changing the meaning of existing v1 artifacts;
 - provide supported backup/content provenance UX appropriate to those requirements.
 
-### TD-004 — runnable boundary is not yet a finished product shell
+### TD-004 — future gameplay surfaces must preserve the runnable boundary
 
-Status: open
+Status: mitigated for the desktop; open for future voice/companion surfaces
 Introduced: Gate 1 / PR #12
 Owner area: application composition
 Severity: medium
 
 Why accepted:
 Gate 1 establishes `dmd-app::CampaignRuntime`/`RunnableCampaign` as the production-intended composition boundary before UI, voice, and later gameplay application surfaces exist. Raw persistence lifecycle APIs intentionally remain public for diagnostics/recovery.
+
+Gate 3's typed desktop IPC delegates play to the application table service; it exposes
+no raw persistence, SQL or rules-execution endpoint. The architecture guard rejects
+desktop dependencies/imports that would bypass this boundary. Later voice and companion
+adapters must retain the same restriction.
 
 Risk:
 Future gameplay-facing entrypoints could accidentally bypass the runnable capability and treat raw `OpenCampaign` as playable state unless integration discipline is extended mechanically as the application grows.

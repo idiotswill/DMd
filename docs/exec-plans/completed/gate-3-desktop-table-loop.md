@@ -1,6 +1,36 @@
 # Gate 3 — first playable desktop table loop
 
-Status: **Active — owner authorized continuation after Gate 2 on 2026-09-24.**
+Status: **Completed — Gate 3 technical implementation and native acceptance.**
+
+## Completion and handoff
+
+Foundation PR #20 merged at `ac900fb5c5603f26bd3f3108aecf81bf597eadae`; desktop PR #21
+merged at `998eedea92da8aab288e1c586eb4a3e406c74b4c`, matching reviewed/tested head
+`05ff272d16ab7d893e0c39950f07bd5176c82e3e`. Full verification passes 207 local Windows/GNU
+tests and 208 Linux tests. Windows run `36025008694` passes MSRV/stable checks, native
+host/frontend/notice tests and fresh packaging. All 1,068 final artifact checksums and
+the dependency/SRD notice audit pass. Independent source review found no remaining blockers.
+
+The packaged native scene covered creation, agreement, character/attendance, questions,
+correction, raw dice, ambiguity, graceful/crash restart, duplicate launch, campaign isolation,
+session end and new-session continuation. Final build reopened the pending Second Wind roll,
+resolved raw 4 + 1 once with 1/2 uses retained, closed/saved/reopened, and started Beyond the
+ridge with Alex/Mira, the original agreement, two accepted outcomes and unchanged resources.
+The checkpoint distinguishes intermediate-build scene work from final-build continuation.
+No manual save edits or developer gameplay bypass was used.
+
+See [Gate 3 acceptance](../../checkpoints/gate-03-desktop-table-loop.md) for the complete
+matrix, exact artifact identities, limits and debt. PR #22 records its final reviewed head,
+checks and post-merge main verification. Gate 4 is not started. After final main verification,
+pause for owner review; the next action is owner-authorized Gate 4 planning, not another
+Gate 3 implementation slice. Human playability and reference-hardware/endurance acceptance
+remain assigned to their existing later checkpoints.
+
+## Historical execution notes
+
+The implementation notes below preserve intermediate findings and next actions as history.
+Their pending integration/build work is superseded by the completion evidence above.
+
 
 ## Objective and baseline
 
@@ -105,8 +135,18 @@ minimal prerequisite is demonstrated. Foundation verification is not desktop gat
 
 ## Exact next action
 
-Integrate the two anchor-review fixes, review the exact foundation diff, rerun full local
-verification and CI, and merge #20 with expected-head protection. Reconcile dependent #21
-with refreshed main, finish frontend/native checks, run the packaged scene and restart
-scenario, then record checkpoint/ledger/debt evidence and verify final merged main.
+Foundation #20 is now merged at `ac900fb5c5603f26bd3f3108aecf81bf597eadae`, matching
+reviewed head `52ffab23c5e67db7d6ee40a622533b08d44f10fd`. Full verification passed
+207 Windows/GNU tests and CI run `36016090350` passed all four jobs (208 Linux tests).
+The foundation findings above are resolved, not outstanding merge prerequisites.
+
+Desktop #21 is reconciled with main. Head `51d2962` passes the local core checks,
+Linux CI, native MSRV/stable checks, strict desktop lint, three host tests and twelve
+frontend tests. Windows run `36017036314` built the executable and NSIS installer,
+but the clean-source packaging guard failed. Investigate the exact generated change,
+preserve the guard, and fix confirmed dependency-notice omissions before packaging again.
+
+The remaining work is tracked by `gate3-integration-review.md` on PR #22: verify a clean
+exact-head package; run the ordinary desktop scene, graceful restart and abrupt crash
+recovery; reconcile checkpoint/ledger/debt evidence; merge and verify final main.
 No owner blocker is known; Gate 4 remains outside current authorization.

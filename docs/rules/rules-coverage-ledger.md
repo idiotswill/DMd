@@ -1,6 +1,6 @@
 # Rules Coverage Ledger
 
-Status: **The 13 scoped Gate 2 families have mechanical and production integration evidence; 42 later-gate families remain intentionally deferred. No player acceptance is claimed.**
+Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mechanical and production integration evidence; 40 later-gate families remain intentionally deferred. No player acceptance is claimed.**
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
@@ -43,9 +43,26 @@ The evidence applies to each row's stated Gate 2 scope. Shared production paths 
 
 The source-license row proves source pinning, attribution retention and loading of the declared local pack. The release packaging/distribution audit remains Gate 13. All `player_acceptance` arrays remain empty: automated tests and intermediate gate integration do not replace the full-game and human acceptance required by Gate 14.
 
+## Gate 3 evidence and limits
+
+Only `play-rhythm` and `character-creation` advance, using exact application/rules tests
+at foundation head `52ffab23c5e67db7d6ee40a622533b08d44f10fd` and the packaged scenario
+in the [Gate 3 checkpoint](../checkpoints/gate-03-desktop-table-loop.md). Initial creation,
+correction, dice, ambiguity/crash recovery and campaign isolation used `f4f1ad2`; the final
+`05ff272d16ab7d893e0c39950f07bd5176c82e3e` package verified pending-roll completion,
+readable labels, saved resources and session end/restart/continuation. All final artifact
+checksums and corrected license notices were inspected.
+
+Creation is the supported Human Fighter 1 Soldier/Skilled profile, not the complete catalog.
+The text path uses trusted host-established check context and conservatively leaves unknown
+intent unresolved. Full catalogs remain Gate 6, tactical execution Gate 4, noncombat and
+progression Gate 5, and autonomous interpretation/DM behavior Gate 9. Kernel rest/Inspiration/
+Savage Attacker primitives do not claim desktop controls or broader feature execution.
+All `player_acceptance` arrays remain empty; this technical scenario is not a human playtest.
+
 ## Updating and validating
 
-Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. The 13 Gate 2 rows record scoped production integration; the other 42 retain `intentionally_deferred`, their receiving gate and their existing obligations. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
+Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. The 13 Gate 2 and two Gate 3 rows record scoped production integration; the other 40 retain `intentionally_deferred`, their receiving gate and their existing obligations. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

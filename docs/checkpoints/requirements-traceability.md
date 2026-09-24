@@ -78,3 +78,14 @@ If a new product-definition requirement is added, it must receive:
 - a final acceptance path.
 
 If a gate defers a requirement, it must point to the receiving gate rather than simply saying "later".
+
+## Gate 3 accepted scope
+
+Gate 3 provides the supported local desktop agreement, character/sheet, attendance, text,
+physical-dice, transcript/recap and suspension path described in its checkpoint. These are
+prerequisites for the broader requirements above, not reassignment or removal of ownership.
+PvP policy is persisted agreement; actual conflict orchestration remains Gate 5. Backstory
+is input only until Gate 6 validates claims against world truth. The last-eight-outcomes
+recap and local channel filtering do not complete Gate 9 campaign memory or Gate 12 private
+companion surfaces. Full source catalogs remain Gate 6; tactical and noncombat execution
+retain Gates 4/5. Four-human acceptance and Gate 14 endurance have not been performed.

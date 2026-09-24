@@ -1,6 +1,6 @@
 # ADR 021 — Current table state, atomic sessions and observation compatibility
 
-Status: Accepted for the Gate 3 persistence slice; final integrated gate evidence is pending.
+Status: **Accepted — Gate 3; see the [integrated checkpoint](../checkpoints/gate-03-desktop-table-loop.md).**
 
 ## Context
 
@@ -73,5 +73,6 @@ CAS and closed-history rejection, current table/projection agreement, observatio
 idempotency after closure, immutable history, reference/privacy rejection, export/restore,
 purge freshness, schema-2 mechanics preservation and corrupt migration rollback.
 `state_schema_compatibility.rs` retains the Gate 1 migration/export/replay regressions.
-Application-level composed table/rules replay and semantic observation display remain the
-application integration slice; storage validation alone does not prove gameplay acceptance.
+Application-level composed table/rules replay and semantic observation display are integrated
+under ADR 024 and covered by the Gate 3 checkpoint; storage validation alone is not the
+basis of desktop acceptance.
