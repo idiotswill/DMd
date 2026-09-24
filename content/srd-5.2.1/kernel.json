@@ -1,0 +1,16 @@
+{
+  "id": "srd-5.2",
+  "version": "5.2.1",
+  "kernel_schema_version": 1,
+  "attacks": [
+    { "id": "club", "ability": "Strength", "damage": [{"count":1,"sides":4}], "damage_type": "Bludgeoning", "ranged": false, "source_page": 91 },
+    { "id": "dagger", "ability": "Finesse", "damage": [{"count":1,"sides":4}], "damage_type": "Piercing", "ranged": false, "source_page": 91 },
+    { "id": "shortbow", "ability": "Dexterity", "damage": [{"count":1,"sides":6}], "damage_type": "Piercing", "ranged": true, "source_page": 91 }
+  ],
+  "spells": [
+    { "id": "cure-wounds", "level": 1, "verbal": true, "somatic": true, "material": false, "effect": { "Healing": { "dice": [{"count":2,"sides":8}], "extra_dice_per_slot": [{"count":2,"sides":8}] } }, "source_page": 121 },
+    { "id": "fire-bolt", "level": 0, "verbal": true, "somatic": true, "material": false, "effect": { "AttackDamage": { "dice": [{"count":1,"sides":10}], "damage_type": "Fire", "cantrip_scaling": true } }, "source_page": 132 },
+    { "id": "dancing-lights", "level": 0, "verbal": true, "somatic": true, "material": true, "effect": { "ConcentrationMarker": { "duration_seconds": 60 } }, "source_page": 121 }
+  ]
+}
+

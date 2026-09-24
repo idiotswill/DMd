@@ -233,6 +233,7 @@ version = "0.1.0"
 dependencies = [
  "dmd-domain",
  "serde",
+ "serde_json",
  "thiserror",
 ]
 
