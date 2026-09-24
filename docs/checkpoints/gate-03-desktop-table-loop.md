@@ -68,3 +68,26 @@ Exact UI visual design remains flexible. Determine minimum accessible keyboard/t
 ## Production integration acceptance
 
 Run a short real tabletop-style scene through the packaged/production desktop path without developer tools. Save/restart mid-session and continue with correct transcript, player/PC bindings, resources and unresolved decisions.
+
+## Integration evidence in progress
+
+[PR #20](https://github.com/idiotswill/DMd/pull/20) merged the table foundation at
+`ac900fb5c5603f26bd3f3108aecf81bf597eadae`. Its tree matches reviewed head
+`52ffab23c5e67db7d6ee40a622533b08d44f10fd`: full local verification passed 207
+Windows/GNU tests; [CI run 318](https://github.com/idiotswill/DMd/actions/runs/36016090350)
+passed 208 Linux tests, Rust 1.88 compatibility, formatting, strict Clippy and guards.
+
+The foundation provides durable Session Zero agreements, player/PC bindings, source-derived
+supported creation, current sheets, bounded local text proposals/questions/corrections,
+physical dice, accepted-outcome recaps and exact pending-state recovery. Composed replay
+validates table/rules provenance and preserves immutable recovery anchors. These application
+tests are evidence for the foundation, not a substitute for the packaged desktop scenario.
+
+[PR #21](https://github.com/idiotswill/DMd/pull/21) supplies the desktop. At intermediate
+head `51d2962d1a9bd7e1bae792ade7bc203e44e3d262`, Linux CI and 207 local Windows/GNU
+tests pass; [Windows run 6](https://github.com/idiotswill/DMd/actions/runs/36017036314)
+passed Rust 1.88/stable native checks, strict desktop lint, three native host tests,
+frontend checks and 12 frontend tests. Release executable and offline NSIS construction
+succeeded, but the post-build clean-source guard rejected packaging. That run is failed,
+has no accepted artifact and proves no native UI acceptance. The integration plan tracks
+the fix and remaining scenario; Gate 3 remains active.
