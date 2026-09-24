@@ -1,6 +1,6 @@
 # Gate 2 application integration
 
-Status: active; primary agent is sole writer on `codex/gate2-rules-runtime`.
+Status: complete; merged in [PR #18](https://github.com/idiotswill/DMd/pull/18).
 
 ## Objective and boundary
 
@@ -51,7 +51,10 @@ Both are fixed in `ce5b67e`/`916ca49`, with regression coverage for audit/snapsh
 post-resolution session rejection and deterministic content changes during a database wait.
 The isolated fixes passed 15 runtime, six helper and eight existing application tests.
 
-Next: refresh/rebase onto merged foundation main, run complete repository verification,
-finish independent application review, open the application PR and inspect exact-head CI.
-Only then merge, update Gate 2 ledger/checkpoint evidence and archive plans. No owner blocker
-is known; later-gate UI, geometry, complete content and measured endurance remain deferred.
+Final head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` received independent full/delta
+review and passed `./scripts/verify` (172 Windows workspace tests), formatting, checks,
+Clippy and both guards. [CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276)
+passed all four jobs, including Rust 1.88 MSRV. Expected-head squash merge produced
+`3ad3885559073e6748d3f17c2172be9ff2a99f52`; its tree equals the reviewed head and full
+local verification passed again. Gate closeout owns final publication; no owner blocker
+remains. UI, geometry, complete content and measured endurance remain deferred.

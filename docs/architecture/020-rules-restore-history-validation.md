@@ -1,6 +1,6 @@
 # ADR 020 — Rules restore history preflight
 
-Status: proposed as a Gate 2 addendum to ADRs 012 and 019.
+Status: **Accepted — Gate 2 addendum to ADRs 012 and 019, [PR #18](https://github.com/idiotswill/DMd/pull/18), exact head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c`, [CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276).**
 
 ## Decision
 
@@ -58,5 +58,6 @@ and validated exact `RulesPack`. The application invokes it before raw restore f
 rules-enabled campaigns; generic campaigns continue their existing lifecycle path.
 Rules lineage is detected from current state, rules command/event namespaces and
 every version-aware historical snapshot. Relabeling only current content or event
-kinds cannot bypass semantic validation. Compilation and integrated production
-tests are required when the kernel, helper, and application wiring land together.
+kinds cannot bypass semantic validation. Six helper regressions and the runtime's
+eleven malformed-export variants, valid pending restore, legacy upgrade and broad
+replay/export/restore scenarios passed with the integrated kernel and wiring.

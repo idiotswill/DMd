@@ -27,7 +27,13 @@ Source PR #16 and foundation PR #17 are merged. Foundation `ca54b8215258468db4fb
 passed 151 Windows tests and CI #303; squash main is `f3222e72b970708517965306dc5bfffbe74eb414`.
 Application PR #18 head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` passed complete local
 verification (172 Windows tests); independent full/delta review found no blocking defect.
-Its CI and merge remain pending. Ledger evidence is prepared on an isolated writer branch.
+[CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276) passed all four jobs,
+and PR #18 merged as `3ad3885559073e6748d3f17c2172be9ff2a99f52`. That merged main also
+passed full local verification (172 tests) and
+[CI #306](https://github.com/idiotswill/DMd/actions/runs/36003489271). Its tree exactly
+matches the reviewed application head. Ledger evidence is integrated: 13 scoped rows,
+42 unchanged deferred rows, no player-acceptance claims and five evidence validation tests.
+ADRs 017–020 are accepted, and the four remaining implementation plans are archived.
 
 Ritual/long-casting execution remains Gate 5, complete tactical/noncombat effects Gates 4/5,
 catalog coverage Gate 6, packaging Gate 13 and human acceptance Gate 6/14. Internal
@@ -35,6 +41,6 @@ consistency does not prove earliest-anchor authenticity. TD-001–008 retain the
 
 ## Next action
 
-Inspect application exact-head CI, merge PR #18, refresh main and reconcile this closeout
-branch. Integrate ledger evidence, finish independent gate review, verify/merge closeout,
+Finish independent integrated-gate/closeout review, run complete verification, publish the
+final evidence PR and inspect its exact-head CI. Merge with expected-head protection,
 verify final main and stop. No owner decision blocker is known.

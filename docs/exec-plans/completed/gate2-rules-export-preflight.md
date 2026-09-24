@@ -1,8 +1,7 @@
 # Gate 2 rules export preflight
 
-Status: helper implementation and focused verification complete on
-`codex/gate2-rules-export-preflight`, based on `ebaef360`; parent application
-wiring and integrated exact-head verification remain part of the Gate 2 plan.
+Status: complete; integrated and verified in [PR #18](https://github.com/idiotswill/DMd/pull/18).
+The isolated helper branch was `codex/gate2-rules-export-preflight`, based on `ebaef360`.
 
 ## Objective and boundaries
 
@@ -54,8 +53,9 @@ Verified with the kernel checkpoint `77b229c` in this isolated branch:
   passed. The harness changed no application dependencies or repository wiring.
 - `git diff --check` passed.
 
-No full integrated application verification is claimed by this slice. Next: the
-parent cherry-picks only helper commits, wires the module into rules-enabled app
-restore, and runs `cargo test -p dmd-app` plus the required full exact-head checks.
-The local kernel cherry-pick is verification-only and must not be cherry-picked
-again by the parent.
+Final integration at `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` passed all six helper
+tests, 15 runtime scenarios and eight existing app tests in full workspace verification.
+[CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276) passed and PR #18
+merged as `3ad3885559073e6748d3f17c2172be9ff2a99f52`. The Gate 2 checkpoint records the
+exact malformed-export, provenance, restart and replay evidence. No remaining slice action;
+gate closeout owns final publication and owner pause.

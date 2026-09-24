@@ -1,6 +1,6 @@
 # ADR 019 — Durable rules application runtime
 
-Status: **Proposed for Gate 2; acceptance requires production integration evidence**
+Status: **Accepted — Gate 2, [PR #18](https://github.com/idiotswill/DMd/pull/18), exact head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c`, [CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276).**
 
 ## Decision
 
@@ -42,6 +42,6 @@ ADR 017 defines schema-2 state compatibility; old recovery anchors remain immuta
 
 This is the production rules integration boundary before Gate 3 desktop UI, Gate 4 full tactical encounters and Gate 5 complete noncombat play. It does not claim those gates complete.
 
-## Required evidence
+## Verified evidence
 
-File-backed campaign create, pending physical roll, restart, resolution, query and replay must agree. Invalid/unauthorized/stale inputs and content/version failures must leave state and history unchanged. Export/restore must preserve pending rolls and mechanically relevant state; separate campaigns must remain isolated. These checks must run against the real runtime/persistence APIs before this ADR is accepted.
+Fifteen runtime integration tests and six restore-helper tests pass through the real APIs, alongside the eight existing runnable-campaign tests. File-backed create, pending physical roll, restart, resolution, query and replay agree; invalid/unauthorized/stale inputs and content/version failures leave state/history unchanged. Export/restore preserves pending mechanics, and unrelated campaigns remain isolated. The Gate 2 checkpoint and rules ledger map the exact test names to criteria. Full local verification passed 172 Windows tests on the accepted head; CI passed formatting, checks, Clippy, tests, both guards and Rust 1.88 MSRV.

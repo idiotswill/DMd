@@ -1,6 +1,6 @@
 # Gate 2 — Commercial fifth-edition rules kernel
 
-Status: **Active — source inventory merged; mechanics/application verification in progress**
+Status: **Integrated implementation verified — closeout review and publication in progress**
 
 ## Product requirements advanced
 
@@ -132,6 +132,26 @@ through the supported host API. That is the Gate 2 application boundary; it is n
 normal-user character creation/desktop workflow owned by Gate 3. Broad runtime scenarios
 check explicit numeric expectations and real database state, then reopen, export/restore
 and replay. Pure kernel equality alone is not the integration evidence.
+
+## Merge and verification record
+
+| Slice | Reviewed exact head | Merge / CI evidence |
+|---|---|---|
+| Roadmap bootstrap [PR #15](https://github.com/idiotswill/DMd/pull/15) | `5a6aab55aa83a156c48feeab45a9c634f9b78f78` | `414040b33d58701cec81e6d73b791347c6d43ca1`; [CI #297](https://github.com/idiotswill/DMd/actions/runs/35995428478) |
+| Source and ledger [PR #16](https://github.com/idiotswill/DMd/pull/16) | `bbf4d78f052bb9d6ec35553dc5a020ea1021defd` | `a0fb8762f3256e384c9bd1ee1e20b0d4acd4d4c3`; [CI #300](https://github.com/idiotswill/DMd/actions/runs/35998593520) |
+| Kernel/schema foundation [PR #17](https://github.com/idiotswill/DMd/pull/17) | `ca54b8215258468db4fbac7b5c15a648fdbb98d7` | `f3222e72b970708517965306dc5bfffbe74eb414`; [CI #303](https://github.com/idiotswill/DMd/actions/runs/36002412992); 151 Windows tests |
+| Application/recovery [PR #18](https://github.com/idiotswill/DMd/pull/18) | `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` | `3ad3885559073e6748d3f17c2172be9ff2a99f52`; [CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276); 172 Windows / 173 Linux tests |
+
+Each implementation head received complete/delta independent review and passed
+`./scripts/verify` locally plus all four CI jobs: Rust formatting/check/Clippy/tests,
+Rust 1.88 MSRV, genericity guard and architecture guard. The final merged implementation
+`3ad3885559073e6748d3f17c2172be9ff2a99f52` also passed local full verification with
+172 tests and [CI #306](https://github.com/idiotswill/DMd/actions/runs/36003489271).
+The closeout adds one ledger evidence-regression test, without changing
+runtime code. Its PR records the final exact-head checks and merged-main follow-up.
+Earlier formatting/Clippy failures were read, fixed and rerun; no failed head is acceptance
+evidence. Tests exercise Windows locally and Linux in CI; this is correctness evidence,
+not reference-laptop performance acceptance.
 
 ## Architecture and precise scope
 

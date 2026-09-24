@@ -1,6 +1,6 @@
 # ADR 018 — Typed rules kernel and semantic replay
 
-Status: Proposed for the owner-authorized Gate 2 foundation PR; acceptance requires root integration review and exact-head verification.
+Status: **Accepted — Gate 2, [PR #17](https://github.com/idiotswill/DMd/pull/17), exact head `ca54b8215258468db4fbac7b5c15a648fdbb98d7`, [CI #303](https://github.com/idiotswill/DMd/actions/runs/36002412992); production integration verified in [PR #18](https://github.com/idiotswill/DMd/pull/18).**
 
 ## Problem and contract
 
@@ -50,6 +50,6 @@ Mechanical restore validation also checks reference/identity/range invariants, c
 
 ## Evidence and costs
 
-The mechanics tests exercise real pure transitions and replay each multi-step scenario, including hostile inputs and restored-state forgeries. Source-review regressions cover negative Dexterity, close spell attacks, conditional ranged threats, concentration DC caps, death/prone continuity, initiative conditions, rest interruptions and invalid expiry mappings. Root integration must add durable commit/reopen/export/replay and content/version failure tests before Gate 2 acceptance.
+The mechanics tests exercise real pure transitions and replay each multi-step scenario, including hostile inputs and restored-state forgeries. Source-review regressions cover negative Dexterity, close spell attacks, conditional ranged threats, concentration DC caps, death/prone continuity, initiative conditions, rest interruptions and invalid expiry mappings. PR #18 adds verified durable commit/reopen/export/replay and content/version failure tests; the Gate 2 checkpoint records exact production evidence and scope limits.
 
 The initial representation retains roll/ruling history and clones the mechanical snapshot for validation/resolution. This is correctness-first work. Bounded archives/projections and performance tuning remain measurable debt for Gates 7/13/14; do not substitute this representation for endurance evidence.

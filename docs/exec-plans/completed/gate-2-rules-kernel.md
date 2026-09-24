@@ -1,6 +1,6 @@
 # Execution plan — Gate 2 rules kernel
 
-Status: **Active**
+Status: **Implementation complete — merged and verified; gate closeout records final publication.**
 
 ## Objective and baseline
 
@@ -47,14 +47,14 @@ Each slice receives complete diff review and exact-head green CI before expected
 
 ## Validation / risks
 
-No Gate 2 completion claim yet. The portable Rust GNU toolchain is installed outside the repository under `../tooling`. Baseline full verification passed after correcting Windows-only unused test helpers and reducing a platform-dependent large error variant. Shell guards now fail closed if their required host utilities are missing; an empty-PATH negative run exited unsuccessfully as intended. Content text uses pinned LF bytes for cross-platform manifest integrity.
+The implementation slices are complete. The portable Rust GNU toolchain is installed outside the repository under `../tooling`. Baseline full verification passed after correcting Windows-only unused test helpers and reducing a platform-dependent large error variant. Shell guards now fail closed if their required host utilities are missing; an empty-PATH negative run exited unsuccessfully as intended. Content text uses pinned LF bytes for cross-platform manifest integrity.
 
 Source/inventory [PR #16](https://github.com/idiotswill/DMd/pull/16) merged as `a0fb8762f3256e384c9bd1ee1e20b0d4acd4d4c3` after final full/delta review and [CI #300](https://github.com/idiotswill/DMd/actions/runs/35998593520) passed on `bbf4d78f052bb9d6ec35553dc5a020ea1021defd`. It accounts for 55 rules families and the source catalogs with explicit gate ownership.
 
-Schema 2 compatibility passed 119 workspace tests before integration (including five new migration/restore regressions). Its typed rules field is now integrated atomically on the foundation branch. The independent migration review found no blocking defect. Kernel/source review produced fixes for authority, retained request derivation, rest interruption, condition interactions and effect timing. Full foundation verification on `50a86fe4be47a8db7ab3339e953b7aa6fdcfff30` passed formatting, workspace checks, all-target Clippy, 151 Windows tests and both architecture guards. The subsequent test/docs-only `7906b06` strengthens adjacent Blinded target/ranged-threat and independent Invisible/Incapacitated initiative regressions and clarifies Gate 3/4/5/6 ownership. Final-head verification and CI remain required before merge.
+Schema 2 compatibility includes five migration/restore regressions and landed atomically with typed rules state. Independent review fixed authority, retained request derivation, rest interruption, condition interactions and effect timing. Final foundation `ca54b8215258468db4fbac7b5c15a648fdbb98d7` passed full local verification (151 Windows tests) and [CI #303](https://github.com/idiotswill/DMd/actions/runs/36002412992), then merged in PR #17 as `f3222e72b970708517965306dc5bfffbe74eb414`. Final regression inputs prove adjacent Blinded/ranged-threat and separate Invisible/Incapacitated initiative behavior.
 
-The integrated app run passed 13 real runtime scenarios, six restore-preflight unit tests and all eight existing runnable-campaign tests before the final review fixes. Review identified two application failure boundaries: relabeled current/event data must not bypass historical rules preflight, and create/restore must reuse validated content after commit rather than report a post-commit file-read failure. Isolated fixes and regression tests are in progress. Foundation CI #302 on `3c16455` passed MSRV and guards but failed formatting of the newly added bonus-action primitive; its actual diff output was inspected. Local full verification also identified three Clippy collapsible-if failures. Both are corrected in the reviewed follow-up and the full run above; neither failed run is counted as acceptance. No owner decision blocker is currently known.
+Application review fixed historical-lineage bypass and post-commit content rereads. Final application `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` passed 15 runtime, six restore-helper and eight existing app tests within 172 Windows workspace tests; [CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276) passed all jobs. PR #18 merged as `3ad3885559073e6748d3f17c2172be9ff2a99f52`, which also passed full local verification. Earlier foundation CI #302 formatting and local Clippy failures were inspected and fixed; failed runs are not acceptance evidence. The checkpoint maps every criterion and records TD-001–008 and later-gate limits. No owner blocker remains.
 
 ## Exact next action
 
-Run final foundation verification and CI, then merge PR #17 after exact-head review. Refresh main and integrate the isolated application review fixes; verify the complete production scenarios before ledger/checkpoint closeout. Keep this plan current as evidence changes.
+Follow the Gate 2 closeout plan/checkpoint for final exact-head publication and merged-main verification. At gate completion pause for the owner; do not begin Gate 3 until told to continue.
