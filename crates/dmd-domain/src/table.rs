@@ -101,7 +101,23 @@ impl TableContract {
 #[serde(deny_unknown_fields)]
 pub struct ActiveTableSession {
     pub session_id: PlaySessionId,
+    pub display_name: String,
+    pub started_at_world: crate::WorldInstant,
     pub participants: Vec<SessionParticipant>,
+}
+
+impl ActiveTableSession {
+    pub fn as_session(&self, campaign_id: crate::CampaignId) -> crate::PlaySession {
+        crate::PlaySession {
+            id: self.session_id,
+            campaign_id,
+            display_name: self.display_name.clone(),
+            status: crate::PlaySessionStatus::Active,
+            started_at_world: self.started_at_world,
+            ended_at_world: None,
+            participants: self.participants.clone(),
+        }
+    }
 }
 
 /// A player proposal. It never supplies a DC, modifier, authority or successful outcome.
@@ -222,15 +238,11 @@ impl TableState {
             bounded_text(&profile.name, 200)?;
         }
         if let Some(session) = &self.active_session {
-            let candidate = crate::PlaySession {
-                id: session.session_id,
-                campaign_id: state.campaign_id(),
-                display_name: "current table binding".into(),
-                status: crate::PlaySessionStatus::Active,
-                started_at_world: state.clock.now,
-                ended_at_world: None,
-                participants: session.participants.clone(),
-            };
+            bounded_text(&session.display_name, 200)?;
+            if session.started_at_world > state.clock.now {
+                return Err("table session starts after current time".into());
+            }
+            let candidate = session.as_session(state.campaign_id());
             if !candidate.validate_against_state(state).is_empty() {
                 return Err("invalid current table session binding".into());
             }
