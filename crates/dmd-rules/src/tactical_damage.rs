@@ -653,6 +653,14 @@ pub fn reduce_vitality(
                 kill(&mut next);
             }
         }
+        VitalityOperation::SucceedDeathSave => {
+            death_save_eligible(entity)?;
+            next.outcome.death_save_succeeded = Some(true);
+            next.entity.death.successes += 1;
+            if next.entity.death.successes >= 3 {
+                stabilize(&mut next, context);
+            }
+        }
         VitalityOperation::Stabilize => {
             if entity.hp != 0 || entity.death.stable {
                 return Err(prerequisite(
