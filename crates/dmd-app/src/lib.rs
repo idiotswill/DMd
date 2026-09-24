@@ -59,6 +59,10 @@ impl RunnableCampaign {
 
 #[derive(Debug, Error)]
 pub enum RunnableCampaignError {
+    /// Proven input rejection before acceptance; the caller may revise the request.
+    #[error("{0}")]
+    TableRejected(String),
+    /// Stored-state/recovery failure does not establish whether a request was accepted.
     #[error("{0}")]
     Table(String),
     #[error("content catalog could not be loaded: {0}")]

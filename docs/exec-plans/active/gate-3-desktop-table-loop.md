@@ -59,15 +59,33 @@ verification and expected-head-protected merge. Refresh main for dependent integ
 
 ## Decisions, risks and current evidence
 
-Repository inspection confirms no desktop crate/frontend exists yet. The accepted Tauri
-stack will be used unless concrete build evidence requires a documented in-scope revision.
-Parallel writer branches now implement Windows packaging, schema-3/session/observation
-persistence, and the licensed Human/Fighter/Soldier creation subset. Root implements
-application table commands, safe views, bounded local text and integration tests. The
-root domain contracts (current session, profile references, pending intent and linked
-rolls) compile; the local text tests pass. No integrated runtime or desktop acceptance
-is claimed at this stage. Gate 2 event restoration still needs the composed table replay
-adapter before exports containing these events can be accepted.
+PR #20 integrates schema-3/session/observation persistence, licensed Human/Fighter/Soldier
+creation, application table commands, safe views, bounded text interpretation and composed
+rules/table replay. Exact head `b9dbf7c18ec2fc3f1e2b173072c111e7b92b047f` passed full local
+`./scripts/verify` and all four jobs in CI run `36013408111`. Seven application table-loop
+tests cover corrections, queries, ownership/absence, player privacy, raw dice, retries,
+export/replay, independent campaigns and real-file database reopen with pending Second Wind.
+
+Independent review fixed negated/third-party/composite intent, query-retry actor identity
+and missing source grants. A subsequent source/restore review found two additional anchor
+boundaries: pending Second Wind must retain turn/issuer authority; retained profiles must
+constrain all immutable mechanical grants, not just abilities and feature flags. Regression
+fixes are being integrated and require a fresh exact-head verification before merge.
+The source kernel rebuilds the profile's complete sheet and permits only explicitly mutable
+play state; future equipment/advancement work must extend that boundary deliberately.
+Those anchor fixes passed full local verification together at `f6d705a`. Follow-up review
+preserves legal concentration state and verifies it through a real kernel effect/replay.
+Native integration found that generic table errors could clear uncertain requests after
+a storage failure. `TableRejected` now denotes only proven input rejection; stored-state,
+receipt/observation readback and persistence errors retain the original request. Two
+application regressions inject an observation write failure and an unavailable accepted
+receipt lookup, then recover with the same ID exactly once. All nine table-loop tests and
+strict app Clippy pass; the final full-workspace/CI rerun is still required on this change.
+
+PR #21 starts Windows packaging and typed native IPC; the gameplay interface is being
+integrated on its separate writer branch. Ten gameplay UI tests now pass, including
+source-choice forms, raw dice, durable retries, malformed local storage and player privacy.
+No packaged desktop acceptance is claimed yet.
 
 The accepted Tauri/Svelte path will build on Windows CI using MSVC because the local
 Rust toolchain is GNU. Portable Node tooling stays outside the repository. WebView2 is
@@ -77,12 +95,12 @@ ADR 024 records the current table authority/visibility decisions pending verific
 Inherited TD-001/004 affect this gate directly: new events need semantic replay and desktop
 entrypoints must use the runtime instead of raw persistence. TD-002/005/006/007 measured
 performance and TD-003/008 recovery/trust retain their recorded receiving gates unless a
-minimal prerequisite is demonstrated. No new implementation or acceptance is claimed yet.
+minimal prerequisite is demonstrated. Foundation verification is not desktop gate acceptance.
 
 ## Exact next action
 
-Integrate the source and persistence commits, compile the application service and run
-the table-loop integration tests. Delegate composed replay/restore validation, then
-review the complete foundation diff. In parallel obtain early Windows packaging CI and
-wire the desktop to the typed application DTOs. Record actual PR/head/check evidence
-before any merge. No owner blocker is known.
+Integrate the two anchor-review fixes, review the exact foundation diff, rerun full local
+verification and CI, and merge #20 with expected-head protection. Reconcile dependent #21
+with refreshed main, finish frontend/native checks, run the packaged scene and restart
+scenario, then record checkpoint/ledger/debt evidence and verify final merged main.
+No owner blocker is known; Gate 4 remains outside current authorization.

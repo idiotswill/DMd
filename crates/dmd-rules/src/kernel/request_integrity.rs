@@ -347,7 +347,19 @@ fn pending_with_recency(
             )?;
         }
         PendingPurpose::SecondWind => {
+            authorize(state, &p.issued_by, actor)?;
             ready(rules, actor)?;
+            if rules.timing.as_ref().is_some_and(|timing| {
+                !timing.bonus_action_spent
+                    || timing
+                        .order
+                        .get(timing.index)
+                        .is_none_or(|turn| turn.actor != actor)
+            }) {
+                return Err(invalid(
+                    "Second Wind lacks its reserved combat bonus action",
+                ));
+            }
             let features = e
                 .character_features
                 .as_ref()

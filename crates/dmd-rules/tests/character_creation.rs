@@ -368,6 +368,47 @@ impl Table {
 }
 
 #[test]
+fn source_sheet_validation_preserves_legal_mutable_play_state() {
+    let mut t = Table::new();
+    let profile = build_character(&input(), t.actor, &pack()).unwrap().profile;
+    t.admin(RulesAction::ApplyDamage {
+        target: t.actor,
+        amount: 3,
+        damage_type: DamageType::Force,
+        critical: false,
+        ruling: ruling(),
+    });
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.submit(&[1]);
+    t.admin(RulesAction::GrantInspiration {
+        actor: t.actor,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: EffectId::new(),
+            source: t.actor,
+            target: t.other,
+            condition: None,
+            label: "An adjudicated effect".into(),
+            expires: Expiry::Never,
+            concentration_owner: Some(t.actor),
+        },
+        ruling: ruling(),
+    });
+    assert!(t.pc().concentration.is_some());
+    validate_character_mechanics(&profile, t.pc(), &pack()).unwrap();
+    t.verify();
+}
+
+#[test]
 fn creation_adds_a_pc_without_replacing_existing_mechanics_or_history() {
     let mut t = Table::new();
     let before = t.state.clone();
@@ -465,6 +506,74 @@ fn second_wind_preserves_raw_pending_rolls_and_partial_rest_recovery() {
     );
     assert!(t.pc().heroic_inspiration);
     t.verify();
+}
+
+#[test]
+fn restored_second_wind_requires_the_reserved_combat_bonus_action() {
+    let mut t = Table::new();
+    t.begin_combat();
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.verify();
+    let encoded = serde_json::to_string(&t.state).unwrap();
+    for mutation in 0..3 {
+        // The earliest imported anchor has no earlier state to replay. Its local
+        // checks must retain the resource reservation for this outstanding roll.
+        let mut anchor: CampaignState = serde_json::from_str(&encoded).unwrap();
+        let timing = anchor.rules.as_mut().unwrap().timing.as_mut().unwrap();
+        match mutation {
+            0 => timing.bonus_action_spent = false,
+            1 => timing.index = 1,
+            2 => timing.index = usize::MAX,
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_state(&anchor, &pack()).is_err(),
+            "accepted Second Wind combat anchor mutation {mutation}"
+        );
+    }
+}
+
+#[test]
+fn restored_second_wind_retains_authorized_issuer_and_actor_identity() {
+    let mut t = Table::new();
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.verify();
+    let encoded = serde_json::to_string(&t.state).unwrap();
+    for mutation in 0..3 {
+        let mut anchor: CampaignState = serde_json::from_str(&encoded).unwrap();
+        let meta = &mut anchor
+            .rules
+            .as_mut()
+            .unwrap()
+            .pending
+            .as_mut()
+            .unwrap()
+            .issued_by;
+        match mutation {
+            0 => meta.issuer = CommandIssuer::Player(t.other_player),
+            1 => meta.actor = Some(AgentRef::Entity(t.other)),
+            2 => meta.actor = None,
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_state(&anchor, &pack()).is_err(),
+            "accepted Second Wind authority anchor mutation {mutation}"
+        );
+    }
 }
 
 #[test]
