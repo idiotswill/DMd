@@ -128,12 +128,12 @@ pub(crate) fn validate_rules_export(
         if replayed.clock.now.0 != row.occurred_at_world || !replayed.validate().is_empty() {
             return Err(format!("rules replay time/domain mismatch at {sequence}"));
         }
-        if let Some(snapshot) = snapshots.get(&sequence) {
-            if snapshot != &replayed {
-                return Err(format!(
-                    "rules snapshot disagrees with replay at {sequence}"
-                ));
-            }
+        if let Some(snapshot) = snapshots.get(&sequence)
+            && snapshot != &replayed
+        {
+            return Err(format!(
+                "rules snapshot disagrees with replay at {sequence}"
+            ));
         }
     }
     if replayed != current {
@@ -286,6 +286,7 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
         | RulesAction::ApplyEffect { ruling, .. }
         | RulesAction::RemoveEffect { ruling, .. }
         | RulesAction::SetExhaustion { ruling, .. }
+        | RulesAction::SetProne { ruling, .. }
         | RulesAction::RecoverResource { ruling, .. }
         | RulesAction::StartRest { ruling, .. }
         | RulesAction::InterruptRest { ruling, .. }
@@ -293,8 +294,16 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
         | RulesAction::AdvanceTime { ruling, .. }
         | RulesAction::StartCombat { ruling, .. }
         | RulesAction::EndCombat { ruling }
-        | RulesAction::UseReaction { ruling, .. } => Some(ruling),
-        _ => None,
+        | RulesAction::UseReaction { ruling, .. }
+        | RulesAction::UseBonusAction { ruling, .. } => Some(ruling),
+        RulesAction::Attack { .. }
+        | RulesAction::CastSpell { .. }
+        | RulesAction::SubmitRoll { .. }
+        | RulesAction::SubmitRollWithInspiration { .. }
+        | RulesAction::SpendResource { .. }
+        | RulesAction::SpendHitDie { .. }
+        | RulesAction::EndTurn { .. }
+        | RulesAction::EndConcentration { .. } => None,
     }
 }
 
@@ -497,6 +506,103 @@ mod tests {
         let original = export.clone();
         validate_rules_export(&export, &pack).expect("valid complete rules history");
         assert_eq!(export, original);
+    }
+
+    fn append_action(
+        export: &mut CampaignExport,
+        pack: &RulesPack,
+        actor: EntityId,
+        action: RulesAction,
+    ) {
+        let state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        let meta = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: state.campaign_id(),
+            session_id: None,
+            issuer: CommandIssuer::System,
+            actor: Some(AgentRef::Entity(actor)),
+            expected_event_sequence: state.applied_event_sequence,
+        };
+        let transition = dmd_rules::resolve(&state, &meta, &action, pack).unwrap();
+        let mut current = transition.next_state;
+        current.applied_event_sequence += 1;
+        let sequence = i64::try_from(current.applied_event_sequence).unwrap();
+        let mut audit = export.command_audit[0].clone();
+        audit.id = meta.id.0.to_string();
+        audit.actor_kind = Some("entity".into());
+        audit.actor_id = Some(actor.0.to_string());
+        audit.expected_event_sequence = sequence - 1;
+        audit.resulting_event_sequence = sequence;
+        audit.payload_json = serde_json::to_string(&action).unwrap();
+        let mut event = export.event_journal[0].clone();
+        event.id = dmd_domain::EventId::new().0.to_string();
+        event.command_id = audit.id.clone();
+        event.actor_kind.clone_from(&audit.actor_kind);
+        event.actor_id.clone_from(&audit.actor_id);
+        event.sequence = sequence;
+        event.occurred_at_world = current.clock.now.0;
+        event.payload_json = serde_json::to_string(&transition.event).unwrap();
+        export.command_audit.push(audit);
+        export.event_journal.push(event);
+        export.current_state.applied_event_sequence = sequence;
+        export.current_state.state_json = current.encode_json().unwrap();
+    }
+
+    #[test]
+    fn prone_and_bonus_action_history_restores_with_origin_audits() {
+        use dmd_domain::{
+            Circumstances, DieResult, InitiativeEntry, RollRequestId, RollResult, RollSource,
+            RollVisibility, TestKind,
+        };
+
+        let (mut export, pack, actor) = fixture();
+        let ruling = Ruling {
+            basis: RulingBasis::Srd { page: 15 },
+            reason: "Authoritative combat context".into(),
+        };
+        let request_id = RollRequestId::new();
+        for action in [
+            RulesAction::SetProne {
+                target: actor,
+                prone: true,
+                ruling: ruling.clone(),
+            },
+            RulesAction::RequestTest {
+                actor,
+                kind: TestKind::Initiative,
+                dc: 0,
+                visibility: RollVisibility::Public,
+                circumstances: Circumstances::default(),
+                ruling: ruling.clone(),
+                request_id,
+            },
+            RulesAction::SubmitRoll {
+                result: RollResult {
+                    request_id,
+                    source: RollSource::Digital,
+                    dice: vec![DieResult {
+                        sides: 20,
+                        value: 10,
+                    }],
+                },
+            },
+            RulesAction::StartCombat {
+                participants: vec![InitiativeEntry {
+                    actor,
+                    total: 10,
+                    tie_break: 0,
+                }],
+                ruling: ruling.clone(),
+            },
+            RulesAction::UseBonusAction {
+                actor,
+                feature_id: "supported-feature".into(),
+                ruling,
+            },
+        ] {
+            append_action(&mut export, &pack, actor, action);
+            validate_rules_export(&export, &pack).expect("valid combat history");
+        }
     }
 
     #[test]

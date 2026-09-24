@@ -1,7 +1,8 @@
 # Gate 2 rules export preflight
 
-Status: implemented, awaiting compilation with integrated kernel on
-`codex/gate2-rules-export-preflight`, based on `ebaef360`.
+Status: helper implementation and focused verification complete on
+`codex/gate2-rules-export-preflight`, based on `ebaef360`; parent application
+wiring and integrated exact-head verification remain part of the Gate 2 plan.
 
 ## Objective and boundaries
 
@@ -36,14 +37,25 @@ available separately. Cryptographic authenticity remains outside this gate.
 
 ## Validation and next action
 
-Implemented helper and five internal regression tests for valid immutable
+Implemented helper and six internal regression tests for valid immutable
 preflight, poisoned current/latest snapshots, pre-anchor envelope/audit parity,
-unsupported events/forged outcomes, and invented ruling provenance. Origin audit
-checks also cover pending requests, accepted roll records and nested permissions.
+unsupported events/forged outcomes, invented ruling provenance, and accepted
+prone/initiative/bonus-action histories. Origin audit checks also cover pending
+requests, accepted roll records and nested permissions. Ruling extraction uses
+an exhaustive action match so future actions require an explicit decision.
 ADR 020 records the earliest-anchor trust boundary and failure policy.
 
-Standalone rustfmt and `git diff --check` passed. Compilation awaits the kernel
-types/dependencies/module wiring; no full verification is claimed for this
-unlinked helper. Next: commit this isolated helper, bring kernel commit `77b229c`
-into the local verification branch, and compile/test through a temporary harness
-without altering application dependencies. Parent cherry-picks only helper commits.
+Verified with the kernel checkpoint `77b229c` in this isolated branch:
+
+- Standalone `rustfmt --edition 2024 crates/dmd-app/src/rules_restore.rs` passed.
+- A temporary external crate imported this exact module by path and depended on
+  this branch's domain, persistence and rules crates. `cargo test --offline`
+  passed all six helper tests; `cargo clippy --offline --all-targets -- -D warnings`
+  passed. The harness changed no application dependencies or repository wiring.
+- `git diff --check` passed.
+
+No full integrated application verification is claimed by this slice. Next: the
+parent cherry-picks only helper commits, wires the module into rules-enabled app
+restore, and runs `cargo test -p dmd-app` plus the required full exact-head checks.
+The local kernel cherry-pick is verification-only and must not be cherry-picked
+again by the parent.
