@@ -3,19 +3,29 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 $dmdRoot = Split-Path $PSScriptRoot -Parent
 if (-not $OutputDirectory) { $OutputDirectory = Join-Path $dmdRoot 'artifacts/desktop' }
+$OutputDirectory = [IO.Path]::GetFullPath($OutputDirectory)
 if (Test-Path -LiteralPath $OutputDirectory) { throw 'Choose a new, empty package output directory.' }
-$dmdTarget = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $dmdRoot 'target' }
-$dmdRelease = Join-Path $dmdTarget 'x86_64-pc-windows-msvc/release'
-$dmdExe = Join-Path $dmdRelease 'dmd-desktop.exe'
-if (-not (Test-Path -LiteralPath $dmdExe)) { throw 'Build the Windows release executable first.' }
-$dmdInstallers = @(Get-ChildItem -LiteralPath (Join-Path $dmdRelease 'bundle/nsis') -Filter '*-setup.exe')
-if ($dmdInstallers.Count -ne 1) { throw 'Expected exactly one NSIS installer from this build.' }
 Push-Location $dmdRoot
 try {
     $dmdCommit = (& git rev-parse HEAD).Trim()
     if ($LASTEXITCODE -ne 0) { throw 'Cannot identify packaged source commit.' }
-    & git diff --quiet HEAD
-    if ($LASTEXITCODE -ne 0) { throw 'Tracked source changes must be committed before packaging.' }
+    $dmdChanges = @(& git status --porcelain --untracked-files=normal)
+    if ($LASTEXITCODE -ne 0 -or $dmdChanges.Count -ne 0) { throw 'Commit source changes before building a package.' }
+
+    # Packaging always builds from this clean head. It cannot relabel binaries left by
+    # another branch, a failed build or an earlier invocation of desktop-build.
+    & (Join-Path $PSScriptRoot 'desktop-build.ps1')
+
+    $dmdAfterBuild = (& git rev-parse HEAD).Trim()
+    if ($LASTEXITCODE -ne 0 -or $dmdAfterBuild -ne $dmdCommit) { throw 'Source commit changed during the build; package cancelled.' }
+    $dmdChanges = @(& git status --porcelain --untracked-files=normal)
+    if ($LASTEXITCODE -ne 0 -or $dmdChanges.Count -ne 0) { throw 'Source changed during the build; package cancelled.' }
+    $dmdTarget = if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR } else { Join-Path $dmdRoot 'target' }
+    $dmdRelease = Join-Path $dmdTarget 'x86_64-pc-windows-msvc/release'
+    $dmdExe = Join-Path $dmdRelease 'dmd-desktop.exe'
+    if (-not (Test-Path -LiteralPath $dmdExe)) { throw 'The fresh build did not produce the Windows executable.' }
+    $dmdInstallers = @(Get-ChildItem -LiteralPath (Join-Path $dmdRelease 'bundle/nsis') -Filter '*-setup.exe')
+    if ($dmdInstallers.Count -ne 1) { throw 'Expected exactly one NSIS installer from this build.' }
     $dmdPortable = Join-Path $OutputDirectory 'portable'
     New-Item -ItemType Directory -Path (Join-Path $dmdPortable 'content'), (Join-Path $dmdPortable 'licenses') -Force | Out-Null
     Copy-Item -LiteralPath $dmdExe -Destination (Join-Path $dmdPortable 'DMd.exe')

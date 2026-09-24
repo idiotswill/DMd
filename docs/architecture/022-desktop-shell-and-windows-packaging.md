@@ -17,6 +17,8 @@ campaign data belongs in the OS application-data directory, outside installed as
 The frontend receives player-safe projections, never raw campaign state or secret
 host adjudication context in player mode. A restrictive CSP denies remote resources;
 no general filesystem, shell, SQL or HTTP plugin is exposed to the renderer.
+The native single-instance plugin registers first. A second launch focuses the existing
+window and exits before opening another renderer that could overwrite its saved request.
 
 ## Build and package
 
@@ -35,6 +37,10 @@ Artifacts include the exact commit/build target, installer, executable/resources
 dependency license declarations and available notice files, and SHA-256 checksums.
 The Windows workflow checks out the exact PR head, not a moving branch. CI downloads
 are development/distribution infrastructure; they are not runtime dependencies.
+Packaging always performs a fresh release build from a clean source tree and checks
+the commit and source cleanliness again afterward. It never stamps a new head onto
+executable/installer files left by an earlier build. SHA-256 hashes cover the copied
+executable, installer and resources together.
 Publisher signing and broader installer/release hardening remain Gate 13 work.
 
 ## Verification and limits
@@ -58,3 +64,4 @@ and actual visual/interaction evidence before claiming the gate complete.
 - [Tauri installer and offline WebView2 configuration](https://v2.tauri.app/distribute/windows-installer/)
 - [Tauri Vite static build configuration](https://v2.tauri.app/start/frontend/vite/)
 - [Tauri packaged-application WebDriver setup](https://v2.tauri.app/develop/tests/webdriver/manual-setup/)
+- [Tauri single-instance initialization and focus](https://v2.tauri.app/plugin/single-instance/)

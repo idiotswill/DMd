@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 if (-not $IsWindows) { throw 'Desktop packaging currently requires Windows with MSVC.' }
 $dmdRoot = Split-Path $PSScriptRoot -Parent
+if ($env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR = [IO.Path]::GetFullPath($env:CARGO_TARGET_DIR, $dmdRoot) }
 if (-not $SkipPrepare) { & (Join-Path $PSScriptRoot 'desktop-prepare.ps1') }
 $dmdCli = Join-Path $dmdRoot 'apps/desktop/node_modules/.bin/tauri.cmd'
 Push-Location $dmdRoot

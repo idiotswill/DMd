@@ -12,6 +12,7 @@ dmd-domain = { path = "../dmd-domain" }
 serde.workspace = true
 tokio.workspace = true
 tauri = { version = "=2.11.6", default-features = false, features = ["wry", "compression", "common-controls-v6"] }
+tauri-plugin-single-instance = "=2.4.5"
 
 [target.'cfg(all(windows, target_env = "msvc"))'.build-dependencies]
 tauri-build = { version = "=2.6.3", features = [] }

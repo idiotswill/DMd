@@ -13,6 +13,7 @@
 /crates/dmd-desktop/icons/android/
 /crates/dmd-desktop/icons/ios/
 /crates/dmd-desktop/licenses/
+/crates/dmd-desktop/gen/
 *.db
 *.db-shm
 *.db-wal

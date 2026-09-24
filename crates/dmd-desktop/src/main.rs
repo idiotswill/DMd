@@ -8,6 +8,14 @@ fn main() {
     use tauri::Manager;
 
     tauri::Builder::default()
+        // Register first: a second process must exit before creating another retry writer.
+        .plugin(tauri_plugin_single_instance::init(|app, _, _| {
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.unminimize();
+                let _ = window.show();
+                let _ = window.set_focus();
+            }
+        }))
         .setup(|app| {
             app.manage(host::DesktopHost::new(app.handle()));
             Ok(())
