@@ -1,6 +1,7 @@
 # Gate 2 integrated acceptance and closeout
 
-Status: active on `codex/gate2-closeout`; primary agent is sole writer.
+Status: **Complete acceptance record for [PR #19](https://github.com/idiotswill/DMd/pull/19).**
+The primary agent was the sole writer on `codex/gate2-closeout`.
 
 ## Objective and scope
 
@@ -35,12 +36,22 @@ matches the reviewed application head. Ledger evidence is integrated: 13 scoped 
 42 unchanged deferred rows, no player-acceptance claims and five evidence validation tests.
 ADRs 017–020 are accepted, and the four remaining implementation plans are archived.
 
+Independent integrated review found no unmet Gate 2 criterion, product reduction or
+blocker. It independently checked all 55 ledger rows, all 50 exact-head test references,
+unchanged later-gate obligations and empty human acceptance. Full closeout verification
+at `9fed3409dbe49f7bb6cb6d8879c07714f17a00f6` passed 173 Windows tests, formatting,
+workspace checks, Clippy and both guards. The final delta only records acceptance,
+this archive, a source-test path clarification and the owner pause. PR #19 records its
+final exact-head CI and final merged-main SHA/checks, avoiding a self-referential hash
+inside this commit. Final publication requires those checks before the owner summary.
+
 Ritual/long-casting execution remains Gate 5, complete tactical/noncombat effects Gates 4/5,
 catalog coverage Gate 6, packaging Gate 13 and human acceptance Gate 6/14. Internal
 consistency does not prove earliest-anchor authenticity. TD-001–008 retain their owners.
 
-## Next action
+## Publication and owner pause
 
-Finish independent integrated-gate/closeout review, run complete verification, publish the
-final evidence PR and inspect its exact-head CI. Merge with expected-head protection,
-verify final main and stop. No owner decision blocker is known.
+Complete exact-head publication checks recorded on PR #19, merge with expected-head
+protection and verify final main. Report the evidence-based Gate 2 summary and stop.
+After publication there is no remaining Gate 2 implementation action. Do not begin Gate 3
+until the owner says to continue. No owner decision blocker is known.

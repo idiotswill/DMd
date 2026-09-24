@@ -1,6 +1,6 @@
 # Gate 2 — Commercial fifth-edition rules kernel
 
-Status: **Integrated implementation verified — closeout review and publication in progress**
+Status: **Accepted — Gate 2 technical scope. Paused for the owner before Gate 3.**
 
 ## Product requirements advanced
 
@@ -114,7 +114,7 @@ provides the per-family pure-mechanics tests and exact production evidence.
 
 | Gate criterion | Verified production evidence |
 |---|---|
-| Legal source and complete ownership | `pinned_source_has_complete_owned_inventory` in `crates/dmd-domain/tests/rules_coverage_ledger.rs`; real distributed pack loads in `distributed_rules_pack.rs`; 55 families, all source chapters/catalogs assigned. |
+| Legal source and complete ownership | `pinned_source_has_complete_owned_inventory` in `crates/dmd-domain/tests/rules_coverage_ledger.rs`; real distributed pack loads in `crates/dmd-domain/tests/distributed_rules_pack.rs`; 55 families, all source chapters/catalogs assigned. |
 | Character validation, checks, saves, proficiency | `pending_physical_roll_survives_shutdown_and_replay_matches_committed_mechanics` checks saved request, raw 13 + derived 5 = 18 and command audit; `invalid_mechanical_initialization_and_stale_competing_action_leave_no_partial_writes` rejects invalid HP; concentration scenario covers a saved saving throw. |
 | Advantage, Inspiration, passives, house rules | `inspiration_advantage_passive_queries_and_house_rulings_are_durable` checks cancellation, two raw dice, actual one-die replacement/resource consumption, passive answers and optional natural-extreme behavior; export/restore/replay agree. |
 | Attack, AC, critical damage, HP/healing | `initiative_attack_damage_reaction_and_effect_timing_use_the_durable_path` authorizes context, resolves a critical, restarts with pending damage and applies the expected 8 damage; spell/rest scenario checks healing; dead-character scenario checks read/action lifecycle distinction. |
@@ -148,10 +148,17 @@ Rust 1.88 MSRV, genericity guard and architecture guard. The final merged implem
 `3ad3885559073e6748d3f17c2172be9ff2a99f52` also passed local full verification with
 172 tests and [CI #306](https://github.com/idiotswill/DMd/actions/runs/36003489271).
 The closeout adds one ledger evidence-regression test, without changing
-runtime code. Its PR records the final exact-head checks and merged-main follow-up.
+runtime code. [Closeout PR #19](https://github.com/idiotswill/DMd/pull/19) records the final
+reviewed head, exact-head checks and final merged-main SHA/verification; its merge commit
+is the final Gate 2 main revision. The complete closeout suite passes 173 Windows tests.
 Earlier formatting/Clippy failures were read, fixed and rerun; no failed head is acceptance
 evidence. Tests exercise Windows locally and Linux in CI; this is correctness evidence,
 not reference-laptop performance acceptance.
+
+The independent integrated review found no unmet Gate 2 criterion, product-scope reduction
+or unresolved blocker. All 13 scoped Gate 2 families have mechanical and production
+evidence; 42 later-gate families remain explicitly deferred, with no human-acceptance
+claims. This accepts the foundation's technical scope, not finished tabletop gameplay.
 
 ## Architecture and precise scope
 

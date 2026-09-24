@@ -14,6 +14,13 @@ Future gates are behaviorally specific but should avoid premature implementation
 
 Only the active gate receives a detailed execution plan.
 
+## Current checkpoint
+
+[Gate 2](gate-02-rules-kernel.md) is accepted after the source, rules kernel and real
+application/persistence integration were verified. [PR #19](https://github.com/idiotswill/DMd/pull/19)
+records final closeout and merged-main verification. Work is paused for the owner;
+Gate 3 remains planned and must not begin until the owner says to continue.
+
 ## Preconditions before Gate 2
 
 1. Gate 1 remains accepted on current `main`; re-verify rather than re-opening completed work by assumption.
