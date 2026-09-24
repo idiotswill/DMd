@@ -23,114 +23,102 @@ jobs:
 
           lifecycle_test = Path('crates/dmd-persistence/tests/campaign_lifecycle.rs')
           text = lifecycle_test.read_text()
-          old = '''    sqlx::query("UPDATE campaign_state_current SET state_json = '{}' WHERE campaign_id = ?")
-              .bind(campaign.campaign_id().0.to_string())
-              .execute(&pool)
-              .await
-              .expect("structurally corrupt but valid JSON should be writable for the failure test");
-          assert!(matches!(
-              purge_campaign(
-                  &pool,
-                  campaign.campaign_id(),
-                  &CampaignPurgeAuthorization::admin("corrupt campaign"),
-                  &backup,
-              )
-              .await,
-              Err(LifecycleError::CorruptExport(_))
-          ));
+          start_token = 'sqlx::query("UPDATE campaign_state_current SET state_json = \'{}\' WHERE campaign_id = ?")'
+          start = text.find(start_token)
+          if start < 0:
+              raise SystemExit('campaign lifecycle corruption start marker not found')
+          start = text.rfind('\n', 0, start) + 1
+          error_marker = 'Err(LifecycleError::CorruptExport(_))'
+          error = text.find(error_marker, start)
+          if error < 0:
+              raise SystemExit('campaign lifecycle corruption error marker not found')
+          end_marker = '    ));'
+          end = text.find(end_marker, error)
+          if end < 0:
+              raise SystemExit('campaign lifecycle corruption end marker not found')
+          end += len(end_marker)
+          if end < len(text) and text[end] == '\n':
+              end += 1
+          replacement = '''    let mut corrupt_backup = backup.clone();
+              corrupt_backup.current_state.state_json = "{}".into();
+              assert!(matches!(
+                  purge_campaign(
+                      &pool,
+                      campaign.campaign_id(),
+                      &CampaignPurgeAuthorization::admin("corrupt backup"),
+                      &corrupt_backup,
+                  )
+                  .await,
+                  Err(LifecycleError::CorruptExport(_))
+              ));
           '''
-          new = '''    let mut corrupt_backup = backup.clone();
-          corrupt_backup.current_state.state_json = "{}".into();
-          assert!(matches!(
-              purge_campaign(
-                  &pool,
-                  campaign.campaign_id(),
-                  &CampaignPurgeAuthorization::admin("corrupt backup"),
-                  &corrupt_backup,
-              )
-              .await,
-              Err(LifecycleError::CorruptExport(_))
-          ));
-          '''
-          if old not in text:
-              raise SystemExit('campaign lifecycle corruption fixture marker not found')
-          lifecycle_test.write_text(text.replace(old, new, 1))
+          lifecycle_test.write_text(text[:start] + replacement + text[end:])
 
           integrity = Path('crates/dmd-persistence/tests/campaign_lifecycle_integrity.rs')
           text = integrity.read_text()
-          old_import = '''    CampaignExport, CampaignPurgeAuthorization, LifecycleError, commit_campaign_transition,
-              create_campaign, export_campaign, migrate_sqlite, open_campaign, purge_campaign,
-              restore_campaign, save_play_session,
-          '''
-          new_import = '''    CampaignExport, CampaignPurgeAuthorization, LifecycleError, commit_campaign_transition,
-              create_campaign, export_campaign, load_campaign_projection_summary, migrate_sqlite,
-              open_campaign, purge_campaign, restore_campaign, save_play_session,
-          '''
+          old_import = '''    create_campaign, export_campaign, migrate_sqlite, open_campaign, purge_campaign,
+              restore_campaign, save_play_session,'''
+          new_import = '''    create_campaign, export_campaign, load_campaign_projection_summary, migrate_sqlite,
+              open_campaign, purge_campaign, restore_campaign, save_play_session,'''
           if old_import not in text:
               raise SystemExit('integrity import marker not found')
           text = text.replace(old_import, new_import, 1)
 
-          old_projection = '''    let has_projection_table: i64 = sqlx::query_scalar(
-              "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'projection_heads'",
-          )
-          .fetch_one(&pool)
-          .await
-          .expect("schema introspection should work");
-          if has_projection_table == 1 {
-              let projections: i64 =
-                  sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
-                      .bind(&export.campaign_id)
-                      .fetch_one(&pool)
-                      .await
-                      .expect("projection head count should query");
-              assert_eq!(projections, 0, "derivative projections must cascade away");
-          }
-          '''
-          new_projection = '''    let projections: i64 =
+          projection_start_token = 'let has_projection_table: i64'
+          projection_start = text.find(projection_start_token)
+          if projection_start < 0:
+              raise SystemExit('projection purge start marker not found')
+          projection_start = text.rfind('\n', 0, projection_start) + 1
+          projection_assert = 'assert_eq!(projections, 0, "derivative projections must cascade away");'
+          projection_assert_pos = text.find(projection_assert, projection_start)
+          if projection_assert_pos < 0:
+              raise SystemExit('projection purge assertion marker not found')
+          projection_end = text.find('\n    }', projection_assert_pos)
+          if projection_end < 0:
+              raise SystemExit('projection purge end marker not found')
+          projection_end += len('\n    }')
+          if projection_end < len(text) and text[projection_end] == '\n':
+              projection_end += 1
+          projection_replacement = '''    let projections: i64 =
               sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
                   .bind(&export.campaign_id)
                   .fetch_one(&pool)
                   .await
                   .expect("projection head count should query");
-          assert_eq!(projections, 0, "derivative projections must cascade away");
+              assert_eq!(projections, 0, "derivative projections must cascade away");
           '''
-          if old_projection not in text:
-              raise SystemExit('projection purge assertion marker not found')
-          text = text.replace(old_projection, new_projection, 1)
+          text = text[:projection_start] + projection_replacement + text[projection_end:]
 
-          old_event_version = '''    let mut overflow_event_version = export.clone();
-          overflow_event_version.event_journal[0].event_schema_version = i64::from(u32::MAX) + 1;
-          '''
-          new_event_version = '''    let mut zero_event_version = export.clone();
-          zero_event_version.event_journal[0].event_schema_version = 0;
-          assert_restore_rejected_without_write(&pool, &zero_event_version, "zero event schema")
-              .await;
-
-          let mut overflow_event_version = export.clone();
-          overflow_event_version.event_journal[0].event_schema_version = i64::from(u32::MAX) + 1;
-          '''
-          if old_event_version not in text:
+          event_marker = '    let mut overflow_event_version = export.clone();\n'
+          if event_marker not in text:
               raise SystemExit('event version regression marker not found')
-          text = text.replace(old_event_version, new_event_version, 1)
+          text = text.replace(
+              event_marker,
+              '''    let mut zero_event_version = export.clone();
+              zero_event_version.event_journal[0].event_schema_version = 0;
+              assert_restore_rejected_without_write(&pool, &zero_event_version, "zero event schema")
+                  .await;
 
-          old_restore = '''    restore_campaign(&pool, &export)
-              .await
-              .expect("original replay-safe export should still restore");
-          '''
-          new_restore = '''    restore_campaign(&pool, &export)
-              .await
-              .expect("original replay-safe export should still restore");
-          let projection = load_campaign_projection_summary(&pool, campaign_id)
-              .await
-              .expect("restore must rebuild derivative projections from authoritative state");
-          assert_eq!(
-              projection.applied_event_sequence,
-              u64::try_from(export.current_state.applied_event_sequence).unwrap()
-          );
-          '''
-          if old_restore not in text:
-              raise SystemExit('projection restore assertion marker not found')
-          integrity.write_text(text.replace(old_restore, new_restore, 1))
+              let mut overflow_event_version = export.clone();
+          ''',
+              1,
+          )
+
+          restore_marker = '        .expect("original replay-safe export should still restore");'
+          restore_pos = text.find(restore_marker)
+          if restore_pos < 0:
+              raise SystemExit('projection restore marker not found')
+          restore_end = restore_pos + len(restore_marker)
+          projection_restore = '''
+              let projection = load_campaign_projection_summary(&pool, campaign_id)
+                  .await
+                  .expect("restore must rebuild derivative projections from authoritative state");
+              assert_eq!(
+                  projection.applied_event_sequence,
+                  u64::try_from(export.current_state.applied_event_sequence).unwrap()
+              );'''
+          text = text[:restore_end] + projection_restore + text[restore_end:]
+          integrity.write_text(text)
           PY
           cargo fmt --all
           cargo test --locked -p dmd-persistence --test campaign_lifecycle
