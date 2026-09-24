@@ -12,7 +12,7 @@ Status: **Proposed for Gate 2; acceptance requires production integration eviden
 
 Manifest resolution proves local content integrity and exact version availability. It does not prove that a compiled kernel implements that version. Rules-enabled create/open/resume/restore and every action/query therefore also load the manifest-declared `kernel.json`, verify the exact bytes against its length/checksum, validate the typed definitions, and validate persisted mechanical state against the supported rules identity.
 
-Existing generic recovery/lifecycle composition remains available for campaigns without mechanical state. No unknown rules identity may execute mechanics. A rules state attached to an unsupported identity fails at the runnable boundary. Content unavailability never triggers a fallback to another rules version.
+Existing generic recovery/lifecycle composition remains available for campaigns without current or historical rules lineage. No unknown rules identity may execute mechanics. A rules state attached to an unsupported identity fails at the runnable boundary. Content unavailability never triggers a fallback to another rules version.
 
 Create and restore retain their verified catalog/pack across the database await and validate the returned state with those same in-memory definitions. They do not reread mutable files after a successful commit and incorrectly report failure. Each later open/action/query reloads content normally; the returned campaign grants no cached authority for a subsequent operation.
 
@@ -24,13 +24,15 @@ Request consumption and mechanical consequences commit atomically with the actio
 
 ## Queries and replay
 
-Rules questions use an immutable query API with a trusted viewer. They construct no command and do not advance event sequence, consume resources or commit journal records. Explanation rendering occurs after structured resolution; rendering failure cannot roll back or repeat accepted actions.
+Rules questions use an immutable query API with a trusted viewer. They construct no command and do not advance event sequence, consume resources or commit journal records. Future presentation adapters must render explanations after structured resolution; rendering failure must not roll back or repeat accepted actions. Gate 2 provides structured answers, not a language explanation renderer.
 
 `rules.action_resolved@1` stores the typed action, trusted command metadata and derived outcome. The application replay adapter rejects unknown kind/version and mismatched journal metadata, then asks the pure kernel to re-resolve the recorded authoritative inputs and compare the outcome. It does not assign an arbitrary serialized after-state. Persistence retains responsibility for immutable snapshot anchors, contiguous sequences, causal references and final domain invariants.
 
 The kernel is sequence-neutral. The app supplies the proposed next sequence to the atomic
 one-event commit, while persistence assigns the event sequence after validating the locked
-head. During replay only persistence advances that sequence. `CampaignRuntime::replay_rules`
+head. During persistence-orchestrated replay only persistence advances that sequence;
+the pure export preflight separately advances its in-memory replay image.
+`CampaignRuntime::replay_rules`
 resolves installed content and validates the resulting mechanics, including when recovery
 starts at an exact-head snapshot and applies no events.
 
