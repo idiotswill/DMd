@@ -11,12 +11,12 @@ Gate 1 advances the requirements that:
 - authoritative campaign truth survives save, exit, restart, and supported recovery;
 - accepted state transitions preserve trusted issuer/provenance and append-only event history atomically;
 - unrelated campaigns remain isolated in one installation;
-- persistence corruption and projection drift fail closed and have replay-backed recovery paths;
-- campaign lifecycle operations do not require ad-hoc database surgery;
+- persistence corruption and projection drift fail closed and have replay-backed recovery mechanisms;
+- campaign lifecycle operations provide supported persistence APIs instead of requiring ad-hoc database surgery at this layer;
 - exact persisted ruleset/content references must resolve before application gameplay receives a runnable campaign;
 - the core persistence/content path remains local-first and network-independent.
 
-Gate 1 deliberately does **not** complete voice/table UX, full gameplay rules, combat/exploration/social/travel/downtime loops, living-world simulation, procedural materialization, Director behavior, desktop UX, content installation UX, or long-horizon endurance play. Those remain later product work.
+Gate 1 deliberately does **not** complete player-facing recovery/admin UX, voice/table UX, full gameplay rules, combat/exploration/social/travel/downtime loops, living-world simulation, procedural materialization, Director behavior, desktop UX, content installation UX, or long-horizon endurance play. Those remain later product work.
 
 ## Implemented and merged slices
 
