@@ -20,8 +20,7 @@ use rand::Rng;
 
 use crate::{CampaignRuntime, RunnableCampaignError};
 
-pub const RULES_EVENT_KIND: &str = "rules.action_resolved";
-pub const RULES_EVENT_VERSION: u32 = 1;
+pub use dmd_rules::{RULES_EVENT_KIND, RULES_EVENT_VERSION};
 
 /// Values supplied by the trusted local session/input channel, never by an interpreted proposal.
 #[derive(Debug, Clone)]
