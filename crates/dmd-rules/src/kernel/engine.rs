@@ -35,10 +35,11 @@ pub fn resolve(
         ));
     }
     if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
-        || state
-            .rules
-            .as_ref()
-            .is_some_and(|r| r.tactical_effects.is_some())
+        || state.rules.as_ref().is_some_and(|r| {
+            r.tactical_effects.is_some()
+                || r.tactical_recovery.is_some()
+                || r.tactical_creatures.is_some()
+        })
     {
         return Err(prerequisite(
             "active tactical state requires the tactical command path",

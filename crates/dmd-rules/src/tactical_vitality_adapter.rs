@@ -118,6 +118,13 @@ pub(crate) fn apply(
             .get_mut(&actor)
             .ok_or_else(|| invalid("missing vitality world actor"))?
             .existence = EntityExistence::Dead;
+        for character in state
+            .characters
+            .values_mut()
+            .filter(|c| c.entity_id == actor)
+        {
+            character.status = CharacterStatus::Dead;
+        }
     }
     Ok(transition)
 }

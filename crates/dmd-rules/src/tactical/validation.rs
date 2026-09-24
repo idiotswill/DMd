@@ -28,11 +28,11 @@ pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
             .ok_or_else(|| invalid("combatant lacks mechanics"))?;
         match &combatant.source {
             TacticalSource::Character => {
-                if !state
-                    .characters
-                    .values()
-                    .any(|c| c.entity_id == combatant.actor && c.status == CharacterStatus::Active)
-                {
+                if !state.characters.values().any(|c| {
+                    c.entity_id == combatant.actor
+                        && (c.status == CharacterStatus::Active
+                            || (c.status == CharacterStatus::Dead && e.death.dead))
+                }) {
                     return Err(invalid("character source requires an active character"));
                 }
             }

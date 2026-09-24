@@ -89,3 +89,30 @@ Custody becomes the encounter scene location while Flow retains exact ground pos
 Next: focused turn/death/effect/restart/hostile-input regressions and the source creature
 failed-save decision hook, then strict Clippy and independent review. This checkpoint
 must not be treated as gate completion or shipped before those checks.
+
+## Focused source/replay verification (2026-09-24)
+
+All 13 `cargo test --locked --offline -p dmd-rules --test tactical_turns` tests pass.
+They serialize each accepted event and state, replay each exact before/event pair, and
+cover initial death-save suspension, foreign/stale/forged input, natural 1/20 and
+voluntary failure, stable raw d4 recovery, independent ordering/rolling controllers,
+automatic condition saves, damage/Inspiration/concentration, six-second rounds,
+selected-speed Dash, Dodge, Attack opportunities, Incapacitated/Stunned standing,
+clock overflow, physical weapon/shield drops, and legacy Unconscious activation.
+The first run exposed and fixed the CharacterStatus death synchronization gap.
+
+End and next Start can execute under one accepted command; carry occurrence allocation
+across that boundary to avoid deterministic request identity reuse. Damage observations
+retain the actual effect source. Becoming Unconscious through effect consequences drops
+held equipment too, including when removing an overlap reveals that condition.
+
+All 31 `cargo test --locked --offline -p dmd-rules --lib tactical_damage` tests pass.
+The additional source-success operation increments a death save success without
+inventing a face or natural-20 healing; the source reviewer confirmed this bounded
+change. Legendary Resistance must invoke it before applying the original failed save.
+Domain failed-save checkpoint `ad72861` is present but source LR dispatch remains the
+next dependency; the ordinary turn path does not claim that unfinished feature.
+Strict Clippy, independent complete scheduler review, combined application tests and
+final head verification remain outstanding. Root aggregate `90c3c23` was merged only
+for integration dependencies; root must cherry-pick this slice's followups, not its
+verification-only merge commit `12b601f`.

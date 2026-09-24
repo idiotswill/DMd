@@ -242,6 +242,7 @@ pub(super) fn start(
                 *actor,
                 work.occurrence,
                 VitalityOperation::RecoverStable,
+                None,
             )?;
             return Ok(());
         }
@@ -424,7 +425,7 @@ fn finish(
                     result: result.clone(),
                 }
             });
-            apply_vitality(state, meta, actor, pending.work.occurrence, operation)?;
+            apply_vitality(state, meta, actor, pending.work.occurrence, operation, None)?;
         }
         TacticalWorkKind::StableRecovery { actor, origin } => {
             let result = result.ok_or_else(|| invalid("recovery requires a raw d4"))?;
@@ -438,6 +439,7 @@ fn finish(
                     request_id: pending.key.request_id(),
                     result: result.clone(),
                 },
+                None,
             )?;
         }
         TacticalWorkKind::ConcentrationSave {
@@ -483,6 +485,7 @@ fn finish(
                             },
                             knockout: None,
                         },
+                        Some(trigger.source.actor),
                     )?;
                 }
                 _ => return Err(invalid("pending effect is not roll-bearing")),
@@ -532,6 +535,7 @@ pub(super) fn apply_vitality(
     actor: EntityId,
     occurrence: u16,
     operation: VitalityOperation,
+    damage_source: Option<EntityId>,
 ) -> Result<(), RulesError> {
     let transition = crate::tactical_vitality_adapter::apply(
         state,
@@ -587,7 +591,7 @@ pub(super) fn apply_vitality(
             state,
             meta,
             EffectLifecycleOperation::Observe(EffectObservation::Damage {
-                source: None,
+                source: damage_source,
                 target: actor,
                 amount: transition.outcome.damage_taken,
             }),

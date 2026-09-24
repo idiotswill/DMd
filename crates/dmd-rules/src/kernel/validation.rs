@@ -171,7 +171,13 @@ pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
             entity, recovery,
         ));
     }
-    if result.contains(&Condition::Unconscious) {
+    if result.contains(&Condition::Unconscious)
+        && !(rules.tactical_recovery.is_some()
+            && rules
+                .entities
+                .get(&id)
+                .is_some_and(|e| e.condition_immunities.contains(&Condition::Prone)))
+    {
         result.insert(Condition::Prone);
     }
     if rules.entities.get(&id).is_some_and(|e| e.prone) {

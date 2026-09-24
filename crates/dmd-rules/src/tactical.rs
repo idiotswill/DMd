@@ -91,7 +91,10 @@ fn controller(state: &CampaignState, actor: EntityId) -> Option<PlayerId> {
     state
         .characters
         .values()
-        .find(|c| c.entity_id == actor && c.status == CharacterStatus::Active)
+        .find(|c| {
+            c.entity_id == actor
+                && matches!(c.status, CharacterStatus::Active | CharacterStatus::Dead)
+        })
         .and_then(|c| c.controlling_player_id)
 }
 fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
@@ -220,6 +223,19 @@ pub fn resolve_tactical(
                 rules.completed_short_rests.retain(|id| *id != c.actor);
             }
             rules.permission = None;
+            // Legacy/imported sheets can predate source-driven item drops. Activating
+            // this encounter reconciles the current condition under this actual command;
+            // it does not invent a prior injury or replace historical grant provenance.
+            let unconscious = combatants
+                .iter()
+                .filter(|c| {
+                    crate::active_conditions(rules, c.actor).contains(&Condition::Unconscious)
+                })
+                .map(|c| c.actor)
+                .collect::<Vec<_>>();
+            for actor in unconscious {
+                crate::tactical_vitality_adapter::drop_held(&mut next, actor, meta)?;
+            }
             initiative::issue(&mut next, meta)?;
         }
         TacticalAction::SubmitRoll { result } => {

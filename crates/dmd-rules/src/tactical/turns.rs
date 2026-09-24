@@ -48,12 +48,38 @@ pub(super) fn effect_operation(
                 .checked_add(1)
                 .ok_or_else(|| invalid("effect step capacity exceeded"))
         })?;
+    let previously_unconscious = state
+        .rules
+        .as_ref()
+        .ok_or(RulesError::Uninitialized)?
+        .entities
+        .keys()
+        .copied()
+        .filter(|id| {
+            crate::active_conditions(state.rules.as_ref().expect("rules checked"), *id)
+                .contains(&Condition::Unconscious)
+        })
+        .collect::<Vec<_>>();
     let (next, _) = crate::tactical_effect_adapter::apply_effect_operation(
         state,
         meta,
         &EffectLifecycleAction { step, operation },
     )?;
     *state = next;
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let mut newly_unconscious = rules
+        .entities
+        .keys()
+        .copied()
+        .filter(|id| {
+            !previously_unconscious.contains(id)
+                && crate::active_conditions(rules, *id).contains(&Condition::Unconscious)
+        })
+        .collect::<Vec<_>>();
+    newly_unconscious.sort_by_key(|id| id.0);
+    for actor in newly_unconscious {
+        crate::tactical_vitality_adapter::drop_held(state, actor, meta)?;
+    }
     refresh_dodges(state)?;
     Ok(())
 }
@@ -137,6 +163,15 @@ pub(super) fn begin_boundary(
     meta: &CommandMeta,
     boundary: TurnBoundary,
 ) -> Result<(), RulesError> {
+    begin_boundary_from(state, meta, boundary, 0)
+}
+
+fn begin_boundary_from(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    boundary: TurnBoundary,
+    first_occurrence: u16,
+) -> Result<(), RulesError> {
     let actor = active(state)?;
     let number = state
         .rules
@@ -154,7 +189,8 @@ pub(super) fn begin_boundary(
         boundary,
         frames: vec![],
         pending: None,
-        next_occurrence: 0,
+        failed_save: None,
+        next_occurrence: first_occurrence,
     });
     state
         .rules
@@ -210,7 +246,7 @@ pub(super) fn begin_boundary(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if resolution(state)?.pending.is_some() {
+        if resolution(state)?.pending.is_some() || resolution(state)?.failed_save.is_some() {
             return Ok(());
         }
         // Ending a group can cancel sibling tickets. They cannot remain a phantom choice.
@@ -224,6 +260,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         }
         let Some(frame) = r.frames.last() else {
             let boundary = r.boundary;
+            let next_occurrence = r.next_occurrence;
             flow_mut(state)?.resolution = None;
             if boundary == TurnBoundary::End {
                 let mut next_budget = TacticalTurnBudget::default();
@@ -243,7 +280,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
                         .ok_or_else(|| invalid("world clock overflow"))?;
                 }
                 flow_mut(state)?.budget = next_budget;
-                return begin_boundary(state, meta, TurnBoundary::Start);
+                return begin_boundary_from(state, meta, TurnBoundary::Start, next_occurrence);
             }
             return Ok(());
         };
@@ -266,7 +303,7 @@ pub(super) fn choose(
     occurrence: u16,
 ) -> Result<(), RulesError> {
     authorize(state, meta, resolution(state)?.turn_actor)?;
-    if resolution(state)?.pending.is_some() {
+    if resolution(state)?.pending.is_some() || resolution(state)?.failed_save.is_some() {
         return Err(RulesError::Pending);
     }
     let frame = resolution_mut(state)?
