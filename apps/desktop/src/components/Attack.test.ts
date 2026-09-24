@@ -7,8 +7,8 @@ import type { AttackOptions, TacticalView } from '../tactical-api';
 
 function options():AttackOptions {
   return {actor:'actor',hands:{hands:['Free','Free']},targets:[{actor:'target',label:'Visible guard'}],weapons:[
-    {item:'dagger',name:'Dagger',deliveries:['Melee','Thrown'],abilities:['Strength','Dexterity'],grips:[{OneHand:'Left'},{OneHand:'Right'}],ammunition_required:false,ammunition:[]},
-    {item:'bow',name:'Shortbow',deliveries:['Shot'],abilities:['Dexterity'],grips:['TwoHands'],ammunition_required:true,ammunition:[{id:'stack',name:'Arrows',quantity:4}]},
+    {item:'dagger',name:'Dagger',deliveries:['Melee','Thrown'],abilities:['Strength','Dexterity'],grips:[{OneHand:'Left'},{OneHand:'Right'}],purposes:['Normal'],ammunition_required:false,ammunition:[]},
+    {item:'bow',name:'Shortbow',deliveries:['Shot'],abilities:['Dexterity'],grips:['TwoHands'],purposes:['Normal'],ammunition_required:true,ammunition:[{id:'stack',name:'Arrows',quantity:4}]},
   ]};
 }
 
@@ -67,4 +67,24 @@ it('sends owned knockout and Graze decisions and removes them on a channel chang
   expect(onAction).toHaveBeenLastCalledWith({ChooseAttackMastery:{choice:'Decline'}});
   await component.rerender({actor:'other',player:'other-player'});
   expect(screen.queryByText('Graze mastery')).toBeNull();
+});
+
+it('offers Light and Nick after the action is spent and removes an expended follow-up',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();const initial=options();
+  initial.weapons[0].purposes=[{LightBonus:{trigger:'accepted-attack'}},{Nick:{trigger:'accepted-attack'}}];
+  initial.weapons[1].purposes=[];
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},attack_options:initial};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  await user.selectOptions(screen.getByLabelText('Target'),'target');
+  expect(screen.queryByRole('option',{name:'Shortbow · 2'})).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Attack opportunity'),JSON.stringify({Nick:{trigger:'accepted-attack'}}));
+  await user.click(screen.getByRole('button',{name:/^Attack$/}));
+  expect(onAction.mock.calls[0][0].Attack.choice.purpose).toEqual({Nick:{trigger:'accepted-attack'}});
+  const changed={...initial,weapons:initial.weapons.map(weapon=>({...weapon,purposes:weapon.item==='dagger'?[{LightBonus:{trigger:'later-accepted-attack'}}]:[]}))};
+  await component.rerender({tactical:{...tactical,attack_options:changed}});
+  await user.click(screen.getByRole('button',{name:/^Attack$/}));
+  expect(onAction.mock.calls[1][0].Attack.choice.purpose).toEqual({LightBonus:{trigger:'later-accepted-attack'}});
+  await component.rerender({tactical:{...tactical,attack_options:{...initial,weapons:initial.weapons.map(weapon=>({...weapon,purposes:[]}))}}});
+  expect(screen.queryByText('Weapon attack')).toBeNull();
 });

@@ -311,6 +311,7 @@ pub struct TableWeaponChoice {
     pub deliveries: Vec<WeaponDelivery>,
     pub abilities: Vec<Ability>,
     pub grips: Vec<WeaponGrip>,
+    pub purposes: Vec<WeaponAttackPurpose>,
     pub ammunition_required: bool,
     pub ammunition: Vec<TableItemView>,
 }

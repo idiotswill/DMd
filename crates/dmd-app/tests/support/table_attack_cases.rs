@@ -450,3 +450,161 @@ async fn thrown_weapon_custody_removes_it_from_later_table_choices() {
     assert_restore(&f).await;
     f.pool.close().await;
 }
+
+#[tokio::test]
+async fn light_and_nick_table_choices_use_real_current_turn_triggers_only_once() {
+    for nick in [false, true] {
+        let mut creation = input("Character 0");
+        creation.purchases.push(EquipmentChoice {
+            item_id: "dagger".into(),
+            quantity: 2,
+        });
+        let mut f = Fixture::with_creation(TableContract::default(), Some(creation)).await;
+        let target = prepare(&mut f).await;
+        let options = attack_options(&f).await;
+        let daggers = options
+            .weapons
+            .iter()
+            .filter(|weapon| weapon.name == "Dagger")
+            .map(|weapon| weapon.item)
+            .collect::<Vec<_>>();
+        assert_eq!(daggers.len(), 2);
+        let trigger = f.player_meta(0).await;
+        f.runtime
+            .execute_table(
+                trigger.clone(),
+                TableAction::Tactical {
+                    action: TacticalAction::Attack {
+                        choice: WeaponUseChoice {
+                            weapon: daggers[0],
+                            target,
+                            delivery: WeaponDelivery::Melee,
+                            ability: Ability::Strength,
+                            grip: WeaponGrip::OneHand(Hand::Left),
+                            purpose: WeaponAttackPurpose::Normal,
+                            ammunition: None,
+                            equipment_change: Some(AttackEquipmentChange {
+                                timing: EquipmentChangeTiming::BeforeAttack,
+                                operation: AttackEquipmentOperation::Equip {
+                                    item: daggers[0],
+                                    hand: Hand::Left,
+                                },
+                            }),
+                        },
+                    },
+                },
+            )
+            .await
+            .unwrap();
+        submit(&f, false, &[1]).await;
+        check_light_followup(&f, target, &daggers, trigger, nick).await;
+        f.pool.close().await;
+    }
+}
+
+async fn attack_options(f: &Fixture) -> TableAttackOptions {
+    f.runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap()
+        .tactical
+        .unwrap()
+        .attack_options
+        .unwrap()
+}
+
+async fn check_light_followup(
+    f: &Fixture,
+    target: EntityId,
+    daggers: &[ItemId],
+    trigger: CommandMeta,
+    nick: bool,
+) {
+    let options = attack_options(f).await;
+    assert!(
+        options
+            .weapons
+            .iter()
+            .find(|weapon| weapon.item == daggers[0])
+            .unwrap()
+            .purposes
+            .is_empty()
+    );
+    assert_eq!(
+        options
+            .weapons
+            .iter()
+            .find(|weapon| weapon.item == daggers[1])
+            .unwrap()
+            .purposes,
+        vec![
+            WeaponAttackPurpose::LightBonus {
+                trigger: trigger.id
+            },
+            WeaponAttackPurpose::Nick {
+                trigger: trigger.id
+            }
+        ]
+    );
+    let choice = WeaponUseChoice {
+        weapon: daggers[1],
+        target,
+        delivery: if nick {
+            WeaponDelivery::Melee
+        } else {
+            WeaponDelivery::Thrown
+        },
+        ability: Ability::Strength,
+        grip: WeaponGrip::OneHand(Hand::Right),
+        purpose: if nick {
+            WeaponAttackPurpose::Nick {
+                trigger: trigger.id,
+            }
+        } else {
+            WeaponAttackPurpose::LightBonus {
+                trigger: trigger.id,
+            }
+        },
+        ammunition: None,
+        equipment_change: nick.then_some(AttackEquipmentChange {
+            timing: EquipmentChangeTiming::BeforeAttack,
+            operation: AttackEquipmentOperation::Equip {
+                item: daggers[1],
+                hand: Hand::Right,
+            },
+        }),
+    };
+    let meta = f.player_meta(0).await;
+    execute_after_restore(
+        f,
+        meta,
+        TableAction::Tactical {
+            action: TacticalAction::Attack { choice },
+        },
+    )
+    .await;
+    submit(f, false, if nick { &[15] } else { &[15, 15] }).await;
+    submit(f, false, &[4]).await;
+    assert!(
+        attack_options(f)
+            .await
+            .weapons
+            .iter()
+            .all(|weapon| weapon.purposes.is_empty())
+    );
+    let state = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    let rules = state.rules.as_ref().unwrap();
+    assert!(rules.timing.as_ref().unwrap().action_spent);
+    assert_eq!(rules.timing.as_ref().unwrap().bonus_action_spent, !nick);
+    assert_eq!(
+        rules.entities[&target].hp, 6,
+        "Light extra damage omits the positive ability modifier"
+    );
+    assert_restore(f).await;
+}

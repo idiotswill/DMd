@@ -34,7 +34,7 @@
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
     <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
   {/if}
-  {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.budget && (!tactical.budget.action_spent || tactical.budget.attacks_remaining>0)}
+  {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.attack_options.weapons.some(weapon=>weapon.purposes.length>0)}
     {#key tactical.attack_options.actor}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
   {/if}
   {#if tactical.attack_decision && (host || actor===tactical.attack_decision.actor)}

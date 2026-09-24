@@ -3,15 +3,16 @@ import type { Ability, Id } from './table-api';
 export type Hand = 'Left' | 'Right';
 export type WeaponGrip = 'TwoHands' | { OneHand: Hand };
 export type WeaponDelivery = 'Melee' | 'Thrown' | 'Shot';
+export type WeaponAttackPurpose = 'Normal' | { LightBonus: { trigger: Id } } | { Nick: { trigger: Id } } | { Cleave: { trigger: Id } };
 export interface WeaponUseChoice {
   weapon: Id; target: Id; delivery: WeaponDelivery; ability: Ability; grip: WeaponGrip;
-  purpose: 'Normal' | { LightBonus: { trigger: Id } } | { Nick: { trigger: Id } } | { Cleave: { trigger: Id } };
+  purpose: WeaponAttackPurpose;
   ammunition: Id | null;
   equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } } | null;
 }
 export interface AttackOptions {
   actor: Id; hands: { hands: ('Free' | { Item: Id })[] };
-  weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[] }[];
+  weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[] }[];
   targets: { actor: Id; label: string }[];
 }
 

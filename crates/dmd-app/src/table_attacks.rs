@@ -1,7 +1,8 @@
 //! Read-only physical choices. The accepted action revalidates every source and fact.
 use dmd_domain::*;
 use dmd_rules::tactical_definitions::{
-    TACTICAL_DEFINITIONS_JSON, TacticalDefinitions, WeaponHands, WeaponKind, WeaponProperty,
+    TACTICAL_DEFINITIONS_JSON, TacticalDefinitions, WeaponDefinition, WeaponHands, WeaponKind,
+    WeaponMastery, WeaponProperty,
 };
 
 pub(super) fn options(
@@ -82,6 +83,7 @@ pub(super) fn options(
             deliveries,
             abilities,
             grips,
+            purposes: purposes(state, actor, item.id, weapon, &definitions),
             ammunition_required: ammunition_id.is_some(),
             ammunition,
         });
@@ -109,4 +111,88 @@ pub(super) fn options(
         weapons,
         targets,
     }))
+}
+
+/// Read-only opportunities from accepted history, never a new attack allowance.
+fn purposes(
+    state: &CampaignState,
+    actor: EntityId,
+    item: ItemId,
+    weapon: &WeaponDefinition,
+    definitions: &TacticalDefinitions,
+) -> Vec<WeaponAttackPurpose> {
+    let Some(flow) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+    else {
+        return vec![];
+    };
+    let Some(timing) = state.rules.as_ref().and_then(|rules| rules.timing.as_ref()) else {
+        return vec![];
+    };
+    let budget = &flow.budget;
+    let mut choices = vec![];
+    if !timing.action_spent || budget.attacks_remaining > 0 {
+        choices.push(WeaponAttackPurpose::Normal);
+    }
+    if !weapon.properties.contains(&WeaponProperty::Light)
+        || budget.weapon_history.iter().any(|prior| {
+            prior.actor == actor
+                && matches!(
+                    prior.purpose,
+                    WeaponAttackPurpose::LightBonus { .. } | WeaponAttackPurpose::Nick { .. }
+                )
+        })
+    {
+        return choices;
+    }
+    let triggers = budget.weapon_history.iter().filter(|prior| {
+        prior.actor == actor
+            && prior.turn_number == timing.turn_number
+            && prior.on_actor_turn
+            && prior.window.kind == WeaponActionKind::AttackAction
+            && prior.purpose == WeaponAttackPurpose::Normal
+            && prior.outcome != WeaponAttackOutcome::Pending
+            && prior.weapon != item
+            && definitions
+                .weapon(&prior.definition_id)
+                .is_some_and(|source| source.properties.contains(&WeaponProperty::Light))
+    });
+    if let Some(prior) = triggers
+        .clone()
+        .next()
+        .filter(|_| !timing.bonus_action_spent)
+    {
+        choices.push(WeaponAttackPurpose::LightBonus {
+            trigger: prior.origin.id,
+        });
+    }
+    let nick = weapon.mastery == WeaponMastery::Nick
+        && state
+            .table
+            .as_ref()
+            .and_then(|table| {
+                table
+                    .character_profiles
+                    .values()
+                    .find(|profile| profile.entity_id == actor)
+            })
+            .is_some_and(|profile| {
+                profile
+                    .features
+                    .iter()
+                    .any(|feature| feature.id == "weapon-mastery")
+                    && profile.masteries.contains(&weapon.id)
+            });
+    if let Some(prior) = triggers
+        .clone()
+        .find(|prior| Some(prior.window) == budget.attack_window)
+        .filter(|_| nick)
+    {
+        choices.push(WeaponAttackPurpose::Nick {
+            trigger: prior.origin.id,
+        });
+    }
+    choices
 }

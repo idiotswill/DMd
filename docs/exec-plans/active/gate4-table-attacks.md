@@ -74,3 +74,22 @@ vanish when its one shared extra attack is used. The resolver remains authoritat
 hands, target and all resource checks. Add a real table sequence plus a UI regression
 for the spent-action state, explicit choice and stale-option removal. No arbitrary
 trigger ID or caller-provided additional-attack allowance is introduced.
+
+The preceding physical attack integration passed all 20 attack tests (including the
+hidden-target rejection oracle regression) and strict workspace/all-target Clippy at
+`507aea2` code; `0b9b9f7` added only the next plan. Logs are
+`tooling/gate4-attack-privacy-tests.log` and `tooling/gate4-attack-table-clippy.log`.
+PR26 is merged as `6d14d81027995f1d880853ec1dfdfdedbc1c9875`; its exact reviewed tree
+matches main and all six post-merge [Linux](https://github.com/idiotswill/DMd/actions/runs/36066318205)
+and [Windows](https://github.com/idiotswill/DMd/actions/runs/36066318331) jobs passed.
+Merge `de40b2b` retains the parent's exports and adds the verified thirteenth inventory
+regression; the five inventory source/test files exactly match main.
+
+Light/Nick projection and controls are now drafted. The frontend passes all 26 tests,
+Svelte with zero errors/warnings and a production build. Its regression covers explicit
+follow-up selection after the ordinary action is spent, current accepted trigger IDs,
+removal of stale triggers and hiding the form after all opportunities are spent. New
+SQLite coverage will execute both follow-ups, restore before accepting the extra attack,
+verify one shared use and confirm omitted positive damage modifiers. These new Rust
+changes are not yet compiled; the compiler is held by the movement/source attack slice,
+then the casting duration follow-up. Review and backend verification remain next.
