@@ -124,7 +124,10 @@ impl CampaignRuntime {
         let catalog = self.load_catalog()?;
         let content = catalog.resolve_campaign(&preflight_state.campaign)?;
         Self::validate_rules(&preflight_state, &content)?;
-        if preflight_state.rules.is_some() || preflight_state.campaign.ruleset.id == "srd-5.2" {
+        if preflight_state.rules.is_some()
+            || preflight_state.campaign.ruleset.id == "srd-5.2"
+            || upgraded.event_journal.iter().any(|event| event.event_kind.starts_with("rules."))
+        {
             let pack = rules_runtime::load_rules_pack(&content)?;
             rules_restore::validate_rules_export(&upgraded, &pack)
                 .map_err(RunnableCampaignError::RulesContent)?;

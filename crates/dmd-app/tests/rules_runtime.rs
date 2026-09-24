@@ -1071,7 +1071,7 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
     )
     .await;
     let original = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
-    for mutation in 0..8 {
+    for mutation in 0..9 {
         let mut export = original.clone();
         match mutation {
             0 => {
@@ -1133,6 +1133,17 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
                     CampaignState::decode_json(&export.current_state.state_json).unwrap();
                 state.rules.as_mut().unwrap().rulings[0].command.id = CommandId::new();
                 export.current_state.state_json = state.encode_json().unwrap();
+            }
+            8 => {
+                // Re-labeling a rules history as a generic campaign must not bypass preflight.
+                let mut state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+                state.rules = None;
+                state.campaign.ruleset.id = "generic-test".into();
+                export.current_state.state_json = state.encode_json().unwrap();
+                let path = f.content.join("manifest.json");
+                let mut manifest: serde_json::Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+                manifest["id"] = serde_json::json!("generic-test");
+                fs::write(path, serde_json::to_vec(&manifest).unwrap()).unwrap();
             }
             _ => unreachable!(),
         }
