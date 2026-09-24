@@ -1152,6 +1152,55 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
 }
 
 #[tokio::test]
+async fn legacy_rules_campaign_restore_upgrades_before_mechanical_preflight() {
+    let f = Fixture::new();
+    let (pool, runtime) = f.runtime().await;
+    runtime.create_campaign(&f.state).await.unwrap();
+    let mut export = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+    fn legacy(json: &str) -> String {
+        let mut value: serde_json::Value = serde_json::from_str(json).unwrap();
+        value["schema_version"] = serde_json::json!(1);
+        value.as_object_mut().unwrap().remove("rules");
+        serde_json::to_string(&value).unwrap()
+    }
+    export.state_schema_version = 1;
+    export.lifecycle.state_schema_version = 1;
+    export.current_state.schema_version = 1;
+    export.current_state.state_json = legacy(&export.current_state.state_json);
+    for snapshot in &mut export.snapshots {
+        snapshot.state_schema_version = 1;
+        snapshot.state_json = legacy(&snapshot.state_json);
+    }
+    let target = open_sqlite("sqlite::memory:").await.unwrap();
+    let restored = CampaignRuntime::from_content_root(target.clone(), &f.content);
+    let runnable = restored.restore_campaign(&export).await.unwrap();
+    assert_eq!(runnable.state().schema_version, 2);
+    assert!(runnable.state().rules.is_none());
+    f.step(
+        &restored,
+        CommandIssuer::Admin,
+        None,
+        RulesAction::Initialize {
+            entities: vec![mechanics(f.actor)],
+            house_rules: HouseRules::default(),
+            ruling: ruling(),
+        },
+    )
+    .await;
+    assert_eq!(
+        export_campaign(&target, f.state.campaign_id())
+            .await
+            .unwrap()
+            .snapshots,
+        export.snapshots
+    );
+    f.assert_replay(&target, &restored).await;
+    drop((runtime, restored));
+    pool.close().await;
+    target.close().await;
+}
+
+#[tokio::test]
 async fn pending_physical_roll_survives_shutdown_and_replay_matches_committed_mechanics() {
     let f = Fixture::new();
     let (pool, runtime) = f.runtime().await;
