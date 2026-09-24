@@ -50,6 +50,22 @@ fn conditions(state: &CampaignState, actor: EntityId) -> Vec<Condition> {
         crate::active_conditions(r, actor).into_iter().collect()
     })
 }
+fn dead(state: &CampaignState, actor: EntityId) -> bool {
+    state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.entities.get(&actor))
+        .is_some_and(|entity| entity.death.dead)
+        || state
+            .entities
+            .get(&actor)
+            .is_some_and(|entity| entity.existence == EntityExistence::Dead)
+}
+fn aware(state: &CampaignState, actor: EntityId) -> bool {
+    // Unaware (SRD191) suppresses awareness regardless of sensing modality. Neither
+    // Incapacitated nor Stunned alone carries that clause (SRD184/189).
+    !dead(state, actor) && !conditions(state, actor).contains(&Condition::Unconscious)
+}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum SpatialTarget {

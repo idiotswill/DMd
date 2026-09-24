@@ -168,7 +168,10 @@ pub struct TerrainVolume {
     pub supports_top: bool,
     /// Connected material/liquid identity for Tremorsense; not a faction/knowledge channel.
     pub surface: Option<String>,
+    /// Non-darkness obscuration such as fog or foliage; Truesight does not bypass it.
     pub obscuration: Obscuration,
+    /// Independently blocks sight through this volume unless Truesight reaches
+    /// its far edge. A darkness-only volume uses obscuration: None.
     pub magical_darkness: bool,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

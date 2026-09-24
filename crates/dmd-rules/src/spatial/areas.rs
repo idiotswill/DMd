@@ -1,20 +1,22 @@
 use super::*;
 
-/// Directions are one of the 26 adjacent grid directions; squared integer predicates
-/// normalize diagonals without rounded floating-point vectors.
+/// Any nonzero bounded integer vector, including the delta between two valid points.
+/// Squared integer predicates normalize directions without rounding floating-point
+/// vectors. At these bounds, even squared cross-basis products remain within i128.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SpatialDirection {
-    pub x: i8,
-    pub y: i8,
-    pub z: i8,
+    pub x: i32,
+    pub y: i32,
+    pub z: i32,
 }
+pub const MAX_SPATIAL_DIRECTION_COMPONENT: i32 = 2 * MAX_SPATIAL_COORDINATE;
 impl SpatialDirection {
     fn validate(self) -> Result<(), SpatialError> {
         if [self.x, self.y, self.z].iter().all(|&n| n == 0)
-            || [self.x, self.y, self.z]
-                .iter()
-                .any(|&n| !(-1..=1).contains(&n))
+            || [self.x, self.y, self.z].iter().any(|&n| {
+                !(-MAX_SPATIAL_DIRECTION_COMPONENT..=MAX_SPATIAL_DIRECTION_COMPONENT).contains(&n)
+            })
         {
             return Err(invalid("invalid spatial direction"));
         }

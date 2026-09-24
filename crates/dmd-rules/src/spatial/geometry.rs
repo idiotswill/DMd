@@ -43,6 +43,13 @@ pub fn segment_intersects(
     b: SpatialPoint,
     volume: SpatialBox,
 ) -> Result<bool, SpatialError> {
+    Ok(segment_interval(a, b, volume)?.is_some())
+}
+fn segment_interval(
+    a: SpatialPoint,
+    b: SpatialPoint,
+    volume: SpatialBox,
+) -> Result<Option<(Fraction, Fraction)>, SpatialError> {
     a.validate().map_err(invalid)?;
     b.validate().map_err(invalid)?;
     volume.validate().map_err(invalid)?;
@@ -56,7 +63,7 @@ pub fn segment_intersects(
         let direction = i64::from(end) - i64::from(start);
         if direction == 0 {
             if start <= min || start >= max {
-                return Ok(false);
+                return Ok(None);
             }
             continue;
         }
@@ -72,10 +79,10 @@ pub fn segment_intersects(
             high = leave;
         }
         if !low.compare(high).is_lt() {
-            return Ok(false);
+            return Ok(None);
         }
     }
-    Ok(low.compare(high).is_lt())
+    Ok(low.compare(high).is_lt().then_some((low, high)))
 }
 
 pub(super) fn samples(volume: SpatialBox) -> Vec<SpatialPoint> {
@@ -100,7 +107,7 @@ pub(super) fn samples(volume: SpatialBox) -> Vec<SpatialPoint> {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CoverAssessment {
     pub degree: CoverDegree,
-    /// Partially clipped Total-Cover geometry has no SRD-specified raster percentage.
+    /// Partial/composite Total-Cover geometry has no SRD-specified raster percentage.
     /// The resolver must obtain a recorded geometry ruling before relying on its grade.
     pub requires_adjudication: bool,
 }
@@ -135,7 +142,6 @@ pub(super) fn cover_unchecked(
     exclude: &[EntityId],
 ) -> Result<CoverAssessment, SpatialError> {
     let points = samples(target);
-    let mut total_blocked = vec![false; points.len()];
     let mut degree = CoverDegree::None;
     let mut partial_total = false;
     for obstacle in &encounter.battlefield.obstacles {
@@ -144,19 +150,28 @@ pub(super) fn cover_unchecked(
             .map(|&p| segment_intersects(origin, p, obstacle.volume))
             .collect::<Result<Vec<_>, _>>()?;
         if obstacle.cover == CoverDegree::Total {
-            for (blocked, hit) in total_blocked.iter_mut().zip(&hits) {
-                *blocked |= hit;
+            // A single convex solid's shadow is convex. Blocking every extreme
+            // target vertex proves the entire target is covered. The union of
+            // several sampled shadows does not: a narrow opening may be missed.
+            let mut entire_target = true;
+            for x in [target.min.x, target.max.x] {
+                for y in [target.min.y, target.max.y] {
+                    for z in [target.min.z, target.max.z] {
+                        entire_target &=
+                            segment_intersects(origin, SpatialPoint { x, y, z }, obstacle.volume)?;
+                    }
+                }
+            }
+            if entire_target {
+                return Ok(CoverAssessment {
+                    degree: CoverDegree::Total,
+                    requires_adjudication: false,
+                });
             }
             partial_total |= hits.iter().any(|&x| x);
         } else if hits.iter().any(|&x| x) {
             degree = degree.max(obstacle.cover);
         }
-    }
-    if total_blocked.iter().all(|&b| b) {
-        return Ok(CoverAssessment {
-            degree: CoverDegree::Total,
-            requires_adjudication: false,
-        });
     }
     for other in &encounter.participants {
         if !exclude.contains(&other.entity_id) {
@@ -180,6 +195,14 @@ pub(super) fn clear_sight(
     from: SpatialPoint,
     to: SpatialPoint,
 ) -> Result<bool, SpatialError> {
+    clear_sight_with_truesight(field, from, to, 0)
+}
+pub(super) fn clear_sight_with_truesight(
+    field: &Battlefield,
+    from: SpatialPoint,
+    to: SpatialPoint,
+    truesight_range: u32,
+) -> Result<bool, SpatialError> {
     for obstacle in &field.obstacles {
         if obstacle.blocks_sight
             && (obstacle.volume.contains(to) || segment_intersects(from, to, obstacle.volume)?)
@@ -188,9 +211,21 @@ pub(super) fn clear_sight(
         }
     }
     for terrain in &field.terrain {
+        // Heavy represents a separate cause such as fog/foliage. Darkness-only
+        // volumes use magical_darkness and need no duplicate Heavy marker.
         if terrain.obscuration == Obscuration::Heavy
             && (terrain.volume.contains(to) || segment_intersects(from, to, terrain.volume)?)
         {
+            return Ok(false);
+        }
+        if terrain.magical_darkness
+            && let Some((_, exit)) = segment_interval(from, to, terrain.volume)?
+            && (truesight_range == 0
+                || i128::from(grid_distance(from, to)?) * i128::from(exit.numerator)
+                    > i128::from(truesight_range) * i128::from(exit.denominator))
+        {
+            // Truesight must cover the entire obscured portion, not necessarily
+            // an otherwise illuminated target beyond its range (SRD122/190).
             return Ok(false);
         }
     }

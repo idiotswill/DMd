@@ -11,12 +11,41 @@ pub struct MovementStep {
 pub struct SpatialPath {
     pub steps: Vec<MovementStep>,
 }
+/// Counts of accepted Dash grants for each selected speed (SRD180; ADR026).
+/// Every mode still subtracts the same movement already spent (SRD188).
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct DashGrants {
+    pub speed: u8,
+    pub climb: u8,
+    pub swim: u8,
+    pub fly: u8,
+    pub burrow: u8,
+}
+impl DashGrants {
+    fn total(&self) -> u16 {
+        [self.speed, self.climb, self.swim, self.fly, self.burrow]
+            .into_iter()
+            .map(u16::from)
+            .sum()
+    }
+    fn for_mode(&self, profile: &MovementProfile, mode: MovementMode) -> u8 {
+        match mode {
+            MovementMode::Walk | MovementMode::Crawl | MovementMode::Jump => self.speed,
+            MovementMode::Climb if profile.climb.is_some() => self.climb,
+            MovementMode::Swim if profile.swim.is_some() => self.swim,
+            MovementMode::Climb | MovementMode::Swim => self.speed,
+            MovementMode::Fly => self.fly,
+            MovementMode::Burrow => self.burrow,
+            MovementMode::Teleport => 0,
+        }
+    }
+}
 /// Query input derived by the encounter resolver from its single turn/feature state.
 /// This DTO does not grant authority and must never be accepted from a player as truth.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct MovementAllowance {
     pub spent: u32,
-    pub dash_count: u8,
+    pub dash: DashGrants,
     pub forced: bool,
     pub disengaged: bool,
     pub teleport_range: Option<u32>,
@@ -251,7 +280,7 @@ pub fn evaluate_path(
     validate_encounter(encounter, state)?;
     if path.steps.is_empty()
         || path.steps.len() > 1024
-        || allowance.dash_count > 4
+        || allowance.dash.total() > 4
         || allowance.spent > 10_000
         || allowance.runup > 10_000
         || allowance.teleport_range.is_some_and(|r| r == 0 || r > 4000)
@@ -265,6 +294,9 @@ pub fn evaluate_path(
         .position(|p| p.entity_id == actor_id)
         .ok_or(SpatialError::UnknownActor)?;
     let mut moving = working.participants[index].clone();
+    if !allowance.forced && dead(state, actor_id) {
+        return Err(illegal("dead creatures cannot move voluntarily"));
+    }
     let mut segments = Vec::new();
     let mut cost = 0u32;
     let mut runup = allowance.runup;
@@ -422,7 +454,7 @@ pub fn evaluate_path(
             .ok_or_else(|| invalid("movement cost overflow"))?;
         if !teleport && !allowance.forced {
             let maximum = speed(&moving, state, step.mode)?
-                .checked_mul(1 + u32::from(allowance.dash_count))
+                .checked_mul(1 + u32::from(allowance.dash.for_mode(&moving.movement, step.mode)))
                 .ok_or_else(|| invalid("movement budget overflow"))?;
             if allowance
                 .spent

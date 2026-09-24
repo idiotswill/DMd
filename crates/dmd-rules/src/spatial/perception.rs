@@ -1,6 +1,23 @@
 use super::*;
 use std::collections::BTreeMap;
 
+/// Deterministic upper bound on geometry/feature visits in one perception query.
+/// Storage bounds do not imply that their Cartesian product is safe to traverse.
+pub const MAX_PERCEPTION_QUERY_WORK: usize = 8_000_000;
+struct QueryWork(usize);
+impl QueryWork {
+    fn new() -> Self {
+        Self(MAX_PERCEPTION_QUERY_WORK)
+    }
+    fn charge(&mut self, visits: usize) -> Result<(), SpatialError> {
+        self.0 = self.0.checked_sub(visits).ok_or(SpatialError::Capacity)?;
+        Ok(())
+    }
+    fn sight(&mut self, field: &Battlefield) -> Result<(), SpatialError> {
+        self.charge(1 + field.obstacles.len() + field.terrain.len())
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PerceptionResult {
     pub sees: bool,
@@ -18,13 +35,15 @@ pub fn illumination(
 ) -> Result<LightLevel, SpatialError> {
     encounter.validate_geometry().map_err(invalid)?;
     point.validate().map_err(invalid)?;
-    illumination_unchecked(encounter, point)
+    illumination_unchecked(encounter, point, &mut QueryWork::new())
 }
 fn illumination_unchecked(
     encounter: &TacticalEncounter,
     point: SpatialPoint,
+    work: &mut QueryWork,
 ) -> Result<LightLevel, SpatialError> {
     let mut level = encounter.battlefield.ambient_light;
+    work.charge(encounter.battlefield.terrain.len())?;
     if encounter
         .battlefield
         .terrain
@@ -33,18 +52,33 @@ fn illumination_unchecked(
     {
         return Ok(LightLevel::Darkness);
     }
+    if level == LightLevel::Bright {
+        return Ok(level);
+    }
     for light in &encounter.battlefield.lights {
+        work.charge(1)?;
+        if light.dim_radius == 0 {
+            continue;
+        }
         let origin = match light.attached_to {
-            Some(actor) => participant(encounter, actor)?.center().map_err(invalid)?,
+            Some(actor) => {
+                work.charge(encounter.participants.len())?;
+                participant(encounter, actor)?.center().map_err(invalid)?
+            }
             None => light.position,
         };
+        let distance = grid_distance(origin, point)?;
+        if distance > light.dim_radius {
+            continue;
+        }
+        work.sight(&encounter.battlefield)?;
         if !geometry::clear_sight(&encounter.battlefield, origin, point)? {
             continue;
         }
-        if grid_distance(origin, point)? <= light.bright_radius {
+        if light.bright_radius > 0 && distance <= light.bright_radius {
             return Ok(LightLevel::Bright);
         }
-        if grid_distance(origin, point)? <= light.dim_radius && level == LightLevel::Darkness {
+        if level == LightLevel::Darkness {
             level = LightLevel::Dim;
         }
     }
@@ -95,8 +129,25 @@ pub(super) fn perceive_unchecked(
     observer: EntityId,
     target: EntityId,
 ) -> Result<PerceptionResult, SpatialError> {
+    perceive_with_work(encounter, state, observer, target, &mut QueryWork::new())
+}
+fn perceive_with_work(
+    encounter: &TacticalEncounter,
+    state: &CampaignState,
+    observer: EntityId,
+    target: EntityId,
+    work: &mut QueryWork,
+) -> Result<PerceptionResult, SpatialError> {
     let actor = participant(encounter, observer)?;
     let subject = participant(encounter, target)?;
+    if !aware(state, observer) {
+        return Ok(PerceptionResult {
+            sees: false,
+            precisely_located: false,
+            modality: None,
+            sight_disadvantage: false,
+        });
+    }
     if observer == target {
         return Ok(PerceptionResult {
             sees: true,
@@ -109,6 +160,7 @@ pub(super) fn perceive_unchecked(
     let target_volume = subject.volume().map_err(invalid)?;
     let actor_conditions = conditions(state, observer);
     let target_conditions = conditions(state, target);
+    work.charge(encounter.battlefield.obstacles.len() * 17 + encounter.participants.len() * 9)?;
     let cover = geometry::cover_unchecked(encounter, from, target_volume, &[observer, target])?;
     let mut dim_visible = false;
     for point in geometry::samples(target_volume) {
@@ -120,8 +172,14 @@ pub(super) fn perceive_unchecked(
                 sight_disadvantage: false,
             });
         }
+        work.sight(&encounter.battlefield)?;
         if actor_conditions.contains(&Condition::Blinded)
-            || !geometry::clear_sight(&encounter.battlefield, from, point)?
+            || !geometry::clear_sight_with_truesight(
+                &encounter.battlefield,
+                from,
+                point,
+                actor.senses.truesight,
+            )?
         {
             continue;
         }
@@ -129,12 +187,13 @@ pub(super) fn perceive_unchecked(
         if target_conditions.contains(&Condition::Invisible) && !true_sight {
             continue;
         }
+        work.charge(encounter.battlefield.terrain.len())?;
         let magical = encounter
             .battlefield
             .terrain
             .iter()
             .any(|t| t.magical_darkness && t.volume.contains(point));
-        let light = illumination_unchecked(encounter, point)?;
+        let light = illumination_unchecked(encounter, point, work)?;
         let darkvision = within(from, point, actor.senses.darkvision)? && !magical;
         let sight = match light {
             LightLevel::Bright => Some(false),
@@ -144,6 +203,7 @@ pub(super) fn perceive_unchecked(
             _ => None,
         };
         if let Some(mut disadvantage) = sight {
+            work.charge(encounter.battlefield.terrain.len())?;
             disadvantage |= encounter
                 .battlefield
                 .terrain
@@ -168,6 +228,7 @@ pub(super) fn perceive_unchecked(
             sight_disadvantage: true,
         });
     }
+    work.charge(encounter.battlefield.terrain.len() * 2)?;
     let located = within(
         from,
         subject.center().map_err(invalid)?,
@@ -205,7 +266,8 @@ pub struct TacticalCellView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ActorTacticalView {
     pub observer: EntityId,
-    pub position: SpatialPoint,
+    /// An unaware actor cannot discover a new location after being moved externally.
+    pub position: Option<SpatialPoint>,
     pub contacts: Vec<TacticalContactView>,
     pub cells: Vec<TacticalCellView>,
 }
@@ -219,13 +281,15 @@ pub fn project_actor_view(
 ) -> Result<ActorTacticalView, SpatialError> {
     validate_encounter(encounter, state)?;
     let actor = participant(encounter, observer)?;
+    let mut work = QueryWork::new();
     let mut contacts = Vec::new();
     let memory = encounter.knowledge.iter().find(|k| k.observer == observer);
     for target in &encounter.participants {
         if target.entity_id == observer {
             continue;
         }
-        let perception = perceive_unchecked(encounter, state, observer, target.entity_id)?;
+        let perception =
+            perceive_with_work(encounter, state, observer, target.entity_id, &mut work)?;
         if perception.precisely_located {
             contacts.push(TacticalContactView {
                 entity_id: target.entity_id,
@@ -267,11 +331,20 @@ pub fn project_actor_view(
             );
         }
     }
+    if !aware(state, observer) {
+        return Ok(ActorTacticalView {
+            observer,
+            position: None,
+            contacts,
+            cells: cells.into_values().collect(),
+        });
+    }
     let from = actor.center().map_err(invalid)?;
     let field = &encounter.battlefield;
     let blind = conditions(state, observer).contains(&Condition::Blinded);
     for x in (field.bounds.min.x..field.bounds.max.x).step_by(10) {
         for y in (field.bounds.min.y..field.bounds.max.y).step_by(10) {
+            work.charge(1)?;
             let position = SpatialPoint {
                 x,
                 y,
@@ -283,17 +356,27 @@ pub fn project_actor_view(
                 z: field.floor_z + 1,
             };
             let special = within(from, point, actor.senses.blindsight)?;
+            work.charge(field.terrain.len())?;
             let magical = field
                 .terrain
                 .iter()
                 .any(|t| t.magical_darkness && t.volume.contains(point));
-            let illuminated = illumination_unchecked(encounter, point)? != LightLevel::Darkness
+            let illuminated = illumination_unchecked(encounter, point, &mut work)?
+                != LightLevel::Darkness
                 || within(from, point, actor.senses.truesight)?
                 || (!magical && within(from, point, actor.senses.darkvision)?);
+            work.sight(field)?;
             let mut visible = if special {
                 geometry::clear_effect(field, from, point)?
             } else {
-                !blind && illuminated && geometry::clear_sight(field, from, point)?
+                !blind
+                    && illuminated
+                    && geometry::clear_sight_with_truesight(
+                        field,
+                        from,
+                        point,
+                        actor.senses.truesight,
+                    )?
             };
             // A wall's near face can be visible although the center of its occupied
             // square is behind that face. Never reveal the interior/backside cells.
@@ -306,11 +389,13 @@ pub fn project_actor_view(
                         z: field.floor_z + 1,
                     },
                 };
+                work.charge(field.obstacles.len())?;
                 for obstacle in field
                     .obstacles
                     .iter()
                     .filter(|o| o.observable && o.volume.intersects(cell))
                 {
+                    work.charge(1)?;
                     let clipped = SpatialBox {
                         min: SpatialPoint {
                             x: cell.min.x.max(obstacle.volume.min.x),
@@ -337,9 +422,17 @@ pub fn project_actor_view(
                         y: outside(from.y, clipped.min.y, clipped.max.y),
                         z: outside(from.z, clipped.min.z, clipped.max.z),
                     };
+                    work.sight(field)?;
+                    work.charge(field.terrain.len())?;
                     if surface.validate().is_ok()
-                        && geometry::clear_sight(field, from, surface)?
-                        && (illumination_unchecked(encounter, surface)? != LightLevel::Darkness
+                        && geometry::clear_sight_with_truesight(
+                            field,
+                            from,
+                            surface,
+                            actor.senses.truesight,
+                        )?
+                        && (illumination_unchecked(encounter, surface, &mut work)?
+                            != LightLevel::Darkness
                             || within(from, surface, actor.senses.truesight)?
                             || (within(from, surface, actor.senses.darkvision)?
                                 && !field
@@ -353,6 +446,7 @@ pub fn project_actor_view(
                 }
             }
             if visible {
+                work.sight(field)?;
                 cells.insert(
                     position,
                     TacticalCellView {
@@ -381,7 +475,7 @@ pub fn project_actor_view(
     }
     Ok(ActorTacticalView {
         observer,
-        position: actor.position,
+        position: Some(actor.position),
         contacts,
         cells: cells.into_values().collect(),
     })

@@ -62,8 +62,8 @@ accepted encounter transitions and exact suspension through the real application
 - Source cover bonuses are exact (+2/+5, highest only). Authored partial-cover
   volumes carry a grade. Partly clipped Total-Cover geometry returns an explicit
   adjudication requirement; ray counts do not invent an SRD percentage rule.
-- All six source area shapes have continuous point predicates; 26 grid directions
-  are normalized algebraically. Cube origins may lie anywhere on a selected face.
+- All six source area shapes have continuous point predicates; bounded integer direction
+  vectors are normalized algebraically. Cube origins may lie anywhere on a selected face.
   The spatial grid uses an explicit square line-prism and voxel-center rasterization
   convention. A point predicate remains available for boundary adjudication.
 - Perception separates physical cover, opaque terrain, ambient/emitted light,
@@ -92,3 +92,39 @@ p.180; Emanation p.181; Frightened/Grappled/Flying p.182; Hide p.183; Invisible/
 p.184; Passive Perception/Prone p.186; Search p.187; Speed/Sphere p.188;
 Stunned p.189; Tremorsense/Truesight p.190. Stunned/Incapacitated do not themselves
 reduce ordinary movement to zero; unsupported flight still cannot continue.
+
+## Independent review followup
+
+The source-content review found only the root-owned Fire Bolt page-reference correction.
+The spatial review found that Unconscious observers could receive fresh perception and
+that a global Dash count granted extra movement to unselected speeds. The followup owns
+only this slice's spatial module, tests and plan:
+
+- Suppress all fresh senses and terrain for Unconscious/dead observers, including special
+  senses, retaining only remembered contacts/cells. Hide their current self-position so
+  unconscious forced movement does not disclose a new location. Keep Stunned and
+  Incapacitated awareness, as those conditions lack Unaware (SRD pp.184,189,191).
+- Reject voluntary dead-creature movement while preserving externally forced movement.
+- Replace the query's global Dash count with selected-speed counts, with shared spent
+  movement and fallback climb/swim using ordinary Speed. Match the root's ADR 026
+  documented cross-mode interpretation (SRD pp.180,188), without storing a second budget.
+- Remove the 26-direction restriction in favor of bounded arbitrary integer vectors;
+  test non-cardinal orientation, scale invariance, and maximum-product bounds.
+- Require proof from one convex solid before returning Total cover. A union of sampled
+  blocked rays can conceal an opening and instead requires an explicit geometry ruling.
+- Preserve dim-only emitter output at its exact origin. Cull zero-output/out-of-radius
+  lights before occlusion. Share an 8,000,000-operation deterministic geometry-work budget
+  across a projection; pathological combined workloads return `SpatialError::Capacity`
+  without mutation or a fallback that reveals truth. Storage limits alone do not imply
+  every Cartesian query is affordable. The maximum sparse floor remains supported.
+- Block ordinary sight and Darkvision across magical-darkness regions; Truesight must
+  reach the far edge of the obscured ray portion. Independent heavy fog still blocks it.
+  `magical_darkness: true` represents the darkness cause; `obscuration: Heavy` represents
+  a separate fog/foliage cause and must not be redundantly added for darkness alone.
+
+Followup verification after root released the serialized build slot: all 25 focused
+spatial tests pass, strict `cargo clippy --locked -p dmd-rules --lib --tests -- -D warnings`
+passes, and formatting/diff whitespace checks pass. The first test run found two fixture
+identifiers containing unsupported spaces; those fixtures were corrected before the
+successful run. No full-workspace verification was rerun here. Build slot is released.
+Next: independent exact-commit review, then root integration/combined runtime verification.

@@ -6,7 +6,7 @@ fn point(x: i32, y: i32, z: i32) -> SpatialPoint {
 fn volume(min: SpatialPoint, max: SpatialPoint) -> SpatialBox {
     SpatialBox { min, max }
 }
-fn direction(x: i8, y: i8, z: i8) -> SpatialDirection {
+fn direction(x: i32, y: i32, z: i32) -> SpatialDirection {
     SpatialDirection { x, y, z }
 }
 struct Fixture {
@@ -465,6 +465,227 @@ fn movement_modes_and_speed_switching_do_not_refresh_a_turn_budget() {
 }
 
 #[test]
+fn dash_grants_apply_only_to_the_selected_speed_and_share_spent_movement() {
+    let mut f = Fixture::new();
+    f.actor(f.a).movement.fly = Some(120);
+    let walk = DashGrants {
+        speed: 1,
+        ..Default::default()
+    };
+    let fly = DashGrants {
+        fly: 1,
+        ..Default::default()
+    };
+    // Units are half-feet: Speed30/Fly60 becomes60/60 with Dash(Speed),
+    // or30/120 with Dash(Fly), as explicitly adjudicated in ADR026.
+    for (dash, mode, maximum) in [
+        (walk.clone(), MovementMode::Walk, 120),
+        (walk.clone(), MovementMode::Fly, 120),
+        (fly.clone(), MovementMode::Walk, 60),
+        (fly.clone(), MovementMode::Fly, 240),
+    ] {
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    dash: dash.clone(),
+                    spent: maximum - 10,
+                    ..Default::default()
+                }
+            )
+            .is_ok()
+        );
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    dash,
+                    spent: maximum,
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
+    }
+    assert!(
+        f.path(
+            &[
+                (point(20, 10, 0), MovementMode::Walk),
+                (point(20, 10, 10), MovementMode::Fly),
+            ],
+            MovementAllowance {
+                dash: walk.clone(),
+                spent: 110,
+                ..Default::default()
+            }
+        )
+        .is_err()
+    );
+    f.state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.a)
+        .unwrap()
+        .exhaustion = 1;
+    assert!(
+        f.path(
+            &[(point(20, 10, 0), MovementMode::Walk)],
+            MovementAllowance {
+                dash: walk.clone(),
+                spent: 90,
+                ..Default::default()
+            }
+        )
+        .is_ok()
+    );
+    assert!(
+        f.path(
+            &[(point(20, 10, 0), MovementMode::Walk)],
+            MovementAllowance {
+                dash: walk,
+                spent: 100,
+                ..Default::default()
+            }
+        )
+        .is_err()
+    );
+    assert!(
+        f.path(
+            &[(point(20, 10, 0), MovementMode::Walk)],
+            MovementAllowance {
+                dash: DashGrants {
+                    speed: u8::MAX,
+                    fly: u8::MAX,
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn climbing_and_swimming_dash_fallbacks_follow_the_speed_actually_used() {
+    let mut f = Fixture::new();
+    let terrain = f.terrain("traversal", volume(point(20, 0, -10), point(40, 100, 20)));
+    terrain.water = true;
+    terrain.climbable = true;
+    for mode in [MovementMode::Climb, MovementMode::Swim] {
+        // No special speed: each foot costs two, and Dash(Speed) applies.
+        assert_eq!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    spent: 60,
+                    dash: DashGrants {
+                        speed: 1,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .total_cost,
+            20
+        );
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    spent: 60,
+                    dash: DashGrants {
+                        climb: 1,
+                        swim: 1,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
+    }
+    f.actor(f.a).movement.climb = Some(60);
+    f.actor(f.a).movement.swim = Some(60);
+    for mode in [MovementMode::Climb, MovementMode::Swim] {
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    spent: 60,
+                    dash: DashGrants {
+                        speed: 1,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
+        assert_eq!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    spent: 60,
+                    dash: DashGrants {
+                        climb: 1,
+                        swim: 1,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .total_cost,
+            10
+        );
+    }
+}
+
+#[test]
+fn dead_creatures_cannot_move_or_teleport_voluntarily_but_can_be_moved() {
+    let mut f = Fixture::new();
+    let entity = f
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.a)
+        .unwrap();
+    entity.hp = 0;
+    entity.death.dead = true;
+    f.state.entities.get_mut(&f.a).unwrap().existence = EntityExistence::Dead;
+    for mode in [MovementMode::Walk, MovementMode::Teleport] {
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    teleport_range: Some(20),
+                    ..Default::default()
+                }
+            )
+            .is_err()
+        );
+        assert_eq!(
+            f.path(
+                &[(point(20, 10, 0), mode)],
+                MovementAllowance {
+                    forced: true,
+                    teleport_range: Some(20),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .total_cost,
+            0
+        );
+    }
+}
+
+#[test]
 fn flying_climbing_burrowing_and_jump_limits_use_real_elevation() {
     let mut f = Fixture::new();
     assert!(
@@ -796,6 +1017,150 @@ fn fog_magic_darkness_and_light_sources_have_distinct_effects() {
 }
 
 #[test]
+fn dim_only_emitters_never_create_bright_light_at_their_origin() {
+    let mut f = Fixture::new();
+    f.encounter.battlefield.ambient_light = LightLevel::Darkness;
+    f.encounter.battlefield.lights.push(SpatialLight {
+        id: "dancing-light".into(),
+        position: point(55, 15, 6),
+        bright_radius: 0,
+        dim_radius: 20,
+        attached_to: None,
+    });
+    for position in [point(55, 15, 6), point(75, 15, 6)] {
+        assert_eq!(
+            illumination(&f.encounter, position).unwrap(),
+            LightLevel::Dim
+        );
+    }
+    f.encounter.battlefield.lights[0].dim_radius = 0;
+    assert_eq!(
+        illumination(&f.encounter, point(55, 15, 6)).unwrap(),
+        LightLevel::Darkness
+    );
+}
+
+#[test]
+fn composite_sampled_cover_cannot_claim_total_across_an_unsampled_gap() {
+    let mut f = Fixture::new();
+    f.encounter.battlefield.bounds = volume(point(-200, -200, -200), point(200, 200, 200));
+    let origin = point(0, 0, 10);
+    let target = volume(point(100, 0, 0), point(120, 20, 20));
+    f.wall(
+        "lower",
+        volume(point(50, -100, -100), point(51, 2, 100)),
+        CoverDegree::Total,
+        true,
+    );
+    f.wall(
+        "upper",
+        volume(point(50, 3, -100), point(51, 100, 100)),
+        CoverDegree::Total,
+        true,
+    );
+    // Every old sample is blocked, yet an actual ray passes through the opening.
+    for sample in geometry::samples(target) {
+        assert!(!geometry::clear_effect(&f.encounter.battlefield, origin, sample).unwrap());
+    }
+    assert!(geometry::clear_effect(&f.encounter.battlefield, origin, point(110, 5, 10)).unwrap());
+    let result = cover_from(&f.encounter, origin, target, &[f.a, f.b, f.c]).unwrap();
+    assert_ne!(result.degree, CoverDegree::Total);
+    assert!(result.requires_adjudication);
+    assert!(result.armor_and_dexterity_bonus().is_err());
+    f.encounter.battlefield.obstacles.clear();
+    f.wall(
+        "one-solid",
+        volume(point(50, -100, -100), point(51, 100, 100)),
+        CoverDegree::Total,
+        true,
+    );
+    assert_eq!(
+        cover_from(&f.encounter, origin, target, &[f.a, f.b, f.c]).unwrap(),
+        CoverAssessment {
+            degree: CoverDegree::Total,
+            requires_adjudication: false,
+        }
+    );
+}
+
+#[test]
+fn magical_darkness_blocks_crossing_rays_but_truesight_does_not_bypass_fog() {
+    let mut f = Fixture::new();
+    f.terrain("darkness", volume(point(30, 0, -20), point(40, 100, 80)))
+        .magical_darkness = true;
+    // Target remains in bright light beyond the obscured slab.
+    assert_eq!(
+        illumination(&f.encounter, point(55, 15, 6)).unwrap(),
+        LightLevel::Bright
+    );
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+    f.actor(f.a).senses.darkvision = 120;
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+    let hidden = project_actor_view(&f.encounter, &f.state, f.a).unwrap();
+    assert!(hidden.contacts.is_empty());
+    assert!(hidden.cells.iter().all(|cell| cell.position.x < 30));
+    f.actor(f.a).senses.truesight = 24;
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+    // Entire obscured part lies within 25 units; bright target may be farther away.
+    f.actor(f.a).senses.truesight = 25;
+    assert!(perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+    f.actor(f.a).senses.truesight = 120;
+    let visible = project_actor_view(&f.encounter, &f.state, f.a).unwrap();
+    assert!(
+        visible
+            .contacts
+            .iter()
+            .any(|contact| contact.entity_id == f.b)
+    );
+    assert!(visible.cells.iter().any(|cell| cell.position.x == 50));
+    // A separate heavy obscuration cause remains opaque, even in the same volume.
+    f.encounter.battlefield.terrain[0].obscuration = Obscuration::Heavy;
+    assert!(!perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+    f.actor(f.a).senses.blindsight = 120;
+    assert!(perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+}
+
+#[test]
+fn projection_prunes_zero_output_lights_and_rejects_excessive_combined_work() {
+    let mut f = Fixture::new();
+    f.encounter.battlefield.bounds = volume(point(0, 0, -20), point(1280, 2560, 100));
+    f.encounter.battlefield.ambient_light = LightLevel::Darkness;
+    for n in 0..128 {
+        f.encounter.battlefield.lights.push(SpatialLight {
+            id: format!("lamp-{n}"),
+            position: point(15, 15, 6),
+            bright_radius: 0,
+            dim_radius: 0,
+            attached_to: None,
+        });
+    }
+    // The maximum sparse floor and 128 extinguished emitters remain usable.
+    assert!(
+        project_actor_view(&f.encounter, &f.state, f.a)
+            .unwrap()
+            .cells
+            .is_empty()
+    );
+    for light in &mut f.encounter.battlefield.lights {
+        light.dim_radius = 4000;
+    }
+    for n in 0..128 {
+        f.wall(
+            &format!("obstacle-{n}"),
+            volume(point(1200, 2400, 0), point(1210, 2410, 10)),
+            CoverDegree::Half,
+            false,
+        );
+    }
+    let before = f.encounter.clone();
+    assert_eq!(
+        project_actor_view(&f.encounter, &f.state, f.a),
+        Err(SpatialError::Capacity)
+    );
+    assert_eq!(f.encounter, before);
+}
+
+#[test]
 fn actor_projection_is_immutable_non_omniscient_and_preserves_old_positions() {
     let mut f = Fixture::new();
     f.wall(
@@ -854,6 +1219,104 @@ fn actor_projection_is_immutable_non_omniscient_and_preserves_old_positions() {
         project_actor_view(&restored, &f.state, f.a).unwrap(),
         remembered
     );
+}
+
+#[test]
+fn unaware_observers_keep_only_memory_despite_special_senses_or_hidden_movement() {
+    for cause in ["condition", "zero-hp", "dead"] {
+        let mut f = Fixture::new();
+        f.actor(f.a).senses = Senses {
+            darkvision: 200,
+            blindsight: 200,
+            tremorsense: 200,
+            truesight: 200,
+        };
+        assert!(perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+        f.encounter.knowledge.push(ActorKnowledge {
+            observer: f.a,
+            contacts: vec![RememberedContact {
+                target: f.b,
+                position: point(50, 10, 0),
+                modality: PerceptionModality::Sight,
+                origin: f.encounter.origin.clone(),
+            }],
+            terrain: vec![RememberedCell {
+                position: point(10, 10, 0),
+                difficult: false,
+                blocked: false,
+                origin: f.encounter.origin.clone(),
+            }],
+        });
+        if cause == "condition" {
+            f.condition(f.a, Condition::Unconscious);
+        } else {
+            let entity = f
+                .state
+                .rules
+                .as_mut()
+                .unwrap()
+                .entities
+                .get_mut(&f.a)
+                .unwrap();
+            entity.hp = 0;
+            entity.prone = true;
+            if cause == "dead" {
+                entity.death.dead = true;
+                f.state.entities.get_mut(&f.a).unwrap().existence = EntityExistence::Dead;
+            }
+        }
+        let before_state = f.state.clone();
+        let before_encounter = f.encounter.clone();
+        let view = project_actor_view(&f.encounter, &f.state, f.a).unwrap();
+        assert_eq!(view.position, None);
+        assert_eq!(view.contacts.len(), 1);
+        assert_eq!(view.contacts[0].status, ContactStatus::Remembered);
+        assert_eq!(view.contacts[0].position, point(50, 10, 0));
+        assert_eq!(view.cells.len(), 1);
+        assert!(!view.cells[0].currently_seen);
+        assert_eq!(f.state, before_state);
+        assert_eq!(f.encounter, before_encounter);
+        for target in [f.a, f.b, f.c] {
+            let perception = perceive(&f.encounter, &f.state, f.a, target).unwrap();
+            assert!(!perception.sees && !perception.precisely_located);
+            assert_eq!(perception.modality, None);
+        }
+        f.actor(f.a).position = point(0, 0, 0);
+        f.actor(f.b).position = point(80, 20, 0);
+        f.terrain("new-terrain", volume(point(20, 0, 0), point(40, 100, 20)))
+            .difficult = true;
+        assert_eq!(
+            project_actor_view(&f.encounter, &f.state, f.a).unwrap(),
+            view
+        );
+        let restored: TacticalEncounter =
+            serde_json::from_str(&serde_json::to_string(&f.encounter).unwrap()).unwrap();
+        assert_eq!(project_actor_view(&restored, &f.state, f.a).unwrap(), view);
+    }
+}
+
+#[test]
+fn incapacitated_and_stunned_observers_retain_source_awareness() {
+    for condition in [Condition::Incapacitated, Condition::Stunned] {
+        let mut f = Fixture::new();
+        f.condition(f.a, condition);
+        assert!(perceive(&f.encounter, &f.state, f.a, f.b).unwrap().sees);
+        let view = project_actor_view(&f.encounter, &f.state, f.a).unwrap();
+        assert_eq!(view.position, Some(point(10, 10, 0)));
+        assert!(
+            view.contacts
+                .iter()
+                .all(|contact| contact.status == ContactStatus::Seen)
+        );
+        assert!(view.cells.iter().any(|cell| cell.currently_seen));
+        assert!(
+            f.path(
+                &[(point(20, 10, 0), MovementMode::Walk)],
+                MovementAllowance::default()
+            )
+            .is_ok()
+        );
+    }
 }
 
 #[test]
@@ -954,6 +1417,114 @@ fn all_six_area_shapes_honor_exact_boundaries_and_origin_rules() {
     };
     assert!(area_contains_point(&f.encounter, &diagonal, point(40, 40, 20)).unwrap());
     assert!(!area_contains_point(&f.encounter, &diagonal, point(45, 45, 20)).unwrap());
+}
+
+#[test]
+fn arbitrary_integer_directions_preserve_orientation_scale_and_overflow_bounds() {
+    let f = Fixture::new();
+    let origin = point(30, 30, 20);
+    let contains = |direction, target| {
+        area_contains_point(
+            &f.encounter,
+            &SpatialArea::Line {
+                origin,
+                direction,
+                length: 30,
+                width: 2,
+                include_origin: false,
+            },
+            target,
+        )
+        .unwrap()
+    };
+    assert!(contains(direction(2, 1, 0), point(50, 40, 20)));
+    assert!(!contains(direction(2, 1, 0), point(40, 40, 20)));
+    assert!(contains(direction(2, 1, 1), point(50, 40, 30)));
+    for target in [point(50, 40, 20), point(40, 40, 20), point(20, 20, 20)] {
+        assert_eq!(
+            contains(direction(2, 1, 0), target),
+            contains(direction(200_000, 100_000, 0), target)
+        );
+    }
+    let cone = SpatialArea::Cone {
+        origin,
+        direction: direction(2, 1, 1),
+        length: 30,
+        include_origin: false,
+    };
+    assert!(area_contains_point(&f.encounter, &cone, point(50, 40, 30)).unwrap());
+    assert!(!area_contains_point(&f.encounter, &cone, point(10, 20, 10)).unwrap());
+    let cube = SpatialArea::Cube {
+        origin,
+        face_center: origin,
+        direction: direction(2, 1, 0),
+        size: 30,
+        include_origin: false,
+    };
+    assert!(area_contains_point(&f.encounter, &cube, point(50, 40, 20)).unwrap());
+    assert!(!area_contains_point(&f.encounter, &cube, point(10, 20, 20)).unwrap());
+    for bad in [i32::MIN, i32::MAX, MAX_SPATIAL_DIRECTION_COMPONENT + 1] {
+        assert!(
+            area_contains_point(
+                &f.encounter,
+                &SpatialArea::Line {
+                    origin,
+                    direction: direction(bad, 1, 0),
+                    length: 1,
+                    width: 1,
+                    include_origin: false,
+                },
+                origin
+            )
+            .is_err()
+        );
+    }
+    // Exercise cross-basis squares at maximum coordinate and direction deltas.
+    let minimum = point(
+        -MAX_SPATIAL_COORDINATE,
+        -MAX_SPATIAL_COORDINATE,
+        -MAX_SPATIAL_COORDINATE,
+    );
+    let maximum = point(
+        MAX_SPATIAL_COORDINATE,
+        MAX_SPATIAL_COORDINATE,
+        MAX_SPATIAL_COORDINATE,
+    );
+    let diagonal = direction(
+        MAX_SPATIAL_DIRECTION_COMPONENT,
+        MAX_SPATIAL_DIRECTION_COMPONENT,
+        MAX_SPATIAL_DIRECTION_COMPONENT,
+    );
+    assert!(
+        !area_contains_point(
+            &f.encounter,
+            &SpatialArea::Line {
+                origin: minimum,
+                direction: diagonal,
+                length: 4000,
+                width: 4000,
+                include_origin: false,
+            },
+            maximum
+        )
+        .unwrap()
+    );
+    // A cube validates the far-offset face using cross-basis arithmetic before rejecting it.
+    assert!(
+        SpatialArea::Cube {
+            origin: maximum,
+            face_center: minimum,
+            direction: direction(
+                MAX_SPATIAL_DIRECTION_COMPONENT,
+                -MAX_SPATIAL_DIRECTION_COMPONENT,
+                0
+            ),
+            size: 4000,
+            include_origin: false,
+        }
+        .validate(&f.encounter)
+        .is_err()
+    );
 }
 
 #[test]
