@@ -9,7 +9,10 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Row, Sqlite, SqlitePool, Transaction, sqlite::SqliteRow};
 use thiserror::Error;
 
-use crate::{JournalStoreError, initialize_campaign_state, load_campaign_state};
+use crate::{
+    CampaignStateSnapshotCodec, JournalStoreError, initialize_campaign_state, load_campaign_state,
+    snapshot_replay::upgrade_state_schema_one,
+};
 
 pub const CAMPAIGN_EXPORT_FORMAT_VERSION: u32 = 1;
 
@@ -95,6 +98,44 @@ impl CampaignExport {
     pub fn from_json(value: &str) -> Result<Self, LifecycleError> {
         serde_json::from_str(value)
             .map_err(|error| LifecycleError::ExportEncoding(error.to_string()))
+    }
+
+    /// Validate and upgrade a portable export without mutating the source or its immutable history.
+    ///
+    /// Application restore preflight must use this before resolving the exported campaign's
+    /// content. Schema-1 current state gains only an explicit null rules field. Original snapshot
+    /// bytes, journal records, audit records, and their metadata remain unchanged.
+    pub fn upgraded(&self) -> Result<Self, LifecycleError> {
+        if self.state_schema_version == CURRENT_STATE_SCHEMA_VERSION {
+            validate_export(self)?;
+            return Ok(self.clone());
+        }
+        if self.state_schema_version != 1 {
+            return Err(LifecycleError::IncompatibleStateSchema {
+                actual: self.state_schema_version,
+                supported: CURRENT_STATE_SCHEMA_VERSION,
+            });
+        }
+        validate_export_metadata_version(self, 1)?;
+        if self
+            .snapshots
+            .iter()
+            .any(|snapshot| snapshot.state_schema_version > 1)
+        {
+            return Err(LifecycleError::CorruptExport(
+                "schema-1 export contains a newer snapshot".into(),
+            ));
+        }
+        let mut upgraded = self.clone();
+        upgraded.current_state.state_json =
+            upgrade_state_schema_one(&self.current_state.state_json).map_err(|message| {
+                LifecycleError::CorruptExport(format!("schema-1 state: {message}"))
+            })?;
+        upgraded.state_schema_version = CURRENT_STATE_SCHEMA_VERSION;
+        upgraded.current_state.schema_version = i64::from(CURRENT_STATE_SCHEMA_VERSION);
+        upgraded.lifecycle.state_schema_version = CURRENT_STATE_SCHEMA_VERSION;
+        validate_export(&upgraded)?;
+        Ok(upgraded)
     }
 }
 
@@ -458,7 +499,8 @@ pub async fn restore_campaign(
     pool: &SqlitePool,
     export: &CampaignExport,
 ) -> Result<OpenCampaign, LifecycleError> {
-    validate_export(export)?;
+    let upgraded = export.upgraded()?;
+    let export = &upgraded;
     let mut tx = pool.begin().await?;
     let exists =
         sqlx::query_scalar::<_, i64>("SELECT 1 FROM campaign_state_current WHERE campaign_id = ?")
@@ -786,13 +828,20 @@ fn validate_export(export: &CampaignExport) -> Result<(), LifecycleError> {
 }
 
 fn validate_export_metadata(export: &CampaignExport) -> Result<(), LifecycleError> {
+    validate_export_metadata_version(export, CURRENT_STATE_SCHEMA_VERSION)
+}
+
+fn validate_export_metadata_version(
+    export: &CampaignExport,
+    expected_state_version: u32,
+) -> Result<(), LifecycleError> {
     if export.format_version != CAMPAIGN_EXPORT_FORMAT_VERSION {
         return Err(LifecycleError::IncompatibleExportFormat {
             actual: export.format_version,
             supported: CAMPAIGN_EXPORT_FORMAT_VERSION,
         });
     }
-    if export.state_schema_version != CURRENT_STATE_SCHEMA_VERSION {
+    if export.state_schema_version != expected_state_version {
         return Err(LifecycleError::IncompatibleStateSchema {
             actual: export.state_schema_version,
             supported: CURRENT_STATE_SCHEMA_VERSION,
@@ -1277,12 +1326,13 @@ fn validate_snapshots(
                 "invalid snapshot metadata".into(),
             ));
         }
-        let snapshot_state = CampaignState::decode_json(&snapshot.state_json)
-            .map_err(|error| LifecycleError::CorruptExport(format!("snapshot JSON: {error}")))?;
+        let stored_version = u32::try_from(snapshot.state_schema_version)
+            .map_err(|_| LifecycleError::CorruptExport("invalid snapshot schema version".into()))?;
+        let snapshot_state = CampaignStateSnapshotCodec::new()
+            .decode_state(stored_version, &snapshot.state_json)
+            .map_err(|error| LifecycleError::CorruptExport(format!("snapshot state: {error}")))?;
         if snapshot_state.campaign_id().0.to_string() != export.campaign_id
-            || i64::from(snapshot_state.schema_version) != snapshot.state_schema_version
             || snapshot_state.applied_event_sequence != snapshot.event_sequence as u64
-            || !snapshot_state.validate().is_empty()
         {
             return Err(LifecycleError::CorruptExport(
                 "snapshot state metadata mismatch".into(),

@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
 use dmd_domain::{
-    Campaign, CampaignId, CampaignState, CampaignStatus, CommandId, CommandIssuer, CommandMeta,
-    EventId, EventSource, PendingEvent, SerializedRecord, VersionedRef, WorldClock, WorldDuration,
-    WorldInstant,
+    CURRENT_STATE_SCHEMA_VERSION, Campaign, CampaignId, CampaignState, CampaignStatus, CommandId,
+    CommandIssuer, CommandMeta, EventId, EventSource, PendingEvent, SerializedRecord, VersionedRef,
+    WorldClock, WorldDuration, WorldInstant,
 };
 use dmd_persistence::{
     CampaignStateSnapshotCodec, ReplayApplyError, ReplayEventApplier, SNAPSHOT_EVENT_INTERVAL,
@@ -149,7 +149,7 @@ async fn new_campaign_gets_sequence_zero_snapshot_and_snapshot_is_immutable() {
     let schema_version: i64 = row.try_get("state_schema_version").expect("schema version");
     let json: String = row.try_get("state_json").expect("state JSON");
     assert_eq!(sequence, 0);
-    assert_eq!(schema_version, 1);
+    assert_eq!(schema_version, i64::from(CURRENT_STATE_SCHEMA_VERSION));
     assert_eq!(json, initial.encode_json().expect("state should encode"));
 
     let update = sqlx::query(
@@ -329,11 +329,11 @@ fn snapshot_codec_rejects_future_and_missing_legacy_migration() {
     let codec = CampaignStateSnapshotCodec::new();
 
     assert!(matches!(
-        codec.decode_state(2, &current_json),
+        codec.decode_state(CURRENT_STATE_SCHEMA_VERSION + 1, &current_json),
         Err(SnapshotCodecError::UnsupportedFutureVersion {
-            actual: 2,
-            supported: 1
-        })
+            actual,
+            supported
+        }) if actual == CURRENT_STATE_SCHEMA_VERSION + 1 && supported == CURRENT_STATE_SCHEMA_VERSION
     ));
 
     let mut legacy = current;
@@ -359,7 +359,7 @@ fn snapshot_codec_applies_registered_sequential_migration() {
         .decode_state(0, &legacy_json)
         .expect("registered migration should reach current schema");
 
-    assert_eq!(migrated.schema_version, 1);
+    assert_eq!(migrated.schema_version, CURRENT_STATE_SCHEMA_VERSION);
     assert_eq!(migrated.campaign_id(), legacy.campaign_id());
 }
 
@@ -383,7 +383,7 @@ fn duplicate_snapshot_migration_registration_does_not_replace_original() {
             &legacy.encode_json().expect("legacy fixture should encode"),
         )
         .expect("original registered migration should remain usable");
-    assert_eq!(migrated.schema_version, 1);
+    assert_eq!(migrated.schema_version, CURRENT_STATE_SCHEMA_VERSION);
 }
 
 #[tokio::test]
@@ -441,7 +441,7 @@ async fn migration_sql_backfills_existing_materialized_head() {
     let schema_version: i64 = row.try_get("state_schema_version").expect("schema version");
     let json: String = row.try_get("state_json").expect("state JSON");
     assert_eq!(sequence, 7);
-    assert_eq!(schema_version, 1);
+    assert_eq!(schema_version, i64::from(CURRENT_STATE_SCHEMA_VERSION));
     assert_eq!(json, current_json);
 }
 

@@ -1,9 +1,9 @@
 use std::str::FromStr;
 
 use dmd_domain::{
-    Campaign, CampaignId, CampaignState, CampaignStatus, CommandId, CommandIssuer, CommandMeta,
-    EventId, EventSource, PendingEvent, SerializedRecord, VersionedRef, WorldClock, WorldDuration,
-    WorldInstant,
+    CURRENT_STATE_SCHEMA_VERSION, Campaign, CampaignId, CampaignState, CampaignStatus, CommandId,
+    CommandIssuer, CommandMeta, EventId, EventSource, PendingEvent, SerializedRecord, VersionedRef,
+    WorldClock, WorldDuration, WorldInstant,
 };
 use dmd_persistence::{
     CampaignStateSnapshotCodec, ReplayApplyError, ReplayEventApplier, SnapshotCodecError,
@@ -250,9 +250,10 @@ async fn direct_snapshot_load_requires_a_matching_journal_prefix() {
     let mut forged = initial.clone();
     forged.applied_event_sequence = 1;
     sqlx::query(
-        "INSERT INTO campaign_snapshots (campaign_id, event_sequence, state_schema_version, state_json) VALUES (?, 1, 1, ?)",
+        "INSERT INTO campaign_snapshots (campaign_id, event_sequence, state_schema_version, state_json) VALUES (?, 1, ?, ?)",
     )
     .bind(initial.campaign_id().0.to_string())
+    .bind(i64::from(CURRENT_STATE_SCHEMA_VERSION))
     .bind(forged.encode_json().expect("forged snapshot should encode"))
     .execute(&pool)
     .await
@@ -288,8 +289,9 @@ async fn replay_rejects_snapshot_newer_than_supported_state_schema() {
         .await
         .expect("corruption fixture should disable the snapshot update guard");
     sqlx::query(
-        "UPDATE campaign_snapshots SET state_schema_version = 2 WHERE campaign_id = ? AND event_sequence = 0",
+        "UPDATE campaign_snapshots SET state_schema_version = ? WHERE campaign_id = ? AND event_sequence = 0",
     )
+    .bind(i64::from(CURRENT_STATE_SCHEMA_VERSION + 1))
     .bind(initial.campaign_id().0.to_string())
     .execute(&pool)
     .await
@@ -300,10 +302,10 @@ async fn replay_rejects_snapshot_newer_than_supported_state_schema() {
         result,
         Err(SnapshotReplayError::Codec(
             SnapshotCodecError::UnsupportedFutureVersion {
-                actual: 2,
-                supported: 1
+                actual,
+                supported
             }
-        ))
+        )) if actual == CURRENT_STATE_SCHEMA_VERSION + 1 && supported == CURRENT_STATE_SCHEMA_VERSION
     ));
 }
 
@@ -358,8 +360,8 @@ async fn replay_rejects_applier_that_changes_state_schema() {
     assert!(matches!(
         result,
         Err(SnapshotReplayError::StateSchemaChanged {
-            actual: 2,
-            expected: 1
-        })
+            actual,
+            expected
+        }) if actual == CURRENT_STATE_SCHEMA_VERSION + 1 && expected == CURRENT_STATE_SCHEMA_VERSION
     ));
 }

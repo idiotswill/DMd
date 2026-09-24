@@ -8,7 +8,7 @@ use crate::{
     LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
 };
 
-pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 1;
+pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
