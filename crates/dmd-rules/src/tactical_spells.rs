@@ -204,6 +204,8 @@ pub struct SpellCastContext {
     pub now: WorldInstant,
     pub turn_number: u64,
     pub current_actor: EntityId,
+    /// Current source can_act result, including death/incapacitation. Never player input.
+    pub can_act: bool,
     pub concentration: Option<EffectId>,
 }
 
@@ -213,7 +215,7 @@ pub struct SpellCastContext {
 pub enum SpellCastAdvance {
     Commit,
     Countered,
-    LoseConcentration,
+    Interrupt(SpellCastingInterruption),
     ReleaseReady,
     ExpireHeld,
 }
@@ -746,6 +748,8 @@ pub fn validate_spell_cast(cast: &SpellCast) -> Result<(), RulesError> {
         ) && !matches!(cast.plan.choice.mode, SpellCastMode::Ready { .. }))
         || (cast.phase == SpellCastPhase::Committed
             && !matches!(cast.plan.choice.mode, SpellCastMode::Immediate))
+        || (cast.phase == SpellCastPhase::Interrupted(SpellCastingInterruption::ConcentrationLost)
+            && cast.plan.concentration_group.is_none())
     {
         return Err(invalid("retained cast phase or origin is invalid"));
     }
@@ -762,6 +766,9 @@ pub fn begin_cast(
     validate_spell_plan(plan)?;
     if plan.origin.id.0.is_nil() || context.turn_number == 0 || context.now.0 < 0 {
         return Err(invalid("invalid cast origin or turn"));
+    }
+    if !context.can_act {
+        return Err(unavailable("caster cannot begin an action"));
     }
     if ((!plan.activation_prepaid && plan.cost != SpellCastingCost::Reaction)
         || matches!(plan.choice.mode, SpellCastMode::Ready { .. }))
@@ -838,6 +845,9 @@ pub fn advance_cast(
     let mut obligations = Vec::new();
     match operation {
         SpellCastAdvance::Commit if cast.phase == SpellCastPhase::Casting => {
+            if !context.can_act {
+                return Err(unavailable("caster can no longer complete the action"));
+            }
             if let Some(group) = cast.plan.concentration_group
                 && context.concentration != Some(group)
             {
@@ -860,11 +870,16 @@ pub fn advance_cast(
             next.phase = SpellCastPhase::Countered;
             end_owned_group(cast, context, &mut obligations);
         }
-        SpellCastAdvance::LoseConcentration if cast.phase == SpellCastPhase::Casting => {
-            if cast.plan.concentration_group.is_none()
-                || context.concentration == cast.plan.concentration_group
-            {
-                return Err(unavailable("casting has not lost its concentration"));
+        SpellCastAdvance::Interrupt(reason) if cast.phase == SpellCastPhase::Casting => {
+            let supported = match reason {
+                SpellCastingInterruption::ConcentrationLost => {
+                    cast.plan.concentration_group.is_some()
+                        && context.concentration != cast.plan.concentration_group
+                }
+                SpellCastingInterruption::Incapacitated => !context.can_act,
+            };
+            if !supported {
+                return Err(unavailable("casting interruption is not present"));
             }
             // SRD105/179: this source loss ends the spell. Counterspell (120) is
             // the represented explicit exception to ordinary slot expenditure.
@@ -875,9 +890,13 @@ pub fn advance_cast(
                     expenditure: cast.plan.expenditure.clone(),
                 });
             }
-            next.phase = SpellCastPhase::Interrupted;
+            next.phase = SpellCastPhase::Interrupted(reason);
+            end_owned_group(cast, context, &mut obligations);
         }
         SpellCastAdvance::ReleaseReady if cast.phase == SpellCastPhase::Held => {
+            if !context.can_act {
+                return Err(unavailable("caster cannot take the release reaction"));
+            }
             if context.current_actor == cast.plan.choice.actor
                 && context.turn_number > cast.started_on_turn
             {

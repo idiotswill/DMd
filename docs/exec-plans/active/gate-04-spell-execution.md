@@ -2,7 +2,8 @@
 
 Status: **Active — implementation and integration pending.**
 Branch: `codex/gate4-spell-execution`, initial base `05afd1239d165813837fbdcdf76cfc2980092c1a`;
-root integration `1c7dac593565001fbd80f1c5e0a63135ad4b83d9` merged and creature source
+root integrations `1c7dac593565001fbd80f1c5e0a63135ad4b83d9` and
+`5114159bdb38eb1f04f720b69628d9f8a61bd11a` merged and creature source
 `0f388c0fbabcd771775ef1229c18a7d5887433f6` cherry-picked to obtain compiling dependencies.
 Writer: bootstrap_audit; root owns scheduler/application attachment and final verification.
 
@@ -81,22 +82,26 @@ scheduling and enduring noncombat consequences retain Gate 5 ownership.
   mutation. Direct planning now accepts Prepared grants only; source creatures must
   enter through the feature adapter so this boundary cannot be bypassed.
 - Independent scheduler review found that a just-started concentration spell could
-  lose its group and then have no terminal continuation. `LoseConcentration` now
-  requires actual group loss and ends Casting as Interrupted with ordinary prepared
+  lose its group and then have no terminal continuation. Typed `Interrupt` now
+  requires actual group loss or source inability to act and ends Casting as Interrupted
+  with the retained reason and ordinary prepared
   expenditure, no queued program and no deletion of another group's concentration.
   This applies the general slot rule (p.105) and concentration loss (p.179); Counterspell
   retains its explicit exception (p.120). The distinct no-slot failure exception for
   longer casting times is outside this immediate-casting reducer and stays Gate 5.
+  Nonconcentration casts can likewise finish after death/incapacitation; Begin, Commit
+  and Ready release check the scheduler's current `can_act` fact. Structural restore
+  rejects a concentration-loss reason on a plan which never owned a group.
 
 ## Validation, risks and next action
 
-Typed plans, source compilation, phase transitions and 23 focused regressions are drafted.
+Typed plans, source compilation, phase transitions and 24 focused regressions are drafted.
 The first focused run could not compile the initial base's unfinished integration fields
 and exhaustive matches. Merging the root checkpoint fixed those dependencies without
 duplicating their implementation. All 18 tests then passed on the source tree preceding
-the five source-feature/interruption follow-up tests. Strict Clippy found one Ready conditional in
+the six source-feature/interruption follow-up tests. Strict Clippy found one Ready conditional in
 this slice (fixed) and four integration lints in kernel validation/turns (owners notified).
-The follow-up source-feature adapter, exact share marker and five new tests await their
+The follow-up source-feature adapter, exact share marker and six new tests await their
 focused rerun; no final-head or strict-lint pass is claimed yet. Formatting and whitespace
 checks pass. The root's global serialized build-slot rule applies.
 Primary risks are premature resource commits, hidden-target leaks, source context drift,

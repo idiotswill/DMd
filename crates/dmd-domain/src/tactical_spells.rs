@@ -280,6 +280,12 @@ pub struct SpellCastPlan {
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SpellCastingInterruption {
+    ConcentrationLost,
+    Incapacitated,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum SpellCastPhase {
     /// Casting action is spent; the casting interruption window has not closed.
     Casting,
@@ -291,7 +297,7 @@ pub enum SpellCastPhase {
     Countered,
     /// Concentration was lost during this immediate casting; ordinary resources
     /// are still spent. This is not Counterspell's explicit slot exception.
-    Interrupted,
+    Interrupted(SpellCastingInterruption),
     Expired,
 }
 

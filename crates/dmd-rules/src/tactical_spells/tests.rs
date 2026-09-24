@@ -88,6 +88,7 @@ fn context(plan: &SpellCastPlan) -> SpellCastContext {
         now: WorldInstant(100),
         turn_number: 3,
         current_actor: plan.choice.actor,
+        can_act: true,
         concentration: plan.concentration_group,
     }
 }
@@ -332,14 +333,21 @@ fn lost_casting_concentration_completes_without_counterspell_refund_or_program()
             &begun.cast,
             &next_meta(&begun.cast),
             &context(&plan),
-            SpellCastAdvance::LoseConcentration
+            SpellCastAdvance::Interrupt(SpellCastingInterruption::ConcentrationLost)
         )
         .is_err()
     );
     let mut ctx = context(&plan);
     ctx.concentration = Some(EffectId::new());
-    let ended = step(&begun.cast, &ctx, SpellCastAdvance::LoseConcentration);
-    assert_eq!(ended.cast.phase, SpellCastPhase::Interrupted);
+    let ended = step(
+        &begun.cast,
+        &ctx,
+        SpellCastAdvance::Interrupt(SpellCastingInterruption::ConcentrationLost),
+    );
+    assert_eq!(
+        ended.cast.phase,
+        SpellCastPhase::Interrupted(SpellCastingInterruption::ConcentrationLost)
+    );
     assert_eq!(
         ended.obligations,
         [SpellCastObligation::CommitExpenditure {
@@ -352,9 +360,65 @@ fn lost_casting_concentration_completes_without_counterspell_refund_or_program()
             &ended.cast,
             &next_meta(&ended.cast),
             &ctx,
-            SpellCastAdvance::LoseConcentration
+            SpellCastAdvance::Interrupt(SpellCastingInterruption::ConcentrationLost)
         )
         .is_err()
+    );
+    assert!(
+        advance_cast(
+            &ended.cast,
+            &next_meta(&ended.cast),
+            &ctx,
+            SpellCastAdvance::Commit
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn incapacitating_interrupt_finishes_even_a_nonconcentration_cast() {
+    let (state, meta, choice) = fixture("cure-wounds", SpellResourceChoice::Slot { level: 1 });
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    let begun = begin_cast(&plan, &context(&plan)).unwrap();
+    let mut forged = begun.cast.clone();
+    forged.phase = SpellCastPhase::Interrupted(SpellCastingInterruption::ConcentrationLost);
+    assert!(validate_spell_cast(&forged).is_err());
+    let mut ctx = context(&plan);
+    assert!(
+        advance_cast(
+            &begun.cast,
+            &next_meta(&begun.cast),
+            &ctx,
+            SpellCastAdvance::Interrupt(SpellCastingInterruption::Incapacitated)
+        )
+        .is_err()
+    );
+    ctx.can_act = false;
+    assert!(begin_cast(&plan, &ctx).is_err());
+    assert!(
+        advance_cast(
+            &begun.cast,
+            &next_meta(&begun.cast),
+            &ctx,
+            SpellCastAdvance::Commit
+        )
+        .is_err()
+    );
+    let ended = step(
+        &begun.cast,
+        &ctx,
+        SpellCastAdvance::Interrupt(SpellCastingInterruption::Incapacitated),
+    );
+    assert_eq!(
+        ended.cast.phase,
+        SpellCastPhase::Interrupted(SpellCastingInterruption::Incapacitated)
+    );
+    assert_eq!(
+        ended.obligations,
+        [SpellCastObligation::CommitExpenditure {
+            actor: choice.actor,
+            expenditure: SpellExpenditure::Slot { level: 1 },
+        }]
     );
     assert!(
         advance_cast(
