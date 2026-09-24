@@ -3,6 +3,10 @@ use std::path::{Path, PathBuf};
 mod rules_restore;
 mod rules_runtime;
 pub use rules_runtime::*;
+mod table_protocol;
+pub use table_protocol::*;
+mod table_engine;
+mod table_runtime;
 
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,
@@ -55,6 +59,12 @@ impl RunnableCampaign {
 
 #[derive(Debug, Error)]
 pub enum RunnableCampaignError {
+    /// Proven input rejection before acceptance; the caller may revise the request.
+    #[error("{0}")]
+    TableRejected(String),
+    /// Stored-state/recovery failure does not establish whether a request was accepted.
+    #[error("{0}")]
+    Table(String),
     #[error("content catalog could not be loaded: {0}")]
     Catalog(#[from] CatalogLoadError),
     #[error("campaign content could not be resolved: {0}")]
@@ -74,6 +84,18 @@ pub enum RunnableCampaignError {
 }
 
 impl CampaignRuntime {
+    pub async fn open_local(
+        database_path: impl AsRef<Path>,
+        content_root: impl AsRef<Path>,
+    ) -> Result<Self, RunnableCampaignError> {
+        let pool = dmd_persistence::open_sqlite_path(database_path)
+            .await
+            .map_err(|error| RunnableCampaignError::Table(error.to_string()))?;
+        let runtime = Self::from_content_root(pool, content_root);
+        runtime.load_catalog()?;
+        Ok(runtime)
+    }
+
     #[must_use]
     pub fn new(pool: SqlitePool, content_roots: impl IntoIterator<Item = PathBuf>) -> Self {
         Self {
@@ -158,7 +180,7 @@ impl CampaignRuntime {
         // operation reloads content normally, so this reuse cannot authorize a future command.
         let content = catalog.resolve_campaign(&raw.state.campaign)?;
         if let Some(pack) = pack {
-            dmd_rules::validate_state(&raw.state, pack)?;
+            table_engine::validate_table(&raw.state, pack).map_err(RunnableCampaignError::Table)?;
         } else if Self::uses_rules(&raw.state) {
             return Err(RunnableCampaignError::RulesContent(
                 "returned state requires rules that were not validated before the operation".into(),
@@ -177,14 +199,14 @@ impl CampaignRuntime {
     ) -> Result<Option<RulesPack>, RunnableCampaignError> {
         if Self::uses_rules(state) {
             let pack = rules_runtime::load_rules_pack(content)?;
-            dmd_rules::validate_state(state, &pack)?;
+            table_engine::validate_table(state, &pack).map_err(RunnableCampaignError::Table)?;
             return Ok(Some(pack));
         }
         Ok(None)
     }
 
     fn uses_rules(state: &CampaignState) -> bool {
-        state.rules.is_some() || state.campaign.ruleset.id == "srd-5.2"
+        state.rules.is_some() || state.table.is_some() || state.campaign.ruleset.id == "srd-5.2"
     }
 
     fn has_rules_history(
@@ -192,14 +214,16 @@ impl CampaignRuntime {
         current: &CampaignState,
     ) -> Result<bool, RunnableCampaignError> {
         let mut found = Self::uses_rules(current)
+            || export.command_audit.iter().any(|audit| {
+                audit.command_kind.starts_with("rules.") || audit.command_kind.starts_with("table.")
+            })
+            || export.event_journal.iter().any(|event| {
+                event.event_kind.starts_with("rules.") || event.event_kind.starts_with("table.")
+            })
             || export
-                .command_audit
+                .observations
                 .iter()
-                .any(|audit| audit.command_kind.starts_with("rules."))
-            || export
-                .event_journal
-                .iter()
-                .any(|event| event.event_kind.starts_with("rules."));
+                .any(|observation| observation.record.kind.starts_with("table."));
         let codec = CampaignStateSnapshotCodec::new();
         for snapshot in &export.snapshots {
             let version = u32::try_from(snapshot.state_schema_version)

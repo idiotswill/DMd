@@ -9,6 +9,29 @@ pub use engine::{query, replay, resolve};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 pub use validation::{ability_modifier, armor_class, proficiency_bonus, validate_state};
+pub use validation::{check_modifier as test_modifier, conditions as active_conditions};
+
+/// SRD 5.2.1 standard skill abilities; a host may establish a different ability for a check.
+pub const STANDARD_SKILL_ABILITIES: [(Skill, Ability); 18] = [
+    (Skill::Acrobatics, Ability::Dexterity),
+    (Skill::AnimalHandling, Ability::Wisdom),
+    (Skill::Arcana, Ability::Intelligence),
+    (Skill::Athletics, Ability::Strength),
+    (Skill::Deception, Ability::Charisma),
+    (Skill::History, Ability::Intelligence),
+    (Skill::Insight, Ability::Wisdom),
+    (Skill::Intimidation, Ability::Charisma),
+    (Skill::Investigation, Ability::Intelligence),
+    (Skill::Medicine, Ability::Wisdom),
+    (Skill::Nature, Ability::Intelligence),
+    (Skill::Perception, Ability::Wisdom),
+    (Skill::Performance, Ability::Charisma),
+    (Skill::Persuasion, Ability::Charisma),
+    (Skill::Religion, Ability::Intelligence),
+    (Skill::SleightOfHand, Ability::Dexterity),
+    (Skill::Stealth, Ability::Dexterity),
+    (Skill::Survival, Ability::Wisdom),
+];
 
 pub const RULES_EVENT_KIND: &str = "rules.action_resolved";
 pub const RULES_EVENT_VERSION: u32 = 1;
@@ -16,6 +39,10 @@ pub const RULES_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum RulesAction {
+    CreateCharacter {
+        entity_id: EntityId,
+        input: crate::CharacterCreationInput,
+    },
     Initialize {
         entities: Vec<MechanicalEntity>,
         house_rules: HouseRules,
@@ -63,6 +90,17 @@ pub enum RulesAction {
     },
     SubmitRoll {
         result: RollResult,
+    },
+    SecondWind {
+        actor: EntityId,
+        request_id: RollRequestId,
+    },
+    ResolveInspirationTransfer {
+        actor: EntityId,
+        recipient: Option<EntityId>,
+    },
+    SubmitSavageAttacker {
+        roll: SavageAttackerRoll,
     },
     SubmitRollWithInspiration {
         result: RollResult,

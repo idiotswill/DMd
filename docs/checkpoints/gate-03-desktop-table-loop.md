@@ -1,6 +1,6 @@
 # Gate 3 — First playable desktop table loop
 
-Status: **Planned**
+Status: **Active — owner authorized continuation after Gate 2 on 2026-09-24.**
 
 ## Product requirements advanced
 

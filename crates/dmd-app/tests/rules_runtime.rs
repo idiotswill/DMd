@@ -1315,9 +1315,11 @@ async fn legacy_rules_campaign_restore_upgrades_before_mechanical_preflight() {
         let mut value: serde_json::Value = serde_json::from_str(json).unwrap();
         value["schema_version"] = serde_json::json!(1);
         value.as_object_mut().unwrap().remove("rules");
+        value.as_object_mut().unwrap().remove("table");
         serde_json::to_string(&value).unwrap()
     }
     export.state_schema_version = 1;
+    export.format_version = 1;
     export.lifecycle.state_schema_version = 1;
     export.current_state.schema_version = 1;
     export.current_state.state_json = legacy(&export.current_state.state_json);
@@ -1328,8 +1330,12 @@ async fn legacy_rules_campaign_restore_upgrades_before_mechanical_preflight() {
     let target = open_sqlite("sqlite::memory:").await.unwrap();
     let restored = CampaignRuntime::from_content_root(target.clone(), &f.content);
     let runnable = restored.restore_campaign(&export).await.unwrap();
-    assert_eq!(runnable.state().schema_version, 2);
+    assert_eq!(
+        runnable.state().schema_version,
+        CURRENT_STATE_SCHEMA_VERSION
+    );
     assert!(runnable.state().rules.is_none());
+    assert!(runnable.state().table.is_none());
     f.step(
         &restored,
         CommandIssuer::Admin,

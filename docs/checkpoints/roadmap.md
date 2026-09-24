@@ -18,8 +18,9 @@ Only the active gate receives a detailed execution plan.
 
 [Gate 2](gate-02-rules-kernel.md) is accepted after the source, rules kernel and real
 application/persistence integration were verified. [PR #19](https://github.com/idiotswill/DMd/pull/19)
-records final closeout and merged-main verification. Work is paused for the owner;
-Gate 3 remains planned and must not begin until the owner says to continue.
+records final closeout and merged-main verification. The owner authorized continuation
+on 2026-09-24; [Gate 3](gate-03-desktop-table-loop.md) is now active. Its execution plan
+is `docs/exec-plans/active/gate-3-desktop-table-loop.md`. Pause again at Gate 3 completion.
 
 ## Preconditions before Gate 2
 

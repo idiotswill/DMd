@@ -5,6 +5,8 @@ pub use dmd_domain::{
 use thiserror::Error;
 pub mod kernel;
 pub use kernel::*;
+pub mod character_creation;
+pub use character_creation::*;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {

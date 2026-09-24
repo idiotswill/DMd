@@ -8,10 +8,13 @@ use crate::{
     LocationId, Player, PlayerId, Scene, SceneId, StandingDirective, WorldClock, WorldEntity,
 };
 
-pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 2;
+pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 3;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
+    /// Current table contract, binding and unresolved decision; absent in legacy saves.
+    #[serde(default)]
+    pub table: Option<crate::TableState>,
     /// Authoritative mechanical state; absent before a rules kernel is initialized.
     pub rules: Option<crate::RulesState>,
     pub schema_version: u32,
@@ -37,6 +40,7 @@ impl CampaignState {
     #[must_use]
     pub fn empty(campaign: Campaign, clock: WorldClock) -> Self {
         Self {
+            table: None,
             rules: None,
             schema_version: CURRENT_STATE_SCHEMA_VERSION,
             campaign,

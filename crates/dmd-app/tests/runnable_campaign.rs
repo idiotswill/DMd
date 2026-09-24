@@ -533,3 +533,47 @@ async fn malformed_unrelated_manifest_fails_catalog_load_explicitly() {
     .await
     .expect("raw administrative purge should remain available");
 }
+
+#[tokio::test]
+async fn table_observation_lineage_cannot_be_hidden_by_generic_state_images() {
+    use dmd_domain::{
+        CommandIssuer, NewSessionObservation, ObservationAudience, ObservationId,
+        SessionObservation,
+    };
+    let test = TestDir::new("table-lineage");
+    let content = test.path().join("content");
+    fs::create_dir_all(&content).unwrap();
+    write_ruleset(&content, "rules", "rules.generic", "1");
+    let pool = file_pool(&test.path().join("source.sqlite")).await;
+    let source = CampaignRuntime::from_content_root(pool.clone(), &content);
+    let campaign = state("Generic image", 22, ("rules.generic", "1"), &[]);
+    source.create_campaign(&campaign).await.unwrap();
+    let mut export = export_campaign(&pool, campaign.campaign_id())
+        .await
+        .unwrap();
+    export.observations.push(SessionObservation {
+        ordinal: 1,
+        record: NewSessionObservation {
+            id: ObservationId::new(),
+            campaign_id: campaign.campaign_id(),
+            session_id: None,
+            issuer: CommandIssuer::Admin,
+            audience: ObservationAudience::Host,
+            observed_event_sequence: 0,
+            kind: "table.conversation".into(),
+            payload_schema_version: 1,
+            payload_json: "{}".into(),
+        },
+    });
+    let destination_pool = file_pool(&test.path().join("destination.sqlite")).await;
+    let destination = CampaignRuntime::from_content_root(destination_pool.clone(), content);
+    assert!(
+        matches!(destination.restore_campaign(&export).await,Err(RunnableCampaignError::RulesContent(message)) if message.contains("no implemented kernel"))
+    );
+    assert!(
+        dmd_persistence::list_campaigns(&destination_pool)
+            .await
+            .unwrap()
+            .is_empty()
+    );
+}

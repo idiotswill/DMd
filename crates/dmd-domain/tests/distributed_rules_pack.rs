@@ -28,6 +28,11 @@ fn distributed_srd_manifest_verifies_kernel_source_and_license_bytes() {
             .iter()
             .map(|file| file.path.as_str())
             .collect::<BTreeSet<_>>(),
-        BTreeSet::from(["NOTICE.md", "source.json", "kernel.json"])
+        BTreeSet::from([
+            "NOTICE.md",
+            "source.json",
+            "kernel.json",
+            "character-creation.json"
+        ])
     );
 }

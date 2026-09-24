@@ -51,7 +51,7 @@ impl CampaignRuntime {
         let state = dmd_persistence::replay_campaign_to_head(&self.pool, campaign_id, &applier)
             .await
             .map_err(|error| RunnableCampaignError::Replay(Box::new(error)))?;
-        dmd_rules::validate_state(&state, &pack)?;
+        crate::table_engine::validate_table(&state, &pack).map_err(RunnableCampaignError::Table)?;
         Ok(state)
     }
 
@@ -62,6 +62,11 @@ impl CampaignRuntime {
         action: RulesAction,
     ) -> Result<RulesReceipt, RunnableCampaignError> {
         let runnable = self.open_campaign(context.campaign_id).await?;
+        if runnable.state().table.is_some() {
+            return Err(RunnableCampaignError::Table(
+                "This campaign uses the table command path so pending decisions and mechanics commit together.".into(),
+            ));
+        }
         let pack = load_rules_pack(runnable.content())?;
         let meta = CommandMeta {
             id: CommandId::new(),
@@ -203,6 +208,22 @@ pub(crate) fn load_rules_pack(
     let base = installed.manifest_path.parent().ok_or_else(|| {
         RunnableCampaignError::RulesContent("rules manifest has no parent directory".into())
     })?;
+    let creation = installed
+        .manifest
+        .files
+        .iter()
+        .find(|file| file.path == "character-creation.json")
+        .ok_or_else(|| {
+            RunnableCampaignError::RulesContent("character-creation.json is not declared".into())
+        })?;
+    let creation_bytes = fs::read(base.join("character-creation.json"))
+        .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
+    if creation_bytes.len() as u64 != creation.byte_len
+        || fnv1a64_hex(&creation_bytes) != creation.checksum.value
+        || creation_bytes != include_bytes!("../../../content/srd-5.2.1/character-creation.json")
+    {
+        return Err(RunnableCampaignError::RulesContent("installed character creation catalog does not match this exact supported rules version".into()));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {
@@ -232,41 +253,72 @@ impl ReplayEventApplier for RulesReplayApplier {
         state: &mut CampaignState,
         event: &StoredJournalEvent,
     ) -> Result<(), ReplayApplyError> {
-        if event.payload.kind != RULES_EVENT_KIND
-            || event.payload.schema_version != RULES_EVENT_VERSION
-        {
-            return Err(ReplayApplyError::UnsupportedEvent {
-                kind: event.payload.kind.clone(),
-                schema_version: event.payload.schema_version,
-            });
-        }
-        let rules_event: RulesEvent =
-            serde_json::from_str(&event.payload.json).map_err(|error| {
-                ReplayApplyError::InvalidPayload {
+        let next = match (event.payload.kind.as_str(), event.payload.schema_version) {
+            (RULES_EVENT_KIND, RULES_EVENT_VERSION) => {
+                if state.table.is_some() {
+                    return Err(ReplayApplyError::InvalidTransition(
+                        "raw rules event bypasses the table command boundary".into(),
+                    ));
+                }
+                let rules_event: RulesEvent = serde_json::from_str(&event.payload.json)
+                    .map_err(|error| invalid_replay_payload(event, error))?;
+                validate_replay_envelope(event, &rules_event.meta)?;
+                dmd_rules::replay(state, &rules_event, &self.pack)
+                    .map_err(|error| ReplayApplyError::InvalidTransition(error.to_string()))?
+                    .next_state
+            }
+            (crate::TABLE_EVENT_KIND, crate::TABLE_EVENT_VERSION) => {
+                let table_event: crate::TableEvent = serde_json::from_str(&event.payload.json)
+                    .map_err(|error| invalid_replay_payload(event, error))?;
+                validate_replay_envelope(event, &table_event.meta)?;
+                crate::table_engine::replay_table(state, &table_event, &self.pack)
+                    .map_err(ReplayApplyError::InvalidTransition)?
+                    .state
+            }
+            _ => {
+                return Err(ReplayApplyError::UnsupportedEvent {
                     kind: event.payload.kind.clone(),
                     schema_version: event.payload.schema_version,
-                    message: error.to_string(),
-                }
-            })?;
-        if event.meta.campaign_id != rules_event.meta.campaign_id
-            || event.meta.command_id != Some(rules_event.meta.id)
-            || event.meta.actor != rules_event.meta.actor
-            || event.meta.session_id != rules_event.meta.session_id
-            || event.meta.source != EventSource::RuleResolution
-            || Some(event.meta.sequence) != rules_event.meta.expected_event_sequence.checked_add(1)
-        {
+                });
+            }
+        };
+        if next.clock.now != event.meta.occurred_at {
             return Err(ReplayApplyError::InvalidTransition(
-                "rules event authority metadata does not match its journal envelope".into(),
+                "gameplay event time does not match its journal envelope".into(),
             ));
         }
-        let transition = dmd_rules::replay(state, &rules_event, &self.pack)
-            .map_err(|error| ReplayApplyError::InvalidTransition(error.to_string()))?;
-        if transition.next_state.clock.now != event.meta.occurred_at {
-            return Err(ReplayApplyError::InvalidTransition(
-                "rules event time does not match its journal envelope".into(),
-            ));
-        }
-        *state = transition.next_state;
+        crate::table_engine::validate_table(&next, &self.pack)
+            .map_err(ReplayApplyError::InvalidTransition)?;
+        *state = next;
         Ok(())
     }
+}
+
+fn invalid_replay_payload(
+    event: &StoredJournalEvent,
+    error: serde_json::Error,
+) -> ReplayApplyError {
+    ReplayApplyError::InvalidPayload {
+        kind: event.payload.kind.clone(),
+        schema_version: event.payload.schema_version,
+        message: error.to_string(),
+    }
+}
+
+fn validate_replay_envelope(
+    event: &StoredJournalEvent,
+    meta: &CommandMeta,
+) -> Result<(), ReplayApplyError> {
+    if event.meta.campaign_id != meta.campaign_id
+        || event.meta.command_id != Some(meta.id)
+        || event.meta.actor != meta.actor
+        || event.meta.session_id != meta.session_id
+        || event.meta.source != EventSource::RuleResolution
+        || Some(event.meta.sequence) != meta.expected_event_sequence.checked_add(1)
+    {
+        return Err(ReplayApplyError::InvalidTransition(
+            "gameplay event authority metadata does not match its journal envelope".into(),
+        ));
+    }
+    Ok(())
 }

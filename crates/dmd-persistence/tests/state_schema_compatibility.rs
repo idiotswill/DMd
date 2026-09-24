@@ -72,6 +72,7 @@ fn legacy_json(current: &str) -> String {
     let object = value.as_object_mut().expect("state object");
     object.insert("schema_version".into(), json!(1));
     object.remove("rules");
+    object.remove("table");
     serde_json::to_string(&value).expect("legacy JSON")
 }
 
@@ -156,6 +157,7 @@ async fn legacy_export() -> CampaignExport {
     let mut export = export_campaign(&pool, initial.campaign_id())
         .await
         .expect("campaign exports");
+    export.format_version = 1;
     export.state_schema_version = 1;
     export.lifecycle.state_schema_version = 1;
     export.current_state.schema_version = 1;
@@ -203,12 +205,16 @@ async fn gate_one_database_upgrades_current_rows_and_replays_unchanged_anchor() 
     .fetch_one(&pool)
     .await
     .expect("current row");
-    assert_eq!(row.get::<i64, _>("schema_version"), 2);
+    assert_eq!(
+        row.get::<i64, _>("schema_version"),
+        i64::from(CURRENT_STATE_SCHEMA_VERSION)
+    );
     let current: Value =
         serde_json::from_str(&row.get::<String, _>("state_json")).expect("current JSON");
     let mut expected: Value = serde_json::from_str(&legacy).expect("legacy JSON");
-    expected["schema_version"] = json!(2);
+    expected["schema_version"] = json!(CURRENT_STATE_SCHEMA_VERSION);
     expected["rules"] = Value::Null;
+    expected["table"] = Value::Null;
     assert_eq!(current, expected);
     let snapshot_after: (String, String) = sqlx::query_as(
         "SELECT state_json, created_at_utc FROM campaign_snapshots WHERE campaign_id = ?",
