@@ -99,7 +99,10 @@ pub struct TacticalFlow {
     pub phase: TacticalPhase,
     pub budget: TacticalTurnBudget,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub resolution: Option<TacticalResolution>,
+    // The growing interrupt cursor lives on the heap. Keeping it inline inflated
+    // every CampaignState async/serde stack frame even outside an encounter.
+    // Box is transparent on the existing durable JSON wire.
+    pub resolution: Option<Box<TacticalResolution>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub dodges: Vec<TacticalDodge>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
