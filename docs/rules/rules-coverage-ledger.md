@@ -1,12 +1,12 @@
 # Rules Coverage Ledger
 
-Status: **Source inventory established; mechanics implementation remains in progress in Gate 2**.
+Status: **The 13 scoped Gate 2 families have mechanical and production integration evidence; 42 later-gate families remain intentionally deferred. No player acceptance is claimed.**
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
 ## What is accounted for
 
-The ledger has 55 rules/content families. Every family has one numeric `primary_gate`, legal/source citations, explicit scope, status, mechanical test evidence, production integration evidence, player acceptance evidence and final Gate 14 ownership. Empty evidence arrays mean no such evidence is claimed. An inventory entry inherits its owning family's gate/status; listing a spell or creature does not implement it.
+The ledger has 55 rules/content families. Every family has one numeric `primary_gate`, legal/source citations, explicit scope, status, mechanical test evidence, production integration evidence, player acceptance evidence and final Gate 14 ownership. Empty evidence arrays mean no such evidence is claimed. An inventory entry inherits its owning family's scope and gate accounting; a primitive family's integration status does not declare every source subrule implemented. Listing a spell or creature does not implement it.
 
 The source inventory covers all fourteen substantive chapter groups, with printed page citations. Pages 2–4 are contents/index navigation; their entries are represented by the chapters and catalogs rather than counted as mechanics. It additionally names:
 
@@ -29,15 +29,23 @@ The PDF's visible contents and page headings take precedence over bookmark desti
 - **Gate 2:** legal pin and completeness accounting; validated character modifiers; D20/proficiency/advantage; attack/HP/damage foundations; conditions/resources; timing/reaction, rest, spellcasting/concentration and passive/secret primitives.
 - **Gate 3:** supported character creation/sheets and the first text-first table flow.
 - **Gate 4:** full spatial combat, all timing/effect/condition interactions, target geometry, visibility, tactics, death saves, mounts, unarmed/grapple, weapon mastery and combat spell execution.
-- **Gate 5:** full exploration/social/travel/rest/crafting/economy, advancement/multiclass, environmental/curse/poison/trap rules, noncombat magic and item use.
+- **Gate 5:** full exploration/social/travel/rest/crafting/economy, advancement/multiclass, environmental/curse/poison/trap rules, noncombat magic and item use, including ritual execution and longer casting-time orchestration.
 - **Gate 6:** complete legally reusable catalogs/options plus production content integration. Gates 4/5 own mechanical dependencies. Gate 6 must account for every catalog entry and its variants, not only content used by the starter adventure.
 - **Gates 9/13/14:** autonomous interpretation/explanation, distribution notices/recovery, and human end-to-end acceptance remain cross-cutting. These do not absorb unfinished rules mechanics without an explicit roadmap change.
 
 Primitives and complete families have separate rows where needed. For example, `condition-primitives` belongs to Gate 2 while `combat-conditions` owns complete tactical semantics in Gate 4. A typed marker alone is not full condition support. The same distinction applies to spellcasting vs complete spell effects/catalogs, timing vs complete encounters, and recovery primitives vs actual rest gameplay.
 
+## Gate 2 evidence and limits
+
+The 13 `production_integrated` rows cite exact test files and names at application head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` in [PR #18](https://github.com/idiotswill/DMd/pull/18). Mechanical tests check deterministic rule behavior; application scenarios use `CampaignRuntime`, actual SQLite state/audit/event commits, local content, restart, queries, and export/restore/replay. The checkpoint and execution plan retain the final exact-head verification and CI evidence; this ledger does not independently declare a gate accepted.
+
+The evidence applies to each row's stated Gate 2 scope. Shared production paths are exercised alongside kernel-specific boundary tests; it does not claim that every rule variant has a separate application test. Character option grants, complete tactical condition consequences and simultaneous trigger ordering, full preparation/spell effects/geometry, complete catalogs and full rest/camp play retain their later-gate owners. The `Ritual` glossary member remains inventoried under `spell-primitives`, whose scope explicitly assigns ritual execution and longer casting-time orchestration to Gate 5. No ritual implementation is claimed. The shipped `dancing-lights` adaptation implements concentration/duration bookkeeping only, as reported by the supported-content query.
+
+The source-license row proves source pinning, attribution retention and loading of the declared local pack. The release packaging/distribution audit remains Gate 13. All `player_acceptance` arrays remain empty: automated tests and intermediate gate integration do not replace the full-game and human acceptance required by Gate 14.
+
 ## Updating and validating
 
-Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. All current rules rows are planned/deferred; this source slice does not claim gameplay tests or user acceptance. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
+Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. The 13 Gate 2 rows record scoped production integration; the other 42 retain `intentionally_deferred`, their receiving gate and their existing obligations. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

@@ -1,9 +1,8 @@
 # Gate 2 runtime review fixes
 
-Status: implementation and targeted verification complete on
-`codex/gate2-runtime-review-fixes`, based on application head `b74149f`.
-The rules-architecture agent is the sole writer for this slice; parent integration
-and exact-head repository/CI checks remain part of the Gate 2 application plan.
+Status: complete; integrated and verified in [PR #18](https://github.com/idiotswill/DMd/pull/18).
+The isolated `codex/gate2-runtime-review-fixes` branch was based on application head
+`b74149f`; the rules-architecture agent was its sole writer.
 
 ## Objective and boundary
 
@@ -46,7 +45,9 @@ Verified against foundation `50a86fe` through a verification-only local merge:
 - `cargo clippy --offline -p dmd-app --all-targets -- -D warnings`: passed.
 - Scoped Rustfmt and `git diff --check`: passed.
 
-Next: parent cherry-picks only the app/plan commits, integrates the foundation
-separately, and completes full repository verification and CI on the final exact
-head. Do not cherry-pick the local verification merge. No full repository check is
-claimed by this slice. No product scope or gate boundary changes.
+Final integrated head `3346699d5b8047ad5232199c4ad1c2c3e8d5c72c` passed complete
+workspace verification (172 Windows tests) and
+[CI #305](https://github.com/idiotswill/DMd/actions/runs/36003158276), including MSRV.
+Independent final-head review found no blocker; PR #18 merged as
+`3ad3885559073e6748d3f17c2172be9ff2a99f52`. No remaining slice action or product/gate
+boundary change. Gate closeout owns final publication and owner pause.

@@ -1,6 +1,6 @@
 # ADR 017 — State schema 2 and Gate 1 compatibility
 
-Status: proposed for the integrated Gate 2 rules foundation PR.
+Status: **Accepted — Gate 2, [PR #17](https://github.com/idiotswill/DMd/pull/17), exact head `ca54b8215258468db4fbac7b5c15a648fdbb98d7`, [CI #303](https://github.com/idiotswill/DMd/actions/runs/36002412992).**
 
 ## Context
 
