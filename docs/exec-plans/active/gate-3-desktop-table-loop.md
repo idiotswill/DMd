@@ -105,8 +105,18 @@ minimal prerequisite is demonstrated. Foundation verification is not desktop gat
 
 ## Exact next action
 
-Integrate the two anchor-review fixes, review the exact foundation diff, rerun full local
-verification and CI, and merge #20 with expected-head protection. Reconcile dependent #21
-with refreshed main, finish frontend/native checks, run the packaged scene and restart
-scenario, then record checkpoint/ledger/debt evidence and verify final merged main.
+Foundation #20 is now merged at `ac900fb5c5603f26bd3f3108aecf81bf597eadae`, matching
+reviewed head `52ffab23c5e67db7d6ee40a622533b08d44f10fd`. Full verification passed
+207 Windows/GNU tests and CI run `36016090350` passed all four jobs (208 Linux tests).
+The foundation findings above are resolved, not outstanding merge prerequisites.
+
+Desktop #21 is reconciled with main. Head `51d2962` passes the local core checks,
+Linux CI, native MSRV/stable checks, strict desktop lint, three host tests and twelve
+frontend tests. Windows run `36017036314` built the executable and NSIS installer,
+but the clean-source packaging guard failed. Investigate the exact generated change,
+preserve the guard, and fix confirmed dependency-notice omissions before packaging again.
+
+The remaining work is tracked by `gate3-integration-review.md` on PR #22: verify a clean
+exact-head package; run the ordinary desktop scene, graceful restart and abrupt crash
+recovery; reconcile checkpoint/ledger/debt evidence; merge and verify final main.
 No owner blocker is known; Gate 4 remains outside current authorization.
