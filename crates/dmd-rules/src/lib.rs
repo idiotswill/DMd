@@ -9,6 +9,7 @@ pub mod character_creation;
 pub use character_creation::*;
 pub mod spatial;
 pub mod tactical_definitions;
+pub mod tactical_effects;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {
