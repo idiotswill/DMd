@@ -400,6 +400,10 @@ async fn initiative_attack_damage_reaction_and_effect_timing_use_the_durable_pat
             ..
         }
     ));
+    let bonus = RulesAction::UseBonusAction { actor: f.actor, feature_id: "validated-feature".into(), ruling: ruling() };
+    f.step(&runtime, CommandIssuer::System, Some(f.actor), bonus.clone()).await;
+    let sequence = runtime.open_campaign(f.state.campaign_id()).await.unwrap().state().applied_event_sequence;
+    assert!(runtime.execute_rules(f.context(CommandIssuer::System, Some(f.actor), sequence), bonus).await.is_err());
     let effect_id = EffectId::new();
     f.step(
         &runtime,
@@ -465,6 +469,7 @@ async fn initiative_attack_damage_reaction_and_effect_timing_use_the_durable_pat
     assert_eq!(rules.entities[&f.other_actor].hp, 4);
     assert!(!rules.effects.iter().any(|e| e.id == effect_id));
     assert!(rules.timing.as_ref().unwrap().reactions_spent.is_empty());
+    assert!(!rules.timing.as_ref().unwrap().bonus_action_spent);
     f.step(
         &runtime,
         CommandIssuer::Player(f.other_player),
