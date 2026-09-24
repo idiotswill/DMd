@@ -1155,3 +1155,45 @@ fn recovery_time_overflow_or_wrong_occurrence_does_not_accept_a_raw_die() {
     assert_eq!(stable.recovery, original);
     assert!(stable.recovery.stable.unwrap().delay_roll.is_none());
 }
+
+#[test]
+fn source_changed_death_save_is_one_success_without_natural_twenty_healing() {
+    let (mut entity, recovery, context) = fixture();
+    zero(&mut entity);
+    entity.death.failures = 2;
+    let first = reduce_vitality(
+        &entity,
+        &recovery,
+        &context,
+        &VitalityOperation::SucceedDeathSave,
+    )
+    .unwrap();
+    assert_eq!(first.entity.hp, 0);
+    assert_eq!(first.entity.death.successes, 1);
+    assert_eq!(first.entity.death.failures, 2);
+    entity.death.successes = 2;
+    let third = reduce_vitality(
+        &entity,
+        &recovery,
+        &context,
+        &VitalityOperation::SucceedDeathSave,
+    )
+    .unwrap();
+    assert!(third.entity.death.stable);
+    assert_eq!(third.entity.hp, 0);
+    assert_eq!(third.entity.death.successes, 0);
+    assert_eq!(third.entity.death.failures, 0);
+    assert!(matches!(
+        third.followups.as_slice(),
+        [VitalityFollowup::StableRecoveryRoll { .. }]
+    ));
+    assert!(
+        reduce_vitality(
+            &third.entity,
+            &third.recovery,
+            &context,
+            &VitalityOperation::SucceedDeathSave
+        )
+        .is_err()
+    );
+}

@@ -129,6 +129,9 @@ pub enum VitalityOperation {
     },
     /// Controller chooses to fail a saving throw (SRD187); no fictional natural die.
     FailDeathSave,
+    /// A validated source feature changes the failed save to an ordinary success.
+    /// This neither rewrites its die nor grants the natural-20 healing exception.
+    SucceedDeathSave,
     Stabilize,
     StableRecoveryRoll {
         origin: VitalityOrigin,
