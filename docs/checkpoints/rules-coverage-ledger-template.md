@@ -2,6 +2,8 @@
 
 Status: **Gate 2 required artifact**
 
+The current SRD 5.2.1 inventory and implementation record are in the [live Rules Coverage Ledger](../rules/rules-coverage-ledger.md). This document remains the template for future rules-source versions.
+
 The ledger is the mechanical completeness/provenance inventory for the first production rules pack.
 
 It prevents "generic engine support" or a handful of representative mechanics from being mistaken for complete fifth-edition support.
