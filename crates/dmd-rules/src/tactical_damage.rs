@@ -163,6 +163,29 @@ pub fn validate_recovery(
             return Err(invalid("invalid knockout recovery"));
         }
     }
+    if let Some(rest) = &recovery.knockout_rest {
+        validate_origin(&rest.knockout_origin, &rest.started_by)?;
+        validate_origin(&rest.started_by, &context.origin)?;
+        if entity.death.dead
+            || entity.hp == 0
+            || rest.started_at > context.now
+            || recovery.knockout.as_ref().is_some_and(|knockout| {
+                knockout.origin != rest.knockout_origin
+                    || knockout.short_rest_started_at != Some(rest.started_at)
+                    || rest.started_at < knockout.inflicted_at
+            })
+        {
+            return Err(invalid("invalid knockout rest authorization"));
+        }
+    }
+    if recovery
+        .knockout
+        .as_ref()
+        .is_some_and(|knockout| knockout.short_rest_started_at.is_some())
+        && recovery.knockout_rest.is_none()
+    {
+        return Err(invalid("knockout rest lacks its source authorization"));
+    }
     if let Some(stable) = &recovery.stable {
         validate_origin(&stable.origin, &context.origin)?;
         if !entity.death.stable
@@ -448,6 +471,9 @@ fn kill(next: &mut VitalityTransition) {
         ..DeathState::default()
     };
     next.recovery = TacticalRecovery::default();
+    if !next.followups.contains(&VitalityFollowup::InterruptRest) {
+        next.followups.push(VitalityFollowup::InterruptRest);
+    }
     next.outcome.died = true;
 }
 fn heal(next: &mut VitalityTransition, amount: u32) {
@@ -456,7 +482,8 @@ fn heal(next: &mut VitalityTransition, amount: u32) {
     next.outcome.hp_regained = regained;
     if regained > 0 {
         next.entity.death = DeathState::default();
-        next.recovery = TacticalRecovery::default();
+        next.recovery.knockout = None;
+        next.recovery.stable = None;
     }
 }
 
@@ -510,6 +537,7 @@ pub fn reduce_vitality(
                 next.entity.temporary_hp -= next.outcome.temporary_hp_lost;
                 next.followups.push(VitalityFollowup::InterruptRest);
                 next.recovery.stable = None;
+                next.recovery.knockout_rest = None;
                 if let Some(knockout) = &mut next.recovery.knockout {
                     knockout.short_rest_started_at = None;
                 }
@@ -528,6 +556,11 @@ pub fn reduce_vitality(
                             origin: context.origin.clone(),
                             inflicted_at: context.now,
                             short_rest_started_at: Some(context.now),
+                        });
+                        next.recovery.knockout_rest = Some(KnockoutRestAuthorization {
+                            knockout_origin: context.origin.clone(),
+                            started_by: context.origin.clone(),
+                            started_at: context.now,
                         });
                         next.followups.push(VitalityFollowup::DropHeldItems);
                         next.followups
@@ -703,6 +736,7 @@ pub fn reduce_vitality(
             heal(&mut next, 1);
         }
         VitalityOperation::InterruptKnockoutRest => {
+            next.recovery.knockout_rest = None;
             if let Some(knockout) = &mut next.recovery.knockout {
                 knockout.short_rest_started_at = None;
             }
@@ -720,30 +754,40 @@ pub fn reduce_vitality(
                 return Err(prerequisite("knockout short rest already started"));
             }
             knockout.short_rest_started_at = Some(context.now);
+            next.recovery.knockout_rest = Some(KnockoutRestAuthorization {
+                knockout_origin: knockout.origin.clone(),
+                started_by: context.origin.clone(),
+                started_at: context.now,
+            });
             next.followups
                 .push(VitalityFollowup::StartKnockoutShortRest {
                     started_at: context.now,
                 });
         }
         VitalityOperation::CompleteShortRest => {
-            if let Some(knockout) = &recovery.knockout {
-                let start = knockout
-                    .short_rest_started_at
-                    .ok_or_else(|| prerequisite("knockout rest was interrupted"))?;
-                if context
+            if recovery.knockout.is_some() && recovery.knockout_rest.is_none() {
+                return Err(prerequisite("knockout rest was interrupted"));
+            }
+            if let Some(rest) = &recovery.knockout_rest
+                && context
                     .now
                     .0
-                    .checked_sub(start.0)
+                    .checked_sub(rest.started_at.0)
                     .is_none_or(|elapsed| elapsed < 3600)
-                {
-                    return Err(prerequisite(
-                        "knockout rest requires one uninterrupted hour",
-                    ));
-                }
-                next.recovery.knockout = None;
+            {
+                return Err(prerequisite(
+                    "knockout rest requires one uninterrupted hour",
+                ));
             }
+            next.recovery.knockout = None;
+            next.recovery.knockout_rest = None;
         }
         VitalityOperation::CompleteLongRest => {
+            if recovery.knockout_rest.is_some() {
+                return Err(prerequisite(
+                    "the source-authorized rest is Short, not Long",
+                ));
+            }
             next.entity.temporary_hp = 0;
         }
         VitalityOperation::SetMaximumHitPoints { maximum } => {

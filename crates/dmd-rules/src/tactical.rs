@@ -1,5 +1,6 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod attacks;
 mod continuations;
 mod creature_bridge;
 mod failed_save;
@@ -19,6 +20,15 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    Attack {
+        choice: WeaponUseChoice,
+    },
+    ChooseAttackKnockout {
+        choice: KnockoutChoice,
+    },
+    ChooseAttackMastery {
+        choice: WeaponMasteryChoice,
+    },
     Establish {
         encounter: Box<TacticalEncounter>,
     },
@@ -183,6 +193,13 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::Attack { choice } => attacks::begin(&mut next, meta, choice, pack)?,
+        TacticalAction::ChooseAttackKnockout { choice } => {
+            attacks::choose_knockout(&mut next, meta, *choice)?
+        }
+        TacticalAction::ChooseAttackMastery { choice } => {
+            attacks::choose_mastery(&mut next, meta, choice)?
+        }
         TacticalAction::Establish {
             encounter: authored,
         } => {

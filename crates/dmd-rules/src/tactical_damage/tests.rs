@@ -417,6 +417,117 @@ fn eligible_knockout_waits_for_attacker_choice_without_changing_hp() {
 }
 
 #[test]
+fn knockout_rest_authorization_survives_waking_and_ends_only_with_its_rest() {
+    let (knocked, mut context) = knock_out();
+    let original = knocked.recovery.knockout_rest.clone().unwrap();
+    context.origin.command.id = CommandId::new();
+    context.origin.command.expected_event_sequence += 1;
+    for operation in [
+        VitalityOperation::Heal { amount: 1 },
+        VitalityOperation::Medicine {
+            purpose: MedicinePurpose::EndKnockout,
+            total: 10,
+        },
+    ] {
+        context.now = WorldInstant(100);
+        let awake =
+            reduce_vitality(&knocked.entity, &knocked.recovery, &context, &operation).unwrap();
+        assert!(awake.recovery.knockout.is_none());
+        assert_eq!(awake.recovery.knockout_rest, Some(original.clone()));
+        assert!(!awake.followups.contains(&VitalityFollowup::InterruptRest));
+        let unchanged = awake.clone();
+        assert!(
+            reduce_vitality(
+                &awake.entity,
+                &awake.recovery,
+                &context,
+                &VitalityOperation::CompleteShortRest
+            )
+            .is_err()
+        );
+        assert_eq!(awake, unchanged);
+        let interrupted = reduce_vitality(
+            &awake.entity,
+            &awake.recovery,
+            &context,
+            &VitalityOperation::InterruptKnockoutRest,
+        )
+        .unwrap();
+        assert!(interrupted.recovery.knockout_rest.is_none());
+        let damaged = reduce_vitality(
+            &awake.entity,
+            &awake.recovery,
+            &context,
+            &VitalityOperation::Damage {
+                packet: packet(1),
+                knockout: None,
+            },
+        )
+        .unwrap();
+        assert!(damaged.recovery.knockout_rest.is_none());
+        context.now = WorldInstant(3700);
+        let completed = reduce_vitality(
+            &awake.entity,
+            &awake.recovery,
+            &context,
+            &VitalityOperation::CompleteShortRest,
+        )
+        .unwrap();
+        assert!(completed.recovery.knockout_rest.is_none());
+        assert!(
+            reduce_vitality(
+                &awake.entity,
+                &awake.recovery,
+                &context,
+                &VitalityOperation::CompleteLongRest
+            )
+            .is_err()
+        );
+    }
+}
+
+#[test]
+fn restarted_knockout_rest_retains_original_cause_and_actual_new_start_command() {
+    let (knocked, mut context) = knock_out();
+    let cause = knocked.recovery.knockout.as_ref().unwrap().origin.clone();
+    let interrupted = reduce_vitality(
+        &knocked.entity,
+        &knocked.recovery,
+        &context,
+        &VitalityOperation::InterruptKnockoutRest,
+    )
+    .unwrap();
+    context.origin.command.id = CommandId::new();
+    context.origin.command.expected_event_sequence += 1;
+    context.now.0 += 20;
+    let restarted = reduce_vitality(
+        &interrupted.entity,
+        &interrupted.recovery,
+        &context,
+        &VitalityOperation::StartKnockoutRest,
+    )
+    .unwrap();
+    let proof = restarted.recovery.knockout_rest.as_ref().unwrap();
+    assert_eq!(proof.knockout_origin, cause);
+    assert_eq!(proof.started_by, context.origin);
+    assert_eq!(proof.started_at, context.now);
+    for mutation in 0..3 {
+        let mut corrupt = restarted.recovery.clone();
+        let proof = corrupt.knockout_rest.as_mut().unwrap();
+        match mutation {
+            0 => proof.knockout_origin.command.id = CommandId::new(),
+            1 => proof.started_at.0 += 1,
+            2 => proof.started_by.command.expected_event_sequence += 1,
+            _ => unreachable!(),
+        };
+        assert!(
+            validate_recovery(&restarted.entity, &corrupt, &context).is_err(),
+            "mutation {mutation}"
+        );
+    }
+}
+
+#[test]
 fn knockout_is_one_hp_and_ends_only_its_owned_condition_after_full_rest() {
     let (next, mut context) = knock_out();
     assert_eq!(next.entity.hp, 1);
