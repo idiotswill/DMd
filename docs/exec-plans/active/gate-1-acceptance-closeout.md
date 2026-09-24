@@ -1,6 +1,6 @@
 # Gate 1 acceptance closeout
 
-Status: integrated acceptance review complete; documentation/CI/human gates pending
+Status: integrated acceptance review and documentation diff review complete; exact-head CI/human gates pending
 Branch: `gate1/acceptance-closeout`
 Base: `main` @ `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639`
 PR: `#14` (draft)
@@ -37,11 +37,11 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - [x] Direct evidence covers journal integrity, restart/recovery, snapshot migration/replay, projection consistency/rebuild, campaign isolation, lifecycle/export/restore/purge, exact manifest resolution, and runnable-campaign gating.
 - [x] No technical Gate 1 correctness, integrity, replay, isolation, destructive-operation, content-resolution, or architecture-boundary blocker was found.
 - [x] Prior worker PR merge/exact-head evidence was re-verified for projections (#10), manifests (#11), lifecycle (#9), runnable composition (#12), and snapshot/replay (#7).
-- [x] `docs/checkpoints/gate-1.md` has a prepared reconciliation that records implemented slices, integrated evidence, limitations/debt, and explicitly deferred product scope without marking the gate Accepted early.
-- [x] The five stale completed worker plans are prepared for archival without altering their historical content.
-- [ ] Accepted cross-gate technical debt is durably recorded for carry-forward.
-- [ ] Complete PR #14 diff is inspected after documentation/plan archival changes.
-- [ ] Exact-final-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard.
+- [x] `docs/checkpoints/gate-1.md` records implemented slices, integrated evidence, limitations/debt, and explicitly deferred product scope without marking the gate Accepted early.
+- [x] Five stale completed worker plans were archived with zero content changes.
+- [x] Accepted cross-gate technical debt is durably recorded in `docs/tech-debt.md` for carry-forward.
+- [x] Complete PR #14 diff through acceptance-evidence commit `6968d94c515f47ac188f60d84605bb967f5bad61` was inspected; comparison shows only checkpoint/plan/debt edits plus five zero-change renames and no production/test/schema files.
+- [ ] Exact-current-head CI is green: verify-fast, Clippy, workspace tests, Rust 1.88 MSRV, genericity guard, architecture guard. The current head includes this plan-only diff-review reconciliation.
 - [ ] ADR 012 receives explicit human acceptance and its stale status is reconciled.
 - [ ] Gate 1 receives explicit human acceptance of the final evidence.
 - [ ] Final acceptance commit marks Gate 1/ADR 012 Accepted, archives this closeout plan, and is itself validated on an exact green head before merge.
@@ -54,20 +54,22 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 5. **Content manifests:** verified exact identity/version behavior, unrelated systems, dependencies/compatibility, malformed/duplicate/corrupt content, closed schema, unsafe path, and symlink fail-closed behavior.
 6. **Runnable composition:** verified private capability construction, fresh exact catalog resolution on create/open/resume/restore, preflight-before-mutation behavior, raw recovery distinction, and mechanical dependency guard.
 7. **Historical plan/PR reconciliation:** final merged PR records establish the stale worker-plan validation gaps: #10 CI #221, #11 CI #249, #9 CI #259, #12 CI #274; combined post-ADR `main` CI #279 was green.
+8. **Documentation reconciliation:** checkpoint rewritten from stale post-Slice-B state; six deliberate Gate 1 debts recorded; five completed worker plans moved unchanged to `completed/`; complete compare confirms no code/test/schema changes.
 
 ## Decisions
 - This remains an evidence/closeout branch, not a feature branch.
 - Gate 1 acceptance means the durable campaign persistence foundation is production-intended and verified; it does not mean DMd is a complete game.
-- Historical worker plans will be moved unchanged to `completed/`; their stale top-line merge-gate wording is retained as historical state rather than rewritten after the fact.
+- Historical worker plans are moved unchanged to `completed/`; their stale top-line merge-gate wording is retained as historical state rather than rewritten after the fact.
 - ADR 012 is not silently marked Accepted. PR #7 was explicitly human-approval-gated and its merge commit says “Accept Gate 1 Slice B”, but durable architecture status still says Proposed; final closeout will request explicit human confirmation.
 - Exact-head CI is external authoritative evidence. The final human-approval/status commit will create a new head and must be validated before merge.
 
 ## Validation status
-- Base `main` verified unchanged at `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639`.
-- Acceptance branch verified unchanged at `652f4cb1b7d814ac7223d8b6c23c1426efc29289` before this documentation write phase.
+- Base `main` verified unchanged at `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639` before the audit.
+- Acceptance branch verified unchanged at `652f4cb1b7d814ac7223d8b6c23c1426efc29289` before the substantive documentation write phase.
 - Root `AGENTS.md`, product definition, Gate 1 checkpoint, ADRs 011/012, merged PR records, production boundary code, architecture guard, and relevant integration/regression tests were directly re-read.
-- Post-ADR-reconciliation `main` CI #279 was previously and durably verified green on the base commit.
-- Exact-head PR #14 CI is still required after the closeout documentation commit.
+- Post-ADR-reconciliation `main` CI #279 was directly/durably verified green on the base commit.
+- Compare `33bf7b2… → 6968d94…` shows checkpoint + plan + technical-debt edits and five exact renames with zero additions/deletions; no production, test, schema, migration, Cargo, or script file changed.
+- Exact-head PR #14 CI is required on the current head after this plan-only reconciliation.
 
 ## Blockers / risks
 - No technical implementation blocker is known.
@@ -75,4 +77,4 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Governance: the Gate 1 checkpoint is a high-impact acceptance boundary and requires explicit human approval before it is marked Accepted/merged.
 
 ## Next action
-Commit the reconciled checkpoint, accepted-debt ledger entries, and archival moves for the five completed worker plans in one coherent documentation commit. Inspect the complete PR diff and run/verify exact-head CI. If green, stop for explicit human approval of ADR 012 and Gate 1 acceptance before the final status/plan-archival commit and merge.
+Verify GitHub CI on the immutable current PR head. If green, update PR #14 metadata with the exact SHA/run without mutating the branch, then stop for explicit human approval of ADR 012 and Gate 1 acceptance. After approval, make the final status-only/plan-archival commit, validate that exact head, and merge with expected-head protection.
