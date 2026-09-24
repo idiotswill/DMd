@@ -768,3 +768,53 @@ async fn identical_creatures_share_source_initiative_and_host_resolves_mixed_tie
     drop(runtime);
     pool.close().await;
 }
+
+#[tokio::test]
+async fn source_effect_authority_cannot_authenticate_its_own_recovery_anchor() {
+    let (f, _) = fixture();
+    let (pool, runtime) = f.runtime().await;
+    f.initialize(&runtime).await;
+    let mut corrupt = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+    // Make every snapshot and the current image agree. Structural consistency alone
+    // must not allow newly recognized source effects to bypass semantic reconstruction.
+    for json in std::iter::once(&mut corrupt.current_state.state_json).chain(
+        corrupt
+            .snapshots
+            .iter_mut()
+            .map(|snapshot| &mut snapshot.state_json),
+    ) {
+        let mut value: serde_json::Value = serde_json::from_str(json).unwrap();
+        if value["rules"].is_null() {
+            value["rules"] = serde_json::from_str::<serde_json::Value>(
+                &runtime
+                    .open_campaign(f.state.campaign_id())
+                    .await
+                    .unwrap()
+                    .state()
+                    .encode_json()
+                    .unwrap(),
+            )
+            .unwrap()["rules"]
+                .clone();
+        }
+        value["rules"]["tactical_effects"] =
+            serde_json::to_value(TacticalEffects::default()).unwrap();
+        *json = value.to_string();
+    }
+    let target = open_sqlite("sqlite::memory:").await.unwrap();
+    let restore = CampaignRuntime::from_content_root(target.clone(), &f.content);
+    let error = restore
+        .restore_campaign(&corrupt)
+        .await
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("pre-tactical anchor"), "{error}");
+    assert!(
+        dmd_persistence::open_campaign(&target, f.state.campaign_id())
+            .await
+            .is_err()
+    );
+    drop((runtime, restore));
+    pool.close().await;
+    target.close().await;
+}

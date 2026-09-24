@@ -21,6 +21,14 @@ impl CampaignState {
         self.validate_items(expected, &mut violations);
         self.validate_information(expected, &mut violations);
         self.validate_directives(expected, &mut violations);
+        if let Some(effects) = self
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_effects.as_ref())
+            && let Err(message) = effects.validate(self)
+        {
+            violations.push(StateInvariantViolation::InvalidTacticalEffects(message));
+        }
         if let Some(encounter) = &self.encounter
             && let Err(message) = encounter.validate(self)
         {
@@ -561,6 +569,7 @@ impl CampaignState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StateInvariantViolation {
     InvalidEncounterState(String),
+    InvalidTacticalEffects(String),
     InvalidTableState(String),
     CampaignMismatch {
         record_kind: String,

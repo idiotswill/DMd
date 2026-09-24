@@ -16,7 +16,12 @@ pub fn resolve(
         return Err(RulesError::Stale);
     }
     validate_state(state, pack)?;
-    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some()) {
+    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+        || state
+            .rules
+            .as_ref()
+            .is_some_and(|r| r.tactical_effects.is_some())
+    {
         return Err(prerequisite(
             "active tactical state requires the tactical command path",
         ));
@@ -75,6 +80,7 @@ pub fn resolve(
                         table.contract.house_rules.clone()
                     }),
                 effects: vec![],
+                tactical_effects: None,
                 pending: None,
                 rolls: vec![],
                 cancelled_roll_ids: vec![],
@@ -110,6 +116,7 @@ pub fn resolve(
             entities: map,
             house_rules: house_rules.clone(),
             effects: vec![],
+            tactical_effects: None,
             pending: None,
             rolls: vec![],
             cancelled_roll_ids: vec![],

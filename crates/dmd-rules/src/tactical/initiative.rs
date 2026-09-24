@@ -62,9 +62,7 @@ pub(super) fn circumstances(
     let conditions = crate::active_conditions(rules, actor);
     let advantage = conditions.contains(&Condition::Invisible);
     let mut frightened_in_sight = false;
-    for effect in rules
-        .effects
-        .iter()
+    for effect in crate::tactical_effect_adapter::condition_effects(rules)
         .filter(|e| e.target == actor && e.condition == Some(Condition::Frightened))
     {
         if encounter(state)?.participant(effect.source).is_some() {

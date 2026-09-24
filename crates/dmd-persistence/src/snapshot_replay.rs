@@ -66,8 +66,33 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Legacy versions must not acquire future authority merely because their JSON has extra fields.
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
-    if legacy.encounter.is_some() {
+    if legacy.encounter.is_some()
+        || legacy
+            .rules
+            .as_ref()
+            .is_some_and(|rules| rules.tactical_effects.is_some())
+    {
         return Err("legacy state unexpectedly contains tactical encounter data".into());
+    }
+    Ok(())
+}
+
+pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
+    // Probe only the newly recognized nested fields. Established legacy preflights
+    // remain in their original migrations (including the all-chain rollback test).
+    // Typed fields reject duplicates; a Value-only probe could hide a first non-null
+    // value behind a duplicate null field. Unknown old members are deliberately ignored.
+    #[derive(serde::Deserialize)]
+    struct Probe {
+        rules: Option<RulesProbe>,
+    }
+    #[derive(serde::Deserialize)]
+    struct RulesProbe {
+        tactical_effects: Option<serde_json::Value>,
+    }
+    let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
+    if probe.rules.is_some_and(|rules| rules.tactical_effects.is_some()) {
+        return Err("legacy state unexpectedly contains tactical effect authority".into());
     }
     Ok(())
 }

@@ -83,3 +83,23 @@ remain in their isolated worktrees until reviewed integration.
 Exact next action: integrate the reviewed effect lifecycle and persistent equipment
 contracts, with strict save compatibility guards. Complete turn/death/interrupt actions,
 weapons and table/desktop without claiming the gate accepted early.
+
+### Effect integration checkpoint
+
+The reviewed lifecycle source `5942d326` is integrated with optional RulesState attachment,
+group concentration pointers, unified ephemeral conditions (including charmer/grappler/fear
+sources), immediate incapacitation cleanup, and retained effect-origin audit checks.
+Schema 1/2/3 reject nested authority before migration relabeling as well as in the codec;
+the original SQL migrations remain untouched. A typed narrow preflight preserves existing
+late-migration atomicity coverage. New tactical authority must replay from a pre-tactical
+anchor instead of trusting source-effect payloads in an initial snapshot.
+
+Focused integration run: 19 effect tests, 13 schema compatibility tests and six tactical
+application tests passed. This includes restart/replay and forged-anchor rejection before
+writes. Domain-only weapon contract `87b60fd` and inventory contract `4b30722` are present;
+their reducers and current-equipment validation are not yet integrated. Independent review
+of the new root adapter and canonical full verification remain pending.
+
+Next: integrate reviewed weapon/inventory/damage reducers, then turn-boundary scheduling
+with source-derived durable rolls/choices. Retain the original command and typed occurrence
+when deriving deterministic continuation identities; never generate dice or IDs on replay.

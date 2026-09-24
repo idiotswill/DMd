@@ -146,6 +146,7 @@ fn encounter_state() -> CampaignState {
             .collect(),
         house_rules: HouseRules::default(),
         effects: vec![],
+        tactical_effects: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -502,6 +503,7 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "encounter",
         "duplicate",
         "duplicate_encounter",
+        "tactical_effects",
         "lifecycle",
     ] {
         let pool = gate_three_pool().await;
@@ -517,6 +519,10 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "sequence" => value["applied_event_sequence"] = json!(1),
             "encounter" => {
                 value["encounter"] = json!({"unknown_pending_action": "must not be erased"})
+            }
+            "tactical_effects" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_effects"] = json!(dmd_domain::TacticalEffects::default());
             }
             _ => (),
         }
@@ -704,6 +710,27 @@ fn every_legacy_snapshot_path_rejects_future_encounter_authority() {
         assert!(matches!(
             codec.decode_state(version, &legacy.encode_json().expect("JSON")),
             Err(SnapshotCodecError::MigrationFailed { message, .. }) if message.contains("tactical encounter")
+        ));
+    }
+}
+
+#[test]
+fn old_saves_reject_even_empty_well_formed_tactical_effect_authority() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_effects = Some(dmd_domain::TacticalEffects::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        assert!(matches!(
+            codec.decode_state(version, &current.encode_json().unwrap()),
+            Err(SnapshotCodecError::MigrationFailed { .. })
         ));
     }
 }

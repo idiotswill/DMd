@@ -85,6 +85,20 @@ pub(crate) fn validate_rules_export(
     let (&anchor_sequence, anchor) = snapshots
         .first_key_value()
         .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
+    // New tactical authority has always been event-sourced. Unlike pre-journal legacy
+    // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
+    // Keep the original pre-tactical anchor so every source-derived payload is replayed.
+    if anchor
+        .encounter
+        .as_ref()
+        .is_some_and(|encounter| encounter.flow.is_some())
+        || anchor
+            .rules
+            .as_ref()
+            .is_some_and(|rules| rules.tactical_effects.is_some())
+    {
+        return Err("tactical recovery requires its original pre-tactical anchor".into());
+    }
 
     let mut audits = HashMap::new();
     for row in &export.command_audit {
@@ -676,6 +690,28 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let Some(rules) = &state.rules else {
         return origins;
     };
+    if let Some(effects) = &rules.tactical_effects {
+        origins.extend(effects.groups.iter().map(|g| &g.source.command));
+        for effect in &effects.effects {
+            origins.push(&effect.source.command);
+            if let Some(stamp) = &effect.established_at {
+                origins.push(&stamp.command);
+            }
+        }
+        if let Some(stamp) = &effects.last_operation {
+            origins.push(&stamp.command);
+        }
+        for trigger in &effects.pending {
+            origins.push(&trigger.source.command);
+            origins.push(&trigger.origin.command);
+        }
+        origins.extend(
+            effects
+                .trigger_uses
+                .iter()
+                .map(|usage| &usage.origin.command),
+        );
+    }
     origins.extend(
         rules
             .rulings

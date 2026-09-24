@@ -351,6 +351,10 @@ pub struct RulesState {
     pub entities: HashMap<EntityId, MechanicalEntity>,
     pub house_rules: HouseRules,
     pub effects: Vec<ActiveEffect>,
+    /// Grouped, interruptible effects are authoritative independently of encounter lifetime.
+    /// Absent on historical campaigns; projected condition views must never be stored above.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_effects: Option<crate::TacticalEffects>,
     pub pending: Option<PendingRoll>,
     pub rolls: Vec<RecordedRoll>,
     pub cancelled_roll_ids: Vec<crate::RollRequestId>,

@@ -70,6 +70,21 @@ from current visibility can either leak a past secret or erase an already witnes
 Views, map markers, roll reasons, errors, transcript and recap all use the same explicit
 knowledge boundaries. The host may inspect authority; player channels never receive it.
 
+RulesState has optional typed lifecycle authority outside the encounter, so lasting effects
+retain their source and concentration after initiative ends. Shared condition queries
+project its effective conditions without storing a second legacy ActiveEffect copy.
+The concentration pointer binds to a lifecycle group or one legacy effect, never both.
+Losing consciousness/incapacitation removes that source's concentration consequences;
+unrelated conditions and their provenance remain intact.
+
+Schema 4 remains the encounter authority envelope. Optional fields are absent from old
+schema-4 saves. Schema 1/2/3 inputs reject non-null tactical authority through both the
+typed snapshot codec and a database preflight inside the atomic migration transaction.
+Already shipped SQL migrations retain their checksums. New tactical execution always
+retains its original pre-tactical recovery anchor: source-derived effect payloads cannot
+authenticate themselves by appearing in a forged initial snapshot. Semantic replay must
+reconstruct their authorizing source operations.
+
 ## Verification obligations
 
 Test every interrupt stage through serialization and later through SQLite restart and

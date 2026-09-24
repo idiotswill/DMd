@@ -48,7 +48,7 @@ fn mode(advantage: bool, disadvantage: bool) -> RollMode {
 
 /// Charmed forbids attacks and other harmful abilities/effects against the charmer.
 pub fn may_harm(rules: &RulesState, actor: EntityId, target: EntityId) -> bool {
-    !rules.effects.iter().any(|effect| {
+    !crate::tactical_effect_adapter::condition_effects(rules).any(|effect| {
         effect.target == actor
             && effect.source == target
             && effect.condition == Some(Condition::Charmed)
@@ -86,7 +86,7 @@ pub fn attack_conditions(
         || own.contains(&Condition::Restrained)
         || (own.contains(&Condition::Frightened) && perception.fear_source_in_sight)
         || (ranged && perception.hostile_ranged_threat);
-    disadvantage |= rules.effects.iter().any(|effect| {
+    disadvantage |= crate::tactical_effect_adapter::condition_effects(rules).any(|effect| {
         effect.target == actor
             && effect.condition == Some(Condition::Grappled)
             && effect.source != target

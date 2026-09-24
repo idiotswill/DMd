@@ -151,9 +151,7 @@ pub(super) fn ruling_valid(ruling: &Ruling, houses: &HouseRules) -> Result<(), R
     }
 }
 pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
-    let mut result: HashSet<_> = rules
-        .effects
-        .iter()
+    let mut result: HashSet<_> = crate::tactical_effect_adapter::condition_effects(rules)
         .filter(|e| e.target == id)
         .filter_map(|e| e.condition)
         .collect();
@@ -382,6 +380,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     if rules.entities.is_empty() {
         return Err(invalid("empty mechanical state"));
     }
+    crate::tactical_effect_adapter::validate_effect_attachment(state)?;
     for (id, e) in &rules.entities {
         if *id != e.entity_id {
             return Err(invalid("mechanical entity key mismatch"));
@@ -455,10 +454,15 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             return Err(invalid("Savage Attacker references no valid combat turn"));
         }
         if let Some(effect_id) = e.concentration
-            && (!rules
+            && (!(rules
                 .effects
                 .iter()
                 .any(|x| x.id == effect_id && x.concentration_owner == Some(e.entity_id))
+                || rules.tactical_effects.as_ref().is_some_and(|effects| {
+                    effects
+                        .group_for_owner(e.entity_id)
+                        .is_some_and(|g| g.id == effect_id)
+                }))
                 || conditions(rules, e.entity_id).contains(&Condition::Incapacitated)
                 || e.death.dead)
         {
