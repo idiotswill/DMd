@@ -26,6 +26,29 @@ Exit criteria:
 
 ## Open debt
 
+### TD-008 — lifecycle installation acknowledgement can fail after commit
+
+Status: open
+Introduced: inherited Gate 1 lifecycle behavior, identified during Gate 2 application review
+Owner area: persistence recovery and desktop diagnostics; Gate 13
+Severity: medium
+
+Why accepted:
+Raw create/restore commits an atomic installation and then reads it back through the normal
+open path. Gate 2 removes avoidable post-commit content-file reads, but an I/O or connection
+failure in the inherited persistence readback can still prevent acknowledgement of a committed
+installation. This is not a partially written campaign or an invalid-action commit.
+
+Risk:
+A caller may see an error after installation succeeded. Blindly retrying the same identity
+will hit the existing-campaign guard; the diagnostic path must check the durable identity
+before assuming nothing was written.
+
+Exit criteria:
+- expose an explicit committed/unknown-outcome recovery contract for lifecycle operations;
+- verify readback/connection failure injection and identity-based reconciliation in Gate 13;
+- preserve atomic installation and never overwrite an existing campaign on retry.
+
 ### TD-007 — mechanical provenance is retained in whole campaign images
 
 Status: open

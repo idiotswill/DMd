@@ -1,13 +1,18 @@
 use std::path::{Path, PathBuf};
 
+mod rules_restore;
+mod rules_runtime;
+pub use rules_runtime::*;
+
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,
     ResolvedCampaignContent,
 };
 use dmd_persistence::{
-    CampaignExport, CampaignLifecycleSummary, LifecycleError, OpenCampaign, create_campaign,
-    open_campaign, restore_campaign,
+    CampaignExport, CampaignLifecycleSummary, CampaignStateSnapshotCodec, LifecycleError,
+    OpenCampaign, create_campaign, open_campaign, restore_campaign,
 };
+use dmd_rules::RulesPack;
 use sqlx::SqlitePool;
 use thiserror::Error;
 
@@ -58,6 +63,14 @@ pub enum RunnableCampaignError {
     Lifecycle(#[from] LifecycleError),
     #[error("campaign export current state could not be decoded: {0}")]
     ExportStateDecode(String),
+    #[error(transparent)]
+    Rules(#[from] dmd_rules::RulesError),
+    #[error("rules content is unavailable or incompatible: {0}")]
+    RulesContent(String),
+    #[error(transparent)]
+    Journal(Box<dmd_persistence::JournalStoreError>),
+    #[error(transparent)]
+    Replay(Box<dmd_persistence::SnapshotReplayError>),
 }
 
 impl CampaignRuntime {
@@ -79,10 +92,11 @@ impl CampaignRuntime {
         state: &CampaignState,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
         let catalog = self.load_catalog()?;
-        catalog.resolve_campaign(&state.campaign)?;
+        let content = catalog.resolve_campaign(&state.campaign)?;
+        let pack = Self::validate_rules(state, &content)?;
 
         let raw = create_campaign(&self.pool, state).await?;
-        Self::make_runnable(raw, &catalog)
+        Self::make_runnable(raw, &catalog, pack.as_ref())
     }
 
     pub async fn open_campaign(
@@ -91,7 +105,9 @@ impl CampaignRuntime {
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
         let raw = open_campaign(&self.pool, campaign_id).await?;
         let catalog = self.load_catalog()?;
-        Self::make_runnable(raw, &catalog)
+        let content = catalog.resolve_campaign(&raw.state.campaign)?;
+        let pack = Self::validate_rules(&raw.state, &content)?;
+        Self::make_runnable(raw, &catalog, pack.as_ref())
     }
 
     pub async fn resume_campaign(
@@ -105,16 +121,28 @@ impl CampaignRuntime {
         &self,
         export: &CampaignExport,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
-        let preflight_state = CampaignState::decode_json(&export.current_state.state_json)
+        let upgraded = export.upgraded()?;
+        let preflight_state = CampaignState::decode_json(&upgraded.current_state.state_json)
             .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
         let catalog = self.load_catalog()?;
-        catalog.resolve_campaign(&preflight_state.campaign)?;
+        let content = catalog.resolve_campaign(&preflight_state.campaign)?;
+        let mut pack = Self::validate_rules(&preflight_state, &content)?;
+        if Self::has_rules_history(&upgraded, &preflight_state)? {
+            if pack.is_none() {
+                pack = Some(rules_runtime::load_rules_pack(&content)?);
+            }
+            rules_restore::validate_rules_export(
+                &upgraded,
+                pack.as_ref().expect("rules pack loaded"),
+            )
+            .map_err(RunnableCampaignError::RulesContent)?;
+        }
 
         // Content preflight happens before raw restore opens its write transaction. Persistence then
-        // revalidates the full export and restores atomically; resolution is repeated on the exact
-        // state returned from persistence before it can cross the runnable boundary.
-        let raw = restore_campaign(&self.pool, export).await?;
-        Self::make_runnable(raw, &catalog)
+        // revalidates the full export and restores atomically. Check its returned state against
+        // the already validated content snapshot, without a fallible file read after the commit.
+        let raw = restore_campaign(&self.pool, &upgraded).await?;
+        Self::make_runnable(raw, &catalog, pack.as_ref())
     }
 
     fn load_catalog(&self) -> Result<ContentCatalog, CatalogLoadError> {
@@ -124,12 +152,63 @@ impl CampaignRuntime {
     fn make_runnable(
         raw: OpenCampaign,
         catalog: &ContentCatalog,
+        pack: Option<&RulesPack>,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
+        // Catalog resolution is pure: file integrity was checked before the write. A later
+        // operation reloads content normally, so this reuse cannot authorize a future command.
         let content = catalog.resolve_campaign(&raw.state.campaign)?;
+        if let Some(pack) = pack {
+            dmd_rules::validate_state(&raw.state, pack)?;
+        } else if Self::uses_rules(&raw.state) {
+            return Err(RunnableCampaignError::RulesContent(
+                "returned state requires rules that were not validated before the operation".into(),
+            ));
+        }
         Ok(RunnableCampaign {
             lifecycle: raw.lifecycle,
             state: raw.state,
             content,
         })
+    }
+
+    fn validate_rules(
+        state: &CampaignState,
+        content: &ResolvedCampaignContent,
+    ) -> Result<Option<RulesPack>, RunnableCampaignError> {
+        if Self::uses_rules(state) {
+            let pack = rules_runtime::load_rules_pack(content)?;
+            dmd_rules::validate_state(state, &pack)?;
+            return Ok(Some(pack));
+        }
+        Ok(None)
+    }
+
+    fn uses_rules(state: &CampaignState) -> bool {
+        state.rules.is_some() || state.campaign.ruleset.id == "srd-5.2"
+    }
+
+    fn has_rules_history(
+        export: &CampaignExport,
+        current: &CampaignState,
+    ) -> Result<bool, RunnableCampaignError> {
+        let mut found = Self::uses_rules(current)
+            || export
+                .command_audit
+                .iter()
+                .any(|audit| audit.command_kind.starts_with("rules."))
+            || export
+                .event_journal
+                .iter()
+                .any(|event| event.event_kind.starts_with("rules."));
+        let codec = CampaignStateSnapshotCodec::new();
+        for snapshot in &export.snapshots {
+            let version = u32::try_from(snapshot.state_schema_version)
+                .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
+            let state = codec
+                .decode_state(version, &snapshot.state_json)
+                .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
+            found |= Self::uses_rules(&state);
+        }
+        Ok(found)
     }
 }

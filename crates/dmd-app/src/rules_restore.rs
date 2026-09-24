@@ -1,0 +1,715 @@
+//! Pure preflight for rules-enabled portable restores. Raw recovery remains content-agnostic.
+
+use std::collections::{BTreeMap, HashMap, HashSet};
+
+use dmd_domain::{
+    AgentRef, CampaignId, CampaignState, CommandId, CommandIssuer, CommandMeta, PendingPurpose,
+    PlaySessionId, Ruling, RulingRecord,
+};
+use dmd_persistence::{
+    CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow,
+};
+use dmd_rules::{RULES_EVENT_KIND, RULES_EVENT_VERSION, RulesAction, RulesEvent, RulesPack};
+
+/// The caller first upgrades and structurally validates the export and resolves its exact pack.
+/// This adds gameplay-history checks without touching the export or opening a write transaction.
+pub(crate) fn validate_rules_export(
+    export: &CampaignExport,
+    pack: &RulesPack,
+) -> Result<(), String> {
+    let current = CampaignState::decode_json(&export.current_state.state_json)
+        .map_err(|error| format!("current rules state: {error}"))?;
+    dmd_rules::validate_state(&current, pack).map_err(|error| error.to_string())?;
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut snapshots = BTreeMap::new();
+    for row in &export.snapshots {
+        let sequence = nonnegative(row.event_sequence, "snapshot sequence")?;
+        let version = u32::try_from(row.state_schema_version)
+            .map_err(|_| "invalid snapshot schema version".to_owned())?;
+        let state = codec
+            .decode_state(version, &row.state_json)
+            .map_err(|error| format!("rules snapshot {sequence}: {error}"))?;
+        dmd_rules::validate_state(&state, pack)
+            .map_err(|error| format!("rules snapshot {sequence}: {error}"))?;
+        if state.campaign_id() != current.campaign_id()
+            || state.applied_event_sequence != sequence
+            || sequence > current.applied_event_sequence
+            || snapshots.insert(sequence, state).is_some()
+        {
+            return Err("rules snapshot identity/sequence mismatch".into());
+        }
+    }
+    let (&anchor_sequence, anchor) = snapshots
+        .first_key_value()
+        .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
+
+    let mut audits = HashMap::new();
+    for row in &export.command_audit {
+        let meta = audit_meta(row)?;
+        if audits.insert(meta.id, (row, meta)).is_some() {
+            return Err("duplicate rules command audit identity".into());
+        }
+    }
+    let mut events = BTreeMap::new();
+    let mut rules_commands = HashSet::new();
+    for row in &export.event_journal {
+        let sequence = nonnegative(row.sequence, "event sequence")?;
+        if row.event_kind != RULES_EVENT_KIND {
+            if sequence > anchor_sequence || row.event_kind.starts_with("rules.") {
+                return Err(format!(
+                    "unsupported rules recovery event {}@{} at {sequence}",
+                    row.event_kind, row.event_schema_version
+                ));
+            }
+            // A backfilled anchor may follow older generic event families. Their opaque payloads
+            // have passed persistence validation; no unrecorded historical image is invented here.
+            continue;
+        }
+        if row.event_schema_version != i64::from(RULES_EVENT_VERSION) {
+            return Err(format!(
+                "unsupported rules event version {} at {sequence}",
+                row.event_schema_version
+            ));
+        }
+        let event: RulesEvent = serde_json::from_str(&row.payload_json)
+            .map_err(|error| format!("rules event {sequence}: {error}"))?;
+        let (audit, meta) = audits
+            .get(&event.meta.id)
+            .ok_or_else(|| "rules event has no matching command audit".to_owned())?;
+        validate_event(row, &event, audit, meta)?;
+        if snapshots
+            .get(&sequence)
+            .is_some_and(|snapshot| snapshot.clock.now.0 != row.occurred_at_world)
+        {
+            return Err(format!("rules snapshot/event time mismatch at {sequence}"));
+        }
+        if !rules_commands.insert(event.meta.id) || events.insert(sequence, (row, event)).is_some()
+        {
+            return Err("rules command must produce exactly one event at a unique sequence".into());
+        }
+    }
+    for (id, (audit, _)) in &audits {
+        if audit.command_kind.starts_with("rules.")
+            && (audit.command_kind != "rules.action"
+                || audit.command_schema_version != 1
+                || !rules_commands.contains(id))
+        {
+            return Err("rules command audit lacks its supported typed event".into());
+        }
+    }
+
+    let anchor_rulings = anchor
+        .rules
+        .as_ref()
+        .map_or(&[][..], |rules| &rules.rulings);
+    let anchor_origins = command_origins(anchor);
+    for snapshot in snapshots.values() {
+        validate_rulings(snapshot, anchor_rulings, anchor_sequence, &audits)?;
+        validate_origins(snapshot, &anchor_origins, anchor_sequence, &audits)?;
+    }
+    validate_rulings(&current, anchor_rulings, anchor_sequence, &audits)?;
+    validate_origins(&current, &anchor_origins, anchor_sequence, &audits)?;
+
+    let mut replayed = anchor.clone();
+    for (&sequence, (row, event)) in events.range((anchor_sequence.saturating_add(1))..) {
+        let expected = replayed
+            .applied_event_sequence
+            .checked_add(1)
+            .ok_or_else(|| "rules replay sequence overflow".to_owned())?;
+        if sequence != expected {
+            return Err(format!(
+                "rules replay gap: expected {expected}, found {sequence}"
+            ));
+        }
+        let transition = dmd_rules::replay(&replayed, event, pack)
+            .map_err(|error| format!("rules replay at {sequence}: {error}"))?;
+        replayed = transition.next_state;
+        replayed.applied_event_sequence = sequence;
+        if replayed.clock.now.0 != row.occurred_at_world || !replayed.validate().is_empty() {
+            return Err(format!("rules replay time/domain mismatch at {sequence}"));
+        }
+        if let Some(snapshot) = snapshots.get(&sequence)
+            && snapshot != &replayed
+        {
+            return Err(format!(
+                "rules snapshot disagrees with replay at {sequence}"
+            ));
+        }
+    }
+    if replayed != current {
+        return Err("current rules state disagrees with anchor-and-journal replay".into());
+    }
+    Ok(())
+}
+
+fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
+    u64::try_from(value).map_err(|_| format!("invalid {field}"))
+}
+
+fn actor(kind: Option<&str>, id: Option<&str>) -> Result<Option<AgentRef>, String> {
+    match (kind, id) {
+        (None, None) => Ok(None),
+        (Some("entity"), Some(id)) => serde_json::from_value(serde_json::json!(id))
+            .map(AgentRef::Entity)
+            .map(Some)
+            .map_err(|error| format!("invalid entity actor: {error}")),
+        (Some("faction"), Some(id)) => serde_json::from_value(serde_json::json!(id))
+            .map(AgentRef::Faction)
+            .map(Some)
+            .map_err(|error| format!("invalid faction actor: {error}")),
+        _ => Err("invalid actor metadata".into()),
+    }
+}
+
+fn session(id: Option<&str>) -> Result<Option<PlaySessionId>, String> {
+    id.map(|id| {
+        serde_json::from_value(serde_json::json!(id))
+            .map_err(|error| format!("invalid session identity: {error}"))
+    })
+    .transpose()
+}
+
+fn audit_meta(row: &CommandAuditRow) -> Result<CommandMeta, String> {
+    let issuer = match (row.issuer_kind.as_str(), row.issuer_player_id.as_deref()) {
+        ("player", Some(id)) => CommandIssuer::Player(
+            serde_json::from_value(serde_json::json!(id))
+                .map_err(|error| format!("invalid player issuer: {error}"))?,
+        ),
+        ("system", None) => CommandIssuer::System,
+        ("admin", None) => CommandIssuer::Admin,
+        ("import", None) => CommandIssuer::Import,
+        _ => return Err("invalid rules command issuer metadata".into()),
+    };
+    Ok(CommandMeta {
+        id: serde_json::from_value(serde_json::json!(row.id))
+            .map_err(|error| format!("invalid command identity: {error}"))?,
+        campaign_id: serde_json::from_value(serde_json::json!(row.campaign_id))
+            .map_err(|error| format!("invalid command campaign: {error}"))?,
+        session_id: session(row.session_id.as_deref())?,
+        issuer,
+        actor: actor(row.actor_kind.as_deref(), row.actor_id.as_deref())?,
+        expected_event_sequence: nonnegative(row.expected_event_sequence, "command sequence")?,
+    })
+}
+
+fn validate_event(
+    row: &EventJournalRow,
+    event: &RulesEvent,
+    audit: &CommandAuditRow,
+    audit_meta: &CommandMeta,
+) -> Result<(), String> {
+    let campaign_id: CampaignId = serde_json::from_value(serde_json::json!(row.campaign_id))
+        .map_err(|error| format!("invalid event campaign: {error}"))?;
+    let command_id: CommandId = serde_json::from_value(serde_json::json!(row.command_id))
+        .map_err(|error| format!("invalid event command: {error}"))?;
+    let sequence = nonnegative(row.sequence, "event sequence")?;
+    if &event.meta != audit_meta
+        || event.meta.campaign_id != campaign_id
+        || event.meta.id != command_id
+        || event.meta.session_id != session(row.session_id.as_deref())?
+        || event.meta.actor != actor(row.actor_kind.as_deref(), row.actor_id.as_deref())?
+        || row.source != "rule_resolution"
+        || event.meta.expected_event_sequence.checked_add(1) != Some(sequence)
+        || nonnegative(audit.resulting_event_sequence, "audit resulting sequence")? != sequence
+        || audit.accepted != 1
+        || audit.command_kind != "rules.action"
+        || audit.command_schema_version != 1
+    {
+        return Err(format!(
+            "rules event/audit/envelope metadata mismatch at {sequence}"
+        ));
+    }
+    let action: RulesAction = serde_json::from_str(&audit.payload_json)
+        .map_err(|error| format!("invalid rules command action: {error}"))?;
+    if action != event.action {
+        return Err(format!(
+            "rules event action disagrees with audit at {sequence}"
+        ));
+    }
+    Ok(())
+}
+
+fn validate_rulings(
+    state: &CampaignState,
+    anchor_rulings: &[RulingRecord],
+    anchor_sequence: u64,
+    audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
+) -> Result<(), String> {
+    let Some(rules) = &state.rules else {
+        return Ok(());
+    };
+    let mut seen = HashSet::new();
+    for record in &rules.rulings {
+        if !matches!(
+            record.command.issuer,
+            CommandIssuer::System | CommandIssuer::Admin
+        ) || record.command.campaign_id != state.campaign_id()
+            || !seen.insert(record.command.id)
+        {
+            return Err("invalid or duplicate privileged ruling provenance".into());
+        }
+        if let Some((audit, meta)) = audits.get(&record.command.id) {
+            if meta != &record.command
+                || audit.command_kind != "rules.action"
+                || audit.command_schema_version != 1
+                || audit.accepted != 1
+                || nonnegative(audit.resulting_event_sequence, "ruling sequence")?
+                    > state.applied_event_sequence
+            {
+                return Err("ruling provenance disagrees with accepted audit".into());
+            }
+            let action: RulesAction = serde_json::from_str(&audit.payload_json)
+                .map_err(|error| format!("invalid ruling command action: {error}"))?;
+            if action_ruling(&action) != Some(&record.ruling) {
+                return Err("ruling disagrees with its originating typed action".into());
+            }
+        } else if record.command.expected_event_sequence > anchor_sequence
+            || !anchor_rulings.contains(record)
+        {
+            return Err("post-anchor ruling has no authoritative command audit".into());
+        }
+    }
+    Ok(())
+}
+
+fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
+    match action {
+        RulesAction::Initialize { ruling, .. }
+        | RulesAction::RequestTest { ruling, .. }
+        | RulesAction::AuthorizeAttack { ruling, .. }
+        | RulesAction::AuthorizeSpell { ruling, .. }
+        | RulesAction::GrantInspiration { ruling, .. }
+        | RulesAction::CancelRoll { ruling }
+        | RulesAction::ApplyDamage { ruling, .. }
+        | RulesAction::Heal { ruling, .. }
+        | RulesAction::GrantTemporaryHp { ruling, .. }
+        | RulesAction::ApplyEffect { ruling, .. }
+        | RulesAction::RemoveEffect { ruling, .. }
+        | RulesAction::SetExhaustion { ruling, .. }
+        | RulesAction::SetProne { ruling, .. }
+        | RulesAction::RecoverResource { ruling, .. }
+        | RulesAction::StartRest { ruling, .. }
+        | RulesAction::InterruptRest { ruling, .. }
+        | RulesAction::FinishRest { ruling, .. }
+        | RulesAction::AdvanceTime { ruling, .. }
+        | RulesAction::StartCombat { ruling, .. }
+        | RulesAction::EndCombat { ruling }
+        | RulesAction::UseReaction { ruling, .. }
+        | RulesAction::UseBonusAction { ruling, .. } => Some(ruling),
+        RulesAction::Attack { .. }
+        | RulesAction::CastSpell { .. }
+        | RulesAction::SubmitRoll { .. }
+        | RulesAction::SubmitRollWithInspiration { .. }
+        | RulesAction::SpendResource { .. }
+        | RulesAction::SpendHitDie { .. }
+        | RulesAction::EndTurn { .. }
+        | RulesAction::EndConcentration { .. } => None,
+    }
+}
+
+fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
+    let Some(rules) = &state.rules else {
+        return vec![];
+    };
+    let mut origins = rules
+        .rulings
+        .iter()
+        .map(|record| &record.command)
+        .collect::<Vec<_>>();
+    if let Some(permission) = &rules.permission {
+        origins.push(&permission.issued_by);
+    }
+    if let Some(pending) = &rules.pending {
+        origins.push(&pending.issued_by);
+        if let Some(meta) = purpose_permission_origin(&pending.purpose) {
+            origins.push(meta);
+        }
+    }
+    for roll in &rules.rolls {
+        origins.push(&roll.issued_by);
+        origins.push(&roll.accepted_by);
+        if let Some(meta) = purpose_permission_origin(&roll.purpose) {
+            origins.push(meta);
+        }
+    }
+    origins
+}
+
+fn purpose_permission_origin(purpose: &PendingPurpose) -> Option<&CommandMeta> {
+    match purpose {
+        PendingPurpose::Attack { permission, .. } | PendingPurpose::Healing { permission, .. } => {
+            Some(&permission.issued_by)
+        }
+        _ => None,
+    }
+}
+
+fn validate_origins(
+    state: &CampaignState,
+    anchor_origins: &[&CommandMeta],
+    anchor_sequence: u64,
+    audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
+) -> Result<(), String> {
+    for origin in command_origins(state) {
+        if let Some((audit, meta)) = audits.get(&origin.id) {
+            if origin != meta
+                || audit.accepted != 1
+                || audit.command_kind != "rules.action"
+                || audit.command_schema_version != 1
+                || nonnegative(audit.resulting_event_sequence, "rules origin sequence")?
+                    > state.applied_event_sequence
+            {
+                return Err("rules request/result/permission origin disagrees with audit".into());
+            }
+        } else if origin.expected_event_sequence > anchor_sequence
+            || !anchor_origins.contains(&origin)
+        {
+            return Err(
+                "rules request/result/permission origin lacks an authoritative audit".into(),
+            );
+        }
+    }
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use dmd_domain::{
+        Campaign, CampaignStatus, EntityExistence, EntityId, EntityKind, MechanicalEntity,
+        RulingBasis, VersionedRef, WorldClock, WorldEntity, WorldInstant,
+    };
+    use dmd_persistence::{
+        CAMPAIGN_EXPORT_FORMAT_VERSION, CampaignLifecycleSummary, CampaignStorageStatus,
+        CurrentStateRow, SnapshotRow,
+    };
+    use dmd_rules::RulesOutcome;
+
+    fn fixture() -> (CampaignExport, RulesPack, EntityId) {
+        let pack = RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+            .expect("shipped rules definitions");
+        let campaign_id = CampaignId::new();
+        let actor = EntityId::new();
+        let mut initial = CampaignState::empty(
+            Campaign {
+                id: campaign_id,
+                display_name: "Restore preflight".into(),
+                status: CampaignStatus::Active,
+                world_seed: 41,
+                ruleset: VersionedRef {
+                    id: pack.id.clone(),
+                    version: pack.version.clone(),
+                },
+                content_packs: vec![],
+            },
+            WorldClock {
+                now: WorldInstant(0),
+                calendar_id: "seconds".into(),
+            },
+        );
+        initial.entities.insert(
+            actor,
+            WorldEntity {
+                id: actor,
+                campaign_id,
+                display_name: "Independent creature".into(),
+                kind: EntityKind::Creature,
+                existence: EntityExistence::Present,
+                location_id: None,
+            },
+        );
+        let meta = CommandMeta {
+            id: CommandId::new(),
+            campaign_id,
+            session_id: None,
+            issuer: CommandIssuer::System,
+            actor: None,
+            expected_event_sequence: 0,
+        };
+        let action = RulesAction::Initialize {
+            entities: vec![MechanicalEntity::basic(actor)],
+            house_rules: Default::default(),
+            ruling: Ruling {
+                basis: RulingBasis::Srd { page: 7 },
+                reason: "Validated initialization".into(),
+            },
+        };
+        let transition = dmd_rules::resolve(&initial, &meta, &action, &pack).expect("initialize");
+        let mut current = transition.next_state;
+        current.applied_event_sequence = 1;
+        let export = CampaignExport {
+            format_version: CAMPAIGN_EXPORT_FORMAT_VERSION,
+            state_schema_version: current.schema_version,
+            campaign_id: campaign_id.0.to_string(),
+            exported_at_utc: "2026-09-24 00:00:00".into(),
+            lifecycle: CampaignLifecycleSummary {
+                campaign_id: campaign_id.0.to_string(),
+                display_name: "Restore preflight".into(),
+                storage_status: CampaignStorageStatus::Active,
+                state_schema_version: current.schema_version,
+                created_at_utc: "2026-09-24 00:00:00".into(),
+                archived_at_utc: None,
+            },
+            current_state: CurrentStateRow {
+                campaign_id: campaign_id.0.to_string(),
+                schema_version: i64::from(current.schema_version),
+                applied_event_sequence: 1,
+                state_json: current.encode_json().expect("current state"),
+            },
+            play_sessions: vec![],
+            play_session_participants: vec![],
+            command_audit: vec![CommandAuditRow {
+                id: meta.id.0.to_string(),
+                campaign_id: campaign_id.0.to_string(),
+                session_id: None,
+                issuer_kind: "system".into(),
+                issuer_player_id: None,
+                actor_kind: None,
+                actor_id: None,
+                expected_event_sequence: 0,
+                command_kind: "rules.action".into(),
+                command_schema_version: 1,
+                payload_json: serde_json::to_string(&action).expect("action"),
+                accepted: 1,
+                resolution_explanation: "Initialized mechanics".into(),
+                resulting_event_sequence: 1,
+            }],
+            event_journal: vec![EventJournalRow {
+                id: dmd_domain::EventId::new().0.to_string(),
+                campaign_id: campaign_id.0.to_string(),
+                sequence: 1,
+                session_id: None,
+                occurred_at_world: 0,
+                source: "rule_resolution".into(),
+                actor_kind: None,
+                actor_id: None,
+                command_id: meta.id.0.to_string(),
+                event_kind: RULES_EVENT_KIND.into(),
+                event_schema_version: i64::from(RULES_EVENT_VERSION),
+                payload_json: serde_json::to_string(&transition.event).expect("event"),
+            }],
+            event_causes: vec![],
+            snapshots: vec![SnapshotRow {
+                campaign_id: campaign_id.0.to_string(),
+                event_sequence: 0,
+                state_schema_version: i64::from(initial.schema_version),
+                state_json: initial.encode_json().expect("initial state"),
+                created_at_utc: "2026-09-24 00:00:00".into(),
+            }],
+        };
+        (export, pack, actor)
+    }
+
+    #[test]
+    fn valid_export_replays_without_mutating_source() {
+        let (export, pack, _) = fixture();
+        let original = export.clone();
+        validate_rules_export(&export, &pack).expect("valid complete rules history");
+        assert_eq!(export, original);
+    }
+
+    fn append_action(
+        export: &mut CampaignExport,
+        pack: &RulesPack,
+        actor: EntityId,
+        action: RulesAction,
+    ) {
+        let state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        let meta = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: state.campaign_id(),
+            session_id: None,
+            issuer: CommandIssuer::System,
+            actor: Some(AgentRef::Entity(actor)),
+            expected_event_sequence: state.applied_event_sequence,
+        };
+        let transition = dmd_rules::resolve(&state, &meta, &action, pack).unwrap();
+        let mut current = transition.next_state;
+        current.applied_event_sequence += 1;
+        let sequence = i64::try_from(current.applied_event_sequence).unwrap();
+        let mut audit = export.command_audit[0].clone();
+        audit.id = meta.id.0.to_string();
+        audit.actor_kind = Some("entity".into());
+        audit.actor_id = Some(actor.0.to_string());
+        audit.expected_event_sequence = sequence - 1;
+        audit.resulting_event_sequence = sequence;
+        audit.payload_json = serde_json::to_string(&action).unwrap();
+        let mut event = export.event_journal[0].clone();
+        event.id = dmd_domain::EventId::new().0.to_string();
+        event.command_id = audit.id.clone();
+        event.actor_kind.clone_from(&audit.actor_kind);
+        event.actor_id.clone_from(&audit.actor_id);
+        event.sequence = sequence;
+        event.occurred_at_world = current.clock.now.0;
+        event.payload_json = serde_json::to_string(&transition.event).unwrap();
+        export.command_audit.push(audit);
+        export.event_journal.push(event);
+        export.current_state.applied_event_sequence = sequence;
+        export.current_state.state_json = current.encode_json().unwrap();
+    }
+
+    #[test]
+    fn prone_and_bonus_action_history_restores_with_origin_audits() {
+        use dmd_domain::{
+            Circumstances, DieResult, InitiativeEntry, RollRequestId, RollResult, RollSource,
+            RollVisibility, TestKind,
+        };
+
+        let (mut export, pack, actor) = fixture();
+        let ruling = Ruling {
+            basis: RulingBasis::Srd { page: 15 },
+            reason: "Authoritative combat context".into(),
+        };
+        let request_id = RollRequestId::new();
+        for action in [
+            RulesAction::SetProne {
+                target: actor,
+                prone: true,
+                ruling: ruling.clone(),
+            },
+            RulesAction::RequestTest {
+                actor,
+                kind: TestKind::Initiative,
+                dc: 0,
+                visibility: RollVisibility::Public,
+                circumstances: Circumstances::default(),
+                ruling: ruling.clone(),
+                request_id,
+            },
+            RulesAction::SubmitRoll {
+                result: RollResult {
+                    request_id,
+                    source: RollSource::Digital,
+                    dice: vec![DieResult {
+                        sides: 20,
+                        value: 10,
+                    }],
+                },
+            },
+            RulesAction::StartCombat {
+                participants: vec![InitiativeEntry {
+                    actor,
+                    total: 10,
+                    tie_break: 0,
+                }],
+                ruling: ruling.clone(),
+            },
+            RulesAction::UseBonusAction {
+                actor,
+                feature_id: "supported-feature".into(),
+                ruling,
+            },
+        ] {
+            append_action(&mut export, &pack, actor, action);
+            validate_rules_export(&export, &pack).expect("valid combat history");
+        }
+    }
+
+    #[test]
+    fn current_state_and_latest_snapshot_cannot_hide_replay_disagreement() {
+        let (mut export, pack, actor) = fixture();
+        let mut current = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        current
+            .rules
+            .as_mut()
+            .unwrap()
+            .entities
+            .get_mut(&actor)
+            .unwrap()
+            .hp -= 1;
+        export.current_state.state_json = current.encode_json().unwrap();
+        assert!(
+            validate_rules_export(&export, &pack)
+                .unwrap_err()
+                .contains("current rules state disagrees")
+        );
+        export.snapshots.push(SnapshotRow {
+            campaign_id: export.campaign_id.clone(),
+            event_sequence: 1,
+            state_schema_version: i64::from(current.schema_version),
+            state_json: export.current_state.state_json.clone(),
+            created_at_utc: "2026-09-24 00:00:01".into(),
+        });
+        assert!(
+            validate_rules_export(&export, &pack)
+                .unwrap_err()
+                .contains("snapshot disagrees")
+        );
+    }
+
+    #[test]
+    fn all_rules_envelopes_and_audits_are_checked_even_before_the_anchor() {
+        let (mut base, pack, _) = fixture();
+        base.snapshots[0].event_sequence = 1;
+        base.snapshots[0].state_json = base.current_state.state_json.clone();
+        validate_rules_export(&base, &pack).expect("real backfilled current anchor");
+        for corruption in [
+            "issuer",
+            "action",
+            "version",
+            "source",
+            "actor",
+            "audit_kind",
+        ] {
+            let mut export = base.clone();
+            match corruption {
+                "issuer" => export.command_audit[0].issuer_kind = "admin".into(),
+                "action" => {
+                    export.command_audit[0].payload_json =
+                        serde_json::to_string(&RulesAction::EndConcentration {
+                            actor: EntityId::new(),
+                        })
+                        .unwrap()
+                }
+                "version" => export.event_journal[0].event_schema_version += 1,
+                "source" => export.event_journal[0].source = "import".into(),
+                "actor" => {
+                    export.event_journal[0].actor_kind = Some("entity".into());
+                    export.event_journal[0].actor_id = Some(EntityId::new().0.to_string());
+                }
+                "audit_kind" => export.command_audit[0].command_kind = "generic.action".into(),
+                _ => unreachable!(),
+            }
+            assert!(
+                validate_rules_export(&export, &pack).is_err(),
+                "{corruption}"
+            );
+        }
+    }
+
+    #[test]
+    fn unknown_post_anchor_events_and_forged_outcomes_fail_closed() {
+        let (mut export, pack, _) = fixture();
+        export.event_journal[0].event_kind = "generic.changed".into();
+        assert!(
+            validate_rules_export(&export, &pack)
+                .unwrap_err()
+                .contains("unsupported")
+        );
+        export.event_journal[0].event_kind = RULES_EVENT_KIND.into();
+        let mut event: RulesEvent =
+            serde_json::from_str(&export.event_journal[0].payload_json).unwrap();
+        event.outcome = RulesOutcome::Healed { regained: 1 };
+        export.event_journal[0].payload_json = serde_json::to_string(&event).unwrap();
+        assert!(
+            validate_rules_export(&export, &pack)
+                .unwrap_err()
+                .contains("replay")
+        );
+    }
+
+    #[test]
+    fn new_ruling_provenance_must_have_an_accepted_audit() {
+        let (mut export, pack, _) = fixture();
+        let mut current = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        let mut invented = current.rules.as_ref().unwrap().rulings[0].clone();
+        invented.command.id = CommandId::new();
+        current.rules.as_mut().unwrap().rulings.push(invented);
+        export.current_state.state_json = current.encode_json().unwrap();
+        assert!(
+            validate_rules_export(&export, &pack)
+                .unwrap_err()
+                .contains("no authoritative command audit")
+        );
+    }
+}
