@@ -1,11 +1,13 @@
 # Gate 4 — Typed effect lifecycle
 
-Status: **Implementation verified; independent review and production integration pending.**
+Status: **Bounded reducer reviewed and fully verified; Gate 4 integration remains active.**
 
 ## Objective and branch
 
 Implement reusable, deterministic effect identity, concentration grouping, overlap,
-expiry and trigger scheduling on `codex/gate4-effect-lifecycle`, based on `325369b`.
+expiry and trigger scheduling on `codex/gate4-effects-verified`, based on merged
+foundation main `580f487`. The original `codex/gate4-effect-lifecycle` source branch is
+retained. Root is the sole writer of this verification branch.
 The root encounter resolver will authorize source-defined actions, call this reducer,
 persist its state in `RulesState` and pending trigger consequences atomically, and supply application
 and desktop acceptance. This slice alone does not complete a spell or Gate 4.
@@ -84,7 +86,7 @@ identity, groups, expiry, suppression and trigger scheduling in the relevant row
 | Casting transaction | Components/hands, effective slot level, spending phase, one slot per turn, interruptible casting; 105–106 |
 | Ordered effects | Hit/miss/save branches, independent rays, simultaneous damage, actual-damage references, bounded extra dice; Acid Arrow107, Scorching Ray159, Sorcerous Burst163, Vampiric Touch171 |
 | Effect identity | Shared concentration, target-local endings, strongest/latest overlap, hidden invalid-target behavior; 106,179 |
-| Trigger lifecycle | Start/end/damage/movement/attack/casting/interaction triggers, staged saves, owner-relative expiry; Hypnotic Pattern141, Sleep162 |
+| Trigger lifecycle | Start/end/damage/movement/attack/casting/interaction triggers, staged saves, owner-relative expiry; Hypnotic Pattern141, Sleep163 |
 | Interruptions | Shield, Constitution-save Counterspell with unspent slot, fall response, retargeting/redirecting defenses, accepted order; 120,130,150,159,161–162 |
 | Ready | Pay for and concentrate on held spell, perceivable trigger, reaction release after trigger, expiry; 186–187 |
 | Persistent zones | Fixed/attached origin, exclusions, moving-zone contact, once per target per turn; 117–118,164–165 |
@@ -122,8 +124,8 @@ Verified on this slice's final source tree with workspace-local Rust GNU, one bu
 
 Shared-target metadata initially reused another worktree's domain export artifact;
 refreshing this branch's domain `lib.rs` timestamp forced the correct rebuild. No source
-workaround or shared-cache deletion was used. Canonical full verification and actual
-save/restore/desktop acceptance remain root integration work, not claimed by these tests.
+workaround or shared-cache deletion was used. Actual save/restore/desktop acceptance
+remains root integration work, not claimed by these reducer tests.
 
 Parent owns the global build slot. Risk: a structurally
 valid initial snapshot cannot authenticate its own history; application journal/audit
@@ -133,15 +135,37 @@ definition-derived effect/trigger payloads against pinned content before accepti
 restored initial anchor; this module's structural validation cannot prove that a
 well-formed custom damage/DC record was authorized by its named source.
 
-Next: finish independent delta review, commit this coherent slice, and supply its exact
-head to root for integration. Root must add the optional RulesState field/legacy-input
-guards, maintain group concentration pointers, bridge condition queries, validate
-content-derived payloads and persist/resolve the due-ticket continuation. Do not push
-or claim gate acceptance.
+The source reducer is isolated into a six-file PR so it can be reviewed and verified
+without bundling every developing tactical subsystem. Its three implementation/test
+files match the original reviewed source commit `5942d326`; exports and this plan are
+reconciled with merged main.
 
-Root integrated reviewed source `5942d326` into `codex/gate4-encounter-execution` and added
-RulesState attachment, group pointer synchronization, unified condition views, legacy
-codec/database guards and strict pre-tactical recovery-anchor requirements. All 19 effect
-tests (16 original plus three attachment interactions), 13 schema compatibility tests and
-six tactical application tests passed. Root adapter review and full source-authorized
-encounter/effect scheduling remain pending; no public raw lifecycle command was added.
+PR #24 implementation head `99d4548f4ac360b8823d47380820e98d4f358087` passed canonical
+`./scripts/verify` on Windows GNU (format/check, strict workspace Clippy, workspace
+tests and both guards). Independent full-diff review of that exact head found no code
+blockers and requested only the plan-parity correction above. All six jobs passed in
+Linux CI run `36052478357` and Windows desktop run `36052478319`, including declared
+MSRV and the fresh Windows installer build. This documentation-only evidence update
+must also pass canonical verification and current-head CI before expected-head merge;
+the PR retains those final check links.
+
+Next: verify the evidence-only head and merge this bounded reducer slice,
+then refresh the integration branch onto current main. That integration must attach the
+optional RulesState field/legacy-input guards, group concentration pointers, condition
+queries, authenticated replay and due-ticket continuation. All eighteen effect-family
+obligations and packaged encounter acceptance above remain active Gate 4 work.
+
+Integration checkpoint: PR #24 merged as `405112ff7209b2e923c8cbba941900b6c81cb388`.
+Final PR head `1dea01741d7aedcdfefc8a31eefa05d0d2c7edb0` passed full canonical verification
+(265 Rust tests), independent unchanged-code/documentation review, Linux CI340
+`36054128367` and Windows desktop20 `36054128519` (all six jobs). The merged main tree
+exactly equals the verified head tree `4a7d017ca9d79e8d278d58c8996056cb5ea02e28`.
+
+The developing encounter branch retains the optional RulesState attachment, group
+pointer synchronization, unified condition views, legacy codec/database guards and
+strict pre-tactical recovery-anchor requirements. Its 19 effect tests (16 source plus
+three attachment interactions), 13 schema compatibility tests and six tactical app tests
+passed at their earlier integration checkpoints. Those are historical evidence, not
+final combined-head or packaged encounter acceptance. The merge preserves the additional
+attachment tests and current optional-state fixture fields. Continue integrating the
+turn/source-casting pipeline; all eighteen mechanism families remain Gate 4 work.

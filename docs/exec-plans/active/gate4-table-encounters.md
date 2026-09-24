@@ -74,3 +74,10 @@ passed and the two added regressions pass (host-to-player map replacement; uncha
 disadvantage faces and original command after uncertain failure/restart). Production Vite
 build passes. Native packaged encounter acceptance and the full final-head checks remain
 outstanding. No complete-combat claim is made by these initial controls.
+
+Turn-choice checkpoint `1c7dac5`: controller-filtered simultaneous work and voluntary
+save-failure choices are projected without hidden effect source/target IDs, payloads or
+DCs. Existing turn controls stay disabled during retained continuation. Sixteen frontend
+tests pass together, Svelte has zero errors/warnings and the production build passes.
+The two Rust projection regressions are written but await the serialized build slot;
+the new recharge/Legendary Action continuation variants must also be integrated.
