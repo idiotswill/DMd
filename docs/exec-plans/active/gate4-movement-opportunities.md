@@ -408,3 +408,43 @@ landing and fall damage are still outstanding Gate 4 acceptance. They must prese
 unrelated accepted attack/casting/concentration work and both original movement and
 actual causing commands. This checkpoint does not claim complete movement, tactical
 combat, desktop acceptance, or the end of Gate 4.
+
+### Historical falling draft (superseded by later verified checkpoints)
+
+## Falling leaf draft and integration handoff
+
+Shared movement source checkpoint `2e745b2` is handed to the attack author for the
+real opportunity adapters. Reviewed privacy admission fix `cfbdff0` is incorporated
+as `de6929b`. Those adapters, the new shared movement tests and source Charge proof
+have not yet compiled together. Casting receives shared dispatcher/pump ownership
+after that coherent checkpoint; falling is currently confined to new leaf modules
+and additive exports/tests. Its shared queue attachment follows casting's checkpoint.
+
+New source leaf primitives derive the SRD182 falling dice and DC15 liquid landing
+check from actual skills, exhaustion, conditions and source NPC modifiers. No
+zero-die request is fabricated for falls shorter than ten feet. A private outcome
+proof binds the actual landing check to the actor and fall; half damage is an ordered
+adjustment before target defenses. The eventual vitality adapter must use actual
+`damage_taken`, including temporary-HP absorption, when deciding Prone. A dead body
+lands physically without using a living damage reducer to alter corpse HP.
+
+The authored geometry convention is first vertical contact with the battlefield
+floor, movement-blocking solid obstacle, load-bearing terrain or liquid surface.
+Any positive footprint overlap with a narrow ledge counts; a touching edge does not.
+This is an explicit GM map convention, not quoted SRD collision math. Terrain marked
+`supports_top` or `burrowable` supports contact: the latter is already physically
+solid in swept movement, so falling must not tunnel through it. Abstract difficult,
+climbable or obscuring regions alone do not acquire a physical top. At equal heights
+solid contact wins over liquid, with canonical source-ID ordering for ties. A forced
+landing may share a creature's space and creates no invented optional collision
+damage. A creature already in liquid does not suffer another air impact.
+
+Seven new leaf regressions cover small ledges, obstruction, water heights, solid
+ties, involuntary occupancy, burrowable ground without a top flag, actual flight
+loss/Hover/death, integer bounds/dice cap, Reaction capacity and source skills,
+raw-result identity, liquid halving before resistance and temporary HP, and short
+falls without invented dice. These tests and the earlier unverified straight/sight
+regressions are still UNRUN. Rust formatting and diff checks alone are not execution
+evidence. Next: consume the tested real OA adapter; serialize focused movement and
+falling compilation with the parent; then attach falling to the shared queue after
+casting's handoff and verify actual airborne interruption/resumption end to end.
