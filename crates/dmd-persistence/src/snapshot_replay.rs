@@ -29,11 +29,38 @@ impl Default for CampaignStateSnapshotCodec {
     fn default() -> Self {
         let mut migrations: HashMap<u32, Box<dyn SnapshotMigration>> = HashMap::new();
         migrations.insert(1, Box::new(StateSchemaOneToTwo));
+        migrations.insert(2, Box::new(StateSchemaTwoToThree));
         Self { migrations }
     }
 }
 
 struct StateSchemaOneToTwo;
+
+struct StateSchemaTwoToThree;
+
+impl SnapshotMigration for StateSchemaTwoToThree {
+    fn source_version(&self) -> u32 {
+        2
+    }
+
+    fn migrate_json(&self, json: &str) -> Result<String, String> {
+        let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
+        if legacy.schema_version != 2 || !legacy.validate().is_empty() {
+            return Err("schema-2 state is structurally invalid".into());
+        }
+        if legacy.table.is_some() {
+            return Err("schema-2 state unexpectedly contains table data".into());
+        }
+        let mut value: serde_json::Value =
+            serde_json::from_str(json).map_err(|error| error.to_string())?;
+        let object = value
+            .as_object_mut()
+            .ok_or("schema-2 state must be an object")?;
+        object.insert("schema_version".into(), serde_json::json!(3));
+        object.insert("table".into(), serde_json::Value::Null);
+        serde_json::to_string(&value).map_err(|error| error.to_string())
+    }
+}
 
 impl SnapshotMigration for StateSchemaOneToTwo {
     fn source_version(&self) -> u32 {
@@ -78,6 +105,31 @@ impl CampaignStateSnapshotCodec {
     #[must_use]
     pub fn new() -> Self {
         Self::default()
+    }
+
+    /// Keep unknown JSON data intact while applying the same validated migration chain as anchors.
+    pub(crate) fn upgraded_json(
+        &self,
+        stored_version: u32,
+        json: &str,
+    ) -> Result<String, SnapshotCodecError> {
+        self.decode_state(stored_version, json)?;
+        let mut upgraded = json.to_owned();
+        for version in stored_version..CURRENT_STATE_SCHEMA_VERSION {
+            let migration =
+                self.migrations
+                    .get(&version)
+                    .ok_or(SnapshotCodecError::MissingMigration {
+                        from_version: version,
+                    })?;
+            upgraded = migration.migrate_json(&upgraded).map_err(|message| {
+                SnapshotCodecError::MigrationFailed {
+                    from_version: version,
+                    message,
+                }
+            })?;
+        }
+        Ok(upgraded)
     }
 
     pub fn register<M>(&mut self, migration: M) -> Result<(), SnapshotCodecError>

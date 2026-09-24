@@ -40,7 +40,19 @@ The compatibility commit must land with the new domain table type, not alone.
 
 ## Verification and exact next action
 
-Implementation has not started. Root will supply the table-domain commit; begin
-independent observation contracts and transactional session infrastructure now.
-Run focused persistence/domain tests, strict Clippy and required repository checks
-on the integrated branch before handing the slice to root for final integration.
+The root's character/table/session identity contracts are present via cherry-picks
+of `ae60a83`, `8a16c6e` and `983e020`; those are dependencies, not slice-owned work.
+Schema 3, validation hook, migration 0009, chained codec, format-2 observations,
+session side-effect transaction and audience-aware observation append APIs are implemented.
+Campaign/session paginated reads and campaign-scoped stable-ID retry lookup are available.
+ADR 021 records the compatibility and operational/world-state boundary decisions.
+
+Full domain/persistence tests passed after the final session identity/time guards.
+The six focused table persistence tests passed again after the last metadata regression.
+Strict domain/persistence Clippy and formatting checks passed.
+
+The application `CampaignExport` fixture requires its new empty observation field;
+root owns that application adjustment and the composed table/rules replay integration.
+Repository-wide `verify-fast`/`verify` and exact-head review must run on that integrated
+branch before PR completion. Next action: root integrates the owned persistence/domain
+integration and ADR commit, reviews the complete diff, and verifies the combined application.
