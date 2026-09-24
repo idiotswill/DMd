@@ -1,4 +1,5 @@
 pub mod campaign;
+pub mod character_creation;
 pub mod command;
 pub mod content_manifest;
 pub mod dice;
@@ -18,6 +19,7 @@ pub mod validation;
 pub mod world;
 
 pub use campaign::*;
+pub use character_creation::*;
 pub use command::*;
 pub use content_manifest::*;
 pub use dice::*;

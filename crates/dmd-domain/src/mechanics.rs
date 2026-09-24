@@ -140,6 +140,8 @@ pub struct DeathState {
 #[serde(deny_unknown_fields)]
 pub struct MechanicalEntity {
     pub entity_id: EntityId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub character_features: Option<crate::CharacterFeatureState>,
     pub level: u8,
     pub ability_scores: [u8; 6],
     pub armor: ArmorClass,
@@ -359,6 +361,7 @@ impl MechanicalEntity {
     pub fn basic(entity_id: EntityId) -> Self {
         Self {
             entity_id,
+            character_features: None,
             level: 1,
             ability_scores: [10; 6],
             armor: ArmorClass::Armor {
