@@ -1,0 +1,173 @@
+name: Lifecycle integrated fix
+
+on:
+  push:
+    branches: [gate1/campaign-lifecycle]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.88.0
+        with:
+          components: rustfmt
+      - name: Apply integrated fixes and run persistence tests
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          lifecycle = Path('crates/dmd-persistence/src/lifecycle.rs')
+          text = lifecycle.read_text()
+          old = '''        if accepted {
+              if row.resolution_explanation.trim().is_empty() {
+                  return Err(LifecycleError::CorruptExport(
+                      "accepted command resolution explanation must not be empty".into(),
+                  ));
+              }
+              if row.resulting_event_sequence <= row.expected_event_sequence {
+                  return Err(LifecycleError::CorruptExport(
+                      "accepted command must advance the event sequence".into(),
+                  ));
+              }
+          }
+          '''.replace('          ', '')
+          new = '''        if row.resolution_explanation.trim().is_empty() {
+              return Err(LifecycleError::CorruptExport(
+                  "command resolution explanation must not be empty".into(),
+              ));
+          }
+          if accepted {
+              if row.resulting_event_sequence <= row.expected_event_sequence {
+                  return Err(LifecycleError::CorruptExport(
+                      "accepted command must advance the event sequence".into(),
+                  ));
+              }
+          } else if row.resulting_event_sequence != row.expected_event_sequence {
+              return Err(LifecycleError::CorruptExport(
+                  "rejected command must not advance the event sequence".into(),
+              ));
+          }
+          '''.replace('          ', '')
+          if old not in text:
+              raise SystemExit('command audit validation marker not found')
+          lifecycle.write_text(text.replace(old, new, 1))
+
+          integrity = Path('crates/dmd-persistence/tests/campaign_lifecycle_integrity.rs')
+          text = integrity.read_text()
+          old_import = '''    create_campaign, export_campaign, migrate_sqlite, open_campaign, purge_campaign,
+              restore_campaign, save_play_session,
+          '''.replace('          ', '')
+          new_import = '''    create_campaign, export_campaign, load_campaign_projection_summary, migrate_sqlite,
+              open_campaign, purge_campaign, restore_campaign, save_play_session,
+          '''.replace('          ', '')
+          if old_import not in text:
+              raise SystemExit('integrity import marker not found')
+          text = text.replace(old_import, new_import, 1)
+
+          old_projection = '''    let has_projection_table: i64 = sqlx::query_scalar(
+              "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'projection_heads'",
+          )
+          .fetch_one(&pool)
+          .await
+          .expect("schema introspection should work");
+          if has_projection_table == 1 {
+              let projections: i64 =
+                  sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
+                      .bind(&export.campaign_id)
+                      .fetch_one(&pool)
+                      .await
+                      .expect("projection head count should query");
+              assert_eq!(projections, 0, "derivative projections must cascade away");
+          }
+          '''.replace('          ', '')
+          new_projection = '''    let projections: i64 =
+              sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
+                  .bind(&export.campaign_id)
+                  .fetch_one(&pool)
+                  .await
+                  .expect("projection head count should query");
+          assert_eq!(projections, 0, "derivative projections must cascade away");
+          '''.replace('          ', '')
+          if old_projection not in text:
+              raise SystemExit('projection purge marker not found')
+          text = text.replace(old_projection, new_projection, 1)
+
+          old_final = '''    restore_campaign(&pool, &export)
+              .await
+              .expect("original replay-safe export should still restore");
+          '''.replace('          ', '')
+          new_final = '''    let mut with_rejected_audit = export.clone();
+          let mut rejected = with_rejected_audit.command_audit[0].clone();
+          rejected.id = uuid::Uuid::new_v4().to_string();
+          rejected.accepted = 0;
+          rejected.expected_event_sequence = export.current_state.applied_event_sequence;
+          rejected.resulting_event_sequence = export.current_state.applied_event_sequence;
+          rejected.resolution_explanation = "rejected command remains eventless".into();
+          with_rejected_audit.command_audit.push(rejected);
+          restore_campaign(&pool, &with_rejected_audit)
+              .await
+              .expect("replay-safe export with an eventless rejected audit should restore");
+
+          let projection = load_campaign_projection_summary(&pool, campaign_id)
+              .await
+              .expect("restore must rebuild derivative projections from current state");
+          assert_eq!(
+              projection.applied_event_sequence,
+              u64::try_from(export.current_state.applied_event_sequence).unwrap()
+          );
+          '''.replace('          ', '')
+          if old_final not in text:
+              raise SystemExit('valid restore marker not found')
+          integrity.write_text(text.replace(old_final, new_final, 1))
+
+          lifecycle_test = Path('crates/dmd-persistence/tests/campaign_lifecycle.rs')
+          text = lifecycle_test.read_text()
+          old_corruption = '''    sqlx::query("UPDATE campaign_state_current SET state_json = '{}' WHERE campaign_id = ?")
+              .bind(campaign.campaign_id().0.to_string())
+              .execute(&pool)
+              .await
+              .expect("structurally corrupt but valid JSON should be writable for the failure test");
+          assert!(matches!(
+              purge_campaign(
+                  &pool,
+                  campaign.campaign_id(),
+                  &CampaignPurgeAuthorization::admin("corrupt campaign"),
+                  &backup,
+              )
+              .await,
+              Err(LifecycleError::CorruptExport(_))
+          ));
+          '''.replace('          ', '')
+          new_corruption = '''    let mut corrupt_backup = backup.clone();
+          corrupt_backup.current_state.state_json = "{}".into();
+          assert!(matches!(
+              purge_campaign(
+                  &pool,
+                  campaign.campaign_id(),
+                  &CampaignPurgeAuthorization::admin("corrupt backup"),
+                  &corrupt_backup,
+              )
+              .await,
+              Err(LifecycleError::CorruptExport(_))
+          ));
+          '''.replace('          ', '')
+          if old_corruption not in text:
+              raise SystemExit('projection-incompatible corruption fixture marker not found')
+          lifecycle_test.write_text(text.replace(old_corruption, new_corruption, 1))
+          PY
+          cargo fmt --all
+          cargo test --locked -p dmd-persistence --test campaign_lifecycle_integrity
+          cargo test --locked -p dmd-persistence
+      - name: Commit fixes and remove helper
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm .github/workflows/lifecycle-integrated-fix.yml
+          git add crates/dmd-persistence/src/lifecycle.rs crates/dmd-persistence/tests/campaign_lifecycle_integrity.rs crates/dmd-persistence/tests/campaign_lifecycle.rs
+          git commit -m "Integrate lifecycle invariants with query projections"
+          git push origin HEAD:gate1/campaign-lifecycle
