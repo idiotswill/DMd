@@ -228,17 +228,14 @@ async fn purge_requires_admin_and_valid_backup() {
         .await
         .expect("denied purge must leave campaign intact");
 
-    sqlx::query("UPDATE campaign_state_current SET state_json = '{}' WHERE campaign_id = ?")
-        .bind(campaign.campaign_id().0.to_string())
-        .execute(&pool)
-        .await
-        .expect("structurally corrupt but valid JSON should be writable for the failure test");
+    let mut corrupt_backup = backup.clone();
+    corrupt_backup.current_state.state_json = "{}".into();
     assert!(matches!(
         purge_campaign(
             &pool,
             campaign.campaign_id(),
-            &CampaignPurgeAuthorization::admin("corrupt campaign"),
-            &backup,
+            &CampaignPurgeAuthorization::admin("corrupt backup"),
+            &corrupt_backup,
         )
         .await,
         Err(LifecycleError::CorruptExport(_))

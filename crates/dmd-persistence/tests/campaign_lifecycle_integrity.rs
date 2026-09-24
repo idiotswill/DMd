@@ -9,8 +9,8 @@ use dmd_domain::{
 };
 use dmd_persistence::{
     CampaignExport, CampaignPurgeAuthorization, LifecycleError, commit_campaign_transition,
-    create_campaign, export_campaign, migrate_sqlite, open_campaign, purge_campaign,
-    restore_campaign, save_play_session,
+    create_campaign, export_campaign, load_campaign_projection_summary, migrate_sqlite,
+    open_campaign, purge_campaign, restore_campaign, save_play_session,
 };
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
 
@@ -271,21 +271,13 @@ async fn authorized_root_delete_mechanically_removes_complete_campaign_aggregate
             .expect("participant count should query");
     assert_eq!(participants, 0, "session participants must cascade away");
 
-    let has_projection_table: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'projection_heads'",
-    )
-    .fetch_one(&pool)
-    .await
-    .expect("schema introspection should work");
-    if has_projection_table == 1 {
-        let projections: i64 =
-            sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
-                .bind(&export.campaign_id)
-                .fetch_one(&pool)
-                .await
-                .expect("projection head count should query");
-        assert_eq!(projections, 0, "derivative projections must cascade away");
-    }
+    let projections: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM projection_heads WHERE campaign_id = ?")
+            .bind(&export.campaign_id)
+            .fetch_one(&pool)
+            .await
+            .expect("projection head count should query");
+    assert_eq!(projections, 0, "derivative projections must cascade away");
 }
 
 async fn assert_restore_rejected_without_write(
@@ -418,6 +410,10 @@ async fn restore_rejects_malformed_serialized_and_audit_metadata_before_writing(
     blank_event_kind.event_journal[0].event_kind = "  ".into();
     assert_restore_rejected_without_write(&pool, &blank_event_kind, "blank event kind").await;
 
+    let mut zero_event_version = export.clone();
+    zero_event_version.event_journal[0].event_schema_version = 0;
+    assert_restore_rejected_without_write(&pool, &zero_event_version, "zero event schema").await;
+
     let mut overflow_event_version = export.clone();
     overflow_event_version.event_journal[0].event_schema_version = i64::from(u32::MAX) + 1;
     assert_restore_rejected_without_write(&pool, &overflow_event_version, "overflow event schema")
@@ -449,4 +445,11 @@ async fn restore_rejects_malformed_serialized_and_audit_metadata_before_writing(
     restore_campaign(&pool, &export)
         .await
         .expect("original replay-safe export should still restore");
+    let projection = load_campaign_projection_summary(&pool, campaign_id)
+        .await
+        .expect("restore must rebuild derivative projections from authoritative state");
+    assert_eq!(
+        projection.applied_event_sequence,
+        u64::try_from(export.current_state.applied_event_sequence).unwrap()
+    );
 }
