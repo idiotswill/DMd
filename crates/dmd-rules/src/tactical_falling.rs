@@ -99,7 +99,10 @@ pub fn liquid_landing_request(
     let mut fear_visible = false;
     if let Some(encounter) = &state.encounter {
         for effect in crate::tactical_effect_adapter::condition_effects(rules) {
-            if effect.target == actor && effect.condition == Some(Condition::Frightened) {
+            if effect.target == actor
+                && effect.condition == Some(Condition::Frightened)
+                && encounter.participant(effect.source).is_some()
+            {
                 fear_visible |= crate::spatial::perceive(encounter, state, actor, effect.source)
                     .map_err(|e| invalid(e.to_string()))?
                     .sees;

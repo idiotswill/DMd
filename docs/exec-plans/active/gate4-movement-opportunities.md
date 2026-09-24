@@ -448,3 +448,18 @@ regressions are still UNRUN. Rust formatting and diff checks alone are not execu
 evidence. Next: consume the tested real OA adapter; serialize focused movement and
 falling compilation with the parent; then attach falling to the shared queue after
 casting's handoff and verify actual airborne interruption/resumption end to end.
+
+Independent OA adapter review found that its copied crossing origin outlives the live
+`movement.opportunity` field. The common `validate_opportunity` now checks provenance
+and rejects a crossing cause predating its movement command, so both live decisions
+and reconstructed accepted attack admissions receive those checks. Two additional
+malformed-anchor cases cover foreign campaign and pre-movement origin. They remain
+unrun pending the same serialized combined build; the attack adapter retains its
+separate upper bound against the actual accepted reaction command.
+
+Independent falling leaf review of `dd8730c` found one concrete source-query issue:
+Frightened can reference a real source outside the current encounter. Landing checks
+now test encounter participation before asking spatial sight, matching attack
+admission. A regression checks off-map Normal versus visible-source Disadvantage.
+The reviewer found no other blocker in the bounded geometry/source leaf; eight new
+falling tests remain unrun and runtime attachment remains incomplete.

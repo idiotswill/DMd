@@ -395,3 +395,36 @@ fn short_falls_do_not_fabricate_raw_dice_or_damage() {
     };
     assert!(fall_damage_packet(&path, f.a, id, Some(&forged), None).is_err());
 }
+
+#[test]
+fn off_map_frightened_source_does_not_block_or_penalize_liquid_landing() {
+    let mut f = falling_fixture();
+    f.condition(f.a, Condition::Frightened);
+    f.state.encounter = Some(f.encounter.clone());
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .participants
+        .retain(|p| p.entity_id != f.b);
+    let request = liquid_landing_request(
+        &f.state,
+        f.a,
+        LiquidLandingChoice::Athletics,
+        RollRequestId::new(),
+        RollVisibility::Public,
+    )
+    .unwrap();
+    assert_eq!(request.mode, RollMode::Normal);
+    // The same real source participates and is visible again: source disadvantage applies.
+    f.state.encounter = Some(f.encounter.clone());
+    let request = liquid_landing_request(
+        &f.state,
+        f.a,
+        LiquidLandingChoice::Athletics,
+        RollRequestId::new(),
+        RollVisibility::Public,
+    )
+    .unwrap();
+    assert_eq!(request.mode, RollMode::Disadvantage);
+}
