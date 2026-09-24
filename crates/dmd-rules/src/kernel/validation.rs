@@ -426,15 +426,8 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     crate::tactical_effect_adapter::validate_effect_attachment(state)?;
     crate::tactical_vitality_adapter::validate_attachment(state)?;
     if let Some(creatures) = &rules.tactical_creatures {
-        creatures.validate(state).map_err(|error| invalid(&error))?;
-        for profile in &creatures.profiles {
-            let entity = rules
-                .entities
-                .get(&profile.actor)
-                .ok_or_else(|| invalid("source creature has no mechanics"))?;
-            crate::tactical_creatures::validate_creature_profile(state, profile, entity)
-                .map_err(|error| invalid(&error.to_string()))?;
-        }
+        crate::tactical_creatures::validate_tactical_creatures(state, creatures)
+            .map_err(|error| invalid(&error.to_string()))?;
     }
     if let Some(inventory) = &rules.tactical_inventory {
         crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
