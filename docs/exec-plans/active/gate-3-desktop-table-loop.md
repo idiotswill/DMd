@@ -81,6 +81,12 @@ receipt/observation readback and persistence errors retain the original request.
 application regressions inject an observation write failure and an unavailable accepted
 receipt lookup, then recover with the same ID exactly once. All nine table-loop tests and
 strict app Clippy pass; the final full-workspace/CI rerun is still required on this change.
+At `8be04e5`, full local verification passed 206 tests and all four jobs in CI run
+`36015592974` passed. A final language-boundary review then found that one recognized goal
+could hide an unsupported alternative/additional action. The bounded adapter now asks for
+one action when conjunctions or separate clauses remain, including unsupported remainders.
+The runtime regression proves host adjudication cannot spend resources or create a roll
+until the player clarifies. This follow-up requires fresh exact-head verification.
 
 PR #21 starts Windows packaging and typed native IPC; the gameplay interface is being
 integrated on its separate writer branch. Ten gameplay UI tests now pass, including
