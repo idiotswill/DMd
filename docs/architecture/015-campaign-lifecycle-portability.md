@@ -1,6 +1,6 @@
 # ADR 015: Campaign lifecycle and portability
 
-Status: Proposed — pending human review and explicit approval.
+Status: **Accepted — human-approved 2026-09-24 after implementation in PR #9.**
 
 ## Context
 

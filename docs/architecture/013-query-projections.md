@@ -1,6 +1,6 @@
 # ADR 013 — Derivative query projections
 
-Status: proposed for Gate 1
+Status: **Accepted — human-approved 2026-09-24 after implementation in PR #10.**
 
 ## Context
 

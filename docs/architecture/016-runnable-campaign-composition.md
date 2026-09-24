@@ -1,6 +1,6 @@
 # ADR 016 — Runnable campaign application composition
 
-Status: **Proposed for Gate 1 runnable-campaign integration — PR #12**
+Status: **Accepted — human-approved 2026-09-24 as the final architecture merge gate for PR #12.**
 
 ## Context
 
