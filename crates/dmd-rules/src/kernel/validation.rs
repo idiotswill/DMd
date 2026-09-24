@@ -550,10 +550,11 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             let expected = match key.role {
                 TacticalRollRole::DeathSave
                 | TacticalRollRole::EffectSave
+                | TacticalRollRole::Attack
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),
-                TacticalRollRole::EffectDamage => None,
+                TacticalRollRole::EffectDamage | TacticalRollRole::AttackDamage => None,
             };
             if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {
                 return Err(invalid("invalid tactical roll dice"));
@@ -661,7 +662,18 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             state.encounter.as_ref().is_none_or(|e| e.flow.is_none())
                 || timing.order.iter().any(|entry| entry.actor == r.actor)
         });
-        if !rests.insert(r.actor) || r.started_at > state.clock.now || participant_in_combat {
+        let source_knockout_rest = state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+            && r.kind == RestKind::Short
+            && rules
+                .tactical_recovery
+                .as_ref()
+                .and_then(|records| records.get(&r.actor))
+                .and_then(|recovery| recovery.knockout_rest.as_ref())
+                .is_some_and(|proof| proof.started_at == r.started_at);
+        if !rests.insert(r.actor)
+            || r.started_at > state.clock.now
+            || (participant_in_combat && !source_knockout_rest)
+        {
             return Err(invalid("invalid rest state"));
         }
     }

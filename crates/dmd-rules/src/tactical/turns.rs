@@ -191,6 +191,7 @@ fn begin_boundary_from(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        attack: None,
         next_occurrence: first_occurrence,
     }));
     state
@@ -248,9 +249,25 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
+        if resolution(state)?.attack.as_ref().is_some_and(|a| {
+            matches!(
+                a.stage,
+                TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+            )
+        }) {
+            while resolution(state)?.frames.last().is_some_and(Vec::is_empty) {
+                resolution_mut(state)?.frames.pop();
+            }
+        }
         if resolution(state)?.pending.is_some()
             || resolution(state)?.failed_save.is_some()
             || resolution(state)?.legendary_window.is_some()
+            || resolution(state)?.attack.as_ref().is_some_and(|a| {
+                matches!(
+                    a.stage,
+                    TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+                )
+            })
         {
             return Ok(());
         }
@@ -326,6 +343,12 @@ pub(super) fn choose(
     if resolution(state)?.pending.is_some()
         || resolution(state)?.failed_save.is_some()
         || resolution(state)?.legendary_window.is_some()
+        || resolution(state)?.attack.as_ref().is_some_and(|a| {
+            matches!(
+                a.stage,
+                TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+            )
+        })
     {
         return Err(RulesError::Pending);
     }
@@ -479,5 +502,12 @@ pub(super) fn core_action(
         _ => return Err(invalid("not a core turn action")),
     }
     flow_mut(state)?.budget = turn_budget;
+    // These accepted combat actions exceed the Short Rest's permitted downtime
+    // (SRD187). EndTurn and standing alone take their earlier paths unchanged.
+    crate::kernel::interrupt_rest(
+        state.rules.as_mut().ok_or(RulesError::Uninitialized)?,
+        actor,
+        state.clock.now,
+    );
     refresh_dodges(state)
 }

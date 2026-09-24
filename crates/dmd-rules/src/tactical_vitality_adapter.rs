@@ -61,6 +61,12 @@ pub(crate) fn validate_attachment(state: &CampaignState) -> Result<(), RulesErro
             .iter()
             .map(|r| &r.origin)
             .chain(recovery.stable.iter().map(|r| &r.origin))
+            .chain(
+                recovery
+                    .knockout_rest
+                    .iter()
+                    .flat_map(|r| [&r.knockout_origin, &r.started_by]),
+            )
             .collect::<Vec<_>>();
         for origin in &origins {
             validate_equipment_change_origin(state, &origin.command, *actor).map_err(invalid)?;
@@ -74,6 +80,15 @@ pub(crate) fn validate_attachment(state: &CampaignState) -> Result<(), RulesErro
             validate_recovery(entity, recovery, &context).map_err(|e| invalid(e.to_string()))?;
         } else if recovery != &TacticalRecovery::default() {
             return Err(invalid("unrecognized recovery state"));
+        }
+        if let Some(rest) = &recovery.knockout_rest
+            && !rules.rests.iter().any(|r| {
+                r.actor == *actor && r.kind == RestKind::Short && r.started_at == rest.started_at
+            })
+        {
+            return Err(invalid(
+                "knockout rest evidence differs from authoritative rest progress",
+            ));
         }
     }
     Ok(())

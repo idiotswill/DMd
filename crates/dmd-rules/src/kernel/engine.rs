@@ -1705,6 +1705,16 @@ pub(crate) fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: World
         }
     }
     rules.rests.retain(|r| r.actor != actor);
+    if let Some(recovery) = rules
+        .tactical_recovery
+        .as_mut()
+        .and_then(|records| records.get_mut(&actor))
+    {
+        recovery.knockout_rest = None;
+        if let Some(knockout) = &mut recovery.knockout {
+            knockout.short_rest_started_at = None;
+        }
+    }
 }
 fn finish_rest(
     state: &CampaignState,
