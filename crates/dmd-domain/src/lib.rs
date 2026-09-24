@@ -1,5 +1,6 @@
 pub mod campaign;
 pub mod command;
+pub mod content_manifest;
 pub mod event;
 pub mod faction;
 pub mod ids;
@@ -16,6 +17,7 @@ pub mod world;
 
 pub use campaign::*;
 pub use command::*;
+pub use content_manifest::*;
 pub use event::*;
 pub use faction::*;
 pub use ids::*;
