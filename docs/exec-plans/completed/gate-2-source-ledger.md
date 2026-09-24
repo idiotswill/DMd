@@ -1,6 +1,6 @@
 # Execution plan — Gate 2 source and coverage ledger
 
-Status: **Active — source verified 2026-09-24**
+Status: **Slice implementation complete — final head requires CI and review before merge**
 
 ## Objective and branch
 
@@ -8,7 +8,7 @@ Pin the commercially reusable rules source and give every source rules/content f
 
 - Branch: `codex/gate2-source-ledger`, one writer in a separate worktree.
 - Baseline: freshly fetched `main` `414040b33d58701cec81e6d73b791347c6d43ca1`.
-- PR: pending creation after the first coherent source/inventory change.
+- PR: [#16](https://github.com/idiotswill/DMd/pull/16).
 
 ## Scope, non-goals and contract
 
@@ -42,8 +42,17 @@ Relevant contract: product-definition commercial boundary, faithful selected rul
 
 Official source selection verified; source PDF legal/contents pages inspected visually. The ledger covers 55 families and every substantive source chapter, plus 155 glossary entries, 338 top-level spell headings, 258 magic-item headings, 330 creature stat blocks, all 12 classes/subclasses, four backgrounds, nine species and 17 feats. Subentries/variants remain obligations of their parent family; no gameplay completion is claimed.
 
-Local `cargo test --locked -p dmd-domain --test rules_coverage_ledger` passes all four positive/negative integration checks using the isolated portable Windows GNU toolchain and `target-source-ledger` build directory. `cargo fmt --all` completed; exact-head workspace CI and independent final review remain pending. No commercial-source blocker found; non-SRD protected content remains excluded. Future source updates require explicit version/provenance review, not silent replacement of pinned campaign content.
+Validation on implementation head `db2699ca4d6bdb894e6ace2f53e11c7d16555753` and the reviewed name correction:
+
+- [CI #299](https://github.com/idiotswill/DMd/actions/runs/35997910803) passed on that exact implementation head: Rust format/check/Clippy/workspace tests, Rust 1.88 MSRV, genericity guard and architecture guard. Job steps were directly inspected.
+- Local `cargo test --locked -p dmd-domain --test rules_coverage_ledger` passes all four positive/negative integration checks. Source-targeted Clippy with `-D warnings` and formatting pass.
+- Activated Git Bash `./scripts/verify` passes formatting and workspace check, then exposes existing Windows-only unused imports/helpers in untouched `content_manifest_fail_closed.rs`. No lint was weakened. The main Gate 2 implementation slice owns that portability repair. A first invocation before sourcing the toolchain did not find Cargo and is not counted as verification.
+- Local `cargo test --locked --workspace`, `./scripts/check-genericity` and `./scripts/check-boundaries` pass separately using the portable Windows GNU toolchain and isolated `target-source-ledger` build directory.
+- Primary-agent full-diff/catalog review found one extraction spacing error: `GrayOoze` is corrected to `Gray Ooze` against source page 293 and its contents index. All 330 creature entries were independently cross-checked against the complete source stat-block index.
+- Final bookkeeping also adds live-ledger navigation from the template and tests the complete attribution statement/official source URLs. It creates a new head; final exact-head CI/review evidence belongs in PR #16 before expected-head-protected merge, avoiding a self-referential commit hash.
+
+No commercial-source blocker found; non-SRD protected content remains excluded. Future source updates require explicit version/provenance review, not silent replacement of pinned campaign content. This slice establishes accounting and provenance only. The primary Gate 2 plan still owns actual mechanics/application integration, final ledger statuses and gate acceptance.
 
 ## Exact next action
 
-Open the source/ledger PR, verify exact-head workspace CI, request independent full-diff review, resolve findings and archive this slice plan with evidence before merge. The main Gate 2 implementation plan continues separately.
+Verify the final PR #16 head and complete delta, merge only with expected-head protection after green required checks, and refresh `main`. The primary implementation branch then integrates this source identity/notice/ledger with the production kernel and records gameplay evidence. Do not mark Gate 2 accepted from this slice alone.

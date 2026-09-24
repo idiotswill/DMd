@@ -189,17 +189,28 @@ fn pinned_source_has_complete_owned_inventory() {
     assert_eq!(source["ruleset_id"], ledger.ruleset_id);
     assert_eq!(source["version"], ledger.version);
     assert_eq!(source["license"], "CC-BY-4.0");
+    assert_eq!(
+        source["source_url"],
+        "https://media.dndbeyond.com/compendium-images/srd/5.2/SRD_CC_v5.2.1.pdf"
+    );
+    assert_eq!(source["landing_url"], "https://www.dndbeyond.com/srd");
+    assert_eq!(
+        source["license_url"],
+        "https://creativecommons.org/licenses/by/4.0/legalcode"
+    );
+    assert_eq!(source["publisher"], "Wizards of the Coast LLC");
     assert_eq!(source["sha256"], SOURCE_SHA256);
     assert_eq!(source["byte_len"], 6_031_375);
     assert_eq!(source["page_count"], 364);
     assert_eq!(source["published"], "2025-05-01");
     assert_eq!(source["notice"], "NOTICE.md");
-    assert!(
-        NOTICE.contains("This work includes material from the System Reference Document 5.2.1")
-    );
-    assert!(NOTICE.contains("by Wizards of the Coast LLC"));
-    assert!(NOTICE.contains("https://www.dndbeyond.com/srd"));
-    assert!(NOTICE.contains("https://creativecommons.org/licenses/by/4.0/legalcode"));
+    assert!(NOTICE.contains(concat!(
+        "This work includes material from the System Reference Document 5.2.1 ",
+        "(\"SRD 5.2.1\") by Wizards of the Coast LLC, available at ",
+        "https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the ",
+        "Creative Commons Attribution 4.0 International License, available at ",
+        "https://creativecommons.org/licenses/by/4.0/legalcode."
+    )));
     assert!(NOTICE.contains("DMd adaptations:"));
 }
 
