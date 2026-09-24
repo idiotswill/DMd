@@ -109,6 +109,7 @@ fn validate_origin(origin: &VitalityOrigin, current: &VitalityOrigin) -> Result<
         || source.campaign_id != head.campaign_id
         || source.expected_event_sequence > head.expected_event_sequence
         || (source.expected_event_sequence == head.expected_event_sequence && source != head)
+        || (source.id == head.id && (source != head || origin.occurrence > current.occurrence))
     {
         return Err(invalid("recovery origin is not a valid accepted command"));
     }
@@ -380,11 +381,7 @@ pub fn death_save_request(
     context: &VitalityContext,
     id: RollRequestId,
 ) -> Result<RollRequest, VitalityError> {
-    if entity.hp != 0 || entity.death.dead || entity.death.stable || !entity.uses_death_saves {
-        return Err(prerequisite(
-            "death save requires an unstable living creature at zero HP",
-        ));
-    }
+    death_save_eligible(entity)?;
     if context.death_save_bonus.unsigned_abs() > 1000 {
         return Err(invalid("death save bonus outside bounds"));
     }
@@ -396,6 +393,15 @@ pub fn death_save_request(
         context.death_save_mode,
         "death-save",
     )
+}
+
+fn death_save_eligible(entity: &MechanicalEntity) -> Result<(), VitalityError> {
+    if entity.hp != 0 || entity.death.dead || entity.death.stable || !entity.uses_death_saves {
+        return Err(prerequisite(
+            "death save requires an unstable living creature at zero HP",
+        ));
+    }
+    Ok(())
 }
 
 pub fn stable_recovery_request(
@@ -637,6 +643,14 @@ pub fn reduce_vitality(
                 } else if next.entity.death.successes >= 3 {
                     stabilize(&mut next, context);
                 }
+            }
+        }
+        VitalityOperation::FailDeathSave => {
+            death_save_eligible(entity)?;
+            next.outcome.death_save_succeeded = Some(false);
+            next.entity.death.failures += 1;
+            if next.entity.death.failures >= 3 {
+                kill(&mut next);
             }
         }
         VitalityOperation::Stabilize => {

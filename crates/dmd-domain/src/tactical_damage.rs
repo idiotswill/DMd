@@ -127,6 +127,8 @@ pub enum VitalityOperation {
         request_id: RollRequestId,
         result: RollResult,
     },
+    /// Controller chooses to fail a saving throw (SRD187); no fictional natural die.
+    FailDeathSave,
     Stabilize,
     StableRecoveryRoll {
         origin: VitalityOrigin,
