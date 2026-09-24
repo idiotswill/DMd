@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
-mod rules_runtime;
 mod rules_restore;
+mod rules_runtime;
 pub use rules_runtime::*;
 
 use dmd_domain::{
@@ -131,8 +131,11 @@ impl CampaignRuntime {
             if pack.is_none() {
                 pack = Some(rules_runtime::load_rules_pack(&content)?);
             }
-            rules_restore::validate_rules_export(&upgraded, pack.as_ref().expect("rules pack loaded"))
-                .map_err(RunnableCampaignError::RulesContent)?;
+            rules_restore::validate_rules_export(
+                &upgraded,
+                pack.as_ref().expect("rules pack loaded"),
+            )
+            .map_err(RunnableCampaignError::RulesContent)?;
         }
 
         // Content preflight happens before raw restore opens its write transaction. Persistence then
@@ -189,13 +192,20 @@ impl CampaignRuntime {
         current: &CampaignState,
     ) -> Result<bool, RunnableCampaignError> {
         let mut found = Self::uses_rules(current)
-            || export.command_audit.iter().any(|audit| audit.command_kind.starts_with("rules."))
-            || export.event_journal.iter().any(|event| event.event_kind.starts_with("rules."));
+            || export
+                .command_audit
+                .iter()
+                .any(|audit| audit.command_kind.starts_with("rules."))
+            || export
+                .event_journal
+                .iter()
+                .any(|event| event.event_kind.starts_with("rules."));
         let codec = CampaignStateSnapshotCodec::new();
         for snapshot in &export.snapshots {
             let version = u32::try_from(snapshot.state_schema_version)
                 .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
-            let state = codec.decode_state(version, &snapshot.state_json)
+            let state = codec
+                .decode_state(version, &snapshot.state_json)
                 .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
             found |= Self::uses_rules(&state);
         }

@@ -250,11 +250,22 @@ impl Fixture {
                 .unwrap(),
             actual.state()
         );
-        let backup = export_campaign(pool, self.state.campaign_id()).await.unwrap();
+        let backup = export_campaign(pool, self.state.campaign_id())
+            .await
+            .unwrap();
         let target = open_sqlite("sqlite::memory:").await.unwrap();
         let restored = CampaignRuntime::from_content_root(target.clone(), &self.content);
-        assert_eq!(restored.restore_campaign(&backup).await.unwrap().state(), actual.state());
-        assert_eq!(&restored.replay_rules(self.state.campaign_id()).await.unwrap(), actual.state());
+        assert_eq!(
+            restored.restore_campaign(&backup).await.unwrap().state(),
+            actual.state()
+        );
+        assert_eq!(
+            &restored
+                .replay_rules(self.state.campaign_id())
+                .await
+                .unwrap(),
+            actual.state()
+        );
         drop(restored);
         target.close().await;
     }
@@ -407,10 +418,33 @@ async fn initiative_attack_damage_reaction_and_effect_timing_use_the_durable_pat
             ..
         }
     ));
-    let bonus = RulesAction::UseBonusAction { actor: f.actor, feature_id: "validated-feature".into(), ruling: ruling() };
-    f.step(&runtime, CommandIssuer::System, Some(f.actor), bonus.clone()).await;
-    let sequence = runtime.open_campaign(f.state.campaign_id()).await.unwrap().state().applied_event_sequence;
-    assert!(runtime.execute_rules(f.context(CommandIssuer::System, Some(f.actor), sequence), bonus).await.is_err());
+    let bonus = RulesAction::UseBonusAction {
+        actor: f.actor,
+        feature_id: "validated-feature".into(),
+        ruling: ruling(),
+    };
+    f.step(
+        &runtime,
+        CommandIssuer::System,
+        Some(f.actor),
+        bonus.clone(),
+    )
+    .await;
+    let sequence = runtime
+        .open_campaign(f.state.campaign_id())
+        .await
+        .unwrap()
+        .state()
+        .applied_event_sequence;
+    assert!(
+        runtime
+            .execute_rules(
+                f.context(CommandIssuer::System, Some(f.actor), sequence),
+                bonus
+            )
+            .await
+            .is_err()
+    );
     let effect_id = EffectId::new();
     f.step(
         &runtime,
@@ -1137,12 +1171,14 @@ async fn rules_restore_rejects_semantic_corruption_before_installing_any_rows() 
             }
             8..=10 => {
                 // Re-labeling a rules history as a generic campaign must not bypass preflight.
-                let mut state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+                let mut state =
+                    CampaignState::decode_json(&export.current_state.state_json).unwrap();
                 state.rules = None;
                 state.campaign.ruleset.id = "generic-test".into();
                 export.current_state.state_json = state.encode_json().unwrap();
                 let path = f.content.join("manifest.json");
-                let mut manifest: serde_json::Value = serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
+                let mut manifest: serde_json::Value =
+                    serde_json::from_str(&fs::read_to_string(&path).unwrap()).unwrap();
                 manifest["id"] = serde_json::json!("generic-test");
                 fs::write(path, serde_json::to_vec(&manifest).unwrap()).unwrap();
                 if mutation >= 9 {
@@ -1194,11 +1230,16 @@ async fn persistence_session_rejection_preserves_resolved_rules_state_and_histor
     let missing_session = PlaySessionId::new();
     let mut context = f.context(CommandIssuer::Player(f.player), Some(f.actor), 1);
     context.session_id = Some(missing_session);
-    let rejected = runtime.execute_rules(context, RulesAction::SpendResource {
-        actor: f.actor,
-        resource_id: "resolve".into(),
-        amount: 1,
-    }).await;
+    let rejected = runtime
+        .execute_rules(
+            context,
+            RulesAction::SpendResource {
+                actor: f.actor,
+                resource_id: "resolve".into(),
+                amount: 1,
+            },
+        )
+        .await;
     assert!(matches!(rejected,
         Err(RunnableCampaignError::Journal(error))
         if matches!(*error, dmd_persistence::JournalStoreError::MissingSession(id) if id == missing_session)
@@ -1214,13 +1255,18 @@ async fn persistence_session_rejection_preserves_resolved_rules_state_and_histor
 
 #[tokio::test]
 async fn create_and_restore_reuse_preflight_content_after_waiting_for_database() {
-    use std::{future::{Future, poll_fn}, task::Poll};
+    use std::{
+        future::{Future, poll_fn},
+        task::Poll,
+    };
 
     for restore in [false, true] {
         let f = Fixture::new();
         let (source_pool, source_runtime) = f.runtime().await;
         f.initialize(&source_runtime).await;
-        let backup = export_campaign(&source_pool, f.state.campaign_id()).await.unwrap();
+        let backup = export_campaign(&source_pool, f.state.campaign_id())
+            .await
+            .unwrap();
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let runtime = CampaignRuntime::from_content_root(pool.clone(), &f.content);
         let mut connections = Vec::new();
@@ -1239,12 +1285,17 @@ async fn create_and_restore_reuse_preflight_content_after_waiting_for_database()
         poll_fn(|cx| {
             assert!(operation.as_mut().poll(cx).is_pending());
             Poll::Ready(())
-        }).await;
+        })
+        .await;
         fs::write(f.content.join("kernel.json"), b"{}").unwrap();
         drop(connections);
-        let completed = operation.await.expect("validated operation must report its commit");
+        let completed = operation
+            .await
+            .expect("validated operation must report its commit");
         assert_eq!(completed.state().campaign_id(), f.state.campaign_id());
-        let persisted = dmd_persistence::open_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        let persisted = dmd_persistence::open_campaign(&pool, f.state.campaign_id())
+            .await
+            .unwrap();
         assert_eq!(completed.state(), &persisted.state);
         // Reusing preflight bytes for this response grants no capability to a later operation.
         assert!(runtime.open_campaign(f.state.campaign_id()).await.is_err());

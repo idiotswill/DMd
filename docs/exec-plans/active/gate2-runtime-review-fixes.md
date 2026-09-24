@@ -1,7 +1,9 @@
 # Gate 2 runtime review fixes
 
-Status: active on `codex/gate2-runtime-review-fixes`, based on application head
-`b74149f`. The rules-architecture agent is the sole writer for this slice.
+Status: implementation and targeted verification complete on
+`codex/gate2-runtime-review-fixes`, based on application head `b74149f`.
+The rules-architecture agent is the sole writer for this slice; parent integration
+and exact-head repository/CI checks remain part of the Gate 2 application plan.
 
 ## Objective and boundary
 
@@ -24,7 +26,27 @@ authority and exact suspension requirements govern the work.
 
 ## Validation and next action
 
-Implementation pending. Verify the focused application tests and strict Clippy
-against final foundation `50a86fe` using a verification-only local merge if needed.
-Parent cherry-picks only this slice's app/plan commits, owns full exact-head checks,
-and integrates the foundation separately. No product scope or gate boundary changes.
+Implemented both review fixes. Restore inspects all current/history signals before
+choosing generic recovery. Create/restore retain the preflight catalog and rules
+pack, then perform only pure validation after persistence. Open/resume still reload
+and verify content; retaining a pack for one response grants no later capability.
+
+An additional deterministic regression exhausts the target connection pool and
+polls create/restore through preflight to their database wait. It changes kernel
+bytes before releasing the connections: the operation must return its successful
+commit, and the next open must reject the changed content. This avoids sleeps or
+production test hooks. The session regression asserts the concrete persistence
+`MissingSession` error after otherwise-valid rule resolution, then compares current
+state, command audits, events and snapshots unchanged.
+
+Verified against foundation `50a86fe` through a verification-only local merge:
+
+- `cargo test --offline -p dmd-app`: 6 helper, 15 runtime integration and 8 existing
+  runnable-campaign tests passed.
+- `cargo clippy --offline -p dmd-app --all-targets -- -D warnings`: passed.
+- Scoped Rustfmt and `git diff --check`: passed.
+
+Next: parent cherry-picks only the app/plan commits, integrates the foundation
+separately, and completes full repository verification and CI on the final exact
+head. Do not cherry-pick the local verification merge. No full repository check is
+claimed by this slice. No product scope or gate boundary changes.
