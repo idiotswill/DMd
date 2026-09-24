@@ -1,6 +1,6 @@
 # Gate 1 — Campaign persistence foundation
 
-Status: **Acceptance review complete — pending explicit human approval**
+Status: **Accepted — human-approved 2026-09-24; PR #14 merge pending exact-head CI**
 
 Gate 1 turns the Gate 0 state model into a durable, multi-session campaign persistence foundation. This checkpoint does **not** claim that DMd is yet a playable finished game. The finished-product contract in `docs/product-definition.md` remains unchanged.
 
@@ -30,13 +30,13 @@ Verified properties include atomic material transition persistence of resulting 
 
 ### Slice B — snapshot migration and replay
 
-Status: **Implemented, merged, and technically accepted; ADR-status reconciliation pending human confirmation**
+Status: **Accepted and merged**
 
 PR #7 merged as `40a7cf001f51028a98195ada28e2e1f7dbd5af84` after exact reviewed head `2e0b2eb931a7586b573275de20e9077c53676633` passed CI #157. The merge commit records “Accept Gate 1 Slice B”.
 
 Verified properties include immutable sequence-keyed snapshots; sequence-0 snapshots for new campaigns; migration-time backfill at the materialized head that actually exists; explicit state-schema migration registration; replay head derived from append-only journal history; typed replay appliers rather than persistence-side JSON inference; and fail-closed handling for journal gaps, missing/future snapshots, unsupported event versions, campaign/schema mutation, and invalid provenance.
 
-`docs/architecture/012-snapshot-migration-and-replay.md` still says “Proposed for acceptance”. The implementation/merge record is consistent with acceptance, but the durable ADR status will not be changed by this closeout until explicit human approval is recorded.
+ADR 012 is accepted — human-approved 2026-09-24 during final Gate 1 closeout after implementation and merge through PR #7.
 
 ### Slice C — derivative query projections
 
@@ -76,7 +76,7 @@ PR #13 reconciled ADRs 013–016 after explicit human approval and merged as `33
 
 ## Integrated acceptance evidence
 
-The final Gate 1 review re-read the merged production code, accepted/proposed architecture records, and executable regression coverage on `gate1/acceptance-closeout` rather than relying on worker-chat summaries.
+The final Gate 1 review re-read the merged production code, accepted architecture records, and executable regression coverage on `gate1/acceptance-closeout` rather than relying on worker-chat summaries.
 
 ### Journal authority and provenance
 
@@ -134,7 +134,7 @@ Historical exact-head evidence for each merged slice is recorded above. More imp
 - campaign genericity guard;
 - architecture dependency guard.
 
-PR #14 must also pass the same repository CI on its exact final documentation head before it may be considered merge-ready.
+The pre-approval PR #14 head `6534be39dc7dace05ee1a3bc2ee6c9c9c930f3ca` passed exact-head CI #289 across the same repository checks. The final acceptance bookkeeping creates a new head; that exact final head must also pass repository CI before PR #14 is merged.
 
 ## Known limitations and debt carried beyond Gate 1
 
@@ -152,13 +152,12 @@ These are explicit limitations of the accepted persistence foundation, not hidde
 - Raw persistence lifecycle APIs remain public intentionally for recovery/admin tooling; future gameplay-facing surfaces should gain mechanical guards where necessary to prevent accidental raw-state use.
 - Application-level write scheduling/retry policy under real concurrent writers remains future operational work; SQLite contention is a non-committed failure that callers must re-read/re-resolve.
 
-## Acceptance decision pending
+## Acceptance decision
 
 The integrated technical review found **no unresolved Gate 1 correctness, integrity, replay, isolation, destructive-operation, content-resolution, or architecture-boundary blocker** in the merged production-intended path.
 
-Two final governance/merge gates remain:
+On 2026-09-24 the repository owner explicitly approved proceeding after being presented with the final integrated evidence and the two remaining human gates. That approval accepts ADR 012 and this Gate 1 checkpoint.
 
-1. Explicit human confirmation that ADR 012 is accepted, reconciling its stale `Proposed` status with the human-approval-gated PR #7 merge record.
-2. Explicit human approval of this Gate 1 acceptance evidence after PR #14 reaches a green exact final head.
+Gate 1 acceptance means the campaign persistence foundation is production-intended and verified for this checkpoint. It does **not** mean DMd is a finished or generally playable game; all deferred product-definition requirements above remain binding.
 
-Only after those approvals may ADR 012 and this checkpoint be marked `Accepted`, the closeout plan be archived, and PR #14 be merged. Gate 2 must not begin before that formal closeout.
+The only remaining merge gate is mechanical: the exact final PR #14 head created by the acceptance/status/plan-archival bookkeeping must pass repository CI and the final diff must remain limited to the reviewed documentation/archival scope. After that, PR #14 may merge with expected-head protection. Gate 2 must not begin before the accepted checkpoint is merged to `main`.
