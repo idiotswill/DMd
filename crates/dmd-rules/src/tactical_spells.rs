@@ -1,6 +1,7 @@
 //! Internal source-derived casting primitives. The tactical scheduler applies every
 //! returned obligation in the same atomic command as the returned cast record. None
 //! of these operations is a public command or a second resource/turn authority.
+mod creature;
 mod program;
 #[cfg(test)]
 mod tests;
@@ -9,6 +10,7 @@ use crate::{RulesError, ability_modifier, proficiency_bonus, tactical_definition
 use dmd_domain::*;
 use serde::Serialize;
 
+pub use creature::plan_spell_from_feature;
 pub use program::compile_spell_program;
 
 /// This is an internal fact from a source-backed material registry. It intentionally
@@ -211,6 +213,7 @@ pub struct SpellCastContext {
 pub enum SpellCastAdvance {
     Commit,
     Countered,
+    LoseConcentration,
     ReleaseReady,
     ExpireHeld,
 }
@@ -321,6 +324,29 @@ fn source_pin(
     })
 }
 
+fn source_components(
+    defs: &TacticalDefinitions,
+    spell: &TacticalSpellDefinition,
+    pin: &SpellSourcePin,
+) -> SpellComponentsNeeded {
+    let waivers = pin
+        .creature_definition_id
+        .as_ref()
+        .and_then(|id| defs.creature(id))
+        .and_then(|creature| {
+            creature
+                .features
+                .iter()
+                .find(|f| Some(&f.id) == pin.feature_id.as_ref())
+        })
+        .and_then(|feature| feature.spell_component_waivers);
+    SpellComponentsNeeded {
+        verbal: spell.components.verbal && !waivers.is_some_and(|w| w.verbal),
+        somatic: spell.components.somatic && !waivers.is_some_and(|w| w.somatic),
+        material: spell.components.material.is_some() && !waivers.is_some_and(|w| w.material),
+    }
+}
+
 fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
     if meta.id.0.is_nil()
         || meta.campaign_id != state.campaign_id()
@@ -369,10 +395,24 @@ pub fn plan_spell_cast_at(
     choice: &SpellCastChoice,
     occurrence: u16,
 ) -> Result<SpellCastPlan, RulesError> {
+    if !matches!(choice.grant, SpellGrantChoice::Prepared) {
+        return Err(unavailable(
+            "source creatures require an authenticated feature activation",
+        ));
+    }
+    authorize(state, meta, choice.actor)?;
+    plan_spell_cast_authorized(state, meta, choice, occurrence)
+}
+
+fn plan_spell_cast_authorized(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    choice: &SpellCastChoice,
+    occurrence: u16,
+) -> Result<SpellCastPlan, RulesError> {
     if occurrence >= 32_768 {
         return Err(invalid("spell occurrence exceeds resolution capacity"));
     }
-    authorize(state, meta, choice.actor)?;
     let defs = definitions()?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     if rules.pack_id != defs.ruleset_id || rules.pack_version != defs.ruleset_version {
@@ -501,18 +541,18 @@ pub fn plan_spell_cast_at(
         CastingTime::Reaction { .. } => SpellCastingCost::Reaction,
     };
     let ready = matches!(choice.mode, SpellCastMode::Ready { .. });
-    if let SpellCastMode::Ready { trigger } = &choice.mode {
-        if cost != SpellCastingCost::Action
+    if let SpellCastMode::Ready { trigger } = &choice.mode
+        && (cost != SpellCastingCost::Action
             || trigger.trim().is_empty()
             || trigger.len() > 500
-            || trigger.chars().any(char::is_control)
-        {
-            return Err(unavailable(
-                "Ready requires an action spell and a bounded perceivable trigger",
-            ));
-        }
+            || trigger.chars().any(char::is_control))
+    {
+        return Err(unavailable(
+            "Ready requires an action spell and a bounded perceivable trigger",
+        ));
     }
-    if spell.components.material.is_none() && choice.material != SpellMaterialChoice::None {
+    let components = source_components(&defs, spell, &program.source);
+    if !components.material && choice.material != SpellMaterialChoice::None {
         return Err(invalid("unneeded material component selection"));
     }
     let group = (program.concentration || ready)
@@ -525,11 +565,7 @@ pub fn plan_spell_cast_at(
         cost,
         expenditure,
         activation_prepaid: matches!(choice.grant, SpellGrantChoice::CreatureFeature { .. }),
-        components: SpellComponentsNeeded {
-            verbal: spell.components.verbal,
-            somatic: spell.components.somatic,
-            material: spell.components.material.is_some(),
-        },
+        components,
         concentration_group: group,
     })
 }
@@ -540,6 +576,7 @@ fn command_valid(
     meta: &CommandMeta,
 ) -> Result<(), RulesError> {
     if meta.id.0.is_nil()
+        || matches!(meta.issuer, CommandIssuer::Import)
         || meta.campaign_id != plan.origin.campaign_id
         || meta.expected_event_sequence < previous.expected_event_sequence
         || (meta.expected_event_sequence == previous.expected_event_sequence && *meta != *previous)
@@ -557,6 +594,13 @@ fn command_valid(
 /// a forged initial snapshot. Prepared scores/level are proven by replaying the original
 /// plan against its pre-cast state, rather than trusting this retained derived record.
 pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
+    if plan.origin.id.0.is_nil()
+        || plan.origin.campaign_id.0.is_nil()
+        || plan.choice.actor.0.is_nil()
+        || matches!(plan.origin.issuer, CommandIssuer::Import)
+    {
+        return Err(invalid("retained spell authority is invalid"));
+    }
     let defs = definitions()?;
     let spell = defs
         .spell(&plan.choice.spell_id)
@@ -679,12 +723,8 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
         _ => return Err(invalid("retained Ready choice is invalid")),
     };
     if plan.cost != cost
-        || plan.components
-            != (SpellComponentsNeeded {
-                verbal: spell.components.verbal,
-                somatic: spell.components.somatic,
-                material: spell.components.material.is_some(),
-            })
+        || plan.components != source_components(&defs, spell, &program.source)
+        || (!plan.components.material && plan.choice.material != SpellMaterialChoice::None)
         || plan.concentration_group
             != (program.concentration || ready)
                 .then(|| spell_concentration_id(plan.origin.id, plan.choice.actor, plan.occurrence))
@@ -819,6 +859,23 @@ pub fn advance_cast(
         SpellCastAdvance::Countered if cast.phase == SpellCastPhase::Casting => {
             next.phase = SpellCastPhase::Countered;
             end_owned_group(cast, context, &mut obligations);
+        }
+        SpellCastAdvance::LoseConcentration if cast.phase == SpellCastPhase::Casting => {
+            if cast.plan.concentration_group.is_none()
+                || context.concentration == cast.plan.concentration_group
+            {
+                return Err(unavailable("casting has not lost its concentration"));
+            }
+            // SRD105/179: this source loss ends the spell. Counterspell (120) is
+            // the represented explicit exception to ordinary slot expenditure.
+            // Longer casting times have their own exception, outside this reducer.
+            if !cast.plan.activation_prepaid {
+                obligations.push(SpellCastObligation::CommitExpenditure {
+                    actor: cast.plan.choice.actor,
+                    expenditure: cast.plan.expenditure.clone(),
+                });
+            }
+            next.phase = SpellCastPhase::Interrupted;
         }
         SpellCastAdvance::ReleaseReady if cast.phase == SpellCastPhase::Held => {
             if context.current_actor == cast.plan.choice.actor

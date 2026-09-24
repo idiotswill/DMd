@@ -154,6 +154,9 @@ pub enum SpellTargetRule {
         count: u8,
         requires_sight: bool,
     },
+    Rays {
+        count: u8,
+    },
     LightPoints {
         maximum: u8,
         may_combine_as_medium_form: bool,
@@ -171,9 +174,22 @@ pub enum SpellDamageShare {
     SimultaneousSavingThrows,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum SpellCommandWord {
+    Approach,
+    Drop,
+    Flee,
+    Grovel,
+    Halt,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum SpellProgramNode {
+    SaveCommand {
+        ability: Ability,
+        choices: Vec<SpellCommandWord>,
+    },
     Heal {
         dice: Vec<DieSpec>,
         modifier: i16,
@@ -186,6 +202,7 @@ pub enum SpellProgramNode {
     SaveDamage {
         ability: Ability,
         damage: SpellDamageDice,
+        share: SpellDamageShare,
         half_on_success: bool,
         push_on_failure_feet: u16,
     },
@@ -272,6 +289,9 @@ pub enum SpellCastPhase {
     Held,
     Released,
     Countered,
+    /// Concentration was lost during this immediate casting; ordinary resources
+    /// are still spent. This is not Counterspell's explicit slot exception.
+    Interrupted,
     Expired,
 }
 

@@ -1,7 +1,9 @@
 # Gate 4 — Source-derived spell casting and effect programs
 
 Status: **Active — implementation and integration pending.**
-Branch: `codex/gate4-spell-execution`, base `05afd1239d165813837fbdcdf76cfc2980092c1a`.
+Branch: `codex/gate4-spell-execution`, initial base `05afd1239d165813837fbdcdf76cfc2980092c1a`;
+root integration `1c7dac593565001fbd80f1c5e0a63135ad4b83d9` merged and creature source
+`0f388c0fbabcd771775ef1229c18a7d5887433f6` cherry-picked to obtain compiling dependencies.
 Writer: bootstrap_audit; root owns scheduler/application attachment and final verification.
 
 ## Objective and scope
@@ -66,12 +68,37 @@ scheduling and enduring noncombat consequences retain Gate 5 ownership.
   admission must also account for outstanding same-turn slot commitments, so nested
   casting cannot promise a second slot and fail only after the reaction has resolved.
   Shared frame admission owns this reservation; no duplicate resource pool is added.
+- `plan_spell_from_feature` consumes the exact non-Serde plan returned by the source
+  creature reducer. It preserves the invocation even when a trusted NPC consequence
+  originates in another actor's command, checks the pinned profile and feature, and
+  requires root to retain/reproduce the enclosing source activation. A bare retained
+  spell plan cannot authenticate that historical payment. Component waivers are
+  derived per source feature; the Dragon's material waiver does not waive V or S.
+- Independent source-adapter review found that a Multiattack spell substitution must
+  not become a Ready action. The adapter rejects Ready under an Attack, bonus-action
+  or legendary activation. A genuine later-command Dragon routine-step regression
+  preserves both command origins, allows Immediate casting and rejects Ready without
+  mutation. Direct planning now accepts Prepared grants only; source creatures must
+  enter through the feature adapter so this boundary cannot be bypassed.
+- Independent scheduler review found that a just-started concentration spell could
+  lose its group and then have no terminal continuation. `LoseConcentration` now
+  requires actual group loss and ends Casting as Interrupted with ordinary prepared
+  expenditure, no queued program and no deletion of another group's concentration.
+  This applies the general slot rule (p.105) and concentration loss (p.179); Counterspell
+  retains its explicit exception (p.120). The distinct no-slot failure exception for
+  longer casting times is outside this immediate-casting reducer and stays Gate 5.
 
 ## Validation, risks and next action
 
-Typed plans, source compilation, phase transitions and 18 focused regressions are drafted.
-Formatting and whitespace checks pass; compilation/tests have not run yet. Root's global
-serialized build-slot rule applies (environment_audit precedes this slice).
+Typed plans, source compilation, phase transitions and 23 focused regressions are drafted.
+The first focused run could not compile the initial base's unfinished integration fields
+and exhaustive matches. Merging the root checkpoint fixed those dependencies without
+duplicating their implementation. All 18 tests then passed on the source tree preceding
+the five source-feature/interruption follow-up tests. Strict Clippy found one Ready conditional in
+this slice (fixed) and four integration lints in kernel validation/turns (owners notified).
+The follow-up source-feature adapter, exact share marker and five new tests await their
+focused rerun; no final-head or strict-lint pass is claimed yet. Formatting and whitespace
+checks pass. The root's global serialized build-slot rule applies.
 Primary risks are premature resource commits, hidden-target leaks, source context drift,
 duplicate spending on resume, and a plan-only implementation misrepresented as completed
 gameplay. Next: use the handed-off build slot for focused tests and strict lint, fix

@@ -67,6 +67,24 @@ pub fn compile_spell_program(
     let mut nodes = Vec::new();
     for effect in &spell.effects {
         let node = match effect {
+            EffectDescriptor::SaveCommand { ability, choices } => {
+                if save_dc.is_none() {
+                    return Err(invalid("source save spell lacks a DC"));
+                }
+                SpellProgramNode::SaveCommand {
+                    ability: *ability,
+                    choices: choices
+                        .iter()
+                        .map(|choice| match choice {
+                            CommandWord::Approach => SpellCommandWord::Approach,
+                            CommandWord::Drop => SpellCommandWord::Drop,
+                            CommandWord::Flee => SpellCommandWord::Flee,
+                            CommandWord::Grovel => SpellCommandWord::Grovel,
+                            CommandWord::Halt => SpellCommandWord::Halt,
+                        })
+                        .collect(),
+                }
+            }
             EffectDescriptor::Healing {
                 dice,
                 add_spellcasting_modifier,
@@ -121,6 +139,7 @@ pub fn compile_spell_program(
                 SpellProgramNode::SaveDamage {
                     ability: *ability,
                     damage: damage(value, spell.upcast.as_ref(), extra)?,
+                    share: SpellDamageShare::SimultaneousSavingThrows,
                     half_on_success: *half_on_success,
                     push_on_failure_feet: *push_on_failure_feet,
                 }
@@ -252,6 +271,22 @@ pub fn compile_spell_program(
                     )
                     .ok_or_else(|| invalid("dart count overflow"))?,
                 requires_sight: *requires_sight,
+            }
+        }
+        TargetSelection::Rays { count } => {
+            let added = if let Some(Upcast::AdditionalRays { count }) = spell.upcast {
+                count
+            } else {
+                0
+            };
+            SpellTargetRule::Rays {
+                count: count
+                    .checked_add(
+                        added
+                            .checked_mul(extra)
+                            .ok_or_else(|| invalid("ray count overflow"))?,
+                    )
+                    .ok_or_else(|| invalid("ray count overflow"))?,
             }
         }
         TargetSelection::LightPoints {

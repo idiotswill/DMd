@@ -54,6 +54,7 @@ fn fixture(
         tactical_effects: None,
         tactical_inventory: None,
         tactical_recovery: None,
+        tactical_creatures: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -188,7 +189,7 @@ fn save_damage_upcast_and_target_rules_remain_source_bound() {
         SpellTargetRule::Area(SpellAreaShape::Cone { length_feet: 15 })
     );
     assert!(
-        matches!(&plan.program.nodes[0], SpellProgramNode::SaveDamage { ability: Ability::Dexterity, damage, half_on_success: true, .. }
+        matches!(&plan.program.nodes[0], SpellProgramNode::SaveDamage { ability: Ability::Dexterity, damage, share: SpellDamageShare::SimultaneousSavingThrows, half_on_success: true, .. }
         if damage.dice == [DieSpec { count: 6, sides: 6 }])
     );
     let (state, meta, choice) = fixture("magic-missile", SpellResourceChoice::Slot { level: 4 });
@@ -314,6 +315,51 @@ fn concentration_begins_before_interruption_and_countering_ends_only_its_group()
         advance_cast(
             &started.cast,
             &next_meta(&started.cast),
+            &ctx,
+            SpellCastAdvance::Commit
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn lost_casting_concentration_completes_without_counterspell_refund_or_program() {
+    let (state, meta, choice) = fixture("hold-person", SpellResourceChoice::Slot { level: 2 });
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    let begun = begin_cast(&plan, &context(&plan)).unwrap();
+    assert!(
+        advance_cast(
+            &begun.cast,
+            &next_meta(&begun.cast),
+            &context(&plan),
+            SpellCastAdvance::LoseConcentration
+        )
+        .is_err()
+    );
+    let mut ctx = context(&plan);
+    ctx.concentration = Some(EffectId::new());
+    let ended = step(&begun.cast, &ctx, SpellCastAdvance::LoseConcentration);
+    assert_eq!(ended.cast.phase, SpellCastPhase::Interrupted);
+    assert_eq!(
+        ended.obligations,
+        [SpellCastObligation::CommitExpenditure {
+            actor: choice.actor,
+            expenditure: SpellExpenditure::Slot { level: 2 },
+        }]
+    );
+    assert!(
+        advance_cast(
+            &ended.cast,
+            &next_meta(&ended.cast),
+            &ctx,
+            SpellCastAdvance::LoseConcentration
+        )
+        .is_err()
+    );
+    assert!(
+        advance_cast(
+            &ended.cast,
+            &next_meta(&ended.cast),
             &ctx,
             SpellCastAdvance::Commit
         )
@@ -465,13 +511,14 @@ fn forged_program_payment_group_and_provenance_are_rejected_without_mutation() {
     let (state, meta, choice) = fixture("hold-person", SpellResourceChoice::Slot { level: 2 });
     let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
     let original = begin_cast(&plan, &context(&plan)).unwrap().cast;
-    for index in 0..5 {
+    for index in 0..6 {
         let mut forged = original.clone();
         match index {
             0 => forged.plan.program.save_dc = Some(99),
             1 => forged.plan.expenditure = SpellExpenditure::None,
             2 => forged.plan.concentration_group = Some(EffectId::new()),
             3 => forged.plan.program.ability_modifier = i16::MAX,
+            4 => forged.plan.origin.issuer = CommandIssuer::Import,
             _ => forged.plan.program.nodes.clear(),
         }
         assert!(validate_spell_cast(&forged).is_err());
@@ -729,7 +776,8 @@ fn source_creature_numbers_and_prepaid_activation_are_not_fabricated_pc_levels()
         .get_mut(&choice.actor)
         .unwrap()
         .level = 20;
-    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    assert!(plan_spell_cast(&state, &meta, &choice).is_err());
+    let plan = plan_spell_cast_authorized(&state, &meta, &choice, 0).unwrap();
     assert!(plan.activation_prepaid);
     assert_eq!(plan.program.spell_level, 2);
     assert_eq!(plan.program.save_dc, Some(12));
@@ -762,4 +810,293 @@ fn source_creature_numbers_and_prepaid_activation_are_not_fabricated_pc_levels()
             .any(|o| matches!(o, SpellCastObligation::CommitExpenditure { .. }))
     );
     assert!(apply_spell_expenditure(&state, choice.actor, &plan.expenditure).is_err());
+}
+
+#[test]
+fn new_source_programs_keep_independent_rays_closed_commands_and_fireball_amount() {
+    let (state, meta, choice) = fixture("scorching-ray", SpellResourceChoice::Slot { level: 5 });
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    assert_eq!(plan.program.targets, SpellTargetRule::Rays { count: 6 });
+    assert!(
+        matches!(&plan.program.nodes[0], SpellProgramNode::AttackDamage { damage, share: SpellDamageShare::PerAttack, .. }
+        if damage.dice == [DieSpec { count: 2, sides: 6 }])
+    );
+    let (state, meta, choice) = fixture("command", SpellResourceChoice::Slot { level: 2 });
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    assert!(
+        matches!(&plan.program.nodes[0], SpellProgramNode::SaveCommand { ability: Ability::Wisdom, choices }
+        if *choices == [SpellCommandWord::Approach, SpellCommandWord::Drop, SpellCommandWord::Flee, SpellCommandWord::Grovel, SpellCommandWord::Halt])
+    );
+    let (state, meta, choice) = fixture("fireball", SpellResourceChoice::Slot { level: 4 });
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    assert!(
+        matches!(&plan.program.nodes[0], SpellProgramNode::SaveDamage { ability: Ability::Dexterity, damage, half_on_success: true, .. }
+        if damage.dice == [DieSpec { count: 9, sides: 6 }])
+    );
+    assert_eq!(plan.program.source_pages, [131]);
+}
+
+#[test]
+fn source_material_waiver_does_not_waive_verbal_or_somatic_components() {
+    let (mut state, meta, mut choice) = fixture("fireball", SpellResourceChoice::SourceFeature);
+    add_flow(
+        &mut state,
+        &meta,
+        choice.actor,
+        TacticalSource::Creature {
+            definition_id: "adult-red-dragon".into(),
+        },
+    );
+    choice.grant = SpellGrantChoice::CreatureFeature {
+        feature_id: "spellcasting".into(),
+    };
+    let plan = plan_spell_cast_authorized(&state, &meta, &choice, 0).unwrap();
+    assert_eq!(
+        plan.components,
+        SpellComponentsNeeded {
+            verbal: true,
+            somatic: true,
+            material: false
+        }
+    );
+    validate_spell_components(&state, &plan, true, None).unwrap();
+    assert!(validate_spell_components(&state, &plan, false, None).is_err());
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&choice.actor)
+        .unwrap()
+        .spellcasting
+        .as_mut()
+        .unwrap()
+        .free_hand = false;
+    assert!(validate_spell_components(&state, &plan, true, None).is_err());
+    let mut forged = plan.clone();
+    forged.components.somatic = false;
+    assert!(validate_spell_plan(&forged).is_err());
+}
+
+fn source_fixture(
+    definition_id: &str,
+    size: CreatureSize,
+    spell: &str,
+) -> (CampaignState, CommandMeta, EntityId, TacticalCreatures) {
+    use crate::tactical_creatures::*;
+    let (mut state, meta, choice) = fixture(spell, SpellResourceChoice::SourceFeature);
+    state.rules.as_mut().unwrap().entities.remove(&choice.actor);
+    state.entities.get_mut(&choice.actor).unwrap().kind = EntityKind::Creature;
+    let built = build_creature(
+        &state,
+        &meta,
+        choice.actor,
+        &CreatureBuildChoice {
+            definition_id: definition_id.into(),
+            size,
+            additional_languages: vec![],
+            hit_points: CreatureHitPointChoice::Average,
+            controller: CreatureController::Autonomous,
+            in_lair: false,
+        },
+    )
+    .unwrap();
+    let current = TacticalCreatures {
+        profiles: vec![built.profile],
+        runtime: vec![built.runtime],
+        ..TacticalCreatures::default()
+    };
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .insert(choice.actor, built.mechanics);
+    add_flow(
+        &mut state,
+        &meta,
+        choice.actor,
+        TacticalSource::Creature {
+            definition_id: definition_id.into(),
+        },
+    );
+    let observed = apply_creature_schedule(
+        &state,
+        &current,
+        &meta,
+        &CreatureScheduleOperation::ObserveTurn {
+            actor: choice.actor,
+            turn: CreatureTurn {
+                encounter_id: state.encounter.as_ref().unwrap().id,
+                actor: choice.actor,
+                number: 3,
+                boundary: TurnBoundary::Start,
+            },
+            recharge_ids: vec![],
+        },
+    )
+    .unwrap();
+    (state, meta, choice.actor, observed.next)
+}
+
+#[test]
+fn genuine_source_feature_composes_one_use_and_keeps_exact_invocation() {
+    use crate::tactical_creatures::*;
+    let (mut state, meta, actor, current) =
+        source_fixture("cultist-fanatic", CreatureSize::Medium, "hold-person");
+    let activated = apply_creature_schedule(
+        &state,
+        &current,
+        &meta,
+        &CreatureScheduleOperation::BeginFeature {
+            actor,
+            selection: CreatureFeatureSelection {
+                feature_id: "spellcasting".into(),
+                spell_id: Some("hold-person".into()),
+                simple_action: None,
+            },
+            steps: vec![],
+        },
+    )
+    .unwrap();
+    assert_eq!(activated.cost, CreatureActionCost::Action);
+    let feature = activated.feature.unwrap();
+    let use_row = &activated.next.runtime[0].limited_uses[0];
+    assert_eq!(use_row.spent, 1);
+    state.rules.as_mut().unwrap().tactical_creatures = Some(activated.next);
+    let plan = plan_spell_from_feature(
+        &state,
+        &feature,
+        SpellMaterialChoice::None,
+        SpellCastMode::Immediate,
+        7,
+    )
+    .unwrap();
+    assert_eq!(plan.origin, meta);
+    assert_eq!(plan.occurrence, 7);
+    assert_eq!(plan.program.save_dc, Some(12));
+    let begun = begin_cast(&plan, &context(&plan)).unwrap();
+    let committed = step(&begun.cast, &context(&plan), SpellCastAdvance::Commit);
+    assert!(!committed.obligations.iter().any(|o| matches!(
+        o,
+        SpellCastObligation::CommitExpenditure { .. }
+            | SpellCastObligation::SpendCastingCost { .. }
+    )));
+    let mut forged = feature.clone();
+    if let MonsterFeature::Spellcasting { save_dc, .. } = &mut forged.feature.feature {
+        *save_dc = Some(99);
+    }
+    assert!(
+        plan_spell_from_feature(
+            &state,
+            &forged,
+            SpellMaterialChoice::None,
+            SpellCastMode::Immediate,
+            7
+        )
+        .is_err()
+    );
+    forged = feature.clone();
+    forged.enclosing_activation.origin.expected_event_sequence += 1;
+    assert!(
+        plan_spell_from_feature(
+            &state,
+            &forged,
+            SpellMaterialChoice::None,
+            SpellCastMode::Immediate,
+            7
+        )
+        .is_err()
+    );
+}
+
+#[test]
+fn source_multiattack_spell_preserves_step_origin_and_cannot_become_ready() {
+    use crate::tactical_creatures::*;
+    let (mut state, enclosing, actor, current) =
+        source_fixture("adult-red-dragon", CreatureSize::Huge, "scorching-ray");
+    let routine = apply_creature_schedule(
+        &state,
+        &current,
+        &enclosing,
+        &CreatureScheduleOperation::BeginFeature {
+            actor,
+            selection: CreatureFeatureSelection {
+                feature_id: "multiattack".into(),
+                spell_id: None,
+                simple_action: None,
+            },
+            steps: (0..3)
+                .map(|slot| CreatureRoutineStep {
+                    slot,
+                    selection: if slot == 0 {
+                        CreatureFeatureSelection {
+                            feature_id: "spellcasting".into(),
+                            spell_id: Some("scorching-ray".into()),
+                            simple_action: None,
+                        }
+                    } else {
+                        CreatureFeatureSelection {
+                            feature_id: "rend".into(),
+                            spell_id: None,
+                            simple_action: None,
+                        }
+                    },
+                })
+                .collect(),
+        },
+    )
+    .unwrap();
+    assert_eq!(routine.cost, CreatureActionCost::Action);
+    state = apply_spell_casting_cost(&state, actor, SpellCastingCost::Action).unwrap();
+    state.applied_event_sequence += 1;
+    let invocation = CommandMeta {
+        id: CommandId::new(),
+        expected_event_sequence: state.applied_event_sequence,
+        ..enclosing.clone()
+    };
+    let taken = apply_creature_schedule(
+        &state,
+        &routine.next,
+        &invocation,
+        &CreatureScheduleOperation::TakeStep { actor },
+    )
+    .unwrap();
+    assert_eq!(taken.cost, CreatureActionCost::None);
+    let feature = taken.feature.unwrap();
+    assert_eq!(feature.invocation, invocation);
+    assert_eq!(feature.enclosing_activation.origin, enclosing);
+    assert!(feature.enclosing_activation.attack_action);
+    state.rules.as_mut().unwrap().tactical_creatures = Some(taken.next);
+    let before = state.clone();
+    assert!(
+        plan_spell_from_feature(
+            &state,
+            &feature,
+            SpellMaterialChoice::None,
+            SpellCastMode::Ready {
+                trigger: "When the creature approaches".into()
+            },
+            8
+        )
+        .is_err()
+    );
+    let plan = plan_spell_from_feature(
+        &state,
+        &feature,
+        SpellMaterialChoice::None,
+        SpellCastMode::Immediate,
+        8,
+    )
+    .unwrap();
+    assert_eq!(plan.origin, invocation);
+    assert_eq!(plan.program.targets, SpellTargetRule::Rays { count: 3 });
+    let begun = begin_cast(&plan, &context(&plan)).unwrap();
+    assert!(
+        !begun
+            .obligations
+            .iter()
+            .any(|o| matches!(o, SpellCastObligation::SpendCastingCost { .. }))
+    );
+    assert_eq!(state, before);
 }
