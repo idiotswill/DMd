@@ -781,6 +781,57 @@ fn third_success_stabilizes_resets_both_counts_and_requests_raw_d4() {
 }
 
 #[test]
+fn voluntary_death_save_failure_adds_one_failure_without_inventing_a_die() {
+    let (mut entity, recovery, context) = fixture();
+    assert!(
+        reduce_vitality(
+            &entity,
+            &recovery,
+            &context,
+            &VitalityOperation::FailDeathSave
+        )
+        .is_err()
+    );
+    zero(&mut entity);
+    entity.death.successes = 2;
+    let failed = reduce_vitality(
+        &entity,
+        &recovery,
+        &context,
+        &VitalityOperation::FailDeathSave,
+    )
+    .unwrap();
+    assert_eq!(
+        (failed.entity.death.successes, failed.entity.death.failures),
+        (2, 1)
+    );
+    assert_eq!(failed.outcome.death_save_succeeded, Some(false));
+    assert!(failed.followups.is_empty());
+    entity.death.failures = 2;
+    let dead = reduce_vitality(
+        &entity,
+        &recovery,
+        &context,
+        &VitalityOperation::FailDeathSave,
+    )
+    .unwrap();
+    assert!(dead.entity.death.dead);
+    entity.death = DeathState {
+        stable: true,
+        ..DeathState::default()
+    };
+    assert!(
+        reduce_vitality(
+            &entity,
+            &recovery,
+            &context,
+            &VitalityOperation::FailDeathSave
+        )
+        .is_err()
+    );
+}
+
+#[test]
 fn stable_recovery_waits_for_raw_d4_and_elapsed_time_and_does_not_reuse_invalidated_timer() {
     let (mut entity, recovery, mut context) = fixture();
     zero(&mut entity);
@@ -1053,6 +1104,21 @@ fn forged_or_future_recovery_origin_is_rejected_without_replacing_the_record() {
     let mut future = original.clone();
     future.knockout.as_mut().unwrap().short_rest_started_at = Some(WorldInstant(101));
     assert!(validate_recovery(&next.entity, &future, &context).is_err());
+    let mut future_occurrence = original.clone();
+    future_occurrence
+        .knockout
+        .as_mut()
+        .unwrap()
+        .origin
+        .occurrence = 999;
+    assert!(validate_recovery(&next.entity, &future_occurrence, &context).is_err());
+    let mut later_context = context.clone();
+    later_context.origin.command.id = CommandId::new();
+    later_context.origin.command.expected_event_sequence += 1;
+    validate_recovery(&next.entity, &original, &later_context).unwrap();
+    let mut altered_same_id = context.clone();
+    altered_same_id.origin.command.expected_event_sequence += 1;
+    assert!(validate_recovery(&next.entity, &original, &altered_same_id).is_err());
     assert_eq!(next.recovery, original);
 }
 

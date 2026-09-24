@@ -46,13 +46,17 @@ Medicine purposes even though both checks have DC10.
 
 Source passages and existing kernel damage/death helpers reviewed. The parent reviewed
 the reducer branches and identified an immune-knockout forced-rest issue; it is corrected
-and covered by a regression. A separate full source/replay review remains required before
-integrated acceptance. The public contract was shared with the parent and turn-scheduler
-author before integration.
+and covered by a regression. Independent effect and weapon/scheduler authors reviewed
+the complete source reducer and tests. Their same-command future-occurrence finding is
+corrected, with immutable same-ID metadata and valid later-command history regressions.
+The scheduler review also requested explicit voluntary death-save failure (SRD187); it
+now records exactly one failure without inventing a natural die, and retains normal
+eligibility/death-at-three checks. Final follow-up delta signoff remains pending. The
+public contract was shared with the parent and turn-scheduler author before integration.
 
 Verified on the final code tree in the agreed serial build slot:
 
-- `cargo test -p dmd-rules tactical_damage --lib`: 29 passed.
+- `cargo test -p dmd-rules tactical_damage --lib`: 30 passed.
 - `cargo clippy -p dmd-domain -p dmd-rules --all-targets -- -D warnings`: passed.
 - `cargo fmt --all -- --check`: passed.
 - `git diff --check`: passed.
@@ -71,6 +75,6 @@ world death; project only active recovery conditions; retain Prone after awakeni
 apply narrowly scoped tactical validation for source-valid dead maximum-HP-zero and
 condition immunity. The parent owns full verification and production-path evidence.
 
-Exact next action: commit this bounded slice, obtain independent full review, then let
+Exact next action: commit the verified review follow-up, obtain final delta signoff, then let
 the parent integrate the records/reducer and run canonical verification. This slice does
 not claim end-user damage support or Gate 4 acceptance before that integration.
