@@ -1,6 +1,6 @@
 # Gate 4 tactical source definitions
 
-Status: Implemented; focused verification passed, awaiting root integration and review.
+Status: Implemented and source-reviewed; integrated in PR #23, exact-head merge checks pending.
 Branch `codex/gate4-combat-definitions`, based on `14a94d6`.
 
 ## Objective and boundaries
@@ -61,11 +61,15 @@ rustfmt and `git diff --check` passed. The tests compile the real production mod
 while the shared lib.rs export is owned by root. Source exceptions, contradictory data,
 unknown fields, references, partial coverage and exact manifest bytes are checked.
 Regenerating the manifest with the updated helper retained all five declared assets.
-The final tactical asset is 62,423 bytes, FNV-1a64 `7d9f1b02b523f400`.
+The independently reviewed Fire Bolt source-page correction (132) leaves the final tactical
+asset at 62,423 bytes, FNV-1a64 `aae2467522ae62d9`.
 
 No full build was run in this slice: the root coordinates serialized workspace verification.
 No execution or Gate 4 acceptance claims follow from these definition tests.
 
-Next: root reviews/cherry-picks this commit, exports `pub mod tactical_definitions;`, pins
-installed tactical bytes to the embedded catalog, and wires supported effects through the
-authoritative encounter resolver and table flow. Root performs full integrated verification.
+Root exported the public module, switched tests to that production export and pinned installed
+tactical bytes to the embedded catalog. A regression rehashes altered bytes or removes the
+manifest declaration and proves application rejection leaves history unchanged. Independent
+source review found no remaining represented-content blocker. Next: complete exact-head
+PR #23 verification, then wire these definitions through the authoritative encounter/table
+path. Unrepresented tactical mechanisms remain Gate 4 work.

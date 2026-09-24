@@ -8,7 +8,7 @@ Complete the twelve Gate 4 rules families through the real desktop application, 
 source-faithful mechanics, player agency, filtered perception, durable consequences and
 exact mid-combat suspension. Fetched main is `afcbe108c57d13322a32260325a5fc0133c7240c`;
 Gate 3 is accepted there. Its final local and Linux/Windows checks remain recorded in PR #22.
-Initial branch: `codex/gate4-spatial-foundation`; PR pending implementation.
+Initial branch: `codex/gate4-spatial-foundation`; [PR #23](https://github.com/idiotswill/DMd/pull/23).
 
 ## Scope, authority and non-goals
 
@@ -75,12 +75,25 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 - Initial read-only audits separately examine rules/timing, spatial/perception and desktop/
   persistence integration. Existing mechanics are reusable primitives, not complete combat.
 - Final-main baseline is clean; no repository movement was found on entry.
-- No Gate 4 code or acceptance is claimed yet. Interface and migration decisions are pending
-  source review; source-faithful reaction ordering and save compatibility are key risks.
+- PR #23 implements the schema-4 spatial/perception/content foundation and installed-byte
+  pin. It does not claim encounter execution or Gate 4 acceptance. Independent reviews
+  cover source definitions, migration/recovery and spatial privacy/geometry. Review fixes
+  include Unaware perception, selected-speed Dash, darkness, cover and bounded projections.
+- The initial integrated `./scripts/verify` passed 237 Rust tests plus architecture checks;
+  subsequent focused spatial tests cover the review fixes. Final-head evidence is recorded
+  in PR #23 after full verification and Linux/native Windows checks. The first Windows run
+  exposed SQLx Acquire lifetime inference at the desktop boundary; direct acquired-connection
+  migration plus a spawned-future regression addresses it without weakening transactionality.
+- `codex/gate4-encounter-runtime` owns versioned encounter commands, persisted initiative,
+  player-approved ties and upcoming interrupts; `codex/gate4-effect-lifecycle` owns grouped
+  concentration, suppression and ordered trigger tickets. Both are unaccepted followups.
+  The full source audit retains summons, transformations, interrupted casting, forced actions,
+  zones, source-linked damage and monster feature limits within this gate.
 - Existing TD-001/002/004/006/007/009 remain visible. New compromise must name its receiving
   gate; it may not silently move unfinished Gate 4 rules to a later checkpoint.
 
 ## Exact next action
 
-Finish the source/code audits, settle the serializable spatial/encounter boundary, document
-the decision and implement the first foundation slice with targeted regression tests.
+Finish exact-head review and full local/native CI verification of PR #23, merge with expected
+head protection, then continue the encounter and effects slices. Complete all twelve ledger
+families and packaged encounter acceptance before the Gate 4 owner pause; do not enter Gate 5.

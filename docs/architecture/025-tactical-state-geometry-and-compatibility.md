@@ -1,6 +1,6 @@
 # ADR 025 — Tactical spatial truth and compatible campaign state
 
-Status: **Proposed — Gate 4 foundation; implementation/review evidence pending.**
+Status: **Accepted for the Gate 4 foundation in PR #23; complete encounter acceptance remains pending.**
 
 ## Product requirements and source
 
@@ -31,6 +31,24 @@ Pure geometry functions derive paths, costs, cover, visibility and area membersh
 not mutate authoritative state. The tactical resolver commits accepted consequences and
 records provenance through the existing atomic application boundary. The renderer may
 preview/display geometry; it cannot authorize it or provide final modifiers/damage.
+
+Dash retains the selected ordinary/special speed (SRD p.180). The default interpretation
+increases only that speed's allowance, while every mode subtracts shared movement spent
+(p.188). Speed 30/Fly 60 with Dash using Speed therefore has allowances 60/60; Dash using
+Fly has allowances 30/120. The source requires a choice but does not explicitly settle
+transferring that extra movement to another mode; this boundary convention preserves the
+choice without treating extra movement as a change to Speed. Alternative treatment requires
+an explicit persisted campaign adjudication. The query receives derived selected-speed
+counts; it never stores or grants a second movement budget.
+
+Arbitrary bounded integer direction vectors support aiming between grid axes. Sampled
+occlusion cannot prove that several solids collectively grant Total Cover: uncertainty
+requires an authored ruling. Sight and Blindsight still check actual candidate rays.
+Magical darkness and independent heavy fog are distinct causes; Truesight bypasses only
+darkness within its range. Dim-only light has no Bright radius. Unaware creatures acquire
+no new sensory contacts or current self-position, while their remembered information stays
+available. Projection also has a deterministic shared work limit: dense pathological
+queries return Capacity instead of partial or unfiltered information.
 
 ## Perception and knowledge
 
@@ -67,6 +85,11 @@ audit and observation bytes; decode historical snapshots through the registered 
 chain. Reject non-null future encounter data under historical schemas rather than silently
 preserving it. No new aggregate storage tables are required solely for encounter state;
 portable format 2 can retain its existing envelope while explicit state versions evolve.
+
+All pending SQLite migrations run inside one outer transaction. SQLx receives the already
+acquired connection through `run_direct`; this preserves nested migration savepoints and
+keeps the opening future Send for the native desktop command boundary. The public generic
+Acquire wrapper produced a Windows compilation failure and is not used here.
 
 Existing rules definitions and their historical outcomes remain stable. New tactical source
 definitions are separately versioned and validated. Loading new metadata does not imply

@@ -35,7 +35,9 @@ pub async fn migrate_sqlite(pool: &SqlitePool) -> Result<(), MigrateError> {
     // later state-schema preflight failures must also roll back earlier pending migrations.
     // SQLite's nested SQLx migration transactions become savepoints inside this transaction.
     let mut transaction = pool.begin().await?;
-    MIGRATOR.run(&mut *transaction).await?;
+    // Use the already acquired connection. `run` adds an Acquire lifetime that
+    // prevents this future satisfying Send at the native desktop command boundary.
+    MIGRATOR.run_direct(&mut *transaction).await?;
     transaction.commit().await?;
     Ok(())
 }

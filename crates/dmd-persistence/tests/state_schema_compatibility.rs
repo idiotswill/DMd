@@ -239,6 +239,20 @@ fn encounter_state() -> CampaignState {
 }
 
 #[tokio::test]
+async fn atomic_migration_and_open_futures_remain_send_for_native_commands() {
+    let db = tokio::spawn(dmd_persistence::open_sqlite("sqlite::memory:"))
+        .await
+        .unwrap()
+        .unwrap();
+    tokio::spawn(async move {
+        dmd_persistence::migrate_sqlite(&db).await.unwrap();
+        db.close().await;
+    })
+    .await
+    .unwrap();
+}
+
+#[tokio::test]
 async fn typed_encounter_round_trip_preserves_geometry_knowledge_and_existing_timing() {
     let source = pool(false).await;
     let initial = encounter_state();

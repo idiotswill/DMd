@@ -1,6 +1,6 @@
 # Gate 4 — Encounter state compatibility
 
-Status: **Ready for independent review and root integration; focused verification passed.**
+Status: **Implemented and independently reviewed; integrated in PR #23, exact-head merge checks pending.**
 
 ## Objective and branch
 
@@ -63,5 +63,9 @@ remains supported because encounter state adds no separate aggregate table.
 
 ## Exact next action
 
-Root cherry-picks the compatibility commit after the model checkpoint, independently
-reviews the full foundation, and runs required full verification before any merge.
+Independent review of 9dd6405 found no blockers in migration atomicity, legacy decoding,
+immutable history or restore preflight. Root integrated it in PR #23 and added the public
+Send-future regression after Windows CI exposed SQLx Acquire lifetime inference. The
+already-acquired `run_direct` path retains the same migration/savepoint behavior. Final
+integrated verification and CI are prerequisites for merging the exact PR head. Encounter
+continuation semantics and desktop acceptance remain in the active gate plan.
