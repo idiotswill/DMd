@@ -1,4 +1,4 @@
-# ADR 014: Campaign lifecycle and portability
+# ADR 015: Campaign lifecycle and portability
 
 Status: Proposed — pending human review and explicit approval.
 
@@ -8,7 +8,7 @@ DMd needs durable lifecycle operations for multiple unrelated campaigns without 
 
 A campaign must be creatable, discoverable, archivable, reopened after restart, exported for recovery/portability, restored safely, and intentionally destroyed without manual database surgery. Ordinary history deletion must remain forbidden. Restore must not admit persisted audit/event data that normal persistence could not safely replay.
 
-This ADR covers lifecycle persistence. Content-manifest resolution remains a separate Gate 1 integration boundary.
+This ADR covers lifecycle persistence. Content-manifest resolution remains a separate Gate 1 integration boundary governed by ADR 014.
 
 ## Decision
 
@@ -65,7 +65,7 @@ Before an export is accepted for restore or purge, lifecycle validation re-estab
 
 These checks ensure a modified export cannot be restored successfully merely because SQLite columns accept it and then fail later during snapshot+journal replay.
 
-Ruleset/content references are preserved as stored identifiers. Whether they resolve to installed compatible manifests is owned by the content-manifest subsystem.
+Ruleset/content references are preserved as stored identifiers. Whether they resolve to installed compatible manifests is owned by the content-manifest subsystem under ADR 014.
 
 ### Restore is transactional and collision-safe
 
