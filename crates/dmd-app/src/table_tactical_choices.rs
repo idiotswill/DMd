@@ -8,10 +8,19 @@ pub(super) fn continuation(
     own: &HashSet<EntityId>,
     host: bool,
 ) -> Option<crate::TableTacticalContinuation> {
-    if !host && !own.contains(&resolution.turn_actor) {
+    let after_turn = resolution.frames.last().is_some_and(|frame| {
+        !frame.is_empty()
+            && frame
+                .iter()
+                .all(|work| matches!(work.kind, TacticalWorkKind::LegendaryWindow { .. }))
+    });
+    if !host && (after_turn || !own.contains(&resolution.turn_actor)) {
         return None;
     }
-    let choices = if resolution.pending.is_none() && resolution.failed_save.is_none() {
+    let choices = if resolution.pending.is_none()
+        && resolution.failed_save.is_none()
+        && resolution.legendary_window.is_none()
+    {
         resolution
             .frames
             .last()
@@ -34,6 +43,18 @@ pub(super) fn continuation(
                                 (Some(*actor), "Stable recovery")
                             }
                             TacticalWorkKind::Effect { .. } => (None, "Effect consequence"),
+                            TacticalWorkKind::CreatureRecharge { actor, .. } => {
+                                (Some(*actor), "Ability recharge")
+                            }
+                            TacticalWorkKind::LegendaryWindow { actor } => {
+                                (Some(*actor), "Legendary Action opportunity")
+                            }
+                            TacticalWorkKind::AttackRoll
+                            | TacticalWorkKind::AttackDamage
+                            | TacticalWorkKind::FinishAttack => (
+                                resolution.attack.as_ref().map(|attack| attack.actor),
+                                "Attack consequence",
+                            ),
                         };
                         // Owning the turn grants ordering authority, not knowledge of another
                         // actor's health, concentration, hidden source, DC or location.
@@ -55,6 +76,7 @@ pub(super) fn continuation(
     };
     Some(crate::TableTacticalContinuation {
         actor: resolution.turn_actor,
+        host_adjudication: after_turn,
         choices,
     })
 }
@@ -173,6 +195,8 @@ mod tests {
             ]],
             pending: None,
             failed_save: None,
+            legendary_window: None,
+            attack: None,
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);

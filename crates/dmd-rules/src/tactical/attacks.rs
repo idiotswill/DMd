@@ -173,7 +173,7 @@ pub(super) fn begin(
         .ok_or_else(|| invalid("timing absent"))?;
     let number = timing.turn_number;
     flow_mut(state)?.budget = budget;
-    flow_mut(state)?.resolution = Some(TacticalResolution {
+    flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
         turn_number: number,
@@ -184,7 +184,7 @@ pub(super) fn begin(
         legendary_window: None,
         attack: Some(attack),
         next_occurrence: 0,
-    });
+    }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
     pump(state, meta)
 }

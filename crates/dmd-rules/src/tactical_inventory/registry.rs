@@ -117,6 +117,30 @@ fn build_registry() -> Result<Vec<EquipmentDefinition>, InventoryError> {
             source_page: item.source_page,
         });
     }
+    // SRD98; carrying one does not itself grant a class's spellcasting-focus feature.
+    registry.push(EquipmentDefinition {
+        id: "holy-symbol".into(),
+        display_name: "Holy Symbol".into(),
+        kind: EquipmentKind::Gear,
+        stacking: ItemStacking::Individual,
+        source_page: 98,
+    });
+    // Exact per-spell material identity. The source descriptor supplies its nature,
+    // minimum value and consumption rule; display names never establish those facts.
+    for spell in definitions.spells {
+        if let Some(material) = spell.components.material {
+            registry.push(EquipmentDefinition {
+                id: format!("spell-material:{}", spell.id),
+                display_name: material.description,
+                kind: EquipmentKind::Gear,
+                stacking: ItemStacking::Stack,
+                source_page: *spell
+                    .source_pages
+                    .first()
+                    .ok_or_else(|| invalid("Spell material source page is absent."))?,
+            });
+        }
+    }
     registry.sort_by(|a, b| a.id.cmp(&b.id));
     if registry
         .windows(2)

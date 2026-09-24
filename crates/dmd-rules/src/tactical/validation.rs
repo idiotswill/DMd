@@ -40,6 +40,18 @@ pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
                 let source = definitions
                     .creature(definition_id)
                     .ok_or_else(|| invalid("unknown source creature"))?;
+                if let Some(profile) = rules
+                    .tactical_creatures
+                    .as_ref()
+                    .and_then(|c| c.profile(combatant.actor))
+                {
+                    if profile.source.definition_id != *definition_id {
+                        return Err(invalid("initiative source differs from creature profile"));
+                    }
+                    crate::tactical_creatures::validate_creature_profile(state, profile, e)
+                        .map_err(|error| invalid(&error.to_string()))?;
+                    continue;
+                }
                 if state
                     .characters
                     .values()

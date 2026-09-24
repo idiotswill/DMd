@@ -2,6 +2,7 @@
   import { newId, type CharacterView, type Id } from '../table-api';
   import type { TacticalAction, TacticalView } from '../tactical-api';
   import TacticalMap from './TacticalMap.svelte';
+  import AttackForm from './AttackForm.svelte';
   let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -13,7 +14,16 @@
     tieOrder={...tieOrder,[total]:order};
   }
   const name=(id:Id)=>characters.find(character=>character.entity_id===id)?.name ?? tactical.participants.find(p=>p.entity_id===id)?.public_label ?? 'Combatant';
-  function begin(){onAction({Begin:{combatants:tactical.participants.map(p=>({actor:p.entity_id,source:'Character',surprised:surprised.includes(p.entity_id)})),groups:tactical.participants.map(p=>({actors:[p.entity_id],request_id:newId()}))}});}
+  function begin(){
+    const combatants=tactical.combatant_sources.map(source=>({actor:source.actor,source:source.source,surprised:surprised.includes(source.actor)}));
+    const grouped=new Map<string,Id[]>();
+    for(const combatant of combatants){
+      const preview=tactical.combatant_sources.find(source=>source.actor===combatant.actor)!;
+      const key=combatant.source==='Character'?combatant.actor:`${combatant.source.Creature.definition_id}:${combatant.surprised}:${preview.initiative_modifier}:${combatant.surprised?preview.surprised_mode:preview.normal_mode}`;
+      grouped.set(key,[...(grouped.get(key)??[]),combatant.actor]);
+    }
+    onAction({Begin:{combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
+  }
 </script>
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
   <TacticalMap {tactical} {characters}/>
@@ -24,10 +34,24 @@
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
     <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
   {/if}
+  {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.budget && (!tactical.budget.action_spent || tactical.budget.attacks_remaining>0)}
+    {#key tactical.attack_options.actor}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+  {/if}
+  {#if tactical.attack_decision && (host || actor===tactical.attack_decision.actor)}
+    <fieldset disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>
+      {#if tactical.attack_decision.kind==='Knockout'}
+        <p>This melee attack can knock the creature out. Choose how to resolve the damage.</p>
+        <button onclick={()=>onAction({ChooseAttackKnockout:{choice:'KnockOut'}})}>Knock out</button><button class="secondary" onclick={()=>onAction({ChooseAttackKnockout:{choice:'NormalDamage'}})}>Apply normal damage</button>
+      {:else}
+        <p>The attack missed. You may apply Graze damage.</p>
+        <button onclick={()=>onAction({ChooseAttackMastery:{choice:'Graze'}})}>Use Graze</button><button class="secondary" onclick={()=>onAction({ChooseAttackMastery:{choice:'Decline'}})}>Decline Graze</button>
+      {/if}
+    </fieldset>
+  {/if}
   {#if tactical.continuation && (host || actor===tactical.continuation.actor)}
     {#if tactical.continuation.choices.length}
       <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
-        <p>These consequences occur at the same time. Choose their order for this turn.</p>
+        <p>{tactical.continuation.host_adjudication?'The turn has ended. The host determines which after-turn opportunity resolves first.':'These consequences occur at the same time. Choose their order for this turn.'}</p>
         {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{occurrence:choice.occurrence}})}>{choice.label} · {index+1}</button>{/each}
       </fieldset>
     {:else}<p>Resolve the pending consequence before continuing the turn.</p>{/if}
@@ -37,5 +61,13 @@
       <p>You may choose to fail this saving throw before reporting dice. This resolves it as a failure.</p>
       <button class="secondary" onclick={()=>onAction('VoluntarilyFailSave')}>Choose to fail this save</button>
     </fieldset>
+  {/if}
+  {#if tactical.legendary_resistance && (host || actor===tactical.legendary_resistance)}
+    <fieldset {disabled}><legend>Legendary Resistance</legend><p>This saving throw failed. Spend a remaining use to succeed instead, or keep the failure.</p>
+      <button onclick={()=>onAction('UseLegendaryResistance')}>Use Legendary Resistance</button><button class="secondary" onclick={()=>onAction('DeclineLegendaryResistance')}>Keep the failed save</button>
+    </fieldset>
+  {/if}
+  {#if tactical.legendary_action && (host || actor===tactical.legendary_action)}
+    <fieldset {disabled}><legend>Legendary Action opportunity</legend><p>{name(tactical.legendary_action)} may act after this turn.</p><button class="secondary" onclick={()=>onAction('DeclineLegendaryAction')}>Pass this opportunity</button></fieldset>
   {/if}
 </section>

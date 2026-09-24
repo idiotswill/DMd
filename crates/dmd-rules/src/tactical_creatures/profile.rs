@@ -279,7 +279,9 @@ pub fn validate_creature_profile(
         || entity.level != 0
         || entity.character_features.is_some()
         || entity.ability_scores != initial.ability_scores
-        || entity.armor != initial.armor
+        || entity.armor
+            != crate::tactical_creature_equipment::creature_current_armor(state, profile)
+                .map_err(|error| invalid(error.to_string()))?
         || entity.hit_dice.sides != initial.hit_dice.sides
         || entity.hit_dice.maximum != initial.hit_dice.maximum
         || entity.hit_dice.remaining > entity.hit_dice.maximum

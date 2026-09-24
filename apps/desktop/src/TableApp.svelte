@@ -7,6 +7,7 @@
   import SituationForm from './components/SituationForm.svelte';
   import RollForm from './components/RollForm.svelte';
   import BattlefieldForm from './components/BattlefieldForm.svelte';
+  import CreatureForm from './components/CreatureForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
   import { rawDice } from './table-api';
   import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
@@ -158,7 +159,8 @@
         {#if view.players.length}<section class="panel">{#key view.event_sequence}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Finish or withdraw pending work before ending the session. Closing the app preserves pending work for later.</p></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
-      {#if view.active_session && !view.tactical}<section class="panel">{#key view.event_sequence}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
+      {#if !view.tactical && view.creature_setup}<section class="panel"><CreatureForm setup={view.creature_setup} disabled={locked||!!view.pending||!!view.roll} onCreate={(creation)=>act({CreateCreature:{creation}})}/></section>{/if}
+      {#if view.active_session && !view.tactical}<section class="panel">{#key view.event_sequence}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}

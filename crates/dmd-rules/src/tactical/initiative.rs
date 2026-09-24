@@ -42,6 +42,15 @@ pub(super) fn circumstances(
         .iter()
         .find(|c| c.actor == actor)
         .ok_or_else(|| invalid("unknown initiative actor"))?;
+    preview_initiative_circumstances(state, combatant)
+}
+
+/// Read-only setup preview; the authoritative Begin transition repeats these checks.
+pub fn preview_initiative_circumstances(
+    state: &CampaignState,
+    combatant: &TacticalCombatant,
+) -> Result<(i32, RollMode), RulesError> {
+    let actor = combatant.actor;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let mechanics = rules
         .entities

@@ -34,7 +34,7 @@ Chimera (p273) provides a bounded additional source fixture: mixed Ram/Bite/Claw
 optional available Fire Breath replacing Claw, extra Bite damage with Advantage and
 the source recharge/save area. Existing Multiattack definitions keep their semantics;
 new source-defined slots/limits express mixtures and substitutions without accepting
-player-authored mechanical definitions. Selected Adult Red Dragon features (318–319)
+player-authored mechanical definitions. Selected Adult Red Dragon features (318â€“319)
 exercise a maximum-one Scorching Ray substitution and individual Legendary Action
 limits. Command116, ScorchingRay159 and Fireball131 have typed source clauses; Detect Magic and
 in-lair XP remain explicit adult-dragon omissions. Source component waivers are
@@ -99,7 +99,7 @@ fixed by adding the verified SRD131 definition. Final evidence uses the rebuilt 
 source. Root owns canonical full verification on the integrated reviewed head.
 
 The source reviewer checked Chimera, Command, Scorching Ray and the dragon clauses
-against SRD273/116/159/318–319 and reviewed source scheduling/proof/policy boundaries
+against SRD273/116/159/318â€“319 and reviewed source scheduling/proof/policy boundaries
 without finding a blocker. Exact final-head review, including the added Fireball
 dependency, is requested after this commit; it is not claimed from the earlier pass.
 
