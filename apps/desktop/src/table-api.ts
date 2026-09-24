@@ -95,7 +95,7 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (request.action === 'EndSession') return true;
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
-  return ['UpdateContract','AddPlayer','CreateCharacter','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
+  return ['UpdateContract','AddPlayer','CreateCharacter','PrepareEquipment','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
 }
 export function loadRequest(): UnconfirmedRequest | null {
   const value = localStorage.getItem(REQUEST_KEY);

@@ -125,9 +125,15 @@ guard now limits that old path to character creation, checks, Second Wind and th
 completion/cancellation. Consequences use the tactical path so damage cannot omit physical
 drops or source recovery. Current-loadout provenance permits another known causing actor;
 starting grants retain recipient/host attribution. New guard/provenance/schema regression
-tests await their serial Rust verification slot.
+tests passed: one application equipment test, all 12 inventory tests and all 13 schema
+compatibility tests, including duplicate nested authority and atomic migration rollback.
 
 Frontend checks passed: Svelte reports zero errors/warnings, all 12 UI tests pass (including
 source mastery selection), and the production Vite build succeeds. This does not yet prove
 native encounter acceptance. Turn scheduling, table tactical commands, combat UI and the
 rest of Gate 4 remain active; no gate or runtime merge acceptance is claimed.
+
+Independent review of `b6d887a` found one frontend recovery omission: the saved-request
+whitelist lacked PrepareEquipment. The fix retains this command across uncertain failure
+and restart; the seven TableApp tests pass, including exact original command and all item
+identities being resent. No other blocking review findings were reported.
