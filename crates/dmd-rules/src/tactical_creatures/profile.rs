@@ -110,6 +110,7 @@ pub fn build_creature(
         used_this_own_turn: vec![],
         legendary_spent: 0,
         legendary_resistance_spent: 0,
+        legendary_resistance_rolls: vec![],
         observed_turn: None,
         legendary_window_spent: false,
         routine: None,
@@ -271,6 +272,10 @@ pub fn validate_creature_profile(
     let initial = initial_creature_mechanics(profile)?;
     let source = source_for_profile(profile)?;
     if entity.entity_id != profile.actor
+        || !matches!(
+            state.entities[&profile.actor].kind,
+            EntityKind::Npc | EntityKind::Creature
+        )
         || entity.level != 0
         || entity.character_features.is_some()
         || entity.ability_scores != initial.ability_scores
@@ -290,6 +295,7 @@ pub fn validate_creature_profile(
         || entity.spellcasting.is_some()
         || !entity.resources.is_empty()
         || (source.statistics.exhaustion_immune && entity.exhaustion != 0)
+        || entity.exhaustion > 6
         || entity.max_hp > 1_000_000
         || entity.hp > entity.max_hp
         || entity.temporary_hp > 1_000_000
@@ -377,7 +383,13 @@ pub(super) fn initial_recharge(source: &CreatureDefinition) -> Vec<CreatureRecha
     source
         .features
         .iter()
-        .filter(|feature| matches!(feature.feature, MonsterFeature::SaveArea { .. }))
+        .filter(|feature| {
+            matches!(feature.feature, MonsterFeature::SaveArea { .. })
+                || matches!(
+                    feature.usage,
+                    Some(FeatureUsage::Recharge(_) | FeatureUsage::RechargeAfterShortOrLongRest)
+                )
+        })
         .map(|feature| CreatureRechargeState {
             feature_id: feature.id.clone(),
             available: true,
@@ -389,6 +401,13 @@ pub(super) fn initial_recharge(source: &CreatureDefinition) -> Vec<CreatureRecha
 pub(super) fn initial_limited_uses(source: &CreatureDefinition) -> Vec<CreatureLimitedUse> {
     let mut uses = vec![];
     for feature in &source.features {
+        if matches!(feature.usage, Some(FeatureUsage::PerLongRest { .. })) {
+            uses.push(CreatureLimitedUse {
+                feature_id: feature.id.clone(),
+                spell_id: None,
+                spent: 0,
+            });
+        }
         if let MonsterFeature::Spellcasting { spells, .. } = &feature.feature {
             for spell in spells
                 .iter()

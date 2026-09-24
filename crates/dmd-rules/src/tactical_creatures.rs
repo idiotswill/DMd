@@ -1,6 +1,10 @@
 //! Source-faithful creature capabilities and deterministic limited-use execution.
+mod policy;
 mod profile;
+mod schedule;
+pub use policy::*;
 pub use profile::*;
+pub use schedule::*;
 
 use crate::tactical_definitions::{
     CreatureDefinition, TACTICAL_DEFINITIONS_JSON, TacticalDefinitions,

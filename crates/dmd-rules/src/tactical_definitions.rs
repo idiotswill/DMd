@@ -208,6 +208,10 @@ pub enum TargetSelection {
         count: u8,
         requires_sight: bool,
     },
+    /// A separate ranged attack for each ray; targets can repeat (SRD159).
+    Rays {
+        count: u8,
+    },
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ReactionTrigger {
@@ -256,6 +260,11 @@ pub struct DamageComponent {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum EffectDescriptor {
+    /// Failure follows one chosen command on the target's next turn (SRD116).
+    SaveCommand {
+        ability: Ability,
+        choices: Vec<CommandWord>,
+    },
     Healing {
         dice: Vec<DieSpec>,
         add_spellcasting_modifier: bool,
@@ -313,7 +322,19 @@ pub enum Upcast {
     ExtraHealingDice { dice: Vec<DieSpec> },
     AdditionalTargets { count: u8 },
     AdditionalDarts { count: u8 },
+    AdditionalRays { count: u8 },
     AdditionalRadius { feet: u16 },
+}
+/// Closed source commands, not arbitrary compelled actions. Approach ends within
+/// 5 feet; Drop/Grovel end the turn; Flee uses fastest means; Halt prohibits
+/// movement, action and bonus action on that next turn (SRD116).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum CommandWord {
+    Approach,
+    Drop,
+    Flee,
+    Grovel,
+    Halt,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -437,6 +458,37 @@ pub struct Recharge {
     pub minimum: u16,
     pub maximum: u16,
 }
+/// A source-defined invocation, not a mechanical payload supplied by a player.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MonsterFeatureReference {
+    pub feature_id: String,
+    pub spell_id: Option<String>,
+    pub simple_action: Option<BasicAction>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MultiattackSlot {
+    /// Alternatives for this required occurrence; order of occurrences is chosen in play.
+    pub options: Vec<MonsterFeatureReference>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MultiattackLimit {
+    pub selection: MonsterFeatureReference,
+    pub maximum: u8,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum FeatureUsage {
+    PerLongRest {
+        uses: u8,
+    },
+    Recharge(Recharge),
+    RechargeAfterShortOrLongRest,
+    /// E.g. the Adult Red Dragon's individual Commanding Presence/Fiery Rays (SRD319).
+    OnceUntilOwnTurnStart,
+}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum MonsterFeature {
@@ -450,6 +502,11 @@ pub enum MonsterFeature {
     Multiattack {
         count: u8,
         attack_options: Vec<String>,
+    },
+    /// Mixed mandatory occurrences and source-authorized substitutions (SRD257/273).
+    MultiattackRoutine {
+        slots: Vec<MultiattackSlot>,
+        limits: Vec<MultiattackLimit>,
     },
     BasicActionChoice {
         options: Vec<BasicAction>,
@@ -493,8 +550,19 @@ pub struct NamedMonsterFeature {
     pub id: String,
     pub name: String,
     pub activation: FeatureActivation,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub usage: Option<FeatureUsage>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub spell_component_waivers: Option<SpellComponentWaivers>,
     pub feature: MonsterFeature,
     pub source_page: u16,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct SpellComponentWaivers {
+    pub verbal: bool,
+    pub somatic: bool,
+    pub material: bool,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -685,6 +753,20 @@ impl TacticalSpellDefinition {
                 ensure((1..=100).contains(&maximum), "invalid target count")?
             }
             TargetSelection::Area { shape } => area(shape)?,
+            TargetSelection::Rays { count } => {
+                ensure(
+                    (1..=100).contains(&count)
+                        && self
+                            .effects
+                            .iter()
+                            .filter(|effect| {
+                                matches!(effect, EffectDescriptor::RangedSpellAttack { .. })
+                            })
+                            .count()
+                            == 1,
+                    "rays require one per-ray attack formula",
+                )?;
+            }
             TargetSelection::Darts {
                 count,
                 requires_sight,
@@ -783,6 +865,10 @@ impl TacticalSpellDefinition {
                 Upcast::AdditionalDarts { count } => ensure(
                     *count > 0 && matches!(self.targets, TargetSelection::Darts { .. }),
                     "dart upcast mismatch",
+                )?,
+                Upcast::AdditionalRays { count } => ensure(
+                    *count > 0 && matches!(self.targets, TargetSelection::Rays { .. }),
+                    "ray upcast mismatch",
                 )?,
                 Upcast::AdditionalRadius { feet } => {
                     distance(*feet)?;
@@ -936,6 +1022,13 @@ impl CreatureDefinition {
     ) -> Result<(), DefinitionError> {
         label(&f.name)?;
         page(f.source_page)?;
+        if let Some(waivers) = f.spell_component_waivers {
+            ensure(
+                matches!(f.feature, MonsterFeature::Spellcasting { .. })
+                    && (waivers.verbal || waivers.somatic || waivers.material),
+                "component waiver requires source spellcasting",
+            )?;
+        }
         ensure(
             self.source_pages.contains(&f.source_page),
             "feature page outside creature source",
@@ -947,6 +1040,26 @@ impl CreatureDefinition {
                     .is_some_and(|b| cost > 0 && cost <= b.uses),
                 "legendary feature lacks valid budget",
             )?;
+        }
+        if let Some(usage) = f.usage {
+            ensure(
+                !matches!(f.feature, MonsterFeature::SaveArea { .. }),
+                "save area already has its source recharge policy",
+            )?;
+            match usage {
+                FeatureUsage::PerLongRest { uses } => {
+                    ensure((1..=20).contains(&uses), "invalid per-rest use limit")?
+                }
+                FeatureUsage::Recharge(recharge) => ensure(
+                    recharge.die_sides == 6
+                        && recharge.minimum >= 1
+                        && recharge.minimum <= recharge.maximum
+                        && recharge.maximum <= 6,
+                    "invalid feature recharge",
+                )?,
+                FeatureUsage::RechargeAfterShortOrLongRest
+                | FeatureUsage::OnceUntilOwnTurnStart => (),
+            }
         }
         let attack_exists = |id: &str| {
             self.features
@@ -994,6 +1107,40 @@ impl CreatureDefinition {
                     f.activation == FeatureActivation::Action,
                     "multiattack requires action",
                 )?;
+            }
+            MonsterFeature::MultiattackRoutine { slots, limits } => {
+                ensure(
+                    f.activation == FeatureActivation::Action
+                        && (1..=20).contains(&slots.len())
+                        && limits.len() <= 20,
+                    "invalid mixed multiattack shape",
+                )?;
+                for slot in slots {
+                    ensure(
+                        (1..=20).contains(&slot.options.len()),
+                        "invalid multiattack alternatives",
+                    )?;
+                    for (index, selection) in slot.options.iter().enumerate() {
+                        ensure(
+                            !slot.options[..index].contains(selection),
+                            "duplicate multiattack alternative",
+                        )?;
+                        self.validate_feature_reference(selection)?;
+                    }
+                }
+                for (index, limit) in limits.iter().enumerate() {
+                    ensure(
+                        limit.maximum > 0
+                            && usize::from(limit.maximum) <= slots.len()
+                            && !limits[..index]
+                                .iter()
+                                .any(|other| other.selection == limit.selection)
+                            && slots
+                                .iter()
+                                .any(|slot| slot.options.contains(&limit.selection)),
+                        "invalid multiattack shared limit",
+                    )?;
+                }
             }
             MonsterFeature::BasicActionChoice { options } => {
                 ensure(!options.is_empty(), "empty action choice")?;
@@ -1068,6 +1215,47 @@ impl CreatureDefinition {
             }
         }
         Ok(())
+    }
+}
+
+impl CreatureDefinition {
+    fn validate_feature_reference(
+        &self,
+        reference: &MonsterFeatureReference,
+    ) -> Result<(), DefinitionError> {
+        let feature = self
+            .features
+            .iter()
+            .find(|feature| feature.id == reference.feature_id)
+            .ok_or_else(|| DefinitionError("multiattack references missing feature".into()))?;
+        ensure(
+            feature.activation == FeatureActivation::Action,
+            "multiattack primitive must be a source action",
+        )?;
+        match &feature.feature {
+            MonsterFeature::Multiattack { .. } | MonsterFeature::MultiattackRoutine { .. } => Err(
+                DefinitionError("nested multiattack is not a primitive".into()),
+            ),
+            MonsterFeature::Spellcasting { spells, .. } => ensure(
+                reference.simple_action.is_none()
+                    && reference
+                        .spell_id
+                        .as_ref()
+                        .is_some_and(|id| spells.iter().any(|spell| &spell.spell_id == id)),
+                "multiattack spell reference is not in source capability",
+            ),
+            MonsterFeature::BasicActionChoice { options } => ensure(
+                reference.spell_id.is_none()
+                    && reference
+                        .simple_action
+                        .is_some_and(|choice| options.contains(&choice)),
+                "invalid multiattack basic action",
+            ),
+            _ => ensure(
+                reference.spell_id.is_none() && reference.simple_action.is_none(),
+                "primitive has unexpected spell/basic choice",
+            ),
+        }
     }
 }
 
@@ -1171,6 +1359,17 @@ fn effects(es: &[EffectDescriptor]) -> Result<(), DefinitionError> {
     )?;
     for e in es {
         match e {
+            EffectDescriptor::SaveCommand { choices, .. } => {
+                ensure(
+                    !choices.is_empty()
+                        && choices.len() <= 5
+                        && choices
+                            .iter()
+                            .enumerate()
+                            .all(|(i, c)| !choices[..i].contains(c)),
+                    "invalid command choices",
+                )?;
+            }
             EffectDescriptor::Healing { dice: healing, .. } => {
                 dice(healing)?;
                 ensure(!healing.is_empty(), "healing requires dice")?;

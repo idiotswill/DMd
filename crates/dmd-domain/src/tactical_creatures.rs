@@ -146,9 +146,10 @@ pub struct CreatureRuntime {
     pub used_this_own_turn: Vec<String>,
     pub legendary_spent: u8,
     pub legendary_resistance_spent: u8,
+    pub legendary_resistance_rolls: Vec<crate::RollRequestId>,
     /// Last source hook observed, used only for idempotence/ordering of creature work.
     pub observed_turn: Option<CreatureTurn>,
-    /// Only one Legendary Action at an eligible other-creature end boundary.
+    /// Used or explicitly declined at this other-creature end boundary.
     pub legendary_window_spent: bool,
     pub routine: Option<CreatureRoutineContinuation>,
     pub last_rest: Option<CreatureRestReceipt>,
@@ -228,6 +229,7 @@ impl TacticalCreatures {
                 || runtime.recharge.len() > 64
                 || runtime.limited_uses.len() > 128
                 || runtime.used_this_own_turn.len() > 64
+                || runtime.legendary_resistance_rolls.len() > 10
             {
                 return Err("invalid creature runtime identity/count".into());
             }
