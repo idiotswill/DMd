@@ -125,6 +125,34 @@ pub(crate) fn resolve_table(
                 built.profile.name
             )
         }
+        TableAction::PrepareEquipment {
+            character_id,
+            item_ids,
+        } => {
+            host(meta)?;
+            if table(state)?.active_session.is_some() {
+                active(state, meta)?;
+            } else if meta.session_id.is_some() {
+                return Err("Equipment setup does not belong to an active session.".into());
+            }
+            if table(state)?.pending.is_some()
+                || table(state)?.roll_context.is_some()
+                || state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_some())
+                || state
+                    .encounter
+                    .as_ref()
+                    .is_some_and(|encounter| encounter.flow.is_some())
+            {
+                return Err(
+                    "Finish pending decisions and prepare equipment before initiative.".into(),
+                );
+            }
+            next = crate::table_equipment::prepare(state, meta, *character_id, item_ids, pack)?;
+            "Starting equipment is ready for play.".into()
+        }
         TableAction::StartSession {
             id,
             name,
@@ -492,8 +520,7 @@ pub(crate) fn validate_table(state: &CampaignState, pack: &RulesPack) -> Result<
                 .as_ref()
                 .and_then(|rules| rules.entities.get(&profile.entity_id))
                 .ok_or("A table character has no authoritative mechanical sheet.")?;
-            dmd_rules::validate_character_mechanics(profile, entity, pack)
-                .map_err(|error| error.to_string())?;
+            crate::table_equipment::validate_character_equipment(state, profile, entity, pack)?;
         }
     }
     Ok(())

@@ -294,7 +294,7 @@ pub fn validate_loadout(
     state: &CampaignState,
     loadout: &ActorEquipmentLoadout,
 ) -> Result<(), InventoryError> {
-    validate_equipment_origin(state, &loadout.command, loadout.actor).map_err(invalid)?;
+    validate_equipment_change_origin(state, &loadout.command, loadout.actor).map_err(invalid)?;
     let mut held = Vec::new();
     for hand in &loadout.hands.hands {
         if let HandAssignment::Item(id) = hand {

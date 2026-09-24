@@ -176,6 +176,40 @@ impl Fixture {
 }
 
 #[test]
+fn derived_equipment_changes_preserve_other_actors_without_loosening_grants() {
+    let mut f = Fixture::new();
+    f.grant();
+    let mut cause = f.meta();
+    cause.actor = Some(AgentRef::Entity(f.other));
+    cause.issuer = CommandIssuer::Player(f.other_player);
+    f.inventory.loadouts[0].command = cause.clone();
+    f.valid();
+    assert!(validate_equipment_origin(&f.state, &cause, f.actor).is_err());
+    for invalid in [
+        CommandMeta {
+            actor: Some(AgentRef::Entity(EntityId::new())),
+            ..cause.clone()
+        },
+        CommandMeta {
+            campaign_id: CampaignId::new(),
+            ..cause.clone()
+        },
+        CommandMeta {
+            issuer: CommandIssuer::Player(PlayerId::new()),
+            ..cause.clone()
+        },
+        CommandMeta {
+            expected_event_sequence: f.state.applied_event_sequence + 1,
+            ..cause.clone()
+        },
+    ] {
+        assert!(validate_equipment_change_origin(&f.state, &invalid, f.actor).is_err());
+    }
+    f.inventory.receipts[0].command = cause;
+    assert!(validate_tactical_inventory(&f.state, &f.inventory, &f.pack).is_err());
+}
+
+#[test]
 fn source_grants_allocate_unique_weapons_canonical_stacks_and_initial_loadout() {
     let mut f = Fixture::new();
     let before = f.state.clone();

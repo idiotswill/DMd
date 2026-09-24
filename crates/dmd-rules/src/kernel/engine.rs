@@ -16,6 +16,24 @@ pub fn resolve(
         return Err(RulesError::Stale);
     }
     validate_state(state, pack)?;
+    if state
+        .rules
+        .as_ref()
+        .is_some_and(|rules| rules.tactical_inventory.is_some())
+        && !matches!(
+            action,
+            RulesAction::CreateCharacter { .. }
+                | RulesAction::RequestTest { .. }
+                | RulesAction::SecondWind { .. }
+                | RulesAction::SubmitRoll { .. }
+                | RulesAction::SubmitRollWithInspiration { .. }
+                | RulesAction::CancelRoll { .. }
+        )
+    {
+        return Err(prerequisite(
+            "physical equipment requires the tactical action path",
+        ));
+    }
     if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
         || state
             .rules

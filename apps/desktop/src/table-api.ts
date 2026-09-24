@@ -36,10 +36,11 @@ export interface CharacterProfile {
 }
 export interface CharacterSheet { ability_modifiers: number[]; proficiency_bonus: number; armor_class: number; hp: number; max_hp: number; temporary_hp: number; spell_save_dc: number | null }
 export interface SheetDetails { ability_scores: number[]; hit_dice: { sides: number; maximum: number; remaining: number }; heroic_inspiration: boolean; saving_throws: { ability: Ability; modifier: number; proficient: boolean }[]; skills: { skill: Skill; ability: Ability; modifier: number; proficiency: 'Proficient' | 'Expertise' | null }[]; conditions: string[]; exhaustion: number; death: { successes: number; failures: number; stable: boolean; dead: boolean } }
-export interface CharacterView { character_id: Id; player_id: Id | null; entity_id: Id; name: string; profile: CharacterProfile | null; sheet: { Character: CharacterSheet } | null; details: SheetDetails | null; second_wind_remaining: number | null }
+export interface EquipmentView { prepared: boolean; initial_item_count: number; items: { id: Id; name: string; quantity: number }[]; worn_armor: Id | null; shield: Id | null; hands: { hands: ('Free' | { Item: Id })[] } }
+export interface CharacterView { character_id: Id; player_id: Id | null; entity_id: Id; name: string; profile: CharacterProfile | null; sheet: { Character: CharacterSheet } | null; details: SheetDetails | null; second_wind_remaining: number | null; equipment?: EquipmentView | null }
 export interface CreationOptions {
   catalog: { schema_version: number; ruleset_id: string; version: string; profile_id: string; starting_money_cp: number; source_pages: number[]; scope: string; items: { id: string; name: string; unit_cost_cp: number; purchase_multiple: number; source_page: number; weapon: boolean }[] };
-  fighter_skills: Skill[]; standard_languages: string[]; alignments: string[];
+  fighter_skills: Skill[]; fighter_masteries: string[]; standard_languages: string[]; alignments: string[];
 }
 export interface Challenge { id: string; title: string; description: string; phrases: string[]; kind: { Check: { ability: Ability; skill: Skill | null } }; dc: number; success: string; failure: string; resolution: { actor: Id; request_id: Id; success: boolean; total: number } | null }
 export interface Situation { title: string; description: string; challenges: Challenge[] }
@@ -55,6 +56,7 @@ export interface TableView {
 export type TableAction =
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
   | { CreateCharacter: { character_id: Id; entity_id: Id; player_id: Id; input: CharacterInput } }
+  | { PrepareEquipment: { character_id: Id; item_ids: Id[] } }
   | { StartSession: { id: Id; name: string; participants: Participant[] } } | 'EndSession'
   | { SetSituation: { situation: Situation } }
   | { CancelDecision: { pending_id: Id; revision: number } }
@@ -115,7 +117,7 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
-  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
+  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',PrepareEquipment:'Prepare starting equipment',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
   return labels[typeof request.request.action === 'string' ? request.request.action : Object.keys(request.request.action)[0]];
 }
 

@@ -110,3 +110,24 @@ Exhaustion/current armor) are copied into this branch. Inventory now has an opti
 RulesState attachment, structural/source validation and codec/database/audit guards.
 The combined tree has not yet been compiled; its application provisioning/current-AC
 adapter and turn resolution remain active work. This checkpoint is not merge evidence.
+
+### Physical equipment and table checkpoint
+
+The combined integration compiled, and the six tactical application tests passed. The
+desktop/table now materializes each creation grant once using caller-retained ItemIds,
+shows the controller's current physical equipment, and offers all source Fighter mastery
+choices. Creation evidence stays immutable while current loadout determines AC.
+The new SQLite test passed same-command retry, second-grant rejection, private views and
+exact export/restore; forged grant provenance fails before restore writes.
+
+Independent review of `d5ea75e` found an inventory-only legacy action bypass. A fail-closed
+guard now limits that old path to character creation, checks, Second Wind and their roll
+completion/cancellation. Consequences use the tactical path so damage cannot omit physical
+drops or source recovery. Current-loadout provenance permits another known causing actor;
+starting grants retain recipient/host attribution. New guard/provenance/schema regression
+tests await their serial Rust verification slot.
+
+Frontend checks passed: Svelte reports zero errors/warnings, all 12 UI tests pass (including
+source mastery selection), and the production Vite build succeeds. This does not yet prove
+native encounter acceptance. Turn scheduling, table tactical commands, combat UI and the
+rest of Gate 4 remain active; no gate or runtime merge acceptance is claimed.

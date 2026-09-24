@@ -8,6 +8,7 @@ pub use tactical_runtime::TacticalReceipt;
 mod table_protocol;
 pub use table_protocol::*;
 mod table_engine;
+mod table_equipment;
 mod table_runtime;
 
 use dmd_domain::{

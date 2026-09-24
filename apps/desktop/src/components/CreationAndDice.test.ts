@@ -13,12 +13,14 @@ describe('source choices and physical input', () => {
     await user.type(screen.getByLabelText('Character name'),'River');
     await user.type(screen.getByRole('spinbutton',{name:'Leather Armor quantity'}),'1');
     await user.click(screen.getByLabelText('Wear purchased Leather Armor'));
+    await user.selectOptions(screen.getByLabelText('Weapon mastery 1'), 'longsword');
     expect(screen.getByText('Remaining: 195.00 GP')).toBeTruthy();
     await user.click(screen.getByRole('button',{name:'Create character'}));
     expect(onCreate).toHaveBeenCalledOnce();
     const input = onCreate.mock.calls[0][1];
     expect(input.purchases).toEqual([{item_id:'leather-armor',quantity:1}]);
     expect(input.worn_armor).toBe('leather-armor');
+    expect(input.masteries).toEqual(['longsword', 'dagger', 'shortbow']);
     expect(input).not.toHaveProperty('hp'); expect(input).not.toHaveProperty('armor_class');
   });
   it('keeps invalid repeated score assignment local until corrected', async () => {

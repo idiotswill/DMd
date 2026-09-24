@@ -774,6 +774,8 @@ fn validate_origins(
                     && !commands
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
+                    && !commands.get(&origin.id).is_some_and(|event| matches!(event,
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. })))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())

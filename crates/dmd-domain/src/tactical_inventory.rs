@@ -170,7 +170,7 @@ impl TacticalInventory {
             if !equipped_actors.insert(loadout.actor) {
                 return Err("duplicate current equipment record".into());
             }
-            validate_equipment_origin(state, &loadout.command, loadout.actor)?;
+            validate_equipment_change_origin(state, &loadout.command, loadout.actor)?;
             for id in loadout
                 .hands
                 .hands
@@ -199,6 +199,26 @@ pub fn validate_equipment_origin(
     command: &CommandMeta,
     actor: EntityId,
 ) -> Result<(), String> {
+    validate_equipment_change_origin(state, command, actor)?;
+    if command
+        .actor
+        .is_some_and(|id| id != AgentRef::Entity(actor))
+        || matches!(command.issuer, CommandIssuer::Player(_))
+            && command.actor != Some(AgentRef::Entity(actor))
+    {
+        return Err("starting grant must originate with its recipient or the host".into());
+    }
+    Ok(())
+}
+
+/// Consequences such as dropping held items retain the causing actor's command,
+/// even when that actor differs from the equipment holder. This authenticates
+/// references only; the resolver and journal prove the specific consequence.
+pub fn validate_equipment_change_origin(
+    state: &CampaignState,
+    command: &CommandMeta,
+    actor: EntityId,
+) -> Result<(), String> {
     let entity = state
         .entities
         .get(&actor)
@@ -210,16 +230,19 @@ pub fn validate_equipment_origin(
         || command.campaign_id != state.campaign_id()
         || command.expected_event_sequence > state.applied_event_sequence
         || command.session_id.is_some_and(|id| id.0.is_nil())
-        || command
-            .actor
-            .is_some_and(|id| id != AgentRef::Entity(actor))
+        || command.actor.is_some_and(|origin| match origin {
+            AgentRef::Entity(id) => state.entities.get(&id).is_none_or(|entity| {
+                id.0.is_nil() || entity.id != id || entity.campaign_id != state.campaign_id()
+            }),
+            AgentRef::Faction(_) => true,
+        })
     {
         return Err("invalid equipment command provenance".into());
     }
     match command.issuer {
         CommandIssuer::System | CommandIssuer::Admin => Ok(()),
         CommandIssuer::Player(id)
-            if command.actor == Some(AgentRef::Entity(actor))
+            if matches!(command.actor, Some(AgentRef::Entity(_)))
                 && state.players.get(&id).is_some_and(|player| {
                     !id.0.is_nil() && player.id == id && player.campaign_id == state.campaign_id()
                 }) =>
