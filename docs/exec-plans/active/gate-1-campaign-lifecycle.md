@@ -1,10 +1,11 @@
 # Gate 1 campaign lifecycle
 
-Status: validation closeout — implementation/review blockers resolved; exact-head full CI pending
+Status: ready for human review — do not merge without explicit approval
 Branch: gate1/campaign-lifecycle
 PR: #9
 Integrated base: main@f4473745bb44e6fa112ae87833c9336553304c20 (PR #10 projections merged)
 Reviewed implementation head: 74256b11c523cb7f5bf47a73bf1473a5cc089604
+Validated closeout head: 09d8332839702a9c484618139879ff5ad8a2b12d
 
 ## Objective
 Build production-intended durable lifecycle operations for multiple unrelated campaigns, including create/open/list/archive, safe whole-aggregate purge, and portable backup/export/restore without weakening append-only history, replay integrity, projections, or authority boundaries.
@@ -49,7 +50,7 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - [x] Integration onto `main@f4473745...` preserves projection migration `0006`, uses lifecycle migration `0007`, uses lifecycle ADR `014`, and preserves `dmd-persistence/src/lib.rs` projection/lifecycle exports and migration-on-open behavior.
 - [x] Projection rows are rebuilt automatically from restored authoritative current state and are removed by root cascade during purge; export v1 remains projection-free and authoritative-state-only.
 - [x] Complete integrated diff was reviewed against ADRs 004/011/012/013 and proposed lifecycle ADR 014; changed-file set contains only the 10 intended lifecycle/dependency/test/documentation files and no temporary helper workflow.
-- [ ] `./scripts/verify-fast`, clippy, full workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard pass on the exact final integrated head.
+- [x] `./scripts/verify-fast`, clippy, full workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard passed together in PR CI 254 on closeout head `09d8332839702a9c484618139879ff5ad8a2b12d`.
 - [x] Lifecycle ADR remains proposed/pending human approval.
 - [x] Irreversible decisions and remaining debt are recorded below.
 
@@ -57,7 +58,7 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 1. **Complete-root purge invariant** — migration `0007` authorizes only aggregate-root deletion; child immutable-history guards ignore purge authorization; the root `AFTER DELETE` trigger mechanically removes non-cascading sessions plus transient authorization rows. Production Rust has no post-root session cleanup dependency. Direct-SQL regression proves sessions/participants/history/snapshots/lifecycle/projections/auth rows are all gone after one authorized root delete.
 2. **Replay-safe restore validation** — import validates normal serialized-record shape, accepted resolution provenance, event→accepted-command relation, exact accepted-command event spans, session/authority/actor references, journal/causal/snapshot/state provenance, and rejects corrupt artifacts before writes.
 3. **Projection integration** — lifecycle is rebased onto merged projection `main`; projection migration remains `0006`, lifecycle is `0007`, projection API/open/migration behavior in `lib.rs` is preserved, restore rebuilds projections from current state, and purge cascades them away.
-4. **Validation/closeout** — focused integrated persistence suite is green; full diff reviewed; exact-head repository CI remains the final machine-validation step before human review.
+4. **Validation/closeout** — focused integrated persistence suite is green; full diff reviewed; full PR CI 254 is green on the validated closeout head. This final plan-only commit records that evidence and does not alter production code, migrations, tests, or the ADR decision.
 
 ## Decisions
 - Archive remains operational lifecycle metadata and does not rewrite domain `CampaignStatus` or accepted history.
@@ -73,8 +74,9 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - Review #5296941307 was re-read and used as the blocker contract.
 - Focused integrated helper run `35967468476` passed on Rust 1.88 after projection integration: `campaign_lifecycle`, `campaign_lifecycle_integrity`, and the full `dmd-persistence` test suite all passed. The helper removed itself after committing only the intended test changes.
 - PR CI 253 on bot-authored cleanup head `74256b11...` was `action_required` before jobs executed; it is not counted as validation evidence.
-- `scripts/verify` was inspected: its checks are exactly `verify-fast`, clippy, full workspace tests, genericity guard, and architecture guard. Normal PR CI runs those same checks plus a separate Rust 1.88 workspace check.
-- Final exact-head PR CI is pending on the user-authored closeout commit containing this plan update.
+- PR CI 254 (`35968214801`) on user-authored closeout head `09d8332839702a9c484618139879ff5ad8a2b12d` completed fully green: fast verification, clippy, full workspace tests, Rust 1.88 workspace check, genericity guard, and architecture guard all succeeded.
+- `scripts/verify` was inspected: its checks are exactly `verify-fast`, clippy, full workspace tests, genericity guard, and architecture guard. Normal PR CI runs those same checks plus the separate Rust 1.88 workspace check.
+- This final commit changes only this execution-plan validation record. PR CI on the resulting exact head remains the external final guard before merge consideration; no further repository edit is required solely to echo that run number back into this file.
 
 ## Irreversible / high-impact decisions
 - Export format version 1 is a durable compatibility surface; incompatible future changes require an explicit format/version migration decision.
@@ -93,8 +95,7 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - Content-manifest availability/compatibility remains outside this PR.
 
 ## Blockers / risks
-- Machine blocker: exact-head full PR CI must pass after this closeout commit.
-- Governance blocker: this remains irreversible migration/save-format/destructive-persistence work and must stay draft/unmerged until explicit human approval.
+- Governance blocker only after exact-head CI: this remains irreversible migration/save-format/destructive-persistence work and must stay draft/unmerged until explicit human approval.
 
 ## Next action
-Verify exact-head full PR CI, then update PR #9 with the integrated review/validation summary. If CI is green, stop for human review without merging or accepting ADR 014.
+Verify PR CI on this final plan-only head. If it is green, update PR #9 with the integrated blocker-resolution and validation summary, then stop for human review without merging or accepting ADR 014.
