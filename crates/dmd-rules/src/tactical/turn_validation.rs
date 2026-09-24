@@ -32,13 +32,30 @@ pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<()
         ));
     }
     provenance(state, &pending.issued_by, key.subject)?;
-    if let TacticalWorkKind::Effect { ticket } = p.work.kind {
+    selected_applicable(state, &p.work)?;
+    Ok(())
+}
+
+pub(super) fn selected_applicable(
+    state: &CampaignState,
+    work: &TacticalWorkItem,
+) -> Result<(), RulesError> {
+    if let TacticalWorkKind::Effect { ticket } = work.kind {
         let t = super::continuations::ticket(state, ticket)?;
         if !crate::tactical_effects::trigger_is_applicable(effects(state)?, t)
             .map_err(|e| invalid(&e.to_string()))?
         {
             return Err(invalid("pending source effect is inactive"));
         }
+    }
+    if let TacticalWorkKind::ConcentrationSave { actor, group, .. } = work.kind
+        && state
+            .rules
+            .as_ref()
+            .and_then(|r| r.entities.get(&actor))
+            .is_none_or(|e| e.concentration != Some(group))
+    {
+        return Err(invalid("selected concentration save lost its source group"));
     }
     Ok(())
 }
@@ -83,6 +100,41 @@ fn validate_work(
             *actor
         }
         TacticalWorkKind::RecoverStable { actor } => *actor,
+        TacticalWorkKind::CreatureRecharge { actor, feature_id } => {
+            let ticket = super::creature_bridge::recharge(state, *actor, feature_id)?;
+            if *actor != r.turn_actor
+                || r.boundary != TurnBoundary::Start
+                || ticket.origin != r.origin
+                || ticket.turn.encounter_id != encounter(state)?.id
+                || ticket.turn.actor != r.turn_actor
+                || ticket.turn.number != r.turn_number
+                || ticket.turn.boundary != r.boundary
+                || ticket.request.id != super::continuations::key(state, work)?.request_id()
+            {
+                return Err(invalid(
+                    "recharge is not attached to its source own-start occurrence",
+                ));
+            }
+            *actor
+        }
+        TacticalWorkKind::LegendaryWindow { actor } => {
+            let profile = rules
+                .tactical_creatures
+                .as_ref()
+                .and_then(|c| c.profile(*actor))
+                .ok_or_else(|| invalid("legendary window lacks a source profile"))?;
+            let source = crate::tactical_creatures::source_for_profile(profile)
+                .map_err(|e| invalid(&e.to_string()))?;
+            if *actor == r.turn_actor
+                || r.boundary != TurnBoundary::End
+                || source.legendary_budget.is_none()
+            {
+                return Err(invalid(
+                    "legendary window outside another creature's completed turn",
+                ));
+            }
+            *actor
+        }
         TacticalWorkKind::Effect { ticket } => {
             let t = super::continuations::ticket(state, *ticket)?;
             if t.origin.command.expected_event_sequence < r.origin.expected_event_sequence {
@@ -132,11 +184,32 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         let mut occurrences = HashSet::new();
         let mut ticket_ids = HashSet::new();
+        if usize::from(r.pending.is_some())
+            + usize::from(r.failed_save.is_some())
+            + usize::from(r.legendary_window.is_some())
+            > 1
+        {
+            return Err(invalid("multiple selected tactical continuations"));
+        }
+        for (index, frame) in r.frames.iter().enumerate() {
+            if frame
+                .iter()
+                .any(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
+                && (index != 0
+                    || !frame
+                        .iter()
+                        .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. })))
+            {
+                return Err(invalid("after-turn work must follow all End consequences"));
+            }
+        }
         for work in r
             .frames
             .iter()
             .flatten()
             .chain(r.pending.iter().map(|p| &p.work))
+            .chain(r.failed_save.iter().map(|f| &f.pending.work))
+            .chain(r.legendary_window.iter().map(|w| &w.work))
         {
             if !occurrences.insert(work.occurrence) {
                 return Err(invalid("duplicate consequence occurrence"));
@@ -157,7 +230,21 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 "effect ticket omitted from authoritative continuation",
             ));
         }
-        if r.pending.is_some() {
+        if let Some(window) = &r.legendary_window {
+            if r.frames.len() > 1
+                || r.frames
+                    .iter()
+                    .flatten()
+                    .any(|w| !matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
+            {
+                return Err(invalid(
+                    "legendary opportunity preceded unfinished End effects",
+                ));
+            }
+            super::creature_bridge::validate_window(state, window)?;
+        } else if let Some(failed) = &r.failed_save {
+            super::failed_save::validate_failed_save(state, failed)?;
+        } else if r.pending.is_some() {
             pending(
                 state,
                 rules
@@ -178,6 +265,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             "unattached pending work or unfinished end boundary",
         ));
     }
+    super::creature_bridge::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20
         || f.budget.weapon_history.len() > 512

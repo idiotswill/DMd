@@ -1,6 +1,7 @@
 # Gate 4 durable turn scheduler
 
-Status: compiling reducer checkpoint; focused behavioral tests and review pending. Branch
+Status: source resistance/creature-boundary bridge passes focused verification and independent
+working-delta review; final exact-head and application verification remain with integration. Branch
 `codex/gate4-turn-scheduler`, base `d5ea75e`.
 
 ## Objective and ownership
@@ -116,3 +117,57 @@ Strict Clippy, independent complete scheduler review, combined application tests
 final head verification remain outstanding. Root aggregate `90c3c23` was merged only
 for integration dependencies; root must cherry-pick this slice's followups, not its
 verification-only merge commit `12b601f`.
+
+## Source creature boundary bridge
+
+The next slice retains a failed save before applying consequences, validates it against
+the exact accepted raw roll or automatic/voluntary decision, and obtains a sealed source
+Legendary Resistance proof. The creature's controller accepts or declines; accepting
+spends the source use and changes the outcome without changing raw faces. Declining leaves
+the source budget intact. Source profile/controller authority is separate from the active
+turn's controller. A PC without the source trait has no invented resistance opportunity.
+
+Source OwnStart refreshes legendary/per-own-turn accounting through the single central
+cursor. Spent recharge features add explicit raw d6 work, with IDs derived from the same
+boundary origin and checked occurrence allocator. Recharge participates in simultaneous
+Start work ordering and must finish before actions. The original accepted command remains
+the hook cause even when Player A's EndTurn starts creature B's turn; no substituted System
+or victim command is invented. Secret recharge submissions remain host/system controlled.
+
+Legendary Action opportunities follow all End effects (SRD257 says immediately after the
+other creature's turn), and Disengage has expired before this phase. Capability is checked
+again after those effects. When multiple creatures have this opportunity, the host selects
+their order as an explicit GM timing adjudication; this is not claimed as the SRD187 rule
+for simultaneous effects on a turn. Each selected creature then makes its own choice.
+This bounded bridge exposes decline only. Root's later feature pipeline must durably attach
+the selected source action and its target/roll/effect continuation before consuming the
+opportunity. It must not skip a paid or unresolved feature payload to advance the turn.
+Stat-block Multiattack is an Attack action under SRD257; nested routine steps inherit the
+original action and do not create another action budget.
+
+Restored state validates source/central cursor agreement, complete recharge work coverage,
+matching raw history, mutually exclusive selected work, original command provenance and
+after-End frame ordering. Seven new source integration regressions are authored, covering
+raw/voluntary/automatic resistance, authority, decline, malformed pauses, source recharge,
+End-effect eligibility and multiple after-turn opportunities. Every accepted test event
+continues through serialization and exact replay.
+
+Dependencies integrated only for local verification: source scheduler `0f388c0` and root
+deep-validation `5e410c6`. Root already owns these; cherry-pick only this slice's final
+implementation/test commit, not duplicate dependency commits.
+
+Final focused verification passed: all 20 `tactical_turns` and 14
+`tactical_creature_schedule` integration tests, all 31 `tactical_damage` unit tests, and
+strict `cargo clippy --locked --offline -p dmd-domain -p dmd-rules --all-targets -- -D warnings`.
+`cargo fmt --all --check` and `git diff --check` pass. The first run found one invalid test
+fixture assigning separate initiative rolls to identical creatures; it now uses their
+shared roll and the host's tie decision, preserving the existing source invariant.
+The final Clippy fix only collapses an equivalent duplicate-window match guard.
+
+Independent source/authority review found no blocker in the complete working bridge and
+seven new tests. The final narrow guard also rejects an inactive selected source effect
+or a selected concentration save whose target no longer owns that group; the concentration
+tamper regression passes. Queued work can still legitimately expire before selection.
+Next: reviewer confirms the committed exact head, root integrates application labels,
+provenance collection and UI decisions, then runs combined production/replay/restore and
+canonical verification before its PR. This source slice alone does not complete Gate 4.

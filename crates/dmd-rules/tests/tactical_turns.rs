@@ -2,6 +2,499 @@ use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, *};
 use std::collections::HashMap;
 
+fn resistance_save(ability: Ability) -> EffectTriggerPayload {
+    EffectTriggerPayload::SavingThrow {
+        ability,
+        dc: 30,
+        on_success: EffectSaveEnd::TargetEffect,
+        on_failure: EffectSaveEnd::None,
+    }
+}
+
+#[test]
+fn legendary_resistance_pauses_before_consequences_preserves_raw_faces_and_creature_authority() {
+    let mut f = Fixture::new();
+    f.creature(1, true);
+    let effect = f.effect(1, resistance_save(Ability::Wisdom), vec![]);
+    f.begin();
+    f.roll(1, &[1]);
+    let failed = f.resolution().failed_save.clone().unwrap();
+    assert_eq!(failed.result.as_ref().unwrap().dice[0].value, 1);
+    assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 0);
+    assert!(
+        f.rules()
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .effects
+            .iter()
+            .any(|e| e.id == effect)
+    );
+    f.rejected(Some(0), TacticalAction::UseLegendaryResistance);
+    f.rejected(Some(0), TacticalAction::DeclineLegendaryResistance);
+    f.rejected(Some(0), TacticalAction::EndTurn);
+    let stale = f.meta(Some(1));
+    f.run(Some(1), TacticalAction::UseLegendaryResistance);
+    assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 1);
+    assert_eq!(
+        f.creature_runtime(1).legendary_resistance_rolls,
+        vec![failed.pending.key.request_id()]
+    );
+    assert!(
+        !f.rules()
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .effects
+            .iter()
+            .any(|e| e.id == effect)
+    );
+    assert_eq!(
+        f.rules().rolls.last().unwrap().result,
+        failed.result.unwrap()
+    );
+    assert!(
+        resolve_tactical(
+            &f.state,
+            &stale,
+            &TacticalAction::UseLegendaryResistance,
+            &f.pack
+        )
+        .is_err()
+    );
+    f.rejected(Some(1), TacticalAction::UseLegendaryResistance);
+}
+
+#[test]
+fn legendary_resistance_handles_voluntary_and_automatic_failure_without_fictional_rolls() {
+    for automatic in [false, true] {
+        let mut f = Fixture::new();
+        f.creature(1, true);
+        let effect = f.effect(
+            1,
+            resistance_save(if automatic {
+                Ability::Strength
+            } else {
+                Ability::Wisdom
+            }),
+            if automatic {
+                vec![Condition::Stunned]
+            } else {
+                vec![]
+            },
+        );
+        f.begin();
+        let count = f.rules().rolls.len();
+        if !automatic {
+            f.run(Some(1), TacticalAction::VoluntarilyFailSave);
+        }
+        assert!(
+            f.resolution()
+                .failed_save
+                .as_ref()
+                .unwrap()
+                .result
+                .is_none()
+        );
+        assert_eq!(f.rules().rolls.len(), count);
+        f.run(Some(1), TacticalAction::UseLegendaryResistance);
+        assert_eq!(f.rules().rolls.len(), count);
+        assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 1);
+        assert!(
+            !f.rules()
+                .tactical_effects
+                .as_ref()
+                .unwrap()
+                .effects
+                .iter()
+                .any(|e| e.id == effect)
+        );
+    }
+}
+
+#[test]
+fn declining_resistance_applies_failure_without_spending_and_rejects_forged_pause() {
+    let mut f = Fixture::new();
+    f.creature(1, true);
+    let effect = f.effect(1, resistance_save(Ability::Wisdom), vec![]);
+    f.begin();
+    f.roll(1, &[1]);
+    for mutation in 0..5 {
+        let mut corrupt = f.state.clone();
+        let r = corrupt
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap();
+        let failed = r.failed_save.as_mut().unwrap();
+        match mutation {
+            0 => failed.result.as_mut().unwrap().dice[0].value = 20,
+            1 => failed.result = None,
+            2 => failed.pending.key.occurrence += 1,
+            3 => failed.resolved_by.issuer = CommandIssuer::Player(f.players[0]),
+            4 => {
+                r.failed_save = None;
+            }
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_tactical_state(&corrupt).is_err(),
+            "mutation {mutation}"
+        );
+    }
+    f.run(Some(1), TacticalAction::DeclineLegendaryResistance);
+    assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 0);
+    assert!(f.creature_runtime(1).legendary_resistance_rolls.is_empty());
+    assert!(
+        f.rules()
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .effects
+            .iter()
+            .any(|e| e.id == effect)
+    );
+    assert!(
+        f.rules()
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .pending
+            .is_empty()
+    );
+}
+
+#[test]
+fn recharge_follows_own_start_preserves_triggering_player_and_raw_history_before_actions() {
+    let mut f = Fixture::new();
+    f.creature(1, false);
+    f.creature_runtime_mut(1).recharge[0].available = false;
+    // Exhausted legendary actions provide no after-turn pause; own Start refreshes them.
+    f.creature_runtime_mut(1).legendary_spent = 3;
+    f.begin();
+    assert!(f.rules().pending.is_none());
+    let end = f.run(Some(0), TacticalAction::EndTurn);
+    let pending = f.rules().pending.clone().unwrap();
+    let PendingPurpose::TacticalResolution { key, .. } = pending.purpose else {
+        panic!("expected source recharge")
+    };
+    assert_eq!(key.role, TacticalRollRole::CreatureRecharge);
+    assert_eq!(key.origin, end.meta.id);
+    assert_eq!(pending.request.dice, vec![DieSpec { count: 1, sides: 6 }]);
+    assert_eq!(pending.request.visibility, RollVisibility::Secret);
+    assert_eq!(f.creature_runtime(1).legendary_spent, 0);
+    assert_eq!(
+        f.creature_runtime(1).recharge[0]
+            .pending
+            .as_ref()
+            .unwrap()
+            .origin,
+        end.meta
+    );
+    f.rejected(None, TacticalAction::StartAttackAction);
+    f.rejected(None, TacticalAction::VoluntarilyFailSave);
+    let raw = f.raw(&[6]);
+    f.rejected(
+        Some(0),
+        TacticalAction::SubmitRoll {
+            result: raw.clone(),
+        },
+    );
+    let event = f.run(
+        None,
+        TacticalAction::SubmitRoll {
+            result: raw.clone(),
+        },
+    );
+    let record = f.creature_runtime(1).recharge[0]
+        .last_roll
+        .as_ref()
+        .unwrap();
+    assert_eq!(record.result, raw);
+    assert_eq!(record.accepted_by, event.meta);
+    assert_eq!(record.ticket.origin, end.meta);
+    assert!(f.creature_runtime(1).recharge[0].available);
+    assert_eq!(f.rules().rolls.last().unwrap().result, raw);
+    f.run(None, TacticalAction::StartAttackAction);
+}
+
+#[test]
+fn restored_recharge_cannot_omit_work_change_origin_or_forge_accepted_history() {
+    let mut f = Fixture::new();
+    f.creature(1, false);
+    f.creature_runtime_mut(1).recharge[0].available = false;
+    f.creature_runtime_mut(1).legendary_spent = 3;
+    f.begin();
+    f.run(Some(0), TacticalAction::EndTurn);
+    for mutation in 0..4 {
+        let mut corrupt = f.state.clone();
+        match mutation {
+            0 => {
+                corrupt
+                    .encounter
+                    .as_mut()
+                    .unwrap()
+                    .flow
+                    .as_mut()
+                    .unwrap()
+                    .resolution = None
+            }
+            1 => {
+                corrupt
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .tactical_creatures
+                    .as_mut()
+                    .unwrap()
+                    .runtime[0]
+                    .recharge[0]
+                    .pending
+                    .as_mut()
+                    .unwrap()
+                    .origin
+                    .id = CommandId::new()
+            }
+            2 => {
+                corrupt
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .tactical_creatures
+                    .as_mut()
+                    .unwrap()
+                    .runtime[0]
+                    .observed_turn
+                    .as_mut()
+                    .unwrap()
+                    .number += 1
+            }
+            3 => {
+                corrupt
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .pending
+                    .as_mut()
+                    .unwrap()
+                    .request
+                    .modifier = 1
+            }
+            _ => unreachable!(),
+        }
+        assert!(
+            validate_tactical_state(&corrupt).is_err(),
+            "mutation {mutation}"
+        );
+    }
+    let result = f.raw(&[1]);
+    f.run(None, TacticalAction::SubmitRoll { result });
+    assert!(!f.creature_runtime(1).recharge[0].available);
+    let mut corrupt = f.state.clone();
+    corrupt
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_creatures
+        .as_mut()
+        .unwrap()
+        .runtime[0]
+        .recharge[0]
+        .last_roll
+        .as_mut()
+        .unwrap()
+        .result
+        .dice[0]
+        .value = 6;
+    assert!(validate_tactical_state(&corrupt).is_err());
+}
+
+#[test]
+fn legendary_window_waits_until_end_effects_and_disengage_expiry_then_controller_declines() {
+    let mut f = Fixture::new();
+    f.creature(1, true);
+    f.effect_at(
+        1,
+        EffectTriggerPayload::SavingThrow {
+            ability: Ability::Wisdom,
+            dc: 1,
+            on_success: EffectSaveEnd::TargetEffect,
+            on_failure: EffectSaveEnd::None,
+        },
+        vec![Condition::Stunned],
+        TurnBoundary::End,
+    );
+    f.begin();
+    f.run(Some(0), TacticalAction::Disengage);
+    f.run(Some(0), TacticalAction::EndTurn);
+    assert!(f.resolution().legendary_window.is_none());
+    assert!(f.rules().pending.is_some());
+    f.rejected(Some(1), TacticalAction::DeclineLegendaryAction);
+    f.roll(1, &[20]);
+    assert!(f.resolution().legendary_window.is_some());
+    assert!(
+        f.state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .budget
+            .disengaged
+            .is_none()
+    );
+    assert_eq!(f.rules().timing.as_ref().unwrap().turn_number, 1);
+    assert!(!active_conditions(f.rules(), f.actors[1]).contains(&Condition::Stunned));
+    f.rejected(Some(0), TacticalAction::DeclineLegendaryAction);
+    f.rejected(Some(0), TacticalAction::EndTurn);
+    f.run(Some(1), TacticalAction::DeclineLegendaryAction);
+    assert_eq!(f.rules().timing.as_ref().unwrap().turn_number, 2);
+    assert_eq!(f.creature_runtime(1).legendary_spent, 0);
+    f.rejected(Some(1), TacticalAction::DeclineLegendaryAction);
+}
+
+#[test]
+fn multiple_after_turn_opportunities_require_host_order_and_each_creatures_explicit_choice() {
+    use dmd_rules::tactical_creatures::*;
+    let mut f = Fixture::new();
+    f.creature(1, false);
+    let third = EntityId::new();
+    let mut world = f.state.entities[&f.actors[1]].clone();
+    world.id = third;
+    f.state.entities.insert(third, world);
+    f.state
+        .scenes
+        .values_mut()
+        .next()
+        .unwrap()
+        .presences
+        .push(ScenePresence {
+            entity_id: third,
+            role: PresenceRole::Participant,
+        });
+    let built = build_creature(
+        &f.state,
+        &f.meta(None),
+        third,
+        &CreatureBuildChoice {
+            definition_id: "adult-red-dragon".into(),
+            size: CreatureSize::Huge,
+            additional_languages: vec![],
+            hit_points: CreatureHitPointChoice::Average,
+            controller: CreatureController::Host,
+            in_lair: false,
+        },
+    )
+    .unwrap();
+    let mut participant = f.state.encounter.as_ref().unwrap().participants[1].clone();
+    participant.entity_id = third;
+    participant.position.y = 60;
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .participants
+        .push(participant);
+    let rules = f.state.rules.as_mut().unwrap();
+    rules.entities.insert(third, built.mechanics);
+    let creatures = rules.tactical_creatures.as_mut().unwrap();
+    creatures.profiles.push(built.profile);
+    creatures.runtime.push(built.runtime);
+    f.state.applied_event_sequence += 1;
+    let actors = [f.actors[0], f.actors[1], third];
+    f.run(
+        None,
+        TacticalAction::Begin {
+            combatants: actors
+                .into_iter()
+                .enumerate()
+                .map(|(i, actor)| TacticalCombatant {
+                    actor,
+                    source: if i == 0 {
+                        TacticalSource::Character
+                    } else {
+                        TacticalSource::Creature {
+                            definition_id: "adult-red-dragon".into(),
+                        }
+                    },
+                    surprised: false,
+                })
+                .collect(),
+            groups: vec![
+                InitiativeGroup {
+                    actors: vec![f.actors[0]],
+                    request_id: RollRequestId::new(),
+                },
+                InitiativeGroup {
+                    actors: vec![f.actors[1], third],
+                    request_id: RollRequestId::new(),
+                },
+            ],
+        },
+    );
+    for value in [18, 3] {
+        let result = f.raw(&[value]);
+        f.run(None, TacticalAction::SubmitRoll { result });
+    }
+    f.run(
+        None,
+        TacticalAction::ProposeInitiativeTie {
+            order: vec![f.actors[1], third],
+        },
+    );
+    f.run(Some(0), TacticalAction::EndTurn);
+    assert_eq!(f.resolution().frames.last().unwrap().len(), 2);
+    let occurrence = f
+        .resolution()
+        .frames
+        .last()
+        .unwrap()
+        .iter()
+        .find(|w| matches!(w.kind,TacticalWorkKind::LegendaryWindow {actor} if actor==third))
+        .unwrap()
+        .occurrence;
+    f.rejected(Some(0), TacticalAction::ChooseTurnWork { occurrence });
+    f.run(None, TacticalAction::ChooseTurnWork { occurrence });
+    assert!(
+        matches!(f.resolution().legendary_window.as_ref().unwrap().work.kind,TacticalWorkKind::LegendaryWindow {actor} if actor==third)
+    );
+    let mut corrupt = f.state.clone();
+    corrupt
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .legendary_window = None;
+    assert!(validate_tactical_state(&corrupt).is_err());
+    f.run(None, TacticalAction::DeclineLegendaryAction);
+    assert!(
+        matches!(f.resolution().legendary_window.as_ref().unwrap().work.kind,TacticalWorkKind::LegendaryWindow {actor} if actor==f.actors[1])
+    );
+    f.run(None, TacticalAction::DeclineLegendaryAction);
+    assert_eq!(f.rules().timing.as_ref().unwrap().turn_number, 2);
+    assert_eq!(
+        f.rules()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(third)
+            .unwrap()
+            .legendary_spent,
+        0
+    );
+}
+
 struct Fixture {
     state: CampaignState,
     pack: RulesPack,
@@ -200,6 +693,97 @@ impl Fixture {
             .get_mut(&self.actors[index])
             .unwrap()
     }
+    fn creature(&mut self, index: usize, controlled: bool) {
+        use dmd_rules::tactical_creatures::*;
+        let actor = self.actors[index];
+        self.state.characters.retain(|_, c| c.entity_id != actor);
+        self.state.entities.get_mut(&actor).unwrap().kind = EntityKind::Creature;
+        self.state.rules.as_mut().unwrap().entities.remove(&actor);
+        let built = build_creature(
+            &self.state,
+            &self.meta(None),
+            actor,
+            &CreatureBuildChoice {
+                definition_id: "adult-red-dragon".into(),
+                size: CreatureSize::Huge,
+                additional_languages: vec![],
+                hit_points: CreatureHitPointChoice::Average,
+                controller: if controlled {
+                    CreatureController::Player(self.players[index])
+                } else {
+                    CreatureController::Host
+                },
+                in_lair: false,
+            },
+        )
+        .unwrap();
+        let participant = self
+            .state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .participants
+            .iter_mut()
+            .find(|p| p.entity_id == actor)
+            .unwrap();
+        participant.size = CreatureSize::Huge;
+        participant.height = 30;
+        participant.movement = built.movement;
+        participant.senses = built.senses;
+        // Keep two Huge actors disjoint when testing independent after-turn windows.
+        participant.position.x = if index == 0 { 20 } else { 70 };
+        self.state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .battlefield
+            .bounds
+            .max
+            .x = 120;
+        let rules = self.state.rules.as_mut().unwrap();
+        rules.entities.insert(actor, built.mechanics);
+        let current = rules.tactical_creatures.get_or_insert(TacticalCreatures {
+            schema_version: 1,
+            profiles: vec![],
+            runtime: vec![],
+        });
+        current.profiles.push(built.profile);
+        current.runtime.push(built.runtime);
+        self.state.applied_event_sequence += 1;
+    }
+    fn resolution(&self) -> &TacticalResolution {
+        self.state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .as_ref()
+            .unwrap()
+    }
+    fn creature_runtime(&self, index: usize) -> &CreatureRuntime {
+        self.rules()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(self.actors[index])
+            .unwrap()
+    }
+    fn creature_runtime_mut(&mut self, index: usize) -> &mut CreatureRuntime {
+        self.state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_creatures
+            .as_mut()
+            .unwrap()
+            .runtime
+            .iter_mut()
+            .find(|r| r.actor == self.actors[index])
+            .unwrap()
+    }
     fn run(&mut self, actor: Option<usize>, action: TacticalAction) -> TacticalEvent {
         let meta = self.meta(actor);
         let before = self.state.clone();
@@ -254,7 +838,14 @@ impl Fixture {
                     .into_iter()
                     .map(|actor| TacticalCombatant {
                         actor,
-                        source: TacticalSource::Character,
+                        source: self
+                            .rules()
+                            .tactical_creatures
+                            .as_ref()
+                            .and_then(|c| c.profile(actor))
+                            .map_or(TacticalSource::Character, |p| TacticalSource::Creature {
+                                definition_id: p.source.definition_id.clone(),
+                            }),
                         surprised: false,
                     })
                     .collect(),
@@ -268,15 +859,22 @@ impl Fixture {
                     .collect(),
             },
         );
-        if self.rules().pending.as_ref().unwrap().request.mode == RollMode::Disadvantage {
-            self.roll(0, &[18, 18]);
-        } else {
-            self.roll(0, &[18]);
-        }
-        if self.rules().pending.as_ref().unwrap().request.mode == RollMode::Disadvantage {
-            self.roll(1, &[3, 3]);
-        } else {
-            self.roll(1, &[3]);
+        for (index, value) in [(0, 18), (1, 3)] {
+            let values =
+                if self.rules().pending.as_ref().unwrap().request.mode == RollMode::Disadvantage {
+                    vec![value, value]
+                } else {
+                    vec![value]
+                };
+            let result = self.raw(&values);
+            let actor = self
+                .rules()
+                .tactical_creatures
+                .as_ref()
+                .and_then(|c| c.profile(self.actors[index]))
+                .is_none()
+                .then_some(index);
+            self.run(actor, TacticalAction::SubmitRoll { result });
         }
     }
     fn effect(
@@ -284,6 +882,15 @@ impl Fixture {
         target: usize,
         payload: EffectTriggerPayload,
         conditions: Vec<Condition>,
+    ) -> EffectId {
+        self.effect_at(target, payload, conditions, TurnBoundary::Start)
+    }
+    fn effect_at(
+        &mut self,
+        target: usize,
+        payload: EffectTriggerPayload,
+        conditions: Vec<Condition>,
+        boundary: TurnBoundary,
     ) -> EffectId {
         let meta = self.meta(None);
         let id = EffectId::new();
@@ -310,7 +917,7 @@ impl Fixture {
             triggers: vec![EffectTriggerRule {
                 event: EffectTriggerEvent::Turn {
                     subject: EffectSubject::Source,
-                    boundary: TurnBoundary::Start,
+                    boundary,
                 },
                 frequency: EffectTriggerFrequency::EveryOccurrence,
                 payload,
@@ -723,6 +1330,26 @@ fn effect_damage_preserves_inspiration_raw_faces_and_queues_target_concentration
         f.rules().pending.as_ref().unwrap().request.roller,
         Some(f.actors[1])
     );
+    let mut corrupt = f.state.clone();
+    let work = &mut corrupt
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .work;
+    let TacticalWorkKind::ConcentrationSave { group, .. } = &mut work.kind else {
+        panic!("expected concentration")
+    };
+    *group = EffectId::new();
+    assert!(validate_tactical_state(&corrupt).is_err());
     f.roll(1, &[9]);
     assert_eq!(f.rules().entities[&f.actors[1]].concentration, None);
 }

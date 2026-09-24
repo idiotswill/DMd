@@ -13,6 +13,7 @@ pub enum TacticalRollRole {
     EffectDamage,
     Concentration,
     StableRecovery,
+    CreatureRecharge,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -35,6 +36,7 @@ impl TacticalRollKey {
             TacticalRollRole::EffectDamage => 3,
             TacticalRollRole::Concentration => 4,
             TacticalRollRole::StableRecovery => 5,
+            TacticalRollRole::CreatureRecharge => 6,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -63,6 +65,15 @@ pub enum TacticalWorkKind {
         origin: VitalityOrigin,
     },
     RecoverStable {
+        actor: EntityId,
+    },
+    CreatureRecharge {
+        actor: EntityId,
+        feature_id: String,
+    },
+    /// Post-End opportunity, after End effects. Does not spend a source use until
+    /// a feature is actually selected; the creature's controller may decline.
+    LegendaryWindow {
         actor: EntityId,
     },
 }
@@ -95,6 +106,13 @@ pub struct TacticalFailedSave {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct TacticalLegendaryWindow {
+    pub work: TacticalWorkItem,
+    pub origin: CommandMeta,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TacticalResolution {
     pub origin: CommandMeta,
     pub turn_actor: EntityId,
@@ -106,6 +124,8 @@ pub struct TacticalResolution {
     pub pending: Option<TacticalPendingWork>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub failed_save: Option<TacticalFailedSave>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub legendary_window: Option<TacticalLegendaryWindow>,
     pub next_occurrence: u16,
 }
 

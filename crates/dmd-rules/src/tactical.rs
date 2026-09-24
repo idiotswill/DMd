@@ -1,12 +1,15 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
 mod continuations;
+mod creature_bridge;
+mod failed_save;
 mod initiative;
 mod turn_validation;
 mod turns;
 mod validation;
 use crate::{ResolveRoll, RulesError, RulesPack};
 use dmd_domain::*;
+pub use failed_save::validate_failed_save;
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
 
@@ -41,6 +44,9 @@ pub enum TacticalAction {
         occurrence: u16,
     },
     VoluntarilyFailSave,
+    UseLegendaryResistance,
+    DeclineLegendaryResistance,
+    DeclineLegendaryAction,
     EndTurn,
     Dash {
         speed: DashSpeed,
@@ -96,6 +102,17 @@ fn controller(state: &CampaignState, actor: EntityId) -> Option<PlayerId> {
                 && matches!(c.status, CharacterStatus::Active | CharacterStatus::Dead)
         })
         .and_then(|c| c.controlling_player_id)
+        .or_else(|| {
+            state
+                .rules
+                .as_ref()
+                .and_then(|r| r.tactical_creatures.as_ref())
+                .and_then(|c| c.runtime(actor))
+                .and_then(|runtime| match runtime.controller {
+                    CreatureController::Player(player) => Some(player),
+                    _ => None,
+                })
+        })
 }
 fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
     let accepted = match meta.issuer {
@@ -272,6 +289,9 @@ pub fn resolve_tactical(
             turns::choose(&mut next, meta, *occurrence)?
         }
         TacticalAction::VoluntarilyFailSave => continuations::voluntarily_fail(&mut next, meta)?,
+        TacticalAction::UseLegendaryResistance => failed_save::choose(&mut next, meta, true)?,
+        TacticalAction::DeclineLegendaryResistance => failed_save::choose(&mut next, meta, false)?,
+        TacticalAction::DeclineLegendaryAction => creature_bridge::decline(&mut next, meta)?,
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage
