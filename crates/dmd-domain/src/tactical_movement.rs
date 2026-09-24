@@ -74,6 +74,20 @@ pub struct TacticalOpportunityWindow {
     pub options: Vec<TacticalMeleeOption>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TacticalOpportunityDecisionKind {
+    Declined,
+    Attack,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalOpportunityDecision {
+    pub reactor: EntityId,
+    pub origin: CommandMeta,
+    pub kind: TacticalOpportunityDecisionKind,
+}
+
 /// Retained ordinary movement. Actual current position and expenditure stay in the
 /// encounter participant and turn budget. The initial image/receipts explain how the
 /// accepted path reached its current cursor, which semantic replay verifies.
@@ -91,5 +105,6 @@ pub struct TacticalMovement {
     /// Actors whose opportunity at this crossing has already been offered. Clearing
     /// a selected attack must not reopen its trigger, even if it declined or missed.
     pub offered: Vec<EntityId>,
+    pub decisions: Vec<TacticalOpportunityDecision>,
     pub opportunity: Option<TacticalOpportunityWindow>,
 }
