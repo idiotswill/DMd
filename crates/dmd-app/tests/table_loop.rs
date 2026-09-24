@@ -41,6 +41,9 @@ struct Fixture {
 }
 impl Fixture {
     async fn new() -> Self {
+        Self::with_contract(TableContract::default()).await
+    }
+    async fn with_contract(contract: TableContract) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let runtime = CampaignRuntime::from_content_root(
             pool.clone(),
@@ -56,11 +59,7 @@ impl Fixture {
             session: PlaySessionId::new(),
         };
         f.runtime
-            .create_table_campaign(
-                f.campaign,
-                "An independent campaign",
-                TableContract::default(),
-            )
+            .create_table_campaign(f.campaign, "An independent campaign", contract)
             .await
             .unwrap();
         for i in 0..2 {
@@ -499,4 +498,145 @@ async fn supported_profiles_require_their_authoritative_mechanics_and_feature_gr
     assert!(
         matches!(f.runtime.create_campaign(&missing_grants).await,Err(RunnableCampaignError::Table(message)) if message.contains("feature grants"))
     );
+}
+
+#[tokio::test]
+async fn selected_house_rule_is_inherited_by_creation_and_explained_as_a_house_rule() {
+    let mut contract = TableContract::default();
+    contract.house_rules.ability_test_natural_extremes = true;
+    contract.house_rule_notes = "Natural 1 and 20 determine ability test results.".into();
+    let f = Fixture::with_contract(contract.clone()).await;
+    assert_eq!(
+        f.runtime
+            .open_campaign(f.campaign)
+            .await
+            .unwrap()
+            .state()
+            .rules
+            .as_ref()
+            .unwrap()
+            .house_rules,
+        contract.house_rules
+    );
+    let reply = f
+        .runtime
+        .submit_table_text(f.player_meta(0).await, "How do I roll?")
+        .await
+        .unwrap();
+    assert!(
+        matches!(reply,TableTextResult::Observed(body) if body.answer.contains("Your table explicitly enabled the house rule"))
+    );
+}
+
+#[tokio::test]
+async fn second_wind_pending_roll_resources_and_transcript_survive_database_reopen() {
+    let f = Fixture::new().await;
+    f.runtime
+        .submit_table_text(f.player_meta(0).await, "I use Second Wind")
+        .await
+        .unwrap();
+    let pending = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap()
+        .pending
+        .unwrap();
+    let request_id = RollRequestId::new();
+    let meta = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+    let action = TableAction::Adjudicate {
+        pending_id: pending.id,
+        revision: pending.revision,
+        request_id,
+    };
+    f.runtime
+        .execute_table(meta.clone(), action.clone())
+        .await
+        .unwrap();
+    assert!(
+        f.runtime
+            .execute_table(meta, action)
+            .await
+            .unwrap()
+            .already_accepted
+    );
+    let expected = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert_eq!(
+        expected
+            .characters
+            .iter()
+            .find(|pc| pc.character_id == f.characters[0])
+            .unwrap()
+            .second_wind_remaining,
+        Some(1)
+    );
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let directory = std::env::temp_dir().join(format!("dmd-table-reopen-{}", f.campaign.0));
+    std::fs::create_dir(&directory).unwrap();
+    let database = format!("sqlite:{}", directory.join("campaign.sqlite").display());
+    let content = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content");
+    let pool = open_sqlite(&database).await.unwrap();
+    let restored = CampaignRuntime::from_content_root(pool.clone(), &content);
+    restored.restore_campaign(&export).await.unwrap();
+    drop(restored);
+    pool.close().await;
+    let reopened_pool = open_sqlite(&database).await.unwrap();
+    let reopened = CampaignRuntime::from_content_root(reopened_pool.clone(), content);
+    assert_eq!(
+        expected,
+        reopened
+            .table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap()
+    );
+    let meta = f.player_meta(0).await;
+    let result = reopened
+        .execute_table(
+            meta,
+            TableAction::SubmitPhysical {
+                request_id,
+                faces: vec![6],
+            },
+        )
+        .await
+        .unwrap();
+    assert!(result.outcome.message.contains("total 7"));
+    assert!(
+        reopened
+            .table_view(f.campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .roll
+            .is_none()
+    );
+    // The old direct entrypoint cannot bypass a table campaign's pending-action composition.
+    let state = reopened.open_campaign(f.campaign).await.unwrap();
+    assert!(
+        reopened
+            .execute_rules(
+                RulesContext {
+                    campaign_id: f.campaign,
+                    issuer: CommandIssuer::Admin,
+                    actor: None,
+                    session_id: Some(f.session),
+                    expected_event_sequence: state.state().applied_event_sequence
+                },
+                dmd_rules::RulesAction::AdvanceTime {
+                    seconds: 1,
+                    ruling: Ruling {
+                        basis: RulingBasis::GmAdjudication,
+                        reason: "Bypass attempt".into()
+                    }
+                }
+            )
+            .await
+            .is_err()
+    );
+    drop(reopened);
+    reopened_pool.close().await;
+    std::fs::remove_dir_all(directory).unwrap();
 }
