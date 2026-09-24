@@ -3,7 +3,7 @@
 Status: active
 Branch: `gate1/acceptance-closeout`
 Base: `main` @ `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639`
-PR: pending
+PR: `#14` (draft)
 
 ## Objective
 Perform the final integrated Gate 1 acceptance review against the merged production-intended persistence/application path, reconcile durable Gate 1 documentation with verified repository state, archive completed Gate 1 execution plans, and prepare Gate 1 for explicit human acceptance without weakening the product definition or beginning Gate 2.
@@ -63,7 +63,7 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Base `main` verified at `33bf7b26520446d4fd8e29b14cc6ab8f4cf70639` after merge of PR #13.
 - Post-merge CI #279 on that base was previously verified green before branch creation.
 - Root `AGENTS.md`, `docs/product-definition.md`, `docs/checkpoints/gate-1.md`, and the current active-plan inventory were read from that exact base.
-- No acceptance conclusion has yet been drawn on this branch.
+- Draft PR #14 is open against `main`; no acceptance conclusion has yet been drawn on this branch.
 
 ## Blockers / risks
 - The Gate 1 checkpoint is materially stale and must not be marked Accepted until integrated evidence is re-verified.
@@ -71,4 +71,4 @@ Perform the final integrated Gate 1 acceptance review against the merged product
 - Any newly discovered correctness or integrity defect blocks acceptance and must be recorded immediately rather than papered over in documentation.
 
 ## Next action
-Open a draft PR to `main`, then inventory the merged Gate 1 implementation/evidence area by area before changing the checkpoint status or moving completed plans.
+Inventory the merged Gate 1 implementation and executable acceptance evidence area by area before changing the checkpoint status or moving completed plans.
