@@ -306,8 +306,25 @@ impl TableState {
                 .ok_or("table roll context has no authoritative request")?;
             if pending.request.id != context.request_id
                 || pending.request.roller != Some(context.actor)
+                || pending.issued_by.session_id != Some(context.session_id)
+                || pending.request.visibility != crate::RollVisibility::Public
             {
                 return Err("table roll context points to a different request".into());
+            }
+            if let Some(id) = &context.challenge_id {
+                let challenge = self
+                    .situation
+                    .challenges
+                    .iter()
+                    .find(|challenge| &challenge.id == id)
+                    .ok_or("unknown pending challenge")?;
+                if challenge.resolution.is_some()
+                    || !matches!(&pending.purpose, crate::PendingPurpose::Test {kind,dc,..} if kind==&challenge.kind && *dc==i32::from(challenge.dc))
+                {
+                    return Err(
+                        "table roll context disagrees with the established challenge".into(),
+                    );
+                }
             }
         }
         if self.situation.title.len() > 200
@@ -323,7 +340,11 @@ impl TableState {
             bounded_text(&challenge.description, 4000)?;
             bounded_text(&challenge.success, 4000)?;
             bounded_text(&challenge.failure, 4000)?;
-            if !ids.insert(&challenge.id) || challenge.dc > 30 || challenge.phrases.len() > 20 {
+            if !ids.insert(&challenge.id)
+                || challenge.dc > 30
+                || challenge.phrases.len() > 20
+                || !matches!(challenge.kind, TestKind::Check { .. })
+            {
                 return Err("invalid table challenge".into());
             }
             for phrase in &challenge.phrases {
