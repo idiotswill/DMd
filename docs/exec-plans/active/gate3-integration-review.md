@@ -77,7 +77,57 @@ license files); all three copying/containment regressions pass, including a Wind
 junction escape. New Windows run `36020516064` must produce the tested artifact.
 
 Closeout review strengthened the mechanical boundary guard to parse Cargo package
-identities, including renamed, inherited and target-specific dependencies. All seven
-regressions and both foundation/desktop tree checks pass under Python 3.11.9. CI now
+identities, including renamed, inherited and target-specific dependencies. Seven
+regressions and both foundation/desktop tree checks pass under Python 3.11.9; the
+eighth fixture needs symbolic-link privilege unavailable locally and passes in Linux
+CI run `36021191797` at `cc1b948`. CI now
 provisions Python 3.11 explicitly; local verification can set `PYTHON` to a working
 3.11+ executable when Windows exposes a nonfunctional python3 Store alias.
+
+## Packaged native observations (partial; gate remains active)
+
+Windows run `36020516064` produced artifact `10816249118` for exact head
+`f4f1ad2e2049aecbc2323252d290dfbf2893de02`. Its ZIP SHA-256 is
+`c9f03483a6c03b0bc458649b91b7ad57594345bfaf888c453cc2f6f04fcd0018`.
+All 3,318 manifest checksums passed before launching the portable MSVC release executable
+outside the repository with the installed WebView2 runtime. Ordinary native UI controls
+were used throughout; no developer tools or save edits were used.
+
+Observed through that executable:
+
+- Created Ridge Crossing QA and saved a custom Session Zero tone; created Alex and
+  Mira (Human Fighter 1 Soldier/Skilled), purchased/wore Leather Armor, and obtained
+  source-derived HP 11/11, AC 14, proficiency +2 and Second Wind 2/2. Started Across
+  the ridge with Alex present and bound to Mira.
+- Established The narrow ledge, a Strength (Athletics) DC 15 check. The Alex view hid
+  the host DC and unrevealed consequences. A character question returned saved HP/AC
+  without spending resources or becoming a recap outcome.
+- Corrected an uncommitted Second Wind declaration to a climb; the resource remained
+  2/2. The host requested dice. Native validation rejected 21 on a d20; raw 12 resolved
+  as total 17 and the selected success appeared once in the transcript and recap.
+- An alternative action, "I climb or drink a potion", remained a material clarification
+  across normal quit/restart with the binding, history, resources and recap unchanged.
+  Explicit withdrawal reported no world outcome.
+- A subsequent Second Wind request reserved one use (1/2) and a d10. Duplicate launch
+  focused the same single window. Forced termination of only the verified test executable,
+  followed by normal relaunch, retained the pending request, binding and 1/2 resource.
+
+The pending d10 is deliberately retained for a continuity check against the final package.
+Created Harbor QA with a separate default agreement and verified empty characters, scene,
+transcript and recap. Switching back preserved Ridge Crossing QA's pending roll, history
+and resource count. Remaining native steps: resolve the saved d10, then end/save/reopen/
+continue on the final build. Reference-hardware performance and human enjoyment are not
+claimed by this test.
+
+Actual package inspection found recursive self-copying of generated notices and three
+published WebView2 crates without license files. Narrow pinned MIT supplements and
+generated-output exclusion now have seven copying/containment regressions. Failed Windows
+runs `36023230952` and `36024054085` exposed, respectively, temporary-root aliases and a
+vendoring-only checksum-file assumption; neither is acceptance evidence. The collector now
+uses the exact Cargo.lock registry record after locked metadata, with revision/text checks.
+Native testing also found debug-format roll labels; the application projection now emits
+readable labels without changing stored requests or private context. Independent review
+cleared these fixes; all ten real application table-loop tests pass. Final candidate
+`05ff272d16ab7d893e0c39950f07bd5176c82e3e` passes full local verification (207 tests,
+strict Clippy, formatting and guards). Linux run `36025008608`, Windows run
+`36025008694`, artifact inspection and native completion remain pending.
