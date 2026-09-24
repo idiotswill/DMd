@@ -73,9 +73,19 @@ constrain all immutable mechanical grants, not just abilities and feature flags.
 fixes are being integrated and require a fresh exact-head verification before merge.
 The source kernel rebuilds the profile's complete sheet and permits only explicitly mutable
 play state; future equipment/advancement work must extend that boundary deliberately.
+Those anchor fixes passed full local verification together at `f6d705a`. Follow-up review
+preserves legal concentration state and verifies it through a real kernel effect/replay.
+Native integration found that generic table errors could clear uncertain requests after
+a storage failure. `TableRejected` now denotes only proven input rejection; stored-state,
+receipt/observation readback and persistence errors retain the original request. Two
+application regressions inject an observation write failure and an unavailable accepted
+receipt lookup, then recover with the same ID exactly once. All nine table-loop tests and
+strict app Clippy pass; the final full-workspace/CI rerun is still required on this change.
 
 PR #21 starts Windows packaging and typed native IPC; the gameplay interface is being
-integrated on its separate writer branch. No packaged desktop acceptance is claimed yet.
+integrated on its separate writer branch. Ten gameplay UI tests now pass, including
+source-choice forms, raw dice, durable retries, malformed local storage and player privacy.
+No packaged desktop acceptance is claimed yet.
 
 The accepted Tauri/Svelte path will build on Windows CI using MSVC because the local
 Rust toolchain is GNU. Portable Node tooling stays outside the repository. WebView2 is

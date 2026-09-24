@@ -368,6 +368,47 @@ impl Table {
 }
 
 #[test]
+fn source_sheet_validation_preserves_legal_mutable_play_state() {
+    let mut t = Table::new();
+    let profile = build_character(&input(), t.actor, &pack()).unwrap().profile;
+    t.admin(RulesAction::ApplyDamage {
+        target: t.actor,
+        amount: 3,
+        damage_type: DamageType::Force,
+        critical: false,
+        ruling: ruling(),
+    });
+    t.act(
+        t.player,
+        t.actor,
+        RulesAction::SecondWind {
+            actor: t.actor,
+            request_id: RollRequestId::new(),
+        },
+    );
+    t.submit(&[1]);
+    t.admin(RulesAction::GrantInspiration {
+        actor: t.actor,
+        ruling: ruling(),
+    });
+    t.admin(RulesAction::ApplyEffect {
+        effect: ActiveEffect {
+            id: EffectId::new(),
+            source: t.actor,
+            target: t.other,
+            condition: None,
+            label: "An adjudicated effect".into(),
+            expires: Expiry::Never,
+            concentration_owner: Some(t.actor),
+        },
+        ruling: ruling(),
+    });
+    assert!(t.pc().concentration.is_some());
+    validate_character_mechanics(&profile, t.pc(), &pack()).unwrap();
+    t.verify();
+}
+
+#[test]
 fn creation_adds_a_pc_without_replacing_existing_mechanics_or_history() {
     let mut t = Table::new();
     let before = t.state.clone();

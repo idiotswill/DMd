@@ -35,6 +35,9 @@ Command IDs survive uncertain replies. Identical retries return the accepted rec
 reusing an ID with different metadata or payload fails. A correction retains the pending
 proposal identity, increments its revision and never rewrites an accepted world outcome.
 Correction, proposal and withdrawal transcript entries are labeled as table activity.
+Only `TableRejected` proves that input was rejected and may be revised. Storage failures,
+failed accepted-receipt lookups/decoding and observation write/readback errors do not prove
+non-acceptance; the desktop retains the original request for safe retry.
 
 The deterministic local text adapter recognizes questions, table chatter, corrections,
 Second Wind and a single goal matching current host-established context. Negated,

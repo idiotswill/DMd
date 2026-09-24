@@ -164,6 +164,75 @@ impl Fixture {
 }
 
 #[tokio::test]
+async fn observation_storage_failure_keeps_request_retryable_and_recovers_exactly_once() {
+    let f = Fixture::new().await;
+    let meta = f.player_meta(0).await;
+    sqlx::query("CREATE TRIGGER reject_observation BEFORE INSERT ON session_observations BEGIN SELECT RAISE(FAIL, 'temporary write failure'); END")
+        .execute(&f.pool).await.unwrap();
+    assert!(matches!(
+        f.runtime
+            .submit_table_text(meta.clone(), "How do I roll?")
+            .await,
+        Err(RunnableCampaignError::Table(_))
+    ));
+    sqlx::query("DROP TRIGGER reject_observation")
+        .execute(&f.pool)
+        .await
+        .unwrap();
+    let accepted = f
+        .runtime
+        .submit_table_text(meta.clone(), "How do I roll?")
+        .await
+        .unwrap();
+    let retried = f
+        .runtime
+        .submit_table_text(meta.clone(), "How do I roll?")
+        .await
+        .unwrap();
+    assert_eq!(accepted, retried);
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM session_observations")
+        .fetch_one(&f.pool)
+        .await
+        .unwrap();
+    assert_eq!(count, 1);
+    assert!(matches!(
+        f.runtime.submit_table_text(meta, "Different input").await,
+        Err(RunnableCampaignError::TableRejected(_))
+    ));
+}
+
+#[tokio::test]
+async fn unavailable_receipt_lookup_never_claims_a_prior_action_was_rejected() {
+    let f = Fixture::new().await;
+    let meta = f.player_meta(0).await;
+    let action = TableAction::Declare {
+        text: "I climb the wall".into(),
+    };
+    let receipt = f
+        .runtime
+        .execute_table(meta.clone(), action.clone())
+        .await
+        .unwrap();
+    sqlx::query("ALTER TABLE command_audit RENAME TO temporarily_unavailable_audit")
+        .execute(&f.pool)
+        .await
+        .unwrap();
+    assert!(matches!(
+        f.runtime.execute_table(meta.clone(), action.clone()).await,
+        Err(RunnableCampaignError::Table(_))
+    ));
+    sqlx::query("ALTER TABLE temporarily_unavailable_audit RENAME TO command_audit")
+        .execute(&f.pool)
+        .await
+        .unwrap();
+    let retried = f.runtime.execute_table(meta, action).await.unwrap();
+    assert!(retried.already_accepted);
+    assert_eq!(receipt.command_id, retried.command_id);
+    assert_eq!(receipt.event_sequence, retried.event_sequence);
+    assert_eq!(receipt.outcome, retried.outcome);
+}
+
+#[tokio::test]
 async fn normal_scene_corrects_pending_accepts_raw_faces_and_retries_without_duplicates() {
     let mut f = Fixture::new().await;
     let before = f

@@ -120,6 +120,7 @@ pub fn validate_character_mechanics(
     expected.exhaustion = entity.exhaustion;
     expected.heroic_inspiration = entity.heroic_inspiration;
     expected.prone = entity.prone;
+    expected.concentration = entity.concentration;
     expected.last_long_rest_finished = entity.last_long_rest_finished;
     let actual_features = entity
         .character_features

@@ -16,6 +16,9 @@ use dmd_persistence::{
 use dmd_rules::{RulesAnswer, RulesQuery};
 
 fn invalid(error: impl ToString) -> RunnableCampaignError {
+    RunnableCampaignError::TableRejected(error.to_string())
+}
+fn recovery(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
 }
 
@@ -109,9 +112,10 @@ impl CampaignRuntime {
         // Resolve a previously accepted submission before consulting current pending state.
         if let Some(audit) = load_command_audit(&self.pool, meta.id)
             .await
-            .map_err(invalid)?
+            .map_err(recovery)?
         {
-            let action: TableAction = serde_json::from_str(&audit.payload.json).map_err(invalid)?;
+            let action: TableAction =
+                serde_json::from_str(&audit.payload.json).map_err(recovery)?;
             let submitted = match &action {
                 TableAction::Declare { text: submitted } => submitted == text,
                 TableAction::Correct {
@@ -135,7 +139,7 @@ impl CampaignRuntime {
         let id = ObservationId(meta.id.0);
         if load_session_observation(&self.pool, meta.campaign_id, id)
             .await
-            .map_err(invalid)?
+            .map_err(recovery)?
             .is_some()
         {
             return self
@@ -224,7 +228,7 @@ impl CampaignRuntime {
             &dmd_persistence::CampaignStateSnapshotCodec::new(),
         )
         .await
-        .map_err(invalid)?;
+        .map_err(recovery)?;
         let Some(initial) = initial else {
             return Ok(false);
         };
@@ -247,7 +251,7 @@ impl CampaignRuntime {
             .map(|row| {
                 Ok(TableCampaignSummary {
                     id: serde_json::from_value(serde_json::json!(row.campaign_id))
-                        .map_err(invalid)?,
+                        .map_err(recovery)?,
                     name: row.display_name,
                 })
             })
@@ -317,7 +321,7 @@ impl CampaignRuntime {
     ) -> Result<Option<TableReceipt>, RunnableCampaignError> {
         let Some(audit) = load_command_audit(&self.pool, meta.id)
             .await
-            .map_err(invalid)?
+            .map_err(recovery)?
         else {
             return Ok(None);
         };
@@ -325,7 +329,8 @@ impl CampaignRuntime {
             || &audit.meta != meta
             || audit.payload.kind != "table.action"
             || audit.payload.schema_version != 1
-            || serde_json::from_str::<TableAction>(&audit.payload.json).map_err(invalid)? != *action
+            || serde_json::from_str::<TableAction>(&audit.payload.json).map_err(recovery)?
+                != *action
         {
             return Err(invalid(
                 "This request identity was already used for different input. Refresh before continuing.",
@@ -334,7 +339,7 @@ impl CampaignRuntime {
         Ok(Some(TableReceipt {
             command_id: meta.id,
             event_sequence: audit.resulting_event_sequence,
-            outcome: serde_json::from_str(&audit.resolution_explanation).map_err(invalid)?,
+            outcome: serde_json::from_str(&audit.resolution_explanation).map_err(recovery)?,
             already_accepted: true,
         }))
     }
@@ -350,9 +355,9 @@ impl CampaignRuntime {
         let runnable = self.open_campaign(meta.campaign_id).await?;
         if let Some(saved) = load_session_observation(&self.pool, meta.campaign_id, id)
             .await
-            .map_err(invalid)?
+            .map_err(recovery)?
         {
-            let body = validate_table_observation(&saved.record).map_err(invalid)?;
+            let body = validate_table_observation(&saved.record).map_err(recovery)?;
             if body.meta != meta
                 || saved.record.issuer != meta.issuer
                 || saved.record.session_id != meta.session_id
@@ -447,7 +452,7 @@ impl CampaignRuntime {
         };
         append_session_observations(&self.pool, meta.campaign_id, &[record])
             .await
-            .map_err(invalid)?;
+            .map_err(recovery)?;
         Ok(body)
     }
 
@@ -550,7 +555,7 @@ impl CampaignRuntime {
             .cloned();
         let events = load_journal_events(&self.pool, campaign_id, 0)
             .await
-            .map_err(invalid)?;
+            .map_err(recovery)?;
         let mut transcript = Vec::new();
         let mut recap = Vec::new();
         for event in events {
@@ -561,10 +566,10 @@ impl CampaignRuntime {
                 continue;
             }
             if event.payload.schema_version != TABLE_EVENT_VERSION {
-                return Err(invalid("Unsupported table transcript event version."));
+                return Err(recovery("Unsupported table transcript event version."));
             }
             let event_body: TableEvent =
-                serde_json::from_str(&event.payload.json).map_err(invalid)?;
+                serde_json::from_str(&event.payload.json).map_err(recovery)?;
             let (kind, text) = match &event_body.action {
                 TableAction::Declare { text } => (
                     "declaration",
@@ -606,7 +611,7 @@ impl CampaignRuntime {
         loop {
             let page = load_campaign_observations(&self.pool, campaign_id, after, 500)
                 .await
-                .map_err(invalid)?;
+                .map_err(recovery)?;
             if page.is_empty() {
                 break;
             }
@@ -622,7 +627,7 @@ impl CampaignRuntime {
                 if record.kind != "table.conversation" || record.payload_schema_version != 1 {
                     continue;
                 }
-                let body = validate_table_observation(record).map_err(invalid)?;
+                let body = validate_table_observation(record).map_err(recovery)?;
                 let speaker = match record.issuer {
                     CommandIssuer::Player(player) => state
                         .players
