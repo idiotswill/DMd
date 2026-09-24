@@ -8,6 +8,28 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
+  it('reports raw tactical dice through the retained tactical action envelope',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'session',display_name:'Encounter',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.tactical={encounter_id:'encounter',phase:'initiative',round:null,active_actor:null,battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null};
+    view.roll={id:'initiative-roll',roller:'actor',dice:[{sides:20,count:1}],modifier:2,mode:'Disadvantage',visibility:'Public',reason:'Initiative'};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
+    vi.mocked(tableApi.action).mockRejectedValue('Connection interrupted');
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Report these faces'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.type(screen.getByLabelText('Die 1 · d20'),'17');await user.type(screen.getByLabelText('Die 2 · d20'),'4');
+    await user.click(screen.getByRole('button',{name:'Report these faces'}));
+    await screen.findByRole('alert');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request.action).toEqual({Tactical:{action:{SubmitRoll:{result:{request_id:'initiative-roll',source:'Physical',dice:[{sides:20,value:17},{sides:20,value:4}]}}}}});
+    mounted.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    expect(tableApi.action).toHaveBeenLastCalledWith(saved.request);
+  });
   it('retries equipment preparation after restart with the original command and every item identity',async()=>{
     const user=userEvent.setup();
     const request: UnconfirmedRequest={kind:'action',request:{command_id:'equipment-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{PrepareEquipment:{character_id:'character',item_ids:['first-weapon','second-weapon','ammo-stack']}}}};

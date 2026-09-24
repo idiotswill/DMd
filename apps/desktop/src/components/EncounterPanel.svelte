@@ -1,0 +1,27 @@
+<script lang="ts">
+  import { newId, type CharacterView, type Id } from '../table-api';
+  import type { TacticalAction, TacticalView } from '../tactical-api';
+  import TacticalMap from './TacticalMap.svelte';
+  let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
+    tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
+  }=$props();
+  let surprised=$state<Id[]>([]);
+  let tieOrder=$state<Record<string,Id[]>>({});
+  function reorder(total:number, actors:Id[], index:number, step:number) {
+    const order=[...(tieOrder[total] ?? actors)];const to=index+step;
+    if(to<0||to>=order.length)return;[order[index],order[to]]=[order[to],order[index]];
+    tieOrder={...tieOrder,[total]:order};
+  }
+  const name=(id:Id)=>characters.find(character=>character.entity_id===id)?.name ?? tactical.participants.find(p=>p.entity_id===id)?.public_label ?? 'Combatant';
+  function begin(){onAction({Begin:{combatants:tactical.participants.map(p=>({actor:p.entity_id,source:'Character',surprised:surprised.includes(p.entity_id)})),groups:tactical.participants.map(p=>({actors:[p.entity_id],request_id:newId()}))}});}
+</script>
+<section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
+  <TacticalMap {tactical} {characters}/>
+  {#if tactical.initiative.length}<ol aria-label="Known initiative order">{#each tactical.initiative as entry}<li><strong>{entry.actor===tactical.active_actor?'Current turn: ':''}{entry.label}</strong>{entry.total===null?'':` · ${entry.total}`}</li>{/each}</ol>{/if}
+  {#if host && tactical.phase==='setup'}<fieldset disabled={disabled||pendingRoll}><legend>Begin initiative</legend><p>Mark creatures surprised by combat starting. The rules apply their initiative disadvantage.</p>{#each tactical.participants as participant}<label><input type="checkbox" value={participant.entity_id} bind:group={surprised}/>{participant.public_label} is surprised</label>{/each}<button onclick={begin}>Roll initiative</button></fieldset>{/if}
+  {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
+  {#if tactical.phase==='active' && tactical.budget && (host || actor===tactical.active_actor)}
+    <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
+    <fieldset disabled={disabled||pendingRoll}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
+  {/if}
+</section>

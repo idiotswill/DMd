@@ -58,3 +58,11 @@ source-pinned creatures receive the level-zero/real-Hit-Dice validation exceptio
 
 Next: review/check the combined runtime, connect source creature setup and complete turn
 choices/UI and spell/movement/reaction execution. Full gate acceptance remains pending.
+
+Desktop checkpoint: host terrain/placement form, filtered SVG map, initiative/tie controls,
+physical tactical roll reporting and initial turn controls are connected through the
+existing retained-command path. Svelte reports zero errors/warnings; 13 existing tests
+passed and the two added regressions pass (host-to-player map replacement; unchanged raw
+disadvantage faces and original command after uncertain failure/restart). Production Vite
+build passes. Native packaged encounter acceptance and the full final-head checks remain
+outstanding. No complete-combat claim is made by these initial controls.

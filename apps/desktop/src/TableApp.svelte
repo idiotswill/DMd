@@ -6,6 +6,9 @@
   import SessionForm from './components/SessionForm.svelte';
   import SituationForm from './components/SituationForm.svelte';
   import RollForm from './components/RollForm.svelte';
+  import BattlefieldForm from './components/BattlefieldForm.svelte';
+  import EncounterPanel from './components/EncounterPanel.svelte';
+  import { rawDice } from './table-api';
   import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
   let campaigns = $state<{ id: string; name: string }[]>([]);
@@ -103,6 +106,17 @@
   async function act(action: TableAction, sessionId?: string | null) {
     try { await send({ kind: 'action', request: { ...context(sessionId), action } }); } catch (reason) { await showError(reason); }
   }
+  function reportFaces(faces: number[]) {
+    if (!view?.roll) return;
+    if (view.tactical) {
+      const sides=rawDice(view.roll);
+      return act({ Tactical: { action: { SubmitRoll: { result: {
+        request_id: view.roll.id, source: 'Physical',
+        dice: faces.map((value,index) => ({ sides:sides[index], value }))
+      } } } } });
+    }
+    return act({SubmitPhysical:{request_id:view.roll.id,faces}});
+  }
   async function speak(event: SubmitEvent) {
     event.preventDefault();
     try { await send({ kind: 'text', request: { ...context(), text } }); } catch (reason) { await showError(reason); }
@@ -144,14 +158,16 @@
         {#if view.players.length}<section class="panel">{#key view.event_sequence}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Finish or withdraw pending work before ending the session. Closing the app preserves pending work for later.</p></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
+      {#if view.active_session && !view.tactical}<section class="panel">{#key view.event_sequence}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
           {#if host}<button disabled={locked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending}<div class="actions"><button class="secondary" disabled={locked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={locked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{/if}
         </div>{/if}
-        {#if view.roll}{#if !host && currentCharacter?.entity_id === view.roll.roller}{#key view.roll.id}<RollForm request={view.roll} disabled={locked} onSubmit={(faces) => view?.roll && act({ SubmitPhysical: { request_id: view.roll.id, faces } })} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && currentCharacter?.entity_id === view.roll.roller) || (host && !!view.tactical && !view.characters.some(character=>character.entity_id===view?.roll?.roller))}{#key view.roll.id}<RollForm request={view.roll} disabled={locked} onSubmit={reportFaces} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
+      {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel tactical={view.tactical} characters={view.characters} {host} actor={currentCharacter?.entity_id??null} player={playerId||null} disabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
       <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={locked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
       <section class="panel"><h2>Player-safe recap</h2>{#if view.recap.length}<ol>{#each view.recap as entry}<li class="preserve">{entry}</li>{/each}</ol>{:else}<p>No accepted outcomes yet. Proposed actions and questions do not enter the recap.</p>{/if}</section>
       <section class="panel"><h2>Table transcript</h2><div class="transcript" role="log" aria-label="Saved table transcript">{#each view.transcript as entry (entry.id)}<article><p><strong>{entry.speaker}</strong> <span class="tag">{entry.kind}</span></p><p class="preserve">{entry.text}</p></article>{:else}<p>Your accepted table activity and conversation appear here.</p>{/each}</div></section>
