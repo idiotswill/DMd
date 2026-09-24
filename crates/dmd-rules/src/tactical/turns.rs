@@ -14,7 +14,7 @@ pub(super) fn active(state: &CampaignState) -> Result<EntityId, RulesError> {
 pub(super) fn resolution(state: &CampaignState) -> Result<&TacticalResolution, RulesError> {
     flow(state)?
         .resolution
-        .as_ref()
+        .as_deref()
         .ok_or_else(|| invalid("missing tactical continuation"))
 }
 pub(super) fn resolution_mut(
@@ -22,7 +22,7 @@ pub(super) fn resolution_mut(
 ) -> Result<&mut TacticalResolution, RulesError> {
     flow_mut(state)?
         .resolution
-        .as_mut()
+        .as_deref_mut()
         .ok_or_else(|| invalid("missing tactical continuation"))
 }
 pub(super) fn effects(state: &CampaignState) -> Result<&TacticalEffects, RulesError> {
@@ -182,7 +182,7 @@ fn begin_boundary_from(
     if flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
     }
-    flow_mut(state)?.resolution = Some(TacticalResolution {
+    flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
         turn_number: number,
@@ -192,7 +192,7 @@ fn begin_boundary_from(
         failed_save: None,
         legendary_window: None,
         next_occurrence: first_occurrence,
-    });
+    }));
     state
         .rules
         .as_mut()
