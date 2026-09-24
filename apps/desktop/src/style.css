@@ -11,6 +11,7 @@ header strong { display: block; font-size: 1.4rem; letter-spacing: .04em; }
 .subtitle, .version { font-size: .9rem; color: #526366; }
 .local-badge { margin-left: auto; border: 1px solid #bacdc4; border-radius: 20px; padding: .3rem .8rem; font-size: .85rem; color: #355b49; }
 main { max-width: 1040px; margin: auto; padding: 58px 5vw; }
+main.table-ready { max-width: 1440px; padding-top: 28px; }
 .welcome { max-width: 680px; margin-bottom: 38px; }
 .eyebrow { text-transform: uppercase; letter-spacing: .12em; color: #6e581f; font-size: .78rem; font-weight: 700; }
 h1 { font: normal clamp(2rem, 4vw, 3.2rem)/1.13 Georgia, serif; margin: 14px 0; }

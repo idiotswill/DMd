@@ -40,9 +40,10 @@ Publisher signing and broader installer/release hardening remain Gate 13 work.
 ## Verification and limits
 
 Frontend checks/tests test rendering and recovery behavior; they are not tabletop
-acceptance. The initial scaffold exposes only truthful desktop status and does not
-invent a campaign or mocked gameplay. The actual table service must be wired before
-Gate 3 acceptance. No placeholder screen is claimed as a usable table loop.
+acceptance. Startup initializes the production table service before mounting the table
+UI, with a recoverable startup error otherwise. Typed commands include campaign and
+contract setup, source character choices, sessions, player text and physical dice.
+No placeholder screen or mocked backend is claimed as a usable table loop.
 
 Run the packaged executable through its normal UI, including keyboard navigation,
 labels/errors, offline campaign creation, physical dice, quit/restart and exact pending
