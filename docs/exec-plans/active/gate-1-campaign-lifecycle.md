@@ -1,10 +1,11 @@
 # Gate 1 campaign lifecycle
 
-Status: in progress — post-PR #11 integration required before human merge approval
+Status: validation closeout — post-PR #11 integration complete; exact-head CI pending
 Branch: gate1/campaign-lifecycle
 PR: #9
-Branch head at control review #5301125460: 8a9098a124c1f276f9fd5fd5a0af832acdbdeb92
-Integration target: main@88f813e3afc07d51d2d62416a7b11747acc956f7 (PR #11 content manifests merged)
+Control review #5301125460 head: 8a9098a124c1f276f9fd5fd5a0af832acdbdeb92
+Integrated base: main@88f813e3afc07d51d2d62416a7b11747acc956f7 (PR #11 content manifests merged)
+Integrated lifecycle head before this plan closeout: cf986ea26487aedeec2181b7fd36fc718752cb4b
 
 ## Objective
 Build production-intended durable lifecycle operations for multiple unrelated campaigns, including create/open/list/archive, safe whole-aggregate purge, and portable backup/export/restore without weakening append-only history, replay integrity, projections, content isolation, or authority boundaries.
@@ -21,7 +22,7 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 
 ## Non-goals
 - Expanding normalized projection scope beyond integration with the merged Gate 1 projection layer.
-- Wiring lifecycle/application runnable-campaign opening to `ContentCatalog`; control review #5301125460 explicitly leaves that composition step for a small focused Gate 1 integration PR after #9 lands.
+- Wiring lifecycle/application runnable-campaign opening to `ContentCatalog`; control review #5301125460 leaves that composition step for a focused Gate 1 integration PR after #9 lands.
 - Changing PR #11 content-manifest behavior, APIs, tests, or ADR 014.
 - Gameplay mechanics, simulation/Director, voice/AI/UI, or product-scope changes.
 - Merging this destructive-persistence/save-format work without explicit human approval.
@@ -34,8 +35,8 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - ADR 012 — immutable snapshots and explicit migration/replay behavior.
 - ADR 013 — merged derivative query-projection architecture; projections remain non-authoritative.
 - ADR 014 — merged versioned content-manifest contract; raw persistence remains content-agnostic and runnable-campaign composition is a separate integration requirement.
-- Proposed ADR 015 — lifecycle/portability contract after renumbering; must remain proposed pending human approval.
-- Control review #5301125460 — lifecycle mechanics approved; final blocker is integration with `main@88f813e3...`, ADR renumber, fresh exact-head CI, and combined-diff review.
+- Proposed ADR 015 — lifecycle/portability contract; remains proposed pending human approval.
+- Control review #5301125460 — lifecycle mechanics approved; required final work was current-main integration, ADR renumber, fresh exact-head CI, and combined-diff review.
 
 ## Acceptance criteria
 - [x] Create/open/list/archive and exact-backup purge/export/restore baseline behavior is implemented with unrelated-campaign isolation and restart coverage.
@@ -49,10 +50,11 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - [x] Accepted command event metadata exactly describes its contiguous emitted sequence span; rejected audit rows remain portable only without emitted events.
 - [x] Corruption regressions cover malformed command/event JSON, kind/version metadata, resolution explanation, rejected-command event references, and inconsistent event-batch metadata; invalid restores leave the target campaign absent.
 - [x] Projection rows rebuild automatically from restored authoritative current state and cascade away during purge; export v1 remains projection-free.
-- [ ] Current `main@88f813e3afc07d51d2d62416a7b11747acc956f7` is incorporated without changing merged PR #11 content-manifest code.
-- [ ] Lifecycle migration remains `0007_campaign_lifecycle.sql`; PR #11 introduced no persistence migration.
-- [ ] Lifecycle ADR is renamed from 014 to 015 and all lifecycle references are updated without modifying merged content-manifest ADR 014.
-- [ ] Complete post-#11 combined diff is reviewed against ADRs 004/011/012/013/014 and proposed ADR 015, with no accidental content-manifest changes.
+- [x] Current `main@88f813e3afc07d51d2d62416a7b11747acc956f7` is incorporated as a merge parent.
+- [x] PR #11 content-manifest code/tests/docs remain unchanged relative to current main; `main → #9` contains only the 10 lifecycle/dependency/test/documentation files.
+- [x] Lifecycle migration remains `0007_campaign_lifecycle.sql`; PR #11 introduced no persistence migration.
+- [x] Lifecycle ADR is renamed from 014 to 015; merged content-manifest ADR 014 is untouched.
+- [x] Complete post-#11 combined diff was re-inspected against ADRs 004/011/012/013/014 and proposed ADR 015. Reviewed lifecycle production/test blobs are unchanged from the accepted lifecycle mechanics; new integration changes are the ADR renumber and execution-plan metadata.
 - [ ] `./scripts/verify-fast`, clippy, full workspace tests, Rust 1.88 MSRV, genericity guard, and architecture guard pass on the exact final post-#11 head.
 - [x] Irreversible decisions and remaining debt are recorded below.
 
@@ -60,7 +62,8 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 1. **Complete-root purge invariant — complete.** Root deletion is the mechanical complete-purge boundary; selective history surgery remains blocked.
 2. **Replay-safe restore validation — complete.** Imported serialized/audit/event/session/provenance data is validated before writes.
 3. **Projection integration — complete.** Migration 0006 and ADR 013 remain owned by projections; restore rebuilds derivative projections and purge cascades them.
-4. **Post-content-manifest integration — in progress.** Merge current main, preserve PR #11 unchanged, retain lifecycle migration 0007, renumber lifecycle ADR 014→015, then run exact-head CI and re-review the combined diff.
+4. **Post-content-manifest integration — complete.** Current main is a merge parent; PR #11 files are preserved from main; lifecycle migration stays 0007; lifecycle ADR is 015; combined diff is lifecycle-only.
+5. **Validation closeout — pending exact-head CI.** No further code/schema change is planned unless CI exposes a real integration defect.
 
 ## Decisions
 - Archive remains operational lifecycle metadata and does not rewrite domain `CampaignStatus` or accepted history.
@@ -70,14 +73,16 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - Restore validation reproduces `SerializedRecord::encode` storage invariants and accepted-command/event sequence relationships before opening the write transaction.
 - Query projections remain derivative and excluded from export format v1.
 - Merged content-manifest code and ADR 014 are preserved unchanged in this integration pass.
-- Lifecycle/content runnable composition is intentionally deferred to a focused follow-up PR; #9 continues to preserve stored `VersionedRef` values without declaring unresolved campaigns runnable through a new composition layer.
+- Lifecycle/content runnable composition is intentionally deferred to a focused follow-up PR; #9 preserves stored `VersionedRef` values but does not add the application-level `ContentCatalog` runnable gate.
 
 ## Validation status
 - Review #5296941307 blockers were resolved and accepted by control review #5301125460.
-- Exact-head CI 255 (`35968478504`) was fully green on lifecycle head `8a9098a124c1f276f9fd5fd5a0af832acdbdeb92`: verify-fast, clippy, full workspace tests, Rust 1.88 workspace check, genericity guard, and architecture guard all passed.
-- CI 255 predates merged PR #11 and is therefore historical evidence only; it is not sufficient for the final branch state.
-- Current `main` was directly verified as `88f813e3afc07d51d2d62416a7b11747acc956f7`, merging PR #11. The main-tree comparison from the prior integration base shows PR #11 adds content-manifest domain code/tests/docs and no persistence migration.
-- Fresh exact-head validation after integration is pending.
+- CI 255 (`35968478504`) was fully green on lifecycle head `8a9098a124c1f276f9fd5fd5a0af832acdbdeb92`, but predates PR #11 and is historical evidence only.
+- Current `main` was directly verified as `88f813e3afc07d51d2d62416a7b11747acc956f7`, merging PR #11.
+- Comparison `f4473745... → 88f813e3...` shows PR #11 added only content-manifest domain code/tests/docs and no persistence migration.
+- Comparison `88f813e3... → cf986ea2...` shows exactly 10 lifecycle/dependency/test/documentation files and no content-manifest files, proving the merged PR #11 implementation is unchanged in the integrated tree.
+- The complete PR patch was re-opened after integration. Lifecycle migration/code/tests remain the reviewed implementation; docs now use ADR 015 and point to ADR 014 for the separate content-manifest contract.
+- Fresh exact-head full CI after this plan-only closeout commit is pending.
 
 ## Irreversible / high-impact decisions
 - Export format version 1 is a durable compatibility surface; incompatible future changes require an explicit format/version migration decision.
@@ -96,9 +101,8 @@ Build production-intended durable lifecycle operations for multiple unrelated ca
 - Runnable-campaign manifest resolution composition remains a focused post-#9 Gate 1 integration task.
 
 ## Blockers / risks
-- Integration blocker: current `main@88f813e3...` must be incorporated while preserving PR #11 unchanged and eliminating the ADR-number collision.
-- Validation blocker: exact-head full CI must pass after that integration.
+- Validation blocker: exact-head full CI must pass on the final post-#11 branch head.
 - Governance blocker: this remains irreversible migration/save-format/destructive-persistence work and must stay draft/unmerged until explicit human approval.
 
 ## Next action
-Incorporate `main@88f813e3afc07d51d2d62416a7b11747acc956f7`, keep lifecycle migration 0007, rename lifecycle ADR 014→015 and update references, inspect the combined diff for accidental PR #11 changes, run exact-head full CI, update PR #9, and stop for human review without merging or accepting ADR 015.
+Run/verify exact-head full PR CI. If green, update PR #9 with the post-#11 integration evidence and stop for human review without merging or accepting ADR 015.
