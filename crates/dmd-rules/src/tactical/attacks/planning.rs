@@ -131,20 +131,38 @@ pub(super) fn hit_facts(
     choice: &WeaponUseChoice,
     plan: &WeaponAttackPlan,
 ) -> Result<(RollMode, i32, bool), RulesError> {
+    hit_facts_for(
+        state,
+        actor,
+        choice.target,
+        choice.delivery != WeaponDelivery::Melee,
+        !plan.disadvantage.is_empty(),
+    )
+}
+
+/// Common visibility/condition/cover facts. Intrinsic and spell adapters provide
+/// their source-derived delivery and disadvantage without invented weapon IDs.
+pub(super) fn hit_facts_for(
+    state: &CampaignState,
+    actor: EntityId,
+    target_id: EntityId,
+    ranged: bool,
+    source_disadvantage: bool,
+) -> Result<(RollMode, i32, bool), RulesError> {
     let e = encounter(state)?;
     let from = e
         .participant(actor)
         .ok_or_else(|| invalid("attacker absent"))?;
     let target = e
-        .participant(choice.target)
+        .participant(target_id)
         .ok_or_else(|| invalid("target absent"))?;
-    let seen = perceive(e, state, actor, choice.target).map_err(spatial)?;
+    let seen = perceive(e, state, actor, target_id).map_err(spatial)?;
     if !seen.precisely_located {
         return Err(prerequisite(
             "an unlocated target requires an explicit guessed-location attack",
         ));
     }
-    let reverse = perceive(e, state, choice.target, actor).map_err(spatial)?;
+    let reverse = perceive(e, state, target_id, actor).map_err(spatial)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let mut feared = false;
     for effect in crate::tactical_effect_adapter::condition_effects(rules)
@@ -203,8 +221,8 @@ pub(super) fn hit_facts(
     let condition = attack_conditions(
         rules,
         actor,
-        choice.target,
-        choice.delivery != WeaponDelivery::Melee,
+        target_id,
+        ranged,
         AttackPerception {
             attacker_sees_target: seen.sees,
             target_sees_attacker: reverse.sees,
@@ -214,16 +232,16 @@ pub(super) fn hit_facts(
         },
         Circumstances {
             advantage: source_advantage,
-            disadvantage: !plan.disadvantage.is_empty(),
+            disadvantage: source_disadvantage,
             ..Circumstances::default()
         },
-        dodge_context(state, choice.target)?,
+        dodge_context(state, target_id)?,
     )?;
     let cover = cover_from(
         e,
         from.center().map_err(|error| invalid(&error))?,
         target.volume().map_err(|error| invalid(&error))?,
-        &[actor, choice.target],
+        &[actor, target_id],
     )
     .map_err(spatial)?
     .armor_and_dexterity_bonus()
@@ -231,7 +249,7 @@ pub(super) fn hit_facts(
     let ac = crate::armor_class(
         rules
             .entities
-            .get(&choice.target)
+            .get(&target_id)
             .ok_or_else(|| invalid("target mechanics absent"))?,
     ) + cover;
     Ok((condition.mode, ac, condition.critical_on_hit))
@@ -244,9 +262,12 @@ pub(super) fn reconstruct(
     state: &CampaignState,
     attack: &TacticalAttack,
 ) -> Result<WeaponAttackPlan, RulesError> {
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("attack source is not a physical weapon"))?;
     let mut before = state.clone();
     before.applied_event_sequence = attack.origin.expected_event_sequence;
-    if let Some(ammo) = &attack.ammunition {
+    if let Some(ammo) = &weapon.ammunition {
         let stack = before
             .items
             .get_mut(&ammo.stack)
@@ -260,15 +281,15 @@ pub(super) fn reconstruct(
         .as_mut()
         .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
         .ok_or_else(|| invalid("reserved equipment absent"))?;
-    *current = attack.equipment_before.clone();
+    *current = weapon.equipment_before.clone();
     let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
     weapon_plan(
         &before,
         &attack.origin,
         attack.actor,
-        &attack.choice,
-        attack.window,
-        &attack.equipment_before.hands,
+        &weapon.choice,
+        weapon.window,
+        &weapon.equipment_before.hands,
         &pack,
     )
 }

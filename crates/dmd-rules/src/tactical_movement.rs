@@ -83,6 +83,10 @@ pub(crate) fn validate_budget_progress(state: &CampaignState) -> Result<(), Rule
 
 /// Internal source adapter query. The actor must be the current turn's mover; the
 /// returned command and geometry are captured before the attack consumes progress.
+#[expect(
+    dead_code,
+    reason = "Source creature Charge adapter follows this opportunity checkpoint"
+)]
 pub(crate) fn straight_approach(
     state: &CampaignState,
     actor: EntityId,

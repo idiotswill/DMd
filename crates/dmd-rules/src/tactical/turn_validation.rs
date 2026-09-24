@@ -83,7 +83,6 @@ fn validate_work(
             r.attack
                 .as_ref()
                 .ok_or_else(|| invalid("attack work lacks declaration"))?
-                .choice
                 .target
         }
         TacticalWorkKind::DeathSave { actor } => {

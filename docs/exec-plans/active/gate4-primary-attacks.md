@@ -154,3 +154,60 @@ hidden ID near and far, then an absent ID, and requires identical errors without
 ammo changes. Formatting/diff checks pass; this follow-up's test and Clippy are pending in
 root's queued integration batch, not represented by the prior 19-test evidence. New source,
 opportunity and spell admission must preserve the same knowledge-before-geometry boundary.
+
+## Opportunity/source continuation checkpoint in progress
+
+The next bounded checkpoint consumes the movement author's shared cursor contracts and
+adds one accepted reaction above that cursor. `TacticalAttack` now retains common target
+and melee/ranged semantics separately from a typed physical Weapon, Unarmed, or pinned
+CreatureFeature source. Only physical sources carry original equipment and ammunition.
+An Opportunity admission retains the original crossing and must match its exact accepted
+movement decision, original metadata, current reach/knowledge, and spent reaction. The
+parent movement command and lower frames survive every attack/damage/material-choice
+pause; movement resumes only after vitality children. Ordinary attacks clear their own
+continuous movement proof, while reactions preserve the mover's proof.
+
+This checkpoint implements the damage form of Strength Unarmed Strike (SRD190), ordinary
+held melee weapon opportunities (SRD15), and canonical creature melee opportunities with
+printed attack bonuses/damage and represented on-hit clauses: size-gated Prone and Chimera
+Advantage Bite. A reaction cannot borrow the mover's Charge distance. Source Gear requires
+the actual held ItemId; intrinsic features have no item. Creature feature use within an
+own-turn routine, its straight-approach Charge, spells/rays, legendary attacks, grapple/shove,
+and the remaining weapon masteries still require subsequent same-Gate4 execution slices.
+They are not claimed by this checkpoint or deferred to catalog Gate6.
+
+Read-only review added Charmed/Total-cover eligibility filtering before an opportunity is
+offered and strict nested crossing-origin validation. Partial cover that needs geometry
+adjudication fails closed rather than silently suppressing a possible reaction. Draft
+regressions include fixed Unarmed critical damage, exact reaction/parent provenance,
+forged source/crossing/cost rejection, source Wolf Prone, Chimera advantage cancellation,
+and no borrowed Warhorse Charge. At this edit these new tests are unrun; root owns the
+compiler until its integration batch completes. Existing source evidence above remains
+scoped to the earlier commits, not this working delta.
+
+### Verified opportunity checkpoint
+
+The combined implementation now passes 28 attack integration tests, 10 movement
+integration tests, all 32 spatial unit tests and 20 turn-continuation regressions.
+Strict all-target Clippy for `dmd-domain` and `dmd-rules`, formatting and diff checks
+pass. Each attack/movement fixture serializes accepted state and events, replays the
+actual reducer, and validates the resumed state. This is 90 focused tests, not a full
+workspace/desktop acceptance claim. The shared Cargo target initially reused newer
+artifacts from another worktree despite older local source mtimes; explicitly refreshing
+the two affected library roots forced the actual current sources to compile before
+these results were recorded.
+
+Review corrections verified here include grouping Chimera's same-type source dice pools
+before resistance (including the odd-sum rounding case and critical doubling), preserving
+explicit movement choices when a Wolf's Prone rider invalidates a pending Walk, and checking
+real source reach before uncertain cover so a distant enemy cannot block unrelated movement.
+The source Charge helper has an intentional `expect(dead_code)` until the real own-turn
+feature adapter consumes it; this records unfinished same-gate work, not an acceptance waiver.
+
+Root integration must update restore origin collection atomically: retain `attack.origin`,
+`attack.source.Weapon.equipment_before.command`, and
+`attack.admission.Opportunity.origin`. Source pins in intrinsic feature records are data,
+not substitute commands. Movement separately retains its original command, initial progress
+origin, traversed-segment causes, decision origins, selected crossing origin and current
+budget movement origin. App projections continue using the common actor/target/stage;
+source-specific fields and hidden target facts do not become player-facing details.

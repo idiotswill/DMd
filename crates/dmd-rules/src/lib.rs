@@ -14,8 +14,8 @@ pub mod tactical_definitions;
 pub mod tactical_effect_adapter;
 pub mod tactical_effects;
 pub mod tactical_inventory;
-pub mod tactical_spells;
 mod tactical_movement;
+pub mod tactical_spells;
 mod tactical_vitality_adapter;
 pub mod tactical_weapons;
 
