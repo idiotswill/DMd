@@ -158,7 +158,7 @@ pub(crate) fn resolve_table(
             active(state, meta)?;
             match meta.issuer {
                 CommandIssuer::Player(_) => {
-                    player_channel(state, meta)?;
+                    player_channel_for_encounter(state, meta, true)?;
                 }
                 _ => host(meta)?,
             }
@@ -643,6 +643,14 @@ pub(crate) fn player_channel(
     state: &CampaignState,
     meta: &CommandMeta,
 ) -> Result<(PlayerId, CharacterId, EntityId, PlaySessionId), String> {
+    player_channel_for_encounter(state, meta, false)
+}
+
+fn player_channel_for_encounter(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    allow_dead_participant: bool,
+) -> Result<(PlayerId, CharacterId, EntityId, PlaySessionId), String> {
     let CommandIssuer::Player(player) = meta.issuer else {
         return Err("Select an attending player for this declaration.".into());
     };
@@ -656,7 +664,18 @@ pub(crate) fn player_channel(
         .find(|pc| {
             pc.entity_id == actor
                 && pc.controlling_player_id == Some(player)
-                && pc.status == CharacterStatus::Active
+                && (pc.status == CharacterStatus::Active
+                    || allow_dead_participant
+                        && pc.status == CharacterStatus::Dead
+                        && state
+                            .encounter
+                            .as_ref()
+                            .and_then(|encounter| encounter.flow.as_ref())
+                            .is_some_and(|flow| {
+                                flow.combatants
+                                    .iter()
+                                    .any(|combatant| combatant.actor == actor)
+                            }))
         })
         .ok_or("The selected player does not control that active character.")?;
     table(state)?.validate_attendance(session.session_id, player, character.id)?;

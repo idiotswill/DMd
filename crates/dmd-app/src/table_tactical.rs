@@ -14,7 +14,7 @@ pub(crate) fn view(
     let host = matches!(viewer, crate::TableViewer::Host);
     let own = state.characters.values().filter(|character| {
         matches!(viewer, crate::TableViewer::Player(player) if character.controlling_player_id == Some(*player))
-            && character.status == CharacterStatus::Active
+            && matches!(character.status, CharacterStatus::Active | CharacterStatus::Dead)
             && encounter.participant(character.entity_id).is_some()
     }).map(|character| character.entity_id).collect::<std::collections::HashSet<_>>();
     let mut observers = own
