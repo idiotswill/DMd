@@ -150,7 +150,7 @@ pub(super) fn ruling_valid(ruling: &Ruling, houses: &HouseRules) -> Result<(), R
         _ => Ok(()),
     }
 }
-pub(super) fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
+pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
     let mut result: HashSet<_> = rules
         .effects
         .iter()
@@ -196,7 +196,7 @@ pub(super) fn mode(c: Circumstances) -> RollMode {
         _ => RollMode::Normal,
     }
 }
-pub(super) fn check_modifier(e: &MechanicalEntity, kind: &TestKind) -> i32 {
+pub fn check_modifier(e: &MechanicalEntity, kind: &TestKind) -> i32 {
     let base = match kind {
         TestKind::Check { ability, skill } => {
             ability_modifier(e.ability_scores[ability.index()])

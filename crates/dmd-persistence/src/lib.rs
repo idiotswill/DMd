@@ -39,6 +39,23 @@ pub async fn open_sqlite(database_url: &str) -> Result<SqlitePool, PersistenceEr
         .create_if_missing(true)
         .foreign_keys(true);
 
+    open_with_options(options).await
+}
+
+/// Native paths are not parsed as URLs, so spaces, `?`, `#` and Unicode remain file names.
+pub async fn open_sqlite_path(
+    path: impl AsRef<std::path::Path>,
+) -> Result<SqlitePool, PersistenceError> {
+    open_with_options(
+        SqliteConnectOptions::new()
+            .filename(path)
+            .create_if_missing(true)
+            .foreign_keys(true),
+    )
+    .await
+}
+
+async fn open_with_options(options: SqliteConnectOptions) -> Result<SqlitePool, PersistenceError> {
     let pool = SqlitePool::connect_with(options).await?;
     migrate_sqlite(&pool).await?;
     Ok(pool)
