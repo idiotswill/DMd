@@ -55,3 +55,11 @@ tests and a real mounted production bundle build. Windows CI at `277d705` reache
 compilation after frontend preparation. Those are intermediate heads, not final acceptance.
 Root has confirmed native desktop automation is available. Next: integrate/verify the two
 package fixes, obtain a successful exact-head package, and execute the scenario above.
+
+Follow-up at desktop head `51d2962d1a9bd7e1bae792ade7bc203e44e3d262`: both package findings
+passed an independent source review. The missing project LICENSE was added consistently
+with the existing workspace MIT declaration; rules/dependency notices retain their own
+terms. Full local `./scripts/verify` passes with `CARGO_BUILD_JOBS=1`; the prior parallel
+attempt exhausted host compiler memory and is not a passing result. Linux CI run
+`36017036464` is green. Windows run `36017036314` passed the full Rust 1.88 native check;
+stable lint/host tests and packaging remain in progress. No native UI acceptance yet.
