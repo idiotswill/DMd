@@ -12,8 +12,13 @@ def main():
     kernel = json.loads((root / "kernel.json").read_text(encoding="utf-8"))
     if (kernel["id"], kernel["version"]) != ("srd-5.2", "5.2.1"):
         raise ValueError("Review source/version changes before regenerating this manifest")
+    tactical = json.loads((root / "tactical.json").read_text(encoding="utf-8"))
+    if (tactical["schema_version"], tactical["ruleset_id"], tactical["ruleset_version"]) != (
+        1, kernel["id"], kernel["version"]
+    ):
+        raise ValueError("Review tactical schema/source changes before regenerating this manifest")
     files = []
-    for name in ("NOTICE.md", "source.json", "kernel.json", "character-creation.json"):
+    for name in ("NOTICE.md", "source.json", "kernel.json", "character-creation.json", "tactical.json"):
         data = (root / name).read_bytes()
         if b"\r" in data:
             raise ValueError(f"{name} must retain the pinned LF content line endings")

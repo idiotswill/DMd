@@ -38,6 +38,14 @@
         "algorithm": "fnv1a64",
         "value": "e4a3734cf07c43a9"
       }
+    },
+    {
+      "path": "tactical.json",
+      "byte_len": 62423,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "7d9f1b02b523f400"
+      }
     }
   ]
 }
