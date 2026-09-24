@@ -10,6 +10,7 @@ pub use table_protocol::*;
 mod table_engine;
 mod table_equipment;
 mod table_runtime;
+mod table_tactical;
 
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,

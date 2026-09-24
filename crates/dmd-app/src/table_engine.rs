@@ -26,6 +26,7 @@ pub(crate) fn resolve_table(
     let mut next = state.clone();
     let mut session_change = None;
     let mut rules_event = None;
+    let mut tactical_event = None;
     let mut mechanics = None;
     let message = match action {
         TableAction::UpdateContract { contract } => {
@@ -153,6 +154,43 @@ pub(crate) fn resolve_table(
             next = crate::table_equipment::prepare(state, meta, *character_id, item_ids, pack)?;
             "Starting equipment is ready for play.".into()
         }
+        TableAction::Tactical { action } => {
+            active(state, meta)?;
+            match meta.issuer {
+                CommandIssuer::Player(_) => {
+                    player_channel(state, meta)?;
+                }
+                _ => host(meta)?,
+            }
+            if table(state)?.pending.is_some() || table(state)?.roll_context.is_some() {
+                return Err("Finish the pending table decision before an encounter action.".into());
+            }
+            if matches!(
+                action,
+                dmd_rules::tactical::TacticalAction::Establish { .. }
+            ) {
+                return Err(
+                    "Use battlefield setup to place source-derived characters and creatures."
+                        .into(),
+                );
+            }
+            let transition = dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
+                .map_err(|error| error.to_string())?;
+            next = transition.next_state;
+            tactical_event = Some(transition.event);
+            // Detailed outcomes belong to the viewer-specific tactical projection.
+            // This transcript is shared by the whole table, including unaware PCs.
+            "Encounter action recorded.".into()
+        }
+        TableAction::PrepareBattlefield { setup } => {
+            host(meta)?;
+            active(state, meta)?;
+            idle(state)?;
+            let transition = crate::table_tactical::prepare(state, meta, setup, pack)?;
+            next = transition.next_state;
+            tactical_event = Some(transition.event);
+            "The encounter map is ready.".into()
+        }
         TableAction::StartSession {
             id,
             name,
@@ -205,6 +243,16 @@ pub(crate) fn resolve_table(
         TableAction::EndSession => {
             host(meta)?;
             idle(&next)?;
+            if next
+                .encounter
+                .as_ref()
+                .is_some_and(|encounter| encounter.flow.is_some())
+            {
+                return Err(
+                    "Finish the encounter before ending its session. You can quit and resume now."
+                        .into(),
+                );
+            }
             let binding = active(&next, meta)?;
             let expected = binding.as_session(meta.campaign_id);
             let mut ended = expected.clone();
@@ -490,6 +538,7 @@ pub(crate) fn resolve_table(
             action: action.clone(),
             outcome: TableOutcome { message, mechanics },
             rules_event,
+            tactical_event,
         },
         session_change,
     })

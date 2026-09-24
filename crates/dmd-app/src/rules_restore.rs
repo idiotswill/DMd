@@ -442,6 +442,49 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if let TableAction::PrepareBattlefield { setup } = &event.action {
+        let matched = event.tactical_event.as_ref().is_some_and(|nested| {
+            nested.meta == event.meta && matches!(&nested.action,
+                TacticalAction::Establish { encounter } if encounter.id == setup.encounter_id
+                    && encounter.scene_id == setup.scene_id && encounter.battlefield == setup.battlefield
+                    && encounter.geometry_ruling == setup.geometry_ruling && encounter.origin == event.meta
+                    && encounter.flow.is_none() && encounter.knowledge.is_empty())
+        });
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+            || !matched
+        {
+            return Err("battlefield setup disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
+    if let TableAction::Tactical { action } = &event.action {
+        let valid_authority = match event.meta.issuer {
+            CommandIssuer::Player(_) => matches!(event.meta.actor, Some(AgentRef::Entity(_))),
+            CommandIssuer::Admin | CommandIssuer::System => event.meta.actor.is_none(),
+            CommandIssuer::Import => false,
+        };
+        if !valid_authority
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+            || event
+                .tactical_event
+                .as_ref()
+                .is_none_or(|nested| nested.meta != event.meta || &nested.action != action)
+        {
+            return Err("table tactical action disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
+    if event.tactical_event.is_some() {
+        return Err("non-tactical table action contains unsolicited encounter authority".into());
+    }
     let player_action = matches!(
         event.action,
         TableAction::Declare { .. }
@@ -775,7 +818,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. })))
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())

@@ -26,6 +26,12 @@ pub enum TableAction {
         character_id: CharacterId,
         item_ids: Vec<ItemId>,
     },
+    Tactical {
+        action: dmd_rules::tactical::TacticalAction,
+    },
+    PrepareBattlefield {
+        setup: Box<TableBattlefieldSetup>,
+    },
     StartSession {
         id: PlaySessionId,
         name: String,
@@ -73,6 +79,8 @@ pub struct TableEvent {
     pub action: TableAction,
     pub outcome: TableOutcome,
     pub rules_event: Option<RulesEvent>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_event: Option<dmd_rules::tactical::TacticalEvent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -80,6 +88,29 @@ pub struct TableEvent {
 pub enum TableViewer {
     Host,
     Player(PlayerId),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableBattlefieldSetup {
+    pub encounter_id: EncounterId,
+    pub scene_id: SceneId,
+    pub location_id: LocationId,
+    pub name: String,
+    pub battlefield: Battlefield,
+    pub characters: Vec<TableCharacterPlacement>,
+    pub geometry_ruling: Ruling,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableCharacterPlacement {
+    pub character_id: CharacterId,
+    pub position: SpatialPoint,
+    /// Explicit physical geometry, measured in half-feet; not a mechanical bonus.
+    pub height: u32,
+    pub allies: Vec<EntityId>,
+    pub enemies: Vec<EntityId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -164,10 +195,42 @@ pub struct TableView {
     pub active_session: Option<ActiveTableSession>,
     pub pending: Option<PendingTableDecision>,
     pub roll: Option<RollRequest>,
+    pub tactical: Option<TableTacticalView>,
     pub situation_title: String,
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableTacticalView {
+    pub encounter_id: EncounterId,
+    pub round: Option<u32>,
+    pub active_actor: Option<EntityId>,
+    pub phase: String,
+    /// Full map geometry and participant truth are local-host-only.
+    pub battlefield: Option<Battlefield>,
+    pub participants: Vec<TacticalParticipant>,
+    pub observers: Vec<dmd_rules::spatial::ActorTacticalView>,
+    pub initiative: Vec<TableInitiativeView>,
+    pub ties: Vec<InitiativeTie>,
+    pub budget: Option<TableTacticalBudget>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableTacticalBudget {
+    pub movement_spent: u32,
+    pub attacks_remaining: u8,
+    pub action_spent: bool,
+    pub bonus_action_spent: bool,
+    pub reaction_available: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableInitiativeView {
+    pub actor: EntityId,
+    pub label: String,
+    pub total: Option<i32>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

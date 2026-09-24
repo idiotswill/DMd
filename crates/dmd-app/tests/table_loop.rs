@@ -4,6 +4,9 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/table_tactical_cases.rs"]
+mod table_tactical_cases;
+
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
         name: name.into(),

@@ -37,3 +37,14 @@ will use deterministic replay; no tactical state is trusted in an imported initi
 
 Next: implement and test the typed table envelope, then source setup and visibility DTOs.
 Nothing in this plan claims a playable complete encounter until integrated acceptance.
+
+Implementation checkpoint: typed Tactical and PrepareBattlefield actions are written with
+active-session/attendance checks, source-derived PC speed/size, exact nested event replay
+and secret-safe shared messages. Players receive actor knowledge only; full map/participant
+truth stays in the host view. Budget presentation excludes other actors' private records.
+Ending the session during initiative is rejected while ordinary quit/resume remains valid.
+A real SQLite test covers pending initiative export/restore, continuation equality,
+wrong-channel rejection, hidden map filtering and forged nested provenance. This checkpoint
+has not compiled yet; the serial compiler is running the independent turn scheduler.
+Next: integrate reviewed damage/turn types, compile and fix the table test, then connect UI
+and source creature setup. Full gate acceptance remains pending.

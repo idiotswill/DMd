@@ -753,6 +753,7 @@ impl CampaignRuntime {
             active_session: table.active_session.clone(),
             pending,
             roll,
+            tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
             situation_title: table.situation.title.clone(),
             situation_description: table.situation.description.clone(),
             transcript,
