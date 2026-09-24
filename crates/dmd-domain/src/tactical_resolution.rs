@@ -84,6 +84,17 @@ pub struct TacticalPendingWork {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct TacticalFailedSave {
+    pub pending: TacticalPendingWork,
+    pub issued_by: CommandMeta,
+    pub resolved_by: CommandMeta,
+    /// None records an automatic or voluntarily chosen failure. A source feature
+    /// changes the outcome, never these accepted physical/digital die faces.
+    pub result: Option<crate::RollResult>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TacticalResolution {
     pub origin: CommandMeta,
     pub turn_actor: EntityId,
@@ -93,6 +104,8 @@ pub struct TacticalResolution {
     /// resuming the remaining parent boundary's simultaneous work.
     pub frames: Vec<Vec<TacticalWorkItem>>,
     pub pending: Option<TacticalPendingWork>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failed_save: Option<TacticalFailedSave>,
     pub next_occurrence: u16,
 }
 
