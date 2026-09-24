@@ -109,9 +109,6 @@ def check_repository(root):
     inherited = table(workspace.get("dependencies", {}), "workspace.dependencies")
     for crate, forbidden in FORBIDDEN.items():
         manifest_path = root / "crates" / crate / "Cargo.toml"
-        # The desktop adapter is optional until its separately reviewed integration lands.
-        if crate == "dmd-desktop" and not manifest_path.exists():
-            continue
         manifest = read_manifest(manifest_path)
         for context, alias, spec in dependencies(manifest):
             name = package_name(alias, spec, inherited, context)

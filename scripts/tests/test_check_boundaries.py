@@ -86,9 +86,13 @@ class BoundaryTests(unittest.TestCase):
                 self.write_dependencies(text)
                 with self.assertRaises(BoundaryError):
                     check_repository(self.root)
-        self.manifest("dmd-rules").unlink()
-        with self.assertRaisesRegex(BoundaryError, "Cannot read manifest"):
-            check_repository(self.root)
+        self.write_dependencies("")
+        for crate in ("dmd-rules", "dmd-desktop"):
+            with self.subTest(missing=crate):
+                self.manifest(crate).unlink()
+                with self.assertRaisesRegex(BoundaryError, "Cannot read manifest"):
+                    check_repository(self.root)
+                self.write_dependencies("", crate)
 
     def test_linked_source_directories_are_rejected_instead_of_silently_skipped(self):
         outside = self.root / "shared-source"

@@ -1,6 +1,6 @@
 # ADR 023 — Source-derived supported character creation
 
-Status: Proposed for Gate 3 integration and exact-head review.
+Status: **Accepted — Gate 3; see the [integrated checkpoint](../checkpoints/gate-03-desktop-table-loop.md).**
 
 ## Decision
 

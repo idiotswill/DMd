@@ -1,6 +1,6 @@
 # ADR 024 — Durable table commands and bounded text interpretation
 
-Status: **Proposed — Gate 3 integration under verification**
+Status: **Accepted — Gate 3; see the [integrated checkpoint](../checkpoints/gate-03-desktop-table-loop.md).**
 
 ## Context
 

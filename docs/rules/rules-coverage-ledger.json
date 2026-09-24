@@ -33,11 +33,20 @@
         5
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-conversation/src/local_text.rs::local_text::tests::ordinary_text_never_supplies_authority_dc_or_result @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/table_loop.rs::normal_scene_corrects_pending_accepts_raw_faces_and_retries_without_duplicates @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_loop.rs::alternatives_and_unsupported_extra_actions_wait_without_spending_resources @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_loop.rs::absent_wrong_owner_secret_view_and_prose_authority_are_rejected_or_filtered @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_loop.rs::pending_state_survives_export_replay_and_independent_campaigns @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_recovery.rs::composed_roll_outcomes_audits_and_closed_session_history_restore_exactly @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "docs/checkpoints/gate-03-desktop-table-loop.md::Packaged production-path scenario; initial scene at f4f1ad2e2049aecbc2323252d290dfbf2893de02, final pending-roll/session continuation at 05ff272d16ab7d893e0c39950f07bd5176c82e3e (PR #21; artifact 10819373695)"
+      ],
       "player_acceptance": [],
-      "scope": "Supported text-first table flow; broad autonomous interpretation and adjudication belongs to Gate 9.",
+      "scope": "Supported desktop table flow with persistent agreement and attendance, trusted local host/player channels, host-established ability-check context, questions, corrections and withdrawal before resolution, raw physical dice, filtered transcript/recap and durable pending-state recovery. Unsupported/composite intent remains unresolved. Broad autonomous interpretation and adjudication remain Gate 9; noncombat breadth remains Gate 5.",
       "final_acceptance_gate": 14
     },
     {
@@ -364,11 +373,21 @@
         186
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "status": "production_integrated",
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/character_creation.rs::source_creation_derives_every_grant_and_profile_without_caller_totals @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-rules/tests/character_creation.rs::real_choices_and_invalid_source_combinations_are_validated @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-rules/tests/character_creation.rs::creation_adds_a_pc_without_replacing_existing_mechanics_or_history @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-rules/tests/character_creation.rs::starter_catalog_retains_exact_source_identity_and_prices @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/table_loop.rs::supported_profiles_require_their_authoritative_mechanics_and_feature_grants @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_loop.rs::selected_house_rule_is_inherited_by_creation_and_explained_as_a_house_rule @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "crates/dmd-app/tests/table_loop.rs::second_wind_pending_roll_resources_and_transcript_survive_database_reopen @ 52ffab23c5e67db7d6ee40a622533b08d44f10fd (PR #20)",
+        "docs/checkpoints/gate-03-desktop-table-loop.md::Packaged production-path scenario; source-choice creation at f4f1ad2e2049aecbc2323252d290dfbf2893de02, saved sheet/resource/session continuation at 05ff272d16ab7d893e0c39950f07bd5176c82e3e (PR #21; artifact 10819373695)"
+      ],
       "player_acceptance": [],
-      "scope": "Supported player creation and assignment; kernel validation Gate 2, full option catalogs Gate 6.",
+      "scope": "Source-derived SRD 5.2.1 Human Fighter 1 Soldier with Skilled, validated standard-array/background/skill/language/size/style/equipment choices, player assignment and current derived sheets. Callers cannot supply derived totals. Initial mastery grants are recorded; complete execution remains Gate 4. Progression/noncombat breadth remains Gate 5 and complete option catalogs remain Gate 6. Backstory remains unaccepted player narrative.",
       "final_acceptance_gate": 14
     },
     {

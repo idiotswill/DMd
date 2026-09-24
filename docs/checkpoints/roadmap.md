@@ -16,11 +16,11 @@ Only the active gate receives a detailed execution plan.
 
 ## Current checkpoint
 
-[Gate 2](gate-02-rules-kernel.md) is accepted after the source, rules kernel and real
-application/persistence integration were verified. [PR #19](https://github.com/idiotswill/DMd/pull/19)
-records final closeout and merged-main verification. The owner authorized continuation
-on 2026-09-24; [Gate 3](gate-03-desktop-table-loop.md) is now active. Its execution plan
-is `docs/exec-plans/active/gate-3-desktop-table-loop.md`. Pause again at Gate 3 completion.
+[Gate 3](gate-03-desktop-table-loop.md) is accepted for its scoped Windows desktop
+table loop following foundation PR #20, desktop PR #21 and closeout PR #22. Its checkpoint
+records packaged play, physical dice, correction, ambiguity/crash recovery and session
+continuation evidence. Completed plans are archived under `docs/exec-plans/completed/`.
+Development is paused for owner review. **Gate 4 has not started and requires continuation.**
 
 ## Preconditions before Gate 2
 
