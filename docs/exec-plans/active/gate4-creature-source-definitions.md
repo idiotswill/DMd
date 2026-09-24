@@ -35,3 +35,16 @@ planning can follow this slice; creature profiles/physical gear then depend on t
 planner. Shared scheduler, journal/codec guards, table execution and packaged Gate4
 acceptance remain active work. Content completeness is not inferred from these selected
 stat blocks. Next: extract the bounded five-file dependency and review source evidence.
+
+## Review checkpoint
+
+Extraction `6b1bc541be011e991ece17a44cfb6eabcd0dbcf0` is open as
+[PR27](https://github.com/idiotswill/DMd/pull/27). Independent full-diff/source review
+confirmed Command p116, Fireball p131, Scorching Ray p159, Chimera p273 and Adult Red
+Dragon pp318–319 values, substitutions, usage and material-only waivers. It found one
+validator gap: individually valid alternatives and shared limits could require an
+impossible overall routine. A bounded capacitated matching now requires a complete
+assignment. Regressions cover impossible three-ray/max-one routines and a feasible
+case that requires reassigning an earlier choice. Independent review of this correction
+found no remaining blocker. Formatting/diff checks pass; Rust compilation, canonical
+verification and exact-head CI remain required and are not yet claimed.

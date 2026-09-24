@@ -1141,6 +1141,10 @@ impl CreatureDefinition {
                         "invalid multiattack shared limit",
                     )?;
                 }
+                ensure(
+                    multiattack_is_satisfiable(slots, limits),
+                    "shared limits prevent completing required multiattack slots",
+                )?;
             }
             MonsterFeature::BasicActionChoice { options } => {
                 ensure(!options.is_empty(), "empty action choice")?;
@@ -1257,6 +1261,77 @@ impl CreatureDefinition {
             ),
         }
     }
+}
+
+/// Required occurrences must admit at least one assignment under shared limits.
+/// A bounded capacitated matching avoids exponential enumeration of all routines.
+fn multiattack_is_satisfiable(slots: &[MultiattackSlot], limits: &[MultiattackLimit]) -> bool {
+    let mut selections: Vec<&MonsterFeatureReference> = vec![];
+    let edges = slots
+        .iter()
+        .map(|slot| {
+            slot.options
+                .iter()
+                .map(|selection| {
+                    if let Some(index) = selections.iter().position(|known| *known == selection) {
+                        index
+                    } else {
+                        selections.push(selection);
+                        selections.len() - 1
+                    }
+                })
+                .collect::<Vec<_>>()
+        })
+        .collect::<Vec<_>>();
+    let capacities = selections
+        .iter()
+        .map(|selection| {
+            limits
+                .iter()
+                .find(|limit| &limit.selection == *selection)
+                .map_or(slots.len(), |limit| usize::from(limit.maximum))
+        })
+        .collect::<Vec<_>>();
+    let mut occupants = vec![Vec::<usize>::new(); selections.len()];
+    for slot in 0..slots.len() {
+        if !assign_multiattack_slot(
+            slot,
+            &edges,
+            &capacities,
+            &mut occupants,
+            &mut vec![false; selections.len()],
+        ) {
+            return false;
+        }
+    }
+    true
+}
+
+fn assign_multiattack_slot(
+    slot: usize,
+    edges: &[Vec<usize>],
+    capacities: &[usize],
+    occupants: &mut [Vec<usize>],
+    visited: &mut [bool],
+) -> bool {
+    for &selection in &edges[slot] {
+        if visited[selection] {
+            continue;
+        }
+        visited[selection] = true;
+        if occupants[selection].len() < capacities[selection] {
+            occupants[selection].push(slot);
+            return true;
+        }
+        for index in 0..occupants[selection].len() {
+            let previous = occupants[selection][index];
+            if assign_multiattack_slot(previous, edges, capacities, occupants, visited) {
+                occupants[selection][index] = slot;
+                return true;
+            }
+        }
+    }
+    false
 }
 
 fn ensure(condition: bool, message: &str) -> Result<(), DefinitionError> {
