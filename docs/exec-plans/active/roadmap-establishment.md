@@ -104,7 +104,11 @@ Inspect full diff, run verification, resolve contradictions, update plan/PR, mer
 
 ## Validation status
 
-Not run. Codex must populate exact commands/results on its PR head.
+- Fresh clone and GitHub PR metadata verify baseline `056b788364029f74afd15c9dcb592920308998fa`, merged PR #14, and no open PRs.
+- Product expansion is appended in full after the existing contract; no existing requirement is removed.
+- Read-only independent input audit identified stale runbook governance, a circular Gate 6 playtest prerequisite, and missing explicit traceability rows; all are reconciled in bootstrap.
+- `git diff --check` passes during preparation. Full exact-head review and CI are pending.
+- This Windows environment has Git Bash but no installed Rust/C++ toolchain. Local toolchain setup is in progress outside the repository; CI must directly verify the canonical equivalent checks before merge.
 
 ## Blockers/risks
 

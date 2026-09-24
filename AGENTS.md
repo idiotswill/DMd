@@ -9,6 +9,7 @@ Before repository work:
 1. Fetch the current branch/PR head. Do not trust a remembered SHA.
 2. Read this file.
 3. Find the active execution plan under `docs/exec-plans/active/`.
+   Use `docs/checkpoints/roadmap.md` and `docs/checkpoints/gate-execution-protocol.md` to locate the active gate and its operating boundaries.
 4. Read `docs/product-definition.md` when the task changes product behavior, gate acceptance, user-facing completeness, world simulation, or release/endurance expectations.
 5. Read only the ADRs, checkpoint docs, runbooks, and code relevant to the task.
 6. Confirm the task scope, non-goals, acceptance criteria, and verification commands before writing.
@@ -124,9 +125,15 @@ For substantial changes, separate implementation and review roles when practical
 - stale documentation or unsupported claims;
 - scope creep and accidental placeholders.
 
-## Human approval boundaries
+## Autonomous gate work and owner boundaries
 
-Do not merge or mark accepted without explicit human approval when work changes the product definition, architecture checkpoints, save-format compatibility, irreversible migrations, licensing/content boundaries, or other high-impact foundations.
+The owner authorizes Codex to create branches, implement, open PRs, review/fix its own work, and merge in-scope PRs within the active approved gate. Review the complete exact head, verify required checks on that head, satisfy the slice acceptance criteria, record debt, and merge with expected-head protection. Routine PR or merge approval is not required.
+
+Architecture/checkpoint/save-format/content decisions within the approved gate may be merged after rigorous verification and documented rationale. A gate may span several coherent PRs/branches; retain exactly one writer per branch.
+
+At the end of each gate, perform the integrated production-path review, verify final merged `main`, update checkpoint/plan evidence, and pause with the summary required by `docs/checkpoints/gate-execution-protocol.md`. Do not start the next gate until the owner says to continue. The owner-approved roadmap bootstrap is the explicit exception: merge it and proceed directly to Gate 2 on a fresh branch.
+
+Surface true blockers immediately: unresolved legal risk without a safe implementation path, proposed product reduction or waived acceptance, destructive/data-loss decisions outside gate intent, unsafe security/privacy issues, irreconcilable repository movement, or required human/hardware evidence unavailable in the execution environment.
 
 No plan or gate may silently weaken `docs/product-definition.md` to make acceptance easier. Deliberate product-scope changes require explicit human approval.
 

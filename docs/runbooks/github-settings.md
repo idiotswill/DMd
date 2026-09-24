@@ -15,7 +15,7 @@ Recommended rules:
 - block branch deletion;
 - allow repository administrators to bypass only for genuine recovery/emergency use.
 
-For a solo repository, do **not** require a separate approving reviewer merely for ceremony. Human approval remains a project process requirement for architecture/save-format/high-impact checkpoints even when GitHub does not require another account's review.
+For a solo repository, do **not** require a separate approving reviewer merely for ceremony. The owner delegates in-scope active-gate merges to Codex after exact-head review and verification, including approved gate architecture/save-format/content decisions. Owner review occurs at gate end under `../checkpoints/gate-execution-protocol.md`.
 
 ## Required status checks
 
@@ -23,7 +23,8 @@ Once the Lab 0 workflow is merged and check names are stable, require the curren
 
 - Rust formatting/check/Clippy/tests (`rust` job);
 - declared Rust minimum-version check (`msrv` job);
-- campaign-genericity guard (`genericity-guard` job).
+- campaign-genericity guard (`genericity-guard` job);
+- authoritative dependency guard (`architecture-guard` job).
 
 If job names change, update the ruleset rather than keeping obsolete required checks.
 
@@ -34,7 +35,7 @@ Recommended defaults:
 - use PRs for all agent-authored changes to `main`;
 - prefer squash merge for small focused implementation PRs when intermediate connector commits are not valuable history;
 - retain normal merge commits when preserving a meaningful stacked/architectural history is useful;
-- do not enable automatic merging for architecture checkpoints or irreversible/high-impact changes without explicit human acceptance.
+- merge in-scope gate work with expected-head protection only after exact-head review, checks, and acceptance; do not waive acceptance or perform destructive changes outside approved gate intent.
 
 ## Verification after configuration
 

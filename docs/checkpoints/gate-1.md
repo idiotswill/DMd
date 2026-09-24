@@ -1,6 +1,6 @@
 # Gate 1 — Campaign persistence foundation
 
-Status: **Accepted — human-approved 2026-09-24; PR #14 merge pending exact-head CI**
+Status: **Accepted — human-approved 2026-09-24; PR #14 merged as `056b788364029f74afd15c9dcb592920308998fa`**
 
 Gate 1 turns the Gate 0 state model into a durable, multi-session campaign persistence foundation. This checkpoint does **not** claim that DMd is yet a playable finished game. The finished-product contract in `docs/product-definition.md` remains unchanged.
 
@@ -134,7 +134,7 @@ Historical exact-head evidence for each merged slice is recorded above. More imp
 - campaign genericity guard;
 - architecture dependency guard.
 
-The pre-approval PR #14 head `6534be39dc7dace05ee1a3bc2ee6c9c9c930f3ca` passed exact-head CI #289 across the same repository checks. The final acceptance bookkeeping creates a new head; that exact final head must also pass repository CI before PR #14 is merged.
+The pre-approval PR #14 head `6534be39dc7dace05ee1a3bc2ee6c9c9c930f3ca` passed exact-head CI #289 across the same repository checks. Final acceptance head `7d8399cb9c9fde700b4bc1f628bfe5f76ab9e5ee` subsequently passed CI #294 and PR #14 merged as `056b788364029f74afd15c9dcb592920308998fa`. Bootstrap re-verified the merged PR and main on 2026-09-24.
 
 ## Known limitations and debt carried beyond Gate 1
 
@@ -160,4 +160,4 @@ On 2026-09-24 the repository owner explicitly approved proceeding after being pr
 
 Gate 1 acceptance means the campaign persistence foundation is production-intended and verified for this checkpoint. It does **not** mean DMd is a finished or generally playable game; all deferred product-definition requirements above remain binding.
 
-The only remaining merge gate is mechanical: the exact final PR #14 head created by the acceptance/status/plan-archival bookkeeping must pass repository CI and the final diff must remain limited to the reviewed documentation/archival scope. After that, PR #14 may merge with expected-head protection. Gate 2 must not begin before the accepted checkpoint is merged to `main`.
+The acceptance closeout is merged to `main` through PR #14. Gate 1 remains accepted; Gate 2 additionally requires the owner-approved roadmap bootstrap to be verified and merged.
