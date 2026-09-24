@@ -1,5 +1,8 @@
 //! Tactical accounting which is not represented by the legacy action/reaction budgets.
-use crate::{CommandId, CommandMeta, EntityId, PlayerId, RollRequestId};
+use crate::{
+    CommandId, CommandMeta, EntityId, PlayerId, RollRequestId, TacticalDodge, TacticalResolution,
+    TacticalSaveDecision, WeaponActionWindow, WeaponAttackReceipt,
+};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -11,10 +14,11 @@ pub struct TacticalTurnBudget {
     /// Unresolved attacks granted by the current Attack action, not additional actions.
     pub attacks_remaining: u8,
     pub object_interaction_spent: bool,
-    pub light_attack_earned_with: Option<String>,
-    pub light_attack_spent: bool,
-    pub nick_spent: bool,
-    pub cleave_spent: bool,
+    pub attack_window: Option<WeaponActionWindow>,
+    /// Current global turn's receipts, including off-turn attacks; no duplicate Light,
+    /// Nick, Cleave or Loading booleans can drift from these physical-identity records.
+    pub weapon_history: Vec<WeaponAttackReceipt>,
+    pub disengaged: Option<CommandMeta>,
     /// Every source of a slotted cast on this turn except the active actor, whose existing
     /// CombatTiming.slot_spent_this_turn is authoritative. Clear at every turn boundary.
     pub other_slot_casters: Vec<EntityId>,
@@ -90,4 +94,12 @@ pub struct TacticalFlow {
     pub initiative_decisions: Vec<InitiativeTie>,
     pub phase: TacticalPhase,
     pub budget: TacticalTurnBudget,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub resolution: Option<TacticalResolution>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub dodges: Vec<TacticalDodge>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub save_decisions: Vec<TacticalSaveDecision>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ground_items: Vec<crate::TacticalGroundItem>,
 }

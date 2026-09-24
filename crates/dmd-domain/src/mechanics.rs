@@ -268,6 +268,10 @@ pub enum TestKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum PendingPurpose {
+    TacticalResolution {
+        encounter: crate::EncounterId,
+        key: crate::TacticalRollKey,
+    },
     TacticalInitiative {
         encounter: crate::EncounterId,
         group_index: usize,
@@ -346,6 +350,8 @@ pub struct ActionPermission {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RulesState {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_recovery: Option<HashMap<EntityId, crate::TacticalRecovery>>,
     pub pack_id: String,
     pub pack_version: String,
     pub entities: HashMap<EntityId, MechanicalEntity>,
