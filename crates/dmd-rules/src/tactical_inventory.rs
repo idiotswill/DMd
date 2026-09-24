@@ -263,6 +263,18 @@ pub fn validate_tactical_inventory(
         return Err(invalid("campaign has invalid identity/reference state"));
     }
     current.validate(state).map_err(invalid)?;
+    // NPC grants and loose/borrowed objects need the same physical invariants as
+    // PC starting allocations. Unknown campaign objects remain available for
+    // improvised use; recognizing a definition does not grant custody or training.
+    let registry = equipment_registry()?;
+    for item in state.items.values() {
+        if let Some(definition) = registry
+            .iter()
+            .find(|definition| definition.id == item.definition_id)
+        {
+            validate_physical_quantity(item, definition)?;
+        }
+    }
     for receipt in &current.receipts {
         let plan = starting_equipment_plan(state, receipt.character_id, pack)?;
         if receipt.source != plan.source || receipt.allocations.len() != plan.allocations.len() {

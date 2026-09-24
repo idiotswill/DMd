@@ -10,6 +10,7 @@ mod validation;
 use crate::{ResolveRoll, RulesError, RulesPack};
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
+pub use initiative::preview_initiative_circumstances;
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
 

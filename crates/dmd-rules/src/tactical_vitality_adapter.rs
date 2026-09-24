@@ -204,5 +204,21 @@ pub(crate) fn drop_held(
             origin: origin.clone(),
         });
     }
+    if let Some(profile) = state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_creatures.as_ref())
+        .and_then(|creatures| creatures.profile(actor))
+    {
+        let armor = crate::tactical_creature_equipment::creature_current_armor(state, profile)?;
+        state
+            .rules
+            .as_mut()
+            .ok_or(RulesError::Uninitialized)?
+            .entities
+            .get_mut(&actor)
+            .ok_or_else(|| invalid("drop mechanics absent"))?
+            .armor = armor;
+    }
     Ok(())
 }

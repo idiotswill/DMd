@@ -445,6 +445,21 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if let TableAction::CreateCreature { .. } = &event.action {
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err(
+                "Creature preparation has incompatible authority or nested mechanics.".into(),
+            );
+        }
+        return Ok(());
+    }
     if let TableAction::PrepareBattlefield { setup } = &event.action {
         let matched = event.tactical_event.as_ref().is_some_and(|nested| {
             nested.meta == event.meta && matches!(&nested.action,
@@ -728,6 +743,9 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             origins.push(&flow.origin);
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(window) = &resolution.legendary_window {
+                    origins.push(&window.origin);
+                }
                 if let Some(failed) = &resolution.failed_save {
                     origins.push(&failed.issued_by);
                     origins.push(&failed.resolved_by);
@@ -878,7 +896,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())

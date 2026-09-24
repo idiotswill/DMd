@@ -61,6 +61,7 @@ fn roll_label(purpose: &PendingPurpose) -> String {
                 "Constitution saving throw to maintain concentration"
             }
             TacticalRollRole::StableRecovery => "Stable recovery time",
+            TacticalRollRole::CreatureRecharge => "Ability recharge",
         }
         .into(),
         PendingPurpose::Test { kind, .. } => match kind {
@@ -764,6 +765,11 @@ impl CampaignRuntime {
             pending,
             roll,
             tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
+            creature_setup: crate::table_creatures::view(
+                state,
+                matches!(viewer, TableViewer::Host),
+            )
+            .map_err(invalid)?,
             situation_title: table.situation.title.clone(),
             situation_description: table.situation.description.clone(),
             transcript,

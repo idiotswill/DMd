@@ -104,6 +104,43 @@ pub(crate) fn view(
         } else {
             vec![]
         },
+        combatant_sources: if host {
+            encounter
+                .participants
+                .iter()
+                .map(|participant| {
+                    let source = state
+                        .rules
+                        .as_ref()
+                        .and_then(|r| r.tactical_creatures.as_ref())
+                        .and_then(|c| c.profile(participant.entity_id))
+                        .map(|profile| TacticalSource::Creature {
+                            definition_id: profile.source.definition_id.clone(),
+                        })
+                        .unwrap_or(TacticalSource::Character);
+                    let mut combatant = TacticalCombatant {
+                        actor: participant.entity_id,
+                        source: source.clone(),
+                        surprised: false,
+                    };
+                    let (initiative_modifier, normal_mode) =
+                        preview_initiative_circumstances(state, &combatant)
+                            .map_err(|e| e.to_string())?;
+                    combatant.surprised = true;
+                    let (_, surprised_mode) = preview_initiative_circumstances(state, &combatant)
+                        .map_err(|e| e.to_string())?;
+                    Ok(crate::TableCombatantSource {
+                        actor: participant.entity_id,
+                        source,
+                        initiative_modifier,
+                        normal_mode,
+                        surprised_mode,
+                    })
+                })
+                .collect::<Result<Vec<_>, String>>()?
+        } else {
+            vec![]
+        },
         observers,
         initiative,
         ties,
@@ -115,6 +152,19 @@ pub(crate) fn view(
             .as_ref()
             .and_then(|rules| rules.pending.as_ref())
             .and_then(|pending| choices::save_actor(pending, &own, host)),
+        legendary_resistance: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.failed_save.as_ref())
+            .map(|failed| failed.pending.key.subject)
+            .filter(|actor| host || own.contains(actor)),
+        legendary_action: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.legendary_window.as_ref())
+            .and_then(|window| match window.work.kind {
+                TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
+                _ => None,
+            })
+            .filter(|actor| host || own.contains(actor)),
         budget: flow
             .filter(|_| host || active.is_some_and(|actor| own.contains(&actor)))
             .and_then(|flow| {
@@ -143,7 +193,7 @@ pub(crate) fn prepare(
         || setup.scene_id.0.is_nil()
         || setup.encounter_id.0.is_nil()
         || setup.characters.is_empty()
-        || setup.characters.len() > 100
+        || setup.characters.len().saturating_add(setup.creatures.len()) > 100
     {
         return Err("Choose a new encounter and scene with at least one character.".into());
     }
@@ -216,6 +266,59 @@ pub(crate) fn prepare(
         next.entities
             .get_mut(&character.entity_id)
             .ok_or("Character entity is absent.")?
+            .location_id = Some(setup.location_id);
+    }
+    for placement in &setup.creatures {
+        bounded_text(&placement.public_label, 200)?;
+        let world = state
+            .entities
+            .get(&placement.actor)
+            .ok_or("Unknown source creature.")?;
+        let profile = state
+            .rules
+            .as_ref()
+            .and_then(|r| r.tactical_creatures.as_ref())
+            .and_then(|creatures| creatures.profile(placement.actor))
+            .ok_or("Creature source profile is absent.")?;
+        if world.existence != EntityExistence::Present
+            || state
+                .rules
+                .as_ref()
+                .and_then(|r| r.tactical_inventory.as_ref())
+                .and_then(|i| i.loadout(placement.actor))
+                .is_none()
+        {
+            return Err("Place a living source creature with its prepared equipment.".into());
+        }
+        let source = dmd_rules::tactical_creatures::source_for_profile(profile)
+            .map_err(|e| e.to_string())?;
+        let reach = source
+            .features
+            .iter()
+            .filter_map(|feature| match &feature.feature {
+                dmd_rules::tactical_definitions::MonsterFeature::Attack {
+                    delivery: dmd_rules::tactical_definitions::AttackDelivery::Melee { reach_feet },
+                    ..
+                } => Some(u32::from(*reach_feet) * 2),
+                _ => None,
+            })
+            .max()
+            .unwrap_or(10);
+        participants.push(TacticalParticipant {
+            entity_id: placement.actor,
+            public_label: placement.public_label.clone(),
+            position: placement.position,
+            size: profile.size,
+            height: placement.height,
+            reach,
+            movement: dmd_rules::tactical_creatures::creature_movement(source),
+            senses: dmd_rules::tactical_creatures::creature_senses(source),
+            allies: placement.allies.clone(),
+            enemies: placement.enemies.clone(),
+        });
+        next.entities
+            .get_mut(&placement.actor)
+            .ok_or("Creature entity is absent.")?
             .location_id = Some(setup.location_id);
     }
     next.scenes.insert(

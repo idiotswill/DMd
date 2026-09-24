@@ -26,6 +26,9 @@ pub enum TableAction {
         character_id: CharacterId,
         item_ids: Vec<ItemId>,
     },
+    CreateCreature {
+        creation: Box<TableCreatureCreation>,
+    },
     Tactical {
         action: dmd_rules::tactical::TacticalAction,
     },
@@ -92,6 +95,18 @@ pub enum TableViewer {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
+pub struct TableCreatureCreation {
+    pub entity_id: EntityId,
+    pub name: String,
+    pub definition_id: String,
+    pub size: CreatureSize,
+    pub additional_languages: Vec<String>,
+    pub ammunition_units: u16,
+    pub item_ids: Vec<ItemId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct TableBattlefieldSetup {
     pub encounter_id: EncounterId,
     pub scene_id: SceneId,
@@ -99,7 +114,20 @@ pub struct TableBattlefieldSetup {
     pub name: String,
     pub battlefield: Battlefield,
     pub characters: Vec<TableCharacterPlacement>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub creatures: Vec<TableCreaturePlacement>,
     pub geometry_ruling: Ruling,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableCreaturePlacement {
+    pub actor: EntityId,
+    pub public_label: String,
+    pub position: SpatialPoint,
+    pub height: u32,
+    pub allies: Vec<EntityId>,
+    pub enemies: Vec<EntityId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -196,10 +224,39 @@ pub struct TableView {
     pub pending: Option<PendingTableDecision>,
     pub roll: Option<RollRequest>,
     pub tactical: Option<TableTacticalView>,
+    pub creature_setup: Option<TableCreatureSetupView>,
     pub situation_title: String,
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureSetupView {
+    pub catalog: Vec<TableCreatureOption>,
+    pub creatures: Vec<TableCreatureView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureOption {
+    pub definition_id: String,
+    pub name: String,
+    pub sizes: Vec<CreatureSize>,
+    pub additional_languages: u8,
+    pub ammunition_required: bool,
+    pub item_count: usize,
+    pub abilities: Vec<String>,
+    pub omitted_features: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureView {
+    pub actor: EntityId,
+    pub name: String,
+    pub definition_id: String,
+    pub size: CreatureSize,
+    pub hp: u32,
+    pub max_hp: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -211,6 +268,7 @@ pub struct TableTacticalView {
     /// Full map geometry and participant truth are local-host-only.
     pub battlefield: Option<Battlefield>,
     pub participants: Vec<TacticalParticipant>,
+    pub combatant_sources: Vec<TableCombatantSource>,
     pub observers: Vec<dmd_rules::spatial::ActorTacticalView>,
     pub initiative: Vec<TableInitiativeView>,
     pub ties: Vec<InitiativeTie>,
@@ -219,11 +277,23 @@ pub struct TableTacticalView {
     pub continuation: Option<TableTacticalContinuation>,
     /// A saving throw's controller may choose failure before reporting any dice.
     pub may_fail_save: Option<EntityId>,
+    pub legendary_resistance: Option<EntityId>,
+    pub legendary_action: Option<EntityId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCombatantSource {
+    pub actor: EntityId,
+    pub source: TacticalSource,
+    pub initiative_modifier: i32,
+    pub normal_mode: RollMode,
+    pub surprised_mode: RollMode,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableTacticalContinuation {
     pub actor: EntityId,
+    pub host_adjudication: bool,
     pub choices: Vec<TableTacticalWorkChoice>,
 }
 
