@@ -757,7 +757,7 @@ fn add_flow(
             tie_break: 0,
         }],
         index: 0,
-        round: 1,
+        round: 3,
         turn_number: 3,
         action_spent: false,
         bonus_action_spent: false,
@@ -984,6 +984,25 @@ fn source_fixture(
             definition_id: definition_id.into(),
         },
     );
+    // A source hook requires the same actor to be present in the encounter and
+    // central initiative. Use the source-built movement/senses for that participant.
+    state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .participants
+        .push(TacticalParticipant {
+            entity_id: choice.actor,
+            position: SpatialPoint { x: 10, y: 10, z: 0 },
+            size,
+            public_label: "Source creature".into(),
+            height: 10,
+            reach: 10,
+            movement: built.movement,
+            senses: built.senses,
+            allies: vec![],
+            enemies: vec![],
+        });
     let observed = apply_creature_schedule(
         &state,
         &current,

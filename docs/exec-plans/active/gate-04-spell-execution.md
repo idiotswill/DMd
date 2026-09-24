@@ -1,6 +1,6 @@
 # Gate 4 — Source-derived spell casting and effect programs
 
-Status: **Active — implementation and integration pending.**
+Status: **Source primitives reviewed and focused verification passed; integration remains active.**
 Branch: `codex/gate4-spell-execution`, initial base `05afd1239d165813837fbdcdf76cfc2980092c1a`;
 root integrations `1c7dac593565001fbd80f1c5e0a63135ad4b83d9` and
 `5114159bdb38eb1f04f720b69628d9f8a61bd11a` merged and creature source
@@ -95,18 +95,39 @@ scheduling and enduring noncombat consequences retain Gate 5 ownership.
 
 ## Validation, risks and next action
 
-Typed plans, source compilation, phase transitions and 24 focused regressions are drafted.
+Typed plans, source compilation, phase transitions and 24 focused regressions are implemented.
 The first focused run could not compile the initial base's unfinished integration fields
 and exhaustive matches. Merging the root checkpoint fixed those dependencies without
 duplicating their implementation. All 18 tests then passed on the source tree preceding
-the six source-feature/interruption follow-up tests. Strict Clippy found one Ready conditional in
-this slice (fixed) and four integration lints in kernel validation/turns (owners notified).
-The follow-up source-feature adapter, exact share marker and six new tests await their
-focused rerun; no final-head or strict-lint pass is claimed yet. Formatting and whitespace
-checks pass. The root's global serialized build-slot rule applies.
+the six source-feature/interruption follow-up tests. Strict Clippy found one Ready
+conditional in this slice (fixed) and four integration lints in kernel validation/turns
+(fixed by their owners and merged here). The root's serialized build-slot rule applies.
+
+The exact 24-test code head `100cb336ee4017c223ea722b05ad6801d24761b7` was then
+attempted after merging the integration/lint fixes. The compiler failed in `dmd-domain`
+before reaching these tests: allocation of 2,359,312 bytes failed, followed by allocation
+of 1,572,864 bytes and process status `0xc0000409`. Read-only host measurement after exit
+showed only 230,480 KiB of virtual/commit capacity free; no compiler remained. No user
+process was terminated and no system pagefile setting changed.
+
+After the owner freed memory, the exact code compiled and 22 of 24 tests passed. The
+two new source-creature fixtures were correctly rejected because they omitted the
+central encounter participant. The fixture correction adds a participant using the
+source-built movement/senses and makes round 3 agree with the single-actor third turn;
+no production rule or expected outcome was weakened. On the corrected source tree:
+
+- `cargo test -p dmd-rules tactical_spells --lib`: all **24 passed**.
+- `cargo clippy -p dmd-domain -p dmd-rules --all-targets -- -D warnings`: **passed**.
+- Formatting and whitespace checks: **passed**.
+
+Full independent source review covered domain contracts, program compilation, creature
+composition, phase/resource semantics and all regressions. Its Ready/interruption
+findings were fixed; final review of the fixture correction found no remaining blocker.
+Canonical workspace verification, CI and real application/save/restore/desktop evidence
+remain root integration obligations, not claims made by these focused checks.
 Primary risks are premature resource commits, hidden-target leaks, source context drift,
 duplicate spending on resume, and a plan-only implementation misrepresented as completed
-gameplay. Next: use the handed-off build slot for focused tests and strict lint, fix
-observed failures, obtain independent review, then commit the coherent slice. Root must
-attach new durable authority with
-legacy future-field rejection and semantic replay before any production acceptance.
+gameplay. Next: integrate this reviewed source slice into the shared encounter resolver,
+attach durable authority with legacy future-field rejection and semantic replay, and
+verify the complete application path before any production acceptance. All eighteen
+families above remain the Gate 4 completion checklist; this source slice does not close it.
