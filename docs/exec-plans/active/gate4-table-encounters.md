@@ -38,6 +38,14 @@ will use deterministic replay; no tactical state is trusted in an imported initi
 Next: implement and test the typed table envelope, then source setup and visibility DTOs.
 Nothing in this plan claims a playable complete encounter until integrated acceptance.
 
+Current bounded work: expose retained simultaneous-work choices and voluntary saving
+throw failure to their authorized player/host channel, without serializing hidden effect
+payloads or target identities. Normal turn controls must remain unavailable while a
+continuation is outstanding. Add projection and UI regressions, then validate through
+the existing durable command path. Exact failed-save provenance is included in restore
+audit collection. SRD 5.2.1 p257 explicitly makes Multiattack part of the Attack action;
+the weapon window documentation is corrected accordingly before creature integration.
+
 Implementation checkpoint: typed Tactical and PrepareBattlefield actions are written with
 active-session/attendance checks, source-derived PC speed/size, exact nested event replay
 and secret-safe shared messages. Players receive actor knowledge only; full map/participant

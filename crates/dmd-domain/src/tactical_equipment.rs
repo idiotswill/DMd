@@ -41,7 +41,8 @@ pub enum WeaponDelivery {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum WeaponActionKind {
     AttackAction,
-    /// A source-defined attack from another action, including monster Multiattack.
+    /// A source-defined attack outside the Attack action. SRD 5.2.1 Multiattack
+    /// belongs to AttackAction (p257), including its source-limited replacements.
     OtherAction,
     BonusAction,
     Reaction,

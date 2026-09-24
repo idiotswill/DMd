@@ -215,6 +215,22 @@ pub struct TableTacticalView {
     pub initiative: Vec<TableInitiativeView>,
     pub ties: Vec<InitiativeTie>,
     pub budget: Option<TableTacticalBudget>,
+    /// Only the controlling viewer or host receives the current ordered-work choice.
+    pub continuation: Option<TableTacticalContinuation>,
+    /// A saving throw's controller may choose failure before reporting any dice.
+    pub may_fail_save: Option<EntityId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableTacticalContinuation {
+    pub actor: EntityId,
+    pub choices: Vec<TableTacticalWorkChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableTacticalWorkChoice {
+    pub occurrence: u16,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

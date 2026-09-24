@@ -27,5 +27,7 @@ export interface TacticalView {
   observers: { observer: Id; position: Point | null; contacts: { entity_id: Id; label: string | null; position: Point; status: 'Seen' | 'Located' | 'Remembered'; modality: string }[]; cells: { position: Point; difficult: boolean; blocked: boolean; currently_seen: boolean }[] }[];
   initiative: { actor: Id; label: string; total: number | null }[];
   ties: InitiativeTie[];
+  continuation: { actor: Id; choices: { occurrence: number; label: string }[] } | null;
+  may_fail_save: Id | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }

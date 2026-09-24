@@ -728,6 +728,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             origins.push(&flow.origin);
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(failed) = &resolution.failed_save {
+                    origins.push(&failed.issued_by);
+                    origins.push(&failed.resolved_by);
+                }
             }
             origins.extend(flow.dodges.iter().map(|dodge| &dodge.origin));
             origins.extend(flow.ground_items.iter().map(|item| &item.origin));

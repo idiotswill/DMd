@@ -22,6 +22,20 @@
   {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
   {#if tactical.phase==='active' && tactical.budget && (host || actor===tactical.active_actor)}
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
-    <fieldset disabled={disabled||pendingRoll}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
+    <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
+  {/if}
+  {#if tactical.continuation && (host || actor===tactical.continuation.actor)}
+    {#if tactical.continuation.choices.length}
+      <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
+        <p>These consequences occur at the same time. Choose their order for this turn.</p>
+        {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{occurrence:choice.occurrence}})}>{choice.label} · {index+1}</button>{/each}
+      </fieldset>
+    {:else}<p>Resolve the pending consequence before continuing the turn.</p>{/if}
+  {/if}
+  {#if tactical.may_fail_save && (host || actor===tactical.may_fail_save)}
+    <fieldset {disabled}><legend>Saving throw choice</legend>
+      <p>You may choose to fail this saving throw before reporting dice. This resolves it as a failure.</p>
+      <button class="secondary" onclick={()=>onAction('VoluntarilyFailSave')}>Choose to fail this save</button>
+    </fieldset>
   {/if}
 </section>

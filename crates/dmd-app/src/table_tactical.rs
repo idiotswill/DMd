@@ -4,6 +4,9 @@ use dmd_rules::{RulesPack, tactical::*};
 
 use crate::{TableBattlefieldSetup, table_engine::table};
 
+#[path = "table_tactical_choices.rs"]
+mod choices;
+
 pub(crate) fn view(
     state: &CampaignState,
     viewer: &crate::TableViewer,
@@ -104,6 +107,14 @@ pub(crate) fn view(
         observers,
         initiative,
         ties,
+        continuation: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| choices::continuation(resolution, &own, host)),
+        may_fail_save: state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.pending.as_ref())
+            .and_then(|pending| choices::save_actor(pending, &own, host)),
         budget: flow
             .filter(|_| host || active.is_some_and(|actor| own.contains(&actor)))
             .and_then(|flow| {
