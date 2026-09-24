@@ -30,7 +30,25 @@ Gate 3 acceptance; ADRs 008, 011, 012, 020, 021 and 024 apply.
 
 ## Verification and next action
 
-Implementation has not started. Refactor preflight around a typed composed recovery event,
-extend the live replay adapter, add focused tamper/legacy/session regressions, run all app
-tests and strict Clippy/formatting. Full integrated repository verification remains root's
-responsibility after reviewing/cherry-picking this slice. No owner blocker is known.
+Implemented the typed composed event preflight, exact action/outcome audit parity, stateless
+pre-anchor table authority/nested-action checks, table pending-origin checks, all-snapshot
+canonical replay and session-ledger reconciliation. The live replay adapter uses the same
+table engine and rejects raw mechanical events once table state exists. Final replay checks
+validate table profiles even when a latest snapshot requires no subsequent events.
+Root follow-up `2354c9f` is present as dependency copy `4b068c2`; its observation helper now
+validates all table observation bodies during restore. No root-owned table/catalog files changed.
+
+All 36 application tests passed: 6 helper unit, 15 rules runtime, 8 runnable boundary,
+4 table loop and 3 composed recovery tests. Strict app/all-targets Clippy passed. The genuine
+format-1 legacy restore fixture now expects the current schema and confirms absent table state.
+The focused recovery test was extended to explicitly reject an altered intermediate table
+snapshot; its final focused rerun, strict Clippy and formatting check all passed.
+
+The earliest available anchor remains the trust base for unavailable earlier state and closed
+session projections. Available earlier typed records still require matching authority, actions,
+outcomes and origins. No invented replay is claimed for that unavailable prefix.
+Review identified a root-owned integration follow-up: `has_rules_history` must recognize table
+audit/event/observation lineage as well as rules lineage so stripping current/historical table
+images cannot bypass preflight. Root was notified and owns that `lib.rs` guard/regression.
+Next action: root cherry-picks the owned commit, reviews it, completes the lineage guard and
+performs integrated repository verification. No owner decision is required.
