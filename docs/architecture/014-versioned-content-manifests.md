@@ -1,4 +1,4 @@
-# ADR 013 — Versioned rules/content manifests
+# ADR 014 — Versioned rules/content manifests
 
 Status: **Proposed for Gate 1 content-manifest blocker — PR #11**
 
