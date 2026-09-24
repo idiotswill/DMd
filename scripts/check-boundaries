@@ -22,6 +22,17 @@ for dependency in dmd-core dmd-rules dmd-persistence dmd-conversation dmd-app; d
   fail_dependency crates/dmd-domain/Cargo.toml "$dependency"
 done
 
+# The desktop is an outer application adapter, not another mechanics/storage entrypoint.
+if [[ -f crates/dmd-desktop/Cargo.toml ]]; then
+  for dependency in dmd-core dmd-rules dmd-persistence dmd-conversation sqlx; do
+    fail_dependency crates/dmd-desktop/Cargo.toml "$dependency"
+  done
+  if grep -RniE '(^|[^[:alnum:]_])(dmd_persistence|dmd_rules|sqlx)(::|[^[:alnum:]_])' crates/dmd-desktop/src; then
+    echo 'Architecture boundary violation: desktop gameplay must use dmd-app.' >&2
+    exit 1
+  fi
+fi
+
 # Conversation interprets input into candidates; it does not validate rules or write state.
 for dependency in dmd-core dmd-rules dmd-persistence dmd-app sqlx; do
   fail_dependency crates/dmd-conversation/Cargo.toml "$dependency"

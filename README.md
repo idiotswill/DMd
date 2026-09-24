@@ -10,9 +10,13 @@ This repository starts from a generic engine architecture. Existing Asterra camp
 
 ## Current phase
 
-Gate 0 — architecture, repository foundation, test strategy, and development-lab/product-contract hardening.
+[Gate 3 — first playable desktop table loop](docs/checkpoints/gate-03-desktop-table-loop.md)
+is active. The accepted persistence and rules foundations now support durable table sessions,
+source-derived character creation, physical dice and exact pending-state recovery. Windows
+desktop integration and packaged acceptance are in progress; this is not a finished game.
 
-No gameplay implementation is considered stable yet.
+See the [roadmap](docs/checkpoints/roadmap.md), [rules coverage ledger](docs/rules/rules-coverage-ledger.md)
+and [active execution plans](docs/exec-plans/active/) for verified scope and remaining work.
 
 ## Software and content licenses
 
