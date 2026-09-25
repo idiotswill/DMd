@@ -5,9 +5,11 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR42
+## Current checkpoint after PR43
 
-Verified main is 2798b6b1d6263b5e321a1903d9fb4f2331b73895. Compatibility PR42
+Current verified source main is e813e3a13911497902a3d4a55aec3c70653afb2a;
+its post-main checks are separately pending below. The compatibility prerequisite
+was main2798b6b1d6263b5e321a1903d9fb4f2331b73895. Compatibility PR42
 merged after exact-head review and all six checks; its complete tree matches
 reviewed cbe9575 at ddfe5b58c0c55ad2aab6e367de295bf7c1760e5e. All six post-main
 checks pass: Linux36188457488 reports 695 Rust tests and 44 table cases; native
