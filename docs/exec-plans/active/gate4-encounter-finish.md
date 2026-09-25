@@ -64,6 +64,18 @@ findings, reconcile verified PR43 main, then run focused and canonical verificat
 when the slot is available. Review exact final head and all six CI checks before
 root's protected merge.
 
+Integration checkpoint `f7984322584d3e2260ce8893d5a2299b2a8ab27e` was published
+to draft PR44. Independent reviewer shield_rules_recovery inspected that exact head,
+including the actual remerge diff, all manual resolutions, the full source-only
+fixture and production authority/privacy/session paths; no actionable defect was
+found. This is static review, not runtime evidence. Exact-head remote Linux run
+36193552678 passed both guards, MSRV, fast verification and strict Clippy and is
+running the full tests. Windows run36193552717 MSRV job108264109998 passed; its
+downloaded log verifies Svelte 0 errors/0 warnings, 81 UI tests across 15 files and
+the 138-module production build. The stable job continues workspace/native checks.
+These preliminary results do not replace full exact-head acceptance. No local
+compiler or frontend process was started during PR43's canonical slot.
+
 ## Authorized first production slice
 
 Implement durable **hostilities concluded**, retaining the same initiative cadence,
