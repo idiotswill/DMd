@@ -11,6 +11,7 @@ pub mod spatial;
 pub mod tactical_definitions;
 pub mod tactical_effects;
 pub mod tactical_inventory;
+pub mod tactical_weapons;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {
