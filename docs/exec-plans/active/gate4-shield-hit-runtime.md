@@ -218,3 +218,8 @@ adds selected-source Shield/outbox retry across ownership changes, and hides own
 source casting from Host while preserving issued delegated ordering. These
 integration additions have formatting/diff checking only; compiler, independent
 review and actual execution are pending.
+
+Integrated candidate32d937b passes all-target compilation, declared MSRV and both
+guards. Strict Clippy job108262766479 identified one manual vector membership scan
+in the newly registered SQLite fixture; replace it with `contains`, preserving the
+same hand-occupancy assertion. Runtime and integration review remain pending.

@@ -372,11 +372,7 @@ async fn hit(f: &mut Fixture, path: &Path, mage: EntityId, face: u16) -> Command
         .find(|weapon| weapon.name == "Dagger")
         .unwrap()
         .item;
-    let equipped = options
-        .hands
-        .hands
-        .iter()
-        .any(|hand| *hand == HandAssignment::Item(weapon));
+    let equipped = options.hands.hands.contains(&HandAssignment::Item(weapon));
     Box::pin(step(
         f,
         path,
