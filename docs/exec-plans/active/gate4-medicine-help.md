@@ -89,3 +89,15 @@ The fresh review added settled-ground admission and interruption of the helper's
 ongoing rest when its Action is paid. Additional authored assertions cover a visible
 but physically blocking barrier, Poisoned disadvantage and independent unconsciousness
 remaining after the source knockout ends. These follow-up changes are unverified.
+
+Sourcec5b3a14 passes native frontend static checking (zero errors/warnings),57 tests,
+135-module build and MSRV, with fast verification, strict lint and both Linux guards.
+The full Rust suites are still running and no full-pass claim is made. The reviewed
+production diff preserves the old vitality total operation and all old projection
+shapes; new clients cannot submit an authoritative Medicine outcome or total.
+
+PR37 finald901058 passed all six checks and merged as current maincd8d4a4, with
+fetched full-tree parity. b65d163 integrates that main into first aid; conflicts were
+only adjacent Rust/TypeScript action variants and both features were retained. PR36
+post-merge checks are also all green. Next: complete combined CI and local canonical/
+desktop verification, review any actual failures, then final exact-head merge checks.

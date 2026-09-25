@@ -5,7 +5,36 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Audited baseline
+## Current checkpoint after PR37
+
+Authoritative fetched main is cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a. PR35
+opaque projection/transport, PR36 Second Wind and PR37 Savage Attacker are merged.
+All six exact-head checks passed for each; fetched full-tree equality to each
+reviewed head was checked after protected squash. PR36's six post-merge checks
+36152298689/36152294368 pass. PR35's post-merge Linux/MSRV pass; its native tests,
+desktop and installer upload completed before its final cache cleanup was cancelled
+by the next main merge. PR37 post-merge checks remain pending.
+
+Savage source47fc passes649 local GNU/650 Linux/652 native Rust tests,59 desktop
+tests, static checking and build; finald901058 passes all six checks36152545195/
+36152544545. It is now actual source-bound tactical two-set damage with cold/retry/
+hostile replay evidence. Remaining masteries are still required below.
+
+Reaction PR38 sourcea61e95d passes all six checks36150846605/36150846528 and full
+local canonical verification (664 GNU Rust tests, strict lint and both guards).
+Native CI has667 Rust tests,57 desktop tests and fresh offline packaging. Its legacy
+save upgrade, owned declaration, defense and ordering foundations are verified;
+actual Shield/Counterspell/Ready response windows remain unimplemented. Its local
+desktop batch is in progress. This is not accepted response or completed gate evidence.
+
+First aid is draft PR39: owned Action/Medicine, current-contact desktop selection,
+stabilization/knockout and actual source-attack cold recovery tests are authored.
+Sourcec5b3a14 passed frontend checking,57 tests/build and native MSRV; full Rust
+tests have not completed. b65d163 imports verified main with only two additive
+typed-action conflicts resolved by retaining both features. Combined verification
+is still required. General Help and Utilize remain separate Gate4 obligations.
+
+## Earlier audit and implementation history
 
 PR33 is now merged as fetched main21cf176, with exact full-tree parity to reviewed
 head8cb3084 and all six final-head CI checks. It adds physical/source attacks,
@@ -53,15 +82,15 @@ regressions are being added. Neither draft is accepted or gate-complete.
 | Family or seam | Missing application execution and next dependency |
 | --- | --- |
 | Combat sequence | No public encounter finish/second encounter path; EndSession currently rejects every live flow. Compose settled source/lifecycle departure, durable outcome and recovery without resource resets. Root owns finish. |
-| Combat actions | Ready/reaction responses remain with the reaction runtime. Verify/integrate PR36's actual Second Wind Bonus Action/raw1d10/resource continuation. Help, Hide, Search, Influence, Study, Utilize and typed improvisation still need source-authorized actions. |
+| Combat actions | Ready/reaction responses remain with the reaction runtime. PR36's Second Wind is merged and verified. PR39 adds first aid but does not complete general Help. Hide, Search, Influence, Study, Utilize and typed improvisation still need source-authorized actions. |
 | Movement/geometry | Add forced/compelled displacement and teleport distinction, mount control and source zone interactions. Voluntary movement cannot stand in for forced motion. |
 | Targeting/areas | The reviewed breath path is bounded to its source cone/explicit occupied-cell policy. General source area selection/shapes and compound source clauses still need complete execution. Fireball's damage plus ignition is not playable merely because SaveDamage exists. |
-| Visibility/stealth | Integrate opaque audience protocol and private-ordering policy. Persist witnessed/last-known updates; implement Hide/Search/guessed-location attacks and source sensory/illusion changes. A sealed pure actor view is not an NPC knowledge executor. |
+| Visibility/stealth | Opaque audience protocol is merged; integrate actual private reaction ordering. Persist witnessed/last-known updates; implement Hide/Search/guessed-location attacks and source sensory/illusion changes. A sealed pure actor view is not an NPC knowledge executor. |
 | Conditions | Add owner-linked grapples, source charm/fear/forced choices, remaining weapon riders and action-budget effects. Current area Charmed refusal is an explicit unsupported boundary, not finished source behavior. |
-| Death/knockout | Actual tactical Medicine/Help and post-combat recovery/finish remain. Existing VitalityOperation variants alone do not expose those player choices. |
+| Death/knockout | Verify and integrate PR39's actual tactical first aid. Post-combat recovery/finish remain. Existing VitalityOperation variants alone do not expose those player choices. |
 | Grapple/unarmed | Intrinsic OA damage exists; ordinary own-turn Unarmed/Grapple/Shove/Escape choices, target saves, size/reach/free-hand ownership, dragging and break conditions do not. |
 | Mounts/underwater | Live weapon planning still supplies mounted:false; no mount/rider/control/initiative/dismount lifecycle. Whole-body underwater restrictions work; partial overlap still needs retained adjudication. |
-| Weapon properties | Only Nick/Graze have live mastery execution. Add Cleave, Push, Sap, Slow, Topple, Vex with costs/saves/rider expiry and displacement consequences. Savage Attacker's legacy entry is not tactical execution; preserve two raw sets and the actual selected source weapon dice. |
+| Weapon properties | Only Nick/Graze have live mastery execution. Add Cleave, Push, Sap, Slow, Topple, Vex with costs/saves/rider expiry and displacement consequences. PR37's tactical Savage Attacker is merged with both raw sets and the actual selected source weapon dice. |
 | Monster running | Pure capability/goal/morale proposals have no app executor. Bridge validated Multiattack/replacement/legendary feature plans; persist actor-known observations/goals and real retreat/surrender/parley decisions. Preserve source reaction/limited-use budgets. This is Gate4, not deferred to Gate9. |
 | Spell effects | Complete each remaining reusable mechanism below, using actual source grants and controller choices. Catalog enumeration stays Gate6; execution mechanics do not. |
 
