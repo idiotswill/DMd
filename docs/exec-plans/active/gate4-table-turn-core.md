@@ -64,3 +64,20 @@ Planning only. PR31 corrected0486c77 has independent review and all six source C
 checks green (376 Linux Rust tests); root canonical Windows verification is running.
 After verified PR31 merge, refresh main and create the planned branch. Inspect the
 actual final core before extraction; no source/code/test claim exists for this slice.
+
+Read-only dependency review confirms the turn closure is separable while retaining
+the existing scheduler. Keep vitality/drop-held/live-AC and knockout-rest proof,
+EndOccupiedSpace, source effect saves/damage/concentration, Legendary Resistance,
+recharge and after-End choice/decline. Floor-only initial placement is insufficient
+unless enforced on every accepted/restored tactical image. Reject unsupported
+position-changing effects and nonempty future cursor/history authority, including
+last_movement, movement_progress/origin, weapon_history, attack_window, remaining
+attacks and other_slot_casters. Preserve historical non-tactical recorded rolls.
+No legendary payload execution is claimed by a decline-only timing boundary.
+
+The preserved integration source at `d046810` now passes the Svelte check (zero
+errors/warnings), all38 UI tests with one Vitest worker, and the Vite production
+build. These are integration-branch frontend checks, not turn-core extraction or
+backend acceptance. Logs: `tooling/gate4-integrated-ui-tests-r2.log` and
+`tooling/gate4-integrated-ui-build-r2.log` outside the repository. Earlier UI/Rust
+attempts interrupted by system memory exhaustion remain failed attempts.
