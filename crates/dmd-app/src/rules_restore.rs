@@ -103,10 +103,11 @@ pub(crate) fn visit_rules_history(
     // New tactical authority has always been event-sourced. Unlike pre-journal legacy
     // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
     // Keep the original pre-tactical anchor so every source-derived payload is replayed.
-    if anchor
-        .encounter
-        .as_ref()
-        .is_some_and(|encounter| encounter.flow.is_some())
+    if crate::table_source_control::enabled(anchor)
+        || anchor
+            .encounter
+            .as_ref()
+            .is_some_and(|encounter| encounter.flow.is_some())
         || anchor.rules.as_ref().is_some_and(|rules| {
             rules.tactical_effects.is_some()
                 || rules.tactical_inventory.is_some()
@@ -346,7 +347,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && version == 2)
+    version == 1 || (kind == "table.action" && matches!(version, 2 | 3))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -356,7 +357,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2 | 3 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)
@@ -481,6 +482,21 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if matches!(
+        event.action,
+        TableAction::EnableSourceActorAccess { .. }
+            | TableAction::SetSourceCreatureController { .. }
+    ) {
+        if event.meta.issuer != CommandIssuer::Admin
+            || event.meta.actor.is_some()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("source control has incompatible authority or nested mechanics".into());
+        }
+        return Ok(());
+    }
     if let TableAction::CreateCreature { .. } = &event.action {
         if !matches!(
             event.meta.issuer,
@@ -793,6 +809,16 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    if let Some(access) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.source_actor_access.as_ref())
+    {
+        origins.push(&access.origin);
+        for adoption in &access.adopted {
+            origins.extend([&adoption.profile_origin, &adoption.control_origin]);
+        }
+    }
     if let Some(encounter) = &state.encounter {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
@@ -1071,7 +1097,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))

@@ -56,6 +56,56 @@ pub(crate) fn project_table(
     observations: &[SessionObservation],
     visible_events: Option<&HashSet<EventId>>,
 ) -> Result<TableView, RunnableCampaignError> {
+    let mut view = project_table_v1(
+        state,
+        viewer.clone(),
+        pack,
+        events,
+        observations,
+        visible_events,
+    )?;
+    if crate::table_source_control::enabled(state) {
+        view.source_control = Some(crate::TableSourceControlView {
+            version: 2,
+            actors: crate::table_source_control::visible_actors(state, &viewer).map_err(invalid)?,
+        });
+        view.tactical = crate::table_tactical::view_v2(state, &viewer).map_err(invalid)?;
+        // Only source-owned public tactical requests gain the new table visibility.
+        // Legacy PC kernel queries (including source-inappropriate sheet formulas) stay frozen.
+        if let TableViewer::Player(player) = viewer
+            && let Some(pending) = state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.pending.as_ref())
+            && pending.request.visibility == RollVisibility::Public
+            && matches!(
+                pending.purpose,
+                PendingPurpose::TacticalInitiative { .. }
+                    | PendingPurpose::TacticalResolution { .. }
+            )
+            && pending
+                .request
+                .roller
+                .is_some_and(|actor| crate::table_source_control::owns_source(state, player, actor))
+        {
+            let mut request = pending.request.clone();
+            request.reason = roll_label(&pending.purpose, state);
+            view.roll = Some(request);
+            view.roll_channel = Some(TableRollChannel::Tactical);
+        }
+    }
+    Ok(view)
+}
+
+/// Historical version-one projection, including PC-only ownership, is immutable.
+pub(crate) fn project_table_v1(
+    state: &CampaignState,
+    viewer: TableViewer,
+    pack: &RulesPack,
+    events: &[ProjectionEvent],
+    observations: &[SessionObservation],
+    visible_events: Option<&HashSet<EventId>>,
+) -> Result<TableView, RunnableCampaignError> {
     let campaign_id = state.campaign_id();
     let table = table(state).map_err(invalid)?;
     if let TableViewer::Player(player) = viewer
@@ -269,6 +319,7 @@ pub(crate) fn project_table(
         .rev()
         .collect();
     Ok(TableView {
+        source_control: None,
         campaign_id,
         name: state.campaign.display_name.clone(),
         event_sequence: state.applied_event_sequence,

@@ -127,6 +127,21 @@ impl CampaignExport {
                 "legacy export cannot contain table projection or transport authority".into(),
             ));
         }
+        if self.format_version < 3 {
+            for json in std::iter::once(self.current_state.state_json.as_str()).chain(
+                self.snapshots
+                    .iter()
+                    .map(|snapshot| snapshot.state_json.as_str()),
+            ) {
+                if crate::snapshot_replay::contains_source_actor_access(json)
+                    .map_err(LifecycleError::CorruptExport)?
+                {
+                    return Err(LifecycleError::CorruptExport(
+                        "legacy export cannot contain source-control authority".into(),
+                    ));
+                }
+            }
+        }
         if self.format_version == 1
             && (!self.observations.is_empty() || self.state_schema_version > 2)
         {

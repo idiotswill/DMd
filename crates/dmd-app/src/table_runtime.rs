@@ -167,7 +167,7 @@ pub(crate) fn validate_table_observation(
     }
     let body: TableObservationBody = match record.payload_schema_version {
         1 => serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?,
-        2 => {
+        2 | 3 => {
             serde_json::from_str::<crate::table_transport::TransportedTableObservation>(
                 &record.payload_json,
             )
@@ -373,7 +373,9 @@ impl CampaignRuntime {
         meta: CommandMeta,
         action: TableAction,
     ) -> Result<TableReceipt, RunnableCampaignError> {
-        self.execute_legacy_table(meta, action, true).await
+        // Retain the transaction future on the heap instead of embedding its state
+        // and replay buffers in every caller's declaration/creation async frame.
+        Box::pin(self.execute_legacy_table(meta, action, true)).await
     }
 
     /// Questions and table chatter have their own append-only observation history, not game events.
@@ -383,7 +385,7 @@ impl CampaignRuntime {
         id: ObservationId,
         text: &str,
     ) -> Result<TableObservationBody, RunnableCampaignError> {
-        self.observe_legacy_table(meta, id, text, true).await
+        Box::pin(self.observe_legacy_table(meta, id, text, true)).await
     }
 
     pub async fn read_host_situation(

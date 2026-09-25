@@ -201,11 +201,22 @@ fn resolve_table_internal(
             // Private preparation must not teach players an actor's name or existence.
             "Host preparation recorded.".into()
         }
+        TableAction::EnableSourceActorAccess { adopted } => {
+            next = crate::table_source_control::activate(state, meta, adopted)?;
+            "Source creature control is enabled for this table.".into()
+        }
+        TableAction::SetSourceCreatureController { actor, controller } => {
+            next = crate::table_source_control::assign(state, meta, *actor, *controller, pack)?;
+            "Source control updated.".into()
+        }
         TableAction::Tactical { action } => {
             active(state, meta)?;
+            crate::table_source_control::authorize_tactical(state, meta, action)?;
             match meta.issuer {
                 CommandIssuer::Player(_) => {
-                    player_channel_for_encounter(state, meta, true)?;
+                    if crate::table_source_control::attending_source(state, meta).is_err() {
+                        player_channel_for_encounter(state, meta, true)?;
+                    }
                 }
                 _ => host(meta)?,
             }
@@ -254,9 +265,11 @@ fn resolve_table_internal(
             bounded_text(name, 200)?;
             if meta.session_id != Some(*id)
                 || participants.is_empty()
-                || !participants
-                    .iter()
-                    .any(|p| p.attendance == AttendanceStatus::Present && p.character_id.is_some())
+                || !participants.iter().any(|p| {
+                    p.attendance == AttendanceStatus::Present
+                        && (p.character_id.is_some()
+                            || crate::table_source_control::has_owned_source(state, p.player_id))
+                })
             {
                 return Err("Choose at least one attending player and their character.".into());
             }

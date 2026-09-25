@@ -2,7 +2,7 @@
   import { untrack } from 'svelte';
   import { newId, type CharacterView, type CreatureView } from '../table-api';
   import type { BattlefieldSetup } from '../tactical-api';
-  let { characters, creatures = [], disabled = false, onPrepare }: { characters: CharacterView[]; creatures?: CreatureView[]; disabled?: boolean; onPrepare: (setup: BattlefieldSetup) => void } = $props();
+  let { characters, creatures = [], ownedSourceActors = [], disabled = false, onPrepare }: { characters: CharacterView[]; creatures?: CreatureView[]; ownedSourceActors?: string[]; disabled?: boolean; onPrepare: (setup: BattlefieldSetup) => void } = $props();
   let name = $state('Encounter'); let width = $state(50); let depth = $state(50);
   let areaPolicy = $state(false);
   let light = $state<'Bright'|'Dim'|'Darkness'>('Bright');
@@ -17,7 +17,7 @@
   function submit(event: SubmitEvent) {
     event.preventDefault(); error = '';
     const selected = positions.filter(p => p.included);
-    if (!selected.some(p=>p.characterId) || selected.some(p => !p.prepared)) { error = "Select at least one character and prepare every selected character's equipment first."; return; }
+    if (!selected.some(p=>p.characterId || ownedSourceActors.includes(p.actor)) || selected.some(p => !p.prepared)) { error = "Select an attending player's actor and prepare every selected character's equipment first."; return; }
     if (selected.some(p => p.x < 0 || p.y < 0 || p.x + p.space > width || p.y + p.space > depth)) { error = 'Place every participant inside the map.'; return; }
     if (regions.some(r => r.x < 0 || r.y < 0 || r.x + r.width > width || r.y + r.depth > depth)) { error = 'Place each terrain region inside the map.'; return; }
     const volume = (r: typeof regions[number]) => ({ min: { x: r.x*2, y: r.y*2, z: 0 }, max: { x: (r.x+r.width)*2, y: (r.y+r.depth)*2, z: r.height*2 } });
