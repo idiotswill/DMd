@@ -344,6 +344,16 @@ the actual Mage, checks that neither control can create an outbox request, switc
 back to the PC, and exercises correction focus plus a lost-ack withdrawal/restart
 whose exact original PC channel overrides a later local actor preference.
 
-These review corrections are authored and formatted, with git diff --check clear.
-They have not yet compiled or run. The next authorized heavy slot runs their focused
-Rust/UI regressions, then the complete canonical verification on the committed head.
+The review corrections were published as `fe76131`. Its exact-head Windows MSRV
+job 108250211419 passes all 77 frontend tests, including the new PC selection and
+restart case, Svelte check with zero errors/warnings, and the 137-module production
+build. Linux compilation, strict lint, MSRV and guards also pass; full Rust acceptance
+and packaging are still pending. No local runtime success is claimed yet.
+
+A final static correction keeps the Begin attendance check behind the existing
+Admin/System issuer gate. Nonprivileged Begin attempts must reach the established
+rules authorization refusal without learning a private source's attendance from
+this new guard. Assignment and activation already authenticate Host first. Desktop
+source is unchanged from the verified frontend head. The next heavy slot runs
+focused Rust/source/adoption and genuine corpus cases, then releases briefly for
+the parent's Shield rules cases before full canonical verification.

@@ -234,7 +234,7 @@ pub(crate) fn authorize_tactical(
     action: &dmd_rules::tactical::TacticalAction,
 ) -> Result<(), String> {
     use dmd_rules::tactical::TacticalAction as A;
-    if !enabled(state) {
+    if !enabled(state) || !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
         return Ok(());
     }
     let rules = state.rules.as_ref().ok_or("Mechanical state is absent.")?;
@@ -252,9 +252,6 @@ pub(crate) fn authorize_tactical(
                 );
             }
         }
-    }
-    if !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
-        return Ok(());
     }
     let resolution = state
         .encounter
