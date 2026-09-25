@@ -9,7 +9,7 @@ use super::turns::*;
 use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
-pub(super) use opportunity::{begin_opportunity_attack, opportunity_options};
+pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
 pub(super) use spell::begin_spell_attack;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
     match attack.source {

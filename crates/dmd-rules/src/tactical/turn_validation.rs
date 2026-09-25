@@ -186,6 +186,9 @@ fn validate_work(
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     let f = flow(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    // Historical reached-place receipts survive combat completion, but never
+    // become exempt from validation when the active cursor is absent.
+    crate::tactical_movement::validate_result(state)?;
     if f.phase != TacticalPhase::Active {
         if f.resolution.is_some()
             || !f.dodges.is_empty()

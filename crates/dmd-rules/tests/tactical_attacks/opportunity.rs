@@ -489,3 +489,63 @@ fn distant_enemy_with_uncertain_cover_cannot_block_unrelated_movement() {
     );
     assert_eq!(f.flow().budget.movement_spent, 10);
 }
+
+#[test]
+fn movement_within_reach_does_not_consult_uncertain_opportunity_cover() {
+    let mut f = Fixture::new();
+    f.arm("longsword", false, false);
+    let e = f.state.encounter.as_mut().unwrap();
+    e.battlefield.obstacles.push(SpatialObstacle {
+        id: "partial-reaction-barrier".into(),
+        volume: SpatialBox {
+            min: SpatialPoint { x: 20, y: 0, z: 0 },
+            max: SpatialPoint {
+                x: 21,
+                y: 100,
+                z: 100,
+            },
+        },
+        blocks_movement: false,
+        blocks_sight: false,
+        observable: false,
+        cover: CoverDegree::Total,
+    });
+    let assessed = dmd_rules::spatial::cover_from(
+        e,
+        e.participants[0].center().unwrap(),
+        e.participants[1].volume().unwrap(),
+        &f.actors,
+    )
+    .unwrap();
+    assert!(assessed.requires_adjudication);
+    let mut destination = e.participants[1].position;
+    destination.y += 10;
+    let mut after = e.participants[1].clone();
+    after.position = destination;
+    assert!(dmd_rules::spatial::participant_distance(&e.participants[0], &after).unwrap() <= 10);
+    f.begin();
+    f.run(Some(0), TacticalAction::EndTurn);
+    f.run(
+        Some(1),
+        TacticalAction::Move {
+            path: vec![TacticalMoveStep {
+                destination,
+                mode: MovementMode::Walk,
+            }],
+        },
+    );
+    assert!(f.flow().resolution.is_none());
+    assert!(
+        f.rules()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .is_empty()
+    );
+    assert_eq!(f.flow().budget.movement_spent, 10);
+    assert_eq!(
+        f.state.encounter.as_ref().unwrap().participants[1].position,
+        destination
+    );
+}

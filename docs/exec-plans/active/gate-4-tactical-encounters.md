@@ -98,12 +98,16 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ### 2026-09-25 integration checkpoint
 
-Main is now `0ff676dd0fceefa826230bdcafdfcb608fc571d7`. Bounded prerequisite
+Main is now `d12b2a68b82592cc59622062d6ab1668defa20ed`. Bounded prerequisite
 PRs24 (effects),25 (damage/vitality),26 (physical inventory) and27 (source creature
 definitions) have merged after exact-head verification. PR27's merged tree equals
 its reviewed final head; all six post-merge jobs passed in Linux run36101900611 and
 Windows run36101900631, including stable packaging.
-PR28 extracts pure physical weapon planning for independent review and canonical CI.
+PR28 (physical weapon plans) also merged: canonical329 Rust tests passed on source
+`32970a1`; final docs-only head `1c5ebb9` retained exact source bytes, received fresh
+review and passed all six CI jobs. Its merged full tree equals that exact reviewed
+head; all six post-merge jobs passed in Linux36103736797 and Windows36103736775,
+including packaging. Integration merge is `cac466c`.
 These source/reducer slices do not establish playable encounter acceptance by themselves.
 
 The separate encounter integration branch includes source creature setup/gear,
@@ -113,13 +117,26 @@ tests passed at `e5d1c2d`'s code (including17 table-loop and3 recovery cases); t
 subsequent main merge `ea21c76` preserves the catalog's matching validator fix.
 The movement UI passed30 tests, Svelte validation and a production build. A fresh
 review found the legal two-handed reaction projection gap; its fix is present and
-dedicated regressions/strict Clippy are next. Miss/decline restore tests do not prove
+the dedicated12-comparison grip regression and strict workspace all-target Clippy
+passed at `56a8d35`. Miss/decline restore tests do not prove
 the still-required damaging reaction and concentration sequence.
 
-Casting owns the next shared continuation checkpoint, while the attack author owns
-the sealed spell-attack adapter. The movement author will then integrate falling,
-accepted-prefix travel privacy and durable stop receipts. Whole-route hidden geometry
-preflight remains a known defect until that correction passes its regression matrix.
+Casting checkpoint `81c1a4e` passed96 integration tests and strict domain/rules
+all-target Clippy, including the sealed source spell-attack adapter and EndTurn
+occupied-space consequence. It remains to be integrated through the table UI and
+recovery boundary. Root merged that rules checkpoint as `f34b42c`. Movement checkpoint
+`4a6f879` plus departure helper `5435743` are integrated as `140b737`/`7c7ef03`; the
+four production/test movement files exactly match the reviewed source checkpoint.
+The source branch passed42 attack/OA,18 movement and24 turn tests plus strict
+domain/rules all-target Clippy. Accepted-prefix travel privacy and durable stop receipts
+now have reducer evidence. Casting's new roll/work variants and receipt audit attachment
+are still awaiting the separate table-casting application branch, so this newly merged
+integration head does not yet have whole-application verification. Falling queue
+attachment remains the movement author's active follow-up.
+Root owns fresh main-based `codex/gate4-equipment-table`: attaching physical inventory,
+its durable host preparation and private current sheet, source mastery choices and
+save migration/replay defenses. Its extracted UI passed13 tests, zero Svelte diagnostics
+and the production build; Rust/canonical/review/CI remain pending for that branch.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
 and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
 
