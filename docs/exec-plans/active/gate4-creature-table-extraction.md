@@ -73,3 +73,19 @@ stay active; no Gate5 work or reduced gate acceptance is authorized.
 Independent environment reviewer inspected the full extraction and source closure with
 no actionable finding before this candidate commit. Exact committed-head review and
 Rust/canonical checks remain pending; no gate or slice completion is claimed.
+
+## First exact-head CI finding
+
+Draft PR30 source `53cbbe9` compiled and passed strict Clippy/Linux MSRV/architecture
+and genericity checks. Its new actual PC check after NPC preparation failed at physical
+roll completion: the inventory validator called the whole CampaignState validator while
+the rules child had cleared pending, before its table parent cleared roll_context.
+The same dependency existed after PC equipment preparation; this regression exposed it.
+
+Factor identity/world reference checks into `CampaignState::validate_references` and use
+those plus inventory/source checks inside the inventory reducer. Full `validate` retains
+all existing attachment, encounter and table invariants, and the app validates the whole
+completed table transition before commit. Tests retain actual PC check/Second Wind and
+add a deliberately incomplete final table context that still fails validation and restore.
+This is an application-composition fix; no final invariant or historical event changes.
+Correction verification is pending on the next head.

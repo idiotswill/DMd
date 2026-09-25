@@ -298,6 +298,7 @@ async fn verify_player_check_after_setup(f: &mut Fixture, actor: EntityId) {
             Some(f.session),
         )
         .await;
+        verify_incomplete_table_state_rejected(f).await;
         let receipt = f
             .runtime
             .execute_table(
@@ -420,5 +421,32 @@ async fn verify_creature_restore_guards(
             "{corrupt} must leave no partial restored campaign"
         );
     }
+    pool.close().await;
+}
+
+async fn verify_incomplete_table_state_rejected(f: &Fixture) {
+    let mut export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mut malformed = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+    assert!(malformed.table.as_ref().unwrap().roll_context.is_some());
+    malformed.rules.as_mut().unwrap().pending = None;
+    assert!(malformed.validate_references().is_empty());
+    assert!(
+        malformed
+            .validate()
+            .iter()
+            .any(|error| matches!(error, StateInvariantViolation::InvalidTableState(_)))
+    );
+    export.current_state.state_json = malformed.encode_json().unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let runtime = CampaignRuntime::from_content_root(
+        pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    assert!(runtime.restore_campaign(&export).await.is_err());
+    assert!(
+        dmd_persistence::open_campaign(&pool, f.campaign)
+            .await
+            .is_err()
+    );
     pool.close().await;
 }
