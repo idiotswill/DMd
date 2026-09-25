@@ -126,3 +126,48 @@ history without changing the underlying game event or its resolver. Malformed ne
 envelopes never fall back to legacy interpretation. Initial presentation bootstrap is
 a constrained, atomic record of replay-derived historical visibility and current
 audience hashes; it changes neither canonical state nor old journal bytes.
+
+The application checkpoint now extracts the trusted view builder and an authenticated
+replay visitor. Explicit desktop DTOs remove canonical heads, pending CommandMeta and
+work/roll occurrence identities. Versioned request markers are retained in canonical
+audit/observation envelopes; a missing protocol ledger cannot masquerade as legacy.
+The same SQLite writer handles request comparison, derived head, game/answer commit,
+revision/capability updates and exact response. Trusted internal v1 table writes also
+maintain an initialized ledger. Desktop migration and its accepted-only legacy bridge
+remain unfinished; this is not an externally usable protocol checkpoint yet.
+
+The storage reviewer found and closed a binding-to-presentation-cause gap (including
+an ordinal-to-Bootstrap corruption regression). App review found that digest equality
+alone suppressed public declarations/corrections/withdrawals; these now retain their
+explicit acceptance-time party audience. Mechanical child entries still require an
+actual audience-visible state change. Observation party membership is reconstructed
+at its historical semantic image, so later players do not retroactively acquire old
+party messages. Eight application regressions cover accepted-only legacy recovery,
+hidden DC history/private answers, shared utterances, exact session-ended retries,
+ABA, rollback, hostile restore and opaque roll handles.
+
+## First verified backend checkpoint
+
+The first persistence batch passed all four tests: three presentation-storage cases
+and one caller-owned transaction composition case. The first application batch passed
+five of eight cases; three fixtures incorrectly ended a session with a pending
+declaration or used an unsupported correction prefix. Fixtures now withdraw before
+ending the session and use the actual supported correction grammar. All eight then
+passed on the normal Windows test stack. No production assertion was relaxed.
+
+Strict persistence/application all-target Clippy subsequently passed after boxing the
+internal action intent and two style corrections. Logs are retained outside the
+repository under `tooling/logs/gate4-protocol-storage-tests.log`,
+`gate4-protocol-app-tests.log`, `gate4-protocol-app-tests-r2.log`, and
+`gate4-protocol-clippy-r2.log`. This evidence is focused; no complete workspace or
+packaged desktop claim follows from it.
+
+The desktop transport and renderer migration are authored but unverified. Their
+outbox preserves both original modern envelopes and genuine legacy retry bodies;
+modern rendering uses opaque revisions and work handles. ADR027 records the durable
+protocol/export boundary. Next: independently review and checkpoint this backend,
+merge the verified area application, and add a real hidden AreaSave continuation,
+file reopen/concurrent acceptance and historical party-membership regressions.
+Then check the desktop/UI with a single worker and run the appropriate backend batch
+after the shared compiler is released. Native packaged privacy acceptance remains
+root-owned and outstanding.

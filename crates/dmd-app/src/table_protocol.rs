@@ -268,7 +268,7 @@ pub struct TableCreatureView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableTacticalView {
+pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     pub encounter_id: EncounterId,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
@@ -282,7 +282,7 @@ pub struct TableTacticalView {
     pub ties: Vec<InitiativeTie>,
     pub budget: Option<TableTacticalBudget>,
     /// Only the controlling viewer or host receives the current ordered-work choice.
-    pub continuation: Option<TableTacticalContinuation>,
+    pub continuation: Option<TableTacticalContinuation<WorkChoice>>,
     /// A saving throw's controller may choose failure before reporting any dice.
     pub may_fail_save: Option<EntityId>,
     pub legendary_resistance: Option<EntityId>,
@@ -409,10 +409,10 @@ pub struct TableCombatantSource {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableTacticalContinuation {
+pub struct TableTacticalContinuation<WorkChoice = TableTacticalWorkChoice> {
     pub actor: EntityId,
     pub host_adjudication: bool,
-    pub choices: Vec<TableTacticalWorkChoice>,
+    pub choices: Vec<WorkChoice>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
