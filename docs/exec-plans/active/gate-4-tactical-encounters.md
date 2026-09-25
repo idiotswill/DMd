@@ -195,6 +195,13 @@ identity, paid shield transitions, AC/training, pending raw dice, restart/retry 
 hostile restore rejection. Its pre-code plan and source are integrated as ee13cff/
 e64c53f. Combined integration and eventual main PR verification remain pending.
 
+The reviewed PR32 visible-purpose dice routing fix is also reconciled into this
+integration branch. The only overlap was additive TableApp test insertion; both
+shield and dice scenarios are retained, and the older initiative fixture now declares
+its actual Tactical roll channel. This combined frontend passes45 tests and Svelte
+check with zero diagnostics. Backend evidence still needs the combined source run;
+the separate turn-core cold-round regression is preserved on its bounded PR branch.
+
 The18 spell mechanism
 families remain active where unfinished, including Ready, interruptions, zones, barriers,
 summons, forms and source-linked effects; do not promote pure catalog coverage to playability.

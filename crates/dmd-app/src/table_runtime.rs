@@ -2,8 +2,8 @@
 use crate::{
     CampaignRuntime, CharacterCreationOptions, RunnableCampaignError, TABLE_EVENT_KIND,
     TABLE_EVENT_VERSION, TableAction, TableCampaignSummary, TableCharacterView, TableEvent,
-    TableObservationBody, TableReceipt, TableSaveBonus, TableSheetDetails, TableSkillBonus,
-    TableTextResult, TableTranscriptEntry, TableView, TableViewer,
+    TableObservationBody, TableReceipt, TableRollChannel, TableSaveBonus, TableSheetDetails,
+    TableSkillBonus, TableTextResult, TableTranscriptEntry, TableView, TableViewer,
     rules_runtime::load_rules_pack,
     table_engine::{player_channel, resolve_table, table},
 };
@@ -647,6 +647,7 @@ impl CampaignRuntime {
             });
         }
         characters.sort_by_key(|character| character.character_id.0);
+        let mut roll_channel = None;
         let roll = if state.rules.is_some() {
             match dmd_rules::query(state, issuer, &RulesQuery::PendingRoll, &pack)? {
                 RulesAnswer::PendingRoll(Some(mut request)) => {
@@ -658,6 +659,11 @@ impl CampaignRuntime {
                         .ok_or_else(|| recovery("Visible roll has no matching pending purpose."))?;
                     // Presentation only: leave the persisted request and its replay inputs intact.
                     request.reason = roll_label(&pending.purpose, state);
+                    roll_channel = Some(match pending.purpose {
+                        PendingPurpose::TacticalInitiative { .. }
+                        | PendingPurpose::TacticalResolution { .. } => TableRollChannel::Tactical,
+                        _ => TableRollChannel::Table,
+                    });
                     Some(request)
                 }
                 _ => None,
@@ -797,6 +803,7 @@ impl CampaignRuntime {
             active_session: table.active_session.clone(),
             pending,
             roll,
+            roll_channel,
             tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
             creature_setup: crate::table_creatures::view(
                 state,

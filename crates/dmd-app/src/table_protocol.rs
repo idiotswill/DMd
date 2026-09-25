@@ -213,6 +213,12 @@ pub struct TableTranscriptEntry {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TableRollChannel {
+    Table,
+    Tactical,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
     pub campaign_id: CampaignId,
     pub name: String,
@@ -223,6 +229,8 @@ pub struct TableView {
     pub active_session: Option<ActiveTableSession>,
     pub pending: Option<PendingTableDecision>,
     pub roll: Option<RollRequest>,
+    /// The handler for this visible request; absent whenever its roll is private.
+    pub roll_channel: Option<TableRollChannel>,
     pub tactical: Option<TableTacticalView>,
     pub creature_setup: Option<TableCreatureSetupView>,
     pub situation_title: String,
