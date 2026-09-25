@@ -99,7 +99,7 @@ async fn prepare_ledge(f: &mut Fixture) {
     .await;
     f.host(
         action(TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: vec![TacticalCombatant {
                 actor: f.actors[0],
                 source: TacticalSource::Character,

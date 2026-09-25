@@ -43,7 +43,7 @@ pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: f.actors[0],
@@ -213,7 +213,7 @@ async fn begin_attack(f: &Fixture, target: EntityId) -> CommandMeta {
             .already_accepted
     );
     assert_restore(f).await;
-    submit(f, false, &[20]).await;
+    Box::pin(table_hit_driver::roll_then_decline(f, false, &[20])).await;
     let request = f
         .runtime
         .table_view(f.campaign, TableViewer::Player(f.players[0]))
@@ -427,7 +427,7 @@ async fn thrown_weapon_custody_removes_it_from_later_table_choices() {
         .await
         .unwrap();
     assert_eq!(view.roll.unwrap().mode, RollMode::Disadvantage);
-    submit(&f, false, &[20, 20]).await;
+    Box::pin(table_hit_driver::roll_then_decline(&f, false, &[20, 20])).await;
     submit(&f, false, &[4, 4]).await;
     let view = f
         .runtime
@@ -587,7 +587,12 @@ async fn check_light_followup(
         },
     )
     .await;
-    submit(f, false, if nick { &[15] } else { &[15, 15] }).await;
+    Box::pin(table_hit_driver::roll_then_decline(
+        f,
+        false,
+        if nick { &[15] } else { &[15, 15] },
+    ))
+    .await;
     submit(f, false, &[4]).await;
     assert!(
         attack_options(f)

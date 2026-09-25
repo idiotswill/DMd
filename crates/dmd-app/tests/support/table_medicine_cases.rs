@@ -185,7 +185,7 @@ async fn prepare(f: &mut Fixture, knockout: bool) {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ReactionsV1,
+            execution: TacticalExecutionVersion::ShieldHitV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: f.actors[0],
@@ -253,6 +253,7 @@ async fn prepare(f: &mut Fixture, knockout: bool) {
     ))
     .await;
     Box::pin(raw(f, None, &[20])).await;
+    Box::pin(table_hit_driver::decline_hit_responses(f)).await;
     Box::pin(raw(f, None, &[5, 5])).await; // Genuine source critical2d6+2 =12; no HP patch.
     Box::pin(direct(
         f,

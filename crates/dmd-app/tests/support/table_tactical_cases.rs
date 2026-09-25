@@ -252,7 +252,7 @@ async fn verify_creature_scene(f: &mut Fixture, actor: EntityId) {
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: f.actors[0],
@@ -512,7 +512,7 @@ pub(super) async fn prepare(f: &Fixture) {
 pub(super) fn begin(f: &Fixture) -> TableAction {
     TableAction::Tactical {
         action: TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: f
                 .actors
                 .iter()

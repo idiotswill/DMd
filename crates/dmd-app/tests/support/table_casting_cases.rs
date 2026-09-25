@@ -177,7 +177,7 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants,
                 groups,
             },
@@ -501,6 +501,7 @@ async fn finish_rays(f: &Fixture, cultist: EntityId, dragon: EntityId) {
         assert_eq!(request.request.roller, Some(dragon));
         assert!(keys.insert(request.request.id));
         submit(f, true, &[10]).await;
+        Box::pin(table_hit_driver::decline_hit_responses(f)).await;
         submit(f, true, &[1, 1]).await;
         let view = f
             .runtime
