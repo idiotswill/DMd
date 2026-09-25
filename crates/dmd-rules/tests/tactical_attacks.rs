@@ -1,6 +1,8 @@
 use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, tactical_inventory::*, *};
 use std::collections::HashMap;
+#[path = "tactical_attacks/casting.rs"]
+mod casting;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
 
