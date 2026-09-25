@@ -3,7 +3,7 @@
 Writer: root, taking over after bootstrap_audit reached its usage limit.
 Branch: `codex/gate4-fighter-combat-features`.
 Base: reviewed physical checkpoint `629177634572740ed637da5b5640fc49bbc08083`.
-Status: active; Second Wind draft authored; formatting checked, executable verification pending.
+Status: Second Wind source and production-path verification pass; final main-based head checks and protected merge pending. Savage Attacker remains separate PR37.
 
 ## Objective and source authority
 
@@ -142,3 +142,25 @@ already use heap-pinned futures, but submit→submit_both→execute_both→execu
 still nests large recovery poll frames. Pin those helper boundaries as well, keeping
 both actual runtimes, all assertions and default stack size. Native rerun is required;
 this is a proposed bounded fixture correction, not a claimed passing result.
+
+The corrected source f669389204dccd20cd9847ce0eeed2318add01a8 passed full local
+`./scripts/verify`:643 GNU Rust tests, strict workspace all-target Clippy, formatting,
+check and both guards. Local desktop verification passed56 tests, zero static errors/
+warnings and the134-module production build. Logs are tooling/pr36-canonical-f669.log
+and tooling/pr36-ui-{check,test,build}-f669.log. All six source CI checks passed:
+Linux36145973970 (644 tests) and Windows36145973959 (646 native tests, MSRV,
+desktop and fresh offline packaging). The existing area cold-retry case now passes
+on the default native stack with every assertion retained.
+
+Root's fresh review inspected source grants/costs, pending reconstruction, raw and
+Inspiration handling, exact nested declaration authority, real cold file-SQLite
+retry/restore, UI ownership and the final area-future fix. Supporting reviewers
+remain quota-blocked. No source defect remains from this pass; full Gate4 completion
+is not claimed. Savage Attacker has its own source, cold recovery and UI PR37.
+
+PR35 finaldc0baad passed all six checks and merged as mainc9b82072b6bfd93455bdab2a7712dd0352088d93.
+Fetched full-tree equality to dc0baad was verified before importing its three evidence
+documents and reconciling squash ancestry. The resulting e1a10de source is byte-
+identical to verifiedf669389 across crates/apps/content/manifests/scripts/tests/CI.
+Next: final evidence-head CI on PR36 retargeted to main, expected-head protected
+merge, fetched tree equality and post-merge checks. Continue Gate4 after this slice.
