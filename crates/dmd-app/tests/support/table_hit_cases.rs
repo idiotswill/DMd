@@ -536,16 +536,25 @@ async fn cast(f: &mut Fixture, path: &Path, mage: EntityId) -> CommandId {
     )
     .await;
     unchanged(f, bypass).await;
-    Box::pin(step(
+    let cast = request(
         f,
-        path,
         channel,
         TableTransportInput::HitResponse {
             handle: owned.key,
             decision: Box::new(TableHitInput::Cast { choice }),
         },
-    ))
-    .await
+    )
+    .await;
+    for channel in [attacker(f), TableTransportChannel::Host] {
+        let mut stolen = cast.clone();
+        stolen.command_id = CommandId::new();
+        stolen.revision = view(f, &channel).await.revision;
+        stolen.channel = channel;
+        Box::pin(unchanged(f, stolen)).await;
+    }
+    let id = cast.command_id;
+    Box::pin(cold_step(f, path, cast)).await;
+    id
 }
 
 async fn reject_changed_hit_images(f: &Fixture) {

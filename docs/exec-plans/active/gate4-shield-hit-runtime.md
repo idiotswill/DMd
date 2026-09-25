@@ -144,7 +144,7 @@ snapshot, then rejects a forged retired-window cover value with current state in
 Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.
 
-### Current checkpoint, 2026-09-25 21:28 UTC
+### Current checkpoint, 2026-09-25 21:27 UTC
 
 Candidate 8aa1915 passes all-target compiler checking, strict Clippy, Rust 1.88
 and both guards. Linux36189578700 and Windows36189578714 are still running their
@@ -155,9 +155,10 @@ its exact90c9230 focused checks, followed by root's tactical_attacks binary and
 then PR43 canonical verification. The former disk/memory blocker is resolved.
 
 PR42 post-main Linux36188457488 passes all four jobs (695 Rust tests, 54 suites,
-44 table cases). Windows36188457455 has passed its native regressions and MSRV;
-release packaging is pending. Verify the final artifact and counts before the
-post-main claim is complete.
+44 table cases). Windows36188457455 passes both jobs with 697 native Rust tests,
+67 UI tests, zero static diagnostics, 136-module build and fresh executable/NSIS.
+All six post-main checks are complete. Artifact10888336544 is 231464157 bytes,
+SHA2567cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
 
 Independent review of the drafted player-owned Mage file-SQLite scenario found
 that the shared fixture originally made that owner absent. Accepted EndSession
