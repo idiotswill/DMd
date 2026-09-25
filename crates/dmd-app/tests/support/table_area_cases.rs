@@ -674,7 +674,12 @@ async fn run_area_case() {
     );
     mirror_pool.close().await;
     f.pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(mirror);
+    drop(mirror_pool);
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }
 
 #[tokio::test]

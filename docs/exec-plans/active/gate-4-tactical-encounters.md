@@ -248,8 +248,13 @@ All71 affected attack tests pass, including living zero-HP, hidden target and le
 OA completion. Genuine damaging-OA/concentration/cold-recovery testf13224e passes
 and is independently reviewed, integrated as5e3f89a. Actual lethal/dead-target
 SQLite regression9910ce7 also passes after a two-line fixture mutability correction,
-retaining zero durable writes and valid lethal replay. Full combined canonical/UI/
-final-head CI and protected merge remain pending. The12 Gate4 ledger families now
+retaining zero durable writes and valid lethal replay. Final code/test6291776 passes
+canonical verification (595 Windows GNU Rust tests, strict workspace lint, formatting
+and both guards),45 desktop tests, zero Svelte diagnostics and production build.
+All six code-head CI checks pass: Linux36133381708 (596 Rust tests),
+Windows36133381673 (598 native Rust tests, MSRV/stable and offline installer).
+The final evidence-only head still requires review and fresh CI before protected
+merge, fetched full-tree parity and post-merge verification. The12 Gate4 ledger families now
 say implementing, with scopes and evidence arrays unchanged and no gate acceptance.
 
 Continue encounter execution and the effects/equipment/damage integrations from merged

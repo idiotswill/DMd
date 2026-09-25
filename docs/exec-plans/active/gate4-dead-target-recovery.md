@@ -43,4 +43,9 @@ The actual file-SQLite test then passed on the default Windows stack: one passed
 24 unrelated cases filtered, 9.66 seconds. Log: `../tooling/pr33-dead-target-app-r2.log`.
 All lethal completion, cold retry, next-turn, no-write rejection, replay and restore
 assertions ran. Root now owns combined canonical/UI/CI verification and integration.
-Gate4 remains active; no native or whole-gate acceptance is claimed.
+Combined code/test6291776 subsequently passes canonical verification (595 local
+Windows GNU tests), desktop45/check/build and all six CI checks: Linux36133381708
+(596 Rust tests), Windows36133381673 (598 native Rust tests, MSRV and installer).
+This real recovery scenario is included in each Rust run. Final evidence-head
+review/CI, protected merge and post-merge verification remain in the integration
+plan. Gate4 remains active; this is not whole-gate acceptance.

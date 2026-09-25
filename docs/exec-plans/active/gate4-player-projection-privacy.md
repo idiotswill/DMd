@@ -256,3 +256,14 @@ were changed into proven rejection. Strict domain/rules/persistence/app all-targ
 Clippy now passes with warnings denied (2m21s); formatting and diff checks pass.
 Final combined canonical verification, latest-main/area reconciliation, review and
 native CI remain required before accepting this protocol slice.
+
+Root reconciled current main21cf176 and area PR34 source f65f2a4 before final
+verification. The area branch already contains main's equivalent squash ancestry.
+Four conflicts came from independently integrated copies of the same source:
+preserve the modern UI revision and opaque work handles, all eleven protocol cases,
+and both test module registrations. Import area's corrected close/drop/bounded
+Windows file cleanup into the original area recovery case while retaining the
+separate hidden-save protocol scenario. No production source changes result from
+this reconciliation; the only code delta from1ab0b1c is that test cleanup.
+Area f65 has all six CI checks, including native packaging, but is still undergoing
+its local canonical verification. This merge does not claim either slice accepted.
