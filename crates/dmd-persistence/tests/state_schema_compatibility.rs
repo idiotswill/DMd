@@ -511,6 +511,7 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "tactical_recovery",
         "tactical_creatures",
         "duplicate_inventory",
+        "shadowed_inventory",
         "lifecycle",
     ] {
         let pool = gate_three_pool().await;
@@ -531,7 +532,7 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_effects"] = json!(dmd_domain::TacticalEffects::default());
             }
-            "tactical_inventory" | "duplicate_inventory" => {
+            "tactical_inventory" | "duplicate_inventory" | "shadowed_inventory" => {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_inventory"] =
                     json!(dmd_domain::TacticalInventory::default());
@@ -551,6 +552,11 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "duplicate_inventory" => value.to_string().replacen(
                 "\"tactical_inventory\":",
                 "\"tactical_inventory\":null,\"tactical_inventory\":",
+                1,
+            ),
+            "shadowed_inventory" => value.to_string().replacen(
+                "\"tactical_inventory\":",
+                "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
                 1,
             ),
             "malformed" => "{".to_owned(),
@@ -1163,4 +1169,40 @@ fn built_in_snapshot_upgrade_is_explicit_and_cannot_be_replaced() {
             ..
         })
     ));
+}
+
+#[test]
+fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_inventory =
+        Some(dmd_domain::TacticalInventory::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        let json = current.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_inventory\":null,\"tactical_inventory\":",
+            "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_inventory\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
 }

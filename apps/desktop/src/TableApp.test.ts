@@ -6,7 +6,7 @@ import { contract, emptyView, options } from './components/table-fixtures.test-s
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
 vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn()} }));
 
-beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
+beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
   it('retries NPC creation after uncertain delivery and restart with the same source and item IDs',async()=>{
     const user=userEvent.setup();
@@ -48,14 +48,32 @@ describe('durable UI retry',()=>{
   });
   it('retries equipment preparation after restart with the original command and every item identity',async()=>{
     const user=userEvent.setup();
-    const request: UnconfirmedRequest={kind:'action',request:{command_id:'equipment-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{PrepareEquipment:{character_id:'character',item_ids:['first-weapon','second-weapon','ammo-stack']}}}};
-    localStorage.setItem(REQUEST_KEY,JSON.stringify(request));
-    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => { expect(received).toEqual(request.request); return {command_id:'equipment-command',event_sequence:5,already_accepted:true,outcome:{message:'Equipment ready.',mechanics:null}}; });
+    const view=emptyView();
+    view.characters=[{
+      character_id:'character',entity_id:'actor',player_id:'player',name:'River',details:null,second_wind_remaining:2,
+      equipment:{prepared:false,initial_item_count:3,items:[],worn_armor:null,shield:null,hands:{hands:['Free','Free']}},
+      sheet:{Character:{ability_modifiers:[3,2,1,-1,0,1],proficiency_bonus:2,armor_class:12,hp:11,max_hp:11,temporary_hp:0,spell_save_dc:null}},
+      profile:{entity_id:'actor',name:'River',pronouns:'they/them',description:'A traveler',alignment:'Neutral Good',backstory:'',
+        class_id:'fighter',species_id:'human',background_id:'soldier',level:1,experience_points:0,size:'Medium',speed_feet:30,
+        base_ability_scores:[15,14,13,8,10,12],background_boosts:[2,0,1,0,0,0],fighter_skills:['Perception','Survival'],human_skill:'Insight',skilled_skills:['Acrobatics','Stealth','Investigation'],
+        languages:['common','dwarvish','elvish'],fighting_style:'Defense',features:[],masteries:['club','dagger','shortbow'],tool_proficiencies:['dice'],armor_training:['light'],weapon_proficiencies:['simple','martial'],
+        equipment:[{item_id:'dagger',display_name:'Dagger',quantity:2,unit_cost_cp:200,source_page:90},{item_id:'arrows',display_name:'Arrows',quantity:20,unit_cost_cp:5,source_page:96}],worn_armor:null,shield:false,money_cp:20000},
+    }];
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Equipment ready.',mechanics:null}}));
     const first=render(TableApp);
-    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
-    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await user.click(await screen.findByText('Equipment and features'));
+    await waitFor(()=>expect(screen.getByRole('button',{name:"Prepare River's equipment"}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:"Prepare River's equipment"}));
     await screen.findByRole('alert');
-    expect(JSON.parse(localStorage.getItem(REQUEST_KEY)!)).toEqual(request);
+    const request=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(request.request.action.PrepareEquipment.character_id).toBe('character');
+    const itemIds=request.request.action.PrepareEquipment.item_ids;
+    expect(itemIds).toHaveLength(3);
+    expect(new Set(itemIds).size).toBe(3);
+    expect(request.request.channel).toBe('Host');
+    expect(request.request.expected_event_sequence).toBe(view.event_sequence);
     first.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));

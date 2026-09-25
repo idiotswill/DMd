@@ -56,6 +56,16 @@ impl Fixture {
         first_character: Option<CharacterCreationInput>,
     ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
+        Self::with_creation_pool(contract, first_character, pool).await
+    }
+    async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
+        Self::with_creation_pool(contract, None, pool).await
+    }
+    async fn with_creation_pool(
+        contract: TableContract,
+        first_character: Option<CharacterCreationInput>,
+        pool: sqlx::SqlitePool,
+    ) -> Self {
         let runtime = CampaignRuntime::from_content_root(
             pool.clone(),
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
@@ -880,7 +890,12 @@ async fn second_wind_pending_roll_resources_and_transcript_survive_database_reop
 
 #[tokio::test]
 async fn equipment_preparation_is_exactly_once_private_and_replayable() {
-    let f = Fixture::new().await;
+    let directory = std::env::temp_dir().join(format!("dmd-equipment-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let database = directory.join("campaign.sqlite");
+    let url = format!("sqlite://{}", database.display());
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Fixture::with_pool(TableContract::default(), pool).await;
     let view = f
         .runtime
         .table_view(f.campaign, TableViewer::Host)
@@ -915,6 +930,13 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
         .execute_table(meta.clone(), action.clone())
         .await
         .unwrap();
+    // Lose the original process and retry its exact command against the reopened file.
+    f.pool.close().await;
+    f.pool = open_sqlite(&url).await.unwrap();
+    f.runtime = CampaignRuntime::from_content_root(
+        f.pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
     let repeated = f.runtime.execute_table(meta, action.clone()).await.unwrap();
     assert!(repeated.already_accepted);
     assert_eq!(receipt.event_sequence, repeated.event_sequence);
@@ -1031,6 +1053,54 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
             .await
             .is_err()
     );
+    // A genuine but unrelated host command cannot be relabeled as a physical grant.
+    let unrelated = export
+        .event_journal
+        .iter()
+        .find_map(|row| {
+            let event: TableEvent = serde_json::from_str(&row.payload_json).ok()?;
+            matches!(event.action, TableAction::AddPlayer { .. }).then_some(event.meta)
+        })
+        .unwrap();
+    let mut unrelated_origin = export.clone();
+    let mut state = CampaignState::decode_json(&unrelated_origin.current_state.state_json).unwrap();
+    let inventory = state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap();
+    inventory.receipts[0].command = unrelated.clone();
+    inventory.loadouts[0].command = unrelated;
+    unrelated_origin.current_state.state_json = state.encode_json().unwrap();
+    assert!(bad.restore_campaign(&unrelated_origin).await.is_err());
+    assert!(
+        dmd_persistence::open_campaign(&bad_pool, f.campaign)
+            .await
+            .is_err()
+    );
+    // A newly backfilled anchor cannot launder materialized authority out of its replay.
+    let mut missing_anchor = export.clone();
+    missing_anchor.snapshots = vec![dmd_persistence::SnapshotRow {
+        campaign_id: missing_anchor.current_state.campaign_id.clone(),
+        event_sequence: missing_anchor.current_state.applied_event_sequence,
+        state_schema_version: missing_anchor.current_state.schema_version,
+        state_json: missing_anchor.current_state.state_json.clone(),
+        created_at_utc: "2026-09-25 00:00:00".into(),
+    }];
+    let error = bad.restore_campaign(&missing_anchor).await.unwrap_err();
+    assert!(error.to_string().contains("original pre-tactical anchor"));
+    assert!(
+        dmd_persistence::open_campaign(&bad_pool, f.campaign)
+            .await
+            .is_err()
+    );
     target.close().await;
     bad_pool.close().await;
+    f.pool.close().await;
+    drop(f);
+    std::fs::remove_file(database).unwrap();
+    // SQLite may retain journal sidecars until pool handles finish dropping.
+    let _ = std::fs::remove_dir(directory);
 }
