@@ -65,6 +65,7 @@ it('shares identical creature initiative while separating current roll circumsta
     observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
   render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction});
   await user.click(screen.getByRole('button',{name:'Roll initiative'}));
+  expect(onAction.mock.calls[0][0].Begin.execution).toBe('ReactionsV1');
   expect(onAction.mock.calls[0][0].Begin.groups.map((group:{actors:string[]})=>group.actors)).toEqual([['a','b'],['c']]);
   expect(Object.keys(onAction.mock.calls[0][0].Begin.combatants[0]).sort()).toEqual(['actor','source','surprised']);
 });

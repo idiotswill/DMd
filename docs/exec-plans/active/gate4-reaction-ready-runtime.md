@@ -1,6 +1,6 @@
 # Gate 4 — Actual reaction and Ready execution
 
-Status: **Active; foundation compiles, first test batch has one diagnosed stale expectation; no reaction completion claim.**
+Status: **Active; 483 foundation tests and strict lint pass; application integration and actual responses remain unverified/incomplete.**
 Branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
 Writer: root, taking over after rules_architecture reached its account usage limit.
 The authored/reviewed checkpoint is dd5123d; root owns its first executable batch,
@@ -162,7 +162,7 @@ on dd5123d; the intervening correction changed only tests/comments. These are
 foundation checks, not full application, CI or completed reaction/Ready evidence.
 
 Next: add complete nested reaction windows and actual Ready response integration,
-then reconcile current main/protocol and explicit live Begin emission. Domain types,
+then verify the current main/protocol integration and explicit live Begin emission. Domain types,
 declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
 
 Root resolved the open private-ordering design seam in ADR028: every uniform public
@@ -174,3 +174,17 @@ private eligibility/acceptance. No automatic fallback or arrival priority is all
 Apply the selected instruction only after private collection, revalidating each
 intent and giving each nested trigger its own decision. This is a documented design
 decision; no new runtime or privacy test result is claimed yet.
+
+Integrationf0b9fe8 imports the exact fetched Fighterf669389, including area main172a15a
+and protocol source. Resolve conflicts by retaining both typed actions and the modern
+opaque transport test expectations. Second Wind now initializes the current work
+ancestry, and the new OA/concentration fixture explicitly starts ReactionsV1.
+No global compiler ran while Second Wind's canonical job owned the shared target.
+
+The subsequent integration review found that declared Second Wind replay bypassed
+the historical tactical policy. Both direct and declared tactical table paths now
+require the exact retained child metadata/action before historical replay; new
+requests still use current live admission. The desktop Begin form explicitly emits
+ReactionsV1 and its real component regression checks that field. No old accepted
+transport envelope is rewritten. These integration changes still need application
+regressions, including a genuine legacy declared-Second-Wind export, before acceptance.

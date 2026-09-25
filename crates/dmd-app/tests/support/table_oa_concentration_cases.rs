@@ -272,11 +272,16 @@ async fn prepare(f: &mut Fixture) -> EntityId {
             request_id: RollRequestId::new(),
         })
         .collect();
-    issue(f, None, TacticalAction::Begin {
-        execution: TacticalExecutionVersion::ReactionsV1,
-        combatants,
-        groups,
-    }).await;
+    issue(
+        f,
+        None,
+        TacticalAction::Begin {
+            execution: TacticalExecutionVersion::ReactionsV1,
+            combatants,
+            groups,
+        },
+    )
+    .await;
     roll_setup(f, Some(0), &[18]).await;
     roll_setup(f, None, &[10]).await;
     roll_setup(f, Some(1), &[1]).await;

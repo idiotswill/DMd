@@ -29,7 +29,7 @@
       const key=combatant.source==='Character'?combatant.actor:`${combatant.source.Creature.definition_id}:${combatant.surprised}:${preview.initiative_modifier}:${combatant.surprised?preview.surprised_mode:preview.normal_mode}`;
       grouped.set(key,[...(grouped.get(key)??[]),combatant.actor]);
     }
-    onAction({Begin:{combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
+    onAction({Begin:{execution:'ReactionsV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
   }
 </script>
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
