@@ -226,7 +226,14 @@ fn resolve_table_internal(
             tactical_event = Some(transition.event);
             // Detailed outcomes belong to the viewer-specific tactical projection.
             // This transcript is shared by the whole table, including unaware PCs.
-            "Encounter action recorded.".into()
+            if matches!(
+                action,
+                dmd_rules::tactical::TacticalAction::ConcludeHostilities { .. }
+            ) {
+                "Hostilities concluded. Ongoing saves and durations continue in the existing turn order.".into()
+            } else {
+                "Encounter action recorded.".into()
+            }
         }
         TableAction::PrepareBattlefield { setup } => {
             host(meta)?;
@@ -259,7 +266,20 @@ fn resolve_table_internal(
                         .characters
                         .get(&id)
                         .ok_or("Unknown session character.")?;
-                    if pc.status != CharacterStatus::Active
+                    let retained_dead = pc.status == CharacterStatus::Dead
+                        && next
+                            .encounter
+                            .as_ref()
+                            .and_then(|encounter| encounter.flow.as_ref())
+                            .is_some_and(|flow| {
+                                flow.aftermath.is_some()
+                                    && flow.phase == TacticalPhase::Active
+                                    && flow
+                                        .combatants
+                                        .iter()
+                                        .any(|combatant| combatant.actor == pc.entity_id)
+                            });
+                    if (pc.status != CharacterStatus::Active && !retained_dead)
                         || pc.controlling_player_id != Some(participant.player_id)
                     {
                         return Err(
@@ -294,10 +314,8 @@ fn resolve_table_internal(
                 .as_ref()
                 .is_some_and(|encounter| encounter.flow.is_some())
             {
-                return Err(
-                    "Finish the encounter before ending its session. You can quit and resume now."
-                        .into(),
-                );
+                dmd_rules::tactical::require_aftermath_session_boundary(&next)
+                    .map_err(|error| error.to_string())?;
             }
             let binding = active(&next, meta)?;
             let expected = binding.as_session(meta.campaign_id);

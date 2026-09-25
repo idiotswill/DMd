@@ -4,6 +4,8 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/table_aftermath_cases.rs"]
+mod table_aftermath_cases;
 #[path = "support/table_area_cases.rs"]
 mod table_area_cases;
 

@@ -5,6 +5,11 @@ Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance 
 claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 
 Current baseline is merged main `d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38`.
+Status: the first aftermath source/app/UI implementation and its regressions are
+authored but **uncompiled and unexecuted**. Only formatting and diff checks have run.
+No production acceptance, PR, push or merge is claimed. The new current-main Night
+Hag dependency `d82d7b2` will be merged after this coherent source checkpoint; reviewed
+PR42/43 compatibility and source-control dependencies remain subsequent integrations.
 Normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to authoritative
 main. The branch's two genuine commits since `8cb3084` changed only this plan;
 after the merge, the full tree differs from main only by this file. No independent
@@ -212,7 +217,8 @@ secret simply because the host can inspect its remaining timing obligations.
 
 ## Required production regressions for the proposal
 
-These are unimplemented acceptance requirements, not existing passing evidence:
+These are the full finish workstream requirements, not existing passing evidence.
+The first slice has authored portions of 1, 2, 4, 6 and 7 below; they remain unrun.
 
 1. Create a genuine source Hold Person through the table, conclude while it is active,
    and retain the affected controller's repeated End save across session end/reopen,
@@ -261,10 +267,32 @@ These are unimplemented acceptance requirements, not existing passing evidence:
 
 Main fetched; root AGENTS, product clauses, gate protocol/checkpoint, ADR024/026/028,
 current production boundaries and pinned source passages read. The normal baseline
-merge is complete and its plan-only difference proved. No compiler or frontend run.
-This revised plan precedes production writes. Next: implement boxed domain marker,
-pure conclusion validation, app session/projection/origin boundaries, UI and genuine
-SQLite tests; request independent review at a coherent checkpoint, then wait for the
-explicit shared test slot. Report actual failures and results, preserving default
-Windows stack and old historical corpus. Full release/new encounter remains mandatory
-Gate4 work and cannot be moved to Gate5/6 or silently represented by the marker.
+merge is complete and its plan-only difference proved. Plan commit `cb52625` preceded
+production writes. Authored first-slice changes now include:
+
+- Boxed optional conclusion record, privileged typed policy/ruling admission,
+  quiescence checks and exact accepted-origin audit. No timing/source/effect mutation.
+- Additive, omitted-when-absent projection with host-only private ruling. Actual host
+  form requires an unchecked policy choice and ruling; session controls respect the
+  same derived boundary. Session start permits only genuinely retained dead PCs to
+  keep their established controller, without admitting them into fresh initiative.
+- Four focused rules tests cover complete preexisting-state preservation, paid Ready
+  lifetime, pending death-save refusal, malformed policy/origin and historical absent
+  serialization. The isolated HP fixture is explicitly not production source proof.
+- Two genuine file-SQLite cases use actual catalog Mage Armor, Cultist Hold Person,
+  paid PC Ready, and a Goblin's physical critical hit causing a real dying PC. New
+  modern-envelope steps are cold-retried and independently restored/continued. They
+  exercise repeated target saves, death saves, later dead-PC session binding, unchanged
+  resources/time/effects, private ruling projection and zero-write forged restore.
+- Three UI cases cover explicit choice, uncertain-request lock, host/current-executor
+  ownership and ruling privacy. The small shared medicine preparation helper is only
+  exposed to the sibling test module; its existing scenario remains unchanged.
+
+`cargo fmt --all` and `git diff --check` pass. **No Rust compiler, tests, frontend
+check or build has run on this source.** Default Windows stack and historical corpus
+verification remain required. Root retains the heavy slot; rules_architecture is
+performing a fresh read-only full source review. Next: checkpoint source, merge verified
+current main normally, resolve review findings and reviewed prerequisite integrations,
+then run focused rules/SQLite/UI and canonical checks only after the explicit slot grant.
+Full release/new encounter remains mandatory Gate4 work and cannot be moved to Gate5/6
+or silently represented by the marker.

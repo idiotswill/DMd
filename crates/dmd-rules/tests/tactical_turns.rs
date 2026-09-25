@@ -2,6 +2,8 @@ use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, *};
 use std::collections::HashMap;
 
+#[path = "tactical_turns/aftermath.rs"]
+mod aftermath;
 #[path = "tactical_turns/ready.rs"]
 mod ready;
 
