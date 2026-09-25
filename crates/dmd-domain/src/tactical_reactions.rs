@@ -9,6 +9,25 @@ use serde::{Deserialize, Serialize};
 pub const MAX_TACTICAL_READY: usize = 128;
 pub const MAX_TACTICAL_REACTION_DEPTH: usize = 32;
 
+/// Explicit current-turn instruction over potential participants. None of these
+/// choices has a default: private eligibility or arrival order never chooses it.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ReactionUnlistedOrder {
+    BeforeForward,
+    BeforeReverse,
+    AfterForward,
+    AfterReverse,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalReactionOrdering {
+    /// Controller-ranked known participants, whether eligible or not. This list
+    /// must never be generated from the private accepted-response set.
+    pub ranked: Vec<EntityId>,
+    pub unlisted: ReactionUnlistedOrder,
+}
+
 /// Semantic executor version, independent of the campaign JSON schema. Missing
 /// fields in old accepted Begin events mean Legacy; live admission cannot choose
 /// that version to suppress a mandatory source interruption.

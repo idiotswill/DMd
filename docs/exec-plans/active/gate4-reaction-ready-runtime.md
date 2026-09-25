@@ -205,3 +205,18 @@ execution version. The Second Wind forgery case changes both pending work and it
 new redundant causal trace so it continues to test semantic journal rejection after
 structural validation, rather than merely detecting mismatched copies. These latest
 changes are authored/format-checked and await fresh executable evidence.
+
+Initial integrated6c37630 CI36149846850 passed fast verification, strict Clippy,
+MSRV and both guards. Its actual Linux log confirms the genuine legacy fixture
+regression passed (21.68s), together with the ten app-unit,22 rules-runtime and
+nine runnable-campaign tests. The later full suite was cancelled by the next push;
+there is no complete integrated-suite claim. This confirms the original fixture
+and historical replay correction before the added projection/UI assertions.
+
+The next authored leaf encodes the ADR028 ordering instruction without a default.
+It validates ranked identities against existing known initiative participants,
+then filters an explicit forward/reverse before/after order to the privately accepted
+set. Tests vary arrival order, hidden-set size and controller instruction, and reject
+unknown ranks, duplicate respondents and omitted choices. This pure function is
+not yet attached to an authenticated runtime window and grants no action authority;
+actual windows, response payment and DTO/revision privacy tests remain required.
