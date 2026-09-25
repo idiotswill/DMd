@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-medicine-help`.
 Base: verified Second Wind head c04e3b6; its main squash is b86e222.
-Status: reviewed source and production-path verification pass; final evidence-head CI and protected merge pending.
+Status: PR39 merged with verified full-tree parity; post-merge checks running.
 
 ## Objective and authority
 
@@ -93,6 +93,16 @@ Reviewed source: cea43b3bd9b83ddae45a24bd2ffb261252096574 (2026-09-25).
   fetched main remains cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
 
 ## Risks and exact next action
+
+PR39 merged as487239c3f14685ba0c2a998574080aedb8b57a9e on2026-09-25 using expected
+heada0b4b570f60fc8fdf6d6f136dbde2ff6870ebd17. All six final-head checks pass:
+Linux36162218754 has655 Rust tests; Windows36162218749 has657 native Rust tests,
+60 desktop tests, zero static errors/warnings,135-module build and installer
+artifact10877631252 (231249974bytes). Both MSRV jobs pass. Fetched full-tree equality
+was verified, as was production-code parity to locally verified cea43. Post-merge
+runs36165482851/36165482845 are running. Complete their verification and retain the
+remaining Help/Utilize/finish obligations below. The earlier merge instructions below
+record the prior evidence stage; no second merge is required.
 
 Changes after cea43 are evidence documents and strengthened test setup; production
 code parity to cea43 must be verified. Await all six checks on that final head, refresh PR/main, inspect its full

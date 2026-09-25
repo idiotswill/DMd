@@ -5,7 +5,29 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR37
+## Current checkpoint after PR39
+
+Fetched main is487239c3f14685ba0c2a998574080aedb8b57a9e. PR39 first aid is merged
+with exact source/main full-tree parity. Finala0b4b57 passes all six checks
+36162218754/36162218749 (655 Linux/657 native Rust,60 desktop tests and fresh offline
+installer). Its production code matches canonical654-GNU sourcecea43; all four
+strengthened valid-fixture Medicine tests also pass locally. Post-merge checks
+36165482851/36165482845 are running. General Help/Utilize remain required.
+
+Unarmed PR40 combinedsourcef9602a8 passes canonical661 GNU Rust tests, all61 desktop
+tests/check/build, and all six source checks36163502155/36163502287 (662 Linux/664
+native Rust and fresh installer). First-aid reconciliationf2e6f84 preserves that
+complete tree. Full15-file review is complete; final evidence-head checks and protected
+merge remain pending. Grapple/Shove/Escape/dragging/equipment/PvP obligations remain.
+
+Reaction PR38 is bounded to replay/work ownership/source/physical Ready lifetime;
+the active live-response follow-up retains all Shield/Counterspell/release/held-spell
+acceptance in Gate4. Full composition verification remains pending. Fresh review found
+an omitted legacy Savage two-set continuation; a genuine event14 old-executor SQLite
+capture now anchors its correction/regression. That new regression is not yet passing
+evidence. No actual response-window completion or gate closure is claimed.
+
+## Earlier checkpoint after PR37
 
 Authoritative fetched main is cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a. PR35
 opaque projection/transport, PR36 Second Wind and PR37 Savage Attacker are merged.
