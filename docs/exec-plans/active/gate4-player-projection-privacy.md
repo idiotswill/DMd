@@ -229,3 +229,14 @@ None, like the other non-area scenes; production and all assertions are unchange
 Root took over the stopped branch and sole compiler slot, and will rerun app tests
 and strict lint. Eleven protocol cases, combined app acceptance and native package
 verification remain pending until their actual results are recorded.
+
+The app batch then passed22 rules-runtime and9 runnable-campaign cases, but the
+ordinary table scenario overflowed the default Windows test stack during its deeply
+nested fixture construction (`gate4-protocol-app-current-r2.log`). Diagnostics
+measured the public operation futures at7.5–25KB and the scenario at40KB. A small
+direct real create/open/AddPlayer sequence passed on the default stack; boxing the
+scenario alone did not fix the nested fixture. Heap-pinning the four shared fixture
+construction phases fixed the unchanged ordinary scenario (1 passed,6.58 seconds).
+No production source, gameplay assertion, thread stack size or compiler flag changed.
+Temporary diagnostic files/log prints were removed. The complete app/strict-lint
+batch is now rerunning; no remaining result is presumed from this focused pass.
