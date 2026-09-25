@@ -30,9 +30,14 @@ playable execution. NPC policy helpers alone do not satisfy autonomous encounter
    command-origin audit without changing historical SQL migrations.
 3. Extract host/session/pending setup checks, canonical source choice projection,
    actual gear identity retention, private creation transcript and desktop form.
+   Preserve the existing PC check/Second Wind/character creation path after NPC setup:
+   do not copy the integrated branch's blanket legacy-action rejection for source
+   creatures when this slice has not yet shipped the replacement tactical path.
 4. Port the existing real runtime create/retry/export/replay and private-view tests.
    Exercise independent file reopen, malformed source/gear and forged source origins,
    preserving atomic failure. Verify selected-feature limitations remain explicit.
+   Include an ordinary PC table check after NPC preparation to prevent a regression
+   in the already shipped table loop.
 5. Run focused checks, frontend tests/check/build and canonical verification; obtain
    independent full-diff review, final-head Linux/Windows CI and expected-head merge.
    Check merged tree parity/post-merge CI, then reconcile the encounter integration.
