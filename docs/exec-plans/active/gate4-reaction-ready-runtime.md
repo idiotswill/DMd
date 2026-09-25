@@ -220,3 +220,9 @@ set. Tests vary arrival order, hidden-set size and controller instruction, and r
 unknown ranks, duplicate respondents and omitted choices. This pure function is
 not yet attached to an authenticated runtime window and grants no action authority;
 actual windows, response payment and DTO/revision privacy tests remain required.
+
+CI36150438429 on00ddb34 rejected the strengthened forgery helper at compilation:
+Rust evaluates the assignment value before its target, so moving the cloned work
+also moved the occurrence captured by the target-search closure (E0382). Retain
+the copyable occurrence before that assignment; keep both forged work images and
+all semantic rejection assertions. Re-run full CI on the corrected combined head.

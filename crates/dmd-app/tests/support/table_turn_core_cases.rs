@@ -538,11 +538,12 @@ async fn reject_forged_second_wind(f: &Fixture) {
     // trace. Forge both images coherently so this still tests semantic history,
     // rather than stopping at a mismatched redundant work record.
     let changed = work.clone();
+    let occurrence = changed.occurrence;
     if let Some(trace) = &mut resolution.work_trace {
         trace
             .nodes
             .iter_mut()
-            .find(|node| node.work.occurrence == changed.occurrence)
+            .find(|node| node.work.occurrence == occurrence)
             .unwrap()
             .work = changed;
     }
