@@ -599,8 +599,10 @@ pub(super) fn validate_work(
         return Err(invalid("hit response work belongs to another trigger"));
     }
     match work.kind {
-        TacticalWorkKind::ResumeHit { attack_origin, attack_roll }
-            if attack_origin == hit.attack_origin && attack_roll == hit.attack_roll => (),
+        TacticalWorkKind::ResumeHit {
+            attack_origin,
+            attack_roll,
+        } if attack_origin == hit.attack_origin && attack_roll == hit.attack_roll => (),
         TacticalWorkKind::CommitShield { cast }
             if hit.selected_cast == Some(cast) && hit.stage == TacticalHitReviewStage::Casting =>
         {

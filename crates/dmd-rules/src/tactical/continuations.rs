@@ -381,7 +381,10 @@ fn start_inner(
         TacticalWorkKind::CommitShield { cast } => {
             return super::casting::commit(state, meta, *cast);
         }
-        TacticalWorkKind::ResumeHit { attack_origin, attack_roll } => {
+        TacticalWorkKind::ResumeHit {
+            attack_origin,
+            attack_roll,
+        } => {
             return super::hit_reactions::resume(state, *attack_origin, *attack_roll);
         }
         TacticalWorkKind::AreaDamageRoll { .. } | TacticalWorkKind::AreaSave { .. } => (),
