@@ -5,7 +5,8 @@ passes native Windows CI, 693 Rust tests and packaging. Its Linux PR merge with
 main `d82d7b2` passes all checks and 694 Rust tests. The local default-stack and
 source-control confirmation also passes. Genuine PR42 corpus integration and final
 combined verification are pending; this is not acceptance.
-Sole writer: environment_audit. Branch: `codex/gate4-source-creature-control`.
+Sole writer: source_control_recovery, taking over environment_audit's preserved
+branch. Branch: `codex/gate4-source-creature-control`.
 Authorized base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`.
 Fetch on 2026-09-25 found main `a84c5a1`; the owner of integration deliberately
 requested this frozen prerequisite base. No unreviewed main merge is implied.
@@ -288,3 +289,11 @@ prerequisite merges, preserve their captured bytes, add the exhaustive source-ch
 test-helper match, and run the combined compatibility/canonical checks in the next
 authorized slot. Do not conflate this source-control boundary with later live reaction
 execution or claim Gate 4 completion.
+
+Resource recovery continuation: the preserved branch was clean at `daf8534`, one
+evidence-only commit above verified production `26241a9`. A fresh fetch confirmed
+remote PR43 remains at `26241a9` and main at `d82d7b2`. No unknown branch movement
+or prior work was discarded. Wait for the parent's verified PR42 merge, then merge
+that exact main and adapt only the new corpus helper's exhaustive channel match.
+No heavy local checks run until the parent releases the shared slot; use jobs1,
+the default thread stack and CARGO_INCREMENTAL=0 after the disk recovery.
