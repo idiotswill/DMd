@@ -98,19 +98,23 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ### 2026-09-25 integration checkpoint
 
-Main is now `ac35c1d65d27239f704cde1422209a0f106fb0e1`. Bounded prerequisite
-PRs24 (effects),25 (damage/vitality),26 (physical inventory),27 (source creature
-definitions) and28 (physical weapon plans) passed exact-head verification and merged.
-Their detailed exact-head/local/post-merge evidence remains in their execution plans.
-PR29 (physical equipment through the table) also merged: Windows canonical verification
-passed331 Rust tests on source `88b468a`; Linux runs332 because of its Unix-only symlink
-case. The final docs-only head `c4d992a` retained all source bytes, received independent
-review and all six final checks. Merged main `ac35c1d` has exact full tree parity with
-that final head; all six post-merge jobs passed in Linux36107189850 and
-Windows36107189841, including stable offline installer packaging. Root reconciliation
-`18330c5` retains the integration's wider source/flow authority and ports PR29's real
-file-reopen, forged-origin/null-shadow and actual equipment-button regressions.
-These source/reducer slices do not establish playable encounter acceptance by themselves.
+Main is now `beaad44c459a65ba674eeca747096a406eab0d78`. Bounded prerequisite
+PRs24 (effects),25 (damage/vitality),26 (physical inventory),27 (source definitions),
+28 (physical weapon plans),29 (actual equipment preparation) and30 (private NPC
+preparation) passed exact-head verification and merged. Detailed evidence remains in
+their plans. PR29 canonical source88b468a passed331 Windows Rust tests (332 Linux);
+its finalc4d992a and postmergeac35 passed all six checks, including offline installer.
+
+PR30 canonical source6136aeb passed356 Windows Rust tests (357 Linux), strict full
+workspace Clippy and both guards. The actual PC-roll regression exposed and fixed
+composite validation calling the table parent before its child transition completed;
+full final-state invariants and foreign physical-reference rejection remain intact.
+Final evidence-only78166c6 received independent full-source/correction/final review,
+source-byte parity and all six checks (Linux36111205928/Windows36111206026). Expected-
+head merge producedbeaad44; fetched full-tree parity and all six postmerge checks
+(Linux36112003062/Windows36112002720) pass. Real form retries/SQLite reopen/export/
+restore and PC checks/Second Wind after NPC setup are verified; encounter execution
+is not claimed by those slices. Root reconciled current main asd046810.
 
 The separate encounter integration branch includes source creature setup/gear,
 initiative/turns, physical attacks and Light/Nick choices, KO recovery, raw dice,
@@ -139,17 +143,34 @@ independent exact-head app/UI review is clear. Root merged it cleanly as `220ee8
 PR29 reconciliation. This integrated combination still requires its own full verification;
 it is not interchangeable with the separately verified source heads.
 
-Root's fresh main-based `codex/gate4-creature-table` is draft PR30, candidate `53cbbe9`.
-It extracts source profiles and actual NPC gear, host-only setup, optional state attachment,
-legacy/replay origin guards and the real form. Existing PC checks/Second Wind are retained;
-legacy source-NPC checks reject the wrong PC formula. New SQLite tests cover creation,
-file reopen, identical retry, eight restore corruptions and ordinary player activity afterward.
-Frontend16 tests/Svelte/build and independent full extraction review are clear; Rust and
-canonical/exact-head CI remain pending. Do not infer verification from the integration.
+Root's fresh main-based `codex/gate4-effect-state-attachment` is draft PR31 at
+corrected0486c77. It attaches lifecycle authority/condition queries/concentration,
+legacy typed save guards, recovery origins and original-anchor enforcement. Initial
+CI exposed test-only BTreeSet API errors; independent review exposed a suppressed
+immune condition that could strand stronger-effect removal. Both are corrected with
+regressions. Exact source review is clear; all six source CI checks pass
+(Linux36112860014/Windows36112860090,376 Linux Rust tests). Local canonical remains
+pending the serialized compiler; no implementation-complete claim yet.
 
-Falling queue attachment and actual source physical weapon attacks are separate active
-branches using the serialized compiler. New source SaveArea breath work has a plan on
-`codex/gate4-area-resolution`; it does not claim area execution yet. The18 spell mechanism
+Source weapons1ab9e7 passed104 focused cases (62 attack,18 movement,24 turn) and
+strict domain/rules Clippy, with independent exact review. Integrated as8fa4484.
+Falling sourceebbff59 has final12 falling+43 spatial cases and strict Clippy; earlier
+95-case combined evidence predates its last two source fixes and is not final-head
+proof. Root integrated its seven-source chain throughb4360d2, then app/UI27c458
+as4fa4212. App/UI37 tests/check/build passed on its source branch; actual SQLite
+falling verification exposed an oversized async test future and is being split/boxed
+under the default Windows stack. A later compile and root frontend run exhausted
+system committed memory; neither counts as passing. No user applications were closed.
+
+Area source2703f96 passed131 distinct rules cases (10 leaf,67 attack including14area,
+30 movement,24 turn) and strict domain/rules Clippy, with exact review. Source-faithful
+breaths use explicit GM occupied-cell sample/cover policy, shared amount and all saves
+before damage, settled fall state before admission and retained source/geometry proof.
+Area app integration and explicit controller delegation for hidden simultaneous work
+are active on a separate branch. Shield don/doff and physical source-weapon table
+controls are another active branch; no tests or completion claimed yet.
+
+The18 spell mechanism
 families remain active where unfinished, including Ready, interruptions, zones, barriers,
 summons, forms and source-linked effects; do not promote pure catalog coverage to playability.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
