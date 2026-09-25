@@ -27,7 +27,7 @@ async fn host(f: &Fixture, action: TacticalAction) -> CommandMeta {
     meta
 }
 async fn submit(f: &Fixture, player: bool, faces: &[u16]) -> CommandMeta {
-    submit_both(f, player, faces, None).await.0
+    submit_both(f, player.then_some(0), faces, None).await.0
 }
 async fn execute_both(
     f: &Fixture,
@@ -52,12 +52,12 @@ async fn execute_both(
 }
 async fn submit_both(
     f: &Fixture,
-    player: bool,
+    player: Option<usize>,
     faces: &[u16],
     mirror: Option<&CampaignRuntime>,
 ) -> (CommandMeta, TableAction) {
-    let viewer = if player {
-        TableViewer::Player(f.players[0])
+    let viewer = if let Some(index) = player {
+        TableViewer::Player(f.players[index])
     } else {
         TableViewer::Host
     };
@@ -78,8 +78,8 @@ async fn submit_both(
         vec![20, 20]
     };
     assert_eq!(sides.len(), faces.len());
-    let meta = if player {
-        f.player_meta(0).await
+    let meta = if let Some(index) = player {
+        f.player_meta(index).await
     } else {
         f.meta(CommandIssuer::Admin, None, Some(f.session)).await
     };
@@ -108,6 +108,23 @@ async fn reopen(f: &mut Fixture, path: &Path) {
 }
 
 async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
+    f.host(TableAction::EndSession, Some(f.session)).await;
+    f.session = PlaySessionId::new();
+    f.host(
+        TableAction::StartSession {
+            id: f.session,
+            name: "All present at the crossing".into(),
+            participants: (0..2)
+                .map(|index| SessionParticipant {
+                    player_id: f.players[index],
+                    character_id: Some(f.characters[index]),
+                    attendance: AttendanceStatus::Present,
+                })
+                .collect(),
+        },
+        Some(f.session),
+    )
+    .await;
     let actors = [EntityId::new(), EntityId::new(), EntityId::new()];
     for (actor, id, size) in [
         (actors[0], "cultist-fanatic", CreatureSize::Medium),
@@ -136,23 +153,25 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
         .table_view(f.campaign, TableViewer::Host)
         .await
         .unwrap();
-    let count = view
-        .characters
-        .iter()
-        .find(|c| c.character_id == f.characters[0])
-        .unwrap()
-        .equipment
-        .as_ref()
-        .unwrap()
-        .initial_item_count;
-    f.host(
-        TableAction::PrepareEquipment {
-            character_id: f.characters[0],
-            item_ids: (0..count).map(|_| ItemId::new()).collect(),
-        },
-        Some(f.session),
-    )
-    .await;
+    for index in 0..2 {
+        let count = view
+            .characters
+            .iter()
+            .find(|c| c.character_id == f.characters[index])
+            .unwrap()
+            .equipment
+            .as_ref()
+            .unwrap()
+            .initial_item_count;
+        f.host(
+            TableAction::PrepareEquipment {
+                character_id: f.characters[index],
+                item_ids: (0..count).map(|_| ItemId::new()).collect(),
+            },
+            Some(f.session),
+        )
+        .await;
+    }
     f.host(
         TableAction::PrepareBattlefield {
             setup: Box::new(TableBattlefieldSetup {
@@ -187,13 +206,22 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
                         observable: false,
                     }],
                 },
-                characters: vec![TableCharacterPlacement {
-                    character_id: f.characters[0],
-                    position: point(40, 40, 0),
-                    height: 12,
-                    allies: vec![],
-                    enemies: vec![],
-                }],
+                characters: vec![
+                    TableCharacterPlacement {
+                        character_id: f.characters[0],
+                        position: point(40, 40, 0),
+                        height: 12,
+                        allies: vec![],
+                        enemies: vec![],
+                    },
+                    TableCharacterPlacement {
+                        character_id: f.characters[1],
+                        position: point(10, 10, 0),
+                        height: 12,
+                        allies: vec![],
+                        enemies: vec![],
+                    },
+                ],
                 creatures: vec![
                     TableCreaturePlacement {
                         actor: actors[0],
@@ -258,6 +286,11 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
             },
             surprised: false,
         },
+        TacticalCombatant {
+            actor: f.actors[1],
+            source: TacticalSource::Character,
+            surprised: false,
+        },
     ];
     let groups = combatants
         .iter()
@@ -271,6 +304,7 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
     submit(f, false, &[18]).await;
     submit(f, true, &[2]).await;
     submit(f, false, &[1]).await;
+    submit_both(f, Some(1), &[4], None).await;
     actors
 }
 
@@ -295,11 +329,11 @@ async fn concentrate(f: &Fixture, cultist: EntityId) {
         f,
         TacticalAction::CastSpell {
             choice,
-            targets: SpellTargetChoice::Entities(vec![f.actors[0]]),
+            targets: SpellTargetChoice::Entities(vec![f.actors[1]]),
         },
     )
     .await;
-    submit(f, true, &[20]).await;
+    submit_both(f, Some(1), &[1], None).await;
     assert!(
         state(f).await.rules.as_ref().unwrap().entities[&cultist]
             .concentration
@@ -427,7 +461,7 @@ async fn finish_area(
     mirror: &CampaignRuntime,
 ) {
     let initial = state(f).await;
-    submit_both(f, false, &[1; 7], Some(mirror)).await;
+    submit_both(f, None, &[1; 7], Some(mirror)).await;
     let mut seen_save = false;
     let mut seen_concentration = false;
     for _ in 0..16 {
@@ -498,7 +532,8 @@ async fn finish_area(
                     } else {
                         assert!(player.roll.is_none());
                     }
-                    let (meta, action) = submit_both(f, player_roll, &[1], Some(mirror)).await;
+                    let (meta, action) =
+                        submit_both(f, player_roll.then_some(0), &[1], Some(mirror)).await;
                     if player_roll {
                         let after = state(f).await;
                         reopen(f, path).await;
@@ -526,7 +561,7 @@ async fn finish_area(
                         current,
                         "area concentration child survives disk reopen"
                     );
-                    submit_both(f, false, &[20], Some(mirror)).await;
+                    submit_both(f, None, &[20], Some(mirror)).await;
                 }
                 _ => panic!("unexpected area child: {:?}", pending.key.role),
             }

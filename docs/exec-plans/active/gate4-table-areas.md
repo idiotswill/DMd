@@ -74,7 +74,8 @@ also preserves its original aim, source, channel, head and ordering across an
 uncertain-delivery restart and retries that exact request.
 
 The real SQLite draft uses genuinely created Host-controlled Chimera/Cultist/Wolf
-sources plus a supported player character. It establishes real concentration,
+sources plus two supported player characters. It establishes real concentration
+with a controller-reported failed Hold Person save outside the cone,
 then breathes through mist, resolving one shared raw amount, independent saves
 and concentration. It checks cold disk reopen, accepted retry, portable restore,
 forged consent/origin/declaration rejection and semantic replay. The strengthened
