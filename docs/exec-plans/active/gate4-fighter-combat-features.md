@@ -133,3 +133,12 @@ paths. Its exact envelope remains independently authenticated. This combined bra
 will be reviewed and verified locally after protocol's serialized canonical batch;
 fresh CI must cover the combined source. Stack PR36 on PR35 until protocol merges,
 then reconcile its verified squash and retarget main. Savage Attacker stays separate.
+
+Combined841e660 passed all four Linux jobs36143802483 (644 Rust tests). Windows
+36143802526 passed MSRV and desktop checks/tests, then overflowed the default test
+stack in the existing source-area cold-retry fixture. No gameplay assertion failed;
+the process exited STATUS_STACK_OVERFLOW during that scenario. Its outer phases
+already use heap-pinned futures, but submit→submit_both→execute_both→execute_table
+still nests large recovery poll frames. Pin those helper boundaries as well, keeping
+both actual runtimes, all assertions and default stack size. Native rerun is required;
+this is a proposed bounded fixture correction, not a claimed passing result.
