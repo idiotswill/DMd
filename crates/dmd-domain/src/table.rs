@@ -205,7 +205,7 @@ pub struct TableState {
     pub situation: TableSituation,
     /// Absent keeps the original PC-only table presentation and transport semantics.
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub source_actor_access: Option<crate::TableSourceActorAccess>,
+    pub source_actor_access: Option<Box<crate::TableSourceActorAccess>>,
 }
 
 impl TableState {

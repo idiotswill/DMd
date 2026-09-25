@@ -153,8 +153,11 @@ cannot carry source profiles or controller provenance. Pure `build_creature` and
 table route imports that state. Restore also rejects source-bearing first anchors.
 No genuine old Player-source table corpus is claimed or fabricated. The pure
 SetContext projection/adoption test is expressly qualified, while both checked-in
-pre-change table corpora are independently restored and their existing bindings and
-exported historical bytes are compared unchanged.
+pre-change table corpora are independently restored and their original legacy
+acceptances and exported historical bytes are compared unchanged. Both old captures
+have zero modern accepted bindings, so they do not prove historical `@2` retry bytes.
+The genuine new Mage scenario separately accepts a v1 modern request before activation
+and recovers that exact response afterward; it is not labelled a pre-change capture.
 
 Implementation now drafts transport v2 with an additive SourceCreature channel.
 Host and Player serialized variants remain unchanged. Activation itself uses v2
@@ -179,3 +182,35 @@ UI tests exercise actual review/activation, assignment, actor selection, self-ca
 and raw-roll submissions with retained retries. No compiler/frontend has run in
 this slice. Next: format and review this coherent draft, then run focused tests in
 the explicitly granted shared slot; fix actual failures before any success claim.
+
+## PR43 review and first CI correction
+
+Draft PR43 began at source `67156c1` and ancestry-only merge `bca4f10`. The frozen
+`100c7da` base and merged main `d5d1db7` have identical tree
+`801db9204a1418303ffada37d46cabf073fef159`; the ancestry merge changed no source.
+
+Initial Linux run 36177838852/job 108212680221 passed format, MSRV and strict lint,
+then overflowed the default stack in the existing normal table scenario. The new
+optional access marker is now boxed, preserving identical serialized bytes while
+removing its inline CommandMeta/Vec cost from every CampaignState async frame.
+There is no stack-limit increase. Initial Windows run 36177838848/job 108212679995
+passed 71 frontend tests and failed the new Mage selector scenario. Its logged DOM
+shows no selected source actor; the fixture now waits for the actual actor selector
+to be enabled, selects it and requires persisted actor selection before casting.
+Both fixes await execution on the new head.
+
+Root review also found generic trusted Host tactical authorization could substitute
+for the new player's source decisions. An activated-table-only admission guard now
+derives the responsible actor for each supported action and rejects Host substitution
+for owned declarations, public dice and optional choices. Host initiative setup,
+explicit frame ordering and secret raw-dice handling remain unchanged. The tests use
+the Host's own current revision and roll capability, assert the ownership rejection
+itself, and retain the later legitimate owner acceptance. The UI hides the same owned
+controls, preserves old views without the marker and discards stale source-control
+query successes/errors after campaign, channel or revision changes.
+
+The existing CreateCreature setup still requires earlier real PC creation; this slice
+adds source-only attendance and encounter participation after that existing setup,
+not a replacement character-creation path. No local compiler or frontend run has yet
+been authorized. Next: independent review of this concrete follow-up, push for fresh
+CI, then the assigned bounded local batch when the preceding build owner releases.

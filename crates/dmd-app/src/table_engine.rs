@@ -211,6 +211,7 @@ fn resolve_table_internal(
         }
         TableAction::Tactical { action } => {
             active(state, meta)?;
+            crate::table_source_control::authorize_tactical(state, meta, action)?;
             match meta.issuer {
                 CommandIssuer::Player(_) => {
                     if crate::table_source_control::attending_source(state, meta).is_err() {

@@ -58,14 +58,25 @@ async fn accept(
     request
 }
 async fn unchanged_rejection(f: &Fixture, request: TableTransportRequest) {
+    unchanged_rejection_message(f, request).await;
+}
+async fn owner_rejection(f: &Fixture, request: TableTransportRequest) {
+    assert_eq!(
+        unchanged_rejection_message(f, request).await,
+        "This source creature's player must make the decision or report its public dice."
+    );
+}
+async fn unchanged_rejection_message(f: &Fixture, request: TableTransportRequest) -> String {
     let before = export_campaign(&f.pool, f.campaign).await.unwrap();
-    assert!(matches!(
-        Box::pin(f.runtime.submit_presented_table(request)).await,
-        Err(RunnableCampaignError::TableRejected(_))
-    ));
+    let Err(RunnableCampaignError::TableRejected(message)) =
+        Box::pin(f.runtime.submit_presented_table(request)).await
+    else {
+        panic!("expected a definite rejection before any write");
+    };
     let mut after = export_campaign(&f.pool, f.campaign).await.unwrap();
     after.exported_at_utc = before.exported_at_utc.clone();
     assert_eq!(after, before);
+    message
 }
 async fn reopen(f: &mut Fixture, path: &Path) {
     let expected = f
@@ -499,6 +510,21 @@ async fn prepare_owned_turn(f: &mut Fixture, mage: EntityId) -> TableTransportRe
         },
     )
     .await;
+    let mut host_raw = raw.clone();
+    host_raw.channel = TableTransportChannel::Host;
+    let host_view = presented(f, &TableTransportChannel::Host).await;
+    host_raw.revision = host_view.revision;
+    let TableTransportInput::Action(host_action) = &mut host_raw.input else {
+        unreachable!()
+    };
+    let TableAction::Tactical {
+        action: TacticalAction::SubmitRoll { result },
+    } = host_action.as_mut()
+    else {
+        unreachable!()
+    };
+    result.request_id = host_view.roll.unwrap().id;
+    owner_rejection(f, host_raw).await;
     let mut stolen = raw.clone();
     stolen.channel = TableTransportChannel::SourceCreature {
         player_id: f.players[1],
@@ -558,6 +584,10 @@ async fn cast_mage_armor(f: &Fixture, mage: EntityId) -> TableTransportRequest {
         },
     )
     .await;
+    let mut host_cast = cast.clone();
+    host_cast.channel = TableTransportChannel::Host;
+    host_cast.revision = presented(f, &TableTransportChannel::Host).await.revision;
+    owner_rejection(f, host_cast).await;
     Box::pin(f.runtime.submit_presented_table(cast.clone()))
         .await
         .unwrap();
@@ -640,6 +670,15 @@ async fn reject_transfer_of_held_work(f: &Fixture, mage: EntityId) {
     )
     .await;
     unchanged_rejection(f, transfer).await;
+    let host_abandon = request(
+        f,
+        TableTransportChannel::Host,
+        TableAction::Tactical {
+            action: TacticalAction::AbandonReady { actor: mage },
+        },
+    )
+    .await;
+    owner_rejection(f, host_abandon).await;
     accept(
         f,
         channel,
@@ -818,7 +857,7 @@ async fn restore_and_reject_forgery(f: &Fixture, export: &CampaignExport, mage: 
 }
 
 #[tokio::test]
-async fn source_control_keeps_genuine_v1_corpus_bytes_and_original_binding_responses() {
+async fn source_control_keeps_genuine_v1_corpus_bytes_and_original_legacy_acceptance() {
     for captured in [
         include_str!("../fixtures/legacy-savage-f960.json"),
         include_str!("../fixtures/legacy-declared-second-wind-f669.json"),
@@ -837,17 +876,17 @@ async fn source_control_keeps_genuine_v1_corpus_bytes_and_original_binding_respo
                 .unwrap()
                 .contains("source_control")
         );
-        for binding in &export.table_transport_bindings {
-            let request: TableTransportRequest =
-                serde_json::from_str(&binding.request_json).unwrap();
-            let expected: TableTransportResult =
-                serde_json::from_str(&binding.response_json).unwrap();
-            assert_eq!(request.version, 1);
-            assert_eq!(
-                Box::pin(app.submit_presented_table(request)).await.unwrap(),
-                expected
-            );
-        }
+        assert!(
+            export.table_transport_bindings.is_empty(),
+            "these old captures predate accepted modern transport; no binding evidence is claimed"
+        );
+        let event: TableEvent =
+            serde_json::from_str(&export.event_journal.last().unwrap().payload_json).unwrap();
+        let receipt = Box::pin(app.execute_table(event.meta.clone(), event.action))
+            .await
+            .unwrap();
+        assert!(receipt.already_accepted);
+        assert_eq!(receipt.outcome, event.outcome);
         let mut after = export_campaign(&pool, campaign).await.unwrap();
         after.exported_at_utc = export.exported_at_utc.clone();
         assert_eq!(

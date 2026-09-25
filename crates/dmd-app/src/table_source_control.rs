@@ -106,11 +106,11 @@ pub(crate) fn activate(
     next.table
         .as_mut()
         .ok_or("This campaign has no table.")?
-        .source_actor_access = Some(TableSourceActorAccess {
+        .source_actor_access = Some(Box::new(TableSourceActorAccess {
         version: TableSourceAccessVersion::SourceActorsV1,
         origin: meta.clone(),
         adopted: adopted.to_vec(),
-    });
+    }));
     Ok(next)
 }
 
@@ -202,6 +202,114 @@ pub(crate) fn has_owned_source(state: &CampaignState, player: PlayerId) -> bool 
                 .iter()
                 .any(|runtime| owns_source(state, player, runtime.actor))
         })
+}
+
+/// Version-two table input assigns voluntary source decisions to their actual
+/// controller. The generic trusted rules API remains unchanged for old replay.
+pub(crate) fn authorize_tactical(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &dmd_rules::tactical::TacticalAction,
+) -> Result<(), String> {
+    use dmd_rules::tactical::TacticalAction as A;
+    if !enabled(state) || !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
+        return Ok(());
+    }
+    let rules = state.rules.as_ref().ok_or("Mechanical state is absent.")?;
+    let resolution = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .and_then(|flow| flow.resolution.as_deref());
+    let active = rules
+        .timing
+        .as_ref()
+        .and_then(|timing| timing.order.get(timing.index))
+        .map(|entry| entry.actor);
+    let actor = match action {
+        // These retain source monster/mixed-tie and explicitly delegated ordering.
+        A::Establish { .. }
+        | A::Begin { .. }
+        | A::UpgradeExecution
+        | A::ProposeInitiativeTie { .. }
+        | A::AcceptInitiativeTie { .. } => None,
+        A::ChooseTurnWork { .. } => match resolution {
+            Some(resolution)
+                if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
+                    .map_err(|error| error.to_string())? =>
+            {
+                Some(resolution.turn_actor)
+            }
+            _ => None,
+        },
+        A::SubmitRoll { .. }
+        | A::SubmitRollWithInspiration { .. }
+        | A::SubmitSavageAttacker { .. } => rules
+            .pending
+            .as_ref()
+            .filter(|pending| pending.request.visibility == RollVisibility::Public)
+            .and_then(|pending| pending.request.roller),
+        A::VoluntarilyFailSave => rules
+            .pending
+            .as_ref()
+            .and_then(|pending| pending.request.roller),
+        A::UseLegendaryResistance | A::DeclineLegendaryResistance => resolution
+            .and_then(|resolution| resolution.failed_save.as_ref())
+            .map(|failed| failed.pending.key.subject),
+        A::DeclineLegendaryAction => resolution
+            .and_then(|resolution| resolution.legendary_window.as_ref())
+            .and_then(|window| match window.work.kind {
+                TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
+                _ => None,
+            }),
+        A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
+            .and_then(|resolution| resolution.attack.as_ref())
+            .map(|attack| attack.actor),
+        A::DeclineOpportunity | A::OpportunityAttack { .. } => resolution
+            .and_then(|resolution| resolution.movement.as_ref())
+            .and_then(|movement| movement.opportunity.as_ref())
+            .map(|window| window.reactor),
+        A::ChooseLiquidLanding { .. } => resolution
+            .and_then(|resolution| {
+                resolution
+                    .falls
+                    .iter()
+                    .find(|fall| fall.stage == TacticalFallStage::LandingChoice)
+            })
+            .map(|fall| fall.actor),
+        A::CastSpell { choice, .. } => Some(choice.actor),
+        A::AbandonReady { actor } => Some(*actor),
+        A::Ready { .. }
+        | A::UnarmedStrike { .. }
+        | A::FirstAid { .. }
+        | A::SecondWind
+        | A::DonShield { .. }
+        | A::DoffShield
+        | A::CreatureWeaponAttack { .. }
+        | A::CreatureArea { .. }
+        | A::CreatureAttack { .. }
+        | A::Move { .. }
+        | A::Attack { .. }
+        | A::EndTurn
+        | A::Dash { .. }
+        | A::Disengage
+        | A::Dodge
+        | A::StandProne
+        | A::StartAttackAction => active,
+    };
+    if actor.is_some_and(|actor| {
+        rules
+            .tactical_creatures
+            .as_ref()
+            .and_then(|creatures| creatures.runtime(actor))
+            .is_some_and(|runtime| matches!(runtime.controller, CreatureController::Player(_)))
+    }) {
+        return Err(
+            "This source creature's player must make the decision or report its public dice."
+                .into(),
+        );
+    }
+    Ok(())
 }
 
 pub(crate) fn visible_actors(
