@@ -5,6 +5,9 @@ use dmd_domain::*;
 use dmd_persistence::{CampaignExport, export_campaign, open_sqlite};
 use dmd_rules::tactical::TacticalAction;
 
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
