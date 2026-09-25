@@ -100,3 +100,8 @@ so the merge candidate exercises both independent source actions together.
 Legacy Opportunity reconstruction remains unchanged; current-source OA armor-training
 parity belongs at the explicit live-response version boundary in Gate4, not an
 unannounced change to old accepted attacks. All other recorded obligations remain.
+
+Normal integration imports first-aid sourcea0b4b57 with both adjacent typed actions,
+forms and tests retained. Medicine production is identical to verified cea43 and its
+strengthened tests pass, but its final CI/protected merge remains pending. The combined
+source/UI needs fresh canonical and desktop evidence; do not inherit isolated passes.

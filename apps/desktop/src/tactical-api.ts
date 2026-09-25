@@ -63,6 +63,7 @@ export interface SavageAttackerRoll {
 }
 export type TacticalAction =
   | { UnarmedStrike: { target: Id } }
+  | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
   | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'

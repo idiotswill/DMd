@@ -138,6 +138,12 @@ pub enum VitalityOperation {
         purpose: MedicinePurpose,
         total: i32,
     },
+    /// The enclosing resolver evaluated the actual raw check and explicit house rules.
+    /// This internal consequence is not a public command or a replacement die total.
+    MedicineOutcome {
+        purpose: MedicinePurpose,
+        succeeded: bool,
+    },
     DeathSave {
         request_id: RollRequestId,
         result: RollResult,
