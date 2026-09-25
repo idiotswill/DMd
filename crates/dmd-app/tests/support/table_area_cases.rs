@@ -27,7 +27,9 @@ async fn host(f: &Fixture, action: TacticalAction) -> CommandMeta {
     meta
 }
 async fn submit(f: &Fixture, player: bool, faces: &[u16]) -> CommandMeta {
-    submit_both(f, player.then_some(0), faces, None).await.0
+    Box::pin(submit_both(f, player.then_some(0), faces, None))
+        .await
+        .0
 }
 async fn execute_both(
     f: &Fixture,
@@ -35,13 +37,11 @@ async fn execute_both(
     meta: &CommandMeta,
     action: &TableAction,
 ) {
-    f.runtime
-        .execute_table(meta.clone(), action.clone())
+    Box::pin(f.runtime.execute_table(meta.clone(), action.clone()))
         .await
         .unwrap();
     if let Some(mirror) = mirror {
-        mirror
-            .execute_table(meta.clone(), action.clone())
+        Box::pin(mirror.execute_table(meta.clone(), action.clone()))
             .await
             .unwrap();
         assert_eq!(
@@ -97,7 +97,9 @@ async fn submit_both(
                 .collect(),
         },
     });
-    execute_both(f, mirror, &meta, &action).await;
+    // The source-save -> two runtimes -> command acceptance poll chain otherwise
+    // nests several large recovery futures on the default native Windows stack.
+    Box::pin(execute_both(f, mirror, &meta, &action)).await;
     (meta, action)
 }
 async fn reopen(f: &mut Fixture, path: &Path) {
