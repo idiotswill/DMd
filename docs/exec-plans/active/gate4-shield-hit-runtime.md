@@ -4,9 +4,8 @@ Status: active integration draft; 14 focused Shield rules cases pass. Final
 application, canonical and exact-head acceptance remain pending.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
-2798b6b1d6263b5e321a1903d9fb4f2331b73895 is integrated. PR43 owns
-source-creature player control; its reviewed a119d7f is integrated for development,
-with verified merged-main reconciliation required before player-path acceptance.
+2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
+e813e3a13911497902a3d4a55aec3c70653afb2a are integrated.
 
 ## Objective and authority
 
@@ -87,10 +86,11 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
 
 ## Current verification checkpoint
 
-Exact development head is 8b5cf52a250c5f381d22977391906cfedc53a630. It normally
-integrates reviewed source-control PR43 candidate a119d7f. That prerequisite still
-requires its final canonical run, all six checks and protected merge; reconcile
-the fetched merged main before final Shield acceptance. No Gate4 criterion is waived.
+The compiler/UI-verified executable candidate is
+8b5cf52a250c5f381d22977391906cfedc53a630. Documentation successor7bc01af and
+verified-main reconciliation98399da change no executable source. The latter's
+whole tree equals7bc01af at926629f4aec461374b38e5ff57a93260e190d408.
+No Gate4 criterion is waived; final Shield runtime/canonical acceptance is pending.
 
 - The fourteen Shield rules cases pass on the local default Windows GNU stack
   (57.29 seconds, jobs1/incremental0). The prior full tactical-attacks run passed
@@ -114,10 +114,14 @@ the fetched merged main before final Shield acceptance. No Gate4 criterion is wa
   role-specific opaque response routing, both UI test sets and actual scenario
   registration. Static review is not a runtime result.
 
-Source-control currently owns the only heavy local build slot for its canonical
-verification. Do not compile or touch shared target inputs until it releases the
-slot. The earlier disk/committed-memory shortage is resolved; use one job,
-CARGO_INCREMENTAL=0 and the default test stack.
+Source-control's canonical verifier completed and released the heavy slot. Root
+now runs the otherwise identical source in an isolated diagnostic worktree,
+06045b2 over7bc01af, with independently reviewed read-only capture hooks in the
+Night Hag and owned Shield tests only. The hooks preserve genuine pre-change
+flow3 exports for the next semantic boundary; they never merge into production.
+The focused batch includes actual source-control units/cases and owned Shield.
+No result is claimed before completion. The earlier disk/committed-memory shortage
+is resolved; use one job, CARGO_INCREMENTAL=0 and the default test stack.
 
 ### Integration and recovery decisions
 
@@ -165,8 +169,24 @@ Rust,67UI,zero static diagnostics,136modules and fresh EXE/NSIS. Artifact1088833
 is231464157bytes with SHA256
 7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
 
-Read any current CI failure before changing source. Once PR43 verification and
-protected merge complete, fetch/integrate main, then run the registered player
+PR43 is protected-squash merged as e813e3a13911497902a3d4a55aec3c70653afb2a.
+Fetched whole-tree95ccff0f48d47f8a92e2a2eafab6f8385e9f7ce3 equals the independently
+reviewed finala119d7f. Its exact canonical verification passes698Rust/54suites/
+46table; all six final-head checks pass699Linux/701native Rust,77UI,0/0,137modules
+and fresh EXE/NSIS. Artifact10890060494 is231627996bytes, SHA256
+ed11f6b7fba78c8733a59cf524514c32e7de118d882011c51f0bd8dea9ffbc12.
+Post-main runs36194898895/36194898980 remain separately pending.
+
+The planned remaining merge order is aftermath PR44, then this hit slice. PR44's
+bounded conclusion currently validates ReactionsV1/flow2 only. Before final Shield
+canonical acceptance, normally integrate its verified main, deliberately admit
+the same retained aftermath cadence under flow3, and update fresh real session/
+source scenarios to Begin3. Preserve already accepted flow2 images and source
+timing; do not leave the new current executor unable to conclude hostilities.
+If verification changes the merge order, perform that integration explicitly in
+the later branch instead. Full encounter release remains separate Gate4 work.
+
+Read any current CI failure before changing source. Complete the registered player
 Shield SQLite case and modified source-control unit/application cases on the
 default stack. Complete canonical verification, final all-six-head CI with fresh
 packaging, full delta review, expected-head merge and fetched tree parity. Record

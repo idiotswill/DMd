@@ -16,10 +16,13 @@ Windows36188457455 reports 697 Rust tests, 67 UI tests, zero static diagnostics,
 7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
 All four genuine pre-change exports retain their original bytes and bindings.
 
-Source-control PR43 candidate a119d7f is reviewed and has eight focused Rust
-cases plus 77 UI tests passing; its full canonical/final-head CI and protected
-merge remain pending. Shield PR45 has 14 passing focused source
-rules cases and has normally integrated that reviewed candidate for development.
+Source-control PR43 merged as e813e3a13911497902a3d4a55aec3c70653afb2a after
+review, canonical698Rust/46table and all six final checks (699Linux/701native
+Rust,77UI,0/0,137modules,fresh EXE/NSIS). Fetched whole-tree95ccff0 equals final
+a119d7f. Post-main36194898895/36194898980 is separately pending.
+Shield PR45 has 14 passing focused source
+rules cases and has normally reconciled verified main with identical complete
+tree to its prior reviewed integration.
 Its actual player-owned file-SQLite case is registered but runtime acceptance is
 pending. Integrated8b5cf52 has a clear independent review, passing compiler/lint/
 MSRV/guards and84UI tests with zero static diagnostics/138modules. Full runtime,

@@ -267,11 +267,12 @@ complete-tree parity, and all six post-main checks36188457488/36188457455 pass
 captured JSON exports remain unchanged. This umbrella remains active because
 compatibility acceptance does not close live source reactions.
 
-Current next action: source-control PR43 a119d7f must complete canonical/final
-checks and protected merge. Its reviewed candidate is normally integrated into
-Shield PR45 for development, whose 14 focused source rules cases pass. Finish its
-registered actual player-source SQLite, desktop, integration review and full
-verification, reconcile verified merged main, then merge the bounded hit slice.
+Current next action: source-control PR43 is merged as e813e3a with full-tree parity
+to a119d7f after canonical/all-six-check acceptance; its post-main checks are pending.
+Shield PR45 has reconciled that verified main without tree changes. Its14 focused
+rules cases and84UI tests pass; full production/integration review is clear.
+Finish its registered actual player-source SQLite and full canonical/final-head
+verification, then merge the bounded hit slice.
 The aftermath writer owns PR44. Local heavy verification remains serialized.
 Magic Missile targeting/simultaneity, Counterspell and all held/Ready release
 acceptance above remain mandatory Gate4 work. No gate pause or scope waiver.
