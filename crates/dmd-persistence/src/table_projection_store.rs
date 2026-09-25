@@ -362,10 +362,23 @@ pub(crate) fn validate_portable_protocol(
         {
             return Err(invalid());
         }
+        let presentation =
+            &export.table_projection_history[binding.projection_ordinal as usize - 1];
         match binding.acceptance {
             TransportAcceptance::Command {
                 resulting_event_sequence,
             } => {
+                let ProjectionCause::Event { id, command_id } = presentation.cause else {
+                    return Err(invalid());
+                };
+                if command_id != binding.meta.id
+                    || events
+                        .get(id.0.to_string().as_str())
+                        .and_then(|row| u64::try_from(row.sequence).ok())
+                        != Some(resulting_event_sequence)
+                {
+                    return Err(invalid());
+                }
                 let audit = export
                     .command_audit
                     .iter()
@@ -386,6 +399,9 @@ pub(crate) fn validate_portable_protocol(
                 }
             }
             TransportAcceptance::Observation { id } => {
+                if presentation.cause != (ProjectionCause::Observation { id }) {
+                    return Err(invalid());
+                }
                 let observation = observations.get(&id).ok_or_else(invalid)?;
                 if id.0 != binding.meta.id.0
                     || observation.record.issuer != binding.meta.issuer

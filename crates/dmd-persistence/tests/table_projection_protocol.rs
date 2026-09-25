@@ -231,6 +231,9 @@ async fn transport_binding_matches_the_atomic_canonical_acceptance_and_rejects_f
     );
     let mut corruptions = Vec::new();
     let mut altered = exported.clone();
+    altered.table_transport_bindings[0].projection_ordinal = 1;
+    corruptions.push(altered);
+    let mut altered = exported.clone();
     altered.table_transport_bindings[0].meta.id = CommandId::new();
     corruptions.push(altered);
     let mut altered = exported.clone();
