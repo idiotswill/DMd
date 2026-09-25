@@ -206,3 +206,10 @@ the existing rules-runtime regression convention; preserve full equality of ever
 durable field, row and creation timestamp. No production code changes or test
 requirements are weakened. The corrected head requires fresh review and CI before
 merge; the previous canonical source pass remains evidence for production only.
+
+Corrected final25be7f6c5f31e60a065f009c52ab44c852639aed passed fresh exact review
+and all six jobs: Linux36127754177 (425 Rust tests), Windows36127754144 (427 native
+Rust tests, MSRV/stable and offline installer). Merge used expected-head protection
+and produced12ed29a72eb3d66ad8565caf358ae573a91aa0dc. A fresh fetch confirms exact
+full-tree parity. Post-merge checks are pending. Continue the already planned physical
+encounter/source-casting slice on its fresh branch; Gate4 acceptance remains open.

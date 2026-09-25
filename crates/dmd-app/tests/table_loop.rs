@@ -4,8 +4,16 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/table_attack_cases.rs"]
+mod table_attack_cases;
+#[path = "support/table_casting_cases.rs"]
+mod table_casting_cases;
 #[path = "support/table_creature_cases.rs"]
 mod table_creature_cases;
+#[path = "support/table_falling_cases.rs"]
+mod table_falling_cases;
+#[path = "support/table_shield_cases.rs"]
+mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 #[path = "support/table_turn_core_cases.rs"]

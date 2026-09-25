@@ -552,17 +552,6 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             _ => (),
         }
         if let PendingPurpose::TacticalResolution { key, .. } = &roll.purpose {
-            if !matches!(
-                key.role,
-                TacticalRollRole::DeathSave
-                    | TacticalRollRole::EffectSave
-                    | TacticalRollRole::EffectDamage
-                    | TacticalRollRole::Concentration
-                    | TacticalRollRole::StableRecovery
-                    | TacticalRollRole::CreatureRecharge
-            ) {
-                return Err(invalid("unavailable tactical roll history"));
-            }
             if key.request_id() != roll.request.id || !rules.entities.contains_key(&key.subject) {
                 return Err(invalid("invalid tactical roll identity"));
             }

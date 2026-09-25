@@ -80,7 +80,7 @@ heads never substitute for this combined verification.
 
 ## Current evidence and next action
 
-No extraction or acceptance exists for this proposed PR yet. Reviewed source heads
+Initial extraction is present; combined verification and acceptance remain pending. Reviewed source heads
 and individual verification are recorded in the central Gate4 and weapon/movement/
 falling/shield plans. PR32 source70b8333 has425 passing Linux Rust tests and424
 passing local Windows GNU Rust tests under canonical verification, strict lint,
@@ -123,3 +123,11 @@ work missing its retained continuation. A blanket ban on every elevated position
 is replaced by the separately implemented and verified real falling/landing tests.
 These reference-test adaptations are formatted only; their runtime verification is
 pending the combined main-based PR and serialized compiler. Production is unchanged.
+
+The fresh branch's pre-code plan is5d250ba. Initial extraction copies the exact
+reviewed reference source0fd7ddc for crates/apps/content/manifest/lock while preserving
+main's harmless domain violation-enum order and expanded native Windows workflow.
+The existing turn-core source and cold-round regression remain present. Historical
+source plans accompany the integrated code as provenance, with this plan and actual
+combined verification authoritative for this PR. The new real damaging OA recovery
+scenario is still being authored separately and is required before acceptance.

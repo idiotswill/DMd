@@ -279,7 +279,14 @@ pub fn creature_current_armor(
     } else {
         i32::from(initial) - if had_shield { 2 } else { 0 }
     };
-    let total = armor.max(unarmored) + if loadout.shield.is_some() { 2 } else { 0 };
+    // Anyone can don a shield, but only source training grants its AC benefit
+    // (SRD92). A source monster has training with the armor in its stat block.
+    let total = armor.max(unarmored)
+        + if had_shield && loadout.shield.is_some() {
+            2
+        } else {
+            0
+        };
     u16::try_from(total)
         .map(ArmorClass::Fixed)
         .map_err(|_| invalid("Creature armor is outside bounds."))

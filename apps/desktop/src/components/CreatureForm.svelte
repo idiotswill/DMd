@@ -23,7 +23,7 @@
   }
 </script>
 <form onsubmit={submit}><fieldset {disabled}><legend>Prepare a creature</legend>
-  <p>Preparation saves creature statistics and equipment. Only the host can see this setup. Encounter play is not available in this build yet.</p>
+  <p>Choose a rules source, then place the creature on the encounter map. Preparation is visible only to the host.</p>
   <label>Creature source<select bind:value={definition} onchange={changeSource}>{#each setup.catalog as source}<option value={source.definition_id}>{source.name}</option>{/each}</select></label>
   {#if selected}
     <label>Creature name<input maxlength="200" placeholder={selected.name} bind:value={name} /></label>

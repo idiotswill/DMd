@@ -251,23 +251,6 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
         .map_err(|e| RulesError::Invalid(e.to_string()))?;
     crate::spatial::validate_physical_positions(encounter)
         .map_err(|e| RulesError::Invalid(e.to_string()))?;
-    // Turn-only admission keeps every participant on the authored floor. Elevated,
-    // swimming/burrowing and displaced images require the later movement/fall path.
-    // This check runs on accepted state and restore, not merely the setup form.
-    for participant in &encounter.participants {
-        let body = participant.volume().map_err(|e| invalid(&e))?;
-        if participant.position.z != encounter.battlefield.floor_z
-            || encounter
-                .battlefield
-                .terrain
-                .iter()
-                .any(|t| (t.water || t.burrowable) && t.volume.intersects(body))
-        {
-            return Err(prerequisite(
-                "turn setup currently requires supported dry floor positions",
-            ));
-        }
-    }
     let Some(f) = &encounter.flow else {
         return Ok(());
     };

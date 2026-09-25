@@ -84,18 +84,40 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if matches!(
+        work.kind,
+        TacticalWorkKind::BeginFall { .. }
+            | TacticalWorkKind::LiquidLandingCheck { .. }
+            | TacticalWorkKind::FallDamage { .. }
+    ) {
+        return super::falling::key(state, work);
+    }
+    if matches!(
+        work.kind,
+        TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. }
+    ) {
+        return super::casting::key(state, work);
+    }
+    if matches!(
+        work.kind,
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage
+    ) {
+        return super::attacks::key(state, work);
+    }
     let (role, subject) = match &work.kind {
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
-        | TacticalWorkKind::FallDamage { .. }
-        | TacticalWorkKind::SpellProgram { .. }
-        | TacticalWorkKind::FinishSpell { .. }
-        | TacticalWorkKind::MoveSegment
-        | TacticalWorkKind::MovementOpportunity { .. }
-        | TacticalWorkKind::AttackRoll
+        | TacticalWorkKind::FallDamage { .. } => unreachable!("handled above"),
+        TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. } => {
+            unreachable!("handled above")
+        }
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement choice has no raw roll key"));
+        }
+        TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
         | TacticalWorkKind::FinishAttack => {
-            return Err(prerequisite("this tactical work is not yet available"));
+            return Err(invalid("attack work has no ordinary save key"));
         }
         TacticalWorkKind::DeathSave { actor } => (TacticalRollRole::DeathSave, *actor),
         TacticalWorkKind::StableRecovery { actor, .. } => {
@@ -201,18 +223,19 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
-        TacticalWorkKind::BeginFall { .. }
-        | TacticalWorkKind::LiquidLandingCheck { .. }
-        | TacticalWorkKind::FallDamage { .. }
-        | TacticalWorkKind::SpellProgram { .. }
-        | TacticalWorkKind::FinishSpell { .. }
-        | TacticalWorkKind::MoveSegment
-        | TacticalWorkKind::MovementOpportunity { .. }
-        | TacticalWorkKind::AttackRoll
-        | TacticalWorkKind::AttackDamage
-        | TacticalWorkKind::FinishAttack => {
-            Err(prerequisite("this tactical work is not yet available"))
+        TacticalWorkKind::BeginFall { .. } => Err(invalid("Fall choice has no raw roll.")),
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => {
+            super::falling::request(state, work, key)
         }
+        TacticalWorkKind::SpellProgram { .. } => super::casting::request(state, work, key),
+        TacticalWorkKind::FinishSpell { .. } => Err(invalid("spell cleanup has no raw roll")),
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            Err(invalid("movement choice has no raw roll"))
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
+            super::attacks::request(state, work, key)
+        }
+        TacticalWorkKind::FinishAttack => Err(invalid("attack completion has no raw roll")),
         TacticalWorkKind::DeathSave { actor } => {
             let context = crate::tactical_vitality_adapter::context(
                 state,
@@ -292,19 +315,18 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::falling::start(state, meta, &work)? {
+        return Ok(());
+    }
+    if super::movement::start(state, meta, &work)? {
+        return Ok(());
+    }
+    if super::attacks::start(state, meta, &work)? {
+        return Ok(());
+    }
     match &work.kind {
-        TacticalWorkKind::BeginFall { .. }
-        | TacticalWorkKind::LiquidLandingCheck { .. }
-        | TacticalWorkKind::FallDamage { .. }
-        | TacticalWorkKind::SpellProgram { .. }
-        | TacticalWorkKind::FinishSpell { .. }
-        | TacticalWorkKind::MoveSegment
-        | TacticalWorkKind::MovementOpportunity { .. }
-        | TacticalWorkKind::AttackRoll
-        | TacticalWorkKind::AttackDamage
-        | TacticalWorkKind::FinishAttack => {
-            return Err(prerequisite("this tactical work is not yet available"));
-        }
+        TacticalWorkKind::BeginFall { .. } => return Err(invalid("Fall choice was not handled.")),
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => (),
         TacticalWorkKind::EndOccupiedSpace { actor } => {
             // Another simultaneous consequence may have moved the actor or
             // changed its size/immunity. Re-evaluate actual geometry at resolution.
@@ -320,6 +342,19 @@ pub(super) fn start(
             }
             return Ok(());
         }
+        TacticalWorkKind::SpellProgram { cast, at } => {
+            if super::casting::start(state, meta, *cast, *at)? {
+                return Ok(());
+            }
+        }
+        TacticalWorkKind::FinishSpell { cast } => {
+            return super::casting::finish_cast(state, meta, *cast);
+        }
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement work was not handled"));
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => (),
+        TacticalWorkKind::FinishAttack => return Err(invalid("attack completion was not handled")),
         TacticalWorkKind::LegendaryWindow { actor } => {
             let actor = *actor;
             return super::creature_bridge::offer(state, meta, work, actor);
@@ -543,21 +578,41 @@ pub(super) fn finish(
         })
         .transpose()?;
     resolution_mut(state)?.pending = None;
+    if matches!(
+        pending.work.kind,
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. }
+    ) {
+        if forced_success {
+            return Err(invalid("A source save override cannot alter falling work."));
+        }
+        return super::falling::finish(state, meta, &pending, result);
+    }
     match pending.work.kind {
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
-        | TacticalWorkKind::FallDamage { .. }
-        | TacticalWorkKind::SpellProgram { .. }
-        | TacticalWorkKind::FinishSpell { .. }
-        | TacticalWorkKind::MoveSegment
-        | TacticalWorkKind::MovementOpportunity { .. }
-        | TacticalWorkKind::AttackRoll
-        | TacticalWorkKind::AttackDamage
-        | TacticalWorkKind::FinishAttack => {
-            return Err(prerequisite("this tactical work is not yet available"));
+        | TacticalWorkKind::FallDamage { .. } => {
+            return Err(invalid("Fall choice cannot await unrelated dice."));
         }
         TacticalWorkKind::EndOccupiedSpace { .. } => {
             return Err(invalid("occupied-space consequence cannot await dice"));
+        }
+        TacticalWorkKind::SpellProgram { .. } => {
+            return super::casting::finish(state, meta, &pending, result, forced_success);
+        }
+        TacticalWorkKind::FinishSpell { .. } => {
+            return Err(invalid("spell cleanup cannot await dice"));
+        }
+        TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
+            return Err(invalid("movement is not a raw roll continuation"));
+        }
+        TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => super::attacks::resolved(
+            state,
+            meta,
+            &pending,
+            result.ok_or_else(|| invalid("attack requires raw dice"))?,
+        )?,
+        TacticalWorkKind::FinishAttack => {
+            return Err(invalid("attack completion is not pending dice"));
         }
         TacticalWorkKind::DeathSave { actor } => {
             let operation = if forced_success {
