@@ -567,7 +567,7 @@ async fn schema_two_database_and_format_one_export_upgrade_preserve_exact_old_an
     let before = legacy.clone();
     let upgraded = legacy.upgraded().expect("explicit upgrade");
     assert_eq!(legacy, before);
-    assert_eq!(upgraded.format_version, 2);
+    assert_eq!(upgraded.format_version, 3);
     assert_eq!(upgraded.snapshots, legacy.snapshots);
     let destination = self::pool().await;
     restore_campaign(&destination, &legacy)

@@ -42,11 +42,11 @@ it('keeps ordinary turns blocked and sends the retained consequence identity', a
   const user=userEvent.setup();const onAction=vi.fn();
   const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},
-    continuation:{actor:'actor',host_adjudication:false,choices:[{occurrence:19,label:'Death saving throw'},{occurrence:27,label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    continuation:{actor:'actor',host_adjudication:false,choices:[{handle:'opaque-death',label:'Death saving throw'},{handle:'opaque-consequence',label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
   expect(screen.getByRole('button',{name:'End turn'}).closest('fieldset')?.disabled).toBe(true);
   await user.click(screen.getByRole('button',{name:'Concurrent consequence · 2'}));
-  expect(onAction).toHaveBeenLastCalledWith({ChooseTurnWork:{occurrence:27}});
+  expect(onAction).toHaveBeenLastCalledWith({ChooseTurnWork:{handle:'opaque-consequence'}});
   await component.rerender({tactical:{...tactical,continuation:{actor:'actor',host_adjudication:false,choices:[]},may_fail_save:'actor'},pendingRoll:true});
   expect(screen.queryByRole('button',{name:'Concurrent consequence · 2'})).toBeNull();
   await user.click(screen.getByRole('button',{name:'Choose to fail this save'}));

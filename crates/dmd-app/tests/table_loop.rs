@@ -4,10 +4,9 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
-#[path = "support/sqlite_test_cleanup.rs"]
-mod sqlite_test_cleanup;
 #[path = "support/table_area_cases.rs"]
 mod table_area_cases;
+
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]
@@ -20,6 +19,8 @@ mod table_dead_target_cases;
 mod table_falling_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
 mod table_oa_concentration_cases;
+#[path = "support/table_projection_cases.rs"]
+mod table_projection_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
@@ -52,6 +53,9 @@ fn input(name: &str) -> CharacterCreationInput {
         masteries: ["club".into(), "dagger".into(), "shortbow".into()],
     }
 }
+
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
 
 struct Fixture {
     runtime: CampaignRuntime,

@@ -426,7 +426,7 @@ async fn schema_three_migration_preserves_table_and_exact_anchor_metadata() {
     let exported = export_campaign(&pool, initial.campaign_id())
         .await
         .expect("export");
-    assert_eq!(exported.format_version, 2);
+    assert_eq!(exported.format_version, 3);
     assert_eq!(exported.snapshots[0].state_schema_version, 3);
     assert_eq!(exported.snapshots[0].state_json, original_json);
     let restored = self::pool(false).await;

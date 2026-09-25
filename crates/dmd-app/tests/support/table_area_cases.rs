@@ -681,3 +681,184 @@ async fn run_area_case() {
         .await
         .unwrap();
 }
+
+#[tokio::test]
+async fn protocol_hidden_area_save_keeps_player_revision_transcript_and_pending_input_unchanged() {
+    Box::pin(hidden_area_protocol_case()).await;
+}
+async fn hidden_area_protocol_case() {
+    let mut f = Box::pin(Fixture::new()).await;
+    let actors = Box::pin(prepare(&mut f)).await;
+    Box::pin(concentrate(&f, actors[0])).await;
+    Box::pin(begin_area(&f, actors[1], actors[2])).await;
+    submit(&f, false, &[1; 7]).await;
+    let before = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert!(before.roll.is_none());
+    assert!(before.tactical.as_ref().unwrap().continuation.is_none());
+    let original_question = TableTransportRequest {
+        version: TABLE_TRANSPORT_VERSION,
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        channel: TableTransportChannel::Player {
+            player_id: f.players[0],
+            character_id: f.characters[0],
+        },
+        revision: before.revision,
+        input: TableTransportInput::Text {
+            text: "How do I roll?".into(),
+        },
+    };
+    let baseline = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mirror_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let mirror = CampaignRuntime::from_content_root(mirror_pool.clone(), content());
+    mirror.restore_campaign(&baseline).await.unwrap();
+    let host_view = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let choices = &host_view
+        .tactical
+        .as_ref()
+        .unwrap()
+        .continuation
+        .as_ref()
+        .unwrap()
+        .choices;
+    assert_eq!(choices.len(), 3);
+    let hidden = choices
+        .iter()
+        .find(|choice| choice.label.contains("Unseen wolf"))
+        .expect("actual hidden wolf save");
+    let selection = TableTransportRequest {
+        version: TABLE_TRANSPORT_VERSION,
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        channel: TableTransportChannel::Host,
+        revision: host_view.revision,
+        input: TableTransportInput::SelectWork {
+            handle: hidden.handle,
+        },
+    };
+    let selected = f
+        .runtime
+        .submit_presented_table(selection.clone())
+        .await
+        .unwrap();
+    assert_eq!(
+        f.runtime
+            .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap(),
+        before
+    );
+    let host_view = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let roll = host_view.roll.as_ref().unwrap();
+    assert_eq!(roll.roller, Some(actors[2]));
+    assert_eq!(
+        roll.dice,
+        vec![DieSpec {
+            count: 1,
+            sides: 20
+        }]
+    );
+    let reported = TableTransportRequest {
+        version: TABLE_TRANSPORT_VERSION,
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        channel: TableTransportChannel::Host,
+        revision: host_view.revision,
+        input: TableTransportInput::Action(Box::new(action(TacticalAction::SubmitRoll {
+            result: RollResult {
+                request_id: roll.id,
+                source: RollSource::Physical,
+                dice: vec![DieResult {
+                    sides: 20,
+                    value: 1,
+                }],
+            },
+        }))),
+    };
+    let accepted = f
+        .runtime
+        .submit_presented_table(reported.clone())
+        .await
+        .unwrap();
+    let after = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert_eq!(
+        after, before,
+        "both accepted private commands are absent from every player DTO field"
+    );
+    assert_eq!(
+        mirror
+            .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap(),
+        after
+    );
+    let advanced = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(
+        advanced.event_journal.len(),
+        baseline.event_journal.len() + 2
+    );
+    let final_host = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    assert_eq!(
+        final_host
+            .tactical
+            .unwrap()
+            .continuation
+            .unwrap()
+            .choices
+            .len(),
+        2
+    );
+    // The original revision remains usable: no stale-head oracle for hidden work.
+    f.runtime
+        .submit_presented_table(original_question.clone())
+        .await
+        .unwrap();
+    mirror
+        .submit_presented_table(original_question)
+        .await
+        .unwrap();
+    let restored = CampaignRuntime::from_content_root(
+        open_sqlite("sqlite::memory:").await.unwrap(),
+        content(),
+    );
+    restored.restore_campaign(&advanced).await.unwrap();
+    assert_eq!(
+        restored
+            .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap(),
+        before
+    );
+    assert_eq!(
+        restored.submit_presented_table(selection).await.unwrap(),
+        selected
+    );
+    assert_eq!(
+        restored.submit_presented_table(reported).await.unwrap(),
+        accepted
+    );
+    mirror_pool.close().await;
+}

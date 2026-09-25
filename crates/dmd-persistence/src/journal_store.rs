@@ -266,6 +266,33 @@ pub async fn commit_campaign_transition_with_session(
     resolution_explanation: &str,
     session_change: Option<&crate::SessionChange>,
 ) -> Result<CommitReceipt, JournalStoreError> {
+    let mut transaction = pool.begin().await?;
+    let receipt = commit_campaign_transition_in_transaction(
+        &mut transaction,
+        command_meta,
+        command_payload,
+        next_state,
+        events,
+        resolution_explanation,
+        session_change,
+    )
+    .await?;
+    transaction.commit().await?;
+    Ok(receipt)
+}
+
+/// Compose authoritative acceptance with application presentation/idempotency records.
+/// The caller owns the transaction and must roll it back on any error. This function
+/// neither commits nor obtains another connection, including for single-connection pools.
+pub async fn commit_campaign_transition_in_transaction(
+    transaction: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    command_meta: &CommandMeta,
+    command_payload: &SerializedRecord,
+    next_state: &CampaignState,
+    events: &[EncodedPendingEvent],
+    resolution_explanation: &str,
+    session_change: Option<&crate::SessionChange>,
+) -> Result<CommitReceipt, JournalStoreError> {
     ensure_supported_state(next_state)?;
     if command_meta.campaign_id != next_state.campaign_id() {
         return Err(JournalStoreError::CampaignMismatch);
@@ -280,14 +307,13 @@ pub async fn commit_campaign_transition_with_session(
     let next_state_json = next_state
         .encode_json()
         .map_err(|error| JournalStoreError::StateSerialization(error.to_string()))?;
-    let mut transaction = pool.begin().await?;
     let campaign_id = command_meta.campaign_id.0.to_string();
 
     let current_row = sqlx::query(
         "SELECT campaign_id, schema_version, applied_event_sequence, state_json FROM campaign_state_current WHERE campaign_id = ?",
     )
     .bind(&campaign_id)
-    .fetch_optional(&mut *transaction)
+    .fetch_optional(&mut **transaction)
     .await?;
     let Some(current_row) = current_row else {
         return Err(JournalStoreError::StateNotInitialized);
@@ -298,12 +324,12 @@ pub async fn commit_campaign_transition_with_session(
         "SELECT COUNT(*) AS event_count, COALESCE(MAX(sequence), 0) AS max_sequence FROM event_journal WHERE campaign_id = ?",
     )
     .bind(&campaign_id)
-    .fetch_one(&mut *transaction)
+    .fetch_one(&mut **transaction)
     .await?;
     verify_journal_head(&current_state, &head)?;
     let no_pending_events = HashSet::new();
     validate_state_event_references(
-        &mut transaction,
+        transaction,
         command_meta.campaign_id,
         &current_state,
         &no_pending_events,
@@ -318,8 +344,7 @@ pub async fn commit_campaign_transition_with_session(
     }
 
     validate_command_authority(&current_state, command_meta)?;
-    crate::session_store::validate_table_session_projection(&mut transaction, &current_state)
-        .await?;
+    crate::session_store::validate_table_session_projection(transaction, &current_state).await?;
     if let Some(change) = session_change {
         let changed_id = match change {
             crate::SessionChange::Start { session } => session.id,
@@ -331,7 +356,7 @@ pub async fn commit_campaign_transition_with_session(
             ));
         }
         crate::session_store::apply_session_change(
-            &mut transaction,
+            transaction,
             command_meta.issuer,
             &current_state,
             next_state,
@@ -339,13 +364,13 @@ pub async fn commit_campaign_transition_with_session(
         )
         .await?;
     }
-    crate::session_store::validate_table_session_projection(&mut transaction, next_state).await?;
-    validate_session(&mut transaction, command_meta).await?;
+    crate::session_store::validate_table_session_projection(transaction, next_state).await?;
+    validate_session(transaction, command_meta).await?;
 
     let duplicate_command =
         sqlx::query_scalar::<_, String>("SELECT campaign_id FROM command_audit WHERE id = ?")
             .bind(command_meta.id.0.to_string())
-            .fetch_optional(&mut *transaction)
+            .fetch_optional(&mut **transaction)
             .await?;
     if duplicate_command.is_some() {
         return Err(JournalStoreError::DuplicateCommandId(command_meta.id));
@@ -378,13 +403,13 @@ pub async fn commit_campaign_transition_with_session(
     }
 
     let pending_ids = event_positions.keys().copied().collect::<HashSet<_>>();
-    let existing_pending = load_existing_event_metadata(&mut transaction, &pending_ids).await?;
+    let existing_pending = load_existing_event_metadata(transaction, &pending_ids).await?;
     if let Some(event_id) = existing_pending.keys().next() {
         return Err(JournalStoreError::EventAlreadyExists(*event_id));
     }
 
     validate_state_event_references(
-        &mut transaction,
+        transaction,
         command_meta.campaign_id,
         next_state,
         &pending_ids,
@@ -397,7 +422,7 @@ pub async fn commit_campaign_transition_with_session(
         .filter(|event_id| !event_positions.contains_key(event_id))
         .collect::<HashSet<_>>();
     let external_cause_metadata =
-        load_existing_event_metadata(&mut transaction, &external_causes).await?;
+        load_existing_event_metadata(transaction, &external_causes).await?;
 
     for (index, event) in events.iter().enumerate() {
         let child_sequence = sequence_at(current_state.applied_event_sequence, index)?;
@@ -443,10 +468,9 @@ pub async fn commit_campaign_transition_with_session(
     .bind(&next_state_json)
     .bind(&campaign_id)
     .bind(sequence_to_i64(current_state.applied_event_sequence)?)
-    .execute(&mut *transaction)
+    .execute(&mut **transaction)
     .await?;
     if updated.rows_affected() != 1 {
-        transaction.rollback().await?;
         return Err(JournalStoreError::ConcurrentWrite);
     }
 
@@ -475,7 +499,7 @@ pub async fn commit_campaign_transition_with_session(
     .bind(command_payload.json())
     .bind(resolution_explanation)
     .bind(sequence_to_i64(target_sequence)?)
-    .execute(&mut *transaction)
+    .execute(&mut **transaction)
     .await?;
 
     for (index, event) in events.iter().enumerate() {
@@ -501,7 +525,7 @@ pub async fn commit_campaign_transition_with_session(
         .bind(event.payload.kind())
         .bind(i64::from(event.payload.schema_version()))
         .bind(event.payload.json())
-        .execute(&mut *transaction)
+        .execute(&mut **transaction)
         .await?;
 
         for (ordinal, cause) in event.caused_by_event_ids.iter().enumerate() {
@@ -514,12 +538,10 @@ pub async fn commit_campaign_transition_with_session(
             .bind(event.id.0.to_string())
             .bind(cause.0.to_string())
             .bind(ordinal)
-            .execute(&mut *transaction)
+            .execute(&mut **transaction)
             .await?;
         }
     }
-
-    transaction.commit().await?;
 
     Ok(CommitReceipt {
         command_id: command_meta.id,
@@ -968,7 +990,7 @@ fn parse_optional_play_session(
         .transpose()
 }
 
-fn encode_issuer(issuer: CommandIssuer) -> (&'static str, Option<String>) {
+pub(crate) fn encode_issuer(issuer: CommandIssuer) -> (&'static str, Option<String>) {
     match issuer {
         CommandIssuer::Player(player_id) => ("player", Some(player_id.0.to_string())),
         CommandIssuer::System => ("system", None),
@@ -990,7 +1012,7 @@ fn decode_issuer(kind: &str, player_id: Option<&str>) -> Result<CommandIssuer, J
     }
 }
 
-fn encode_agent(agent: Option<AgentRef>) -> (Option<&'static str>, Option<String>) {
+pub(crate) fn encode_agent(agent: Option<AgentRef>) -> (Option<&'static str>, Option<String>) {
     match agent {
         Some(AgentRef::Entity(entity_id)) => (Some("entity"), Some(entity_id.0.to_string())),
         Some(AgentRef::Faction(faction_id)) => (Some("faction"), Some(faction_id.0.to_string())),

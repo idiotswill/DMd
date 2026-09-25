@@ -79,7 +79,7 @@
     {#if tactical.continuation.choices.length}
       <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
         <p>{tactical.continuation.host_adjudication?'The host has authority to order these consequences. Individual saves and optional responses stay with their controllers.':'These consequences occur at the same time. Choose their order for this turn.'}</p>
-        {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{occurrence:choice.occurrence}})}>{choice.label} · {index+1}</button>{/each}
+        {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{handle:choice.handle}})}>{choice.label} · {index+1}</button>{/each}
       </fieldset>
     {:else}<p>Resolve the pending consequence before continuing the turn.</p>{/if}
   {/if}
