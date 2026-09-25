@@ -55,6 +55,7 @@ export type TacticalAction =
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
+  | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { occurrence: number } }
@@ -78,6 +79,7 @@ export interface TacticalView {
   casting_options?: CastingOptions | null;
   movement_options?: MovementOptions | null;
   opportunity?: OpportunityView | null;
+  liquid_landing?: { actor: Id } | null;
   attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }

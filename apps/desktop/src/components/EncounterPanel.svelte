@@ -6,6 +6,7 @@
   import CastingForm from './CastingForm.svelte';
   import MovementForm from './MovementForm.svelte';
   import OpportunityForm from './OpportunityForm.svelte';
+  import LiquidLandingForm from './LiquidLandingForm.svelte';
   let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -48,6 +49,9 @@
   {/if}
   {#if tactical.opportunity && (host || actor===tactical.opportunity.actor)}
     {#key `${host}:${player}:${actor}:${tactical.opportunity.actor}:${tactical.opportunity.target.actor}`}<OpportunityForm opportunity={tactical.opportunity} disabled={disabled||pendingRoll} {onAction}/>{/key}
+  {/if}
+  {#if tactical.liquid_landing && (host || actor===tactical.liquid_landing.actor)}
+    <LiquidLandingForm disabled={disabled||pendingRoll} {onAction}/>
   {/if}
   {#if tactical.attack_decision && (host || actor===tactical.attack_decision.actor)}
     <fieldset disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>

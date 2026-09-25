@@ -42,7 +42,7 @@ forged fall/provenance exports and no partial restore writes.
   action variants, audit collectors, decoder guards or fixture fields.
 - Only the falling actor's bound player or authorized host receives usable choices;
   declined/accepted choice is durable and disappears after resolution.
-- Physical/digital raw input uses the existing application dice boundary and returns
+- Physical raw input uses the existing table dice boundary and returns
   the same recorded result on same-request retry, including after process restart.
 - Actual landing/Fell receipt/vitality/concentration state and journal match after
   fresh SQLite import and deterministic continuation; tampering fails before writes.
@@ -60,3 +60,43 @@ resolve source-compatible integration conflicts, inspect current table continuat
 projection/form patterns, implement the smallest consistent owned decision UI and
 origin collector, then add real SQLite recovery regressions. Preserve any failed test
 assumptions and corrections in the verification evidence rather than weakening checks.
+
+
+## Implementation checkpoint (backend verification pending)
+
+The seven reviewed source commits are integrated through `f81922b`. Conflicts were
+historical execution-plan overlap and additive `CreatureAttack`/`ChooseLiquidLanding`
+action/dispatch arms; both source actions and the newer parent evidence were preserved.
+The sole subsequent rules change adds `falls: vec![]` to the newer source creature
+attack constructor, preserving the same transparent wire representation.
+
+`TableTacticalView.liquid_landing` exposes only the controlled falling actor to that
+player or the host. The stateless form offers Athletics, Acrobatics, or decline, with
+no selected default, geometry, source IDs, target or difficulty supplied by the client.
+The authoritative saved stage derives the choice owner and Reaction. Concurrent-work
+labels remain generic for another actor; ordering buttons stay suppressed while an
+owned liquid choice is selected. Typed raw labels identify the real skill or falling
+damage without changing persisted requests or source replay inputs.
+
+Restore collects original fall/movement, accepted landing-choice, retained successful
+check and completed-fall metadata. Existing earliest tactical-anchor rejection and
+semantic replay remain unchanged. The new real SQLite scenario creates a legal source
+PC, materializes equipment, authors a ledge and water through host setup, accepts real
+movement, then exercises all three choices. It closes and reopens the actual database
+at decision/raw boundaries, independently restores the export, submits identical
+commands/raw faces on both branches and compares full state, audit and typed journal
+payloads. Generated event-row IDs are intentionally independent. Malformed current and
+historical fall images must reject before campaign rows are installed. These Rust
+scenarios are written but NOT YET COMPILED OR PASSED.
+
+Frontend evidence on the implementation source tree: all 37 tests passed (including
+both new landing interaction/privacy/disabled-state cases), Svelte check reported zero
+errors/warnings, and Vite production build passed. The initial offline dependency
+installation lacked one lockfile-pinned cache tarball; ordinary `npm ci --ignore-scripts`
+succeeded without changing the lockfile. Rust formatting and diff checks pass.
+
+Next: receive the serialized compiler after parent correction verification and the
+source weapon author, run focused table falling tests plus appropriate existing table
+coverage and strict Clippy, correct any evidenced defects, obtain independent exact
+review and hand the verified commit to the parent. No backend, native desktop, complete
+combat or Gate 4 acceptance claim is made by this checkpoint.

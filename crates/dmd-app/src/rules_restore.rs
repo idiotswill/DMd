@@ -746,6 +746,31 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                for fall in &resolution.falls {
+                    origins.push(&fall.origin);
+                    if let dmd_domain::TacticalFallCause::MovementEnd { movement, .. } = &fall.cause
+                    {
+                        origins.push(movement);
+                    }
+                    match &fall.stage {
+                        dmd_domain::TacticalFallStage::LandingCheck { accepted_by, .. } => {
+                            origins.push(accepted_by)
+                        }
+                        dmd_domain::TacticalFallStage::Damage { landing } => {
+                            origins.extend(landing.as_ref().map(|landing| &landing.accepted_by))
+                        }
+                        dmd_domain::TacticalFallStage::Complete {
+                            landing,
+                            resolved_by,
+                            ..
+                        } => {
+                            origins.extend(landing.as_ref().map(|landing| &landing.accepted_by));
+                            origins.push(resolved_by);
+                        }
+                        dmd_domain::TacticalFallStage::Queued
+                        | dmd_domain::TacticalFallStage::LandingChoice => {}
+                    }
+                }
                 for record in &resolution.casts {
                     origins.extend([&record.cast.plan.origin, &record.cast.last_operation]);
                     origins.extend(

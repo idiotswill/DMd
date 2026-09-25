@@ -286,6 +286,13 @@ pub struct TableTacticalView {
     pub attack_decision: Option<TableAttackDecision>,
     pub movement_options: Option<TableMovementOptions>,
     pub opportunity: Option<TableOpportunityView>,
+    /// Only the falling actor's controller or host receives this Reaction choice.
+    pub liquid_landing: Option<TableLiquidLandingView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableLiquidLandingView {
+    pub actor: EntityId,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

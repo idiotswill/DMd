@@ -20,6 +20,10 @@ pub(super) fn continuation(
     let choices = if resolution.pending.is_none()
         && resolution.failed_save.is_none()
         && resolution.legendary_window.is_none()
+        && !resolution
+            .falls
+            .iter()
+            .any(|fall| fall.stage == TacticalFallStage::LandingChoice)
     {
         resolution
             .frames
@@ -70,6 +74,15 @@ pub(super) fn continuation(
                                     .find(|record| record.cast.plan.occurrence == *cast)
                                     .map(|record| record.cast.plan.choice.actor),
                                 "Spell consequence",
+                            ),
+                            TacticalWorkKind::BeginFall { fall }
+                            | TacticalWorkKind::LiquidLandingCheck { fall }
+                            | TacticalWorkKind::FallDamage { fall } => (
+                                resolution
+                                    .falls
+                                    .get(usize::from(*fall))
+                                    .map(|fall| fall.actor),
+                                "Falling consequence",
                             ),
                             TacticalWorkKind::EndOccupiedSpace { actor } => {
                                 (Some(*actor), "Resolve occupied space")
@@ -242,6 +255,7 @@ mod tests {
             attack: None,
             movement: None,
             casts: vec![],
+            falls: vec![],
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);

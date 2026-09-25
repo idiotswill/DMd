@@ -217,6 +217,16 @@ pub(crate) fn view(
             .filter(|window| host || own.contains(&window.reactor))
             .map(|window| movement::opportunity(state, window))
             .transpose()?,
+        liquid_landing: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| {
+                resolution
+                    .falls
+                    .iter()
+                    .find(|fall| fall.stage == TacticalFallStage::LandingChoice)
+            })
+            .filter(|fall| host || own.contains(&fall.actor))
+            .map(|fall| crate::TableLiquidLandingView { actor: fall.actor }),
         attack_decision: flow
             .and_then(|flow| flow.resolution.as_ref())
             .and_then(|resolution| resolution.attack.as_ref())
