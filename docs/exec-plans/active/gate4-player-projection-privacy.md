@@ -1,5 +1,8 @@
 # Gate 4 durable player projection protocol
 
+Status: source verified; final evidence-head checks, protected merge and post-merge
+verification pending. PR35 now targets current main172a15a.
+
 Writer: root (taken over after the supporting agent reached its usage limit).
 Original writer: environment_audit. Branch `codex/gate4-player-projection-privacy`, base
 `9fd73da`. Root owns canonical integration and PRs; area owns combat ordering and
@@ -276,6 +279,25 @@ All six protocol CI checks passed on c399a781be4a9da1ee4e75311c9f92f0b4418d4a:
 Linux36140154092 (640 Rust tests), Windows36140154128 (642 native Rust tests,
 MSRV, frontend check/tests and fresh release/offline installer). Existing local
 55-test frontend evidence still applies to its unchanged frontend tree; a direct
-diff from a84f8d4 confirms equality. Full local canonical verification is running
-on this code, with one compiler job. Final exact-head checks/review and merge remain
-required; CI on c399 is not claimed as the final documentation/integration head.
+diff from a84f8d4 confirms equality. Full local `./scripts/verify` passed on this
+code:639 GNU Rust tests, strict workspace all-target Clippy, formatting/check and
+both guards (`tooling/pr35-canonical-c399.log`). The command began at c399 and
+finished after the docs/ancestry reconciliationee0a9c9; a direct diff proves the
+entire crates/apps/content/Cargo/scripts/tests/workflow trees remained identical.
+
+The earlier independent complete backend/history/transaction review and separate
+IPC/UI review were clear. Root reviewed the later error-classification fix, area
+fixture cleanup and final docs/ancestry delta. Supporting reviewers remain quota-
+blocked; these last passes are root review, not a claimed independent signoff.
+This final evidence update changes documentation only. Next: inspect its complete
+delta, push and require all six checks on the exact final head; merge with expected-
+head protection, fetch full-tree parity and require post-merge checks. Continue
+Gate4 after this bounded protocol slice; no reaction or packaged-gate acceptance
+is inferred from it.
+# Merged protocol evidence
+
+Finaldc0baad514502e7c0897e5b9ec261002ad90a95c passed all six exact-head checks
+(Linux36146198870; Windows36146198908). PR35 merged with expected-head protection
+as c9b82072b6bfd93455bdab2a7712dd0352088d93. Fresh fetch verified complete tree
+equality to the reviewed head. Post-merge checks are running; they are not yet
+claimed as passing. The implementation and canonical evidence below remain valid.
