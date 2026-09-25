@@ -94,5 +94,10 @@ The actual output is retained outside the repository at
 `research/gate4-charge-first-tests.txt`. Strict all-target domain/rules Clippy also
 passes (`cargo clippy --locked -p dmd-domain -p dmd-rules --all-targets -- -D warnings`),
 with output at `research/gate4-charge-clippy.txt`; formatting and diff checks pass.
-Independent source review is still pending. Root owns the application origin audit,
-production UI/SQLite integration, canonical verification and gate acceptance.
+The movement author independently reviewed exact clean `2a16e37`, including the
+pinned SRD page, source admission/proof lifecycle and all ten new test cases, and
+reported no remaining bounded source, authority or replay finding. That review did
+not rerun the builds; the executed evidence above is the author's verification.
+Root owns the application origin audit, production UI/SQLite integration, canonical
+verification and gate acceptance. This bounded source slice is ready for integration;
+the remaining Gate4 obligations above are unchanged.
