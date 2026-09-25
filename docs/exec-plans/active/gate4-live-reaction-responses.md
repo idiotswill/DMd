@@ -57,3 +57,11 @@ The own-turn unarmed slice preserves original Opportunity attack reconstruction.
 At the new live-response execution boundary, apply current armor-training penalties
 to fresh unarmed opportunity attacks while retaining old accepted interpretation.
 Add actual source/ownership/replay cases; this remains Gate4 source fidelity work.
+
+Compatibility review: the existing journaled UpgradeExecution variant must keep its
+historical Legacy-to-ReactionsV1 result. Do not repoint that old accepted command to
+a newer default. Introduce a distinct explicit upgrade request for live responses,
+with a retained target version, and preserve both earlier continuation allowlists,
+including Savage Attacker's two-set submission. Capture a genuine ReactionsV1 save
+before changing semantics; a fixture regenerated with the new executor cannot prove
+that earlier accepted attacks avoid newly introduced reaction pauses.

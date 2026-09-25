@@ -564,6 +564,7 @@ fn validate_live_execution(
         action,
         TacticalAction::UpgradeExecution
             | TacticalAction::SubmitRoll { .. }
+            | TacticalAction::SubmitSavageAttacker { .. }
             | TacticalAction::SubmitRollWithInspiration { .. }
             | TacticalAction::ProposeInitiativeTie { .. }
             | TacticalAction::AcceptInitiativeTie { .. }

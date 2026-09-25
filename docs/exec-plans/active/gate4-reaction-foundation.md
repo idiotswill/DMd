@@ -73,3 +73,11 @@ retain both actions/forms/tests; the body attack initializes work_trace and its 
 fixture selects ReactionsV1. No runtime responses are introduced. Reconcile each
 protected main squash only after proving the imported source tree and ancestry.
 Final foundation verification must use this full composition, not earlier heads.
+
+Fresh composition review found an omitted legacy continuation: SubmitSavageAttacker
+was absent from live old-save admission, although that damage pause ships on main.
+Before changing the executor, SQLite online backup captured event14 of the genuine
+pre-foundation f9602a8 Savage test, including its original presentation history.
+Add restore/export equality, owned completion, preserved two raw sets and exact cold
+retry from that fixture, then admit this continuation without allowing new legacy
+actions. This finding must be fixed and verified before PR38 merges.
