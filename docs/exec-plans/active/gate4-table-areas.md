@@ -108,14 +108,20 @@ bounded-future pattern, fixes that test-only polling-frame issue. The focused
 passes on the default Windows stack (1 test, 30.21s), including the genuine player
 save and source concentration cold resumes, every mirrored accepted command,
 exact retries and semantic forged-export rejection. The stack limit, production
-functions and assertions are unchanged. Broader app/strict-lint verification
-remains pending; no native acceptance is claimed.
+functions and assertions are unchanged. The subsequent full `cargo test -p
+dmd-app` passes all65 tests (10 unit,22 rules runtime,9 runnable campaign,21 table
+loop,3 recovery), including this scenario again on the default stack. Strict
+`cargo clippy -p dmd-domain -p dmd-rules -p dmd-app --all-targets -- -D warnings`
+also passes. These checks ran against d54f38c; this final update changes evidence
+only. Rust fmt/diff checks pass. No native acceptance is claimed.
 Environment_audit independently reviewed the consent/ordering boundary and found
-no blocker. Full application exact-head review and tests remain pending.
+no blocker.
 Rules_architecture's complete app source review found no production blocker and
 requested the deeper SQLite continuation evidence included in the focused pass.
 The same reviewer inspected the bounded legal-grid/phase-pinning correction and
-confirmed that it preserves the source commands, assertions and default stack.
+confirmed that it preserves the source commands, assertions and default stack,
+including exact3c8630e delta review. Source remains unchanged after the complete
+application review; final evidence-only review and root integration follow.
 
 The zero-card contract does not claim protocol-wide count noninterference. Current
 numeric event heads and one generic party transcript entry per accepted hidden
@@ -124,8 +130,9 @@ protocol fix: persisted audience-safe revisions and historical presentation,
 atomic stale/retry admission, and a private ordering option preserving controller
 agency. Removing labels or using a token that rotates on every hidden command is
 not sufficient. Native/private-count acceptance remains pending that work.
-Next: the compiler was released to the training slice after the focused pass.
-Coordinate the broader app/strict-lint checks with that slice and the protocol
-writer, obtain final exact-head delta review, and hand the coherent tree to root.
+Next: the compiler was released to the protocol writer after the full pass. Obtain
+final evidence-only review and hand the coherent tree to root for integration,
+canonical verification and the eventual bounded main-branch delivery. This plan
+does not claim main or packaged acceptance from isolated worktree verification.
 Remaining Charmed-area adjudication, full source catalogs, other effect families,
 and real packaged/native evidence are unchanged from the active Gate4 plans.
