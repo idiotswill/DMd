@@ -129,5 +129,12 @@ The first draft CI at d3e3ed3 caught an undeclared UUID dependency used by pure
 Shield option previews (Linux stable/MSRV jobs 108248022555/108248022760). The
 workspace already pins UUID; declare it directly in dmd-rules and regenerate the
 lock edge, then rerun the actual compiler checks. No failed check is waived.
+The same draft's Windows frontend step passed 72 tests, zero static errors/warnings
+and a 137-module build (job 108248022369); its Rust failure was the same missing
+dependency. Follow-up 53d1197 compiler jobs 108249026632/108249026705 exposed an
+unnecessary inferred Serde Default bound on optional hit keys and one test using
+set removal on a vector. Explicit deserialization bounds preserve absent fields
+without inventing default capabilities; the mutation test now removes by value.
+Runtime and final-head acceptance remain pending.
 Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.

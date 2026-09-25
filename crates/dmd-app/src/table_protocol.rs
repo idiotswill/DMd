@@ -270,6 +270,7 @@ pub struct TableCreatureView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
     pub encounter_id: EncounterId,
     /// Omitted for legacy flows so their historical presentation bytes remain

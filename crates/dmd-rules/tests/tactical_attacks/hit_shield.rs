@@ -914,7 +914,7 @@ fn completed_shield_damage_pause_rejects_forged_effect_source_cost_original_fact
                     .as_mut()
                     .unwrap()
                     .reactions_spent
-                    .remove(&f.actors[1]);
+                    .retain(|actor| *actor != f.actors[1]);
             }
             7 => {
                 state
