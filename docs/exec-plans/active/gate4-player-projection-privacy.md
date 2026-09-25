@@ -294,3 +294,10 @@ delta, push and require all six checks on the exact final head; merge with expec
 head protection, fetch full-tree parity and require post-merge checks. Continue
 Gate4 after this bounded protocol slice; no reaction or packaged-gate acceptance
 is inferred from it.
+# Merged protocol evidence
+
+Finaldc0baad514502e7c0897e5b9ec261002ad90a95c passed all six exact-head checks
+(Linux36146198870; Windows36146198908). PR35 merged with expected-head protection
+as c9b82072b6bfd93455bdab2a7712dd0352088d93. Fresh fetch verified complete tree
+equality to the reviewed head. Post-merge checks are running; they are not yet
+claimed as passing. The implementation and canonical evidence below remain valid.

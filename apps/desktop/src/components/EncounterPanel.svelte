@@ -14,6 +14,7 @@
   }=$props();
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
+  const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
     const order=[...(tieOrder[total] ?? actors)];const to=index+step;
     if(to<0||to>=order.length)return;[order[index],order[to]]=[order[to],order[index]];
@@ -38,7 +39,9 @@
   {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
   {#if tactical.phase==='active' && tactical.budget && (host || actor===tactical.active_actor)}
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
-    <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
+    <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button>
+      {#if activeCharacter?.second_wind_remaining != null}<button disabled={tactical.budget.bonus_action_spent||activeCharacter.second_wind_remaining===0} onclick={()=>onAction('SecondWind')}>Second Wind · {activeCharacter.second_wind_remaining} uses</button>{/if}
+      <button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
   {/if}
   {#if tactical.area_options && (host || actor===tactical.area_options.actor)}
     {#key `${host}:${player}:${actor}:${tactical.area_options.actor}`}<AreaForm options={tactical.area_options} {host} {player} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}

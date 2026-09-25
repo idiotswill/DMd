@@ -537,6 +537,25 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
         }
         return Ok(());
     }
+    if matches!(event.action, TableAction::Adjudicate { .. })
+        && let Some(nested) = &event.tactical_event
+    {
+        // The original owned declaration is authenticated by semantic table replay.
+        // Even an opaque anchor may not inject unrelated tactical authority here.
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || nested.meta != event.meta
+            || nested.action != TacticalAction::SecondWind
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Second Wind adjudication disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
     if event.tactical_event.is_some() {
         return Err("non-tactical table action contains unsolicited encounter authority".into());
     }
@@ -1014,7 +1033,10 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })
+                            || (matches!(event.action, TableAction::Adjudicate { .. })
+                                && event.tactical_event.as_ref().is_some_and(|nested|
+                                    nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())
