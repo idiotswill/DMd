@@ -13,7 +13,7 @@ describe('source Savage Attacker dice',()=>{
     await user.click(screen.getByLabelText('Use Savage Attacker (once per turn)'));
     await user.type(screen.getByLabelText('Second weapon die 1 · d6'),'6');
     await user.type(screen.getByLabelText('Second weapon die 2 · d6'),'4');
-    expect(screen.queryByLabelText('Second weapon die 3 · d8')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Second weapon die 3 · d8')).toBeNull();
     await user.click(screen.getByLabelText('Spend Heroic Inspiration to reroll one die'));
     await user.selectOptions(screen.getByLabelText('Die to reroll'),'First:2');
     await user.type(screen.getByLabelText('Inspiration replacement'),'8');
@@ -30,7 +30,7 @@ describe('source Savage Attacker dice',()=>{
     render(RollForm,{request:{...request,dice:[{count:1,sides:6}]},savageOption:{weapon_dice:1,heroic_inspiration:false},onSubmit:normal,onSavage:savage});
     await user.type(screen.getByLabelText('Die 1 · d6'),'3');
     await user.click(screen.getByLabelText('Use Savage Attacker (once per turn)'));
-    expect(screen.queryByLabelText('Spend Heroic Inspiration to reroll one die')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('Spend Heroic Inspiration to reroll one die')).toBeNull();
     await user.click(screen.getByLabelText('Use Savage Attacker (once per turn)'));
     await user.click(screen.getByRole('button',{name:'Report these faces'}));
     expect(normal).toHaveBeenCalledExactlyOnceWith([3]);expect(savage).not.toHaveBeenCalled();

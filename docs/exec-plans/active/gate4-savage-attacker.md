@@ -76,3 +76,11 @@ opaque dice, independent restored continuation, cold exact retry and current-sta
 forgeries that remain structurally valid but contradict the journal. Two roll-form
 cases and one full table/outbox retry case exercise the actual source controls.
 These tests remain unrun pending the serialized local slot and corrected CI.
+
+Native36146302726 on af4c4cf stopped at frontend static checking: the new table test
+had one extra closing brace and the new component test used a matcher not installed
+in this project. Split the expected raw payload into a named object and use the
+existing null assertion for absent controls. Preserve the assertions and actual UI
+behavior. Add explicit source-spell and fixed unarmed availability/refusal checks
+to their existing genuine attack regressions. Fresh CI and all local checks remain
+required; neither this correction nor the new recovery scenario is yet verified.

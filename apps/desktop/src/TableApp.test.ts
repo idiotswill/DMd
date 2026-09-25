@@ -29,9 +29,10 @@ describe('durable UI retry',()=>{
     await user.click(screen.getByRole('button',{name:'Report these faces'}));
     await screen.findByText('Delivery uncertain.');
     const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!) as UnconfirmedRequest;
-    expect(saved).toMatchObject({kind:'action',request:{revision:view.revision,action:{Tactical:{action:{SubmitSavageAttacker:{roll:{weapon_dice:2,chosen:'First',inspiration:null,
+    const expectedRoll={weapon_dice:2,chosen:'First',inspiration:null,
       first:{request_id:'opaque-damage',source:'Physical',dice:[{sides:4,value:1},{sides:4,value:2}]},
-      second:{request_id:'opaque-damage',source:'Physical',dice:[{sides:4,value:3},{sides:4,value:4}]}}}}}}});
+      second:{request_id:'opaque-damage',source:'Physical',dice:[{sides:4,value:3},{sides:4,value:4}]}};
+    expect(saved).toMatchObject({kind:'action',request:{revision:view.revision,action:{Tactical:{action:{SubmitSavageAttacker:{roll:expectedRoll}}}}}});
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
     await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
     expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
