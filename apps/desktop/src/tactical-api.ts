@@ -61,7 +61,7 @@ export type TacticalAction =
   | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
-  | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { occurrence: number } }
+  | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
   | { Begin: { combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
@@ -74,7 +74,7 @@ export interface TacticalView {
   observers: { observer: Id; position: Point | null; contacts: { entity_id: Id; label: string | null; position: Point; status: 'Seen' | 'Located' | 'Remembered'; modality: string }[]; cells: { position: Point; difficult: boolean; blocked: boolean; currently_seen: boolean }[] }[];
   initiative: { actor: Id; label: string; total: number | null }[];
   ties: InitiativeTie[];
-  continuation: { actor: Id; host_adjudication: boolean; choices: { occurrence: number; label: string }[] } | null;
+  continuation: { actor: Id; host_adjudication: boolean; choices: { handle: Id; label: string }[] } | null;
   may_fail_save: Id | null;
   legendary_resistance: Id | null;
   legendary_action: Id | null;

@@ -1,16 +1,15 @@
 //! Local input boundary: the renderer selects a channel; this adapter derives authority.
 //! Gameplay, durable acknowledgement and content validation stay in `dmd-app`.
 
+#[cfg(test)]
+use dmd_domain::{AgentRef, CharacterId, CommandIssuer, CommandMeta, PlayerId};
 use std::path::PathBuf;
 
 use dmd_app::{
     CampaignRuntime, CharacterCreationOptions, RunnableCampaignError, TableAction,
-    TableCampaignSummary, TableReceipt, TableTextResult, TableView, TableViewer,
+    TableCampaignSummary, TablePresentedView, TableViewer,
 };
-use dmd_domain::{
-    AgentRef, CampaignId, CharacterId, CommandId, CommandIssuer, CommandMeta, PlaySessionId,
-    PlayerId, TableContract, TableSituation,
-};
+use dmd_domain::{CampaignId, CommandId, PlaySessionId, TableContract, TableSituation};
 use serde::{Deserialize, Serialize};
 use tauri::{Manager, State};
 use tokio::sync::OnceCell;
@@ -74,6 +73,7 @@ impl DesktopError {
         Self { code: "local_storage", message: "DMd could not open its local data. Check that your user data folder is writable, then retry.".into(), retryable: true }
     }
 
+    #[cfg(test)]
     fn selection(message: &str) -> Self {
         Self {
             code: "channel_selection",
@@ -132,15 +132,7 @@ pub struct CampaignRequest {
     campaign_id: CampaignId,
 }
 
-#[derive(Deserialize)]
-#[serde(deny_unknown_fields)]
-pub enum LocalChannel {
-    Host,
-    Player {
-        player_id: PlayerId,
-        character_id: CharacterId,
-    },
-}
+pub type LocalChannel = dmd_app::TableTransportChannel;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -164,6 +156,7 @@ pub struct TableTextRequest {
     text: String,
 }
 
+#[cfg(test)]
 async fn command_meta(
     runtime: &CampaignRuntime,
     command_id: CommandId,
@@ -235,23 +228,24 @@ pub async fn desktop_list_campaigns(
 pub async fn desktop_create_campaign(
     host: State<'_, DesktopHost>,
     request: CreateCampaignRequest,
-) -> Result<TableView, DesktopError> {
-    Ok(host
-        .runtime()
-        .await?
+) -> Result<TablePresentedView, DesktopError> {
+    let runtime = host.runtime().await?;
+    runtime
         .create_table_campaign(request.id, &request.name, request.contract)
+        .await?;
+    Ok(runtime
+        .presented_table_view(request.id, TableViewer::Host)
         .await?)
 }
-
 #[tauri::command]
 pub async fn desktop_open_campaign(
     host: State<'_, DesktopHost>,
     request: OpenCampaignRequest,
-) -> Result<TableView, DesktopError> {
+) -> Result<TablePresentedView, DesktopError> {
     Ok(host
         .runtime()
         .await?
-        .table_view(request.campaign_id, request.viewer)
+        .presented_table_view(request.campaign_id, request.viewer)
         .await?)
 }
 
@@ -283,43 +277,51 @@ pub async fn desktop_host_situation(
 pub async fn desktop_table_action(
     host: State<'_, DesktopHost>,
     request: TableActionRequest,
-) -> Result<TableReceipt, DesktopError> {
-    let runtime = host.runtime().await?;
-    let meta = command_meta(
-        runtime,
-        request.command_id,
-        request.campaign_id,
-        request.expected_event_sequence,
-        request.session_id,
-        request.channel,
-    )
-    .await?;
-    Ok(runtime.execute_table(meta, request.action).await?)
+) -> Result<dmd_app::LegacyTableAcknowledgement, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .recover_legacy_table_request(dmd_app::LegacyTableRequest {
+            command_id: request.command_id,
+            campaign_id: request.campaign_id,
+            expected_event_sequence: request.expected_event_sequence,
+            session_id: request.session_id,
+            channel: request.channel,
+            input: dmd_app::LegacyTableInput::Action(Box::new(request.action)),
+        })
+        .await?)
 }
 
 #[tauri::command]
 pub async fn desktop_table_text(
     host: State<'_, DesktopHost>,
     request: TableTextRequest,
-) -> Result<TableTextResult, DesktopError> {
-    if matches!(request.channel, LocalChannel::Host) {
-        return Err(DesktopError::selection(
-            "Select a present player and their character before speaking at the table.",
-        ));
-    }
-    let runtime = host.runtime().await?;
-    let meta = command_meta(
-        runtime,
-        request.command_id,
-        request.campaign_id,
-        request.expected_event_sequence,
-        request.session_id,
-        request.channel,
-    )
-    .await?;
-    Ok(runtime.submit_table_text(meta, &request.text).await?)
+) -> Result<dmd_app::LegacyTableAcknowledgement, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .recover_legacy_table_request(dmd_app::LegacyTableRequest {
+            command_id: request.command_id,
+            campaign_id: request.campaign_id,
+            expected_event_sequence: request.expected_event_sequence,
+            session_id: request.session_id,
+            channel: request.channel,
+            input: dmd_app::LegacyTableInput::Text { text: request.text },
+        })
+        .await?)
 }
 
+#[tauri::command]
+pub async fn desktop_submit_table(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableTransportRequest,
+) -> Result<dmd_app::TableTransportResult, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .submit_presented_table(request)
+        .await?)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
