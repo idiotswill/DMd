@@ -21,6 +21,23 @@ since `8cb3084` changed only this plan and the full tree differed from main only
 this file. No independent production source was discarded. Source-control PR43 must
 still be reconciled at its reviewed checkpoint before final integrated acceptance.
 
+### Reviewed source-controller development integration
+
+On 2026-09-25 root authorized a normal development merge of independently reviewed
+PR43 checkpoint `a119d7f02ad1741d13c3b8431ec13ac7bb356d07` before that PR's verified
+main merge. This is development integration only: PR44 final acceptance and merge
+must reconcile PR43's verified main result and any subsequent corrections. Preserve
+both scopes, add the privileged `ConcludeHostilities` source-authority arm, and prove
+actual player-owned source-only aftermath attendance and continuation using the real
+Mage, controller assignment, physical initiative/cast and transport2 channel. The
+existing two source-backed scenarios and historical captures remain unchanged.
+
+The source-control writer retains the shared heavy build slot for canonical
+verification. No local compilation or frontend runs are authorized concurrently;
+integration, fixture implementation, static review and remote CI monitoring proceed.
+The immediate next action is committing this authority/design record, normally merging
+the exact reviewed checkpoint, and implementing that bounded integration regression.
+
 ## Authorized first production slice
 
 Implement durable **hostilities concluded**, retaining the same initiative cadence,
@@ -384,8 +401,189 @@ refinement is formatted and statically reviewed but its execution remains pendin
 
 Verified main `2798b6b` was merged normally as `318b62e`. The integration brings the
 four genuine legacy reaction captures and their executable corpus without changing
-any aftermath production source or UI. Final PR44 acceptance still requires PR43's
+any aftermath production source or UI. Root subsequently verified all six post-merge
+checks on literal main `2798b6b`: Linux run36188457488 passed 695 Rust tests across
+54 suites (44 table cases); Windows run36188457455 passed 697 Rust tests, 67 UI tests,
+Svelte 0/0, the 136-module frontend build, fresh executable and NSIS packaging.
+Artifact10888336544 is 231464157 bytes, SHA256
+`7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a`.
+These establish the merged prerequisite, not PR44 acceptance. Final PR44 still requires PR43's
 genuine player-owned source channel, its source-only aftermath session regression,
 canonical verification, independent final review and all six checks at the final
 exact PR head. Terminal release and new-encounter admission remain mandatory Gate4
 follow-up, not completion claims for this PR.
+
+## Proposed next slice: authenticated timing release and battlefield replacement
+
+This is **future design only**, requested by root while PR43 verification runs.
+The read-only audit used aftermath head `9405036` and its verified main baseline.
+No production code, schemas, commands or acceptance claims below are part of PR44.
+Implement on a fresh branch only after the current integration is ready; reconcile
+the latest reaction executor before assigning a new execution/history version.
+
+### Concrete boundaries in the current implementation
+
+- `tactical/initiative.rs::finish_if_agreed` starts every encounter at turn1 with an
+  empty Reaction-spent vector. `tactical/attacks/savage.rs` retains only a numeric
+  `savage_attacker_turn`; resetting to1 can deny a genuine later turn, while clearing
+  Reaction expenditure can refund a different actor before their actual own Start.
+  `tactical_budget::advance_turn` correctly restores only that next actor's Reaction.
+- `tactical/turn_validation.rs::validate` returns early for inactive phases before
+  ground-item, active source, attack/cast and movement validation. Merely setting
+  Finished and clearing timing is insufficient. `aftermath::validate` also currently
+  requires Active timing and must gain a separately authenticated released form.
+- `TacticalGroundItem` currently lives only in `TacticalFlow.ground_items`, while
+  `ItemInstance.custody` retains the location. `Scene` has no spatial item attachment.
+  Both real thrown-weapon drops and unconscious held-item drops write the flow list.
+  Replacing the flow would otherwise discard exact position and original drop cause.
+- `tactical_effects::Observe` requires a cursor for every
+  `OncePerTargetPerTurn` trigger, including Damage/ZoneContact clauses. A scan limited
+  to Turn triggers or currently effective overlap winners would miss real obligations.
+- Effect `LeaveCombat` clears only its cursor and trigger-use ledger; source
+  `LeaveCombat` clears observed-turn/window/routine cursors, preserving recharge
+  availability, limited uses and own-turn/legendary counters. Source routines must
+  therefore be rejected before invoking the helper that would clear them. Future
+  actual own Starts, not release/setup, clear own-turn and legendary expenditure.
+- Current central work requires its subject to be an active encounter participant.
+  An absolute expiry or stable-recovery deadline on an omitted actor can therefore
+  fail when a later encounter advances time. Replacing the map alone does not solve
+  offstage timing or recovery.
+- Kernel legacy guards already also check inventory/effects/recovery attachments;
+  they are not based solely on `encounter`. Preserve those attachments and guards.
+  Table source creation/equipment and battlefield forms currently assume no existing
+  encounter, so an explicit Finished setup path is required for ordinary later play.
+
+### Minimal proposed transition and durable records
+
+Use a privileged `ReleaseEncounterTiming` transition only from a concluded, fully
+settled aftermath. It is a journaled timing decision, not victory, a simulated turn,
+elapsed travel, rest, healing, pickup, dismissal or resource restoration. It performs
+no `Observe(Turn)` and advances no world time. Its accepted receipt retains original
+command metadata, encounter/scene IDs, conclusion command, clock, final actor/turn
+and execution version. Replaying the accepted action must reconstruct every field.
+
+Retain an authenticated completed-encounter epoch outside the replaceable flow.
+The preferred minimal epoch rule is a campaign-wide monotonic tactical turn number:
+the next new initiative starts at checked `previous_final_turn + 1`, while its round
+starts at1. The initial campaign still starts at1. Preserve the last-final-turn
+receipt when no live timing exists, reject reused encounter IDs and overflow, and
+validate the new Begin against that predecessor. Existing Savage/raw/recharge
+identities remain unchanged; do not rewrite past scalar turn values or old captures.
+This needs an explicit executor/history version boundary, not reinterpretation of
+old Begin events. A compact retained completion receipt is enough for the live
+high-water mark; the journal remains the complete historical command authority.
+
+For spatial custody, add an omitted-when-empty scene-space attachment with the old
+encounter ID, original scene/location, its retained battlefield geometry and accepted
+release origin. Transfer live loose-item positions into that space atomically,
+retaining item identity, exact position and original drop metadata. The release
+command authenticates the transfer; it must not replace the older drop cause.
+Custody/ownership/quantity/state and starting-grant receipts are unchanged. An item
+must have exactly one live placement across active flow and retained scene spaces;
+historical geometry is not a second HP, inventory or resource store. Validate these
+placements outside the inactive-flow early return and collect both retained origins
+in strict codec, database preflight and semantic recovery audits.
+
+Only after the derived scan below succeeds may the resolver remove central timing,
+call current effect/source LeaveCombat helpers, archive permitted spent-turn receipts,
+reset the retired flow budget and mark Finished. Keep that Finished encounter attached
+until an atomic accepted replacement installs the new encounter; do not publish an
+intermediate empty-encounter state or clear current-authority attachments.
+
+### Derived release scan, without caller overrides
+
+1. Require no table decision/roll context, raw roll, central resolution or selected
+   child work, effect ticket, cast/routine/recharge continuation, owed attack choice,
+   falling consequence, unfinished source opportunity or global
+   `CharacterFeatures.inspiration_transfer_pending`. The latter already blocks new
+   Begin and cannot be discovered only after the old cadence has been destroyed.
+   Scan actual records rather
+   than relying on one visible continuation card. A paid Attack with attacks still
+   owed cannot be discarded. All owner decisions and physical inputs remain real.
+2. Require no Ready/held spell, Dodge, Disengage or live movement continuation; no
+   legacy `AtTurn` expiry; no owner-relative expiry on either an effect or group; no
+   Turn trigger or per-target-per-turn frequency. Inspect every stored record,
+   including suppressed overlaps and offstage actors. Reject unsupported zone/spatial
+   lifecycle carry until its old-scene consequence route exists. Never dismiss or
+   weaken an effect to make the scan succeed.
+3. Require no living zero-HP unstable actor using death saves, no unreported stable
+   recovery die, and no already-due absolute expiry/recovery work. Stable/knockout
+   histories with genuine future deadlines and completed physical inputs may persist;
+   do not heal, grant a rest or reset their clocks.
+4. For this minimal first handoff, require `reactions_spent` empty. Continue actual
+   owner Starts on the retained cadence to satisfy this; do not clear the vector to
+   satisfy the check. A broader later handoff may transfer spent markers between
+   one dormant/active owner ledger, but that requires explicit provenance and cannot
+   duplicate Reaction authority. Per-rest resources, source uses, recharge availability,
+   legendary resistance and existing own-turn counters otherwise remain unchanged.
+
+Before releasing timing, derive the dependency set needed by surviving absolute
+effect/group or recovery consequences from all retained sources, targets,
+concentration owners and recovery records, not player visibility. Prove that every
+required actor is admissible in the supported subsequent timing path, using the same
+pure eligibility checks as new setup/Begin. In particular, a dead Mage's surviving
+nonconcentration Mage Armor must block this first bounded release: new initiative
+cannot admit that corpse, and no offstage expiry path exists yet. Refuse with the
+old cadence, geometry, resources and session intact; never end the effect or release
+first and discover the dead end during replacement.
+
+The initial replacement admission must recheck that set and re-include every required
+actor until the central resolver supports offstage/no-turn work. A hidden dependency
+must produce only an authorized host explanation; unrelated viewers receive no
+identity/count leakage. This is an explicit bounded first-handoff limitation, not
+permission to drop an actor, reinterpret expiry or declare full Gate4 complete.
+
+### Real setup and source lifecycle path
+
+Allow source/character setup against a validated Finished receipt, preserving the
+existing protections against duplicate starting grants and recreated source actors.
+Expose fresh battlefield preparation in the actual host UI for this state. The new
+map reuses surviving actor/item identities, requires genuine controller attendance,
+excludes dead actors from new initiative, and preserves old scene spaces. Its explicit
+geometry ruling establishes placement; it grants no elapsed travel/rest time. Original
+old accepted requests still retry their saved receipts after replacement, whereas a
+fresh command using an old revision/handle must fail without mutation.
+
+Fresh initiative remains a separate actual command with physical rolls and real tie
+decisions. Its first genuine Start can produce source recharge and reset the proper
+own-turn counters once; neither Finish, setup, reopen nor an earlier different actor's
+turn grants those benefits. Retain `CreatureRechargeRecord`/raw-roll identities from
+the prior encounter. Current source validation already binds recharge to the record's
+own encounter ID, and clearing only `observed_turn` permits a genuine later encounter
+to establish a new first Start without altering that historical evidence.
+
+### Acceptance proposal for the fresh branch
+
+- From real source Mage Armor plus spent Second Wind/source uses and ammunition,
+  complete required cadence, release, close/reopen, prepare a second scene, physically
+  roll initiative and take an actual action. Preserve HP, equipment identities,
+  concentration and the original eight-hour deadline. Expiry is measured from the
+  original cast, never from setup. Exercise real source recharge after the proper
+  first own Start, with no recharge/rest benefit at release or setup.
+- Use actual Savage Attacker in the old encounter, then exercise a distinct new
+  global turn, including an off-turn attack before the actor's own new Start. Reject
+  forged/reused epoch values. Prove a spent Reaction blocks the first bounded release
+  and only a genuine owner Start removes that blocker.
+- Drop actual equipped/thrown items, retain their original scene positions through
+  release/replacement/portable restore, and reject automatic transfer onto a new map.
+  A subsequent pickup or coordinate mapping needs its own accepted physical action;
+  preserving positions is not a claim that pickup/revisit gameplay already exists.
+- Reject release for each selected/raw/source branch, paid Ready, dying actor, active
+   and suppressed relative/Turn/per-turn-frequency effects, and unresolved recovery.
+   Include global Inspiration transfer and an actual dead Mage whose nonconcentration
+   armor still has its original future deadline; prove the failed release retains a
+   usable old cadence rather than trapping the campaign after timing is removed.
+  Reject a replacement that omits a retained deadline dependency without exposing it
+  to unauthorized viewers. Prove omitted blockers cannot be hidden by changing overlap,
+  participant lists, phase, snapshot anchors or receipt fields.
+- At release, Finished session rollover, setup, initiative/first-source pauses and
+  second-encounter actions, use actual file SQLite, portable independent continuation,
+  cold resume, exact retries and zero-write changed-body/foreign/stale refusals. Cover
+  old genuine captures unchanged, default Windows stacks, desktop controls and a
+  packaged session/restart path. Review exact head and all six CI checks before merge.
+
+Offstage/no-turn absolute work, free elapsed time, safe relative-effect rebasing for
+changed participants, live old-scene pickup/revisit and broader carried Reaction
+expenditure remain explicit receiving workstreams **inside Gate4**. They require
+their own continuation/source/authority design; the narrow release path cannot be
+used to waive them or to start Gate5.
