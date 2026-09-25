@@ -97,6 +97,31 @@ fn source_creation_derives_every_grant_and_profile_without_caller_totals() {
 }
 
 #[test]
+fn fighter_mastery_choices_cover_all_source_weapons_without_expanding_starter_shop() {
+    let choices = fighter_mastery_choices().unwrap();
+    assert_eq!(choices.len(), 38);
+    assert!(choices.windows(2).all(|pair| pair[0] < pair[1]));
+    for index in 0..choices.len() {
+        let mut selected = input();
+        selected.masteries = [
+            choices[index].clone(),
+            choices[(index + 1) % choices.len()].clone(),
+            choices[(index + 2) % choices.len()].clone(),
+        ];
+        let built = build_character(&selected, EntityId::new(), &pack()).unwrap();
+        validate_character_profile(&built.profile, &pack()).unwrap();
+        validate_character_mechanics(&built.profile, &built.mechanics, &pack()).unwrap();
+        assert_eq!(built.profile.masteries, selected.masteries);
+        assert_eq!(built.profile.equipment.len(), input().purchases.len());
+    }
+    let legacy = build_character(&input(), EntityId::new(), &pack()).unwrap();
+    assert_eq!(legacy.profile.masteries, ["club", "dagger", "shortbow"]);
+    let mut duplicate = input();
+    duplicate.masteries[1] = duplicate.masteries[0].clone();
+    assert!(build_character(&duplicate, EntityId::new(), &pack()).is_err());
+}
+
+#[test]
 fn real_choices_and_invalid_source_combinations_are_validated() {
     let mut alternate = input();
     alternate.ability_scores = [8, 15, 14, 10, 13, 12];
@@ -115,7 +140,7 @@ fn real_choices_and_invalid_source_combinations_are_validated() {
             2 => bad.fighter_skills[0] = Skill::Arcana,
             3 => bad.human_skill = Skill::Athletics,
             4 => bad.languages[0] = "thieves-cant".into(),
-            5 => bad.masteries[0] = "greatsword".into(),
+            5 => bad.masteries[0] = "invented-weapon".into(),
             6 => bad.purchases[0].quantity = 1000,
             7 => bad.shield = true,
             8 => bad.purchases[4].quantity = 1,
