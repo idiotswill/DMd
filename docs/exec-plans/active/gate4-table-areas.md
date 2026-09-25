@@ -4,7 +4,7 @@ Writer: bootstrap_audit. Branch: `codex/gate4-table-areas`, from root d046810.
 Source dependencies imported as1506062,1674d82,d9b4fa8,977a1a7, preserving the
 verified source weapon and falling integrations. The source rules final2703f96
 passed131 distinct rules tests and strict domain/rules all-target Clippy, with
-independent exact-head review. This application tree has not been compiled.
+independent exact-head review. Application verification is in progress below.
 
 ## Objective and boundaries
 
@@ -96,12 +96,26 @@ frontend tests pass; a subsequent viewer-change consent-reset strengthening also
 passes all5 area tests, static check and the mounted133-module production build.
 The added full TableApp retry case then passes all12 TableApp tests and static
 check, bringing distinct frontend coverage to44 tests (no production UI change).
-Rust fmt/diff checks pass, but Rust compilation/tests
-remain explicitly pending behind the global falling-app and shield build slots.
+Rust compilation now succeeds. All17 source-area tests and all3 tactical
+projection tests pass. The genuine SQLite case first exposed an invalid fixture
+grid coordinate (the Medium wolf was placed halfway between grid lines), corrected
+to a legal cell within the same mist and cone. Its next run completed source
+setup, malformed-export rejection, mirror restore and initial cold retry, then
+exceeded the default Windows test-thread stack during the large continuation test.
+Heap-pinning every large test phase, following the existing falling scenario's
+bounded-future pattern, fixes that test-only polling-frame issue. The focused
+`cargo test -p dmd-app --test table_loop table_area_cases:: -- --nocapture` now
+passes on the default Windows stack (1 test, 30.21s), including the genuine player
+save and source concentration cold resumes, every mirrored accepted command,
+exact retries and semantic forged-export rejection. The stack limit, production
+functions and assertions are unchanged. Broader app/strict-lint verification
+remains pending; no native acceptance is claimed.
 Environment_audit independently reviewed the consent/ordering boundary and found
 no blocker. Full application exact-head review and tests remain pending.
 Rules_architecture's complete app source review found no production blocker and
 requested the deeper SQLite continuation evidence now added but not yet run.
+The same reviewer inspected the bounded legal-grid/phase-pinning correction and
+confirmed that it preserves the source commands, assertions and default stack.
 
 The zero-card contract does not claim protocol-wide count noninterference. Current
 numeric event heads and one generic party transcript entry per accepted hidden
@@ -110,7 +124,8 @@ protocol fix: persisted audience-safe revisions and historical presentation,
 atomic stale/retry admission, and a private ordering option preserving controller
 agency. Removing labels or using a token that rotates on every hidden command is
 not sufficient. Native/private-count acceptance remains pending that work.
-Next: finish UI checks, then use the authorized compiler handoff for focused area
-rules and app/SQLite tests, fix actual failures, and run strict lint.
+Next: the compiler was released to the training slice after the focused pass.
+Coordinate the broader app/strict-lint checks with that slice and the protocol
+writer, obtain final exact-head delta review, and hand the coherent tree to root.
 Remaining Charmed-area adjudication, full source catalogs, other effect families,
 and real packaged/native evidence are unchanged from the active Gate4 plans.
