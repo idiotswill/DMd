@@ -95,7 +95,7 @@ pub(super) fn key(
         | TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
         | TacticalWorkKind::FinishAttack => {
-            return Err(prerequisite("this tactical work is not yet available"));
+            Err(prerequisite("this tactical work is not yet available"))
         }
         TacticalWorkKind::DeathSave { actor } => (TacticalRollRole::DeathSave, *actor),
         TacticalWorkKind::StableRecovery { actor, .. } => {
