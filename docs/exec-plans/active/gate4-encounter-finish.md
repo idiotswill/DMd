@@ -35,8 +35,34 @@ existing two source-backed scenarios and historical captures remain unchanged.
 The source-control writer retains the shared heavy build slot for canonical
 verification. No local compilation or frontend runs are authorized concurrently;
 integration, fixture implementation, static review and remote CI monitoring proceed.
-The immediate next action is committing this authority/design record, normally merging
-the exact reviewed checkpoint, and implementing that bounded integration regression.
+The authority/design record was committed as `cea0b14`, followed by normal merge
+`7c7ea5c` of that exact reviewed checkpoint. Manual resolutions retain both source
+selection/ownership controls and aftermath/session controls and both test sets. The
+privileged source-authority match now explicitly admits `ConcludeHostilities` as a
+host cadence decision even while a player-owned source actor is active.
+
+The third file-SQLite regression now creates an actual source Mage, activates source
+access, assigns its controller, prepares a Mage-only battlefield, physically reports
+initiative and casts source Mage Armor through transport2. It concludes and closes
+the session, rejects an absent Mage owner with no durable writes even when another
+PC is present, resumes with only the Mage owner present and no bound PC, then continues
+the actual owner turn. It retains the original armor effect/deadline, HP, inventory,
+clock and controller authority across conclusion/session changes, with cold reopen,
+portable independent continuation and exact original retries at the accepted
+boundaries. Host/foreign actor decisions and player-issued conclusion are refused.
+The original two scenarios retain transport1; the shared request helper selects
+transport2 only after genuine activation or for its explicit activation action.
+
+These integrated tests are authored, not executed. `cargo fmt --all --check` and
+`git diff --check` pass. Independent integration review is requested; local focused
+and canonical runs await the shared slot. Remote verification of prior head `9405036`
+has no reported failure: both MSRV jobs and both architecture/genericity guards pass,
+Linux Rust tests and native Windows regressions remain running after successful
+compilation/lint/frontend. Superseded results will not count as final-head acceptance.
+Next: publish the coherent draft integration for remote diagnostics, address review
+findings, reconcile verified PR43 main, then run focused and canonical verification
+when the slot is available. Review exact final head and all six CI checks before
+root's protected merge.
 
 ## Authorized first production slice
 
@@ -420,6 +446,10 @@ The read-only audit used aftermath head `9405036` and its verified main baseline
 No production code, schemas, commands or acceptance claims below are part of PR44.
 Implement on a fresh branch only after the current integration is ready; reconcile
 the latest reaction executor before assigning a new execution/history version.
+Independent read-only review identified a dead-actor deadline trap and a missing
+global Inspiration-transfer blocker. Both are explicitly covered below; the reviewer
+confirmed the revised proposal closes those findings. This is design review only,
+not evidence that any timing-release or battlefield-replacement code exists.
 
 ### Concrete boundaries in the current implementation
 

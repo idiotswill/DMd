@@ -34,18 +34,46 @@ async fn view(f: &Fixture, player: Option<usize>) -> TablePresentedView {
         .unwrap()
 }
 async fn request(f: &Fixture, player: Option<usize>, action: TableAction) -> TableTransportRequest {
-    TableTransportRequest {
-        version: TABLE_TRANSPORT_VERSION,
-        command_id: CommandId::new(),
-        campaign_id: f.campaign,
-        session_id: Some(f.session),
-        revision: view(f, player).await.revision,
-        channel: player.map_or(TableTransportChannel::Host, |i| {
+    channel_request(
+        f,
+        player.map_or(TableTransportChannel::Host, |i| {
             TableTransportChannel::Player {
                 player_id: f.players[i],
                 character_id: f.characters[i],
             }
         }),
+        action,
+    )
+    .await
+}
+async fn channel_request(
+    f: &Fixture,
+    channel: TableTransportChannel,
+    action: TableAction,
+) -> TableTransportRequest {
+    let viewer = match channel {
+        TableTransportChannel::Host => TableViewer::Host,
+        TableTransportChannel::Player { player_id, .. }
+        | TableTransportChannel::SourceCreature { player_id, .. } => TableViewer::Player(player_id),
+    };
+    let view = f
+        .runtime
+        .presented_table_view(f.campaign, viewer)
+        .await
+        .unwrap();
+    TableTransportRequest {
+        version: if view.source_control.is_some()
+            || matches!(action, TableAction::EnableSourceActorAccess { .. })
+        {
+            2
+        } else {
+            TABLE_TRANSPORT_VERSION
+        },
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        revision: view.revision,
+        channel,
         input: TableTransportInput::Action(Box::new(action)),
     }
 }
@@ -172,15 +200,19 @@ async fn cold_raw(f: &mut Fixture, url: &str, player: Option<usize>, faces: &[u1
 }
 async fn rejected(f: &Fixture, player: Option<usize>, action: TableAction) {
     let request = request(f, player, action).await;
+    rejected_request(f, request).await;
+}
+async fn rejected_request(f: &Fixture, request: TableTransportRequest) -> String {
     let before = export_campaign(&f.pool, f.campaign).await.unwrap();
-    assert!(
-        Box::pin(f.runtime.submit_presented_table(request))
-            .await
-            .is_err()
-    );
+    let Err(RunnableCampaignError::TableRejected(message)) =
+        Box::pin(f.runtime.submit_presented_table(request)).await
+    else {
+        panic!("expected rejection before any durable mutation");
+    };
     let mut after = export_campaign(&f.pool, f.campaign).await.unwrap();
     after.exported_at_utc = before.exported_at_utc.clone();
     assert_eq!(after, before, "rejected command changes no durable row");
+    message
 }
 fn participants(f: &Fixture) -> Vec<SessionParticipant> {
     (0..2)
@@ -726,6 +758,336 @@ async fn dying_scenario(f: &mut Fixture, url: &str) {
         state(f).await.rules.as_ref().unwrap().entities[&f.actors[1]]
             .death
             .dead
+    );
+}
+
+#[tokio::test]
+async fn aftermath_source_only_mage_retains_owner_and_real_armor_through_session_resume() {
+    let directory =
+        std::env::temp_dir().join(format!("dmd-aftermath-source-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let url = format!(
+        "sqlite://{}",
+        directory
+            .join("campaign.sqlite")
+            .to_string_lossy()
+            .replace('\\', "/")
+    );
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    Box::pin(source_only_scenario(&mut f, &url)).await;
+    f.pool.close().await;
+    drop(f);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
+}
+
+async fn source_only_scenario(f: &mut Fixture, url: &str) {
+    let player = f.players[0];
+    let (mage, _, _) = Box::pin(super::table_source_control_cases::create_mage(f)).await;
+    let options = f
+        .runtime
+        .table_source_control_options(TableCreatureOptionsRequest {
+            campaign_id: f.campaign,
+            channel: TableTransportChannel::Host,
+            revision: view(f, None).await.revision,
+        })
+        .await
+        .unwrap();
+    assert!(!options.enabled && options.settled && options.adopted.is_empty());
+    Box::pin(cold_action(
+        f,
+        url,
+        None,
+        TableAction::EnableSourceActorAccess {
+            adopted: options.adopted,
+        },
+    ))
+    .await;
+    Box::pin(cold_action(
+        f,
+        url,
+        None,
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(player),
+        },
+    ))
+    .await;
+    let owner = TableTransportChannel::SourceCreature {
+        player_id: f.players[0],
+        actor: mage,
+    };
+    let p = |x, y, z| SpatialPoint { x, y, z };
+    let setup = request(
+        f,
+        None,
+        TableAction::PrepareBattlefield {
+            setup: Box::new(TableBattlefieldSetup {
+                encounter_id: EncounterId::new(),
+                scene_id: SceneId::new(),
+                location_id: LocationId::new(),
+                name: "Mage's quiet court".into(),
+                battlefield: Battlefield {
+                    bounds: SpatialBox {
+                        min: p(0, 0, 0),
+                        max: p(100, 100, 40),
+                    },
+                    floor_z: 0,
+                    floor_surface: "stone".into(),
+                    ambient_light: LightLevel::Bright,
+                    terrain: vec![],
+                    obstacles: vec![],
+                    lights: vec![],
+                },
+                characters: vec![],
+                creatures: vec![TableCreaturePlacement {
+                    actor: mage,
+                    public_label: "Spellcaster".into(),
+                    position: p(10, 10, 0),
+                    height: 12,
+                    allies: vec![],
+                    enemies: vec![],
+                }],
+                area_grid_policy: None,
+                geometry_ruling: Ruling {
+                    basis: RulingBasis::GmAdjudication,
+                    reason: "The source creature occupies this open courtyard.".into(),
+                },
+            }),
+        },
+    )
+    .await;
+    Box::pin(f.runtime.submit_presented_table(setup))
+        .await
+        .unwrap();
+    Box::pin(cold_action(
+        f,
+        url,
+        None,
+        action(TacticalAction::Begin {
+            execution: TacticalExecutionVersion::ReactionsV1,
+            combatants: vec![TacticalCombatant {
+                actor: mage,
+                source: TacticalSource::Creature {
+                    definition_id: "mage".into(),
+                },
+                surprised: false,
+            }],
+            groups: vec![InitiativeGroup {
+                actors: vec![mage],
+                request_id: RollRequestId::new(),
+            }],
+        }),
+    ))
+    .await;
+    let roll = raw_action(f, Some(0), &[12]).await;
+    let initiative = channel_request(f, owner.clone(), roll).await;
+    Box::pin(cold_step(f, url, initiative)).await;
+    let choice = view(f, Some(0))
+        .await
+        .tactical
+        .unwrap()
+        .casting_options
+        .unwrap()
+        .variants
+        .into_iter()
+        .find(|variant| variant.choice.spell_id == "mage-armor")
+        .expect("actual owned source Mage Armor option")
+        .choice;
+    assert_eq!(choice.actor, mage);
+    assert_eq!(choice.resource, SpellResourceChoice::SourceFeature);
+    assert!(matches!(
+        choice.material,
+        SpellMaterialChoice::Material { .. }
+    ));
+    let cast = channel_request(
+        f,
+        owner.clone(),
+        action(TacticalAction::CastSpell {
+            choice,
+            targets: SpellTargetChoice::Entities(vec![mage]),
+        }),
+    )
+    .await;
+    Box::pin(cold_step(f, url, cast)).await;
+    let armored = state(f).await;
+    assert_eq!(
+        dmd_rules::tactical_defenses::effective_armor_class(&armored, mage).unwrap(),
+        15
+    );
+    assert!(
+        armored
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .action_spent
+    );
+    let defense = armored
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_effects
+        .as_ref()
+        .unwrap()
+        .effects
+        .iter()
+        .find(|effect| !effect.defenses.is_empty())
+        .unwrap()
+        .clone();
+    assert_eq!(
+        armored
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .combatants
+            .len(),
+        1
+    );
+    assert!(
+        armored
+            .encounter
+            .as_ref()
+            .unwrap()
+            .participant(f.actors[0])
+            .is_none()
+    );
+
+    // The source controller owns its actions, but only the host decides cadence.
+    let forbidden = channel_request(f, owner.clone(), conclusion()).await;
+    Box::pin(rejected_request(f, forbidden)).await;
+    Box::pin(cold_action(f, url, None, conclusion())).await;
+    let concluded = state(f).await;
+    assert_eq!(concluded.rules, armored.rules);
+    assert_eq!(concluded.clock, armored.clock);
+    assert_eq!(concluded.items, armored.items);
+    let owner_view = view(f, Some(0)).await;
+    assert!(
+        owner_view
+            .tactical
+            .unwrap()
+            .aftermath
+            .unwrap()
+            .host_ruling
+            .is_none()
+    );
+    Box::pin(cold_action(f, url, None, TableAction::EndSession)).await;
+    f.session = PlaySessionId::new();
+
+    // Another attending PC satisfies generic session admission. Only the absent
+    // retained source owner must cause this refusal: no PC belongs to the flow.
+    let absent = request(
+        f,
+        None,
+        TableAction::StartSession {
+            id: f.session,
+            name: "Absent Mage controller".into(),
+            participants: vec![
+                SessionParticipant {
+                    player_id: f.players[0],
+                    character_id: None,
+                    attendance: AttendanceStatus::Absent,
+                },
+                SessionParticipant {
+                    player_id: f.players[1],
+                    character_id: Some(f.characters[1]),
+                    attendance: AttendanceStatus::Present,
+                },
+            ],
+        },
+    )
+    .await;
+    assert_eq!(
+        Box::pin(rejected_request(f, absent)).await,
+        "Resume aftermath with every retained source creature's controller explicitly present."
+    );
+    let session = f.session;
+    Box::pin(cold_action(
+        f,
+        url,
+        None,
+        TableAction::StartSession {
+            id: session,
+            name: "Mage-only aftermath resumed".into(),
+            participants: vec![SessionParticipant {
+                player_id: player,
+                character_id: None,
+                attendance: AttendanceStatus::Present,
+            }],
+        },
+    ))
+    .await;
+    let resumed = state(f).await;
+    assert_eq!(resumed.rules, concluded.rules);
+    assert_eq!(resumed.encounter, concluded.encounter);
+    assert_eq!(resumed.clock, concluded.clock);
+    assert_eq!(resumed.items, concluded.items);
+    assert_eq!(resumed.characters, concluded.characters);
+    let owner_view = view(f, Some(0)).await;
+    let attendance = owner_view.active_session.unwrap().participants;
+    assert_eq!(attendance.len(), 1);
+    assert_eq!(attendance[0].character_id, None);
+    assert_eq!(owner_view.source_control.unwrap().actors[0].actor, mage);
+
+    let host_turn = request(f, None, action(TacticalAction::EndTurn)).await;
+    assert_eq!(
+        Box::pin(rejected_request(f, host_turn)).await,
+        "This source creature's player must make the decision or report its public dice."
+    );
+    let foreign_turn = channel_request(
+        f,
+        TableTransportChannel::SourceCreature {
+            player_id: f.players[1],
+            actor: mage,
+        },
+        action(TacticalAction::EndTurn),
+    )
+    .await;
+    Box::pin(rejected_request(f, foreign_turn)).await;
+    let end = channel_request(f, owner, action(TacticalAction::EndTurn)).await;
+    Box::pin(cold_step(f, url, end)).await;
+    let continued = state(f).await;
+    assert_eq!(
+        continued
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number,
+        resumed
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number
+            + 1
+    );
+    assert!(
+        continued
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .effects
+            .contains(&defense)
+    );
+    assert_eq!(continued.items, resumed.items);
+    assert_eq!(
+        continued.rules.as_ref().unwrap().entities[&mage].hp,
+        resumed.rules.as_ref().unwrap().entities[&mage].hp
     );
 }
 
