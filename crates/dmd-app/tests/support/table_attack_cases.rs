@@ -614,6 +614,7 @@ async fn table_movement_restores_an_owned_opportunity_and_resumes_after_attack_o
     for attack in [false, true] {
         let mut f = Fixture::new().await;
         let guard = prepare(&mut f).await;
+        ready_guard_weapon(&mut f).await;
         let view = f
             .runtime
             .table_view(f.campaign, TableViewer::Player(f.players[0]))
@@ -649,6 +650,67 @@ async fn table_movement_restores_an_owned_opportunity_and_resumes_after_attack_o
         resolve_table_opportunity(&f, guard, attack).await;
         f.pool.close().await;
     }
+}
+
+async fn ready_guard_weapon(f: &mut Fixture) {
+    f.runtime
+        .execute_table(
+            f.player_meta(0).await,
+            TableAction::Tactical {
+                action: TacticalAction::EndTurn,
+            },
+        )
+        .await
+        .unwrap();
+    let options = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap()
+        .tactical
+        .unwrap()
+        .attack_options
+        .unwrap();
+    let weapon = options
+        .weapons
+        .iter()
+        .find(|weapon| weapon.name == "Scimitar")
+        .unwrap()
+        .item;
+    // Source creation leaves weapons stowed. Draw through a real Attack action,
+    // then reach the next player turn with that same physical weapon held.
+    f.host(
+        TableAction::Tactical {
+            action: TacticalAction::Attack {
+                choice: WeaponUseChoice {
+                    weapon,
+                    target: f.actors[0],
+                    delivery: WeaponDelivery::Melee,
+                    ability: Ability::Dexterity,
+                    grip: WeaponGrip::OneHand(Hand::Right),
+                    purpose: WeaponAttackPurpose::Normal,
+                    ammunition: None,
+                    equipment_change: Some(AttackEquipmentChange {
+                        timing: EquipmentChangeTiming::BeforeAttack,
+                        operation: AttackEquipmentOperation::Equip {
+                            item: weapon,
+                            hand: Hand::Right,
+                        },
+                    }),
+                },
+            },
+        },
+        Some(f.session),
+    )
+    .await;
+    submit(f, true, &[1]).await;
+    f.host(
+        TableAction::Tactical {
+            action: TacticalAction::EndTurn,
+        },
+        Some(f.session),
+    )
+    .await;
 }
 
 async fn resolve_table_opportunity(f: &Fixture, guard: EntityId, attack: bool) {

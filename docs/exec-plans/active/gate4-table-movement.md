@@ -79,3 +79,19 @@ It verifies unspent Action, conditional Reaction spend and actual reached positi
 All application tests and strict workspace Clippy are compiling now; no Rust success is
 claimed for these new table changes yet. Falling, privacy-safe accepted-prefix movement
 and concentration after a damaging table reaction remain required integration work.
+
+## Application verification and review fixes
+
+The first new movement test failed because its source-created Goblin still had its
+Scimitar stowed. The fixture now takes a real ordinary Attack on the Goblin's own turn,
+equips that physical Scimitar through the permitted BeforeAttack change, submits a
+natural-one miss and returns to the next player turn. Both attack and decline then
+pass through the independently restored opportunity without bypassing gameplay setup.
+
+All 59 application tests pass, including 17 table-loop and three recovery cases.
+Durable log: `tooling/gate4-movement-app-tests.log`. Independent opportunity review
+found a separate projection bug: a held weapon with a free second hand could make a
+legal two-handed reaction in the resolver but was hidden by the UI filter. The filter
+now permits that grip while rejecting another held item; focused projection regressions
+and strict workspace Clippy remain next. No damaging-reaction/concentration or
+falling/privacy completion is inferred from the passing miss/decline scenario.

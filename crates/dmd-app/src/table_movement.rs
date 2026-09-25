@@ -122,7 +122,14 @@ pub(super) fn opportunity(
                     options.hands.hands[hand.index()] == HandAssignment::Item(weapon.item)
                 }
                 WeaponGrip::TwoHands => {
-                    options.hands.hands == [HandAssignment::Item(weapon.item); 2]
+                    options
+                        .hands
+                        .hands
+                        .contains(&HandAssignment::Item(weapon.item))
+                        && options.hands.hands.iter().all(|hand| {
+                            *hand == HandAssignment::Free
+                                || *hand == HandAssignment::Item(weapon.item)
+                        })
                 }
             });
         }
