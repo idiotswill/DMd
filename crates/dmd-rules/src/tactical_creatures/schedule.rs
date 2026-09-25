@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
 mod capabilities;
+#[cfg(test)]
+mod reaction_tests;
 mod resistance;
 mod validation;
 use capabilities::*;
@@ -85,6 +87,7 @@ pub enum CreatureActionCost {
     None,
     Action,
     BonusAction,
+    Reaction,
     Legendary(u8),
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -200,7 +203,38 @@ pub fn apply_creature_schedule(
     meta: &CommandMeta,
     operation: &CreatureScheduleOperation,
 ) -> Result<CreatureScheduleTransition, CreatureError> {
-    apply_schedule(state, current, meta, operation, false)
+    apply_schedule(state, current, meta, operation, ScheduleAuthority::Declared)
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ScheduleAuthority {
+    Declared,
+    TurnObservation,
+    ReactionWindow,
+}
+
+/// Only the live, source-verified reaction-window adapter may call this hook.
+/// The controller's accepted choice remains the invocation; this does not invent
+/// a System issuer or prove a trigger by accepting a serialized flag. The caller
+/// atomically pays central Reaction cost and opens the source spell continuation.
+pub(crate) fn begin_creature_reaction_feature(
+    state: &CampaignState,
+    current: &TacticalCreatures,
+    meta: &CommandMeta,
+    actor: EntityId,
+    selection: CreatureFeatureSelection,
+) -> Result<CreatureScheduleTransition, CreatureError> {
+    apply_schedule(
+        state,
+        current,
+        meta,
+        &CreatureScheduleOperation::BeginFeature {
+            actor,
+            selection,
+            steps: vec![],
+        },
+        ScheduleAuthority::ReactionWindow,
+    )
 }
 
 /// Called only by the central turn scheduler after its accepted command advances
@@ -227,7 +261,7 @@ pub(crate) fn observe_creature_turn(
             turn,
             recharge_ids,
         },
-        true,
+        ScheduleAuthority::TurnObservation,
     )
 }
 
@@ -236,7 +270,7 @@ fn apply_schedule(
     current: &TacticalCreatures,
     meta: &CommandMeta,
     operation: &CreatureScheduleOperation,
-    trusted_observation: bool,
+    authority: ScheduleAuthority,
 ) -> Result<CreatureScheduleTransition, CreatureError> {
     validate_tactical_creatures(state, current)?;
     if meta.expected_event_sequence != state.applied_event_sequence {
@@ -262,7 +296,7 @@ fn apply_schedule(
         CreatureScheduleOperation::ObserveTurn {
             turn, recharge_ids, ..
         } => {
-            if !trusted_observation {
+            if authority != ScheduleAuthority::TurnObservation {
                 privileged(meta)?;
             }
             let hooks = creature_turn_hooks(state, current, actor, *turn)?;
@@ -341,18 +375,51 @@ fn apply_schedule(
         } => {
             authorize(state, rt, meta)?;
             can_act(state, actor)?;
-            if rt.routine.is_some() || rt.recharge.iter().any(|r| r.pending.is_some()) {
+            let f = validate_selection(source, selection)?;
+            let reaction = authority == ScheduleAuthority::ReactionWindow;
+            if reaction != (f.activation == FeatureActivation::Reaction) {
+                return Err(CreatureError::Unauthorized);
+            }
+            if !reaction
+                && (rt.routine.is_some() || rt.recharge.iter().any(|r| r.pending.is_some()))
+            {
                 return Err(CreatureError::Unavailable(
                     "creature has unfinished source work".into(),
                 ));
             }
-            let f = validate_selection(source, selection)?;
-            let turn = rt
-                .observed_turn
-                .ok_or_else(|| invalid("feature requires an observed combat boundary"))?;
+            let timing = rules(state)?
+                .timing
+                .as_ref()
+                .ok_or_else(|| invalid("feature requires central combat timing"))?;
+            let turn = if reaction {
+                let encounter = state
+                    .encounter
+                    .as_ref()
+                    .ok_or_else(|| invalid("reaction requires an encounter"))?;
+                if encounter.participant(actor).is_none() {
+                    return Err(invalid("reactor is not an encounter participant"));
+                }
+                CreatureTurn {
+                    encounter_id: encounter.id,
+                    actor: timing
+                        .order
+                        .get(timing.index)
+                        .ok_or_else(|| invalid("missing active turn"))?
+                        .actor,
+                    number: timing.turn_number,
+                    boundary: TurnBoundary::Start,
+                }
+            } else {
+                rt.observed_turn
+                    .ok_or_else(|| invalid("feature requires an observed combat boundary"))?
+            };
             validate_current_turn(state, turn)?;
-            let timing = rules(state)?.timing.as_ref().expect("validated timing");
             cost = match f.activation {
+                FeatureActivation::Reaction
+                    if reaction && !timing.reactions_spent.contains(&actor) =>
+                {
+                    CreatureActionCost::Reaction
+                }
                 FeatureActivation::Action
                     if turn.actor == actor
                         && turn.boundary == TurnBoundary::Start
@@ -566,6 +633,7 @@ fn apply_schedule(
         match cost {
             CreatureActionCost::Action => timing.action_spent = true,
             CreatureActionCost::BonusAction => timing.bonus_action_spent = true,
+            CreatureActionCost::Reaction => timing.reactions_spent.push(actor),
             _ => (),
         }
     }

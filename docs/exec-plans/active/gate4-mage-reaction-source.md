@@ -80,4 +80,12 @@ Existing creature definitions omit the new optional field, preserving old canoni
 fingerprints. Actual LF byte manifest regenerated; format and diff checks passed.
 This checkpoint is deliberately uncompiled: the Ready writer must map the two new
 effect descriptors and Reaction activation in its owned program/retained modules.
-Source reaction scheduling hook and counter/authority tests follow on this branch.
+The private reaction-window source hook and three authority/resource tests are now
+authored as a separate checkpoint. Ordinary serialized BeginFeature rejects Reaction
+even for the Host/controller. The private hook derives actual source/control/counters,
+returns Reaction cost and unchanged accepted issuer metadata, and preserves unrelated
+routine/recharge work. It does not establish a trigger by itself; the Ready writer's
+verified window is the only caller. Tests cover shared Shield/Counterspell3/day uses,
+Short versus Long Rest, prior-to-first-own-turn availability, actual central spent
+Reaction, stale/foreign/incapacitated/nonparticipant and wrong-capability rejection.
+These tests remain uncompiled pending owned Ready descriptor/exhaustive-match wiring.
