@@ -216,6 +216,15 @@ the separate turn-core cold-round regression is preserved on its bounded PR bran
 The18 spell mechanism
 families remain active where unfinished, including Ready, interruptions, zones, barriers,
 summons, forms and source-linked effects; do not promote pure catalog coverage to playability.
+Reviewed spell training correction1b39980 is integrated as456272e: an untrained
+Shield alone does not prohibit casting, while actual occupied hands and untrained
+worn armor remain enforced. All43 spell tests and strict domain/rules all-target
+Clippy pass; paired genuine component and prepared-caster regressions have independent
+review. Full combined/app verification remains required. PR32 final25be7f6 contains
+only a test comparison correction beyond its canonical production source: export
+request time is normalized while every persisted field still compares exactly.
+The expanded native Windows test step exposed that second-boundary test defect;
+fresh final CI is required before merging.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
 and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
 

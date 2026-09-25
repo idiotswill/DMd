@@ -1,6 +1,6 @@
 # Gate 4 physical encounters and source casting consequences
 
-Writer: root. Planning reference `ba028fe` on the preserved encounter integration
+Writer: root. Planning reference `456272e` on the preserved encounter integration
 branch. Create a fresh `codex/` PR branch from fetched main after the turn-core PR32
 merge; this document precedes that extraction. Gate4 remains active.
 
@@ -81,10 +81,30 @@ heads never substitute for this combined verification.
 
 No extraction or acceptance exists for this proposed PR yet. Reviewed source heads
 and individual verification are recorded in the central Gate4 and weapon/movement/
-falling/shield plans. PR32 source70b8333 has425 passing Linux Rust tests, strict lint,
-MSRV and guards; its Windows packaging/local canonical verification remain pending.
+falling/shield plans. PR32 source70b8333 has425 passing Linux Rust tests and424
+passing local Windows GNU Rust tests under canonical verification, strict lint,
+MSRV and guards. Its final Windows workflow now tests all workspace crates. That
+expanded check caught only a non-persisted export timestamp comparison; reviewed
+correction25be7f6 retains equality of all durable data. All four corrected Linux
+jobs pass; the expanded native Windows test/installer run remains pending.
 First finish PR32 exact-head verification and merge, then fetch main and create the
 fresh bounded branch. The concrete source-program dependency is now recorded above;
 port the reviewed Immediate-only implementation and preserve the one scheduler.
 Full Ready/reactions, remaining spells, NPC morale/knowledge,
 improvisation, encounter finish and packaged integrated acceptance remain Gate4 work.
+
+Reviewed source training correction1b39980 is integrated in456272e. It follows SRD177:
+untrained Shield use removes its AC bonus but does not itself forbid casting;
+untrained worn armor and occupied component hands still prohibit the affected cast.
+All43 source spell tests and strict domain/rules all-target Clippy pass, with
+independent exact-head review. The initial genuine Cultist fixture lacked Hold
+Person's material; the corrected fixture supplies that real component rather than
+weakening admission. The correction changes no app/UI or reaction execution. Include
+it in this combined source slice and rerun canonical and real app verification.
+
+The new OA recovery scenario has a separate owned test branch planned from456272e:
+PC0 equips a real Dagger through an ordinary attack, a source Cultist genuinely casts
+Hold Person, then moves away and provokes PC0. Raw hit/damage must lead to the NPC's
+concentration save before the original movement can resume. Test every accepted pause
+on reopened disk and independently restored runtime, exact retry and forged restore.
+It must preserve the reactor's own Reaction payment and the active mover's budget.
