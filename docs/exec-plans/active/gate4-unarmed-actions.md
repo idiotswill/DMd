@@ -90,3 +90,13 @@ grid; assertions validate the starting aggregate before the requested rejection.
 Untrained armor now uses a real source wolf with borrowed leather and its correctly
 recomputed armor class; fighter/goblin source profiles remain unchanged. All six
 focused unarmed reducer tests now pass. Full app/UI/canonical and CI remain pending.
+
+The actual file-SQLite regression passes locally (237.64s), including all three rounds,
+knockout, cold retry, independent restored continuation and semantic rejection.
+Desktop static checking reports zero errors/warnings; all60 tests and the135-module
+production build pass. The form now explicitly says Strength modifier, Proficiency
+Bonus and zero damage floor. Integrate reviewed first aid before canonical verification
+so the merge candidate exercises both independent source actions together.
+Legacy Opportunity reconstruction remains unchanged; current-source OA armor-training
+parity belongs at the explicit live-response version boundary in Gate4, not an
+unannounced change to old accepted attacks. All other recorded obligations remain.
