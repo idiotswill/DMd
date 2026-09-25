@@ -17,6 +17,8 @@ mod table_creature_cases;
 mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_medicine_cases.rs"]
+mod table_medicine_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
 mod table_oa_concentration_cases;
 #[path = "support/table_projection_cases.rs"]

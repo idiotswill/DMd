@@ -6,6 +6,29 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
 import type { CharacterView } from '../table-api';
 
+it('offers first aid from the acting characters current contacts and preserves the selected purpose', async () => {
+  const user=userEvent.setup();const onAction=vi.fn();
+  const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+    observers:[{observer:'actor',position:{x:10,y:10,z:0},contacts:[contact('patient','Seen'),contact('old-contact','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('other-players-contact','Seen')],cells:[]}],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  expect(screen.queryByRole('option',{name:'old-contact'})).toBeNull();
+  expect(screen.queryByRole('option',{name:'other-players-contact'})).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Creature'),'patient');
+  await user.click(screen.getByRole('button',{name:'Administer first aid'}));
+  expect(onAction).toHaveBeenLastCalledWith({FirstAid:{target:'patient',purpose:'Stabilize'}});
+  await user.selectOptions(screen.getByLabelText('Care needed'),'EndKnockout');
+  await user.click(screen.getByRole('button',{name:'Administer first aid'}));
+  expect(onAction).toHaveBeenLastCalledWith({FirstAid:{target:'patient',purpose:'EndKnockout'}});
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true}}});
+  expect(screen.getByRole('button',{name:'Administer first aid'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({tactical,pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Administer first aid'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:'Administer first aid'})).toBeNull();
+});
+
 it('uses an owned Second Wind bonus action and blocks another or pending turn', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
   const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],

@@ -46,6 +46,9 @@ pub(super) fn continuation(
                     .iter()
                     .map(|work| {
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::Medicine { actor, .. } => {
+                                (Some(*actor), "First aid check")
+                            }
                             TacticalWorkKind::SecondWind { actor, .. } => {
                                 (Some(*actor), "Second Wind healing")
                             }

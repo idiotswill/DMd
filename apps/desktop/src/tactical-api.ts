@@ -55,6 +55,7 @@ export interface BattlefieldSetup {
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
 export type TacticalAction =
+  | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
   | { CreatureWeaponAttack: { feature_id: string; choice: Omit<WeaponUseChoice,'delivery'|'ability'|'purpose'> } }

@@ -562,6 +562,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 | TacticalRollRole::SpellSave
                 | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
+                | TacticalRollRole::Medicine
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),

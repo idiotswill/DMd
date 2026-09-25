@@ -8,6 +8,7 @@ mod creature_bridge;
 mod failed_save;
 mod falling;
 mod initiative;
+mod medicine;
 mod movement;
 mod second_wind;
 mod shields;
@@ -27,6 +28,10 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    FirstAid {
+        target: EntityId,
+        purpose: MedicinePurpose,
+    },
     SecondWind,
     DonShield {
         shield: ItemId,
@@ -392,6 +397,9 @@ pub fn resolve_tactical(
         TacticalAction::DeclineLegendaryResistance => failed_save::choose(&mut next, meta, false)?,
         TacticalAction::DeclineLegendaryAction => creature_bridge::decline(&mut next, meta)?,
         TacticalAction::SecondWind => second_wind::begin(&mut next, meta, pack)?,
+        TacticalAction::FirstAid { target, purpose } => {
+            medicine::begin(&mut next, meta, *target, *purpose)?;
+        }
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage

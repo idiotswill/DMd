@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-medicine-help`.
 Base: verified Second Wind head c04e3b6; its main squash is b86e222.
-Status: planned; no implementation or executable evidence yet.
+Status: draft implementation and production-path tests authored; executable verification pending.
 
 ## Objective and authority
 
@@ -14,7 +14,7 @@ and the source passages were read before implementation.
 
 Pinned SRD5.2.1 p18 permits Help to stabilize a creature at zero HP with a DC10 Wisdom
 (Medicine) check. Stabilization leaves it unconscious and requests 1d4 hours until
-one HP recovery. The glossary's Knocking Out a Creature entry allows an Action and
+one HP recovery. The glossary's Knocking Out a Creature entry (p184) allows an Action and
 the same DC10 check to end that source-owned unconsciousness without healing.
 
 ## Scope, choices and non-goals
@@ -59,3 +59,28 @@ explicit reaction execution version and work ancestry without changing old repla
 Next: implement source admission and retained work using the existing Second Wind,
 landing-check and vitality patterns; then actual UI and recovery tests. Gate4 remains
 active and its full twelve-family ledger/eighteen-spell-mechanism matrix is binding.
+
+The draft now uses FirstAid target/purpose, Action payment, source skill/conditions,
+role17 and the existing queue. Pending validation reconstructs physical access,
+target eligibility and the spent Action. The check uses the table's explicit natural-
+extremes policy while keeping the raw die and numeric total unchanged: an internal
+MedicineOutcome carries only the already resolved success to vitality consequences.
+The earlier Medicine total primitive keeps its original semantics. Neither primitive
+is a public table action or a way to submit an authoritative success flag.
+
+The desktop selects only this actor's current contacts (host uses the host map),
+excludes remembered contacts and exposes both care purposes. It explains the contact
+adjudication and no-healing behavior. It changes no historical projection DTO/digest.
+The default contact interpretation checks occupied-space distance within5ft and a
+center-to-center physical path against movement-blocking obstacles; this is a
+conservative table geometry ruling, not source text. Broader authored contact paths
+belong to the remaining Gate4 environment/adjudication work.
+
+Four reducer cases and one desktop case are authored. The genuine file-SQLite case
+creates two PCs and a source Goblin Warrior, resolves its critical scimitar attack,
+then tests normal zero-HP and explicit knockout consequences in separate campaigns.
+The helper's Medicine and patient's recovery dice use opaque requests, cold reopen,
+accepted retries and independent restored continuation. A structurally valid invented
+Bonus Action expenditure must fail semantic restore without writing rows. These
+tests have not run; formatting and whitespace checks pass. Next: draft PR CI, fix
+actual failures, separate review and serial canonical/desktop verification.
