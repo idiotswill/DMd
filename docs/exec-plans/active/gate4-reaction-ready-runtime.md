@@ -1,5 +1,24 @@
 # Gate 4 — Actual reaction and Ready execution
 
+Status: active Gate4 umbrella; live Shield/Counterspell/Ready responses remain incomplete.
+Root is the sole writer of PR38's integrated `codex/gate4-reaction-ready-runtime` branch.
+Current bounded status and exact next action are in `gate4-reaction-foundation.md`;
+required successor acceptance is in `gate4-live-reaction-responses.md`.
+
+Verified sourcefb83db7 passes687 GNU Rust tests,43 actual table-loop cases, strict lint
+and both guards, plus67 UI tests/static/build. First aid PR39 and unarmed PR40 are
+merged; source/main reconciliations preserve their reviewed trees. Final PR38
+candidate checks and protected merge remain required. Genuine ReactionsV1 attack,
+knockout and paid-Ready saves have been captured before any new response semantics.
+Source casting, player-owned creature control, privacy, Counterspell and all Ready
+mechanisms remain mandatory Gate4 work. No family or gate closure is claimed.
+
+## Earlier planning and implementation record
+
+The following preserves earlier decisions and test history. Its old running-job,
+branch-ownership and pending-verification notes are superseded by the current bounded
+foundation plan above; they are not instructions to resume abandoned source branches.
+
 Status: **Active; a61e95d foundation passes canonical verification and all six CI checks; actual reaction responses remain incomplete.**
 Foundation PR38 branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
 Writer: root, taking over after rules_architecture reached its account usage limit.

@@ -1,5 +1,11 @@
 # Gate 4 Mage reaction source capabilities
 
+Status: source prerequisite integrated into PR38's foundation; no separate source
+implementation is active. Root owns the integrated reaction branch. Current evidence
+and next action are recorded in `gate4-reaction-foundation.md`; actual live source
+responses and player control remain required by `gate4-live-reaction-responses.md`.
+The original source-branch ownership and test notes below are historical.
+
 Writer: bootstrap_audit. Branch `codex/gate4-mage-source`, based on PR33 integration
 `9910ce7`. The Ready writer owns domain casting/reactions, spell program compilation,
 binding/retained programs and the shared tactical scheduler. This source slice owns
