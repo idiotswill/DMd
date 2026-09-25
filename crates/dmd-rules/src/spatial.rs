@@ -8,8 +8,8 @@ mod perception;
 #[cfg(test)]
 mod tests;
 pub use areas::*;
-pub use falling::*;
 use dmd_domain::*;
+pub use falling::*;
 pub use geometry::{CoverAssessment, cover_from, grid_distance, segment_intersects};
 pub use movement::*;
 pub use perception::*;

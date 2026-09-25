@@ -1,6 +1,7 @@
 # Gate 4 movement and opportunity attacks
 
-Status: active implementation; no verification or production completion claimed.
+Status: active implementation; spatial/falling leaves verified, queued falling and
+movement privacy correction outstanding. No production or Gate 4 completion claim.
 Branch: `codex/gate4-movement-opportunities`, base `5114159`.
 
 ## Objective and boundaries
@@ -80,12 +81,15 @@ separate subsequent slice; no raw force/teleport permission is a player command.
 
 ## Verification and next action
 
-Builds are globally serialized. The resumable spatial evaluator passed all 30 focused
-tests (four added regressions); strict domain/rules library Clippy passed. The tactical
-movement adapter and its reducer scenarios are not yet linked or compiled.
-Next: finish focused geometry verification, integrate the coordinated ordinary attack
-checkpoint, then attach movement to its shared cursor and actual opportunity adapter.
-No Gate 4 acceptance claim.
+Builds are globally serialized. The integrated source at `03cac39` passed all 41
+spatial tests, including the nine falling leaf cases. After an equivalent iterator
+lint correction, all nine falling tests and strict domain/rules library Clippy passed;
+formatting and diff checks passed after ordering one export. The opportunity author's
+reviewed `f69dee6` supplies separate 28 attack, 10 movement, 32 spatial and 20 turn
+test evidence; that run did not include these falling leaves.
+Next: consume casting's coherent shared-queue handoff, attach actual falling and
+stopped-movement outcomes, then correct whole-path hidden-truth admission and verify
+nested airborne interruptions and real application recovery. No Gate 4 acceptance claim.
 
 ## Implementation checkpoint
 
@@ -478,3 +482,48 @@ with DC15; the explicit house rule changes natural1/20 outcomes without rewritin
 faces. A ninth leaf regression covers both policies at totals that distinguish them.
 Parent assigned the matching shared tactical-save/failed-save/LR consistency fix to
 casting integration; that broader change is outside this leaf's ownership.
+
+## Required movement privacy correction before acceptance
+
+Parent review identified a remaining oracle: `admit` currently evaluates the complete
+path against hidden authoritative occupancy/solids/difficult terrain before any move
+is accepted. Normalizing error text is insufficient because success/failure itself
+can reveal distant truth. The current movement checkpoint is not gate-accepted.
+
+At the stopped-movement/falling handoff, admission must validate only bounded proposal
+syntax, grid steps, mover-owned source capabilities and known budget lower bounds.
+Malformed or unavailable capabilities still reject atomically. A valid travel attempt
+is accepted, then the existing true per-segment evaluator commits each legal prefix
+and stops only when the actual next crossing meets obstruction or exhausts movement.
+The durable stop receipt discloses the reached place/coarse interruption only, never
+a hidden actor or obstacle ID. This intentionally replaces the draft whole-path
+hidden-truth rejection contract without waiving collision or budget correctness.
+
+Regression pairs must compare near/far/absent hidden walls and remote invisible
+creatures: distant hidden placement cannot change admission; different stops must
+correspond to actual attempted crossings and retained prefix position/cost. Reaction-
+caused displacement invalidates the unfinished remainder with a derived receipt and
+must preserve unrelated consequence frames. Root approved this correction; it follows
+casting's shared queue handoff rather than competing with that writer.
+
+## Falling leaf verification checkpoint
+
+Reviewed opportunity adapter `f69dee6` is integrated by dependency-only merge `03cac39`.
+The merge retained both writers' plans; no shared-queue behavior was changed here.
+Domain/rules library mtimes were refreshed before compilation to avoid reuse of newer
+artifacts from another worktree's shared target. On this source tree, all 41 spatial
+unit tests passed, including the complete nine-case falling leaf suite.
+
+Strict Clippy identified `filter_map(bool::then)` in the new solid-surface collector.
+Replacing it with equivalent `filter` plus `map` preserved predicate, order and landing
+data. The nine falling tests then passed again, and strict library Clippy for both
+`dmd-domain` and `dmd-rules` passed. `cargo fmt --check` required one export-order fix;
+the subsequent formatting and diff checks passed. No falling gameplay execution is
+implied: retained falling work, raw-roll queue attachment, actual landing/vitality,
+movement stop receipts and the privacy correction above remain required integration.
+
+The falling source/geometry received independent read-only review with the off-map
+Frightened query correction closed at `8c6f271`. A separate reviewer cleared the exact
+natural-extremes policy delta `3bc7e36`. Compiler ownership is released to root for its
+application integration checks; casting still owns the shared dispatcher/pump until
+its coherent checkpoint is handed off.

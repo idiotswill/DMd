@@ -56,17 +56,22 @@ pub fn fall_destination(
         return Ok(None);
     }
     let mut surfaces = vec![(field.floor_z, FallSurface::Floor)];
-    surfaces.extend(field.obstacles.iter().filter_map(|o| {
-        (o.blocks_movement
-            && o.volume.max.z <= actor.position.z
-            && horizontal_contact(body, o.volume))
-        .then(|| {
-            (
-                o.volume.max.z,
-                FallSurface::SolidObstacle { id: o.id.clone() },
-            )
-        })
-    }));
+    surfaces.extend(
+        field
+            .obstacles
+            .iter()
+            .filter(|o| {
+                o.blocks_movement
+                    && o.volume.max.z <= actor.position.z
+                    && horizontal_contact(body, o.volume)
+            })
+            .map(|o| {
+                (
+                    o.volume.max.z,
+                    FallSurface::SolidObstacle { id: o.id.clone() },
+                )
+            }),
+    );
     surfaces.extend(field.terrain.iter().filter_map(|t| {
         if t.volume.max.z > actor.position.z || !horizontal_contact(body, t.volume) {
             return None;
