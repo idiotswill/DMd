@@ -27,6 +27,35 @@ async fn host(f: &Fixture, action: TacticalAction) -> CommandMeta {
     meta
 }
 async fn submit(f: &Fixture, player: bool, faces: &[u16]) -> CommandMeta {
+    submit_both(f, player, faces, None).await.0
+}
+async fn execute_both(
+    f: &Fixture,
+    mirror: Option<&CampaignRuntime>,
+    meta: &CommandMeta,
+    action: &TableAction,
+) {
+    f.runtime
+        .execute_table(meta.clone(), action.clone())
+        .await
+        .unwrap();
+    if let Some(mirror) = mirror {
+        mirror
+            .execute_table(meta.clone(), action.clone())
+            .await
+            .unwrap();
+        assert_eq!(
+            mirror.open_campaign(f.campaign).await.unwrap().state(),
+            &state(f).await
+        );
+    }
+}
+async fn submit_both(
+    f: &Fixture,
+    player: bool,
+    faces: &[u16],
+    mirror: Option<&CampaignRuntime>,
+) -> (CommandMeta, TableAction) {
     let viewer = if player {
         TableViewer::Player(f.players[0])
     } else {
@@ -54,27 +83,22 @@ async fn submit(f: &Fixture, player: bool, faces: &[u16]) -> CommandMeta {
     } else {
         f.meta(CommandIssuer::Admin, None, Some(f.session)).await
     };
-    f.runtime
-        .execute_table(
-            meta.clone(),
-            action(TacticalAction::SubmitRoll {
-                result: RollResult {
-                    request_id: request.id,
-                    source: RollSource::Physical,
-                    dice: sides
-                        .into_iter()
-                        .zip(faces)
-                        .map(|(sides, value)| DieResult {
-                            sides,
-                            value: *value,
-                        })
-                        .collect(),
-                },
-            }),
-        )
-        .await
-        .unwrap();
-    meta
+    let action = action(TacticalAction::SubmitRoll {
+        result: RollResult {
+            request_id: request.id,
+            source: RollSource::Physical,
+            dice: sides
+                .into_iter()
+                .zip(faces)
+                .map(|(sides, value)| DieResult {
+                    sides,
+                    value: *value,
+                })
+                .collect(),
+        },
+    });
+    execute_both(f, mirror, &meta, &action).await;
+    (meta, action)
 }
 async fn reopen(f: &mut Fixture, path: &Path) {
     f.pool.close().await;
@@ -396,9 +420,14 @@ async fn reject_forged_area(f: &Fixture) {
     }
 }
 
-async fn finish_area(f: &Fixture, actors: [EntityId; 3]) {
+async fn finish_area(
+    f: &mut Fixture,
+    actors: [EntityId; 3],
+    path: &Path,
+    mirror: &CampaignRuntime,
+) {
     let initial = state(f).await;
-    submit(f, false, &[1; 7]).await;
+    submit_both(f, false, &[1; 7], Some(mirror)).await;
     let mut seen_save = false;
     let mut seen_concentration = false;
     for _ in 0..16 {
@@ -453,16 +482,51 @@ async fn finish_area(f: &Fixture, actors: [EntityId; 3]) {
                             .unwrap();
                         assert!(other.roll.is_none());
                         assert!(other.tactical.unwrap().may_fail_save.is_none());
+                        reopen(f, path).await;
+                        assert_eq!(
+                            state(f).await,
+                            current,
+                            "pending player save survives disk reopen"
+                        );
+                        assert_eq!(
+                            f.runtime
+                                .table_view(f.campaign, TableViewer::Player(f.players[0]))
+                                .await
+                                .unwrap(),
+                            player
+                        );
                     } else {
                         assert!(player.roll.is_none());
                     }
-                    submit(f, player_roll, &[1]).await;
+                    let (meta, action) = submit_both(f, player_roll, &[1], Some(mirror)).await;
+                    if player_roll {
+                        let after = state(f).await;
+                        reopen(f, path).await;
+                        assert!(
+                            f.runtime
+                                .execute_table(meta, action)
+                                .await
+                                .unwrap()
+                                .already_accepted
+                        );
+                        assert_eq!(
+                            state(f).await,
+                            after,
+                            "accepted save retry must not apply another victim's work twice"
+                        );
+                    }
                 }
                 TacticalRollRole::Concentration => {
                     seen_concentration = true;
                     assert_eq!(pending.key.subject, actors[0]);
                     assert!(player.roll.is_none());
-                    submit(f, false, &[20]).await;
+                    reopen(f, path).await;
+                    assert_eq!(
+                        state(f).await,
+                        current,
+                        "area concentration child survives disk reopen"
+                    );
+                    submit_both(f, false, &[20], Some(mirror)).await;
                 }
                 _ => panic!("unexpected area child: {:?}", pending.key.role),
             }
@@ -485,7 +549,8 @@ async fn finish_area(f: &Fixture, actors: [EntityId; 3]) {
                     .await
                     .is_err()
             );
-            host(f, action).await;
+            let meta = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+            execute_both(f, Some(mirror), &meta, &self::action(action)).await;
         }
     }
     assert!(seen_save && seen_concentration);
@@ -517,6 +582,7 @@ async fn finish_area(f: &Fixture, actors: [EntityId; 3]) {
         f.runtime.replay_rules(f.campaign).await.unwrap(),
         final_state
     );
+    assert_eq!(mirror.replay_rules(f.campaign).await.unwrap(), final_state);
 }
 
 #[tokio::test]
@@ -551,7 +617,7 @@ async fn source_area_private_ordering_saves_concentration_and_cold_retry_use_sql
         pending,
         "uncertain accepted retry must not charge twice"
     );
-    finish_area(&f, actors).await;
+    finish_area(&mut f, actors, &path, &mirror).await;
     let final_state = state(&f).await;
     reopen(&mut f, &path).await;
     assert!(

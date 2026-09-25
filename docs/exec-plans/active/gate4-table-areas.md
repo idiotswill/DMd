@@ -69,13 +69,18 @@ Three public reducer regressions exercise absent/forged consent, retained consen
 host-source admission, delegated ordering and unchanged raw-save authority. A
 projection test checks identical player output across empty, hidden and nested
 work. Five UI tests exercise policy/consent, exact retained retry payload, channel
-authority, cancel/reset and pending locks.
+authority, cancel/reset and pending locks. An actual TableApp form submission
+also preserves its original aim, source, channel, head and ordering across an
+uncertain-delivery restart and retries that exact request.
 
 The real SQLite draft uses genuinely created Host-controlled Chimera/Cultist/Wolf
 sources plus a supported player character. It establishes real concentration,
 then breathes through mist, resolving one shared raw amount, independent saves
 and concentration. It checks cold disk reopen, accepted retry, portable restore,
-forged consent/origin/declaration rejection and semantic replay. Source area-to-
+forged consent/origin/declaration rejection and semantic replay. The strengthened
+draft continues a restored mirror with every identical command, reopens at the
+pending player save and concentration child, and retries the accepted player save
+after another cold reopen. Source area-to-
 fall displaced-history behavior already has a public reducer regression; the
 new app test does not claim a combined area/falling native acceptance scenario.
 
@@ -88,10 +93,22 @@ Validation in progress: Svelte static check passes with zero errors or warnings
 after correcting a test payload to use the existing TableAction envelope. All43
 frontend tests pass; a subsequent viewer-change consent-reset strengthening also
 passes all5 area tests, static check and the mounted133-module production build.
+The added full TableApp retry case then passes all12 TableApp tests and static
+check, bringing distinct frontend coverage to44 tests (no production UI change).
 Rust fmt/diff checks pass, but Rust compilation/tests
 remain explicitly pending behind the global falling-app and shield build slots.
 Environment_audit independently reviewed the consent/ordering boundary and found
 no blocker. Full application exact-head review and tests remain pending.
+Rules_architecture's complete app source review found no production blocker and
+requested the deeper SQLite continuation evidence now added but not yet run.
+
+The zero-card contract does not claim protocol-wide count noninterference. Current
+numeric event heads and one generic party transcript entry per accepted hidden
+command can still disclose command count. Parent retains a separate active Gate4
+protocol fix: persisted audience-safe revisions and historical presentation,
+atomic stale/retry admission, and a private ordering option preserving controller
+agency. Removing labels or using a token that rotates on every hidden command is
+not sufficient. Native/private-count acceptance remains pending that work.
 Next: finish UI checks, then use the authorized compiler handoff for focused area
 rules and app/SQLite tests, fix actual failures, and run strict lint.
 Remaining Charmed-area adjudication, full source catalogs, other effect families,
