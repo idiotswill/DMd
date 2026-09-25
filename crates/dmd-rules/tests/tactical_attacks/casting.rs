@@ -270,3 +270,79 @@ fn source_fanatic_hold_uses_real_material_and_counter_then_repeats_target_end_sa
     assert_eq!(f.rules().entities[&f.actors[1]].concentration, None);
     f.rejected(Some(1), action); // Its one source use remains spent after condition ends.
 }
+
+#[test]
+fn spell_save_extremes_follow_only_the_explicit_table_policy_and_preserve_raw_twenty() {
+    for house in [false, true] {
+        let (mut f, choice) = fanatic();
+        f.entity_mut(0).exhaustion = 5;
+        f.state
+            .rules
+            .as_mut()
+            .unwrap()
+            .house_rules
+            .ability_test_natural_extremes = house;
+        f.run(
+            Some(1),
+            TacticalAction::CastSpell {
+                choice,
+                targets: SpellTargetChoice::Entities(vec![f.actors[0]]),
+            },
+        );
+        assert_eq!(f.request().modifier, -10);
+        assert_eq!(
+            matches!(
+                f.rules().pending.as_ref().unwrap().ruling.basis,
+                RulingBasis::HouseRule { .. }
+            ),
+            house
+        );
+        f.roll(0, &[20]); // Total10 fails the source DC12 under ordinary rules.
+        assert_eq!(
+            active_conditions(f.rules(), f.actors[0]).contains(&Condition::Paralyzed),
+            !house
+        );
+        let raw = f.rules().rolls.last().unwrap();
+        assert_eq!(raw.result.dice[0].value, 20);
+        assert_eq!(raw.resolved.total, 10);
+    }
+}
+
+#[test]
+fn canonical_creature_spell_cannot_be_reassigned_to_an_actor_without_its_source() {
+    let (mut f, choice) = fanatic();
+    f.run(
+        Some(1),
+        TacticalAction::CastSpell {
+            choice,
+            targets: SpellTargetChoice::Entities(vec![f.actors[0]]),
+        },
+    );
+    let mut corrupt = f.state.clone();
+    let record = &mut corrupt
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .casts[0];
+    let original = &mut record.cast.plan.origin;
+    original.actor = Some(AgentRef::Entity(f.actors[0]));
+    original.issuer = CommandIssuer::Player(f.players[0]);
+    record.cast.last_operation = original.clone();
+    record.creature_activation.as_mut().unwrap().origin = original.clone();
+    record.cast.plan.choice.actor = f.actors[0];
+    record.cast.plan.concentration_group = Some(spell_concentration_id(
+        original.id,
+        f.actors[0],
+        record.cast.plan.occurrence,
+    ));
+    // The standalone record remains canonical: its program really is Hold Person
+    // from the Cultist source. The attached Human actor has no such source grant.
+    dmd_rules::tactical_spells::validate_retained_spell(record).unwrap();
+    assert!(validate_tactical_state(&corrupt).is_err());
+}

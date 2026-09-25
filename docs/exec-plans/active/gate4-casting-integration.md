@@ -172,3 +172,21 @@ only with that owned adapter dependency; this development checkpoint requires th
 matching attack source files before compilation. Its keys preserve original casting
 identity while the attack records the actual accepted continuation cause. Pending
 late concealment/target choices remain part of full interruption support.
+
+The owned attack adapter `5402050` is now merged with its six public spell cases.
+Six additional public casting cases cover atomic healing payment and caster-owned
+amount dice, range/Ready/forged-grant rejection, exact retained target partition,
+source Cultist material and limited-use ownership with target-end repeat save,
+the explicit natural-extremes save policy, and rejecting a canonical source spell
+reassigned to an actor lacking that source profile. The immutable profile binding
+is checked separately from canonical program reconstruction; mutable prepared
+caster statistics are not frozen during restore. Missing/dead paid targets close
+their occurrence instead of producing an unfinishable amount request.
+
+An effect-save/Legendary Resistance regression checks both natural-1 total success
+and natural-20 total failure under RAW versus the explicit option, without changing
+raw faces. The shared driver and these cases are still uncompiled at this checkpoint.
+Movement domain receipt `616ffa8` is integrated with the two required initializers;
+its actual stop/receipt writer retains ownership of movement files. Next verification
+is the coordinated casting/attack, movement, turn, source-spell and effect batch,
+then strict domain/rules lint. Earlier leaf evidence does not cover this integration.

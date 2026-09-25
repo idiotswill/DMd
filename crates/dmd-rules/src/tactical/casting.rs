@@ -369,18 +369,18 @@ pub(super) fn start(
         .targets
         .get(usize::from(at.target))
         .ok_or_else(|| invalid("spell target absent"))?;
-    let entity = state
+    let unavailable_target = state
         .rules
         .as_ref()
         .and_then(|r| r.entities.get(&target.actor))
-        .ok_or_else(|| invalid("spell target mechanics absent"))?;
+        .is_none_or(|entity| entity.death.dead);
     let group_lost = record.cast.plan.program.concentration
         && state
             .rules
             .as_ref()
             .and_then(|r| r.entities.get(&record.cast.plan.choice.actor))
             .is_none_or(|caster| caster.concentration != record.cast.plan.concentration_group);
-    if !target.source_type_matches || entity.death.dead || group_lost {
+    if !target.source_type_matches || unavailable_target || group_lost {
         complete_occurrence(state, cast, at)?;
         return Ok(true);
     }
@@ -568,6 +568,30 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_equipment_change_origin(state, &record.cast.last_operation, actor)
             .map_err(|e| invalid(&e))?;
         authorize(state, &plan.origin, actor)?;
+        if let SpellGrantChoice::CreatureFeature { feature_id } = &plan.choice.grant {
+            // The canonical program proves what a source can cast; this binding
+            // also proves that the retained actor actually has that source.
+            // Keep the immutable profile here, not mutable transformed statistics.
+            let profile = state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.tactical_creatures.as_ref())
+                .and_then(|creatures| creatures.profile(actor))
+                .ok_or_else(|| invalid("retained source caster profile is absent"))?;
+            let source = crate::tactical_creatures::source_for_profile(profile)
+                .map_err(|error| invalid(&error.to_string()))?;
+            if plan.program.source.creature_definition_id.as_deref() != Some(source.id.as_str())
+                || plan.program.source.feature_id.as_ref() != Some(feature_id)
+                || !source
+                    .features
+                    .iter()
+                    .any(|feature| feature.id == *feature_id)
+            {
+                return Err(invalid(
+                    "retained spell grant differs from its actor's source profile",
+                ));
+            }
+        }
         let mut partition: std::collections::HashSet<_> =
             record.completed.iter().copied().collect();
         let mut finish_count = 0;

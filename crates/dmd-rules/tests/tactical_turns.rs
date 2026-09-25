@@ -12,6 +12,73 @@ fn resistance_save(ability: Ability) -> EffectTriggerPayload {
 }
 
 #[test]
+fn effect_save_and_legendary_resistance_share_the_explicit_natural_extremes_policy() {
+    for (face, dc, raw_success) in [(1, 10, true), (20, 30, false)] {
+        for house in [false, true] {
+            let mut f = Fixture::new();
+            f.creature(1, true);
+            f.state
+                .rules
+                .as_mut()
+                .unwrap()
+                .house_rules
+                .ability_test_natural_extremes = house;
+            let effect = f.effect(
+                1,
+                EffectTriggerPayload::SavingThrow {
+                    ability: Ability::Wisdom,
+                    dc,
+                    on_success: EffectSaveEnd::TargetEffect,
+                    on_failure: EffectSaveEnd::None,
+                },
+                vec![],
+            );
+            f.begin();
+            // The printed Wisdom save is +9: 1 totals10; 20 totals29.
+            assert_eq!(f.rules().pending.as_ref().unwrap().request.modifier, 9);
+            assert_eq!(
+                matches!(
+                    f.rules().pending.as_ref().unwrap().ruling.basis,
+                    RulingBasis::HouseRule { .. }
+                ),
+                house
+            );
+            f.roll(1, &[face]);
+            let success = if house { face == 20 } else { raw_success };
+            let failed = f
+                .state
+                .encounter
+                .as_ref()
+                .unwrap()
+                .flow
+                .as_ref()
+                .unwrap()
+                .resolution
+                .as_ref()
+                .and_then(|r| r.failed_save.as_ref());
+            assert_eq!(failed.is_some(), !success);
+            assert_eq!(f.rules().rolls.last().unwrap().result.dice[0].value, face);
+            if !success {
+                f.run(Some(1), TacticalAction::UseLegendaryResistance);
+                assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 1);
+            } else {
+                f.rejected(Some(1), TacticalAction::UseLegendaryResistance);
+                assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 0);
+            }
+            assert!(
+                !f.rules()
+                    .tactical_effects
+                    .as_ref()
+                    .unwrap()
+                    .effects
+                    .iter()
+                    .any(|e| e.id == effect)
+            );
+        }
+    }
+}
+
+#[test]
 fn legendary_resistance_pauses_before_consequences_preserves_raw_faces_and_creature_authority() {
     let mut f = Fixture::new();
     f.creature(1, true);

@@ -269,6 +269,7 @@ pub fn resolve_tactical(
                 phase: TacticalPhase::Initiative { next_group: 0 },
                 budget: TacticalTurnBudget::default(),
                 resolution: None,
+                last_movement: None,
                 dodges: vec![],
                 save_decisions: vec![],
                 ground_items: vec![],
