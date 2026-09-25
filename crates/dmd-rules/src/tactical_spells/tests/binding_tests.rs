@@ -512,6 +512,7 @@ fn genuine_source_armor_training_with_an_untrained_shield_keeps_component_limits
     let armor = carried_item(&mut state, actor, "leather-armor");
     let shield = carried_item(&mut state, actor, "shield");
     let dagger = carried_item(&mut state, actor, "dagger");
+    let material = carried_item(&mut state, actor, "spell-material:hold-person");
     state.rules.as_mut().unwrap().tactical_inventory = Some(TacticalInventory {
         loadouts: vec![ActorEquipmentLoadout {
             actor,
@@ -527,7 +528,7 @@ fn genuine_source_armor_training_with_an_untrained_shield_keeps_component_limits
     let plan = plan_spell_from_feature(
         &state,
         &feature,
-        SpellMaterialChoice::None,
+        SpellMaterialChoice::Material { item: material },
         SpellCastMode::Immediate,
         0,
     )
@@ -539,7 +540,7 @@ fn genuine_source_armor_training_with_an_untrained_shield_keeps_component_limits
         serde_json::from_slice(&serde_json::to_vec(&state).unwrap()).unwrap();
     assert_eq!(bind_spell(&restored, &plan, &selected).unwrap(), bound);
     assert_eq!(state, before);
-    // The source waives M, not S: a Shield plus dagger cannot supply the hand.
+    // The same free hand accesses M and supplies S; Shield plus dagger blocks it.
     state
         .rules
         .as_mut()
@@ -555,7 +556,7 @@ fn genuine_source_armor_training_with_an_untrained_shield_keeps_component_limits
         bind_spell(&state, &plan, &selected)
             .unwrap_err()
             .to_string()
-            .contains("somatic component")
+            .contains("material component needs an accessible hand")
     );
     assert_eq!(state, before);
 }

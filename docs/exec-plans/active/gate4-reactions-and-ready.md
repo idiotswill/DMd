@@ -1,6 +1,6 @@
 # Gate 4 — Reaction and Ready source audit
 
-Status: **Active; narrow Shield-training correction planned; reaction execution remains unimplemented.**
+Status: **Active; narrow Shield-training correction verified; reaction execution remains unimplemented.**
 Branch: `codex/gate4-spell-shield-training`; base `ba028fe`.
 Writer: rules_architecture. Root owns integration and gate acceptance.
 
@@ -55,10 +55,24 @@ queries/rejections leave state unchanged. These use existing executable spells,
 not an invented Shield reaction executor.
 
 Formatting and diff checks pass. Independent environment_audit source/fixture review
-is clear against SRD177. Rust tests and Clippy remain **unrun**, waiting for root's
-turn-core canonical verification and the area author's agreed slot. Next: run focused
-spell tests and strict domain/rules all-target Clippy, record exact evidence, commit
-and hand the reviewed correction to root. Root has authorized the subsequent complete
+is clear against SRD177. The first focused run compiled and passed 42/43 tests; the
+new Cultist fixture incorrectly omitted Hold Person's actual material component.
+Binding correctly rejected it. The test-only correction supplies the real carried
+`spell-material:hold-person` ItemId and checks the occupied-hand material-access
+failure. It has separate independent review; no production guard was weakened.
+
+All **43 spell tests** now pass, and strict domain/rules all-target Clippy passes.
+Commands: `cargo test --locked --offline -p dmd-rules --lib tactical_spells::tests`
+and `cargo clippy --locked --offline -p dmd-domain -p dmd-rules --all-targets -- -D warnings`.
+Logs outside the repository: `tooling/logs/gate4-shield-training-tests-20260925.log`
+(initial failure), `gate4-shield-training-tests-20260925-r2.log` (43 pass), and
+`gate4-shield-training-clippy-20260925.log` (success). The serialized compiler slot
+was explicitly released to the area author, then protocol. Root still owns the
+combined/canonical and actual application verification before merge; this correction
+does not claim new reaction playability. Next: hand the exact reviewed correction to
+root and coordinate the verified area base and exclusive scheduler ownership.
+
+Root has authorized the subsequent complete
 reaction/Ready execution slice on a fresh branch from reviewed integration, after the
 area checkpoint and explicit shared-file handoff. This correction does not change
 those shared files; the next slice must continue through actual source/app recovery
