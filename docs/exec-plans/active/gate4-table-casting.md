@@ -1,8 +1,10 @@
 # Gate 4 casting at the table
 
-Writer: root on `codex/gate4-encounter-execution`. Dependency: the independently
-reviewed and executable shared casting/attack checkpoint from the casting and attack
-branches. No unverified shared implementation is considered an accepted dependency.
+Writer: bootstrap_audit on `codex/gate4-table-casting`, in its own worktree from
+root integration `cac466c`. Dependency: independently reviewed shared casting/attack
+checkpoint `81c1a4ea91babdcb93d4f6944cfb53695d50b805`, merged before app edits.
+Shared rules/domain queue files remain owned by the movement writer; this slice
+owns application projections/restore auditing, the desktop form/API and focused tests.
 
 ## Objective and constraints
 
@@ -36,9 +38,40 @@ effects. No synthesized prepared spell, creature feature or pre-paid permission.
 
 ## Current status and next action
 
-Plan created before app casting implementation. The shared driver has a clean but
-uncompiled checkpoint; the separate sealed spell attack adapter has two independent
-read reviews and six unrun regressions. Combined executable verification is queued
-behind root's current weapon slice and reaction projection checks. No casting success
-or desktop availability is claimed at this point. Next: receive the verified shared
-checkpoint, inspect its exact merge, then adapt audit, roll and owned-choice boundaries.
+The application/form implementation is complete for the currently admitted immediate
+source programs. Root's verified movement and Charge dependencies are merged. There
+is no new command transport, second queue, prepared grant or source material exemption.
+The pinned kernel still excludes Magic Missile from imported prepared lists; the
+public unchanged-rejection regression passes without altering that source boundary.
+Broader casting mechanisms and final native/Gate4 acceptance remain open.
+
+Private choices use actual source spells, finite uses/slots, real materials and the
+acting creature's perception. Source planning and cost previews operate on discarded
+values. Wrong-type applicability is not disclosed or used to remove legal targets.
+The ordinary form retains explicit target order and physical IDs; accepted retries
+preserve the entire original command, channel, head, material and target selection.
+Saving/amount requests use the real roller. Cast origins, last operations, enclosing
+activations, source attack origins and Charge approach origins are audited. Completed
+movement points to an accepted direct/nested Move with the exact path count and active
+actor; the original pre-tactical anchor and semantic replay prove remaining facts.
+
+Validation on Windows (default stack): all 61 `dmd-app` tests; the additional pinned
+kernel rejection; strict domain/rules/app all-target Clippy; Svelte zero errors/warnings;
+all 35 frontend tests and the mounted Vite production build. The final text-only change
+to the unavailable-spell explanation passed the SQLite casting test, four form tests
+and strict Clippy again. No native gameplay/package acceptance is implied.
+`source_casting_keeps_player_saves_ray_causes_and_cold_retry_authority` uses genuine
+Cultist Fanatic Hold Person and Adult Red Dragon Scorching Ray, checks player saves,
+real source materials, hidden targets behind an opaque wall, wrong-type target privacy,
+unchanged source counters on preview, disk close/reopen, accepted retry, hostile missing
+origin rejection and distinct ray/concentration causes. Existing table, equipment,
+movement, rules and recovery regressions remain green. Local evidence is under the
+workspace's outside-repository `research/gate4-casting/`: `table-app-tests.txt`,
+`table-source-rejection.txt`, `table-final-clippy.txt`, `table-final-casting.txt`,
+`table-ui-tests.txt` and `table-ui-build.txt`.
+
+Independent candidate-projection and recovery-origin reviews found no blocker; the
+final full app/UI review has been requested. Compiler ownership was released after
+the final focused check. Next: finish that review, integrate the exact checked slice,
+run the parent's canonical/CI and packaged acceptance, and adapt falling origins and
+owned choices only after its coherent source checkpoint. Do not mark Gate4 complete.

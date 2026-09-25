@@ -130,6 +130,37 @@ fn casting_rejects_range_ready_and_wrong_source_before_payment() {
 }
 
 #[test]
+fn imported_prepared_spell_outside_the_pinned_kernel_is_rejected_unchanged() {
+    let mut f = imported_healer();
+    // Tactical content is not a new grant or a replacement kernel pack. Even an
+    // imported prepared list must pass the immutable kernel's source validator.
+    f.entity_mut(0)
+        .prepared_spells
+        .insert("magic-missile".into());
+    let action = TacticalAction::CastSpell {
+        choice: SpellCastChoice {
+            actor: f.actors[0],
+            spell_id: "magic-missile".into(),
+            grant: SpellGrantChoice::Prepared,
+            resource: SpellResourceChoice::Slot { level: 1 },
+            material: SpellMaterialChoice::None,
+            mode: SpellCastMode::Immediate,
+        },
+        targets: SpellTargetChoice::Entities(vec![f.actors[1]; 3]),
+    };
+    f.rejected(Some(0), action);
+    assert_eq!(
+        f.rules().entities[&f.actors[0]]
+            .spellcasting
+            .as_ref()
+            .unwrap()
+            .slots[0],
+        2
+    );
+    assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+}
+
+#[test]
 fn retained_spell_partition_rejects_omitted_duplicate_and_foreign_work() {
     let mut f = imported_healer();
     f.run(Some(0), heal(&f));

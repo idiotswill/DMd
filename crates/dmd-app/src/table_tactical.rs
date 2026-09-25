@@ -6,6 +6,8 @@ use crate::{TableBattlefieldSetup, table_engine::table};
 
 #[path = "table_attacks.rs"]
 mod attacks;
+#[path = "table_casting.rs"]
+mod casting;
 #[path = "table_tactical_choices.rs"]
 mod choices;
 #[path = "table_movement.rs"]
@@ -179,6 +181,19 @@ pub(crate) fn view(
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 attacks::options(state, actor)?
+            }
+            _ => None,
+        },
+        casting_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                casting::options(state, actor)?
             }
             _ => None,
         },

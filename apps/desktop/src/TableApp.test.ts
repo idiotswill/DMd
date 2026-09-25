@@ -8,6 +8,31 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
+  it('persists an actual casting form submission and retries its original targets and material after restart',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    const choice={actor:'source-caster',spell_id:'hold-person',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature',material:{Material:{item:'actual-component'}},mode:'Immediate'} as const;
+    view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
+    view.tactical={encounter_id:'encounter',phase:'active',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Encounter action recorded.',mechanics:null}}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Spell and resource').closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByLabelText('Spell and resource'),JSON.stringify(choice));
+    await user.selectOptions(screen.getByLabelText('Spell target 1'),'selected-target');
+    await user.click(screen.getByRole('button',{name:'Cast spell'}));
+    await screen.findByRole('alert');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request.action).toEqual({Tactical:{action:{CastSpell:{choice,targets:{Entities:['selected-target']}}}}});
+    expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');
+    expect(saved.request.expected_event_sequence).toBe(view.event_sequence);
+    mounted.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
   it('retries NPC creation after uncertain delivery and restart with the same source and item IDs',async()=>{
     const user=userEvent.setup();
     const request:UnconfirmedRequest={kind:'action',request:{command_id:'npc-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{CreateCreature:{creation:{entity_id:'same-creature',name:'Private sentry',definition_id:'goblin-warrior',size:'Small',additional_languages:[],ammunition_units:7,item_ids:['arrows','armor','scimitar','shield','bow']}}}}};

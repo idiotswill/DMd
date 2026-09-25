@@ -741,8 +741,20 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(movement) = &flow.last_movement {
+                origins.extend([&movement.original, &movement.cause]);
+            }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                for record in &resolution.casts {
+                    origins.extend([&record.cast.plan.origin, &record.cast.last_operation]);
+                    origins.extend(
+                        record
+                            .creature_activation
+                            .as_ref()
+                            .map(|activation| &activation.origin),
+                    );
+                }
                 if let Some(attack) = &resolution.attack {
                     origins.push(&attack.origin);
                     if let Some(weapon) = attack.weapon() {
@@ -752,6 +764,16 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                         &attack.admission
                     {
                         origins.push(&window.origin);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::Spell { casting_origin } =
+                        &attack.admission
+                    {
+                        origins.push(casting_origin);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::CreatureAction { approach } =
+                        &attack.admission
+                    {
+                        origins.extend(approach.as_ref().map(|approach| &approach.origin));
                     }
                 }
                 if let Some(movement) = &resolution.movement {
@@ -936,6 +958,31 @@ fn validate_origins(
             return Err(
                 "rules request/result/permission origin lacks an authoritative audit".into(),
             );
+        }
+    }
+    if let Some(movement) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .and_then(|flow| flow.last_movement.as_ref())
+    {
+        let action = commands
+            .get(&movement.original.id)
+            .and_then(|event| match event {
+                RecoveryEvent::Tactical(event) => Some((&event.action, &event.outcome)),
+                RecoveryEvent::Table(event) => match &event.action {
+                    TableAction::Tactical { action } => event
+                        .tactical_event
+                        .as_ref()
+                        .map(|nested| (action, &nested.outcome)),
+                    _ => None,
+                },
+                RecoveryEvent::Rules(_) => None,
+            });
+        if !matches!(action, Some((TacticalAction::Move { path }, outcome))
+            if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
+        {
+            return Err("movement receipt disagrees with its originating Move action".into());
         }
     }
     if let Some(pending) = pending

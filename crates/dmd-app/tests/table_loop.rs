@@ -6,6 +6,8 @@ use std::path::Path;
 
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
+#[path = "support/table_casting_cases.rs"]
+mod table_casting_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 
