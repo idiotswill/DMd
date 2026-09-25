@@ -89,3 +89,12 @@ remain intact. Rust formatting and whitespace checks pass; all new runtime tests
 written but uncompiled. Next commit/open the draft, obtain full exact-source review,
 run focused/canonical verification when the serialized compiler reaches root, and
 verify final-head Linux/Windows CI before merging. Gate4 remains active.
+
+Initial exact-head CI at `ab627a9` found four test-only collection API errors: condition
+immunities use a BTreeSet, so the fixtures must insert rather than push. The full
+independent review also found that checking immunity only on effective views allowed
+a weaker immune condition to hide under suppression and later prevent stronger-effect
+removal. Validation now checks every retained grouped condition, with a regression
+that rejects the invalid weak installation atomically and then expires the stronger
+valid effect. The existing valid suppressed-condition reappearance test remains.
+Correction verification is pending; no failed initial suite is counted as passing.
