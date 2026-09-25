@@ -472,7 +472,27 @@ fn area_partition_source_and_raw_evidence_corruption_reject_without_mutation() {
                 let t = r.areas[0].targets[0].clone();
                 r.areas[0].targets[1] = t;
             }
-            6 => r.frames.swap(1, 2),
+            6 => {
+                let phase = r
+                    .frames
+                    .iter()
+                    .position(|frame| {
+                        frame.iter().any(|work| {
+                            matches!(work.kind, TacticalWorkKind::BeginAreaDamage { .. })
+                        })
+                    })
+                    .unwrap();
+                let saves = r
+                    .frames
+                    .iter()
+                    .position(|frame| {
+                        frame
+                            .iter()
+                            .any(|work| matches!(work.kind, TacticalWorkKind::AreaSave { .. }))
+                    })
+                    .unwrap();
+                r.frames.swap(phase, saves);
+            }
             _ => unreachable!(),
         }
         assert!(validate_tactical_state(&bad).is_err(), "forgery {mutation}");
@@ -569,7 +589,7 @@ fn area_save_cover_is_derived_once_from_the_host_policy_and_changes_the_result()
         .battlefield
         .obstacles
         .push(SpatialObstacle {
-            id: "authored low wall".into(),
+            id: "authored-low-wall".into(),
             volume: SpatialBox {
                 min: SpatialPoint { x: 40, y: 0, z: 0 },
                 max: SpatialPoint {
@@ -657,14 +677,44 @@ fn area_does_not_bind_a_cone_before_unresolved_physical_falling() {
         .position
         .z = 40;
     let before = f.state.clone();
+    let error = resolve_tactical(&f.state, &f.meta(Some(0)), &action(&f), &f.pack).unwrap_err();
+    // The existing whole-state validator catches an impossible idle landing even
+    // before area admission's defensive preflight can run.
     assert!(
-        matches!(resolve_tactical(&f.state, &f.meta(Some(0)), &action(&f), &f.pack),
-        Err(RulesError::Prerequisite(message)) if message.contains("physical consequences"))
+        matches!(&error, RulesError::Invalid(message) if message.contains("queued landing")),
+        "{error:?}"
     );
     assert_eq!(f.state, before);
-    // A normal supported turn transition pumps that old fall before it can be
-    // idle: it cannot become an accidental child of a newly accepted area.
-    f.run(Some(0), TacticalAction::EndTurn);
+}
+
+#[test]
+fn actual_area_damage_pumps_new_falling_before_idle_without_rebinding_its_old_victim() {
+    let (mut f, third) = fixture("chimera", true);
+    let first = f.actors[1];
+    let third = third.unwrap();
+    f.state.encounter.as_mut().unwrap().participants[0].height = 30;
+    for participant in &mut f.state.encounter.as_mut().unwrap().participants[1..] {
+        participant.position.z = 20;
+    }
+    f.entity_mut(1).hp = 1;
+    begin(&mut f);
+    focus(&mut f, third);
+    let mut selected = aim(&f);
+    selected.origin.z = 25;
+    selected.toward.z = 25;
+    f.run(
+        Some(0),
+        TacticalAction::CreatureArea {
+            feature_id: "fire-breath".into(),
+            aim: selected,
+        },
+    );
+    raw(&mut f, &[1; 7]);
+    choose(&mut f, first, true);
+    f.roll(1, &[1]);
+    raw(&mut f, &[1]);
+    choose(&mut f, first, false);
+    assert_eq!(f.rules().entities[&first].hp, 0);
     assert_eq!(
         f.flow()
             .resolution
@@ -677,19 +727,47 @@ fn area_does_not_bind_a_cone_before_unresolved_physical_falling() {
             .role,
         TacticalRollRole::FallDamage
     );
-    raw(&mut f, &[1, 1]);
-    assert!(f.flow().resolution.is_none());
+    raw(&mut f, &[1]);
+    // Falling finishes before the remaining target's concentration pause. The
+    // original source area retains its actual admitted volume after displacement.
+    assert_eq!(
+        record(&f)
+            .targets
+            .iter()
+            .find(|target| target.actor == first)
+            .unwrap()
+            .volume
+            .min
+            .z,
+        20
+    );
     assert_eq!(
         f.state
             .encounter
             .as_ref()
             .unwrap()
-            .participant(f.actors[1])
+            .participant(first)
             .unwrap()
             .position
             .z,
         0
     );
+    assert_eq!(f.request().roller, Some(third));
+    assert_eq!(
+        f.flow()
+            .resolution
+            .as_ref()
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap()
+            .key
+            .role,
+        TacticalRollRole::Concentration
+    );
+    raw(&mut f, &[10]);
+    assert!(f.flow().resolution.is_none());
+    assert_eq!(f.rules().entities[&first].death.failures, 1);
 }
 
 #[test]
@@ -705,4 +783,59 @@ fn area_damage_at_zero_hp_is_one_death_failure_without_attack_critical_or_knocko
     assert_eq!(target.death.failures, 1);
     assert!(!target.death.dead);
     assert!(f.flow().resolution.is_none());
+}
+
+#[test]
+fn completed_area_save_must_reconstruct_its_source_request_before_other_saves_finish() {
+    let (mut f, _) = fixture("chimera", true);
+    begin(&mut f);
+    f.run(Some(0), action(&f));
+    raw(&mut f, &[1; 7]);
+    let first = f.actors[1];
+    choose(&mut f, first, true);
+    f.roll(1, &[10]);
+    let save = record(&f)
+        .targets
+        .iter()
+        .find(|target| target.actor == first)
+        .unwrap()
+        .save
+        .as_ref()
+        .unwrap()
+        .clone();
+    let mut bad = f.state.clone();
+    let roll = bad
+        .rules
+        .as_mut()
+        .unwrap()
+        .rolls
+        .iter_mut()
+        .find(|roll| roll.request.id == save.key.request_id())
+        .unwrap();
+    roll.request.modifier += 10;
+    roll.resolved = roll.request.resolve(&roll.result).unwrap();
+    let area = &mut bad
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .areas[0];
+    area.targets
+        .iter_mut()
+        .find(|target| target.actor == first)
+        .unwrap()
+        .save
+        .as_mut()
+        .unwrap()
+        .succeeded = true;
+    // Arithmetic and canonical key remain self-consistent; source request proof
+    // still rejects the fabricated modifier while the second save is outstanding.
+    assert!(
+        matches!(validate_tactical_state(&bad), Err(RulesError::Invalid(message)) if message.contains("source request"))
+    );
 }

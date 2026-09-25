@@ -114,7 +114,12 @@ impl Fixture {
             &state,
             &meta,
             &crate::RulesAction::Initialize {
-                entities: vec![built.mechanics, MechanicalEntity::basic(target)],
+                // The legacy initializer accepts generic mechanics, not source
+                // NPC level-zero statistics before their profile is attached.
+                entities: vec![
+                    MechanicalEntity::basic(actor),
+                    MechanicalEntity::basic(target),
+                ],
                 house_rules: HouseRules::default(),
                 ruling: ruling.clone(),
             },
@@ -122,6 +127,12 @@ impl Fixture {
         )
         .unwrap()
         .next_state;
+        state
+            .rules
+            .as_mut()
+            .unwrap()
+            .entities
+            .insert(actor, built.mechanics);
         state.rules.as_mut().unwrap().tactical_creatures = Some(TacticalCreatures {
             schema_version: TACTICAL_CREATURES_SCHEMA_VERSION,
             profiles: vec![built.profile],
