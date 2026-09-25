@@ -12,6 +12,283 @@ fn resistance_save(ability: Ability) -> EffectTriggerPayload {
 }
 
 #[test]
+fn occupied_end_space_uses_actual_volume_size_exceptions_and_prone_immunity() {
+    for (own, other, immune, overlap, prone) in [
+        (
+            CreatureSize::Medium,
+            CreatureSize::Medium,
+            false,
+            true,
+            true,
+        ),
+        (CreatureSize::Tiny, CreatureSize::Medium, false, true, false),
+        (
+            CreatureSize::Large,
+            CreatureSize::Medium,
+            false,
+            true,
+            false,
+        ),
+        (CreatureSize::Medium, CreatureSize::Large, false, true, true),
+        (
+            CreatureSize::Medium,
+            CreatureSize::Medium,
+            true,
+            true,
+            false,
+        ),
+        (
+            CreatureSize::Medium,
+            CreatureSize::Medium,
+            false,
+            false,
+            false,
+        ),
+    ] {
+        let mut f = Fixture::new();
+        f.begin();
+        let e = f.state.encounter.as_mut().unwrap();
+        e.participants[0].size = own;
+        e.participants[1].size = other;
+        e.participants[1].position = e.participants[0].position;
+        if !overlap {
+            // Exact touching edges are distinct spaces, including on a grid.
+            e.participants[1].position.x = e.participants[0].volume().unwrap().max.x;
+        }
+        if immune {
+            f.entity_mut(0)
+                .condition_immunities
+                .insert(Condition::Prone);
+        }
+        f.run(Some(0), TacticalAction::EndTurn);
+        assert_eq!(f.rules().entities[&f.actors[0]].prone, prone);
+    }
+}
+
+#[test]
+fn occupied_space_consequence_shares_end_order_and_rejects_foreign_or_duplicate_work() {
+    let mut f = Fixture::new();
+    f.effect_at(
+        1,
+        EffectTriggerPayload::SavingThrow {
+            ability: Ability::Wisdom,
+            dc: 5,
+            on_success: EffectSaveEnd::TargetEffect,
+            on_failure: EffectSaveEnd::None,
+        },
+        vec![],
+        TurnBoundary::End,
+    );
+    f.begin();
+    let e = f.state.encounter.as_mut().unwrap();
+    e.participants[1].position = e.participants[0].position;
+    f.run(Some(0), TacticalAction::EndTurn);
+    assert!(!f.rules().entities[&f.actors[0]].prone);
+    let work = f
+        .resolution()
+        .frames
+        .last()
+        .unwrap()
+        .iter()
+        .find(|w| matches!(w.kind, TacticalWorkKind::EndOccupiedSpace { .. }))
+        .unwrap()
+        .clone();
+    let choice = TacticalAction::ChooseTurnWork {
+        occurrence: work.occurrence,
+    };
+    f.rejected(Some(1), choice.clone());
+    for duplicate in [false, true] {
+        let mut corrupt = f.state.clone();
+        let r = corrupt
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap();
+        if duplicate {
+            let mut copied = work.clone();
+            copied.occurrence = r.next_occurrence;
+            r.next_occurrence += 1;
+            r.frames.last_mut().unwrap().push(copied);
+        } else {
+            r.frames
+                .last_mut()
+                .unwrap()
+                .iter_mut()
+                .find(|w| w.occurrence == work.occurrence)
+                .unwrap()
+                .kind = TacticalWorkKind::EndOccupiedSpace { actor: f.actors[1] };
+        }
+        assert!(validate_tactical_state(&corrupt).is_err());
+    }
+    f.run(Some(0), choice);
+    assert!(f.rules().entities[&f.actors[0]].prone);
+    assert_eq!(
+        f.rules().pending.as_ref().unwrap().request.roller,
+        Some(f.actors[1])
+    );
+    f.roll(1, &[10]);
+    assert_eq!(f.rules().timing.as_ref().unwrap().index, 1);
+}
+
+#[test]
+fn effect_save_and_legendary_resistance_share_the_explicit_natural_extremes_policy() {
+    for (face, dc, raw_success) in [(1, 8, true), (20, 30, false)] {
+        for house in [false, true] {
+            let mut f = Fixture::new();
+            f.creature(1, true);
+            f.state
+                .rules
+                .as_mut()
+                .unwrap()
+                .house_rules
+                .ability_test_natural_extremes = house;
+            let effect = f.effect(
+                1,
+                EffectTriggerPayload::SavingThrow {
+                    ability: Ability::Wisdom,
+                    dc,
+                    on_success: EffectSaveEnd::TargetEffect,
+                    on_failure: EffectSaveEnd::None,
+                },
+                vec![],
+            );
+            f.begin();
+            // The printed Wisdom save is +7: 1 totals8; 20 totals27.
+            assert_eq!(f.rules().pending.as_ref().unwrap().request.modifier, 7);
+            assert_eq!(
+                matches!(
+                    f.rules().pending.as_ref().unwrap().ruling.basis,
+                    RulingBasis::HouseRule { .. }
+                ),
+                house
+            );
+            f.roll(1, &[face]);
+            let success = if house { face == 20 } else { raw_success };
+            let failed = f
+                .state
+                .encounter
+                .as_ref()
+                .unwrap()
+                .flow
+                .as_ref()
+                .unwrap()
+                .resolution
+                .as_ref()
+                .and_then(|r| r.failed_save.as_ref());
+            assert_eq!(failed.is_some(), !success);
+            assert_eq!(f.rules().rolls.last().unwrap().result.dice[0].value, face);
+            if !success {
+                f.run(Some(1), TacticalAction::UseLegendaryResistance);
+                assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 1);
+            } else {
+                f.rejected(Some(1), TacticalAction::UseLegendaryResistance);
+                assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 0);
+            }
+            assert!(
+                !f.rules()
+                    .tactical_effects
+                    .as_ref()
+                    .unwrap()
+                    .effects
+                    .iter()
+                    .any(|e| e.id == effect)
+            );
+        }
+    }
+}
+
+#[test]
+fn concentration_uses_the_same_opt_in_policy_before_source_resistance_or_group_loss() {
+    for house in [false, true] {
+        let mut f = Fixture::new();
+        f.creature(1, true);
+        f.state
+            .rules
+            .as_mut()
+            .unwrap()
+            .house_rules
+            .ability_test_natural_extremes = house;
+        let meta = f.meta(None);
+        let group = EffectId::new();
+        f.state = tactical_effect_adapter::apply_effect_operation(
+            &f.state,
+            &meta,
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::BeginConcentration {
+                    group: ConcentrationGroup {
+                        id: group,
+                        source: EffectSource {
+                            definition_id: "test-focus".into(),
+                            actor: f.actors[1],
+                            command: meta.clone(),
+                            ordinal: 0,
+                        },
+                        expires: TacticalEffectExpiry::Never,
+                        stage: ConcentrationStage::Casting,
+                    },
+                },
+            },
+        )
+        .unwrap()
+        .0;
+        f.state.applied_event_sequence += 1;
+        f.effect(
+            1,
+            EffectTriggerPayload::Damage {
+                dice: vec![DieSpec { count: 1, sides: 6 }],
+                modifier: 55,
+                damage_type: DamageType::Acid,
+            },
+            vec![],
+        );
+        f.begin();
+        f.roll(0, &[5]);
+        assert_eq!(
+            f.rules().pending.as_ref().unwrap().request.roller,
+            Some(f.actors[1])
+        );
+        assert_eq!(f.rules().pending.as_ref().unwrap().request.modifier, 7);
+        assert_eq!(
+            matches!(
+                f.rules().pending.as_ref().unwrap().ruling.basis,
+                RulingBasis::HouseRule { .. }
+            ),
+            house
+        );
+        f.roll(1, &[20]); // Printed +7 totals27 against the actual damage DC30.
+        assert_eq!(f.rules().rolls.last().unwrap().result.dice[0].value, 20);
+        assert_eq!(f.rules().rolls.last().unwrap().resolved.total, 27);
+        if house {
+            assert!(
+                f.state
+                    .encounter
+                    .as_ref()
+                    .unwrap()
+                    .flow
+                    .as_ref()
+                    .unwrap()
+                    .resolution
+                    .is_none()
+            );
+            assert_eq!(f.rules().entities[&f.actors[1]].concentration, Some(group));
+            f.rejected(Some(1), TacticalAction::UseLegendaryResistance);
+        } else {
+            assert!(f.resolution().failed_save.is_some());
+            assert_eq!(f.rules().entities[&f.actors[1]].concentration, Some(group));
+            f.run(Some(1), TacticalAction::DeclineLegendaryResistance);
+            assert_eq!(f.rules().entities[&f.actors[1]].concentration, None);
+        }
+        assert_eq!(f.creature_runtime(1).legendary_resistance_spent, 0);
+    }
+}
+
+#[test]
 fn legendary_resistance_pauses_before_consequences_preserves_raw_faces_and_creature_authority() {
     let mut f = Fixture::new();
     f.creature(1, true);

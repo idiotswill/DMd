@@ -123,3 +123,28 @@ pub struct TacticalMovement {
     pub decisions: Vec<TacticalOpportunityDecision>,
     pub opportunity: Option<TacticalOpportunityWindow>,
 }
+
+/// A coarse reached-place outcome. No blocker identity or unvisited location is
+/// retained here; the accepted Move event owns its original requested path.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TacticalMovementEnd {
+    Completed,
+    Stopped,
+    Interrupted,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalMovementResult {
+    pub original: CommandMeta,
+    pub cause: CommandMeta,
+    pub actor: EntityId,
+    pub turn_number: u64,
+    pub start: SpatialPoint,
+    pub endpoint: SpatialPoint,
+    pub requested_steps: u16,
+    pub completed_steps: u16,
+    pub spent_before: u32,
+    pub spent_after: u32,
+    pub reason: TacticalMovementEnd,
+}

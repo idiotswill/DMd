@@ -371,11 +371,15 @@ pub(super) fn validate_admission(
                     feature_id: feature_id.clone(),
                     weapon: *weapon,
                 },
+                TacticalAttackSource::Spell { .. } => {
+                    return Err(invalid("a spell is not this melee opportunity source"));
+                }
             };
             if !window.options.iter().any(|o| o.source == source) {
                 return Err(invalid("reaction implement differs from retained crossing"));
             }
         }
+        TacticalAttackAdmission::Spell { .. } => spell::validate_admission(state, attack)?,
     }
     Ok(())
 }

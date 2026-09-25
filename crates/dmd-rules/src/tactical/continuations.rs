@@ -86,11 +86,20 @@ pub(super) fn key(
 ) -> Result<TacticalRollKey, RulesError> {
     if matches!(
         work.kind,
+        TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. }
+    ) {
+        return super::casting::key(state, work);
+    }
+    if matches!(
+        work.kind,
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage
     ) {
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. } => {
+            unreachable!("handled above")
+        }
         TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
             return Err(invalid("movement choice has no raw roll key"));
         }
@@ -124,6 +133,9 @@ pub(super) fn key(
             return Err(invalid("Legendary Action choice has no roll"));
         }
         TacticalWorkKind::RecoverStable { .. } => return Err(invalid("wake-up has no roll")),
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            return Err(invalid("occupied-space consequence has no roll"));
+        }
     };
     Ok(TacticalRollKey {
         origin: resolution(state)?.origin.id,
@@ -132,8 +144,30 @@ pub(super) fn key(
         occurrence: work.occurrence,
     })
 }
-pub(super) fn ruling(role: TacticalRollRole) -> Ruling {
+pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
+    if houses.ability_test_natural_extremes
+        && matches!(
+            role,
+            TacticalRollRole::EffectSave
+                | TacticalRollRole::Concentration
+                | TacticalRollRole::SpellSave
+        )
+    {
+        return Ruling {
+            basis: RulingBasis::HouseRule {
+                id: "ability-test-natural-extremes".into(),
+            },
+            reason: "The table's explicit natural-1/20 rule applies to this saving throw.".into(),
+        };
+    }
     let (page, reason) = match role {
+        TacticalRollRole::SpellSave => (
+            105,
+            "Saving throw from the accepted canonical spell program.",
+        ),
+        TacticalRollRole::SpellAmount => {
+            (105, "Raw amount from the accepted canonical spell program.")
+        }
         TacticalRollRole::Attack => (15, "Source weapon attack against the selected target."),
         TacticalRollRole::AttackDamage => (16, "Source weapon damage after a confirmed hit."),
         TacticalRollRole::CreatureRecharge => (
@@ -167,6 +201,8 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::SpellProgram { .. } => super::casting::request(state, work, key),
+        TacticalWorkKind::FinishSpell { .. } => Err(invalid("spell cleanup has no raw roll")),
         TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
             Err(invalid("movement choice has no raw roll"))
         }
@@ -242,6 +278,9 @@ pub(super) fn request(
             Err(invalid("legendary decision has no raw roll"))
         }
         TacticalWorkKind::RecoverStable { .. } => Err(invalid("stable wake-up has no raw roll")),
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            Err(invalid("occupied-space consequence has no raw roll"))
+        }
     }
 }
 
@@ -257,6 +296,29 @@ pub(super) fn start(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::EndOccupiedSpace { actor } => {
+            // Another simultaneous consequence may have moved the actor or
+            // changed its size/immunity. Re-evaluate actual geometry at resolution.
+            if end_space_prone(state, *actor)? {
+                state
+                    .rules
+                    .as_mut()
+                    .ok_or(RulesError::Uninitialized)?
+                    .entities
+                    .get_mut(actor)
+                    .ok_or_else(|| invalid("ending actor mechanics are absent"))?
+                    .prone = true;
+            }
+            return Ok(());
+        }
+        TacticalWorkKind::SpellProgram { cast, at } => {
+            if super::casting::start(state, meta, *cast, *at)? {
+                return Ok(());
+            }
+        }
+        TacticalWorkKind::FinishSpell { cast } => {
+            return super::casting::finish_cast(state, meta, *cast);
+        }
         TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
             return Err(invalid("movement work was not handled"));
         }
@@ -350,7 +412,7 @@ pub(super) fn start(
         issued_by: meta.clone(),
         request,
         purpose: PendingPurpose::TacticalResolution { encounter, key },
-        ruling: ruling(key.role),
+        ruling: ruling(key.role, &rules.house_rules),
     });
     Ok(())
 }
@@ -443,6 +505,7 @@ pub(super) fn voluntarily_fail(
         TacticalRollRole::DeathSave
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
+            | TacticalRollRole::SpellSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -485,6 +548,15 @@ pub(super) fn finish(
         .transpose()?;
     resolution_mut(state)?.pending = None;
     match pending.work.kind {
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            return Err(invalid("occupied-space consequence cannot await dice"));
+        }
+        TacticalWorkKind::SpellProgram { .. } => {
+            return super::casting::finish(state, meta, &pending, result, forced_success);
+        }
+        TacticalWorkKind::FinishSpell { .. } => {
+            return Err(invalid("spell cleanup cannot await dice"));
+        }
         TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
             return Err(invalid("movement is not a raw roll continuation"));
         }
@@ -531,7 +603,22 @@ pub(super) fn finish(
             damage_taken,
         } => {
             let dc = (damage_taken / 2).clamp(10, 30);
-            if !forced_success && raw.is_none_or(|r| i64::from(r.total) < i64::from(dc)) {
+            let success = raw
+                .as_ref()
+                .map(|roll| {
+                    crate::test_outcome::ability_test_success(
+                        roll,
+                        dc as i32,
+                        &state
+                            .rules
+                            .as_ref()
+                            .ok_or(RulesError::Uninitialized)?
+                            .house_rules,
+                    )
+                })
+                .transpose()?
+                .unwrap_or(false);
+            if !forced_success && !success {
                 end_concentration(state, meta, actor, group)?;
             }
         }
@@ -543,7 +630,22 @@ pub(super) fn finish(
                     meta,
                     id,
                     EffectTriggerResolution::SavingThrow {
-                        success: forced_success || raw.is_some_and(|r| r.total >= i32::from(dc)),
+                        success: forced_success
+                            || raw
+                                .as_ref()
+                                .map(|roll| {
+                                    crate::test_outcome::ability_test_success(
+                                        roll,
+                                        i32::from(dc),
+                                        &state
+                                            .rules
+                                            .as_ref()
+                                            .ok_or(RulesError::Uninitialized)?
+                                            .house_rules,
+                                    )
+                                })
+                                .transpose()?
+                                .unwrap_or(false),
                     },
                 )?,
                 EffectTriggerPayload::Damage { damage_type, .. } => {

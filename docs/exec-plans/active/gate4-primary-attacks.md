@@ -211,3 +211,48 @@ not substitute commands. Movement separately retains its original command, initi
 origin, traversed-segment causes, decision origins, selected crossing origin and current
 budget movement origin. App projections continue using the common actor/target/stage;
 source-specific fields and hidden target facts do not become player-facing details.
+
+## Sealed spell attack continuation
+
+The independently reviewed opportunity checkpoint is `f69dee626dcb9fd1407fab99c4212fd21c04cb51`.
+The next bounded task consumes casting helper/duration merge `03f93cf` and adds a
+sealed spell attack adapter in the owned attack modules and source enum. The casting
+author owns shared resolution/work/dispatch and cast completion. Both paths use the
+same existing attack and vitality queue; no resource payment, fake ItemId, synthesized
+System issuer, or second pending queue is introduced.
+
+The source record retains canonical cast occurrence, node and target ordinal and pin.
+Its immutable casting origin remains distinct from the actual accepted command that
+caused this attack occurrence. Reconstruct every pending source through the retained
+cast and sealed proof. Live AC, cover, visibility, conditions and Exhaustion apply at
+each ray; critical hits double dice only. Complete that exact cast occurrence before
+pumping damage/concentration children. Paid dead/invalid target occurrences finish
+with no effect rather than creating a request that cannot complete.
+
+Acceptance: source forgery and duplicate occurrence rejection; raw attack/damage
+validation; serialized/replayed pending stages; critical dice and repeated rays with
+distinct request identities; dead/invalid later ray completion; truthful cross-actor
+causal provenance; unchanged inventory and no repeated slot/action costs. Run focused
+attack/casting/turn tests and strict lint only after the shared compiler handoff. At
+this planning edit the new adapter is not implemented or verified. Root owns app
+origin collection, full workspace verification and production acceptance. Own-turn
+creature features/Charge, remaining masteries and broader source spell programs remain
+explicit unfinished Gate4 work after this bounded task.
+
+The source adapter and five public casting regressions are now drafted against shared
+driver checkpoints `cf72285` and `0aae8c0`. The driver consumes the sealed callback;
+the adapter checks the exact retained occurrence and actual causal head, derives live
+hit facts, and stages the existing attack work without recursively running the pump.
+Raw request identity uses the original casting command and unique shared occurrence;
+the request's issuer metadata remains the truthful command that reached this ray.
+The driver partitions every target occurrence among queued work, the active attack and
+completed records, preventing a restored attack from stealing another ray's index.
+
+Draft regressions exercise source level scaling/critical dice, bad raw faces and replay
+metadata, explicit printed dragon spell attacks, three distinct rays separated by a
+target player's concentration save, first-ray death, and eleven retained source/cause
+forgeries. Formatting and diff checks pass. These tests and the new shared driver have
+not yet compiled; the next action is the single coordinated casting/attack test batch
+after root releases the compiler. This intermediate source checkpoint is not green
+verification or a production acceptance claim. Root also needs to collect the new
+`attack.admission.Spell.casting_origin` alongside `attack.origin` and retained cast origins.

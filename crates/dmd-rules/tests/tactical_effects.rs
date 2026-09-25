@@ -259,6 +259,164 @@ fn concentration_target_escape_preserves_other_targets_and_replacement_ends_the_
 }
 
 #[test]
+fn committed_held_cast_replaces_only_its_hold_expiry_before_target_installation() {
+    let mut f = Fixture::new();
+    let meta = f.meta();
+    let group = ConcentrationGroup {
+        id: EffectId::new(),
+        source: f.source(&meta, "hold-person"),
+        expires: TacticalEffectExpiry::AfterOwnerBoundaries {
+            owner: f.caster,
+            boundary: TurnBoundary::Start,
+            remaining: 1,
+        },
+        stage: ConcentrationStage::Casting,
+    };
+    f.run_with(
+        &meta,
+        EffectLifecycleOperation::BeginConcentration {
+            group: group.clone(),
+        },
+    );
+    f.campaign.clock.now = WorldInstant(12);
+    f.run(EffectLifecycleOperation::SetCastingDuration {
+        group: group.id,
+        source: group.source.clone(),
+        expires: TacticalEffectExpiry::AtTime(WorldInstant(72)),
+    });
+    assert_eq!(f.effects.groups[0].id, group.id);
+    assert_eq!(f.effects.groups[0].source, group.source);
+    assert_eq!(f.effects.groups[0].stage, ConcentrationStage::Casting);
+    assert!(f.effects.effects.is_empty());
+    let mut effect = f.effect(group.source.clone(), f.target);
+    effect.concentration_group = Some(group.id);
+    effect.expires = TacticalEffectExpiry::AtTime(WorldInstant(72));
+    f.run(EffectLifecycleOperation::Install {
+        effects: vec![effect],
+    });
+    assert_eq!(f.effects.groups[0].stage, ConcentrationStage::Active);
+    let caster = f.caster;
+    assert!(f.turn(caster, 3, TurnBoundary::Start).triggers.is_empty());
+    assert!(f.effects.group_for_owner(caster).is_some());
+    f.campaign.clock.now = WorldInstant(72);
+    let due = f.observe(EffectObservation::Time);
+    let expiry = due
+        .triggers
+        .iter()
+        .find(|ticket| ticket.payload == EffectTriggerPayload::ExpireConcentrationGroup)
+        .unwrap();
+    f.resolve(expiry.id, EffectTriggerResolution::Apply);
+    assert!(f.effects.groups.is_empty());
+    assert!(f.effects.effects.is_empty());
+    assert!(f.effects.pending.is_empty());
+}
+
+#[test]
+fn casting_duration_cannot_refresh_active_or_due_groups_or_replace_source() {
+    let mut f = Fixture::new();
+    let group = f.group();
+    let mut wrong_source = group.source.clone();
+    wrong_source.actor = f.other;
+    for (id, source, expires) in [
+        (
+            EffectId::new(),
+            group.source.clone(),
+            TacticalEffectExpiry::AtTime(WorldInstant(90)),
+        ),
+        (
+            group.id,
+            wrong_source,
+            TacticalEffectExpiry::AtTime(WorldInstant(90)),
+        ),
+        (
+            group.id,
+            group.source.clone(),
+            TacticalEffectExpiry::AtTime(WorldInstant(0)),
+        ),
+        (group.id, group.source.clone(), TacticalEffectExpiry::Never),
+    ] {
+        let before = f.effects.clone();
+        assert!(
+            apply_effect_lifecycle(
+                &f.campaign,
+                &f.effects,
+                &f.meta(),
+                &EffectLifecycleAction {
+                    step: 0,
+                    operation: EffectLifecycleOperation::SetCastingDuration {
+                        group: id,
+                        source,
+                        expires
+                    },
+                }
+            )
+            .is_err()
+        );
+        assert_eq!(before, f.effects);
+    }
+    let mut active = f.effect(group.source.clone(), f.target);
+    active.concentration_group = Some(group.id);
+    f.run(EffectLifecycleOperation::Install {
+        effects: vec![active],
+    });
+    let operation = EffectLifecycleOperation::SetCastingDuration {
+        group: group.id,
+        source: group.source.clone(),
+        expires: TacticalEffectExpiry::AtTime(WorldInstant(90)),
+    };
+    let before = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction { step: 0, operation }
+        )
+        .is_err()
+    );
+    assert_eq!(before, f.effects);
+    let next = f.group();
+    f.campaign.clock.now = WorldInstant(60);
+    let expired = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::SetCastingDuration {
+                    group: next.id,
+                    source: next.source.clone(),
+                    expires: TacticalEffectExpiry::AtTime(WorldInstant(90)),
+                },
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(expired, f.effects);
+    assert!(!f.observe(EffectObservation::Time).triggers.is_empty());
+    let before = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::SetCastingDuration {
+                    group: next.id,
+                    source: next.source,
+                    expires: TacticalEffectExpiry::AtTime(WorldInstant(90))
+                },
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(before, f.effects);
+}
+
+#[test]
 fn strongest_overlap_is_target_local_and_older_cast_returns_when_newer_ends() {
     let mut f = Fixture::new();
     let meta = f.meta();

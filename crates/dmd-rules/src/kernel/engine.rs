@@ -1387,15 +1387,11 @@ fn submit(
                     }
                 }
             } else if !matches!(kind, TestKind::Initiative) {
-                success = Some(
-                    if rules.house_rules.ability_test_natural_extremes && face == 20 {
-                        true
-                    } else if rules.house_rules.ability_test_natural_extremes && face == 1 {
-                        false
-                    } else {
-                        roll.total >= *dc
-                    },
-                );
+                success = Some(crate::test_outcome::ability_test_success(
+                    &roll,
+                    *dc,
+                    &rules.house_rules,
+                )?);
             }
         }
         PendingPurpose::Attack {

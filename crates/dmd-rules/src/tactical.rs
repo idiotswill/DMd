@@ -1,6 +1,7 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
 mod attacks;
+mod casting;
 mod continuations;
 mod creature_bridge;
 mod failed_save;
@@ -22,6 +23,10 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    CastSpell {
+        choice: SpellCastChoice,
+        targets: SpellTargetChoice,
+    },
     Move {
         path: Vec<TacticalMoveStep>,
     },
@@ -202,6 +207,9 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::CastSpell { choice, targets } => {
+            casting::begin(&mut next, meta, choice, targets)?;
+        }
         TacticalAction::Move { path } => movement::begin(&mut next, meta, path)?,
         TacticalAction::DeclineOpportunity => movement::decline(&mut next, meta)?,
         TacticalAction::OpportunityAttack { choice } => {
@@ -261,6 +269,7 @@ pub fn resolve_tactical(
                 phase: TacticalPhase::Initiative { next_group: 0 },
                 budget: TacticalTurnBudget::default(),
                 resolution: None,
+                last_movement: None,
                 dodges: vec![],
                 save_decisions: vec![],
                 ground_items: vec![],

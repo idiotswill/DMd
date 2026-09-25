@@ -1,4 +1,5 @@
 use super::*;
+mod binding_tests;
 
 fn fixture(
     spell_id: &str,
@@ -745,6 +746,7 @@ fn add_flow(
             phase: TacticalPhase::Active,
             budget: TacticalTurnBudget::default(),
             resolution: None,
+            last_movement: None,
             dodges: vec![],
             save_decisions: vec![],
             ground_items: vec![],
