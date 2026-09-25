@@ -1,16 +1,63 @@
 # Gate 4 durable encounter conclusion and recovery
 
-Implementation lead: root. Current delegated writer: bootstrap_audit, plan only.
-Branch `codex/gate4-encounter-finish`, from reviewed PR33 candidate
-`8cb3084f8119f1b4d159728d2ea1b60ff5ec4a79`. Reconcile merged main before this PR.
-This plan precedes code. Gate4 remains active; no gate acceptance is claimed.
-Do not start implementation until root resolves execution-version integration after
-PR38. This document records a proposed design, not an accepted new timing policy.
+Implementation lead and sole branch writer: bootstrap_audit, delegated by root.
+Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance is
+claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
+
+Current baseline is merged main `d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38`.
+Normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to authoritative
+main. The branch's two genuine commits since `8cb3084` changed only this plan;
+after the merge, the full tree differs from main only by this file. No independent
+production source was discarded. PR41, historical-compatibility PR42 and source-control
+PR43 must be reconciled at reviewed checkpoints before final integrated acceptance.
+
+## Authorized first production slice
+
+Implement durable **hostilities concluded**, retaining the same initiative cadence,
+geometry and single consequence queue; allow a quiescent aftermath session to close
+and resume with genuine controller bindings. This is not terminal timing release or
+new battlefield setup. Those mandatory Gate4 obligations remain below as follow-up.
+
+- A host issues `ConcludeHostilities` with an explicit, non-default
+  `ContinueExistingOrder` cadence policy and bounded ruling text. The accepted boxed
+  optional record retains exact original metadata, clock and current turn. The UI
+  explains this is a GM timing choice: ongoing saves and durations continue in the
+  existing order. It grants no victory, surrender, loot, healing, rest or elapsed time.
+- Keep `TacticalPhase::Active` mechanically. The additive aftermath marker changes
+  presentation and session admission only; existing paid actions, source hooks,
+  expiry and controller choices keep their source implementation. Never call
+  `LeaveCombat`, clear Ready, reset resources, or advance time at conclusion.
+- Conclusion requires no selected/pending consequence, dice, source routine/recharge,
+  due falling or uncommitted table decision. Paid Ready may survive at an idle
+  boundary. The marker is immutable and a second declaration is rejected; ordinary
+  actions can still occur on the retained cadence if hostile activity renews.
+- EndSession permits only quiescent marked aftermath, never a pending continuation.
+  A new session can bind a retained dead character for its existing encounter
+  decisions, without admitting dead actors into fresh initiative. Attendance remains
+  explicit; absent controllers are never replaced by host decisions.
+- Preserve old JSON by omitting the boxed marker and projection when absent. Add
+  strict validation, original-action provenance and pre-tactical-anchor protection;
+  keep exact accepted retry and historical/live execution separation unchanged.
+- Implement actual host UI, session controls and real source-backed SQLite evidence.
+  Keep private ruling text host-only and reveal no hidden participant/work counts.
+
+The first-slice acceptance scenario uses genuine source Mage Armor and Hold Person,
+a real dying character and paid physical Ready. Conclude at a material-choice-free
+boundary, prove unchanged time/HP/resources/effect deadlines/Ready and retained source
+counter state, end the session, quit/reopen, establish actual attendance, then continue
+the same death-save, target-end save and Ready expiry through physical dice. Execute
+identical accepted inputs on an independently restored mirror and retry each original
+request after cold reopen. Reject pending/foreign/repeated/missing-policy/forged-origin
+inputs without durable writes. Test old captures and unknown future-state guards.
+
+No heavy compiler, Rust tests or frontend checks are authorized until root explicitly
+hands over the single build slot. Static edits/formatting and coherent local commits
+are authorized; do not push, open a PR or merge before reporting the source checkpoint.
 
 ## Objective and authority
 
-Allow the actual table to finish a settled encounter, preserve its consequences,
-end/reopen the play session and begin another encounter without recreating source
+The full finish workstream will allow the actual table to finish a settled encounter,
+preserve its consequences, end/reopen the play session and begin another encounter without recreating source
 creatures, healing actors or refreshing limited resources. Advance product-definition
 requirements for ordinary play, persistent consequences and exact save/quit/resume;
 apply root AGENTS, Gate04, ADR024/026 and the coordinated reaction contract ADR028.
@@ -50,7 +97,7 @@ authority. Implement one authenticated tactical action with a retained host ruli
   checks through the vitality reducer. Do not introduce an HP/stable-state setter for
   postcombat recovery. Their existing combat behavior does not prove an aftermath path.
 
-## Proposed timing design and source interpretation
+## Mandatory follow-up design and source interpretation
 
 Read-only audit baseline: `fb83db7821adfce39f24f4de0707e95a3b49df34` on
 2026-09-25. This is a later source reference, not this plan branch's implementation
@@ -73,7 +120,9 @@ conclusion cancels spells or converts every next-owner-boundary duration to six 
 The proposed continuation of the existing round cadence after hostile activity is a
 **GM timing interpretation**, to be explained and explicitly retained at admission.
 It is not a claimed verbatim SRD rule, an automatic player pass, or a new expiry clause.
-The precise typed policy and execution-version boundary require root's design decision.
+The first slice now implements only explicit retained existing-order cadence. Terminal
+release, free elapsed time and replacement still require the decisions below; none is
+claimed complete by the first slice.
 
 ### Why the existing helpers cannot finish this task
 
@@ -210,19 +259,12 @@ These are unimplemented acceptance requirements, not existing passing evidence:
 
 ## Status and next action
 
-Plan-only update on 2026-09-25, based on the exact source audit above. The original
-PR33-based branch remains unchanged in production code and must be reconciled with
-current main before implementation. Origin was fetched; this branch was clean at
-`c6b12994dc7db8530566f1535b3a6bd077c2d1e4`, matching its remote head, before this edit.
-Root AGENTS, relevant product clauses, gate protocol/checkpoint, ADR024/026/028 and
-pinned source passages were read. No compiler, frontend tests or production edits
-were run for this research update; no behavior, gate-family completion or new timing
-policy is accepted by recording it.
-
-Exact next action: root resolves execution-version integration after PR38, then reviews
-this proposed GM timing policy and the unresolved immediate-reentry semantics before
-authorizing code. Suggested bounded ownership is one timing/core/schema writer, an
-app/session/setup/projection writer after stable contracts, and an independent author
-of genuine legacy/cold two-encounter regressions. Maintain one writer per branch and one
-heavy verification job. Do not begin implementation, open a PR or merge this plan-only
-branch as part of the delegated documentation task.
+Main fetched; root AGENTS, product clauses, gate protocol/checkpoint, ADR024/026/028,
+current production boundaries and pinned source passages read. The normal baseline
+merge is complete and its plan-only difference proved. No compiler or frontend run.
+This revised plan precedes production writes. Next: implement boxed domain marker,
+pure conclusion validation, app session/projection/origin boundaries, UI and genuine
+SQLite tests; request independent review at a coherent checkpoint, then wait for the
+explicit shared test slot. Report actual failures and results, preserving default
+Windows stack and old historical corpus. Full release/new encounter remains mandatory
+Gate4 work and cannot be moved to Gate5/6 or silently represented by the marker.
