@@ -2,7 +2,11 @@ use super::*;
 use dmd_rules::tactical_creature_equipment::*;
 use dmd_rules::tactical_creatures::*;
 
-fn goblin() -> Fixture {
+pub(super) fn goblin() -> Fixture {
+    equipped_source("goblin-warrior", 3)
+}
+
+pub(super) fn equipped_source(definition: &str, ammunition: u16) -> Fixture {
     let mut f = Fixture::new();
     let actor = f.actors[0];
     f.state.characters.retain(|_, c| c.entity_id != actor);
@@ -14,8 +18,12 @@ fn goblin() -> Fixture {
         &origin,
         actor,
         &CreatureBuildChoice {
-            definition_id: "goblin-warrior".into(),
-            size: CreatureSize::Small,
+            definition_id: definition.into(),
+            size: if definition == "goblin-warrior" {
+                CreatureSize::Small
+            } else {
+                CreatureSize::Medium
+            },
             additional_languages: vec![],
             hit_points: CreatureHitPointChoice::Average,
             controller: CreatureController::Player(f.players[0]),
@@ -30,14 +38,19 @@ fn goblin() -> Fixture {
         profiles: vec![built.profile],
         runtime: vec![built.runtime],
     });
-    let ids = creature_equipment_plan("goblin-warrior", 3)
+    let ids = creature_equipment_plan(definition, ammunition)
         .unwrap()
         .iter()
         .map(|_| ItemId::new())
         .collect::<Vec<_>>();
-    f.state = materialize_creature_equipment(&f.state, &origin, actor, 3, &ids, &f.pack).unwrap();
+    f.state = materialize_creature_equipment(&f.state, &origin, actor, ammunition, &ids, &f.pack)
+        .unwrap();
     let encounter = f.state.encounter.as_mut().unwrap();
-    encounter.participants[0].size = CreatureSize::Small;
+    encounter.participants[0].size = if definition == "goblin-warrior" {
+        CreatureSize::Small
+    } else {
+        CreatureSize::Medium
+    };
     encounter.participants[0].height = 10;
     encounter.participants[0].movement = built.movement;
     encounter.participants[0].senses = built.senses;
@@ -49,7 +62,7 @@ fn goblin() -> Fixture {
     f
 }
 
-fn item(f: &Fixture, id: &str) -> ItemId {
+pub(super) fn item(f: &Fixture, id: &str) -> ItemId {
     f.state
         .items
         .values()
@@ -58,7 +71,7 @@ fn item(f: &Fixture, id: &str) -> ItemId {
         .id
 }
 
-fn choice(f: &Fixture, id: &str) -> CreatureWeaponUseChoice {
+pub(super) fn choice(f: &Fixture, id: &str) -> CreatureWeaponUseChoice {
     CreatureWeaponUseChoice {
         weapon: item(f, id),
         target: f.actors[1],
@@ -78,7 +91,7 @@ fn choice(f: &Fixture, id: &str) -> CreatureWeaponUseChoice {
     }
 }
 
-fn action(id: &str, choice: CreatureWeaponUseChoice) -> TacticalAction {
+pub(super) fn action(id: &str, choice: CreatureWeaponUseChoice) -> TacticalAction {
     TacticalAction::CreatureWeaponAttack {
         feature_id: id.into(),
         choice,
@@ -114,7 +127,7 @@ fn raw(f: &Fixture, values: &[u16]) -> RollResult {
     }
 }
 
-fn roll(f: &mut Fixture, actor: usize, values: &[u16]) {
+pub(super) fn roll(f: &mut Fixture, actor: usize, values: &[u16]) {
     f.run(
         Some(actor),
         TacticalAction::SubmitRoll {

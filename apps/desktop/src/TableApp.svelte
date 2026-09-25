@@ -109,7 +109,7 @@
   }
   function reportFaces(faces: number[]) {
     if (!view?.roll) return;
-    if (view.tactical) {
+    if (view.roll_channel === 'Tactical') {
       const sides=rawDice(view.roll);
       return act({ Tactical: { action: { SubmitRoll: { result: {
         request_id: view.roll.id, source: 'Physical',

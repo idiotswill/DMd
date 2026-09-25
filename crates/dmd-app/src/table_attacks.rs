@@ -86,6 +86,7 @@ pub(super) fn options(
             purposes: purposes(state, actor, item.id, weapon, &definitions),
             ammunition_required: ammunition_id.is_some(),
             ammunition,
+            source_features: source_features(state, actor, item)?,
         });
     }
     weapons.sort_by(|a, b| a.name.cmp(&b.name).then(a.item.0.cmp(&b.item.0)));
@@ -111,6 +112,63 @@ pub(super) fn options(
         weapons,
         targets,
     }))
+}
+
+fn source_features(
+    state: &CampaignState,
+    actor: EntityId,
+    item: &ItemInstance,
+) -> Result<Vec<crate::TableCreatureAttackChoice>, String> {
+    use dmd_rules::tactical_definitions::{FeatureActivation, MonsterFeature};
+    let Some(rules) = &state.rules else {
+        return Ok(vec![]);
+    };
+    if rules
+        .timing
+        .as_ref()
+        .is_none_or(|timing| timing.action_spent)
+        || !dmd_rules::tactical_conditions::can_act(rules, actor).map_err(|e| e.to_string())?
+    {
+        return Ok(vec![]);
+    }
+    let Some(profile) = rules
+        .tactical_creatures
+        .as_ref()
+        .and_then(|c| c.profile(actor))
+    else {
+        return Ok(vec![]);
+    };
+    let source =
+        dmd_rules::tactical_creatures::source_for_profile(profile).map_err(|e| e.to_string())?;
+    let mut choices = Vec::new();
+    for feature in &source.features {
+        if feature.activation != FeatureActivation::Action || feature.usage.is_some() {
+            continue;
+        }
+        let MonsterFeature::Attack {
+            damage,
+            conditional_hits,
+            ..
+        } = &feature.feature
+        else {
+            continue;
+        };
+        if damage.len() != 1 || !conditional_hits.is_empty() {
+            continue;
+        }
+        let required =
+            dmd_rules::tactical_creature_equipment::creature_attack_gear(profile, &feature.id)
+                .map_err(|e| e.to_string())?;
+        if required == Some(item.definition_id.as_str()) {
+            choices.push(crate::TableCreatureAttackChoice {
+                feature_id: feature.id.clone(),
+                label: feature.name.clone(),
+                weapon: Some(item.id),
+            });
+        }
+    }
+    choices.sort_by(|a, b| a.feature_id.cmp(&b.feature_id));
+    Ok(choices)
 }
 
 /// Read-only opportunities from accepted history, never a new attack allowance.

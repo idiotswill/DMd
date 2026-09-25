@@ -12,6 +12,25 @@ function options():AttackOptions {
   ]};
 }
 
+it('uses the canonical source action for a physical weapon while preserving ordinary looted use',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();const initial=options();
+  initial.weapons[1].source_features=[{feature_id:'shortbow',label:'Shortbow',weapon:'bow'}];
+  render(AttackForm,{options:initial,onAction});
+  await user.selectOptions(screen.getByLabelText('Weapon'),'bow');
+  await user.selectOptions(screen.getByLabelText('Target'),'target');
+  expect(screen.queryByLabelText('Attack ability')).toBeNull();
+  expect(screen.queryByLabelText('Attack method')).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Ammunition'),'stack');
+  await user.selectOptions(screen.getByLabelText('Ready or put away weapon'),'draw-left');
+  await user.click(screen.getByRole('button',{name:/^Attack$/}));
+  expect(onAction).toHaveBeenLastCalledWith({CreatureWeaponAttack:{feature_id:'shortbow',choice:{weapon:'bow',target:'target',grip:'TwoHands',ammunition:'stack',equipment_change:{timing:'BeforeAttack',operation:{Equip:{item:'bow',hand:'Left'}}}}}});
+  await user.selectOptions(screen.getByLabelText('Source action'),'');
+  expect(screen.getByLabelText('Attack ability')).toBeTruthy();
+  await user.selectOptions(screen.getByLabelText('Ready or put away weapon'),'stow-after');
+  await user.click(screen.getByRole('button',{name:/^Attack$/}));
+  expect(onAction.mock.calls[1][0]).toEqual({Attack:{choice:{weapon:'bow',target:'target',delivery:'Shot',ability:'Dexterity',grip:'TwoHands',purpose:'Normal',ammunition:'stack',equipment_change:{timing:'AfterAttack',operation:{Unequip:{item:'bow'}}}}}});
+});
+
 it('preserves physical weapon, target, hand and ability choices without sending mechanics',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
   render(AttackForm,{options:options(),onAction});

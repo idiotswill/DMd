@@ -8,6 +8,52 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
+  it('retains the actual shield form item, hand and original action head through uncertain restart',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
+    view.tactical={encounter_id:'encounter',phase:'active',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Encounter action recorded.',mechanics:null}}));
+    const first=render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Don shield'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Don shield'}));
+    await screen.findByRole('alert');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request.action).toEqual({Tactical:{action:{DonShield:{shield:'carried-shield',hand:'Right'}}}});
+    expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');expect(saved.request.expected_event_sequence).toBe(view.event_sequence);
+    first.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
+  it.each([
+    { channel: 'Table' as const, phase: 'setup', sides: 20, label: 'Skill check' },
+    { channel: 'Table' as const, phase: 'setup', sides: 10, label: 'Second Wind' },
+    { channel: 'Tactical' as const, phase: 'initiative', sides: 20, label: 'Initiative' },
+  ])('routes $label through its pending handler even with a prepared map', async ({channel,phase,sides,label}) => {
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.tactical={encounter_id:'encounter',round:null,active_actor:null,phase,battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    view.roll={id:'roll',roller:'actor',dice:[{count:1,sides}],modifier:2,mode:'Normal',visibility:'Public',reason:label};
+    view.roll_channel=channel;
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.action).mockImplementation(async received=>({command_id:received.command_id,event_sequence:20,already_accepted:false,outcome:{message:'Roll accepted.',mechanics:null}}));
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
+    render(TableApp);
+    const die=await screen.findByLabelText(`Die 1 · d${sides}`);
+    await waitFor(()=>expect(die.closest('fieldset')?.disabled).toBe(false));
+    await user.type(die,'7');
+    await user.click(screen.getByRole('button',{name:'Report these faces'}));
+    await waitFor(()=>expect(tableApi.action).toHaveBeenCalledOnce());
+    expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({channel:{Player:{player_id:'player',character_id:'pc'}},action:channel==='Tactical'
+      ? {Tactical:{action:{SubmitRoll:{result:{request_id:'roll',source:'Physical',dice:[{sides,value:7}]}}}}}
+      : {SubmitPhysical:{request_id:'roll',faces:[7]}}});
+  });
   it('retries NPC creation after uncertain delivery and restart with the same source and item IDs',async()=>{
     const user=userEvent.setup();
     const view=emptyView();
@@ -83,6 +129,7 @@ describe('durable UI retry',()=>{
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.active_session={session_id:'session',display_name:'Encounter',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
     view.tactical={encounter_id:'encounter',phase:'initiative',round:null,active_actor:null,battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    view.roll_channel='Tactical';
     view.roll={id:'initiative-roll',roller:'actor',dice:[{sides:20,count:1}],modifier:2,mode:'Disadvantage',visibility:'Public',reason:'Initiative'};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));

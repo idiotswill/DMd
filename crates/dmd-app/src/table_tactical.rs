@@ -12,6 +12,8 @@ mod casting;
 mod choices;
 #[path = "table_movement.rs"]
 mod movement;
+#[path = "table_shields.rs"]
+mod shields;
 
 pub(crate) fn view(
     state: &CampaignState,
@@ -181,6 +183,19 @@ pub(crate) fn view(
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 attacks::options(state, actor)?
+            }
+            _ => None,
+        },
+        shield_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                shields::options(state, actor)?
             }
             _ => None,
         },

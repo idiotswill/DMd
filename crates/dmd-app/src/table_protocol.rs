@@ -213,6 +213,12 @@ pub struct TableTranscriptEntry {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TableRollChannel {
+    Table,
+    Tactical,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
     pub campaign_id: CampaignId,
     pub name: String,
@@ -223,6 +229,8 @@ pub struct TableView {
     pub active_session: Option<ActiveTableSession>,
     pub pending: Option<PendingTableDecision>,
     pub roll: Option<RollRequest>,
+    /// The handler for this visible request; absent whenever its roll is private.
+    pub roll_channel: Option<TableRollChannel>,
     pub tactical: Option<TableTacticalView>,
     pub creature_setup: Option<TableCreatureSetupView>,
     pub situation_title: String,
@@ -288,11 +296,25 @@ pub struct TableTacticalView {
     pub opportunity: Option<TableOpportunityView>,
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
+    pub shield_options: Option<TableShieldOptions>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableLiquidLandingView {
     pub actor: EntityId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableShieldOptions {
+    pub actor: EntityId,
+    pub donned: Option<ItemId>,
+    pub shields: Vec<TableShieldChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableShieldChoice {
+    pub item: ItemId,
+    pub hands: Vec<Hand>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -349,6 +371,7 @@ pub struct TableWeaponChoice {
     pub purposes: Vec<WeaponAttackPurpose>,
     pub ammunition_required: bool,
     pub ammunition: Vec<TableItemView>,
+    pub source_features: Vec<TableCreatureAttackChoice>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

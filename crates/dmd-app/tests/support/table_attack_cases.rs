@@ -16,6 +16,10 @@ async fn physical_attack_knockout_and_npc_shield_drop_restore_through_the_table(
 }
 
 async fn prepare(f: &mut Fixture) -> EntityId {
+    prepare_at(f, SpatialPoint { x: 20, y: 10, z: 0 }).await
+}
+
+pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId {
     let target = EntityId::new();
     let allocation =
         dmd_rules::tactical_creature_equipment::creature_equipment_plan("goblin-warrior", 20)
@@ -35,8 +39,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
         Some(f.session),
     )
     .await;
-    table_tactical_cases::prepare_source_scene_at(f, target, SpatialPoint { x: 20, y: 10, z: 0 })
-        .await;
+    table_tactical_cases::prepare_source_scene_at(f, target, point).await;
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
@@ -74,7 +77,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
     target
 }
 
-async fn submit(f: &Fixture, host: bool, values: &[u16]) {
+pub(super) async fn submit(f: &Fixture, host: bool, values: &[u16]) {
     let viewer = if host {
         TableViewer::Host
     } else {
@@ -224,7 +227,7 @@ async fn begin_attack(f: &Fixture, target: EntityId) -> CommandMeta {
     meta
 }
 
-async fn assert_restore(f: &Fixture) {
+pub(super) async fn assert_restore(f: &Fixture) {
     let export = export_campaign(&f.pool, f.campaign).await.unwrap();
     let pool = open_sqlite("sqlite::memory:").await.unwrap();
     let restored = CampaignRuntime::from_content_root(
@@ -239,7 +242,7 @@ async fn assert_restore(f: &Fixture) {
     pool.close().await;
 }
 
-async fn execute_after_restore(f: &Fixture, meta: CommandMeta, action: TableAction) {
+pub(super) async fn execute_after_restore(f: &Fixture, meta: CommandMeta, action: TableAction) {
     let export = export_campaign(&f.pool, f.campaign).await.unwrap();
     let pool = open_sqlite("sqlite::memory:").await.unwrap();
     let restored = CampaignRuntime::from_content_root(

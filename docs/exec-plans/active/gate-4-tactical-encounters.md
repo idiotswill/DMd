@@ -98,7 +98,7 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ### 2026-09-25 integration checkpoint
 
-Main is now `beaad44c459a65ba674eeca747096a406eab0d78`. Bounded prerequisite
+Main is now `f8e02c9ab20e73636f82a3414bfd12831b5cd880`. Bounded prerequisite
 PRs24 (effects),25 (damage/vitality),26 (physical inventory),27 (source definitions),
 28 (physical weapon plans),29 (actual equipment preparation) and30 (private NPC
 preparation) passed exact-head verification and merged. Detailed evidence remains in
@@ -143,14 +143,26 @@ independent exact-head app/UI review is clear. Root merged it cleanly as `220ee8
 PR29 reconciliation. This integrated combination still requires its own full verification;
 it is not interchangeable with the separately verified source heads.
 
-Root's fresh main-based `codex/gate4-effect-state-attachment` is draft PR31 at
-corrected0486c77. It attaches lifecycle authority/condition queries/concentration,
-legacy typed save guards, recovery origins and original-anchor enforcement. Initial
-CI exposed test-only BTreeSet API errors; independent review exposed a suppressed
-immune condition that could strand stronger-effect removal. Both are corrected with
-regressions. Exact source review is clear; all six source CI checks pass
-(Linux36112860014/Windows36112860090,376 Linux Rust tests). Local canonical remains
-pending the serialized compiler; no implementation-complete claim yet.
+PR31 is merged as `f8e02c9` after375 Windows Rust tests and full canonical checks at
+source0486c77, exact final review at61739b4 and all six final CI jobs
+(Linux36122086428/Windows36122086408). It attaches lifecycle authority/condition
+queries/concentration, legacy typed save guards, recovery origins and original-anchor
+enforcement. Review fixed suppressed immune conditions that could strand stronger
+effect removal. Expected-head merge, fetched full-tree parity and all six post-merge
+jobs pass (Linux36122812303/Windows36122812557, including offline installer).
+Integration6796581 preserves the source fix with tactical recovery/legacy posture;
+5127efc strengthens that query regression. Combined backend verification is pending.
+
+Fresh main-based PR32 (`codex/gate4-table-turn-core`) extracts initiative, durable
+start/end turn work and budget control with inactive future actions/cursors explicitly
+rejected. Current286f410 has independent full extraction/correction review (final
+fixture-only delta review pending),22 UI tests, zero Svelte diagnostics and build.
+Review fixed ordinary dice after map setup routing through the wrong handler. New
+disk-SQLite tests execute ordinary checks, initiative and a whole round on both real
+and independently restored runtimes, then verify cold retry and forged restore
+rejection. These Rust tests are still uncompiled: initial CI exposed omitted UUID v5
+feature/lock and two absent-flow test constructor fields, now corrected. Canonical
+and exact-head CI are required before merge; no turn slice completion is claimed.
 
 Source weapons1ab9e7 passed104 focused cases (62 attack,18 movement,24 turn) and
 strict domain/rules Clippy, with independent exact review. Integrated as8fa4484.
@@ -158,17 +170,37 @@ Falling sourceebbff59 has final12 falling+43 spatial cases and strict Clippy; ea
 95-case combined evidence predates its last two source fixes and is not final-head
 proof. Root integrated its seven-source chain throughb4360d2, then app/UI27c458
 as4fa4212. App/UI37 tests/check/build passed on its source branch; actual SQLite
-falling verification exposed an oversized async test future and is being split/boxed
-under the default Windows stack. A later compile and root frontend run exhausted
-system committed memory; neither counts as passing. No user applications were closed.
+falling verification exposed an oversized async test future. Test-only32ad5be boxes
+independent phases and now passes all62 app tests, strict three-crate Clippy and the
+liquid landing/recovery cases on the default Windows stack. Integrated as9fd73da.
+Earlier runs exhausted system committed memory; those remain failed attempts. After
+owner freed memory, integrationd046810 passed38 UI tests/check/build. No user
+applications were closed.
 
 Area source2703f96 passed131 distinct rules cases (10 leaf,67 attack including14area,
 30 movement,24 turn) and strict domain/rules Clippy, with exact review. Source-faithful
 breaths use explicit GM occupied-cell sample/cover policy, shared amount and all saves
 before damage, settled fall state before admission and retained source/geometry proof.
 Area app integration and explicit controller delegation for hidden simultaneous work
-are active on a separate branch. Shield don/doff and physical source-weapon table
-controls are another active branch; no tests or completion claimed yet.
+are active on a separate branch. Its697a238 source passes17 current area rules cases;
+actual SQLite app verification is running. Privacy audit exposed canonical sequence
+and generic transcript command-count leakage. A separate owned branch plans durable
+per-audience revisions and acceptance-time presentation history, without reducing
+ordering agency or claiming timing invisibility.
+
+Shield slice16ff104 has independent exact review and121 affected rules tests, all65
+app tests,42 UI tests, zero Svelte diagnostics, production build and strict
+domain/rules/app all-target Clippy. Real SQLite cases retain physical source weapon
+identity, paid shield transitions, AC/training, pending raw dice, restart/retry and
+hostile restore rejection. Its pre-code plan and source are integrated as ee13cff/
+e64c53f. Combined integration and eventual main PR verification remain pending.
+
+The reviewed PR32 visible-purpose dice routing fix is also reconciled into this
+integration branch. The only overlap was additive TableApp test insertion; both
+shield and dice scenarios are retained, and the older initiative fixture now declares
+its actual Tactical roll channel. This combined frontend passes45 tests and Svelte
+check with zero diagnostics. Backend evidence still needs the combined source run;
+the separate turn-core cold-round regression is preserved on its bounded PR branch.
 
 The18 spell mechanism
 families remain active where unfinished, including Ready, interruptions, zones, barriers,
