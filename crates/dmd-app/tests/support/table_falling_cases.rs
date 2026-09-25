@@ -232,6 +232,9 @@ async fn reject_tampered_fall_export(f: &Fixture) {
         } else {
             bad.current_state.state_json = encoded;
         }
+        bad.upgraded().expect(
+            "portable structure remains valid; tactical preflight must reject the forged meaning",
+        );
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let runtime = CampaignRuntime::from_content_root(pool.clone(), content());
         assert!(
@@ -239,11 +242,19 @@ async fn reject_tampered_fall_export(f: &Fixture) {
             "mutation {mutation}"
         );
         assert!(runtime.open_campaign(f.campaign).await.is_err());
-        let rows: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaigns")
-            .fetch_one(&pool)
-            .await
-            .unwrap();
-        assert_eq!(rows, 0);
+        for table in [
+            "campaign_state_current",
+            "campaign_lifecycle",
+            "event_journal",
+            "command_audit",
+            "campaign_snapshots",
+        ] {
+            let rows: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM {table}"))
+                .fetch_one(&pool)
+                .await
+                .unwrap();
+            assert_eq!(rows, 0, "partial restore wrote {table}");
+        }
         pool.close().await;
     }
 }
@@ -255,242 +266,270 @@ async fn liquid_landing_choices_and_raw_dice_reopen_retry_restore_and_replay_thr
         Some(LiquidLandingChoice::Acrobatics),
         None,
     ] {
-        let path =
-            std::env::temp_dir().join(format!("dmd-table-fall-{}.sqlite", CommandId::new().0));
-        let pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
-        let mut f = Fixture::with_pool(TableContract::default(), pool).await;
-        prepare_ledge(&mut f).await;
-        let before = state(&f).await;
-        let move_meta = f.player_meta(0).await;
+        // Keep this long, multi-reopen scenario off the default Windows test stack.
+        // Each phase below has its own bounded future; the stack limit is unchanged.
+        Box::pin(run_landing_case(choice)).await;
+    }
+}
+
+async fn run_landing_case(choice: Option<LiquidLandingChoice>) {
+    let path = std::env::temp_dir().join(format!("dmd-table-fall-{}.sqlite", CommandId::new().0));
+    let pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
+    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    Box::pin(prepare_ledge(&mut f)).await;
+    let (before_hp, move_meta, pending, view) = Box::pin(step_off_and_check_privacy(&f)).await;
+    let choice_action = action(TacticalAction::ChooseLiquidLanding { choice });
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mirror_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let mirror = CampaignRuntime::from_content_root(mirror_pool.clone(), content());
+    mirror.restore_campaign(&export).await.unwrap();
+    reopen(&mut f, &path).await;
+    assert_eq!(
         f.runtime
-            .execute_table(
-                move_meta.clone(),
-                action(TacticalAction::Move {
-                    path: vec![
-                        TacticalMoveStep {
-                            destination: point(20, 10, 30),
-                            mode: MovementMode::Walk,
-                        },
-                        TacticalMoveStep {
-                            destination: point(30, 10, 30),
-                            mode: MovementMode::Walk,
-                        },
-                    ],
-                }),
-            )
+            .table_view(f.campaign, TableViewer::Player(f.players[0]))
             .await
-            .unwrap();
-        let pending = state(&f).await;
+            .unwrap(),
+        view
+    );
+    assert_eq!(state(&f).await, pending);
+    let choice_meta = f.player_meta(0).await;
+    execute_both(&f, &mirror, choice_meta.clone(), choice_action.clone()).await;
+    let after_choice = state(&f).await;
+    assert_eq!(
+        after_choice
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .contains(&f.actors[0]),
+        choice.is_some()
+    );
+    reopen(&mut f, &path).await;
+    assert!(
+        f.runtime
+            .execute_table(choice_meta.clone(), choice_action.clone())
+            .await
+            .unwrap()
+            .already_accepted
+    );
+    assert_eq!(state(&f).await, after_choice);
+    let stale = CommandMeta {
+        id: CommandId::new(),
+        ..choice_meta.clone()
+    };
+    assert!(f.runtime.execute_table(stale, choice_action).await.is_err());
+    Box::pin(reject_tampered_fall_export(&f)).await;
+
+    if let Some(choice) = choice {
+        let request = request(&f).await;
+        assert_eq!(
+            request.reason,
+            match choice {
+                LiquidLandingChoice::Athletics => "Strength (Athletics) liquid landing check",
+                LiquidLandingChoice::Acrobatics => "Dexterity (Acrobatics) liquid landing check",
+            }
+        );
+        assert_eq!(request.roller, Some(f.actors[0]));
         let view = f
             .runtime
             .table_view(f.campaign, TableViewer::Player(f.players[0]))
             .await
             .unwrap();
-        assert!(view.roll.is_none());
-        assert_eq!(
-            view.tactical.as_ref().unwrap().liquid_landing,
-            Some(TableLiquidLandingView { actor: f.actors[0] })
-        );
-        let json = serde_json::to_string(&view).unwrap();
-        assert!(!json.contains("private-water-identity"));
-        assert!(!json.contains("host-platform-identity"));
-        let other = f
-            .runtime
-            .table_view(f.campaign, TableViewer::Player(f.players[1]))
-            .await
-            .unwrap();
-        assert!(other.tactical.unwrap().liquid_landing.is_none());
-        assert!(other.roll.is_none());
+        assert!(view.tactical.as_ref().unwrap().liquid_landing.is_none());
+        assert!(view.tactical.as_ref().unwrap().may_fail_save.is_none());
         assert!(
             f.runtime
-                .table_view(f.campaign, TableViewer::Host)
-                .await
-                .unwrap()
-                .tactical
-                .unwrap()
-                .liquid_landing
-                .is_some()
-        );
-
-        let choice_action = action(TacticalAction::ChooseLiquidLanding { choice });
-        let wrong = f
-            .meta(
-                CommandIssuer::Player(f.players[1]),
-                Some(f.actors[0]),
-                Some(f.session),
-            )
-            .await;
-        assert!(
-            f.runtime
-                .execute_table(wrong, choice_action.clone())
+                .execute_table(
+                    f.player_meta(0).await,
+                    action(TacticalAction::VoluntarilyFailSave)
+                )
                 .await
                 .is_err()
         );
-        assert_eq!(state(&f).await, pending);
-        reject_tampered_fall_export(&f).await;
-
-        let export = export_campaign(&f.pool, f.campaign).await.unwrap();
-        let mirror_pool = open_sqlite("sqlite::memory:").await.unwrap();
-        let mirror = CampaignRuntime::from_content_root(mirror_pool.clone(), content());
-        mirror.restore_campaign(&export).await.unwrap();
-        reopen(&mut f, &path).await;
-        assert_eq!(
-            f.runtime
-                .table_view(f.campaign, TableViewer::Player(f.players[0]))
-                .await
-                .unwrap(),
-            view
-        );
-        assert_eq!(state(&f).await, pending);
-        let choice_meta = f.player_meta(0).await;
-        execute_both(&f, &mirror, choice_meta.clone(), choice_action.clone()).await;
-        let after_choice = state(&f).await;
-        assert_eq!(
-            after_choice
-                .rules
-                .as_ref()
-                .unwrap()
-                .timing
-                .as_ref()
-                .unwrap()
-                .reactions_spent
-                .contains(&f.actors[0]),
-            choice.is_some()
-        );
+        let roll_meta = f.player_meta(0).await;
+        let rolled = raw(&request, &[15]);
+        execute_both(&f, &mirror, roll_meta.clone(), rolled.clone()).await;
         reopen(&mut f, &path).await;
         assert!(
             f.runtime
-                .execute_table(choice_meta.clone(), choice_action.clone())
+                .execute_table(roll_meta.clone(), rolled)
                 .await
                 .unwrap()
                 .already_accepted
         );
-        assert_eq!(state(&f).await, after_choice);
-        let stale = CommandMeta {
-            id: CommandId::new(),
-            ..choice_meta.clone()
-        };
-        assert!(f.runtime.execute_table(stale, choice_action).await.is_err());
-        reject_tampered_fall_export(&f).await;
-
-        if let Some(choice) = choice {
-            let request = request(&f).await;
-            assert_eq!(
-                request.reason,
-                match choice {
-                    LiquidLandingChoice::Athletics => "Strength (Athletics) liquid landing check",
-                    LiquidLandingChoice::Acrobatics =>
-                        "Dexterity (Acrobatics) liquid landing check",
-                }
-            );
-            assert_eq!(request.roller, Some(f.actors[0]));
-            let view = f
-                .runtime
-                .table_view(f.campaign, TableViewer::Player(f.players[0]))
-                .await
-                .unwrap();
-            assert!(view.tactical.as_ref().unwrap().liquid_landing.is_none());
-            assert!(view.tactical.as_ref().unwrap().may_fail_save.is_none());
-            assert!(
-                f.runtime
-                    .execute_table(
-                        f.player_meta(0).await,
-                        action(TacticalAction::VoluntarilyFailSave)
-                    )
-                    .await
-                    .is_err()
-            );
-            let roll_meta = f.player_meta(0).await;
-            let rolled = raw(&request, &[15]);
-            execute_both(&f, &mirror, roll_meta.clone(), rolled.clone()).await;
-            reopen(&mut f, &path).await;
-            assert!(
-                f.runtime
-                    .execute_table(roll_meta.clone(), rolled)
-                    .await
-                    .unwrap()
-                    .already_accepted
-            );
-            assert!(
-                f.runtime
-                    .execute_table(roll_meta, raw(&request, &[1]))
-                    .await
-                    .is_err()
-            );
-            reject_tampered_fall_export(&f).await;
-        }
-        let request = request(&f).await;
-        assert_eq!(request.reason, "Falling damage");
-        assert_eq!(request.dice, vec![DieSpec { count: 1, sides: 6 }]);
-        let damage_meta = f.player_meta(0).await;
-        let rolled = raw(&request, &[6]);
-        execute_both(&f, &mirror, damage_meta.clone(), rolled.clone()).await;
-        let landed = state(&f).await;
-        let flow = landed.encounter.as_ref().unwrap().flow.as_ref().unwrap();
-        assert!(flow.resolution.is_none());
-        assert_eq!(
-            landed
-                .encounter
-                .as_ref()
-                .unwrap()
-                .participant(f.actors[0])
-                .unwrap()
-                .position,
-            point(20, 10, 10)
-        );
-        let receipt = flow.last_movement.as_ref().unwrap();
-        assert_eq!(receipt.original, move_meta);
-        assert_eq!(receipt.cause, damage_meta);
-        assert_eq!(receipt.reason, TacticalMovementEnd::Fell);
-        assert_eq!(
-            (
-                receipt.completed_steps,
-                receipt.requested_steps,
-                receipt.spent_after
-            ),
-            (1, 2, 10)
-        );
-        let entity = &landed.rules.as_ref().unwrap().entities[&f.actors[0]];
-        assert!(entity.prone);
-        assert_eq!(
-            before.rules.as_ref().unwrap().entities[&f.actors[0]].hp - entity.hp,
-            if choice.is_some() { 3 } else { 6 }
-        );
-        reopen(&mut f, &path).await;
         assert!(
             f.runtime
-                .execute_table(damage_meta, rolled)
+                .execute_table(roll_meta, raw(&request, &[1]))
                 .await
-                .unwrap()
-                .already_accepted
+                .is_err()
         );
-        assert_eq!(state(&f).await, landed);
-        assert_eq!(f.runtime.replay_rules(f.campaign).await.unwrap(), landed);
-        let final_export = export_campaign(&f.pool, f.campaign).await.unwrap();
-        let mirror_export = export_campaign(&mirror_pool, f.campaign).await.unwrap();
-        assert_eq!(
-            final_export.event_journal.len(),
-            mirror_export.event_journal.len()
-        );
-        for (actual, replayed) in final_export
-            .event_journal
-            .iter()
-            .zip(&mirror_export.event_journal)
-        {
-            assert_eq!(actual.sequence, replayed.sequence);
-            assert_eq!(actual.command_id, replayed.command_id);
-            assert_eq!(actual.payload_json, replayed.payload_json);
-        }
-        assert_eq!(final_export.command_audit, mirror_export.command_audit);
-        let final_view = f
-            .runtime
-            .table_view(f.campaign, TableViewer::Player(f.players[0]))
-            .await
-            .unwrap();
-        assert!(final_view.roll.is_none());
-        assert!(final_view.tactical.unwrap().liquid_landing.is_none());
-        mirror_pool.close().await;
-        f.pool.close().await;
-        std::fs::remove_file(path).unwrap();
+        Box::pin(reject_tampered_fall_export(&f)).await;
     }
+    Box::pin(finish_landing(
+        &mut f,
+        &mirror,
+        &mirror_pool,
+        &path,
+        before_hp,
+        move_meta,
+        choice.is_some(),
+    ))
+    .await;
+    mirror_pool.close().await;
+    f.pool.close().await;
+    std::fs::remove_file(path).unwrap();
+}
+
+async fn step_off_and_check_privacy(f: &Fixture) -> (u32, CommandMeta, CampaignState, TableView) {
+    let before_hp = state(f).await.rules.as_ref().unwrap().entities[&f.actors[0]].hp;
+    let move_meta = f.player_meta(0).await;
+    f.runtime
+        .execute_table(
+            move_meta.clone(),
+            action(TacticalAction::Move {
+                path: vec![
+                    TacticalMoveStep {
+                        destination: point(20, 10, 30),
+                        mode: MovementMode::Walk,
+                    },
+                    TacticalMoveStep {
+                        destination: point(30, 10, 30),
+                        mode: MovementMode::Walk,
+                    },
+                ],
+            }),
+        )
+        .await
+        .unwrap();
+    let pending = state(f).await;
+    let view = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert!(view.roll.is_none());
+    assert_eq!(
+        view.tactical.as_ref().unwrap().liquid_landing,
+        Some(TableLiquidLandingView { actor: f.actors[0] })
+    );
+    let json = serde_json::to_string(&view).unwrap();
+    assert!(!json.contains("private-water-identity"));
+    assert!(!json.contains("host-platform-identity"));
+    let other = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[1]))
+        .await
+        .unwrap();
+    assert!(other.tactical.unwrap().liquid_landing.is_none());
+    assert!(other.roll.is_none());
+    assert!(
+        f.runtime
+            .table_view(f.campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .tactical
+            .unwrap()
+            .liquid_landing
+            .is_some()
+    );
+
+    let choice_action = action(TacticalAction::ChooseLiquidLanding { choice: None });
+    let wrong = f
+        .meta(
+            CommandIssuer::Player(f.players[1]),
+            Some(f.actors[0]),
+            Some(f.session),
+        )
+        .await;
+    assert!(
+        f.runtime
+            .execute_table(wrong, choice_action.clone())
+            .await
+            .is_err()
+    );
+    assert_eq!(state(f).await, pending);
+    Box::pin(reject_tampered_fall_export(f)).await;
+
+    (before_hp, move_meta, pending, view)
+}
+
+async fn finish_landing(
+    f: &mut Fixture,
+    mirror: &CampaignRuntime,
+    mirror_pool: &sqlx::SqlitePool,
+    path: &Path,
+    before_hp: u32,
+    move_meta: CommandMeta,
+    halved: bool,
+) {
+    let request = request(f).await;
+    assert_eq!(request.reason, "Falling damage");
+    assert_eq!(request.dice, vec![DieSpec { count: 1, sides: 6 }]);
+    let damage_meta = f.player_meta(0).await;
+    let rolled = raw(&request, &[6]);
+    execute_both(f, mirror, damage_meta.clone(), rolled.clone()).await;
+    let landed = state(f).await;
+    let flow = landed.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+    assert!(flow.resolution.is_none());
+    assert_eq!(
+        landed
+            .encounter
+            .as_ref()
+            .unwrap()
+            .participant(f.actors[0])
+            .unwrap()
+            .position,
+        point(20, 10, 10)
+    );
+    let receipt = flow.last_movement.as_ref().unwrap();
+    assert_eq!(receipt.original, move_meta);
+    assert_eq!(receipt.cause, damage_meta);
+    assert_eq!(receipt.reason, TacticalMovementEnd::Fell);
+    assert_eq!(
+        (
+            receipt.completed_steps,
+            receipt.requested_steps,
+            receipt.spent_after
+        ),
+        (1, 2, 10)
+    );
+    let entity = &landed.rules.as_ref().unwrap().entities[&f.actors[0]];
+    assert!(entity.prone);
+    assert_eq!(before_hp - entity.hp, if halved { 3 } else { 6 });
+    reopen(f, path).await;
+    assert!(
+        f.runtime
+            .execute_table(damage_meta, rolled)
+            .await
+            .unwrap()
+            .already_accepted
+    );
+    assert_eq!(state(f).await, landed);
+    assert_eq!(f.runtime.replay_rules(f.campaign).await.unwrap(), landed);
+    let final_export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mirror_export = export_campaign(mirror_pool, f.campaign).await.unwrap();
+    assert_eq!(
+        final_export.event_journal.len(),
+        mirror_export.event_journal.len()
+    );
+    for (actual, replayed) in final_export
+        .event_journal
+        .iter()
+        .zip(mirror_export.event_journal)
+    {
+        assert_eq!(actual.sequence, replayed.sequence);
+        assert_eq!(actual.command_id, replayed.command_id);
+        assert_eq!(actual.payload_json, replayed.payload_json);
+    }
+    assert_eq!(final_export.command_audit, mirror_export.command_audit);
+    let final_view = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert!(final_view.roll.is_none());
+    assert!(final_view.tactical.unwrap().liquid_landing.is_none());
 }
