@@ -172,3 +172,26 @@ the earlier Windows source green does not prove that newly broadened test step.
 ADR026 is included with its previously reviewed decision text and an explicit
 architecture-versus-implementation status; references in this plan now resolve on
 main after merge. The central Gate4 plan retains the active followup obligations.
+
+## Canonical source completion and final-head verification
+
+The local canonical `./scripts/verify` completed successfully after memory was freed:
+424 Windows GNU Rust tests, formatting, workspace/all-target check, strict workspace
+all-target Clippy, genericity guard and architecture guard (8 cases,1 platform skip).
+The actual disk-SQLite round passes with the default Windows stack. Log:
+`tooling/gate4-turn-core-canonical.log` outside the repository. No stack limit, test
+assertion, source rule or verification check was weakened. Source is `70b8333`;
+all Rust/app/content/script/manifest/lock files remain identical through9c22b74.
+
+Independent full extraction, routing correction and fixture/lint delta review are
+clear.22 frontend tests and Svelte/build evidence remain as recorded above. All six
+source CI jobs passed; the9c22b74 Windows workflow expansion adds whole-workspace
+native tests because later actual SQLite scenarios exposed Windows-only stack risk.
+Its Linux run36126126492 passes; native Windows36126126314 is in progress. The
+workflow/ADR/evidence delta has separate independent review with no blocker.
+
+Next verify this final evidence-only head (including the expanded native Windows
+tests and installer), obtain exact final-head signoff and protected merge; fetch
+main, prove full-tree parity and finish post-merge checks. Then proceed directly
+within Gate4 to the physical encounter/source-casting integration on a fresh branch.
+No Gate4 completion or Gate5 entry is claimed by this prerequisite slice.

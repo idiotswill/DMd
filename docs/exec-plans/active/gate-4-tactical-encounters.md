@@ -155,14 +155,25 @@ Integration6796581 preserves the source fix with tactical recovery/legacy postur
 
 Fresh main-based PR32 (`codex/gate4-table-turn-core`) extracts initiative, durable
 start/end turn work and budget control with inactive future actions/cursors explicitly
-rejected. Current286f410 has independent full extraction/correction review (final
-fixture-only delta review pending),22 UI tests, zero Svelte diagnostics and build.
-Review fixed ordinary dice after map setup routing through the wrong handler. New
-disk-SQLite tests execute ordinary checks, initiative and a whole round on both real
-and independently restored runtimes, then verify cold retry and forged restore
-rejection. These Rust tests are still uncompiled: initial CI exposed omitted UUID v5
-feature/lock and two absent-flow test constructor fields, now corrected. Canonical
-and exact-head CI are required before merge; no turn slice completion is claimed.
+rejected. Exact source70b8333 passes full local canonical verification:424 Windows
+Rust tests, strict workspace Clippy, formatting/check and both repository guards.
+Linux36124985437 passes425 Rust tests and all four jobs; Windows36124985423 passes
+MSRV/stable including offline installer. Independent full extraction and correction
+reviews are clear,22 UI tests pass, Svelte has zero diagnostics and build succeeds.
+Review fixed ordinary dice after map setup routing through the wrong handler. The
+new disk-SQLite test executes ordinary checks, initiative and a whole round on both
+real and independently restored runtimes, then verifies cold retry and forged restore
+rejection; it passes the default Windows stack. Initial extraction compile/lint
+failures are fixed and retained in the slice plan. Followup9c22b74 changes only docs
+and broadens native Windows CI from desktop-only to the full workspace; Linux is
+green there, with the expanded Windows test/packaging step still pending. Final
+evidence-head review/CI and expected-head merge remain required.
+
+The next physical encounter slice includes reviewed Immediate-only source casting:
+a genuine damaging opportunity-attack/concentration case needs a legitimately cast
+ongoing spell. No arbitrary effect installer or synthetic state substitutes for that
+prerequisite. Exact combined source/app recovery review remains mandatory; areas,
+Ready/reaction magic and privacy protocol remain separate active Gate4 obligations.
 
 Source weapons1ab9e7 passed104 focused cases (62 attack,18 movement,24 turn) and
 strict domain/rules Clippy, with independent exact review. Integrated as8fa4484.
