@@ -17,6 +17,11 @@ export interface AttackOptions {
 }
 
 export interface Point { x: number; y: number; z: number }
+export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
+export interface MoveStep { destination: Point; mode: MovementMode }
+export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[] }
+export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } };
+export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[] }
 export interface Volume { min: Point; max: Point }
 export interface Battlefield {
   bounds: Volume; floor_z: number; floor_surface: string; ambient_light: 'Bright' | 'Dim' | 'Darkness';
@@ -34,6 +39,8 @@ export type TacticalAction =
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
   | { Attack: { choice: WeaponUseChoice } }
+  | { Move: { path: MoveStep[] } }
+  | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { occurrence: number } }
@@ -54,6 +61,8 @@ export interface TacticalView {
   legendary_resistance: Id | null;
   legendary_action: Id | null;
   attack_options?: AttackOptions | null;
+  movement_options?: MovementOptions | null;
+  opportunity?: OpportunityView | null;
   attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }

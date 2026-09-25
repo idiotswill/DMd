@@ -62,8 +62,8 @@ fn roll_label(purpose: &PendingPurpose) -> String {
             }
             TacticalRollRole::StableRecovery => "Stable recovery time",
             TacticalRollRole::CreatureRecharge => "Ability recharge",
-            TacticalRollRole::Attack => "Weapon attack",
-            TacticalRollRole::AttackDamage => "Weapon damage",
+            TacticalRollRole::Attack => "Attack roll",
+            TacticalRollRole::AttackDamage => "Attack damage",
         }
         .into(),
         PendingPurpose::Test { kind, .. } => match kind {

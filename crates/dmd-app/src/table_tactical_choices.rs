@@ -55,6 +55,13 @@ pub(super) fn continuation(
                                 resolution.attack.as_ref().map(|attack| attack.actor),
                                 "Attack consequence",
                             ),
+                            TacticalWorkKind::MoveSegment => (
+                                resolution.movement.as_ref().map(|movement| movement.actor),
+                                "Continue movement",
+                            ),
+                            TacticalWorkKind::MovementOpportunity { reactor } => {
+                                (Some(*reactor), "Opportunity attack")
+                            }
                         };
                         // Owning the turn grants ordering authority, not knowledge of another
                         // actor's health, concentration, hidden source, DC or location.
@@ -197,6 +204,7 @@ mod tests {
             failed_save: None,
             legendary_window: None,
             attack: None,
+            movement: None,
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);

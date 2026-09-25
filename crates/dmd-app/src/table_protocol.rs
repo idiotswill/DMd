@@ -282,6 +282,32 @@ pub struct TableTacticalView {
     /// Physical choices for an authorized current actor; no target combat statistics.
     pub attack_options: Option<TableAttackOptions>,
     pub attack_decision: Option<TableAttackDecision>,
+    pub movement_options: Option<TableMovementOptions>,
+    pub opportunity: Option<TableOpportunityView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableOpportunityView {
+    pub actor: EntityId,
+    pub target: TableAttackTarget,
+    pub weapons: Option<TableAttackOptions>,
+    pub unarmed: bool,
+    pub features: Vec<TableCreatureAttackChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureAttackChoice {
+    pub feature_id: String,
+    pub label: String,
+    pub weapon: Option<ItemId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableMovementOptions {
+    pub actor: EntityId,
+    pub position: SpatialPoint,
+    pub grid_units: u32,
+    pub modes: Vec<MovementMode>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

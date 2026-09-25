@@ -1,8 +1,8 @@
 <script lang="ts">
   import type { Ability } from '../table-api';
   import type { AttackOptions, TacticalAction, WeaponAttackPurpose, WeaponDelivery, WeaponGrip, WeaponUseChoice } from '../tactical-api';
-  let { options, disabled=false, onAction }: {
-    options:AttackOptions; disabled?:boolean; onAction:(action:TacticalAction)=>void;
+  let { options, disabled=false, opportunity=false, onAction }: {
+    options:AttackOptions; disabled?:boolean; opportunity?:boolean; onAction:(action:TacticalAction)=>void;
   }=$props();
   let item=$state(''); let target=$state(''); let ammunition=$state('');
   let delivery=$state<WeaponDelivery>('Melee'); let ability=$state<Ability>('Strength');
@@ -22,19 +22,19 @@
   });
   const gripLabel=(grip:WeaponGrip)=>grip==='TwoHands'?'Both hands':`${grip.OneHand} hand`;
   const handLabel=(hand:'Free'|{Item:string})=>hand==='Free'?'free':options.weapons.find(weapon=>weapon.item===hand.Item)?.name??'occupied';
-  const purposeLabel=(purpose:WeaponAttackPurpose)=>purpose==='Normal'?'Attack action':'LightBonus' in purpose?'Light extra attack · bonus action':'Nick' in purpose?'Nick extra attack · Attack action':'Cleave extra attack';
+  const purposeLabel=(purpose:WeaponAttackPurpose)=>purpose==='Normal'?(opportunity?'Opportunity attack · reaction':'Attack action'):'LightBonus' in purpose?'Light extra attack · bonus action':'Nick' in purpose?'Nick extra attack · Attack action':'Cleave extra attack';
   function submit(event:SubmitEvent) {
     event.preventDefault();
     const purpose=selected?.purposes.find(choice=>JSON.stringify(choice)===purposeKey);
     if(!selected || !purpose || !target || !selected.grips[gripIndex] || (selected.ammunition_required&&!ammunition)) return;
     let change:WeaponUseChoice['equipment_change']=null;
-    if(equipment==='draw-left'||equipment==='draw-right') change={timing:'BeforeAttack',operation:{Equip:{item,hand:equipment==='draw-left'?'Left':'Right'}}};
-    if(equipment==='stow-after') change={timing:'AfterAttack',operation:{Unequip:{item}}};
+    if(!opportunity&&(equipment==='draw-left'||equipment==='draw-right')) change={timing:'BeforeAttack',operation:{Equip:{item,hand:equipment==='draw-left'?'Left':'Right'}}};
+    if(!opportunity&&equipment==='stow-after') change={timing:'AfterAttack',operation:{Unequip:{item}}};
     onAction({Attack:{choice:{weapon:item,target,delivery,ability,grip:selected.grips[gripIndex],purpose,ammunition:selected.ammunition_required?ammunition:null,equipment_change:change}}});
   }
 </script>
 <form onsubmit={submit}>
-  <fieldset {disabled}><legend>Weapon attack</legend>
+  <fieldset {disabled}><legend>{opportunity?'Held weapon reaction':'Weapon attack'}</legend>
     <p>Left hand: {handLabel(options.hands.hands[0])}. Right hand: {handLabel(options.hands.hands[1])}.</p>
     {#if available.length && options.targets.length}
       <div class="form-grid">
@@ -45,7 +45,7 @@
           <label>Attack method<select bind:value={delivery}>{#each selected.deliveries as method}<option value={method}>{method==='Shot'?'Shoot':method==='Thrown'?'Throw':'Melee'}</option>{/each}</select></label>
           <label>Attack ability<select bind:value={ability}>{#each selected.abilities as choice}<option value={choice}>{choice}</option>{/each}</select></label>
           <label>Weapon grip<select bind:value={gripIndex}>{#each selected.grips as grip,index}<option value={index}>{gripLabel(grip)}</option>{/each}</select></label>
-          <label>Ready or put away weapon<select bind:value={equipment}><option value="held">Use the weapon as held</option><option value="draw-left">Ready in left hand before attacking</option><option value="draw-right">Ready in right hand before attacking</option><option value="stow-after">Put away after attacking</option></select></label>
+          {#if !opportunity}<label>Ready or put away weapon<select bind:value={equipment}><option value="held">Use the weapon as held</option><option value="draw-left">Ready in left hand before attacking</option><option value="draw-right">Ready in right hand before attacking</option><option value="stow-after">Put away after attacking</option></select></label>{/if}
           {#if selected.ammunition_required}<label>Ammunition<select bind:value={ammunition} required><option value="" disabled>Choose a carried stack</option>{#each selected.ammunition as stack,index}<option value={stack.id}>{stack.name} · {stack.quantity} remaining · stack {index+1}</option>{/each}</select></label>{/if}
         {/if}
       </div>

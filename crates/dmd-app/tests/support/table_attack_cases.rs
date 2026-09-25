@@ -217,7 +217,7 @@ async fn begin_attack(f: &Fixture, target: EntityId) -> CommandMeta {
         .unwrap()
         .roll
         .unwrap();
-    assert_eq!(request.reason, "Weapon damage");
+    assert_eq!(request.reason, "Attack damage");
     assert_eq!(request.dice, vec![DieSpec { count: 2, sides: 4 }]);
     assert_restore(f).await;
     submit(f, false, &[4, 4]).await;
@@ -606,5 +606,130 @@ async fn check_light_followup(
         rules.entities[&target].hp, 6,
         "Light extra damage omits the positive ability modifier"
     );
+    assert_restore(f).await;
+}
+
+#[tokio::test]
+async fn table_movement_restores_an_owned_opportunity_and_resumes_after_attack_or_decline() {
+    for attack in [false, true] {
+        let mut f = Fixture::new().await;
+        let guard = prepare(&mut f).await;
+        let view = f
+            .runtime
+            .table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap();
+        let movement = view.tactical.unwrap().movement_options.unwrap();
+        assert_eq!(movement.actor, f.actors[0]);
+        assert_eq!(movement.position, SpatialPoint { x: 10, y: 10, z: 0 });
+        assert!(movement.modes.contains(&MovementMode::Walk));
+        let outsider = f
+            .runtime
+            .table_view(f.campaign, TableViewer::Player(f.players[1]))
+            .await
+            .unwrap();
+        assert!(outsider.tactical.unwrap().movement_options.is_none());
+        let action = TableAction::Tactical {
+            action: TacticalAction::Move {
+                path: vec![TacticalMoveStep {
+                    destination: SpatialPoint { x: 0, y: 10, z: 0 },
+                    mode: MovementMode::Walk,
+                }],
+            },
+        };
+        let meta = f.player_meta(0).await;
+        execute_after_restore(&f, meta.clone(), action.clone()).await;
+        assert!(
+            f.runtime
+                .execute_table(meta, action)
+                .await
+                .unwrap()
+                .already_accepted
+        );
+        resolve_table_opportunity(&f, guard, attack).await;
+        f.pool.close().await;
+    }
+}
+
+async fn resolve_table_opportunity(f: &Fixture, guard: EntityId, attack: bool) {
+    let host = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap()
+        .tactical
+        .unwrap();
+    let opportunity = host.opportunity.unwrap();
+    assert_eq!(opportunity.actor, guard);
+    assert_eq!(opportunity.target.actor, f.actors[0]);
+    assert_eq!(
+        host.budget.unwrap().movement_spent,
+        0,
+        "the crossing awaits its reaction"
+    );
+    for player in f.players {
+        let view = f
+            .runtime
+            .table_view(f.campaign, TableViewer::Player(player))
+            .await
+            .unwrap();
+        assert!(view.tactical.unwrap().opportunity.is_none());
+    }
+    let feature = opportunity
+        .features
+        .iter()
+        .find(|feature| feature.feature_id == "scimitar")
+        .unwrap();
+    assert!(
+        feature.weapon.is_some(),
+        "source gear uses a real held ItemId"
+    );
+    let action = if attack {
+        TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::CreatureFeature {
+                feature_id: feature.feature_id.clone(),
+                weapon: feature.weapon,
+            },
+        }
+    } else {
+        TacticalAction::DeclineOpportunity
+    };
+    execute_after_restore(
+        f,
+        f.meta(CommandIssuer::Admin, None, Some(f.session)).await,
+        TableAction::Tactical { action },
+    )
+    .await;
+    if attack {
+        let roll = f
+            .runtime
+            .table_view(f.campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .roll
+            .unwrap();
+        assert_eq!(roll.reason, "Attack roll");
+        assert_restore(f).await;
+        submit(f, true, &[1]).await;
+    }
+    let state = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    let encounter = state.encounter.as_ref().unwrap();
+    assert_eq!(
+        encounter.participant(f.actors[0]).unwrap().position,
+        SpatialPoint { x: 0, y: 10, z: 0 }
+    );
+    let flow = encounter.flow.as_ref().unwrap();
+    assert!(flow.resolution.is_none());
+    assert_eq!(flow.budget.movement_spent, 10);
+    let timing = state.rules.as_ref().unwrap().timing.as_ref().unwrap();
+    assert_eq!(timing.order[timing.index].actor, f.actors[0]);
+    assert!(!timing.action_spent);
+    assert_eq!(timing.reactions_spent.contains(&guard), attack);
     assert_restore(f).await;
 }

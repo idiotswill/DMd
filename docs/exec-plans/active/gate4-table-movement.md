@@ -47,3 +47,35 @@ This checkpoint is not ready for a movement-complete or gate-complete claim.
 
 Next: import the verified shared checkpoint, adapt audit/continuation projections and
 implement the table controls while the casting author owns the next shared-queue slice.
+
+## Integration checkpoint
+
+The independently reviewed source/OA head `f69dee626dcb9fd1407fab99c4212fd21c04cb51`
+is integrated by `de48b38`. Its author passed 28 attack, 10 movement, 32 spatial and
+20 turn tests plus strict domain/rules all-target Clippy. Root preserved all existing
+table changes. The app now collects original movement/progress/segment/decision/crossing
+origins, including the crossing retained inside an active source attack; only physical
+weapon sources carry an equipment origin. Generic attack roll labels also cover intrinsic
+creature and Unarmed attacks without calling them weapons.
+
+Movement methods use current source speeds, Dash budget and the actor's own position
+projection. A bounded direction/distance parser expands only explicit route legs into
+adjacent typed steps; unsupported combined actions and unavailable modes fail locally
+without inventing permissions. Opportunity projection offers the witnessed target, held
+physical weapons, source creature features or Strength Unarmed damage to its controller.
+Reaction controls cannot borrow ordinary Attack-action equipment changes.
+
+All 30 frontend tests, Svelte checks (zero errors/warnings) and the production build pass.
+Logs outside the repository: `tooling/gate4-movement-ui-{check,tests,build}.log`.
+Independent review of the movement projection/parser found no source boundary defect.
+It identified a component viewer-reset test gap; forms now include host/player/actor in
+their identity, tested with the same actor and position across a host-to-player switch.
+The actual TableApp already unmounted its panel during that switch. No production leak
+was demonstrated. Opportunity projection/control review remains next.
+
+The new SQLite scenario exercises accepted movement, a retained source-gear opportunity,
+attack or decline, physical raw dice and continued movement after independent restore.
+It verifies unspent Action, conditional Reaction spend and actual reached position/cost.
+All application tests and strict workspace Clippy are compiling now; no Rust success is
+claimed for these new table changes yet. Falling, privacy-safe accepted-prefix movement
+and concentration after a damaging table reaction remain required integration work.

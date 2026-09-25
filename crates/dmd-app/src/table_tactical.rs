@@ -8,6 +8,8 @@ use crate::{TableBattlefieldSetup, table_engine::table};
 mod attacks;
 #[path = "table_tactical_choices.rs"]
 mod choices;
+#[path = "table_movement.rs"]
+mod movement;
 
 pub(crate) fn view(
     state: &CampaignState,
@@ -180,6 +182,26 @@ pub(crate) fn view(
             }
             _ => None,
         },
+        movement_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                movement::options(state, actor)?
+            }
+            _ => None,
+        },
+        opportunity: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.movement.as_ref())
+            .and_then(|movement| movement.opportunity.as_ref())
+            .filter(|window| host || own.contains(&window.reactor))
+            .map(|window| movement::opportunity(state, window))
+            .transpose()?,
         attack_decision: flow
             .and_then(|flow| flow.resolution.as_ref())
             .and_then(|resolution| resolution.attack.as_ref())

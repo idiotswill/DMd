@@ -3,6 +3,8 @@
   import type { TacticalAction, TacticalView } from '../tactical-api';
   import TacticalMap from './TacticalMap.svelte';
   import AttackForm from './AttackForm.svelte';
+  import MovementForm from './MovementForm.svelte';
+  import OpportunityForm from './OpportunityForm.svelte';
   let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -35,7 +37,13 @@
     <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
   {/if}
   {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.attack_options.weapons.some(weapon=>weapon.purposes.length>0)}
-    {#key tactical.attack_options.actor}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.attack_options.actor}`}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+  {/if}
+  {#if tactical.movement_options && (host || actor===tactical.movement_options.actor)}
+    {#key `${host}:${player}:${actor}:${tactical.movement_options.actor}:${JSON.stringify(tactical.movement_options.position)}`}<MovementForm options={tactical.movement_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+  {/if}
+  {#if tactical.opportunity && (host || actor===tactical.opportunity.actor)}
+    {#key `${host}:${player}:${actor}:${tactical.opportunity.actor}:${tactical.opportunity.target.actor}`}<OpportunityForm opportunity={tactical.opportunity} disabled={disabled||pendingRoll} {onAction}/>{/key}
   {/if}
   {#if tactical.attack_decision && (host || actor===tactical.attack_decision.actor)}
     <fieldset disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>

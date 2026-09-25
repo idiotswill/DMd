@@ -745,7 +745,21 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                 origins.push(&resolution.origin);
                 if let Some(attack) = &resolution.attack {
                     origins.push(&attack.origin);
-                    origins.push(&attack.equipment_before.command);
+                    if let Some(weapon) = attack.weapon() {
+                        origins.push(&weapon.equipment_before.command);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::Opportunity(window) =
+                        &attack.admission
+                    {
+                        origins.push(&window.origin);
+                    }
+                }
+                if let Some(movement) = &resolution.movement {
+                    origins.push(&movement.origin);
+                    origins.extend(movement.initial_progress_origin.as_ref());
+                    origins.extend(movement.traversed.iter().map(|step| &step.cause));
+                    origins.extend(movement.decisions.iter().map(|decision| &decision.origin));
+                    origins.extend(movement.opportunity.as_ref().map(|window| &window.origin));
                 }
                 if let Some(window) = &resolution.legendary_window {
                     origins.push(&window.origin);
@@ -760,6 +774,7 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             if let Some(origin) = &flow.budget.disengaged {
                 origins.push(origin);
             }
+            origins.extend(flow.budget.movement_origin.as_ref());
             for decision in &flow.save_decisions {
                 origins.push(&decision.issued_by);
                 origins.push(&decision.resolved_by);

@@ -42,10 +42,16 @@ it('resets source-incompatible choices when switching weapons and clears vanishe
 });
 
 it('removes a previous actor weapon form when the viewing channel changes',async()=>{
+  const user=userEvent.setup();
   const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},attack_options:options()};
   const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction:vi.fn()});
   expect(screen.getByText('Weapon attack')).toBeTruthy();
+  await user.selectOptions(screen.getByLabelText('Target'),'target');
+  await user.selectOptions(screen.getByLabelText('Attack method'),'Thrown');
+  await component.rerender({host:false,actor:'actor',player:'player'});
+  expect((screen.getByLabelText('Target') as HTMLSelectElement).value).toBe('');
+  expect((screen.getByLabelText('Attack method') as HTMLSelectElement).value).toBe('Melee');
   await component.rerender({host:false,actor:'other',player:'other-player'});
   expect(screen.queryByText('Weapon attack')).toBeNull();
   expect(screen.queryByText('Visible guard')).toBeNull();
