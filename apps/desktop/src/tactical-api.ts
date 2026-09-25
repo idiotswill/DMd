@@ -12,7 +12,7 @@ export interface WeaponUseChoice {
 }
 export interface AttackOptions {
   actor: Id; hands: { hands: ('Free' | { Item: Id })[] };
-  weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[] }[];
+  weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[]; source_features?: { feature_id: Id; label: string; weapon: Id|null }[] }[];
   targets: { actor: Id; label: string }[];
 }
 export interface SpellCastChoice {
@@ -28,6 +28,7 @@ export interface CastingVariant {
   targets: { actor: Id; label: string }[];
 }
 export interface CastingOptions { actor: Id; variants: CastingVariant[]; unavailable: string[] }
+export interface ShieldOptions { actor: Id; donned: Id|null; shields: { item: Id; hands: Hand[] }[] }
 
 export interface Point { x: number; y: number; z: number }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
@@ -49,6 +50,8 @@ export interface BattlefieldSetup {
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
 export type TacticalAction =
+  | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
+  | { CreatureWeaponAttack: { feature_id: string; choice: Omit<WeaponUseChoice,'delivery'|'ability'|'purpose'> } }
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
   | { Attack: { choice: WeaponUseChoice } }
@@ -80,6 +83,7 @@ export interface TacticalView {
   movement_options?: MovementOptions | null;
   opportunity?: OpportunityView | null;
   liquid_landing?: { actor: Id } | null;
+  shield_options?: ShieldOptions | null;
   attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
   budget: { movement_spent: number; attacks_remaining: number; action_spent: boolean; bonus_action_spent: boolean; reaction_available: boolean } | null;
 }

@@ -73,7 +73,43 @@ Gate5; this does not change the Gate4 shield timing obligation.
 ## Status and next action
 
 Source and existing loadout/action/app boundaries audited; root approved the scoped
-contract and area author approved additive dispatch ownership. No implementation
-or tests yet on this branch. Next: implement the shield helper and AC training
-bridge, then table/UI and real persistence regressions. Do not compile until the
-globally serialized slot is explicitly released (area currently owns it).
+contract and area author approved additive dispatch ownership. Rules helper, live
+training-aware AC, filtered table choices and desktop forms are drafted. Four rules
+scenarios and two real SQLite table scenarios now pass. Four focused UI cases are
+verified below. The native-file test uses actual paid doff, source bow draw/attack, later
+AfterAttack stow, then paid don; it retains cold retries and hostile-restore checks.
+
+Approved root integration `d046810` is merged at `1aa9677`; additive conflicts retain
+both falling and shield forms/DTOs/tests. This includes the reviewed PR30 reference
+validation correction, without maintaining a separate transient-state workaround.
+Read-only source/action/projection review is clear; its only fixture finding was
+corrected to query `campaign_state_current`. Frontend verification passes all 42
+tests, Svelte 0 errors/0 warnings and the production build. This includes a real
+shield form submission followed by uncertain delivery/restart and exact original
+item/hand/head retry.
+
+The first Rust run found a fixture-only ammunition helper mismatch (`u32` instead of
+the existing source API's `u16`); correction did not change production mechanics.
+The next run passed all four new rules scenarios and both real SQLite table cases on
+the unchanged default Windows stack. The hostile export cases first pass generic
+portable validation, then fail application source/history checks without rows in any
+of the five restore tables. A genuine unrelated Admin EndTurn cannot be relabeled as
+the equipment operation. Logs are outside the repository in
+`research/gate4-shields/{rules-first,rules-second,app-first}.txt`.
+
+Reviewed falling test-only checkpoint `32ad5be` was then integrated as `1ff458b` before
+the broader app suite. It preserves that scenario's default-stack recovery coverage;
+no falling production code changed. The broader affected suite passed 67 attack,
+30 movement and 24 turn tests (121 rules tests), followed by all 65 application tests.
+Strict domain/rules/app all-target Clippy passed with warnings denied. The logs are
+`research/gate4-shields/{rules-regression,app-regression,clippy}.txt` outside the
+repository. All runs used the normal Windows thread stack, one Cargo build job and
+the shared target; no source or assertion was bypassed for this result.
+
+The source/action/projection review remains clear after the fixture-only corrections.
+Next request exact committed-head review and hand this bounded slice to root for
+canonical integration/CI and the real desktop scenario. No native or full-gate
+acceptance is claimed. The existing inventory loadout command is the only durable
+origin changed by these actions; no new restore-origin path or saved queue field was
+introduced. The table adds shield choices and canonical source-feature choices to
+existing physical weapons, while reaction projection removes own-turn features.

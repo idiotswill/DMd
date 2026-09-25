@@ -288,11 +288,25 @@ pub struct TableTacticalView {
     pub opportunity: Option<TableOpportunityView>,
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
+    pub shield_options: Option<TableShieldOptions>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableLiquidLandingView {
     pub actor: EntityId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableShieldOptions {
+    pub actor: EntityId,
+    pub donned: Option<ItemId>,
+    pub shields: Vec<TableShieldChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableShieldChoice {
+    pub item: ItemId,
+    pub hands: Vec<Hand>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -349,6 +363,7 @@ pub struct TableWeaponChoice {
     pub purposes: Vec<WeaponAttackPurpose>,
     pub ammunition_required: bool,
     pub ammunition: Vec<TableItemView>,
+    pub source_features: Vec<TableCreatureAttackChoice>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

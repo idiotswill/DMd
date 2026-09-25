@@ -9,6 +9,8 @@ mod creature;
 mod creature_weapon;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
+#[path = "tactical_attacks/shields.rs"]
+mod shields;
 #[path = "tactical_attacks/spell.rs"]
 mod spell;
 

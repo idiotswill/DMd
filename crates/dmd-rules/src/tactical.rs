@@ -8,6 +8,7 @@ mod failed_save;
 mod falling;
 mod initiative;
 mod movement;
+mod shields;
 mod turn_validation;
 mod turns;
 mod validation;
@@ -24,6 +25,11 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    DonShield {
+        shield: ItemId,
+        hand: Hand,
+    },
+    DoffShield,
     CreatureWeaponAttack {
         feature_id: String,
         choice: CreatureWeaponUseChoice,
@@ -220,6 +226,10 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::DonShield { shield, hand } => {
+            shields::change(&mut next, meta, Some((*shield, *hand)), pack)?
+        }
+        TacticalAction::DoffShield => shields::change(&mut next, meta, None, pack)?,
         TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
             attacks::begin_creature_weapon(&mut next, meta, feature_id, choice, pack)?
         }

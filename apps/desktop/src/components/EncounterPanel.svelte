@@ -7,6 +7,7 @@
   import MovementForm from './MovementForm.svelte';
   import OpportunityForm from './OpportunityForm.svelte';
   import LiquidLandingForm from './LiquidLandingForm.svelte';
+  import ShieldForm from './ShieldForm.svelte';
   let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -40,6 +41,9 @@
   {/if}
   {#if tactical.casting_options && (host || actor===tactical.casting_options.actor)}
     {#key `${host}:${player}:${actor}:${tactical.casting_options.actor}`}<CastingForm options={tactical.casting_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+  {/if}
+  {#if tactical.shield_options && (host || actor===tactical.shield_options.actor)}
+    {#key `${host}:${player}:${actor}:${tactical.shield_options.actor}`}<ShieldForm options={tactical.shield_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
   {/if}
   {#if tactical.attack_options && (host || actor===tactical.attack_options.actor) && tactical.attack_options.weapons.some(weapon=>weapon.purposes.length>0)}
     {#key `${host}:${player}:${actor}:${tactical.attack_options.actor}`}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}

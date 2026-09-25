@@ -119,6 +119,7 @@ pub(super) fn opportunity(
             matches!(option.source, TacticalMeleeSource::Weapon { item } if item == weapon.item))
         });
         for weapon in &mut options.weapons {
+            weapon.source_features.clear();
             weapon.deliveries = vec![WeaponDelivery::Melee];
             weapon.purposes = vec![WeaponAttackPurpose::Normal];
             weapon.grips.retain(|grip| match grip {
