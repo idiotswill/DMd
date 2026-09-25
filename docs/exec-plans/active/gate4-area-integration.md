@@ -73,3 +73,11 @@ had completed the OA assertions but reported a sharing violation at file removal
 The area fixture has the same final cleanup pattern, so it now drops closed runtime/
 pool handles and uses the same bounded Windows-sharing retry helper. Every gameplay,
 retry, replay and restore assertion stays intact; file removal must still succeed.
+
+Final physical evidence8cb3084 is integrated as75944b8. The only merge conflicts
+were additive area test registration and current OA evidence; the entire code/test
+tree remains byte-identical to c5b2871. Protocol's subsequent app compilation found
+the newer OA scene fixture lacked the required area_grid_policy field. Set it to
+None in both integrations, preserving all scenario assertions and production code.
+This branch still requires its own combined canonical/UI verification and main
+reconciliation; evidence from the protocol batch does not replace those checks.
