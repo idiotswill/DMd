@@ -2,6 +2,7 @@
 
 Writer: root. Next bounded branch: `codex/gate4-equipment-table`, created from refreshed
 main after verified PR28 merges. The integrated source checkpoint is `56a8d35`.
+PR: https://github.com/idiotswill/DMd/pull/29 (draft).
 
 ## Objective and scope
 
@@ -55,3 +56,14 @@ now closes/reopens a physical SQLite file before retry and rejects a replacement
 Fresh independent complete-diff review and branch-specific checks are pending. Rust stays
 serialized behind shared casting and movement. Next: complete review, run application and
 schema tests plus frontend checks/build, then canonical verification and exact-head CI.
+
+The first extracted head `63e6351` compiled and passed MSRV, architecture and genericity
+CI, but Linux run36104674881 failed the real equipment export/restore regression:
+the origin collector knew about inventory commands while the audit validator still
+required a nested RulesEvent. The correction recognizes only the genuine typed
+PrepareEquipment table action; all metadata/audit and semantic replay checks remain.
+A real unrelated AddPlayer command is now also tested as a forged grant origin.
+The UI retry regression begins with the real preparation button and preserves its
+generated identities across uncertain delivery/restart, instead of seeding a request.
+The original extracted UI passed13 tests, zero diagnostics and production build;
+the strengthened test rerun and corrected Rust/canonical evidence are pending.

@@ -1029,6 +1029,33 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
             .await
             .is_err()
     );
+    // A genuine but unrelated host command cannot be relabeled as a physical grant.
+    let unrelated = export
+        .event_journal
+        .iter()
+        .find_map(|row| {
+            let event: TableEvent = serde_json::from_str(&row.payload_json).ok()?;
+            matches!(event.action, TableAction::AddPlayer { .. }).then_some(event.meta)
+        })
+        .unwrap();
+    let mut unrelated_origin = export.clone();
+    let mut state = CampaignState::decode_json(&unrelated_origin.current_state.state_json).unwrap();
+    let inventory = state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap();
+    inventory.receipts[0].command = unrelated.clone();
+    inventory.loadouts[0].command = unrelated;
+    unrelated_origin.current_state.state_json = state.encode_json().unwrap();
+    assert!(bad.restore_campaign(&unrelated_origin).await.is_err());
+    assert!(
+        dmd_persistence::open_campaign(&bad_pool, f.campaign)
+            .await
+            .is_err()
+    );
     // A newly backfilled anchor cannot launder materialized authority out of its replay.
     let mut missing_anchor = export.clone();
     missing_anchor.snapshots = vec![dmd_persistence::SnapshotRow {
