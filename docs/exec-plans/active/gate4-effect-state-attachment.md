@@ -66,7 +66,8 @@ and final evidence-head reviews. Final head `78166c6` passes all six checks: Lin
 `36111205928` and Windows `36111206026`, including offline installer. Canonical source
 `6136aeb` passes356 Windows Rust tests and all guards/lints; final source/lock/frontend
 parity was verified. Fetched merged main `beaad44` has exact full-tree parity with that
-head. Post-merge checks are running.
+head. All six post-merge checks passed on `beaad44`: Linux `36112003062` and
+Windows `36112002720`, including the offline installer.
 
 This fresh branch starts from that fetched main. The adapter/condition closure is
 extracted from `16f97e7`, including the previously reviewed internal held-cast duration
@@ -85,10 +86,7 @@ Typed legacy save and transactional database preflight reject non-null effect au
 and both duplicate-null orders. Real table export/restore rejects invented current,
 backfilled-anchor and operation-origin authority before writes, while an untouched
 export restores identically. Existing physical-reference/composite table regressions
-remain intact. Rust formatting and whitespace checks pass; all new runtime tests are
-written but uncompiled. Next commit/open the draft, obtain full exact-source review,
-run focused/canonical verification when the serialized compiler reaches root, and
-verify final-head Linux/Windows CI before merging. Gate4 remains active.
+remain intact. Draft PR31 records this bounded attachment. Gate4 remains active.
 
 Initial exact-head CI at `ab627a9` found four test-only collection API errors: condition
 immunities use a BTreeSet, so the fixtures must insert rather than push. The full
@@ -97,4 +95,19 @@ a weaker immune condition to hide under suppression and later prevent stronger-e
 removal. Validation now checks every retained grouped condition, with a regression
 that rejects the invalid weak installation atomically and then expires the stronger
 valid effect. The existing valid suppressed-condition reappearance test remains.
-Correction verification is pending; no failed initial suite is counted as passing.
+Corrected source `0486c77c91e0f14c6657f9106e83fa97211aeee6` now passes full Windows
+`./scripts/verify`:375 Rust tests, formatting, workspace/all-target compilation,
+strict Clippy, genericity guard and architecture guard (8 checks,1 platform skip).
+The completed local log is `tooling/gate4-effect-state-canonical.log` outside this
+repository. Earlier memory-interrupted runs and the initial fixture compile failure
+are not counted as passing. No frontend source changed in this slice.
+
+Independent full-diff and correction reviews are clear on `0486c77`. All six source
+CI jobs pass: Linux `36112860014` (376 Rust tests, including the Unix-only case;
+Rust job108000057910), Windows `36112860090`, including MSRV and offline installer.
+This final evidence edit changes documentation only. Next verify source/lock parity,
+obtain a final evidence-head review and all six exact-head checks, then merge PR31
+with expected-head protection. Fetch merged main, verify full-tree parity and its
+post-merge checks, then start the planned real table initiative/turn slice on a fresh
+branch. Remaining physical actions, spell mechanisms and complete packaged encounter
+acceptance stay in active Gate4; this bridge does not complete that gate.
