@@ -29,7 +29,7 @@ describe('durable UI retry',()=>{
     await user.type(die,'7');
     await user.click(screen.getByRole('button',{name:'Report these faces'}));
     await waitFor(()=>expect(tableApi.action).toHaveBeenCalledOnce());
-    expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({channel:{Player:'player'},action:channel==='Tactical'
+    expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({channel:{Player:{player_id:'player',character_id:'pc'}},action:channel==='Tactical'
       ? {Tactical:{action:{SubmitRoll:{result:{request_id:'roll',source:'Physical',dice:[{sides,value:7}]}}}}}
       : {SubmitPhysical:{request_id:'roll',faces:[7]}}});
   });

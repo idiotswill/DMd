@@ -142,3 +142,10 @@ check on the PR32 routing correction passes with zero errors/warnings; frontend
 tests/build are running. The serialized Rust compiler remains with the area slice
 after completed shield verification, with turn-core next. Next compile this source,
 fix any actual failures, obtain correction review and canonical/exact-head CI.
+
+Independent exact correction review at `e81717e` is clear. The first new UI run
+caught only a test expectation using the viewer shape for an input channel; the
+actual request correctly includes both player and character identity. Correcting
+that expectation yields all22 frontend tests and a successful126-module production
+build. No production change was needed for that test failure. Logs are
+`tooling/gate4-turn-core-ui-tests-r3.log` and `gate4-turn-core-ui-build-r3.log`.
