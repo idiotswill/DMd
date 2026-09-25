@@ -146,6 +146,7 @@ fn encounter_state() -> CampaignState {
             .collect(),
         house_rules: HouseRules::default(),
         effects: vec![],
+        tactical_inventory: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -501,6 +502,9 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "encounter",
         "duplicate",
         "duplicate_encounter",
+        "tactical_inventory",
+        "duplicate_inventory",
+        "shadowed_inventory",
         "lifecycle",
     ] {
         let pool = gate_three_pool().await;
@@ -517,9 +521,24 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "encounter" => {
                 value["encounter"] = json!({"unknown_pending_action": "must not be erased"})
             }
+            "tactical_inventory" | "duplicate_inventory" | "shadowed_inventory" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_inventory"] =
+                    json!(dmd_domain::TacticalInventory::default());
+            }
             _ => (),
         }
         let corrupted = match corruption {
+            "duplicate_inventory" => value.to_string().replacen(
+                "\"tactical_inventory\":",
+                "\"tactical_inventory\":null,\"tactical_inventory\":",
+                1,
+            ),
+            "shadowed_inventory" => value.to_string().replacen(
+                "\"tactical_inventory\":",
+                "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+                1,
+            ),
             "malformed" => "{".to_owned(),
             "duplicate" => value.to_string().replacen('{', "{\"schema_version\":3,", 1),
             "duplicate_encounter" => {
@@ -704,6 +723,42 @@ fn every_legacy_snapshot_path_rejects_future_encounter_authority() {
             codec.decode_state(version, &legacy.encode_json().expect("JSON")),
             Err(SnapshotCodecError::MigrationFailed { message, .. }) if message.contains("tactical encounter")
         ));
+    }
+}
+
+#[test]
+fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_inventory =
+        Some(dmd_domain::TacticalInventory::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        let json = current.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_inventory\":null,\"tactical_inventory\":",
+            "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_inventory\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
     }
 }
 

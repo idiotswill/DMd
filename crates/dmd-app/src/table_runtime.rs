@@ -142,6 +142,7 @@ impl CampaignRuntime {
         Ok(CharacterCreationOptions {
             catalog: dmd_rules::starter_catalog(),
             fighter_skills: dmd_rules::FIGHTER_SKILLS.to_vec(),
+            fighter_masteries: dmd_rules::fighter_mastery_choices()?,
             standard_languages: dmd_rules::STANDARD_LANGUAGES
                 .iter()
                 .map(|language| (*language).to_owned())
@@ -565,6 +566,19 @@ impl CampaignRuntime {
                     .then(|| table.character_profiles.get(&character.id).cloned())
                     .flatten(),
                 sheet,
+                equipment: if may_see && table.character_profiles.contains_key(&character.id) {
+                    Some(
+                        crate::table_equipment::view(
+                            state,
+                            character.id,
+                            &pack,
+                            matches!(viewer, TableViewer::Host),
+                        )
+                        .map_err(invalid)?,
+                    )
+                } else {
+                    None
+                },
                 second_wind_remaining: if may_see {
                     state
                         .rules

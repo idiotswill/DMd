@@ -16,6 +16,24 @@ pub fn resolve(
         return Err(RulesError::Stale);
     }
     validate_state(state, pack)?;
+    if state
+        .rules
+        .as_ref()
+        .is_some_and(|rules| rules.tactical_inventory.is_some())
+        && !matches!(
+            action,
+            RulesAction::CreateCharacter { .. }
+                | RulesAction::RequestTest { .. }
+                | RulesAction::SecondWind { .. }
+                | RulesAction::SubmitRoll { .. }
+                | RulesAction::SubmitRollWithInspiration { .. }
+                | RulesAction::CancelRoll { .. }
+        )
+    {
+        return Err(prerequisite(
+            "physical equipment requires the tactical action path",
+        ));
+    }
     if state.rules.as_ref().is_some_and(|r| r.pending.is_some())
         && !matches!(
             action,
@@ -70,6 +88,7 @@ pub fn resolve(
                         table.contract.house_rules.clone()
                     }),
                 effects: vec![],
+                tactical_inventory: None,
                 pending: None,
                 rolls: vec![],
                 cancelled_roll_ids: vec![],
@@ -105,6 +124,7 @@ pub fn resolve(
             entities: map,
             house_rules: house_rules.clone(),
             effects: vec![],
+            tactical_inventory: None,
             pending: None,
             rolls: vec![],
             cancelled_roll_ids: vec![],

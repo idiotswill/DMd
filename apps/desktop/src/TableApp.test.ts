@@ -8,6 +8,24 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
+  it('retries equipment preparation after restart with the original command and every item identity',async()=>{
+    const user=userEvent.setup();
+    const request: UnconfirmedRequest={kind:'action',request:{command_id:'equipment-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{PrepareEquipment:{character_id:'character',item_ids:['first-weapon','second-weapon','ammo-stack']}}}};
+    localStorage.setItem(REQUEST_KEY,JSON.stringify(request));
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => { expect(received).toEqual(request.request); return {command_id:'equipment-command',event_sequence:5,already_accepted:true,outcome:{message:'Equipment ready.',mechanics:null}}; });
+    const first=render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await screen.findByRole('alert');
+    expect(JSON.parse(localStorage.getItem(REQUEST_KEY)!)).toEqual(request);
+    first.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,request.request);
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,request.request);
+  });
   it('retries exactly the saved nonce, head and channel after restart, then clears only on success',async()=>{
     const user=userEvent.setup();
     const request: UnconfirmedRequest={kind:'action',request:{command_id:'same-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{AddPlayer:{id:'same-player',name:'Sam'}}}};

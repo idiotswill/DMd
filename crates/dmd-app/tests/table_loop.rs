@@ -45,6 +45,9 @@ impl Fixture {
     }
     async fn with_contract(contract: TableContract) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
+        Self::with_pool(contract, pool).await
+    }
+    async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
         let runtime = CampaignRuntime::from_content_root(
             pool.clone(),
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
@@ -859,4 +862,194 @@ async fn second_wind_pending_roll_resources_and_transcript_survive_database_reop
     drop(reopened);
     reopened_pool.close().await;
     std::fs::remove_dir_all(directory).unwrap();
+}
+
+#[tokio::test]
+async fn equipment_preparation_is_exactly_once_private_and_replayable() {
+    let directory = std::env::temp_dir().join(format!("dmd-equipment-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let database = directory.join("campaign.sqlite");
+    let url = format!("sqlite://{}", database.display());
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Fixture::with_pool(TableContract::default(), pool).await;
+    let view = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let equipment = view
+        .characters
+        .iter()
+        .find(|c| c.character_id == f.characters[0])
+        .unwrap()
+        .equipment
+        .as_ref()
+        .unwrap();
+    assert!(!equipment.prepared);
+    let ids = (0..equipment.initial_item_count)
+        .map(|_| ItemId::new())
+        .collect::<Vec<_>>();
+    let action = TableAction::PrepareEquipment {
+        character_id: f.characters[0],
+        item_ids: ids.clone(),
+    };
+    let player = f.player_meta(0).await;
+    assert!(
+        f.runtime
+            .execute_table(player, action.clone())
+            .await
+            .is_err()
+    );
+    let meta = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+    let receipt = f
+        .runtime
+        .execute_table(meta.clone(), action.clone())
+        .await
+        .unwrap();
+    // Lose the original process and retry its exact command against the reopened file.
+    f.pool.close().await;
+    f.pool = open_sqlite(&url).await.unwrap();
+    f.runtime = CampaignRuntime::from_content_root(
+        f.pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    let repeated = f.runtime.execute_table(meta, action.clone()).await.unwrap();
+    assert!(repeated.already_accepted);
+    assert_eq!(receipt.event_sequence, repeated.event_sequence);
+    let accepted = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    assert_eq!(accepted.items.len(), ids.len());
+    let pack =
+        dmd_rules::RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+            .unwrap();
+    let bypass_meta = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+    let ruling = Ruling {
+        basis: RulingBasis::GmAdjudication,
+        reason: "Legacy bypass attempt".into(),
+    };
+    for bypass in [
+        dmd_rules::RulesAction::ApplyDamage {
+            target: f.actors[0],
+            amount: 100,
+            damage_type: DamageType::Bludgeoning,
+            critical: false,
+            ruling: ruling.clone(),
+        },
+        dmd_rules::RulesAction::Heal {
+            target: f.actors[0],
+            amount: 1,
+            ruling: ruling.clone(),
+        },
+        dmd_rules::RulesAction::AuthorizeAttack {
+            actor: f.actors[0],
+            target: f.actors[1],
+            attack_id: "club".into(),
+            circumstances: Circumstances::default(),
+            within_five_feet: true,
+            ruling,
+        },
+    ] {
+        let error = dmd_rules::resolve(&accepted, &bypass_meta, &bypass, &pack).unwrap_err();
+        assert!(
+            error
+                .to_string()
+                .contains("physical equipment requires the tactical action path")
+        );
+    }
+    assert!(
+        ids.iter()
+            .all(|id| accepted.items[id].custody == Custody::Entity(f.actors[0]))
+    );
+    let newer = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+    assert!(f.runtime.execute_table(newer, action).await.is_err());
+    assert_eq!(
+        f.runtime.open_campaign(f.campaign).await.unwrap().state(),
+        &accepted
+    );
+    let own = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert!(
+        own.characters
+            .iter()
+            .find(|c| c.character_id == f.characters[0])
+            .unwrap()
+            .equipment
+            .as_ref()
+            .unwrap()
+            .prepared
+    );
+    assert!(
+        own.characters
+            .iter()
+            .find(|c| c.character_id == f.characters[1])
+            .unwrap()
+            .equipment
+            .is_none()
+    );
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let target = open_sqlite("sqlite::memory:").await.unwrap();
+    let restored = CampaignRuntime::from_content_root(
+        target.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    restored.restore_campaign(&export).await.unwrap();
+    assert_eq!(
+        restored.resume_campaign(f.campaign).await.unwrap().state(),
+        &accepted
+    );
+    let mut corrupted = export.clone();
+    let mut current = CampaignState::decode_json(&corrupted.current_state.state_json).unwrap();
+    current
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .receipts[0]
+        .command
+        .id = CommandId::new();
+    corrupted.current_state.state_json = current.encode_json().unwrap();
+    let bad_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let bad = CampaignRuntime::from_content_root(
+        bad_pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    assert!(bad.restore_campaign(&corrupted).await.is_err());
+    assert!(
+        dmd_persistence::open_campaign(&bad_pool, f.campaign)
+            .await
+            .is_err()
+    );
+    // A newly backfilled anchor cannot launder materialized authority out of its replay.
+    let mut missing_anchor = export.clone();
+    missing_anchor.snapshots = vec![dmd_persistence::SnapshotRow {
+        campaign_id: missing_anchor.current_state.campaign_id.clone(),
+        event_sequence: missing_anchor.current_state.applied_event_sequence,
+        state_schema_version: missing_anchor.current_state.schema_version,
+        state_json: missing_anchor.current_state.state_json.clone(),
+        created_at_utc: "2026-09-25 00:00:00".into(),
+    }];
+    let error = bad.restore_campaign(&missing_anchor).await.unwrap_err();
+    assert!(error.to_string().contains("original pre-equipment anchor"));
+    assert!(
+        dmd_persistence::open_campaign(&bad_pool, f.campaign)
+            .await
+            .is_err()
+    );
+    target.close().await;
+    bad_pool.close().await;
+    f.pool.close().await;
+    drop(f);
+    std::fs::remove_file(database).unwrap();
+    // SQLite may retain journal sidecars until pool handles finish dropping.
+    let _ = std::fs::remove_dir(directory);
 }

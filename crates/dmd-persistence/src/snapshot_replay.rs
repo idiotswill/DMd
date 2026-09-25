@@ -66,8 +66,34 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Legacy versions must not acquire future authority merely because their JSON has extra fields.
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
-    if legacy.encounter.is_some() {
+    if legacy.encounter.is_some()
+        || legacy
+            .rules
+            .as_ref()
+            .is_some_and(|rules| rules.tactical_inventory.is_some())
+    {
         return Err("legacy state unexpectedly contains tactical encounter data".into());
+    }
+    Ok(())
+}
+
+pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
+    // Typed fields reject duplicates, including a second null hiding a first value.
+    // Established legacy preflights retain their original migration checksums.
+    #[derive(serde::Deserialize)]
+    struct Probe {
+        rules: Option<RulesProbe>,
+    }
+    #[derive(serde::Deserialize)]
+    struct RulesProbe {
+        tactical_inventory: Option<serde_json::Value>,
+    }
+    let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
+    if probe
+        .rules
+        .is_some_and(|rules| rules.tactical_inventory.is_some())
+    {
+        return Err("legacy state unexpectedly contains tactical inventory authority".into());
     }
     Ok(())
 }

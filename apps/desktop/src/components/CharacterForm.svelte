@@ -12,6 +12,7 @@
   let gaming = $state<CharacterInput['gaming_set']>('Dice');
   let languages = $state(untrack(() => [options.standard_languages[0] ?? '', options.standard_languages[1] ?? '']));
   let quantities = $state<Record<string, number>>({}); let armor = $state(false); let shield = $state(false);
+  let masteries = $state(['club', 'dagger', 'shortbow']);
   let error = $state('');
   const spent = $derived(options.catalog.items.reduce((total, item) => total + item.unit_cost_cp * (quantities[item.id] || 0), 0));
   const remaining = $derived(options.catalog.starting_money_cp - spent);
@@ -22,11 +23,12 @@
     if (!['0,1,2', '1,1,1'].includes([...boosts.slice(0,3)].sort().join(','))) { error = 'Choose +2 and +1 to different physical abilities, or +1 to all three.'; return; }
     if (!distinctSkills) { error = 'Choose eight different skills, including the Soldier grants of Athletics and Intimidation.'; return; }
     if (languages[0] === languages[1]) { error = 'Choose two different languages.'; return; }
+    if (new Set(masteries).size !== 3 || masteries.some(id => !options.fighter_masteries.includes(id))) { error = 'Choose three different weapon masteries.'; return; }
     if (remaining < 0) { error = 'Your purchases exceed the starting gold. Reduce the quantities.'; return; }
     onCreate(playerId, { name, pronouns, description, backstory, alignment, ability_scores: [...scores], background_boosts: [...boosts], fighter_skills: [...fighter], human_skill: human, skilled_skills: [...skilled], size, languages: [...languages], fighting_style: style, gaming_set: gaming,
       purchases: options.catalog.items.filter(i => (quantities[i.id] || 0) > 0).map(i => ({ item_id: i.id, quantity: quantities[i.id] })),
       worn_armor: armor && quantities['leather-armor'] > 0 ? 'leather-armor' : null, shield: shield && quantities.shield > 0,
-      masteries: ['club','dagger','shortbow'] });
+      masteries: [...masteries] });
   }
 </script>
 
@@ -58,7 +60,8 @@
       <label>Gaming set proficiency<select bind:value={gaming}><option value="Dice">Dice</option><option value="Dragonchess">Dragonchess</option><option value="PlayingCards">Playing cards</option><option value="ThreeDragonAnte">Three-Dragon Ante</option></select></label>
       <label>Fighting Style<select bind:value={style}><option value="Defense">Defense — +1 AC while wearing armor</option><option value="Archery">Archery — +2 to ranged weapon attack rolls</option></select></label>
     </div>
-    <p>Common is included. Mastery grants: Club, Dagger and Shortbow. Mastery effects and tool use are recorded for the sheet; their play resolution is not available yet.</p>
+    <p>Common is included. Choose three Simple or Martial weapons for your mastery training; you do not need to own them.</p>
+    <div class="form-grid">{#each [0,1,2] as i}<label>Weapon mastery {i+1}<select bind:value={masteries[i]}>{#each options.fighter_masteries as weapon}<option value={weapon}>{label(weapon)}</option>{/each}</select></label>{/each}</div>
     <h3>Starting equipment</h3>
     <p>Starting gold: {money(options.catalog.starting_money_cp)}. Choose source-priced purchases; unspent gold stays on the sheet.</p>
     <div class="equipment-grid">{#each options.catalog.items as item}<label>{item.name} · {money(item.unit_cost_cp * item.purchase_multiple)}{item.purchase_multiple > 1 ? ` per ${item.purchase_multiple}` : ' each'}<input aria-label={`${item.name} quantity`} type="number" min="0" max="1000" step={item.purchase_multiple} bind:value={quantities[item.id]} placeholder="0" /></label>{/each}</div>

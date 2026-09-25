@@ -41,7 +41,17 @@ projection regression and strict workspace Clippy. Its earlier frontend checks i
 equipment retry and source mastery selection. This is navigation evidence only: the
 new extracted branch must compile, run its own required checks and receive full review.
 
-PR27 is merged with all post-merge checks green. PR28 final evidence head is awaiting
-stable Windows packaging; no dependent extraction has started. Next: merge verified
-PR28, refresh main, create the branch, copy this plan and extract the listed boundaries.
-Shared casting/movement authors retain their branches and Rust compilation is serialized.
+PR27 and PR28 are merged with all six post-merge checks green. PR28 merged main is
+`d12b2a68b82592cc59622062d6ab1668defa20ed`; its full tree exactly matches reviewed final
+head `1c5ebb9bf0268e565412804a7a6a1271be2eb3be`. Post-merge CI36103736797 and Windows
+36103736775 passed, including the offline installer build.
+
+The branch is based on that refreshed main. The inventory attachment, host command,
+source validation, private views, UI controls and exact uncertain retry are extracted.
+Pending-work checks conservatively require equipment before battlefield setup because
+this bounded main-based slice does not yet attach the tactical flow. Schema regressions
+cover nonempty authority and both duplicate/null-shadow orders. The application regression
+now closes/reopens a physical SQLite file before retry and rejects a replacement anchor.
+Fresh independent complete-diff review and branch-specific checks are pending. Rust stays
+serialized behind shared casting and movement. Next: complete review, run application and
+schema tests plus frontend checks/build, then canonical verification and exact-head CI.

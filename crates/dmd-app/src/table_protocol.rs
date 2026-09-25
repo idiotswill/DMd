@@ -22,6 +22,10 @@ pub enum TableAction {
         player_id: PlayerId,
         input: CharacterCreationInput,
     },
+    PrepareEquipment {
+        character_id: CharacterId,
+        item_ids: Vec<ItemId>,
+    },
     StartSession {
         id: PlaySessionId,
         name: String,
@@ -95,6 +99,24 @@ pub struct TableCharacterView {
     pub sheet: Option<dmd_rules::RulesAnswer>,
     pub second_wind_remaining: Option<u8>,
     pub details: Option<TableSheetDetails>,
+    pub equipment: Option<TableEquipmentView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEquipmentView {
+    pub prepared: bool,
+    pub initial_item_count: usize,
+    pub items: Vec<TableItemView>,
+    pub worn_armor: Option<ItemId>,
+    pub shield: Option<ItemId>,
+    pub hands: WeaponLoadout,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableItemView {
+    pub id: ItemId,
+    pub name: String,
+    pub quantity: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -166,6 +188,7 @@ pub enum TableTextResult {
 pub struct CharacterCreationOptions {
     pub catalog: dmd_rules::StarterCatalog,
     pub fighter_skills: Vec<Skill>,
+    pub fighter_masteries: Vec<String>,
     pub standard_languages: Vec<String>,
     pub alignments: Vec<String>,
 }
