@@ -308,6 +308,25 @@ fn real_source_mage_casts_mage_armor_with_material_and_audited_timed_defense() {
         dmd_rules::tactical_defenses::effective_armor_class(&f.state, actor).unwrap(),
         12
     );
+    // Public CastSpell cannot invent Shield's required hit/target trigger, even
+    // with an actual source grant and its shared Protective Magic use available.
+    let shield = SpellCastChoice {
+        actor,
+        spell_id: "shield".into(),
+        grant: SpellGrantChoice::CreatureFeature {
+            feature_id: "protective-magic".into(),
+        },
+        resource: SpellResourceChoice::SourceFeature,
+        material: SpellMaterialChoice::None,
+        mode: SpellCastMode::Immediate,
+    };
+    f.rejected(
+        Some(1),
+        TacticalAction::CastSpell {
+            choice: shield,
+            targets: SpellTargetChoice::Entities(vec![actor]),
+        },
+    );
     let targets = SpellTargetChoice::Entities(vec![actor]);
     let mut no_material = choice.clone();
     no_material.material = SpellMaterialChoice::None;
@@ -374,25 +393,6 @@ fn real_source_mage_casts_mage_armor_with_material_and_audited_timed_defense() {
             ..
         }
     ));
-    // Public CastSpell cannot invent Shield's required hit/target trigger, even
-    // with an actual source grant and its shared Protective Magic use available.
-    let shield = SpellCastChoice {
-        actor,
-        spell_id: "shield".into(),
-        grant: SpellGrantChoice::CreatureFeature {
-            feature_id: "protective-magic".into(),
-        },
-        resource: SpellResourceChoice::SourceFeature,
-        material: SpellMaterialChoice::None,
-        mode: SpellCastMode::Immediate,
-    };
-    f.rejected(
-        Some(1),
-        TacticalAction::CastSpell {
-            choice: shield,
-            targets: SpellTargetChoice::Entities(vec![actor]),
-        },
-    );
 }
 
 #[test]

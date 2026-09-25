@@ -75,8 +75,9 @@ fn spatial(error: crate::spatial::SpatialError) -> RulesError {
 }
 
 /// A program must have a complete executable path before spending anything. This
-/// closed first slice does not silently discard lights, object ignition, movement,
-/// behavior commands, protection or reaction clauses. Their work remains Gate 4.
+/// closed set does not silently discard lights, object ignition, movement or
+/// behavior clauses. Program support is separate from activation: the ordinary
+/// casting path still refuses reaction spells without a retained trigger window.
 pub fn executable_spell_kind(plan: &SpellCastPlan) -> Result<ExecutableSpellKind, RulesError> {
     validate_spell_plan(plan)?;
     match plan.program.nodes.as_slice() {

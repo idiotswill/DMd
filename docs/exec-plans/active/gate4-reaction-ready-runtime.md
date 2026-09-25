@@ -1,8 +1,10 @@
 # Gate 4 — Actual reaction and Ready execution
 
-Status: **Active; first source/runtime checkpoint authored, not yet compiled; no reaction completion claim.**
+Status: **Active; foundation compiles, first test batch has one diagnosed stale expectation; no reaction completion claim.**
 Branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
-Writer: rules_architecture. Root owns integration, main-based PRs and gate acceptance.
+Writer: root, taking over after rules_architecture reached its account usage limit.
+The authored/reviewed checkpoint is dd5123d; root owns its first executable batch,
+integration, main-based PRs and gate acceptance. No root source edits preceded that handoff.
 
 ## Objective and authority
 
@@ -137,8 +139,22 @@ Authored checkpoint:
   ancestry. It now retains actor ordering without a trace; a replayed legacy movement
   pause regression covers projection and actual continued choice. This fix is unrun.
 
-Next: independent bounded source review, then the granted one-job domain/rules check,
-focused turn/effect/casting/area/source-hook tests and strict lint. Record actual failures
-and fixes before committing verified evidence. Only after that checkpoint add the
-complete nested reaction windows and actual Ready response integration; domain types,
-declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
+Root's first one-job domain/rules all-target check passed on dd5123d (1m39s).
+The domain/rules test batch passed 206 tests, then failed one old rules-unit
+expectation: Shield was still listed among unsupported programs even though this
+checkpoint adds its defense program. Later integration suites and strict Clippy
+did not run after that failure. Logs are outside the worktree under
+tooling/logs/gate4-ready-foundation-{check,tests}.log.
+
+The correction separates program support from activation: a new leaf assertion
+requires Shield's Defense program and Reaction cost, while the public source Mage
+scenario rejects ordinary Shield casting before spending its Action on Mage Armor.
+That rejection now proves the trigger boundary with an otherwise unspent actor,
+rather than after an Action was already spent. The subsequent actual Mage Armor
+scenario and every other unsupported-program case remain. Only comments/tests
+changed; the correction has not yet been rerun. Format and diff checks pass.
+
+Next: finish the serialized area canonical/UI batch, then rerun this domain/rules
+test suite and strict all-target lint. Only after that verified checkpoint add the
+complete nested reaction windows and actual Ready response integration; domain
+types, declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
