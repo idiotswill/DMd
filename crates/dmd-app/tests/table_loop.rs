@@ -4,8 +4,9 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
-#[path = "support/sqlite_test_cleanup.rs"]
-mod sqlite_test_cleanup;
+#[path = "support/table_area_cases.rs"]
+mod table_area_cases;
+
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]
@@ -16,14 +17,24 @@ mod table_creature_cases;
 mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_medicine_cases.rs"]
+mod table_medicine_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
 mod table_oa_concentration_cases;
+#[path = "support/table_projection_cases.rs"]
+mod table_projection_cases;
+#[path = "support/table_ready_cases.rs"]
+mod table_ready_cases;
+#[path = "support/table_savage_cases.rs"]
+mod table_savage_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 #[path = "support/table_turn_core_cases.rs"]
 mod table_turn_core_cases;
+#[path = "support/table_unarmed_cases.rs"]
+mod table_unarmed_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
@@ -51,6 +62,9 @@ fn input(name: &str) -> CharacterCreationInput {
     }
 }
 
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
+
 struct Fixture {
     runtime: CampaignRuntime,
     pool: sqlx::SqlitePool,
@@ -62,20 +76,22 @@ struct Fixture {
 }
 impl Fixture {
     async fn new() -> Self {
-        Self::with_contract(TableContract::default()).await
+        Box::pin(Self::with_contract(TableContract::default())).await
     }
     async fn with_contract(contract: TableContract) -> Self {
-        Self::with_creation(contract, None).await
+        Box::pin(Self::with_creation(contract, None)).await
     }
     async fn with_creation(
         contract: TableContract,
         first_character: Option<CharacterCreationInput>,
     ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
-        Self::with_creation_pool(contract, first_character, pool).await
+        // Keep nested setup phases on the heap so each caller's scenario does not
+        // carry another copy of the complete async creation/transaction frame.
+        Box::pin(Self::with_creation_pool(contract, first_character, pool)).await
     }
     async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
-        Self::with_creation_pool(contract, None, pool).await
+        Box::pin(Self::with_creation_pool(contract, None, pool)).await
     }
     async fn with_creation_pool(
         contract: TableContract,

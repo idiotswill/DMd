@@ -36,6 +36,7 @@ pub fn retain_spell_cast(
                 activation: match feature.enclosing_activation.activation {
                     FeatureActivation::Action => SpellEnclosingActivation::Action,
                     FeatureActivation::BonusAction => SpellEnclosingActivation::BonusAction,
+                    FeatureActivation::Reaction => SpellEnclosingActivation::Reaction,
                     FeatureActivation::Legendary { .. } => SpellEnclosingActivation::Legendary,
                 },
                 attack_action: feature.enclosing_activation.attack_action,
@@ -130,6 +131,7 @@ pub fn validate_retained_spell(record: &TacticalCasting) -> Result<(), RulesErro
         return Err(invalid("retained spell target order or identity differs"));
     }
     let (min, max, repeats, restricted_type) = match &cast.plan.program.targets {
+        SpellTargetRule::Caster => (1, 1, false, false),
         SpellTargetRule::CreatureOrObject => (1, 1, false, false),
         SpellTargetRule::Creatures {
             maximum,
@@ -156,6 +158,20 @@ pub fn validate_retained_spell(record: &TacticalCasting) -> Result<(), RulesErro
     {
         return Err(invalid(
             "retained target facts disagree with source selector",
+        ));
+    }
+    if matches!(cast.plan.program.targets, SpellTargetRule::Caster)
+        && actors.as_slice() != [cast.plan.choice.actor]
+    {
+        return Err(invalid("retained self spell has a foreign target"));
+    }
+    if matches!(
+        cast.plan.program.nodes.as_slice(),
+        [SpellProgramNode::BaseArmorClass { .. }]
+    ) && actors.as_slice() != [cast.plan.choice.actor]
+    {
+        return Err(invalid(
+            "retained armor formula exceeds its admitted self-target path",
         ));
     }
     let mut completed = HashSet::new();

@@ -219,7 +219,7 @@ pub fn query(
             Ok(RulesAnswer::Character {
                 ability_modifiers: e.ability_scores.map(ability_modifier),
                 proficiency_bonus: proficiency_bonus(e.level),
-                armor_class: armor_class(e),
+                armor_class: crate::tactical_defenses::effective_armor_class(state, *actor)?,
                 hp: e.hp,
                 max_hp: e.max_hp,
                 temporary_hp: e.temporary_hp,
@@ -580,6 +580,9 @@ fn apply(
             Ok(RulesOutcome::Changed)
         }
         RulesAction::SubmitSavageAttacker { roll } => {
+            if roll.weapon_dice.is_some() {
+                return Err(invalid("tactical weapon dice require the tactical path"));
+            }
             let pending = rules.pending.as_ref().ok_or(RulesError::NoPending)?;
             let actor = pending
                 .request

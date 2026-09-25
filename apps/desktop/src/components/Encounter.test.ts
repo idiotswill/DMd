@@ -4,6 +4,110 @@ import userEvent from '@testing-library/user-event';
 import TacticalMap from './TacticalMap.svelte';
 import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
+import type { CharacterView } from '../table-api';
+
+it('abandons only an owned readied action and waits for pending work',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'encounter',phase:'active',round:2,active_actor:'other',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],ready:[{actor:'actor',action:'Movement',may_abandon:true}]};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  await user.click(screen.getByRole('button',{name:'Abandon readied action'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({AbandonReady:{actor:'actor'}});
+  await component.rerender({pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Abandon readied action'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({pendingRoll:false,actor:'other',player:'other-player'});
+  expect(screen.queryByRole('button',{name:'Abandon readied action'})).toBeNull();
+  await component.rerender({host:true,actor:null,player:null,tactical:{...tactical,ready:[{actor:'actor',action:'Movement',may_abandon:false}]}});
+  expect(screen.queryByRole('button',{name:'Abandon readied action'})).toBeNull();
+  await component.rerender({tactical:{...tactical,ready:[]}});
+  expect(screen.queryByText(/is readied/)).toBeNull();
+});
+
+it('keeps legacy continuations available and requires an explicit settled host upgrade',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'old',phase:'active',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:{movement_spent:10,attacks_remaining:0,action_spent:false,bonus_action_spent:true,reaction_available:false},
+    continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+  const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,pendingRoll:true,onAction});
+  expect((screen.getByRole('button',{name:'Continue saved encounter'}) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByRole('button',{name:'Dodge'})).toBeNull();
+  await component.rerender({pendingRoll:false,tactical:{...tactical,legendary_action:'actor'}});
+  expect((screen.getByRole('button',{name:'Continue saved encounter'}) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.getByRole('button',{name:'Pass this opportunity'})).toBeTruthy();
+  await component.rerender({tactical});
+  await user.click(screen.getByRole('button',{name:'Continue saved encounter'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith('UpgradeExecution');
+  await component.rerender({host:false,actor:'actor',player:'player'});
+  expect(screen.queryByRole('button',{name:'Continue saved encounter'})).toBeNull();
+  await component.rerender({tactical:{...tactical,execution:'ReactionsV1'}});
+  expect(screen.queryByText(/Finish any pending rolls/)).toBeNull();
+  expect(screen.getByRole('button',{name:'Dodge'})).toBeTruthy();
+});
+
+it('offers an owned unarmed attack from this actors current contacts and available attacks',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+    observers:[{observer:'actor',position:null,contacts:[contact('target','Seen'),contact('remembered','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('private-to-other','Seen')],cells:[]}],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  const select=screen.getByLabelText('Unarmed strike target');
+  expect(select.querySelector('option[value="remembered"]')).toBeNull();
+  expect(select.querySelector('option[value="private-to-other"]')).toBeNull();
+  await user.selectOptions(select,'target');
+  await user.click(screen.getByRole('button',{name:'Make unarmed strike'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({UnarmedStrike:{target:'target'}});
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true,attacks_remaining:0}}});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true,attacks_remaining:1}}});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(false);
+  await component.rerender({pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:'Make unarmed strike'})).toBeNull();
+});
+
+it('offers first aid from the acting characters current contacts and preserves the selected purpose', async () => {
+  const user=userEvent.setup();const onAction=vi.fn();
+  const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+    observers:[{observer:'actor',position:{x:10,y:10,z:0},contacts:[contact('patient','Seen'),contact('old-contact','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('other-players-contact','Seen')],cells:[]}],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  expect(screen.queryByRole('option',{name:'old-contact'})).toBeNull();
+  expect(screen.queryByRole('option',{name:'other-players-contact'})).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Creature'),'patient');
+  await user.click(screen.getByRole('button',{name:'Administer first aid'}));
+  expect(onAction).toHaveBeenLastCalledWith({FirstAid:{target:'patient',purpose:'Stabilize'}});
+  await user.selectOptions(screen.getByLabelText('Care needed'),'EndKnockout');
+  await user.click(screen.getByRole('button',{name:'Administer first aid'}));
+  expect(onAction).toHaveBeenLastCalledWith({FirstAid:{target:'patient',purpose:'EndKnockout'}});
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true}}});
+  expect(screen.getByRole('button',{name:'Administer first aid'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({tactical,pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Administer first aid'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:'Administer first aid'})).toBeNull();
+});
+
+it('uses an owned Second Wind bonus action and blocks another or pending turn', async () => {
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},
+    continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+  const character:CharacterView={character_id:'pc',player_id:'player',entity_id:'actor',name:'Fighter',profile:null,sheet:null,details:null,second_wind_remaining:2};
+  const component=render(EncounterPanel,{tactical,characters:[character],host:false,actor:'actor',player:'player',onAction});
+  await user.click(screen.getByRole('button',{name:'Second Wind · 2 uses'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith('SecondWind');
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,bonus_action_spent:true}},characters:[{...character,second_wind_remaining:1}]});
+  expect((screen.getByRole('button',{name:'Second Wind · 1 uses'}) as HTMLButtonElement).disabled).toBe(true);
+  await component.rerender({tactical,pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Second Wind · 1 uses'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:/Second Wind/})).toBeNull();
+  await component.rerender({actor:'actor',player:'player',characters:[{...character,second_wind_remaining:0}]});
+  expect((screen.getByRole('button',{name:'Second Wind · 0 uses'}) as HTMLButtonElement).disabled).toBe(true);
+});
 
 it('replaces host map truth when the selected viewer changes', async () => {
   const host:TacticalView={encounter_id:'encounter',round:null,active_actor:null,phase:'setup',
@@ -20,13 +124,13 @@ it('replaces host map truth when the selected viewer changes', async () => {
 
 it('keeps ordinary turns blocked and sends the retained consequence identity', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},
-    continuation:{actor:'actor',host_adjudication:false,choices:[{occurrence:19,label:'Death saving throw'},{occurrence:27,label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    continuation:{actor:'actor',host_adjudication:false,choices:[{handle:'opaque-death',label:'Death saving throw'},{handle:'opaque-consequence',label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
   expect(screen.getByRole('button',{name:'End turn'}).closest('fieldset')?.disabled).toBe(true);
   await user.click(screen.getByRole('button',{name:'Concurrent consequence · 2'}));
-  expect(onAction).toHaveBeenLastCalledWith({ChooseTurnWork:{occurrence:27}});
+  expect(onAction).toHaveBeenLastCalledWith({ChooseTurnWork:{handle:'opaque-consequence'}});
   await component.rerender({tactical:{...tactical,continuation:{actor:'actor',host_adjudication:false,choices:[]},may_fail_save:'actor'},pendingRoll:true});
   expect(screen.queryByRole('button',{name:'Concurrent consequence · 2'})).toBeNull();
   await user.click(screen.getByRole('button',{name:'Choose to fail this save'}));
@@ -45,6 +149,7 @@ it('shares identical creature initiative while separating current roll circumsta
     observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
   render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction});
   await user.click(screen.getByRole('button',{name:'Roll initiative'}));
+  expect(onAction.mock.calls[0][0].Begin.execution).toBe('ReactionsV1');
   expect(onAction.mock.calls[0][0].Begin.groups.map((group:{actors:string[]})=>group.actors)).toEqual([['a','b'],['c']]);
   expect(Object.keys(onAction.mock.calls[0][0].Begin.combatants[0]).sort()).toEqual(['actor','source','surprised']);
 });

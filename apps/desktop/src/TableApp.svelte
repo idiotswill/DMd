@@ -10,11 +10,14 @@
   import CreatureForm from './components/CreatureForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
   import { rawDice } from './table-api';
-  import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
+  import type { SavageAttackerRoll } from './tactical-api';
+  import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type CreatureOption, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
   let campaigns = $state<{ id: string; name: string }[]>([]);
   let defaults = $state<TableContract | null>(null);
   let view = $state<TableView | null>(null);
+  let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
+  let creatureCatalog = $state<CreatureOption[] | null>(null);
   let options = $state<CreationOptions | null>(null);
   let hostSituation = $state<Situation | null>(null);
   let campaignId = $state(''); let playerId = $state('');
@@ -23,6 +26,7 @@
   let busy = $state(true); let error = $state(''); let message = $state('');
   let retry = $state<UnconfirmedRequest | null>(null); let unreadableRetry = $state(false);
   let errorElement = $state<HTMLDivElement>();
+  let refreshGeneration = 0;
   const host = $derived(!playerId);
   const locked = $derived(busy || retry !== null || unreadableRetry);
   const binding = $derived(view?.active_session?.participants.find(p => p.player_id === playerId && p.attendance === 'Present' && p.character_id));
@@ -38,12 +42,30 @@
   async function showError(reason: unknown) { error = explain(reason); await tick(); errorElement?.focus(); }
   function rememberSelection() { saveSelection({ campaignId: campaignId || null, playerId: playerId || null }); }
   async function refresh() {
+    const generation = ++refreshGeneration;
     const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null;
+    view = null; options = null; hostSituation = null; savageOption = null; creatureCatalog = null;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
-    if (campaignId !== target || playerId !== selectedPlayer) return;
+    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer) return;
     view = next; options = choices; hostSituation = situation ?? null; rememberSelection();
+    if (!selectedPlayer && next.creature_setup && !next.tactical) void loadCreatureCatalog(target, next.revision, generation);
+    const attending = next.active_session?.participants.find(p=>p.player_id===selectedPlayer&&p.attendance==='Present'&&p.character_id);
+    const selected = next.characters.find(c=>c.character_id===attending?.character_id);
+    if (next.roll && next.roll_channel === 'Tactical'
+      && ((!selectedPlayer && !next.characters.some(c=>c.entity_id===next.roll?.roller))
+        || selected?.entity_id===next.roll.roller)) {
+      const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
+        channel:selectedPlayer?{Player:{player_id:selectedPlayer,character_id:attending!.character_id!}}:'Host'});
+      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) savageOption=answer.savage_attacker;
+    }
+  }
+  async function loadCreatureCatalog(target: string, revision: string, generation: number) {
+    const current = () => generation === refreshGeneration && campaignId === target && !playerId && view?.revision === revision;
+    try {
+      const catalog = await tableApi.creatureOptions({campaign_id:target,channel:'Host',revision});
+      if (current()) creatureCatalog = catalog;
+    } catch (reason) { if (current()) await showError(reason); }
   }
   async function selectCampaign(id: string) {
     busy = true; error = ''; message = ''; campaignId = id; playerId = ''; page = 'play'; creating = false;
@@ -76,7 +98,7 @@
   function context(sessionId?: string | null): RequestContext {
     if (!view) throw new Error('Open the saved campaign first.');
     if (playerId && !binding?.character_id) throw new Error('Select an attending player with a bound character.');
-    return { command_id: newId(), campaign_id: view.campaign_id, expected_event_sequence: view.event_sequence,
+    return { command_id: newId(), campaign_id: view.campaign_id, version: 1, revision: view.revision,
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel: playerId ? { Player: { player_id: playerId, character_id: binding!.character_id! } } : 'Host' };
   }
@@ -118,6 +140,9 @@
     }
     return act({SubmitPhysical:{request_id:view.roll.id,faces}});
   }
+  function reportSavage(roll: SavageAttackerRoll) {
+    return act({Tactical:{action:{SubmitSavageAttacker:{roll}}}});
+  }
   async function speak(event: SubmitEvent) {
     event.preventDefault();
     try { await send({ kind: 'text', request: { ...context(), text } }); } catch (reason) { await showError(reason); }
@@ -151,22 +176,22 @@
     <nav class="actions" aria-label="Campaign sections"><button class:secondary={page !== 'play'} onclick={() => { page = 'play'; }}>Table and sheets</button>{#if host}<button class:secondary={page !== 'setup'} onclick={() => { page = 'setup'; }}>Setup and host controls</button>{/if}</nav>
     {#if host && hostSituation?.challenges.length}<details class="panel"><summary>Current host check context</summary><p class="muted">These difficulties and unrevealed consequences are host-only.</p>{#each hostSituation.challenges as challenge}<article><h3>{challenge.title}</h3><p>{challenge.description}</p><p>{challenge.kind.Check.ability}{challenge.kind.Check.skill ? ` (${challenge.kind.Check.skill})` : ''} · DC {challenge.dc} · {challenge.resolution ? 'Resolved' : 'Unresolved'}</p><p>On success: {challenge.success}</p><p>On failure: {challenge.failure}</p></article>{/each}</details>{/if}
     {#if page === 'setup' && host}
-      <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.event_sequence}<ContractForm value={view.contract} disabled={locked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
+      <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.revision}<ContractForm value={view.contract} disabled={locked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
       {#if !view.active_session}
         <section class="panel"><h2>Players and characters</h2><form onsubmit={(event) => { event.preventDefault(); act({ AddPlayer: { id: newId(), name: playerName } }); }}><fieldset disabled={locked}><legend>Add a player</legend><label>Player name<input required maxlength="200" bind:value={playerName} /></label><button type="submit">Add player</button></fieldset></form>
         {#if view.players.length}<ul>{#each view.players as player}<li>{player.display_name}</li>{/each}</ul>{/if}
-        {#if options && view.players.length}{#key view.event_sequence}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={(player_id,input) => act({ CreateCharacter: { player_id, input, character_id: newId(), entity_id: newId() } })} /></details>{/key}{/if}</section>
-        {#if view.players.length}<section class="panel">{#key view.event_sequence}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
+        {#if options && view.players.length}{#key view.revision}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={(player_id,input) => act({ CreateCharacter: { player_id, input, character_id: newId(), entity_id: newId() } })} /></details>{/key}{/if}</section>
+        {#if view.players.length}<section class="panel">{#key view.revision}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Finish or withdraw pending work before ending the session. Closing the app preserves pending work for later.</p></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
-      {#if !view.tactical && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}<CreatureForm setup={view.creature_setup} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/></section>{/if}
-      {#if view.active_session && !view.tactical}<section class="panel">{#key view.event_sequence}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
+      {#if !view.tactical && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}{#if creatureCatalog !== null}<CreatureForm setup={{...view.creature_setup,catalog:creatureCatalog}} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/>{:else}<p>Loading creature sources...</p>{/if}</section>{/if}
+      {#if view.active_session && !view.tactical}<section class="panel">{#key view.revision}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
           {#if host}<button disabled={locked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending}<div class="actions"><button class="secondary" disabled={locked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={locked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{/if}
         </div>{/if}
-        {#if view.roll}{#if (!host && currentCharacter?.entity_id === view.roll.roller) || (host && !!view.tactical && !view.characters.some(character=>character.entity_id===view?.roll?.roller))}{#key view.roll.id}<RollForm request={view.roll} disabled={locked} onSubmit={reportFaces} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && currentCharacter?.entity_id === view.roll.roller) || (host && !!view.tactical && !view.characters.some(character=>character.entity_id===view?.roll?.roller))}{#key `${host}:${playerId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} disabled={locked} onSubmit={reportFaces} onSavage={reportSavage} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel tactical={view.tactical} characters={view.characters} {host} actor={currentCharacter?.entity_id??null} player={playerId||null} disabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}

@@ -84,6 +84,9 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if super::areas::is_work(&work.kind) {
+        return super::areas::key(state, work);
+    }
     if matches!(
         work.kind,
         TacticalWorkKind::BeginFall { .. }
@@ -105,6 +108,13 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::Medicine { target, .. } => (TacticalRollRole::Medicine, *target),
+        TacticalWorkKind::SecondWind { actor, .. } => (TacticalRollRole::SecondWind, *actor),
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => unreachable!("handled above"),
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => unreachable!("handled above"),
@@ -162,14 +172,18 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
             TacticalRollRole::EffectSave
                 | TacticalRollRole::Concentration
                 | TacticalRollRole::SpellSave
+                | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
+                | TacticalRollRole::Medicine
         )
     {
         return Ruling {
             basis: RulingBasis::HouseRule {
                 id: "ability-test-natural-extremes".into(),
             },
-            reason: if role == TacticalRollRole::LiquidLandingCheck {
+            reason: if role == TacticalRollRole::Medicine {
+                "The table's explicit natural-1/20 rule applies to this Medicine check."
+            } else if role == TacticalRollRole::LiquidLandingCheck {
                 "The table's explicit natural-1/20 rule applies to this landing check."
             } else {
                 "The table's explicit natural-1/20 rule applies to this saving throw."
@@ -178,6 +192,12 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::Medicine => (18, "First aid requires a DC 10 Wisdom (Medicine) check."),
+        TacticalRollRole::SecondWind => (48, "Second Wind heals 1d10 plus Fighter level."),
+        TacticalRollRole::AreaSave => (16, "Saving throw against the accepted source area."),
+        TacticalRollRole::AreaDamage => {
+            (16, "One damage roll is shared by simultaneous area saves.")
+        }
         TacticalRollRole::FallDamage => (182, "Falling damage from the retained source distance."),
         TacticalRollRole::LiquidLandingCheck => (
             182,
@@ -223,6 +243,13 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::Medicine { .. } => super::medicine::request(state, work, key),
+        TacticalWorkKind::SecondWind { .. } => super::second_wind::request(state, work, key),
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => super::areas::request(state, work, key),
         TacticalWorkKind::BeginFall { .. } => Err(invalid("Fall choice has no raw roll.")),
         TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => {
             super::falling::request(state, work, key)
@@ -315,6 +342,26 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    let previous = super::work_trace::enter(state, &work)?;
+    let result = start_inner(state, meta, work).and_then(|()| {
+        if resolution(state)?.work_trace.is_some() {
+            super::falling::queue_losses(state, meta)?;
+        }
+        Ok(())
+    });
+    let reset = super::work_trace::leave(state, previous);
+    result?;
+    reset
+}
+
+fn start_inner(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: TacticalWorkItem,
+) -> Result<(), RulesError> {
+    if super::areas::start(state, meta, &work)? {
+        return Ok(());
+    }
     if super::falling::start(state, meta, &work)? {
         return Ok(());
     }
@@ -325,6 +372,10 @@ pub(super) fn start(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. } | TacticalWorkKind::AreaSave { .. } => (),
+        TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => return Err(invalid("area phase was not handled")),
         TacticalWorkKind::BeginFall { .. } => return Err(invalid("Fall choice was not handled.")),
         TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => (),
         TacticalWorkKind::EndOccupiedSpace { actor } => {
@@ -359,7 +410,9 @@ pub(super) fn start(
             let actor = *actor;
             return super::creature_bridge::offer(state, meta, work, actor);
         }
-        TacticalWorkKind::CreatureRecharge { .. } => (),
+        TacticalWorkKind::CreatureRecharge { .. }
+        | TacticalWorkKind::SecondWind { .. }
+        | TacticalWorkKind::Medicine { .. } => (),
         TacticalWorkKind::Effect { ticket: id } => {
             let trigger = ticket(state, *id)?;
             if !trigger_is_applicable(effects(state)?, trigger)
@@ -537,6 +590,7 @@ pub(super) fn voluntarily_fail(
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
+            | TacticalRollRole::AreaSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -568,6 +622,25 @@ pub(super) fn finish(
     result: Option<&RollResult>,
     forced_success: bool,
 ) -> Result<(), RulesError> {
+    let previous = super::work_trace::enter(state, &pending.work)?;
+    let result = finish_inner(state, meta, pending, result, forced_success).and_then(|()| {
+        if resolution(state)?.work_trace.is_some() {
+            super::falling::queue_losses(state, meta)?;
+        }
+        Ok(())
+    });
+    let reset = super::work_trace::leave(state, previous);
+    result?;
+    reset
+}
+
+fn finish_inner(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    pending: TacticalPendingWork,
+    result: Option<&RollResult>,
+    forced_success: bool,
+) -> Result<(), RulesError> {
     // Derive the current request before removing the selected ticket/cause.
     let raw = result
         .map(|result| {
@@ -588,6 +661,56 @@ pub(super) fn finish(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::Medicine {
+            target, purpose, ..
+        } => {
+            if forced_success {
+                return Err(invalid("A saving throw override cannot change Medicine."));
+            }
+            let roll = raw.ok_or_else(|| invalid("Medicine requires its actual d20 check."))?;
+            let succeeded = crate::test_outcome::ability_test_success(
+                &roll,
+                10,
+                &state
+                    .rules
+                    .as_ref()
+                    .ok_or(RulesError::Uninitialized)?
+                    .house_rules,
+            )?;
+            apply_vitality(
+                state,
+                meta,
+                target,
+                pending.work.occurrence,
+                VitalityOperation::MedicineOutcome { purpose, succeeded },
+                None,
+            )?;
+        }
+        TacticalWorkKind::SecondWind { actor, .. } => {
+            if forced_success {
+                return Err(invalid("a saving throw override cannot change Second Wind"));
+            }
+            let amount = raw
+                .ok_or_else(|| invalid("Second Wind requires its physical d10"))?
+                .total;
+            let amount =
+                u32::try_from(amount).map_err(|_| invalid("invalid Second Wind healing"))?;
+            apply_vitality(
+                state,
+                meta,
+                actor,
+                pending.work.occurrence,
+                VitalityOperation::Heal { amount },
+                None,
+            )?;
+        }
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => {
+            return super::areas::finish(state, meta, &pending, result, forced_success);
+        }
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => {

@@ -409,3 +409,134 @@ fn mixed_multiattack_limits_require_a_complete_feasible_assignment() {
             .contains("shared limits prevent completing")
     );
 }
+
+#[test]
+fn mage_reaction_and_preparation_are_source_grants_not_fabricated_pc_spells() {
+    let p = pack();
+    let mage = p.creature("mage").unwrap();
+    assert_eq!(mage.source_pages, vec![305]);
+    assert_eq!(mage.statistics.ability_scores, [9, 14, 11, 17, 12, 11]);
+    assert_eq!(mage.statistics.saving_throw_modifiers, [-1, 2, 0, 6, 4, 0]);
+    assert_eq!(mage.statistics.armor_class, 15);
+    assert_eq!(
+        mage.statistics.prepared_defense.as_ref().unwrap().spell_id,
+        "mage-armor"
+    );
+    assert_eq!(mage.statistics.gear, ["wand"]);
+    assert_eq!(mage.statistics.additional_languages, 3);
+    let reaction = mage
+        .features
+        .iter()
+        .find(|f| f.id == "protective-magic")
+        .unwrap();
+    assert_eq!(reaction.activation, FeatureActivation::Reaction);
+    assert_eq!(reaction.usage, Some(FeatureUsage::PerLongRest { uses: 3 }));
+    let MonsterFeature::Spellcasting {
+        ability,
+        save_dc,
+        attack_bonus,
+        spells,
+    } = &reaction.feature
+    else {
+        panic!("source spell feature")
+    };
+    assert_eq!(
+        (*ability, *save_dc, *attack_bonus),
+        (Ability::Intelligence, Some(14), None)
+    );
+    assert_eq!(
+        spells
+            .iter()
+            .map(|s| (s.spell_id.as_str(), s.cast_level, s.uses_per_long_rest))
+            .collect::<Vec<_>>(),
+        vec![("counterspell", 3, None), ("shield", 1, None)]
+    );
+    let counter = p.spell("counterspell").unwrap();
+    assert_eq!(counter.source_pages, [120]);
+    assert_eq!(counter.range, SpellRange::Distance { feet: 60 });
+    assert_eq!(
+        counter.components,
+        SpellComponents {
+            verbal: false,
+            somatic: true,
+            material: None
+        }
+    );
+    assert_eq!(
+        counter.effects,
+        [EffectDescriptor::InterruptSpellCasting {
+            ability: Ability::Constitution,
+            preserve_spell_slot: true
+        }]
+    );
+    let armor = p.spell("mage-armor").unwrap();
+    assert_eq!(armor.source_pages, [145]);
+    assert_eq!(
+        armor.duration,
+        EffectDuration::Seconds {
+            seconds: 28_800,
+            concentration: false
+        }
+    );
+    assert_eq!(
+        armor.effects,
+        [EffectDescriptor::BaseArmorClass {
+            base: 13,
+            ability: Ability::Dexterity,
+            ends_when_wearing_armor: true
+        }]
+    );
+    // New optional source metadata must not change any older typed source pin.
+    for old in p.creatures.iter().filter(|c| c.id != "mage") {
+        assert!(
+            !serde_json::to_value(old).unwrap()["statistics"]
+                .as_object()
+                .unwrap()
+                .contains_key("prepared_defense")
+        );
+    }
+}
+
+#[test]
+fn malformed_reaction_or_prepared_defense_source_is_rejected() {
+    fn spell<'a>(v: &'a mut Value, id: &str) -> &'a mut Value {
+        v["spells"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|s| s["id"] == id)
+            .unwrap()
+    }
+    fn mage(v: &mut Value) -> &mut Value {
+        v["creatures"]
+            .as_array_mut()
+            .unwrap()
+            .iter_mut()
+            .find(|c| c["id"] == "mage")
+            .unwrap()
+    }
+    rejects(|v| spell(v, "counterspell")["range"] = json!({"Distance":{"feet":120}}));
+    rejects(|v| {
+        spell(v, "counterspell")["effects"][0]["InterruptSpellCasting"]["preserve_spell_slot"] =
+            json!(false)
+    });
+    rejects(|v| {
+        spell(v, "counterspell")["effects"][0]["InterruptSpellCasting"]["ability"] =
+            json!("Intelligence")
+    });
+    rejects(|v| spell(v, "counterspell")["targets"]["Creatures"]["requires_sight"] = json!(false));
+    rejects(|v| spell(v, "mage-armor")["duration"]["Seconds"]["seconds"] = json!(86400));
+    rejects(|v| {
+        spell(v, "mage-armor")["effects"][0]["BaseArmorClass"]["ends_when_wearing_armor"] =
+            json!(false)
+    });
+    rejects(|v| mage(v)["statistics"]["prepared_defense"]["spell_id"] = json!("shield"));
+    rejects(|v| mage(v)["statistics"]["armor_class"] = json!(18));
+    rejects(|v| {
+        mage(v)["features"][1]["feature"]["Spellcasting"]["spells"][0]["spell_id"] =
+            json!("mage-armor")
+    });
+    rejects(|v| {
+        mage(v)["features"][0]["feature"]["Spellcasting"]["spells"][0]["spell_id"] = json!("shield")
+    });
+}

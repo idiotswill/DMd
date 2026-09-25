@@ -75,13 +75,21 @@ pub(super) fn plan(
         .ok_or_else(|| invalid("target absent"))?;
     let distance =
         crate::spatial::participant_distance(actor, target).map_err(|e| invalid(&e.to_string()))?;
+    let untrained = matches!(
+        attack.admission,
+        TacticalAttackAdmission::UnarmedAction { .. }
+    ) && super::unarmed::untrained_armor(state, attack.actor)?;
     let (mode, armor, critical) =
-        planning::hit_facts_for(state, attack.actor, attack.target, false, false)?;
+        planning::hit_facts_for(state, attack.actor, attack.target, false, untrained)?;
     let mut prone = false;
     let (modifier, components, reach) = match &attack.source {
         TacticalAttackSource::Unarmed { ability } => {
             if *ability != Ability::Strength
-                || !matches!(attack.admission, TacticalAttackAdmission::Opportunity(_))
+                || !matches!(
+                    attack.admission,
+                    TacticalAttackAdmission::Opportunity(_)
+                        | TacticalAttackAdmission::UnarmedAction { .. }
+                )
             {
                 return Err(prerequisite(
                     "this source grants only Strength Unarmed Strikes",
@@ -215,6 +223,7 @@ pub(super) fn plan(
         || !matches!(
             attack.admission,
             TacticalAttackAdmission::Opportunity(_)
+                | TacticalAttackAdmission::UnarmedAction { .. }
                 | TacticalAttackAdmission::CreatureAction { .. }
         )
     {

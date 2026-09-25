@@ -5,7 +5,9 @@ mod creature_weapon;
 mod intrinsic;
 mod opportunity;
 mod planning;
+mod savage;
 mod spell;
+mod unarmed;
 mod validation;
 use super::turns::*;
 use super::*;
@@ -14,7 +16,10 @@ use crate::tactical_weapons::*;
 pub(super) use creature::begin_creature_attack;
 pub(super) use creature_weapon::begin_creature_weapon;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
+pub use savage::savage_attacker_dice;
+pub(super) use savage::submit as submit_savage;
 pub(super) use spell::begin_spell_attack;
+pub(super) use unarmed::begin as begin_unarmed;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
     match attack.source {
         TacticalAttackSource::Spell { cast, at, .. } => Some((cast, at)),
@@ -227,6 +232,7 @@ fn begin_with_source(
         .ok_or_else(|| invalid("timing absent"))?;
     let number = timing.turn_number;
     flow_mut(state)?.budget = budget;
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -240,6 +246,8 @@ fn begin_with_source(
         movement: None,
         casts: vec![],
         falls: vec![],
+        areas: vec![],
+        work_trace,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

@@ -4,6 +4,8 @@ use dmd_rules::{RulesPack, tactical::*};
 
 use crate::{TableBattlefieldSetup, table_engine::table};
 
+#[path = "table_areas.rs"]
+mod areas;
 #[path = "table_attacks.rs"]
 mod attacks;
 #[path = "table_casting.rs"]
@@ -103,6 +105,47 @@ pub(crate) fn view(
     };
     Ok(Some(crate::TableTacticalView {
         encounter_id: encounter.id,
+        execution: encounter
+            .flow
+            .as_ref()
+            .filter(|flow| flow.version == TacticalExecutionVersion::ReactionsV1.flow_version())
+            .map(|_| TacticalExecutionVersion::ReactionsV1),
+        ready: flow
+            .into_iter()
+            .flat_map(|flow| &flow.ready)
+            .filter(|ready| host || own.contains(&ready.actor))
+            .map(|ready| {
+                let player_controlled = state.characters.values().any(|character| {
+                    character.entity_id == ready.actor
+                        && character.controlling_player_id.is_some()
+                        && matches!(
+                            character.status,
+                            CharacterStatus::Active | CharacterStatus::Dead
+                        )
+                }) || state
+                    .rules
+                    .as_ref()
+                    .and_then(|rules| rules.tactical_creatures.as_ref())
+                    .and_then(|creatures| creatures.runtime(ready.actor))
+                    .is_some_and(|runtime| {
+                        matches!(runtime.controller, CreatureController::Player(_))
+                    });
+                crate::TableReadyView {
+                    actor: ready.actor,
+                    action: match ready.action {
+                        ReadyAction::Attack => "Attack",
+                        ReadyAction::Move => "Movement",
+                        ReadyAction::Spell { .. } => "Spell",
+                    }
+                    .into(),
+                    may_abandon: if host {
+                        !player_controlled
+                    } else {
+                        own.contains(&ready.actor)
+                    },
+                }
+            })
+            .collect(),
         round: timing.map(|timing| timing.round),
         active_actor: active.filter(|actor| host || known.contains(actor)),
         phase,
@@ -154,7 +197,7 @@ pub(crate) fn view(
         ties,
         continuation: flow
             .and_then(|flow| flow.resolution.as_ref())
-            .and_then(|resolution| choices::continuation(resolution, &own, host)),
+            .and_then(|resolution| choices::continuation(resolution, &own, host, Some(encounter))),
         may_fail_save: state
             .rules
             .as_ref()
@@ -196,6 +239,19 @@ pub(crate) fn view(
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 shields::options(state, actor)?
+            }
+            _ => None,
+        },
+        area_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                areas::options(state, actor)?
             }
             _ => None,
         },
@@ -438,6 +494,7 @@ pub(crate) fn prepare(
         participants,
         knowledge: vec![],
         origin: meta.clone(),
+        area_grid_policy: setup.area_grid_policy,
         geometry_ruling: setup.geometry_ruling.clone(),
         flow: None,
     };

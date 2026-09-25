@@ -252,6 +252,7 @@ async fn verify_creature_scene(f: &mut Fixture, actor: EntityId) {
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: f.actors[0],
@@ -420,6 +421,7 @@ pub(super) async fn prepare_source_scene_at(
                     allies: vec![],
                     enemies: vec![f.actors[0]],
                 }],
+                area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
                     reason: "Host established visible terrain and public descriptors.".into(),
@@ -495,6 +497,7 @@ pub(super) async fn prepare(f: &Fixture) {
                         })
                         .collect(),
                     creatures: vec![],
+                    area_grid_policy: None,
                     geometry_ruling: Ruling {
                         basis: RulingBasis::GmAdjudication,
                         reason: "Host established bounded physical terrain.".into(),
@@ -509,6 +512,7 @@ pub(super) async fn prepare(f: &Fixture) {
 pub(super) fn begin(f: &Fixture) -> TableAction {
     TableAction::Tactical {
         action: TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
             combatants: f
                 .actors
                 .iter()

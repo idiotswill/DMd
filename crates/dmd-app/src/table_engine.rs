@@ -11,11 +11,43 @@ pub(crate) struct TableTransition {
     pub session_change: Option<SessionChange>,
 }
 
+fn tactical_transition(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &dmd_rules::tactical::TacticalAction,
+    pack: &RulesPack,
+    historical: Option<&TableEvent>,
+) -> Result<dmd_rules::tactical::TacticalTransition, String> {
+    let transition = if let Some(event) = historical {
+        let child = event
+            .tactical_event
+            .as_ref()
+            .ok_or("Historical encounter action lacks its exact source event.")?;
+        if child.meta != *meta || child.action != *action {
+            return Err("Historical encounter event differs from its table envelope.".into());
+        }
+        dmd_rules::tactical::replay_tactical(state, child, pack)
+    } else {
+        dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
+    };
+    transition.map_err(|error| error.to_string())
+}
+
 pub(crate) fn resolve_table(
     state: &CampaignState,
     meta: &CommandMeta,
     action: &TableAction,
     pack: &RulesPack,
+) -> Result<TableTransition, String> {
+    resolve_table_internal(state, meta, action, pack, None)
+}
+
+fn resolve_table_internal(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &TableAction,
+    pack: &RulesPack,
+    historical: Option<&TableEvent>,
 ) -> Result<TableTransition, String> {
     if meta.campaign_id != state.campaign_id()
         || meta.expected_event_sequence != state.applied_event_sequence
@@ -189,8 +221,7 @@ pub(crate) fn resolve_table(
                         .into(),
                 );
             }
-            let transition = dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
-                .map_err(|error| error.to_string())?;
+            let transition = tactical_transition(state, meta, action, pack, historical)?;
             next = transition.next_state;
             tactical_event = Some(transition.event);
             // Detailed outcomes belong to the viewer-specific tactical projection.
@@ -352,84 +383,114 @@ pub(crate) fn resolve_table(
             host(meta)?;
             active(&next, meta)?;
             let pending = pending_match(&next, *pending_id, *revision)?.clone();
-            let (action, challenge_id) = match &pending.intent {
-                TableIntent::Check {
-                    kind,
-                    challenge_id: Some(id),
-                    ..
-                } => {
-                    let challenge = table(&next)?
-                        .situation
-                        .challenges
-                        .iter()
-                        .find(|c| c.id == *id)
-                        .ok_or("The challenge is no longer available.")?;
-                    if challenge.resolution.is_some() || &challenge.kind != kind {
-                        return Err("The challenge context changed. Review the declaration.".into());
-                    }
-                    (
-                        RulesAction::RequestTest {
-                            actor: pending.actor,
-                            kind: kind.clone(),
-                            dc: i32::from(challenge.dc),
-                            visibility: RollVisibility::Public,
-                            circumstances: Circumstances::default(),
-                            ruling: Ruling {
-                                basis: RulingBasis::GmAdjudication,
-                                reason: format!(
-                                    "Established challenge {}: {}",
-                                    challenge.id, challenge.title
-                                ),
+            if pending.intent == TableIntent::SecondWind
+                && next
+                    .encounter
+                    .as_ref()
+                    .is_some_and(|encounter| encounter.flow.is_some())
+            {
+                let acting = next
+                    .rules
+                    .as_ref()
+                    .and_then(|r| r.timing.as_ref())
+                    .and_then(|t| t.order.get(t.index))
+                    .map(|entry| entry.actor);
+                if acting != Some(pending.actor) {
+                    return Err("Second Wind needs the declaring character's turn.".into());
+                }
+                table_mut(&mut next)?.pending = None;
+                let transition = tactical_transition(
+                    &next,
+                    meta,
+                    &dmd_rules::tactical::TacticalAction::SecondWind,
+                    pack,
+                    historical,
+                )?;
+                next = transition.next_state;
+                tactical_event = Some(transition.event);
+                "Second Wind is paid. Report the requested physical d10.".into()
+            } else {
+                let (action, challenge_id) = match &pending.intent {
+                    TableIntent::Check {
+                        kind,
+                        challenge_id: Some(id),
+                        ..
+                    } => {
+                        let challenge = table(&next)?
+                            .situation
+                            .challenges
+                            .iter()
+                            .find(|c| c.id == *id)
+                            .ok_or("The challenge is no longer available.")?;
+                        if challenge.resolution.is_some() || &challenge.kind != kind {
+                            return Err(
+                                "The challenge context changed. Review the declaration.".into()
+                            );
+                        }
+                        (
+                            RulesAction::RequestTest {
+                                actor: pending.actor,
+                                kind: kind.clone(),
+                                dc: i32::from(challenge.dc),
+                                visibility: RollVisibility::Public,
+                                circumstances: Circumstances::default(),
+                                ruling: Ruling {
+                                    basis: RulingBasis::GmAdjudication,
+                                    reason: format!(
+                                        "Established challenge {}: {}",
+                                        challenge.id, challenge.title
+                                    ),
+                                },
+                                request_id: *request_id,
                             },
+                            Some(id.clone()),
+                        )
+                    }
+                    TableIntent::SecondWind => (
+                        RulesAction::SecondWind {
+                            actor: pending.actor,
                             request_id: *request_id,
                         },
-                        Some(id.clone()),
-                    )
+                        None,
+                    ),
+                    _ => {
+                        return Err(
+                            "This decision still needs clarification and supported table context."
+                                .into(),
+                        );
+                    }
+                };
+                table_mut(&mut next)?.pending = None;
+                apply_rules(
+                    &mut next,
+                    meta,
+                    action,
+                    pack,
+                    &mut rules_event,
+                    &mut mechanics,
+                )?;
+                match &mechanics {
+                    Some(RulesOutcome::RollRequested(_)) => {
+                        table_mut(&mut next)?.roll_context = Some(TableRollContext {
+                            request_id: *request_id,
+                            session_id: pending.session_id,
+                            player_id: pending.player_id,
+                            character_id: pending.character_id,
+                            actor: pending.actor,
+                            challenge_id,
+                            declaration: pending.text,
+                        });
+                        "A roll was requested. Report the physical die faces shown in the request."
+                            .into()
+                    }
+                    Some(RulesOutcome::AutomaticTest { .. }) => {
+                        return Err(
+                            "Automatic challenge outcomes need an explicit supported table ruling."
+                                .into(),
+                        );
+                    }
+                    _ => "The supported action was resolved.".into(),
                 }
-                TableIntent::SecondWind => (
-                    RulesAction::SecondWind {
-                        actor: pending.actor,
-                        request_id: *request_id,
-                    },
-                    None,
-                ),
-                _ => {
-                    return Err(
-                        "This decision still needs clarification and supported table context."
-                            .into(),
-                    );
-                }
-            };
-            table_mut(&mut next)?.pending = None;
-            apply_rules(
-                &mut next,
-                meta,
-                action,
-                pack,
-                &mut rules_event,
-                &mut mechanics,
-            )?;
-            match &mechanics {
-                Some(RulesOutcome::RollRequested(_)) => {
-                    table_mut(&mut next)?.roll_context = Some(TableRollContext {
-                        request_id: *request_id,
-                        session_id: pending.session_id,
-                        player_id: pending.player_id,
-                        character_id: pending.character_id,
-                        actor: pending.actor,
-                        challenge_id,
-                        declaration: pending.text,
-                    });
-                    "A roll was requested. Report the physical die faces shown in the request."
-                        .into()
-                }
-                Some(RulesOutcome::AutomaticTest { .. }) => {
-                    return Err(
-                        "Automatic challenge outcomes need an explicit supported table ruling."
-                            .into(),
-                    );
-                }
-                _ => "The supported action was resolved.".into(),
             }
         }
         TableAction::SubmitPhysical { request_id, faces } => {
@@ -564,7 +625,7 @@ pub(crate) fn replay_table(
     event: &TableEvent,
     pack: &RulesPack,
 ) -> Result<TableTransition, String> {
-    let transition = resolve_table(state, &event.meta, &event.action, pack)?;
+    let transition = resolve_table_internal(state, &event.meta, &event.action, pack, Some(event))?;
     if transition.event != *event {
         return Err("Table event disagrees with deterministic replay.".into());
     }

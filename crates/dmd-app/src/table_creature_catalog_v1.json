@@ -1,0 +1,139 @@
+[
+  {
+    "definition_id": "goblin-warrior",
+    "name": "Goblin Warrior",
+    "sizes": [
+      "Small"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": true,
+    "item_count": 5,
+    "abilities": [
+      "Scimitar",
+      "Shortbow",
+      "Nimble Escape"
+    ],
+    "omitted_features": []
+  },
+  {
+    "definition_id": "skeleton",
+    "name": "Skeleton",
+    "sizes": [
+      "Medium"
+    ],
+    "additional_languages": 1,
+    "ammunition_required": true,
+    "item_count": 3,
+    "abilities": [
+      "Shortsword",
+      "Shortbow"
+    ],
+    "omitted_features": []
+  },
+  {
+    "definition_id": "wolf",
+    "name": "Wolf",
+    "sizes": [
+      "Medium"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 0,
+    "abilities": [
+      "Bite"
+    ],
+    "omitted_features": []
+  },
+  {
+    "definition_id": "warhorse",
+    "name": "Warhorse",
+    "sizes": [
+      "Large"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 0,
+    "abilities": [
+      "Hooves"
+    ],
+    "omitted_features": []
+  },
+  {
+    "definition_id": "young-red-dragon",
+    "name": "Young Red Dragon",
+    "sizes": [
+      "Large"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 0,
+    "abilities": [
+      "Multiattack",
+      "Rend",
+      "Fire Breath"
+    ],
+    "omitted_features": []
+  },
+  {
+    "definition_id": "adult-red-dragon",
+    "name": "Adult Red Dragon",
+    "sizes": [
+      "Huge"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 0,
+    "abilities": [
+      "Multiattack",
+      "Rend",
+      "Fire Breath",
+      "Pounce",
+      "Spellcasting",
+      "Commanding Presence",
+      "Fiery Rays"
+    ],
+    "omitted_features": [
+      "spellcasting-detect-magic",
+      "experience-points-in-lair"
+    ]
+  },
+  {
+    "definition_id": "cultist-fanatic",
+    "name": "Cultist Fanatic",
+    "sizes": [
+      "Medium",
+      "Small"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 3,
+    "abilities": [
+      "Pact Blade",
+      "Spellcasting"
+    ],
+    "omitted_features": [
+      "light",
+      "thaumaturgy",
+      "command",
+      "spiritual-weapon"
+    ]
+  },
+  {
+    "definition_id": "chimera",
+    "name": "Chimera",
+    "sizes": [
+      "Large"
+    ],
+    "additional_languages": 0,
+    "ammunition_required": false,
+    "item_count": 0,
+    "abilities": [
+      "Multiattack",
+      "Bite",
+      "Claw",
+      "Ram",
+      "Fire Breath"
+    ],
+    "omitted_features": []
+  }
+]

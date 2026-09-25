@@ -78,6 +78,13 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::Medicine { .. } => super::medicine::validate_work(state, work)?,
+        TacticalWorkKind::SecondWind { .. } => super::second_wind::validate_work(state, work)?,
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => super::areas::validate_work(state, work)?,
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => super::falling::validate_work(state, work)?,
@@ -192,6 +199,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     // Historical reached-place receipts survive combat completion, but never
     // become exempt from validation when the active cursor is absent.
     crate::tactical_movement::validate_result(state)?;
+    super::ready::validate(state)?;
+    super::work_trace::validate(state)?;
     if f.phase != TacticalPhase::Active {
         if f.resolution.is_some()
             || !f.dodges.is_empty()
@@ -341,6 +350,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     super::attacks::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
+    super::areas::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20
         || f.budget.weapon_history.len() > 512
@@ -391,6 +401,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     | TacticalRollRole::EffectSave
                     | TacticalRollRole::Concentration
                     | TacticalRollRole::SpellSave
+                    | TacticalRollRole::AreaSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence

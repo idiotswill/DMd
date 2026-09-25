@@ -141,7 +141,9 @@ pub(super) fn push_frame(
         }
         let occurrence = resolution.next_occurrence;
         resolution.next_occurrence += 1;
-        frame.push(TacticalWorkItem { occurrence, kind });
+        let work = TacticalWorkItem { occurrence, kind };
+        super::work_trace::register(resolution, &work)?;
+        frame.push(work);
     }
     resolution.frames.push(frame);
     Ok(())
@@ -210,6 +212,7 @@ fn begin_boundary_from(
     if flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
     }
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -223,6 +226,8 @@ fn begin_boundary_from(
         movement: None,
         casts: vec![],
         falls: vec![],
+        areas: vec![],
+        work_trace,
         next_occurrence: first_occurrence,
     }));
     state
@@ -233,6 +238,7 @@ fn begin_boundary_from(
         .get_or_insert_default();
     if boundary == TurnBoundary::Start {
         flow_mut(state)?.dodges.retain(|d| d.actor != actor);
+        super::ready::expire_owner(state, meta, actor)?;
     }
     expire_legacy(state, actor, number, boundary)?;
     effect_operation(
@@ -376,13 +382,10 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    let after_turn = resolution(state)?.frames.last().is_some_and(|frame| {
-        !frame.is_empty()
-            && frame
-                .iter()
-                .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
-    });
-    if after_turn {
+    if super::work_trace::tactical_frame_host_ordering(resolution(state)?)? {
+        // This dedicated source invocation retained explicit controller consent
+        // before targeting. Ordering permission ends when its cursor completes;
+        // raw save/reaction/resistance authority is deliberately unaffected.
         privileged(meta)?;
     } else {
         authorize(state, meta, resolution(state)?.turn_actor)?;

@@ -5,7 +5,7 @@ import type { TacticalView } from '../tactical-api';
 import EncounterPanel from './EncounterPanel.svelte';
 
 function tactical(): TacticalView {
-  return { encounter_id: 'encounter', round: 1, active_actor: 'other-turn', phase: 'active', battlefield: null, participants: [], combatant_sources: [], observers: [], initiative: [], ties: [], continuation: null, may_fail_save: null, legendary_resistance: null, legendary_action: null, budget: null, liquid_landing: { actor: 'falling' } };
+  return { encounter_id: 'encounter', round: 1, active_actor: 'other-turn', phase:'active',execution:'ReactionsV1', battlefield: null, participants: [], combatant_sources: [], observers: [], initiative: [], ties: [], continuation: null, may_fail_save: null, legendary_resistance: null, legendary_action: null, budget: null, liquid_landing: { actor: 'falling' } };
 }
 
 it('offers each explicit owned landing choice without sending geometry or a target', async () => {

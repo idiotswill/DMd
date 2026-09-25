@@ -192,6 +192,22 @@ pub fn compile_spell_program(
                 bonus: *bonus,
                 includes_triggering_attack: *includes_triggering_attack,
             },
+            EffectDescriptor::BaseArmorClass {
+                base,
+                ability,
+                ends_when_wearing_armor,
+            } => SpellProgramNode::BaseArmorClass {
+                base: *base,
+                ability: *ability,
+                ends_when_wearing_armor: *ends_when_wearing_armor,
+            },
+            EffectDescriptor::InterruptSpellCasting {
+                ability,
+                preserve_spell_slot,
+            } => SpellProgramNode::InterruptSpellCasting {
+                ability: *ability,
+                preserve_spell_slot: *preserve_spell_slot,
+            },
             EffectDescriptor::PreventSpellDamage { spell_id } => {
                 SpellProgramNode::PreventSpellDamage {
                     spell_id: spell_id.clone(),

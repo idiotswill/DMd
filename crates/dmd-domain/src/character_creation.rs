@@ -125,6 +125,10 @@ pub struct SavageInspiration {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SavageAttackerRoll {
+    /// Tactical source weapon dice occupy this prefix of each raw set. Shared
+    /// rider dice remain identical. Historical kernel rolls omit this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub weapon_dice: Option<usize>,
     pub first: crate::RollResult,
     pub second: crate::RollResult,
     pub chosen: DamageRollChoice,

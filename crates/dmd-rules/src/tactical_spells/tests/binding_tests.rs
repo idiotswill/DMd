@@ -145,6 +145,7 @@ fn scene(spell: &str, level: u8, target_source: &str) -> (CampaignState, SpellCa
         participants: vec![participant(actor, point(10, 10, 0)), other],
         knowledge: vec![],
         origin: meta.clone(),
+        area_grid_policy: None,
         geometry_ruling: Ruling {
             basis: RulingBasis::GmAdjudication,
             reason: "Authored source test geometry".into(),
@@ -266,7 +267,6 @@ fn incomplete_source_programs_are_rejected_before_concentration_or_slots() {
         ("fireball", 3),
         ("command", 1),
         ("fog-cloud", 1),
-        ("shield", 1),
         ("dancing-lights", 0),
     ] {
         let (state, meta, choice) = fixture(
@@ -282,6 +282,21 @@ fn incomplete_source_programs_are_rejected_before_concentration_or_slots() {
         assert!(executable_spell_kind(&plan).is_err(), "{spell}");
         assert_eq!(state, before);
     }
+}
+
+#[test]
+fn shield_defense_program_keeps_its_reaction_cost() {
+    // The defense program is executable by a reaction continuation. Its source
+    // cost still prevents the ordinary CastSpell path from inventing a trigger.
+    let (state, meta, choice) = fixture("shield", SpellResourceChoice::Slot { level: 1 });
+    let before = state.clone();
+    let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+    assert_eq!(
+        executable_spell_kind(&plan).unwrap(),
+        ExecutableSpellKind::Defense
+    );
+    assert_eq!(plan.cost, SpellCastingCost::Reaction);
+    assert_eq!(state, before);
 }
 
 #[test]

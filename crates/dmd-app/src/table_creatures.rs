@@ -9,8 +9,40 @@ pub(crate) fn view(
     if !host {
         return Ok(None);
     }
+    // Immutable presentation v1 wire image, captured from genuine f9602a8 history.
+    // Current creation affordances belong to table_creature_options, not old digests.
+    let catalog = serde_json::from_str(include_str!("table_creature_catalog_v1.json"))
+        .map_err(|e| e.to_string())?;
+    let mut creatures = Vec::new();
+    if let Some(rules) = &state.rules
+        && let Some(profiles) = &rules.tactical_creatures
+    {
+        for profile in &profiles.profiles {
+            let world = state
+                .entities
+                .get(&profile.actor)
+                .ok_or("Creature entity is absent.")?;
+            let entity = rules
+                .entities
+                .get(&profile.actor)
+                .ok_or("Creature mechanics are absent.")?;
+            creatures.push(crate::TableCreatureView {
+                actor: profile.actor,
+                name: world.display_name.clone(),
+                definition_id: profile.source.definition_id.clone(),
+                size: profile.size,
+                hp: entity.hp,
+                max_hp: entity.max_hp,
+            });
+        }
+    }
+    creatures.sort_by_key(|creature| creature.actor.0);
+    Ok(Some(crate::TableCreatureSetupView { catalog, creatures }))
+}
+
+pub(crate) fn current_catalog() -> Result<Vec<crate::TableCreatureOption>, String> {
     let definitions = creature_definitions().map_err(|e| e.to_string())?;
-    let catalog = definitions
+    definitions
         .creatures
         .iter()
         .map(|source| {
@@ -51,32 +83,7 @@ pub(crate) fn view(
                 },
             })
         })
-        .collect::<Result<Vec<_>, String>>()?;
-    let mut creatures = Vec::new();
-    if let Some(rules) = &state.rules
-        && let Some(profiles) = &rules.tactical_creatures
-    {
-        for profile in &profiles.profiles {
-            let world = state
-                .entities
-                .get(&profile.actor)
-                .ok_or("Creature entity is absent.")?;
-            let entity = rules
-                .entities
-                .get(&profile.actor)
-                .ok_or("Creature mechanics are absent.")?;
-            creatures.push(crate::TableCreatureView {
-                actor: profile.actor,
-                name: world.display_name.clone(),
-                definition_id: profile.source.definition_id.clone(),
-                size: profile.size,
-                hp: entity.hp,
-                max_hp: entity.max_hp,
-            });
-        }
-    }
-    creatures.sort_by_key(|creature| creature.actor.0);
-    Ok(Some(crate::TableCreatureSetupView { catalog, creatures }))
+        .collect::<Result<Vec<_>, String>>()
 }
 
 pub(crate) fn create(

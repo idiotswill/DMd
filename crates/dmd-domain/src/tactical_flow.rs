@@ -115,4 +115,8 @@ pub struct TacticalFlow {
     /// Historical reached-place evidence survives the next turn's budget reset.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub last_movement: Option<crate::TacticalMovementResult>,
+    /// Ready survives other actors' resolutions and ends before its owner's next
+    /// turn. The declaration owns its paid Action; release owns a later Reaction.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ready: Vec<crate::TacticalReady>,
 }

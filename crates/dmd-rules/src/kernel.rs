@@ -9,6 +9,7 @@ pub(crate) use engine::interrupt_rest;
 pub use engine::{query, replay, resolve};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
+pub(crate) use validation::savage_result;
 pub use validation::{ability_modifier, armor_class, proficiency_bonus, validate_state};
 pub use validation::{check_modifier as test_modifier, conditions as active_conditions};
 

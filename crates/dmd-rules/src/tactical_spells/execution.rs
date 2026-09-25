@@ -80,7 +80,17 @@ pub fn spell_amount_operation(
         .ok_or_else(|| invalid("spell amount target is absent"))?;
     // Invalid/dead targets do not refund an accepted cast or invoke the ordinary
     // vitality reducer's forbidden revival path. The caller records no effect.
-    if entity.death.dead || !target.source_type_matches {
+    if entity.death.dead
+        || !target.source_type_matches
+        || (matches!(
+            record.cast.plan.program.nodes.as_slice(),
+            [SpellProgramNode::AutomaticDamage { .. }]
+        ) && crate::tactical_defenses::prevents_spell_damage(
+            state,
+            target.actor,
+            &record.cast.plan.program.source.spell_id,
+        ))
+    {
         return Ok(None);
     }
     match record.cast.plan.program.nodes.as_slice() {
@@ -177,6 +187,82 @@ fn effect_id(
     )
 }
 
+pub fn spell_defense_effect(
+    state: &CampaignState,
+    record: &TacticalCasting,
+    at: SpellProgramOccurrence,
+) -> Result<Option<TacticalEffect>, RulesError> {
+    let target = occurrence(record, at)?;
+    let plan = &record.cast.plan;
+    if executable_spell_kind(plan)? != ExecutableSpellKind::Defense {
+        return Err(invalid("spell occurrence has no source defense program"));
+    }
+    let mut defenses = Vec::new();
+    let mut triggers = Vec::new();
+    for node in &plan.program.nodes {
+        match node {
+            SpellProgramNode::BaseArmorClass {
+                base,
+                ability,
+                ends_when_wearing_armor,
+            } => {
+                if *ends_when_wearing_armor
+                    && crate::tactical_defenses::wearing_armor(state, target.actor)
+                {
+                    return Ok(None);
+                }
+                defenses.push(EffectDefense::BaseArmorClass {
+                    base: *base,
+                    ability: *ability,
+                    ends_when_wearing_armor: *ends_when_wearing_armor,
+                });
+                if *ends_when_wearing_armor {
+                    triggers.push(EffectTriggerRule {
+                        event: EffectTriggerEvent::ArmorWorn {
+                            subject: EffectSubject::Target,
+                        },
+                        frequency: EffectTriggerFrequency::EveryOccurrence,
+                        payload: EffectTriggerPayload::EndTargetEffect,
+                    });
+                }
+            }
+            SpellProgramNode::ArmorClassBonus { bonus, .. } => {
+                defenses.push(EffectDefense::ArmorClassBonus { bonus: *bonus });
+            }
+            SpellProgramNode::PreventSpellDamage { spell_id } => {
+                defenses.push(EffectDefense::PreventSpellDamage {
+                    spell_id: spell_id.clone(),
+                });
+            }
+            _ => return Err(invalid("unsupported clause in source defense program")),
+        }
+    }
+    Ok(Some(TacticalEffect {
+        id: effect_id(record, at, false),
+        source: EffectSource {
+            definition_id: plan.program.source.spell_id.clone(),
+            actor: plan.choice.actor,
+            command: plan.origin.clone(),
+            ordinal: plan.occurrence,
+        },
+        established_at: None,
+        target: TacticalEffectTarget::Creature(target.actor),
+        concentration_group: plan
+            .program
+            .concentration
+            .then_some(plan.concentration_group)
+            .flatten(),
+        expires: spell_effect_expiry(record, state.clock.now)?,
+        overlap: Some(EffectOverlap {
+            key: plan.program.source.spell_id.clone(),
+            potency: 0,
+        }),
+        conditions: vec![],
+        defenses,
+        triggers,
+    }))
+}
+
 /// Called only for a failed source save. None represents invalid creature type,
 /// condition immunity, or a concentration group already lost during nested work.
 /// Those private causes must not be sent to the player's result explanation.
@@ -246,6 +332,7 @@ pub fn spell_condition_effect(
             id: effect_id(record, at, true),
             condition: *condition,
         }],
+        defenses: vec![],
         triggers: if *repeat_at_target_end {
             vec![EffectTriggerRule {
                 event: EffectTriggerEvent::Turn {

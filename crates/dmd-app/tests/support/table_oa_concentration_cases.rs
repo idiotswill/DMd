@@ -195,6 +195,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
                 scene_id: SceneId::new(),
                 location_id: LocationId::new(),
                 name: "Crossing the courtyard".into(),
+                area_grid_policy: None,
                 battlefield: Battlefield {
                     bounds: SpatialBox {
                         min: point(0, 0),
@@ -271,7 +272,16 @@ async fn prepare(f: &mut Fixture) -> EntityId {
             request_id: RollRequestId::new(),
         })
         .collect();
-    issue(f, None, TacticalAction::Begin { combatants, groups }).await;
+    issue(
+        f,
+        None,
+        TacticalAction::Begin {
+            execution: TacticalExecutionVersion::ReactionsV1,
+            combatants,
+            groups,
+        },
+    )
+    .await;
     roll_setup(f, Some(0), &[18]).await;
     roll_setup(f, None, &[10]).await;
     roll_setup(f, Some(1), &[1]).await;

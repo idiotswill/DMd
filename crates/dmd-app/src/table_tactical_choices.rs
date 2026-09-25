@@ -7,7 +7,20 @@ pub(super) fn continuation(
     resolution: &TacticalResolution,
     own: &HashSet<EntityId>,
     host: bool,
+    encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    let host_ordering = dmd_rules::tactical::tactical_frame_host_ordering(resolution).ok()?;
+    if host_ordering && !resolution.areas.is_empty() && !host {
+        // Always one generic owned invocation indicator and zero work cards,
+        // independent of private target count, phase and nested consequences.
+        return own
+            .contains(&resolution.turn_actor)
+            .then_some(crate::TableTacticalContinuation {
+                actor: resolution.turn_actor,
+                host_adjudication: true,
+                choices: vec![],
+            });
+    }
     let after_turn = resolution.frames.last().is_some_and(|frame| {
         !frame.is_empty()
             && frame
@@ -34,6 +47,26 @@ pub(super) fn continuation(
                     .iter()
                     .map(|work| {
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::Medicine { actor, .. } => {
+                                (Some(*actor), "First aid check")
+                            }
+                            TacticalWorkKind::SecondWind { actor, .. } => {
+                                (Some(*actor), "Second Wind healing")
+                            }
+                            TacticalWorkKind::AreaDamageRoll { .. } => {
+                                (None, "Shared area damage roll")
+                            }
+                            TacticalWorkKind::AreaSave { area, target } => {
+                                (area_target(resolution, *area, *target), "Area saving throw")
+                            }
+                            TacticalWorkKind::BeginAreaDamage { .. }
+                            | TacticalWorkKind::FinishArea { .. } => {
+                                (None, "Area damage consequence")
+                            }
+                            TacticalWorkKind::ApplyAreaDamage { area, target } => (
+                                area_target(resolution, *area, *target),
+                                "Area damage consequence",
+                            ),
                             TacticalWorkKind::DeathSave { actor } => {
                                 (Some(*actor), "Death saving throw")
                             }
@@ -97,7 +130,16 @@ pub(super) fn continuation(
                         };
                         crate::TableTacticalWorkChoice {
                             occurrence: work.occurrence,
-                            label: label.into(),
+                            label: if host {
+                                subject
+                                    .and_then(|actor| encounter?.participant(actor))
+                                    .map_or_else(
+                                        || label.into(),
+                                        |p| format!("{label}: {}", p.public_label),
+                                    )
+                            } else {
+                                label.into()
+                            },
                         }
                     })
                     .collect()
@@ -108,9 +150,18 @@ pub(super) fn continuation(
     };
     Some(crate::TableTacticalContinuation {
         actor: resolution.turn_actor,
-        host_adjudication: after_turn,
+        host_adjudication: host_ordering,
         choices,
     })
+}
+
+fn area_target(resolution: &TacticalResolution, area: u16, target: u16) -> Option<EntityId> {
+    resolution
+        .areas
+        .iter()
+        .find(|record| record.occurrence == area)
+        .and_then(|record| record.targets.get(usize::from(target)))
+        .map(|target| target.actor)
 }
 
 pub(super) fn save_actor(
@@ -127,6 +178,7 @@ pub(super) fn save_actor(
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
+            | TacticalRollRole::AreaSave
     ) {
         return None;
     }
@@ -256,19 +308,21 @@ mod tests {
             movement: None,
             casts: vec![],
             falls: vec![],
+            areas: vec![],
+            work_trace: None,
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);
-        let presented = continuation(&resolution, &own, false).unwrap();
+        let presented = continuation(&resolution, &own, false, None).unwrap();
         assert_eq!(presented.choices[0].label, "Death saving throw");
         assert_eq!(presented.choices[1].label, "Concurrent consequence");
         let json = serde_json::to_string(&presented).unwrap();
         assert!(!json.contains(&hidden_actor.0.to_string()));
         assert!(!json.contains(&hidden_group.0.to_string()));
         assert!(!json.contains("damage_taken"));
-        assert!(continuation(&resolution, &HashSet::new(), false).is_none());
+        assert!(continuation(&resolution, &HashSet::new(), false, None).is_none());
         assert_eq!(
-            continuation(&resolution, &HashSet::new(), true)
+            continuation(&resolution, &HashSet::new(), true, None)
                 .unwrap()
                 .choices[1]
                 .label,
@@ -284,10 +338,114 @@ mod tests {
             },
         });
         assert!(
-            continuation(&resolution, &own, false)
+            continuation(&resolution, &own, false, None)
                 .unwrap()
                 .choices
                 .is_empty()
+        );
+    }
+
+    #[test]
+    fn delegated_area_cards_are_identical_for_empty_hidden_and_nested_work() {
+        let actor = EntityId::new();
+        let hidden = EntityId::new();
+        let origin = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: CampaignId::new(),
+            session_id: None,
+            issuer: CommandIssuer::Player(PlayerId::new()),
+            actor: Some(AgentRef::Entity(actor)),
+            expected_event_sequence: 8,
+        };
+        let mut resolution = TacticalResolution {
+            origin: origin.clone(),
+            turn_actor: actor,
+            turn_number: 1,
+            boundary: TurnBoundary::Start,
+            frames: vec![],
+            pending: None,
+            failed_save: None,
+            legendary_window: None,
+            attack: None,
+            movement: None,
+            casts: vec![],
+            falls: vec![],
+            work_trace: None,
+            next_occurrence: 100,
+            areas: vec![TacticalArea {
+                occurrence: 0,
+                source: TacticalAreaSource {
+                    actor,
+                    pin: CreatureSourcePin {
+                        ruleset_id: "srd-5.2".into(),
+                        ruleset_version: "5.2.1".into(),
+                        definition_id: "chimera".into(),
+                        definition_fingerprint: "projection-only".into(),
+                    },
+                    feature_id: "fire-breath".into(),
+                    invocation: origin.clone(),
+                    enclosing_origin: origin.clone(),
+                },
+                ordering: TacticalAreaOrdering::DelegateToHost,
+                aim: TacticalAreaAim {
+                    origin: SpatialPoint { x: 0, y: 0, z: 0 },
+                    toward: SpatialPoint { x: 10, y: 0, z: 0 },
+                    include_origin: false,
+                },
+                policy: TacticalAreaGridPolicy::OccupiedCellCentersV1,
+                geometry_origin: origin,
+                targets: vec![],
+                damage: None,
+                stage: TacticalAreaStage::DamageRoll,
+            }],
+        };
+        let own = HashSet::from([actor]);
+        let expected = continuation(&resolution, &own, false, None).unwrap();
+        assert!(expected.host_adjudication);
+        assert!(expected.choices.is_empty());
+        for count in [0, 1, 2, 20] {
+            resolution.frames = vec![
+                (0..count)
+                    .map(|occurrence| TacticalWorkItem {
+                        occurrence,
+                        kind: TacticalWorkKind::ConcentrationSave {
+                            actor: hidden,
+                            group: EffectId::new(),
+                            damage_taken: 37,
+                        },
+                    })
+                    .collect(),
+            ];
+            for stage in [
+                TacticalAreaStage::DamageRoll,
+                TacticalAreaStage::SavingThrows,
+                TacticalAreaStage::ApplyingDamage,
+                TacticalAreaStage::Complete,
+            ] {
+                resolution.areas[0].stage = stage;
+                assert_eq!(
+                    continuation(&resolution, &own, false, None).unwrap(),
+                    expected
+                );
+                assert!(continuation(&resolution, &HashSet::from([hidden]), false, None).is_none());
+                let host = continuation(&resolution, &HashSet::new(), true, None).unwrap();
+                assert_eq!(
+                    host.choices.len(),
+                    if count > 1 { usize::from(count) } else { 0 }
+                );
+            }
+        }
+        assert!(
+            !serde_json::to_string(&expected)
+                .unwrap()
+                .contains(&hidden.0.to_string())
+        );
+        // Clearing this invocation restores the original controller boundary.
+        resolution.areas.clear();
+        assert!(
+            !continuation(&resolution, &own, false, None)
+                .unwrap()
+                .host_adjudication
         );
     }
 }

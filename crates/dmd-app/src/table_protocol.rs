@@ -117,6 +117,8 @@ pub struct TableBattlefieldSetup {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub creatures: Vec<TableCreaturePlacement>,
     pub geometry_ruling: Ruling,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub area_grid_policy: Option<TacticalAreaGridPolicy>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -268,8 +270,15 @@ pub struct TableCreatureView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableTacticalView {
+pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     pub encounter_id: EncounterId,
+    /// Omitted for legacy flows so their historical presentation bytes remain
+    /// unchanged. Only explicitly versioned new/upgraded state adds this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<TacticalExecutionVersion>,
+    /// Private held choices; omission preserves prior empty/legacy projections.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ready: Vec<TableReadyView>,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
     pub phase: String,
@@ -282,7 +291,7 @@ pub struct TableTacticalView {
     pub ties: Vec<InitiativeTie>,
     pub budget: Option<TableTacticalBudget>,
     /// Only the controlling viewer or host receives the current ordered-work choice.
-    pub continuation: Option<TableTacticalContinuation>,
+    pub continuation: Option<TableTacticalContinuation<WorkChoice>>,
     /// A saving throw's controller may choose failure before reporting any dice.
     pub may_fail_save: Option<EntityId>,
     pub legendary_resistance: Option<EntityId>,
@@ -291,12 +300,36 @@ pub struct TableTacticalView {
     pub attack_options: Option<TableAttackOptions>,
     /// Only the current caster's controller or host receives source casting choices.
     pub casting_options: Option<TableCastingOptions>,
+    pub area_options: Option<TableAreaOptions>,
     pub attack_decision: Option<TableAttackDecision>,
     pub movement_options: Option<TableMovementOptions>,
     pub opportunity: Option<TableOpportunityView>,
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
     pub shield_options: Option<TableShieldOptions>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableReadyView {
+    pub actor: EntityId,
+    pub action: String,
+    pub may_abandon: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAreaOptions {
+    pub actor: EntityId,
+    pub controller: Option<PlayerId>,
+    pub source_space: SpatialBox,
+    pub variants: Vec<TableAreaVariant>,
+    pub unavailable: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAreaVariant {
+    pub feature_id: String,
+    pub label: String,
+    pub length_feet: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -409,10 +442,10 @@ pub struct TableCombatantSource {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableTacticalContinuation {
+pub struct TableTacticalContinuation<WorkChoice = TableTacticalWorkChoice> {
     pub actor: EntityId,
     pub host_adjudication: bool,
-    pub choices: Vec<TableTacticalWorkChoice>,
+    pub choices: Vec<WorkChoice>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

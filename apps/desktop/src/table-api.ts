@@ -50,17 +50,16 @@ export interface CreatureView { actor: Id; name: string; definition_id: string; 
 export interface CreatureSetupView { catalog: CreatureOption[]; creatures: CreatureView[] }
 export interface Challenge { id: string; title: string; description: string; phrases: string[]; kind: { Check: { ability: Ability; skill: Skill | null } }; dc: number; success: string; failure: string; resolution: { actor: Id; request_id: Id; success: boolean; total: number } | null }
 export interface Situation { title: string; description: string; challenges: Challenge[] }
-export interface CommandMeta { id: Id; campaign_id: Id; session_id: Id | null; issuer: 'Admin' | { Player: Id }; actor: { Entity: Id } | null; expected_event_sequence: number }
 export interface PendingDecision { id: Id; revision: number; player_id: Id; character_id: Id; actor: Id; session_id: Id; text: string; intent: 'SecondWind' | { Check: { kind: { Check: { ability: Ability; skill: Skill | null } }; goal: string; challenge_id: string | null } } | { Unresolved: { question: string } } }
 export interface RollRequest { id: Id; roller: Id | null; dice: { sides: number; count: number }[]; modifier: number; mode: 'Normal' | 'Advantage' | 'Disadvantage'; visibility: string; reason: string }
 export interface TableView {
-  campaign_id: Id; name: string; event_sequence: number; contract: TableContract; players: Player[]; characters: CharacterView[];
+  campaign_id: Id; name: string; revision: Id; diagnostics?: { canonical_event_sequence: number }; contract: TableContract; players: Player[]; characters: CharacterView[];
   active_session: { session_id: Id; display_name: string; started_at_world: number; participants: Participant[] } | null;
   pending: PendingDecision | null; roll: RollRequest | null; situation_title: string; situation_description: string;
   roll_channel: 'Table' | 'Tactical' | null;
   tactical?: TacticalView | null;
   creature_setup?: CreatureSetupView | null;
-  transcript: { id: string; event_sequence: number; kind: string; speaker: string; text: string }[]; recap: string[];
+  transcript: { id: string; kind: string; speaker: string; text: string }[]; recap: string[];
 }
 export type TableAction =
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
@@ -73,12 +72,14 @@ export type TableAction =
   | { CancelDecision: { pending_id: Id; revision: number } }
   | { Adjudicate: { pending_id: Id; revision: number; request_id: Id } }
   | { SubmitPhysical: { request_id: Id; faces: number[] } };
-export interface Receipt { command_id: Id; event_sequence: number; already_accepted: boolean; outcome: { message: string; mechanics: unknown } }
-export type TextResult = { Accepted: Receipt } | { Observed: { meta: CommandMeta; text: string; answer: string } };
+export interface Receipt { command_id: Id; revision?: Id; outcome: { message: string } }
+export type TextResult = { Accepted: Receipt } | { Observed: { command_id: Id; revision?: Id; text: string; answer: string } };
 export type LocalChannel = 'Host' | { Player: { player_id: Id; character_id: Id } };
-export interface RequestContext { command_id: Id; campaign_id: Id; expected_event_sequence: number; session_id: Id | null; channel: LocalChannel }
-export type UnconfirmedRequest = { kind: 'action'; request: RequestContext & { action: TableAction } } | { kind: 'text'; request: RequestContext & { text: string } } | { kind: 'create'; request: { id: Id; name: string; contract: TableContract } };
-export interface Selection { campaignId: Id | null; playerId: Id | null }
+interface ChannelContext { command_id: Id; campaign_id: Id; session_id: Id | null; channel: LocalChannel }
+export interface RequestContext extends ChannelContext { version: 1; revision: Id }
+export interface LegacyRequestContext extends ChannelContext { expected_event_sequence: number }
+type SavedContext = RequestContext | LegacyRequestContext;
+export type UnconfirmedRequest = { kind: 'action'; request: SavedContext & { action: TableAction } } | { kind: 'text'; request: SavedContext & { text: string } } | { kind: 'create'; request: { id: Id; name: string; contract: TableContract } };export interface Selection { campaignId: Id | null; playerId: Id | null }
 export const REQUEST_KEY = 'dmd.ui.unconfirmed.v1';
 export const SELECTION_KEY = 'dmd.ui.selection.v1';
 export function newId(): Id { return crypto.randomUUID(); }
@@ -98,8 +99,10 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   const request = value.request;
   if (value.kind === 'create') return id(request.id) && id(request.name) && object(request.contract) && object(request.contract.ruleset);
   if (!['action', 'text'].includes(String(value.kind)) || !id(request.command_id) || !id(request.campaign_id)
-    || !Number.isSafeInteger(request.expected_event_sequence) || Number(request.expected_event_sequence) < 0
     || !(request.session_id === null || id(request.session_id))) return false;
+  if ('revision' in request) {
+    if (request.version !== 1 || !id(request.revision) || 'expected_event_sequence' in request) return false;
+  } else if ('version' in request || !Number.isSafeInteger(request.expected_event_sequence) || Number(request.expected_event_sequence) < 0) return false;
   const channel = request.channel;
   if (channel !== 'Host' && (!object(channel) || !object(channel.Player) || !id(channel.Player.player_id) || !id(channel.Player.character_id))) return false;
   if (value.kind === 'text') return channel !== 'Host' && typeof request.text === 'string' && request.text.trim().length > 0 && request.text.length <= 8000;
@@ -134,12 +137,35 @@ export function requestLabel(request: UnconfirmedRequest): string {
 
 // The desktop adapter supplies trusted channels independently of natural-language text.
 export const tableApi = {
+  creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),
+  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null }>('desktop_roll_options', { request }),
   defaults: () => invoke<TableContract>('desktop_default_contract'),
   list: () => invoke<{ id: Id; name: string }[]>('desktop_list_campaigns'),
   create: (request: { id: Id; name: string; contract: TableContract }) => invoke<TableView>('desktop_create_campaign', { request }),
   view: (campaignId: Id, viewer: Viewer) => invoke<TableView>('desktop_open_campaign', { request: { campaign_id: campaignId, viewer } }),
   options: (campaignId: Id) => invoke<CreationOptions>('desktop_creation_options', { request: { campaign_id: campaignId } }),
   situation: (campaignId: Id) => invoke<Situation>('desktop_host_situation', { request: { campaign_id: campaignId } }),
-  action: (request: RequestContext & { action: TableAction }) => invoke<Receipt>('desktop_table_action', { request }),
-  text: (request: RequestContext & { text: string }) => invoke<TextResult>('desktop_table_text', { request }),
+  action: async (request: SavedContext & { action: TableAction }): Promise<Receipt> => {
+    let result: TextResult;
+    if ('revision' in request) {
+      const { action, ...context } = request;
+      const decision = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'ChooseTurnWork' in action.Tactical.action
+        ? action.Tactical.action.ChooseTurnWork : null;
+      const input = decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
+      result = await invoke<TextResult>('desktop_submit_table', { request: { ...context, input } });
+    } else {
+      // A saved v1 nonce goes only to the recovery-only endpoint. Never translate
+      // its numeric head into today's revision or allocate a replacement identity.
+      result = await invoke<TextResult>('desktop_table_action', { request });
+    }
+    if (!('Accepted' in result)) throw new Error('The original action acknowledgement could not be confirmed.');
+    return result.Accepted;
+  },
+  text: (request: SavedContext & { text: string }): Promise<TextResult> => {
+    if ('revision' in request) {
+      const { text, ...context } = request;
+      return invoke<TextResult>('desktop_submit_table', { request: { ...context, input: { Text: { text } } } });
+    }
+    return invoke<TextResult>('desktop_table_text', { request });
+  },
 };

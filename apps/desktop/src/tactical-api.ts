@@ -30,6 +30,10 @@ export interface CastingVariant {
 export interface CastingOptions { actor: Id; variants: CastingVariant[]; unavailable: string[] }
 export interface ShieldOptions { actor: Id; donned: Id|null; shields: { item: Id; hands: Hand[] }[] }
 
+export interface AreaOptions {
+  actor: Id; controller: Id | null; source_space: Volume;
+  variants: { feature_id: string; label: string; length_feet: number }[]; unavailable: string[];
+}
 export interface Point { x: number; y: number; z: number }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
@@ -47,26 +51,43 @@ export interface BattlefieldSetup {
   encounter_id: Id; scene_id: Id; location_id: Id; name: string; battlefield: Battlefield;
   characters: { character_id: Id; position: Point; height: number; allies: Id[]; enemies: Id[] }[];
   creatures: { actor: Id; public_label: string; position: Point; height: number; allies: Id[]; enemies: Id[] }[];
+  area_grid_policy?: 'OccupiedCellCentersV1' | null;
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
+export interface SavageAttackerRoll {
+  weapon_dice: number;
+  first: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] };
+  second: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] };
+  chosen: 'First' | 'Second';
+  inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
+}
 export type TacticalAction =
+  | 'UpgradeExecution'
+  | { AbandonReady: { actor: Id } }
+  | { UnarmedStrike: { target: Id } }
+  | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
+  | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
+  | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
   | { CreatureWeaponAttack: { feature_id: string; choice: Omit<WeaponUseChoice,'delivery'|'ability'|'purpose'> } }
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
   | { Attack: { choice: WeaponUseChoice } }
+  | { CreatureArea: { feature_id: string; aim: { origin: Point; toward: Point; include_origin: boolean }; ordering: 'Host' | 'DelegateToHost' } }
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
-  | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { occurrence: number } }
-  | { Begin: { combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
+  | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
+  | { Begin: { execution: 'ReactionsV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
+  execution?: 'ReactionsV1' | null;
+  ready?: { actor: Id; action: string; may_abandon: boolean }[];
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;
   participants: { entity_id: Id; public_label: string; position: Point; size: string }[];
@@ -74,12 +95,13 @@ export interface TacticalView {
   observers: { observer: Id; position: Point | null; contacts: { entity_id: Id; label: string | null; position: Point; status: 'Seen' | 'Located' | 'Remembered'; modality: string }[]; cells: { position: Point; difficult: boolean; blocked: boolean; currently_seen: boolean }[] }[];
   initiative: { actor: Id; label: string; total: number | null }[];
   ties: InitiativeTie[];
-  continuation: { actor: Id; host_adjudication: boolean; choices: { occurrence: number; label: string }[] } | null;
+  continuation: { actor: Id; host_adjudication: boolean; choices: { handle: Id; label: string }[] } | null;
   may_fail_save: Id | null;
   legendary_resistance: Id | null;
   legendary_action: Id | null;
   attack_options?: AttackOptions | null;
   casting_options?: CastingOptions | null;
+  area_options?: AreaOptions | null;
   movement_options?: MovementOptions | null;
   opportunity?: OpportunityView | null;
   liquid_landing?: { actor: Id } | null;

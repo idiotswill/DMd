@@ -216,6 +216,8 @@ pub enum TargetSelection {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ReactionTrigger {
     HitByAttackOrTargetedByMagicMissile,
+    /// SRD120: actual sight of a creature casting with at least one component.
+    SeenCreatureCastingWithComponents,
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -260,6 +262,19 @@ pub struct DamageComponent {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum EffectDescriptor {
+    /// A willing, unarmored target chooses this base AC formula; this is not an
+    /// additive bonus. The source ends the effect when armor is donned (SRD145).
+    BaseArmorClass {
+        base: u8,
+        ability: Ability,
+        ends_when_wearing_armor: bool,
+    },
+    /// A failed source save dissipates that exact in-progress spell; activation
+    /// costs remain spent, with the explicit spell-slot exception (SRD120).
+    InterruptSpellCasting {
+        ability: Ability,
+        preserve_spell_slot: bool,
+    },
     /// Failure follows one chosen command on the target's next turn (SRD116).
     SaveCommand {
         ability: Ability,
@@ -377,6 +392,14 @@ pub struct SkillModifier {
     pub skill: Skill,
     pub modifier: i16,
 }
+/// The printed stat block includes an already-cast spell. Importing a creature
+/// does not fabricate that cast: use ordinary unarmored AC until a genuine source
+/// effect establishes this formula. Shields are not worn armor for this clause.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct PreparedDefense {
+    pub spell_id: String,
+}
 /// Source stat blocks have explicit attack/save/initiative values; do not infer monster
 /// PB from a fabricated player level or treat CR as level.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -388,6 +411,8 @@ pub struct CreatureStatistics {
     pub creature_tags: Vec<String>,
     pub alignment: String,
     pub armor_class: u8,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub prepared_defense: Option<PreparedDefense>,
     pub hit_points: u32,
     pub hit_point_formula: DamageFormula,
     pub ability_scores: [u8; 6],
@@ -542,6 +567,7 @@ pub struct InnateSpell {
 pub enum FeatureActivation {
     Action,
     BonusAction,
+    Reaction,
     Legendary { cost: u8 },
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -794,6 +820,43 @@ impl TacticalSpellDefinition {
         effects(&self.effects)?;
         for e in &self.effects {
             match e {
+                EffectDescriptor::BaseArmorClass { .. } => ensure(
+                    self.casting_time == CastingTime::Action
+                        && self.range == SpellRange::Touch
+                        && matches!(
+                            self.targets,
+                            TargetSelection::Creatures {
+                                maximum: 1,
+                                creature_type: None,
+                                requires_sight: false
+                            }
+                        )
+                        && self.duration
+                            == (EffectDuration::Seconds {
+                                seconds: 28_800,
+                                concentration: false,
+                            })
+                        && self.upcast.is_none(),
+                    "base armor requires its willing unarmored touch target and source duration",
+                )?,
+                EffectDescriptor::InterruptSpellCasting { .. } => ensure(
+                    self.casting_time
+                        == CastingTime::Reaction {
+                            trigger: ReactionTrigger::SeenCreatureCastingWithComponents,
+                        }
+                        && matches!(
+                            self.targets,
+                            TargetSelection::Creatures {
+                                maximum: 1,
+                                creature_type: None,
+                                requires_sight: true
+                            }
+                        )
+                        && self.range == SpellRange::Distance { feet: 60 }
+                        && self.duration == EffectDuration::Instantaneous
+                        && self.upcast.is_none(),
+                    "casting interruption requires its visible source reaction target",
+                )?,
                 EffectDescriptor::PreventSpellDamage { spell_id } => {
                     ensure(pack.spell(spell_id).is_some(), "unknown prevented spell")?
                 }
@@ -1012,6 +1075,30 @@ impl CreatureDefinition {
         for f in &self.features {
             self.validate_feature(f, pack)?;
         }
+        if let Some(prepared) = &s.prepared_defense {
+            let spell = pack
+                .spell(&prepared.spell_id)
+                .ok_or_else(|| DefinitionError("unknown prepared defense spell".into()))?;
+            let [
+                EffectDescriptor::BaseArmorClass {
+                    base,
+                    ability,
+                    ends_when_wearing_armor: true,
+                },
+            ] = spell.effects.as_slice()
+            else {
+                return Err(DefinitionError(
+                    "prepared defense requires a source base-AC spell".into(),
+                ));
+            };
+            ensure(
+                i32::from(*base) + crate::ability_modifier(s.ability_scores[ability.index()]) == i32::from(s.armor_class)
+                    && self.features.iter().any(|feature| matches!(&feature.feature,
+                        MonsterFeature::Spellcasting { spells, .. } if spells.iter().any(|grant| grant.spell_id == prepared.spell_id)))
+                    && !s.gear.iter().any(|id| id == "leather-armor" || id == "shield"),
+                "printed prepared defense does not match its spell grant and unarmored formula",
+            )?;
+        }
         Ok(())
     }
 
@@ -1039,6 +1126,21 @@ impl CreatureDefinition {
                     .as_ref()
                     .is_some_and(|b| cost > 0 && cost <= b.uses),
                 "legendary feature lacks valid budget",
+            )?;
+        }
+        if f.activation == FeatureActivation::Reaction {
+            let MonsterFeature::Spellcasting { spells, .. } = &f.feature else {
+                return Err(DefinitionError(
+                    "reaction feature requires source spell triggers".into(),
+                ));
+            };
+            ensure(
+                spells.iter().all(|grant| {
+                    pack.spell(&grant.spell_id).is_some_and(|spell| {
+                        matches!(spell.casting_time, CastingTime::Reaction { .. })
+                    })
+                }),
+                "reaction feature grants a spell without a reaction trigger",
             )?;
         }
         if let Some(usage) = f.usage {
@@ -1434,6 +1536,21 @@ fn effects(es: &[EffectDescriptor]) -> Result<(), DefinitionError> {
     )?;
     for e in es {
         match e {
+            EffectDescriptor::BaseArmorClass {
+                base,
+                ability,
+                ends_when_wearing_armor,
+            } => ensure(
+                *base == 13 && *ability == Ability::Dexterity && *ends_when_wearing_armor,
+                "invalid source base armor formula or ending condition",
+            )?,
+            EffectDescriptor::InterruptSpellCasting {
+                ability,
+                preserve_spell_slot,
+            } => ensure(
+                *ability == Ability::Constitution && *preserve_spell_slot,
+                "invalid source casting interruption save or slot exception",
+            )?,
             EffectDescriptor::SaveCommand { choices, .. } => {
                 ensure(
                     !choices.is_empty()

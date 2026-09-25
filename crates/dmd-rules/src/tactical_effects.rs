@@ -353,6 +353,18 @@ fn observe(
                 return Err(invalid("damage observation references an unknown entity"));
             }
         }
+        EffectObservation::ArmorWorn { target } => {
+            if !entity_exists(*target)
+                || campaign
+                    .rules
+                    .as_ref()
+                    .and_then(|rules| rules.tactical_inventory.as_ref())
+                    .and_then(|inventory| inventory.loadout(*target))
+                    .is_none_or(|loadout| loadout.worn_armor.is_none())
+            {
+                return Err(invalid("armor observation requires actual worn armor"));
+            }
+        }
         EffectObservation::Zone {
             effect,
             target,

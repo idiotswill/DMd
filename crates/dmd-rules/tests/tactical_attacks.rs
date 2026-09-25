@@ -1,18 +1,28 @@
 use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, tactical_inventory::*, *};
 use std::collections::HashMap;
+#[path = "tactical_attacks/areas.rs"]
+mod areas;
 #[path = "tactical_attacks/casting.rs"]
 mod casting;
 #[path = "tactical_attacks/creature.rs"]
 mod creature;
 #[path = "tactical_attacks/creature_weapon.rs"]
 mod creature_weapon;
+#[path = "tactical_attacks/medicine.rs"]
+mod medicine;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
+#[path = "tactical_attacks/savage.rs"]
+mod savage;
+#[path = "tactical_attacks/second_wind.rs"]
+mod second_wind;
 #[path = "tactical_attacks/shields.rs"]
 mod shields;
 #[path = "tactical_attacks/spell.rs"]
 mod spell;
+#[path = "tactical_attacks/unarmed.rs"]
+mod unarmed;
 
 struct Fixture {
     state: CampaignState,
@@ -174,6 +184,7 @@ impl Fixture {
                 .collect(),
             knowledge: vec![],
             origin: f.meta(None),
+            area_grid_policy: None,
             geometry_ruling: Ruling {
                 basis: RulingBasis::GmAdjudication,
                 reason: "Explicit flat field".into(),
@@ -282,6 +293,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: self
                     .actors
                     .into_iter()

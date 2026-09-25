@@ -256,6 +256,19 @@ fn source_rays_keep_distinct_rolls_and_resume_after_another_players_concentratio
     assert_eq!(f.request().modifier, 12); // Printed dragon spell attack, never level0 PB.
     f.roll(0, &[15]);
     assert_eq!(f.request().dice, vec![DieSpec { count: 2, sides: 6 }]);
+    assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
+    f.rejected(
+        Some(0),
+        TacticalAction::SubmitSavageAttacker {
+            roll: SavageAttackerRoll {
+                weapon_dice: Some(2),
+                first: f.raw(&[1, 1]),
+                second: f.raw(&[6, 6]),
+                chosen: DamageRollChoice::Second,
+                inspiration: None,
+            },
+        },
+    );
     f.roll(0, &[3, 4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 93);
     assert!(f.flow().resolution.as_ref().unwrap().attack.is_none());

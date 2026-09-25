@@ -129,6 +129,7 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
                         enemies: vec![],
                     },
                 ],
+                area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
                     reason: "Open visible courtyard and explicit creature positions.".into(),
@@ -175,7 +176,11 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
         .collect();
     f.host(
         TableAction::Tactical {
-            action: TacticalAction::Begin { combatants, groups },
+            action: TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                combatants,
+                groups,
+            },
         },
         Some(f.session),
     )
