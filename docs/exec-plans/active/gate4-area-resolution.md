@@ -79,11 +79,29 @@ mechanism slice, not completion of those rows or Gate4.
 
 ## Current state and remaining scope
 
-Planning checkpoint only. Source definitions and reusable geometry/save/vitality
-helpers inspected; no new implementation or test pass yet. Next: settle domain
-contract and spatial membership policy with movement/root, author new source
-binding/leaf tests while shared falling work is active, then integrate its tested
-checkpoint before shared edits.
+Root approved an optional host-selected encounter policy, absent in old states;
+absence rejects area activation before costs. `OccupiedCellCentersV1` samples the
+center of each occupied part of a5ft horizontal cell and vertical band. Tiny spaces
+and partial top bands use their occupied midpoint, rounded toward the minimum if
+it falls between half-foot coordinates. One in-shape sample with a clear effect
+path includes the creature. Total-cover terrain blocking at least half or three
+quarters of all occupied samples grants Half or ThreeQuarters cover; authored
+cover and intervening creature cover combine by taking the greatest grade. A fully
+blocked target is excluded. This named map adjudication avoids hidden-victim-
+dependent requests for extra cover rulings; it is not a source-prescribed ray
+percentage and does not grant around-corner effects. GM setup must explain the
+consequence in ordinary language and retain its accepted origin.
+
+New domain/source/geometry/raw-amount contracts and ten source/geometry tests are
+drafted, not compiled or linked to a public action yet. The tests use actual source
+builds for all three admitted breaths and cover policy absence, malformed aim,
+large/Tiny/tall bodies, cover thresholds and full exclusion, private identity/sight
+independence, canonical raw amounts and explicit origin inclusion. Format and diff
+checks pass; no compiler slot has been taken and no test pass is claimed.
+Target saving throws precede the simultaneous damage frame so
+one target's death/concentration loss cannot retroactively change another save.
+Next: source/geometry tests while shared falling work is active; then integrate
+its tested checkpoint before shared edits. No test pass or native claim yet.
 
 Remaining tactical work is not reassigned to Gate6. Fireball must also implement
 its mandatory flammable unworn/uncarried-object ignition and Burning hazard
