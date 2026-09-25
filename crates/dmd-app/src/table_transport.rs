@@ -46,6 +46,28 @@ pub struct TableTransportRequest {
     pub input: TableTransportInput,
 }
 
+/// Read-only live roll affordances are separate from immutable presentation v1.
+/// They are tied to the owned opaque request; accepting them still rederives rules.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollOptionsRequest {
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub roll_id: RollRequestId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableRollOptions {
+    pub savage_attacker: Option<TableSavageAttackerOption>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSavageAttackerOption {
+    pub weapon_dice: usize,
+    pub heroic_inspiration: bool,
+}
+
 /// Only recovery of an already accepted v1 request uses this old numeric field.
 /// This envelope is never converted into a newly accepted game command.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

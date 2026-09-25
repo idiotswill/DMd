@@ -5,6 +5,7 @@ mod creature_weapon;
 mod intrinsic;
 mod opportunity;
 mod planning;
+mod savage;
 mod spell;
 mod validation;
 use super::turns::*;
@@ -14,6 +15,8 @@ use crate::tactical_weapons::*;
 pub(super) use creature::begin_creature_attack;
 pub(super) use creature_weapon::begin_creature_weapon;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
+pub use savage::savage_attacker_dice;
+pub(super) use savage::submit as submit_savage;
 pub(super) use spell::begin_spell_attack;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
     match attack.source {
