@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-savage-attacker`.
 Base: Second Wind/protocol integration841e660 (draft PR36/PR35), with area main172a15a.
-Status: planned; no implementation or executable evidence yet.
+Status: source, recovery and desktop verification pass; final main-based head CI and protected merge pending.
 
 ## Objective and boundaries
 
@@ -84,3 +84,25 @@ existing null assertion for absent controls. Preserve the assertions and actual 
 behavior. Add explicit source-spell and fixed unarmed availability/refusal checks
 to their existing genuine attack regressions. Fresh CI and all local checks remain
 required; neither this correction nor the new recovery scenario is yet verified.
+
+Source47fc39a2f1d7fe046ae8bf5d532c99b47d9637cd now passes full local
+`./scripts/verify`:649 GNU Rust tests, strict workspace all-target Clippy, formatting,
+check and both guards. Local desktop verification passes59 tests, zero static errors/
+warnings and the134-module production build. Logs: tooling/pr37-canonical-47fc.log
+and tooling/pr37-ui-{check,test,build}-47fc.log. All six source CI checks pass:
+Linux36146796194 (650 Rust tests), Windows36146796251 (652 native Rust tests,
+59 desktop tests, MSRV and fresh offline packaging). Actual logs were inspected.
+
+Root's separate full-diff review covered source/critical weapon pools, optional normal
+submission, once-per-global-turn use, off-turn OA, both raw sets, shared extra dice,
+single Inspiration expenditure, read-only owned availability, opaque submission and
+unchanged retry envelopes. Real SQLite cold/mirror/hostile replay and UI regressions
+passed. Supporting independent reviewers remain quota-blocked; no source defect
+remains from this review. This is one combat feature, not completed Gate4.
+
+PR36 finalc04e3b6 passed all six exact-head checks36149421185/36149421183 and merged
+as b86e2220709a7462da31547dfe921925ce0c0877. Fetched full-tree parity was verified
+before importing its evidence and reconciling squash ancestry. This branch's source
+remains byte-identical to verified47fc across crates/apps/content/manifests/scripts/
+tests/CI. Next: final main-based evidence-head CI, protected merge, fetched parity and
+post-merge checks; continue the remaining Gate4 work.

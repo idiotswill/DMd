@@ -3,7 +3,7 @@
 Writer: root, taking over after bootstrap_audit reached its usage limit.
 Branch: `codex/gate4-fighter-combat-features`.
 Base: reviewed physical checkpoint `629177634572740ed637da5b5640fc49bbc08083`.
-Status: Second Wind source and production-path verification pass; final main-based head checks and protected merge pending. Savage Attacker remains separate PR37.
+Status: Second Wind merged as b86e222 after exact-head verification and fetched tree parity; post-merge checks pending. Savage Attacker remains separate PR37.
 
 ## Objective and source authority
 
@@ -164,3 +164,10 @@ documents and reconciling squash ancestry. The resulting e1a10de source is byte-
 identical to verifiedf669389 across crates/apps/content/manifests/scripts/tests/CI.
 Next: final evidence-head CI on PR36 retargeted to main, expected-head protected
 merge, fetched tree equality and post-merge checks. Continue Gate4 after this slice.
+
+Finalc04e3b6cd397d7463b0e7c57ec9d26114da18e39 passed all six exact-head checks
+36149421185/36149421183, including native regressions and fresh offline packaging.
+Fresh PR/head/base review found the expected clean main-based head. Expected-head
+protected squash merged PR36 as b86e2220709a7462da31547dfe921925ce0c0877; fetched
+full-tree equality to c04e3b6 passed. Post-merge checks remain pending. Gate4 remains
+active; this slice does not complete the combat-action family.
