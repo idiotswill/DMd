@@ -35,8 +35,12 @@ now authored in `crates/dmd-app/tests/support/table_dead_target_cases.rs`, reusi
 the actual public source-scene and raw-roll helpers. It also cold-retries the valid
 original lethal declaration before advancing turns, then reopens after the rejected
 fresh declaration and checks replay/portable restore again. Formatting and diff
-checks pass; **the new test is uncompiled** pending root's production fix. Root now
-owns the compiler and will integrate this test into its focused/canonical batch,
-avoiding a second conflicting build. Read-only review and actual test evidence remain
-required before acceptance. Root owns PR integration and final gate decisions.
+checks pass. Independent exact test review is clear. Root integrated the scenario
+as `9910ce7` with admission correction `a58d4dc`. First compilation caught the
+next-turn helper taking an immutable fixture although the host helper needs a
+mutable reference; its signature and call were corrected without gameplay changes.
+The actual file-SQLite test then passed on the default Windows stack: one passed,
+24 unrelated cases filtered, 9.66 seconds. Log: `../tooling/pr33-dead-target-app-r2.log`.
+All lethal completion, cold retry, next-turn, no-write rejection, replay and restore
+assertions ran. Root now owns combined canonical/UI/CI verification and integration.
 Gate4 remains active; no native or whole-gate acceptance is claimed.

@@ -118,7 +118,7 @@ async fn lethal_attack(f: &Fixture, target: EntityId) -> (ItemId, CommandMeta, T
     (weapon, origin, request)
 }
 
-async fn next_player_turn(f: &Fixture, target: EntityId) {
+async fn next_player_turn(f: &mut Fixture, target: EntityId) {
     player_action(f, TacticalAction::EndTurn).await;
     let current = state(f).await;
     let timing = current.rules.as_ref().unwrap().timing.as_ref().unwrap();
@@ -250,7 +250,7 @@ async fn run_case() {
         durable,
         "retry cannot repeat lethal damage or equipment costs"
     );
-    Box::pin(next_player_turn(&f, target)).await;
+    Box::pin(next_player_turn(&mut f, target)).await;
     Box::pin(reject_new_attack(&mut f, &path, target, weapon)).await;
     f.pool.close().await;
     std::fs::remove_file(path).unwrap();

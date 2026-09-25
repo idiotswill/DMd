@@ -239,6 +239,19 @@ and Ready source branches continue independently, with serialized local builds.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
 and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
 
+PR32 post-merge checks subsequently all pass on main12ed29a (Linux36129020814,
+Windows36129020852). PR33 initial combined extractionb7f5dfb has all six CI checks,
+590 Linux and592 native Windows Rust tests, with independent source/app review.
+Review fixed ordinary/intrinsic dead-target admission before resources; the common
+guard checks actor knowledge first and does not affect retained lethal validation.
+All71 affected attack tests pass, including living zero-HP, hidden target and lethal
+OA completion. Genuine damaging-OA/concentration/cold-recovery testf13224e passes
+and is independently reviewed, integrated as5e3f89a. Actual lethal/dead-target
+SQLite regression9910ce7 also passes after a two-line fixture mutability correction,
+retaining zero durable writes and valid lethal replay. Full combined canonical/UI/
+final-head CI and protected merge remain pending. The12 Gate4 ledger families now
+say implementing, with scopes and evidence arrays unchanged and no gate acceptance.
+
 Continue encounter execution and the effects/equipment/damage integrations from merged
 foundation main. Complete all twelve ledger
 families and packaged encounter acceptance before the Gate 4 owner pause; do not enter Gate 5.

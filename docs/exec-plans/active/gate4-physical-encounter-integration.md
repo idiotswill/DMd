@@ -91,7 +91,9 @@ The admission correction is `a58d4dc`; all 71 affected attack tests pass locally
 after correcting the two new fixture assumptions documented below. The genuine OA
 test is integrated as `5e3f89a`, with its focused source result and independent
 review clear. The real lethal/dead-target SQLite test is integrated as `9910ce7`
-after independent review and is compiling. Full canonical verification, UI checks,
+after independent review and passes on the default Windows stack after a two-line
+test-helper mutability correction (one scenario, 9.66 seconds). All lethal/retry/
+next-turn/zero-write/replay/restore assertions ran. Full canonical verification, UI checks,
 fresh final CI, protected merge and post-merge checks remain required.
 
 PR32's post-merge checks are now all green on main `12ed29a`: Linux36129020814 and
