@@ -101,7 +101,8 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 Main is now `0ff676dd0fceefa826230bdcafdfcb608fc571d7`. Bounded prerequisite
 PRs24 (effects),25 (damage/vitality),26 (physical inventory) and27 (source creature
 definitions) have merged after exact-head verification. PR27's merged tree equals
-its reviewed final head; post-merge Windows packaging is still running at this update.
+its reviewed final head; all six post-merge jobs passed in Linux run36101900611 and
+Windows run36101900631, including stable packaging.
 PR28 extracts pure physical weapon planning for independent review and canonical CI.
 These source/reducer slices do not establish playable encounter acceptance by themselves.
 
