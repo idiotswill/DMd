@@ -159,28 +159,32 @@ fn unarmed_admission_checks_knowledge_reach_ability_to_act_and_full_cover_before
                 concentration_owner: None,
             }),
             3 => f.zero_hp_target(true),
-            _ => f
-                .state
-                .encounter
-                .as_mut()
-                .unwrap()
-                .battlefield
-                .obstacles
-                .push(SpatialObstacle {
-                    id: "transparent-total-cover".into(),
-                    volume: SpatialBox {
-                        min: SpatialPoint { x: 19, y: 10, z: 0 },
-                        max: SpatialPoint {
-                            x: 21,
-                            y: 20,
-                            z: 20,
+            _ => {
+                f.state.encounter.as_mut().unwrap().participants[1]
+                    .position
+                    .x = 30;
+                f.state
+                    .encounter
+                    .as_mut()
+                    .unwrap()
+                    .battlefield
+                    .obstacles
+                    .push(SpatialObstacle {
+                        id: "transparent-total-cover".into(),
+                        volume: SpatialBox {
+                            min: SpatialPoint { x: 20, y: 10, z: 0 },
+                            max: SpatialPoint {
+                                x: 26,
+                                y: 20,
+                                z: 20,
+                            },
                         },
-                    },
-                    blocks_movement: true,
-                    blocks_sight: false,
-                    observable: true,
-                    cover: CoverDegree::Total,
-                }),
+                        blocks_movement: true,
+                        blocks_sight: false,
+                        observable: true,
+                        cover: CoverDegree::Total,
+                    });
+            }
         }
         validate_state(&f.state, &f.pack).unwrap();
         validate_tactical_state(&f.state).unwrap();
@@ -252,45 +256,55 @@ fn unarmed_conditions_exhaustion_and_inspiration_preserve_actual_raw_faces() {
 
 #[test]
 fn unarmed_worn_armor_training_and_creature_proficiency_use_actual_sources() {
-    for trained in [false, true] {
-        let mut f = fixture();
-        let armor = f.item("leather-armor", 1);
-        f.state
-            .rules
-            .as_mut()
-            .unwrap()
-            .tactical_inventory
-            .as_mut()
-            .unwrap()
-            .loadouts[0]
-            .worn_armor = Some(armor);
-        if !trained {
-            f.state
-                .table
-                .as_mut()
-                .unwrap()
-                .character_profiles
-                .values_mut()
-                .next()
-                .unwrap()
-                .armor_training
-                .clear();
-        }
-        f.run(Some(0), strike(&f));
-        assert_eq!(
-            f.request().mode,
-            if trained {
-                RollMode::Normal
-            } else {
-                RollMode::Disadvantage
-            }
-        );
-        f.roll(0, if trained { &[15] } else { &[15, 1] });
-        assert_eq!(
-            f.rules().entities[&f.actors[1]].hp,
-            if trained { 46 } else { 50 }
-        );
-    }
+    // Keep the real fighter creation/equipment evidence unchanged.
+    let mut trained = fixture();
+    let armor = trained.item("leather-armor", 1);
+    trained
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts[0]
+        .worn_armor = Some(armor);
+    trained.run(Some(0), strike(&trained));
+    assert_eq!(trained.request().mode, RollMode::Normal);
+    trained.roll(0, &[15]);
+    assert_eq!(trained.rules().entities[&trained.actors[1]].hp, 46);
+
+    // A source wolf has no armor training. Borrowed armor is a physical fixture,
+    // not an edited source profile or fabricated player class.
+    let mut untrained = creature_weapon::equipped_source("wolf", 0);
+    let armor = untrained.item("leather-armor", 1);
+    untrained
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts[0]
+        .worn_armor = Some(armor);
+    let profile = untrained
+        .rules()
+        .tactical_creatures
+        .as_ref()
+        .unwrap()
+        .profile(untrained.actors[0])
+        .unwrap();
+    let armor =
+        dmd_rules::tactical_creature_equipment::creature_current_armor(&untrained.state, profile)
+            .unwrap();
+    untrained.entity_mut(0).armor = armor;
+    untrained.begin();
+    untrained.run(Some(0), strike(&untrained));
+    assert_eq!(untrained.request().mode, RollMode::Disadvantage);
+    untrained.roll(0, &[20, 1]);
+    assert_eq!(untrained.rules().entities[&untrained.actors[1]].hp, 100);
+
     let mut f = creature_weapon::goblin();
     f.begin();
     let strength = ability_modifier(

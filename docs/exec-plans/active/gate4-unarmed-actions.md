@@ -82,3 +82,11 @@ failures must be corrected without weakening assertions. Next: finish focused te
 open draft CI early, run actual file-SQLite/UI checks, then canonical/full-head review.
 Equipment changes accompanying an unarmed attack, Grapple/Shove/Escape and PvP consent
 remain explicit Gate4 work, not an implicit relaxation of those source requirements.
+
+The focused batch found two invalid test setups before source admission: an obstacle
+embedded in occupied space and a modified fighter profile inconsistent with its
+creation receipt. The barrier now sits in an unoccupied five-foot gap on the actual
+grid; assertions validate the starting aggregate before the requested rejection.
+Untrained armor now uses a real source wolf with borrowed leather and its correctly
+recomputed armor class; fighter/goblin source profiles remain unchanged. All six
+focused unarmed reducer tests now pass. Full app/UI/canonical and CI remain pending.
