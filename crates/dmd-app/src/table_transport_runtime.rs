@@ -308,7 +308,9 @@ impl CampaignRuntime {
             .begin_with("BEGIN IMMEDIATE")
             .await
             .map_err(recovery)?;
-        let export = export_campaign_in_transaction(&mut tx, request.campaign_id).await?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
         let (_, pack) = self.protocol_pack(&export)?;
         presentation::validate_history(&export, &pack).map_err(recovery)?;
         let (meta, response) = if let Some(audit) = export
@@ -431,7 +433,9 @@ impl CampaignRuntime {
             .begin_with("BEGIN IMMEDIATE")
             .await
             .map_err(recovery)?;
-        let mut export = export_campaign_in_transaction(&mut tx, meta.campaign_id).await?;
+        let mut export = export_campaign_in_transaction(&mut tx, meta.campaign_id)
+            .await
+            .map_err(recovery)?;
         let (state, pack) = self.protocol_pack(&export)?;
         let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
         if let Some(audit) = export
@@ -526,7 +530,9 @@ impl CampaignRuntime {
                 .await
                 .map_err(recovery)?;
         }
-        let complete = export_campaign_in_transaction(&mut tx, meta.campaign_id).await?;
+        let complete = export_campaign_in_transaction(&mut tx, meta.campaign_id)
+            .await
+            .map_err(recovery)?;
         presentation::validate_history(&complete, &pack).map_err(recovery)?;
         let receipt = TableReceipt {
             command_id: meta.id,
@@ -553,7 +559,9 @@ impl CampaignRuntime {
             .begin_with("BEGIN IMMEDIATE")
             .await
             .map_err(recovery)?;
-        let mut export = export_campaign_in_transaction(&mut tx, meta.campaign_id).await?;
+        let mut export = export_campaign_in_transaction(&mut tx, meta.campaign_id)
+            .await
+            .map_err(recovery)?;
         let (state, pack) = self.protocol_pack(&export)?;
         let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
         if let Some(saved) = export.observations.iter().find(|o| o.record.id == id) {
@@ -606,7 +614,9 @@ impl CampaignRuntime {
                 .await
                 .map_err(recovery)?;
         }
-        let complete = export_campaign_in_transaction(&mut tx, meta.campaign_id).await?;
+        let complete = export_campaign_in_transaction(&mut tx, meta.campaign_id)
+            .await
+            .map_err(recovery)?;
         presentation::validate_history(&complete, &pack).map_err(recovery)?;
         tx.commit().await.map_err(recovery)?;
         Ok(body)
@@ -662,7 +672,9 @@ impl CampaignRuntime {
             .begin_with("BEGIN IMMEDIATE")
             .await
             .map_err(recovery)?;
-        let mut export = export_campaign_in_transaction(&mut tx, campaign_id).await?;
+        let mut export = export_campaign_in_transaction(&mut tx, campaign_id)
+            .await
+            .map_err(recovery)?;
         let (state, pack) = self.protocol_pack(&export)?;
         let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
         self.bootstrap_presentation(&mut tx, &mut export, &state, &pack, &mut history)
@@ -685,7 +697,9 @@ impl CampaignRuntime {
             .begin_with("BEGIN IMMEDIATE")
             .await
             .map_err(recovery)?;
-        let mut export = export_campaign_in_transaction(&mut tx, request.campaign_id).await?;
+        let mut export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
         let (state, pack) = self.protocol_pack(&export)?;
         let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
         // Exact accepted identity wins before current audience ownership, attendance,
@@ -844,7 +858,9 @@ impl CampaignRuntime {
             .await
             .map_err(recovery)?;
         // Verify the whole staged composition before publishing any game or answer.
-        let complete = export_campaign_in_transaction(&mut tx, request.campaign_id).await?;
+        let complete = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
         presentation::validate_history(&complete, &pack).map_err(recovery)?;
         tx.commit().await.map_err(recovery)?;
         Ok(response)

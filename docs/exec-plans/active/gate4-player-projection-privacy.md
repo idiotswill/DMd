@@ -240,3 +240,19 @@ construction phases fixed the unchanged ordinary scenario (1 passed,6.58 seconds
 No production source, gameplay assertion, thread stack size or compiler flag changed.
 Temporary diagnostic files/log prints were removed. The complete app/strict-lint
 batch is now rerunning; no remaining result is presumed from this focused pass.
+
+The complete app run on274edfd finished with77 passed and one failure, including
+all11 protocol cases and genuine private area saves; the remaining failure was the
+existing unavailable-receipt API contract. New transaction exports propagated a
+generic Lifecycle error instead of the table API's explicit unknown/recovery error.
+Map those read failures through the existing recovery classifier, preserving input
+rejection as a distinct result. The unchanged legacy outage/retry case now passes
+(1.82 seconds); the modern exact-action/answer case additionally hides its receipt
+table, requires unknown/recovery for both original bodies, then restores storage
+and recovers the exact prior result (6.76 seconds). Logs:
+`gate4-protocol-receipt-recovery.log` and
+`gate4-protocol-modern-receipt-recovery.log`. No gameplay/replay semantics or errors
+were changed into proven rejection. Strict domain/rules/persistence/app all-target
+Clippy now passes with warnings denied (2m21s); formatting and diff checks pass.
+Final combined canonical verification, latest-main/area reconciliation, review and
+native CI remain required before accepting this protocol slice.

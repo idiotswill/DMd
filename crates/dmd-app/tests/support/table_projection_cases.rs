@@ -248,6 +248,29 @@ async fn protocol_exact_action_and_answer_retries_precede_stale_session_checks()
         .await
         .unwrap();
     assert_no_head(&accepted);
+    // An unavailable receipt ledger cannot turn either already accepted input
+    // into a proven rejection. Keep its original body until storage returns.
+    sqlx::query("ALTER TABLE table_transport_bindings RENAME TO unavailable_transport_bindings")
+        .execute(&f.pool)
+        .await
+        .unwrap();
+    for saved in [&original, &declare] {
+        assert!(matches!(
+            f.runtime.submit_presented_table(saved.clone()).await,
+            Err(RunnableCampaignError::Table(_))
+        ));
+    }
+    sqlx::query("ALTER TABLE unavailable_transport_bindings RENAME TO table_transport_bindings")
+        .execute(&f.pool)
+        .await
+        .unwrap();
+    assert_eq!(
+        f.runtime
+            .submit_presented_table(declare.clone())
+            .await
+            .unwrap(),
+        accepted
+    );
     withdraw(&f).await;
     f.host(TableAction::EndSession, Some(f.session)).await;
     let exported = export_campaign(&f.pool, f.campaign).await.unwrap();
