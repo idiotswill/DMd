@@ -265,5 +265,17 @@ and both test module registrations. Import area's corrected close/drop/bounded
 Windows file cleanup into the original area recovery case while retaining the
 separate hidden-save protocol scenario. No production source changes result from
 this reconciliation; the only code delta from1ab0b1c is that test cleanup.
-Area f65 has all six CI checks, including native packaging, but is still undergoing
-its local canonical verification. This merge does not claim either slice accepted.
+
+Area PR34 is now merged as172a15a8ec48a71c762788e07dfdb3009a9a1500 after all six
+exact-head checks on71827864e7f953c92945d43cdf39c880c2bb7ca6. Fetched main's complete
+tree equals that reviewed head. Import its two evidence documents, then reconcile
+the equivalent squash ancestry only after proving that tree equality and that718
+is an ancestor. The protocol production/test tree remains identical to c399a78.
+
+All six protocol CI checks passed on c399a781be4a9da1ee4e75311c9f92f0b4418d4a:
+Linux36140154092 (640 Rust tests), Windows36140154128 (642 native Rust tests,
+MSRV, frontend check/tests and fresh release/offline installer). Existing local
+55-test frontend evidence still applies to its unchanged frontend tree; a direct
+diff from a84f8d4 confirms equality. Full local canonical verification is running
+on this code, with one compiler job. Final exact-head checks/review and merge remain
+required; CI on c399 is not claimed as the final documentation/integration head.
