@@ -17,11 +17,12 @@ function options():CastingOptions {
   }]};
 }
 
-it('sends actual source choices and explicit repeated ray order without derived mechanics',async()=>{
+it('sends actual source choices and repeated target selection without derived mechanics',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();const source=options();
   render(CastingForm,{options:source,onAction});
   expect((screen.getByRole('button',{name:'Cast spell'}) as HTMLButtonElement).disabled).toBe(true);
   await user.selectOptions(screen.getByLabelText('Spell and resource'),JSON.stringify(source.variants[0].choice));
+  expect(screen.getByText('Choose all targets before casting. You may choose the same target more than once.')).toBeTruthy();
   await user.selectOptions(screen.getByLabelText('Spell target 1'),'guard');
   await user.selectOptions(screen.getByLabelText('Spell target 2'),'archer');
   expect((screen.getByRole('button',{name:'Cast spell'}) as HTMLButtonElement).disabled).toBe(true);
