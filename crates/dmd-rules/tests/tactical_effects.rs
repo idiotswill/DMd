@@ -52,6 +52,7 @@ impl Fixture {
                 .collect::<HashMap<_, _>>(),
             house_rules: HouseRules::default(),
             effects: Vec::new(),
+            tactical_effects: None,
             tactical_inventory: None,
             tactical_creatures: None,
             pending: None,
@@ -254,6 +255,164 @@ fn concentration_target_escape_preserves_other_targets_and_replacement_ends_the_
         "starting the next cast ends the old spell immediately"
     );
     assert_eq!(f.effects.groups[0].stage, ConcentrationStage::Casting);
+}
+
+#[test]
+fn committed_held_cast_replaces_only_its_hold_expiry_before_target_installation() {
+    let mut f = Fixture::new();
+    let meta = f.meta();
+    let group = ConcentrationGroup {
+        id: EffectId::new(),
+        source: f.source(&meta, "hold-person"),
+        expires: TacticalEffectExpiry::AfterOwnerBoundaries {
+            owner: f.caster,
+            boundary: TurnBoundary::Start,
+            remaining: 1,
+        },
+        stage: ConcentrationStage::Casting,
+    };
+    f.run_with(
+        &meta,
+        EffectLifecycleOperation::BeginConcentration {
+            group: group.clone(),
+        },
+    );
+    f.campaign.clock.now = WorldInstant(12);
+    f.run(EffectLifecycleOperation::SetCastingDuration {
+        group: group.id,
+        source: group.source.clone(),
+        expires: TacticalEffectExpiry::AtTime(WorldInstant(72)),
+    });
+    assert_eq!(f.effects.groups[0].id, group.id);
+    assert_eq!(f.effects.groups[0].source, group.source);
+    assert_eq!(f.effects.groups[0].stage, ConcentrationStage::Casting);
+    assert!(f.effects.effects.is_empty());
+    let mut effect = f.effect(group.source.clone(), f.target);
+    effect.concentration_group = Some(group.id);
+    effect.expires = TacticalEffectExpiry::AtTime(WorldInstant(72));
+    f.run(EffectLifecycleOperation::Install {
+        effects: vec![effect],
+    });
+    assert_eq!(f.effects.groups[0].stage, ConcentrationStage::Active);
+    let caster = f.caster;
+    assert!(f.turn(caster, 3, TurnBoundary::Start).triggers.is_empty());
+    assert!(f.effects.group_for_owner(caster).is_some());
+    f.campaign.clock.now = WorldInstant(72);
+    let due = f.observe(EffectObservation::Time);
+    let expiry = due
+        .triggers
+        .iter()
+        .find(|ticket| ticket.payload == EffectTriggerPayload::ExpireConcentrationGroup)
+        .unwrap();
+    f.resolve(expiry.id, EffectTriggerResolution::Apply);
+    assert!(f.effects.groups.is_empty());
+    assert!(f.effects.effects.is_empty());
+    assert!(f.effects.pending.is_empty());
+}
+
+#[test]
+fn casting_duration_cannot_refresh_active_or_due_groups_or_replace_source() {
+    let mut f = Fixture::new();
+    let group = f.group();
+    let mut wrong_source = group.source.clone();
+    wrong_source.actor = f.other;
+    for (id, source, expires) in [
+        (
+            EffectId::new(),
+            group.source.clone(),
+            TacticalEffectExpiry::AtTime(WorldInstant(90)),
+        ),
+        (
+            group.id,
+            wrong_source,
+            TacticalEffectExpiry::AtTime(WorldInstant(90)),
+        ),
+        (
+            group.id,
+            group.source.clone(),
+            TacticalEffectExpiry::AtTime(WorldInstant(0)),
+        ),
+        (group.id, group.source.clone(), TacticalEffectExpiry::Never),
+    ] {
+        let before = f.effects.clone();
+        assert!(
+            apply_effect_lifecycle(
+                &f.campaign,
+                &f.effects,
+                &f.meta(),
+                &EffectLifecycleAction {
+                    step: 0,
+                    operation: EffectLifecycleOperation::SetCastingDuration {
+                        group: id,
+                        source,
+                        expires
+                    },
+                }
+            )
+            .is_err()
+        );
+        assert_eq!(before, f.effects);
+    }
+    let mut active = f.effect(group.source.clone(), f.target);
+    active.concentration_group = Some(group.id);
+    f.run(EffectLifecycleOperation::Install {
+        effects: vec![active],
+    });
+    let operation = EffectLifecycleOperation::SetCastingDuration {
+        group: group.id,
+        source: group.source.clone(),
+        expires: TacticalEffectExpiry::AtTime(WorldInstant(90)),
+    };
+    let before = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction { step: 0, operation }
+        )
+        .is_err()
+    );
+    assert_eq!(before, f.effects);
+    let next = f.group();
+    f.campaign.clock.now = WorldInstant(60);
+    let expired = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::SetCastingDuration {
+                    group: next.id,
+                    source: next.source.clone(),
+                    expires: TacticalEffectExpiry::AtTime(WorldInstant(90)),
+                },
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(expired, f.effects);
+    assert!(!f.observe(EffectObservation::Time).triggers.is_empty());
+    let before = f.effects.clone();
+    assert!(
+        apply_effect_lifecycle(
+            &f.campaign,
+            &f.effects,
+            &f.meta(),
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::SetCastingDuration {
+                    group: next.id,
+                    source: next.source,
+                    expires: TacticalEffectExpiry::AtTime(WorldInstant(90))
+                },
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(before, f.effects);
 }
 
 #[test]
@@ -903,4 +1062,417 @@ fn equally_potent_delayed_effect_uses_installation_recency_and_retains_casting_o
     let mut corrupt = f.effects.clone();
     corrupt.effects[1].established_at = None;
     assert!(corrupt.validate(&f.campaign).is_err());
+}
+
+impl Fixture {
+    fn attached(&mut self, operation: EffectLifecycleOperation) -> Vec<EndedTacticalEffect> {
+        let meta = match &operation {
+            EffectLifecycleOperation::Install { effects } => effects
+                .iter()
+                .find(|effect| {
+                    effect.source.command.expected_event_sequence
+                        == self.campaign.applied_event_sequence
+                })
+                .map(|effect| effect.source.command.clone())
+                .unwrap_or_else(|| self.meta()),
+            _ => self.meta(),
+        };
+        let action = EffectLifecycleAction { step: 0, operation };
+        let before = self.campaign.clone();
+        let result =
+            dmd_rules::tactical_effect_adapter::apply_effect_operation(&before, &meta, &action)
+                .unwrap();
+        let decoded = CampaignState::decode_json(&before.encode_json().unwrap()).unwrap();
+        assert_eq!(
+            result,
+            dmd_rules::tactical_effect_adapter::apply_effect_operation(&decoded, &meta, &action)
+                .unwrap()
+        );
+        assert_eq!(self.campaign, before);
+        self.campaign = result.0;
+        self.campaign.applied_event_sequence += 1;
+        dmd_rules::tactical_effect_adapter::validate_effect_attachment(&self.campaign).unwrap();
+        assert!(self.campaign.validate().is_empty());
+        result.1
+    }
+}
+
+#[test]
+fn attached_unconsciousness_respects_prone_immunity_and_keeps_legacy_semantics() {
+    for immune in [false, true] {
+        let mut f = Fixture::new();
+        if immune {
+            f.campaign
+                .rules
+                .as_mut()
+                .unwrap()
+                .entities
+                .get_mut(&f.target)
+                .unwrap()
+                .condition_immunities
+                .insert(Condition::Prone);
+        }
+        let mut effect = f.effect(f.source(&f.meta(), "source-unconsciousness"), f.target);
+        effect.conditions[0].condition = Condition::Unconscious;
+        let id = effect.id;
+        f.attached(EffectLifecycleOperation::Install {
+            effects: vec![effect],
+        });
+        let pack =
+            dmd_rules::RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+                .unwrap();
+        dmd_rules::validate_state(&f.campaign, &pack).unwrap();
+        let rules = f.campaign.rules.as_ref().unwrap();
+        let conditions = dmd_rules::active_conditions(rules, f.target);
+        assert!(conditions.contains(&Condition::Unconscious));
+        assert!(conditions.contains(&Condition::Incapacitated));
+        assert_eq!(conditions.contains(&Condition::Prone), !immune);
+        assert_eq!(rules.entities[&f.target].prone, !immune);
+        assert_eq!(
+            dmd_rules::tactical_conditions::effective_speed(rules, f.target, 60).unwrap(),
+            0
+        );
+        assert!(rules.effects.is_empty());
+        f.attached(EffectLifecycleOperation::EndEffect {
+            effect: id,
+            reason: EffectEndReason::Dismissed,
+        });
+        dmd_rules::validate_state(&f.campaign, &pack).unwrap();
+        let rules = f.campaign.rules.as_ref().unwrap();
+        assert!(!dmd_rules::active_conditions(rules, f.target).contains(&Condition::Unconscious));
+        assert_eq!(
+            rules.entities[&f.target].prone, !immune,
+            "ending the condition never stands a creature up"
+        );
+    }
+
+    // Legacy event-v1 consequences are preserved even when an empty new attachment exists.
+    let mut f = Fixture::new();
+    let rules = f.campaign.rules.as_mut().unwrap();
+    let target = rules.entities.get_mut(&f.target).unwrap();
+    target.condition_immunities.insert(Condition::Prone);
+    target.prone = true;
+    rules.effects.push(ActiveEffect {
+        id: EffectId::new(),
+        source: f.caster,
+        target: f.target,
+        condition: Some(Condition::Unconscious),
+        label: "Historical effect".into(),
+        expires: Expiry::Never,
+        concentration_owner: None,
+    });
+    let historical = dmd_rules::active_conditions(rules, f.target);
+    assert!(historical.contains(&Condition::Prone));
+    rules.tactical_effects = Some(TacticalEffects::default());
+    assert_eq!(historical, dmd_rules::active_conditions(rules, f.target));
+}
+
+#[test]
+fn attachment_rejects_unconscious_immunity_and_missing_required_prone_atomically() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Unconscious);
+    let mut effect = f.effect(f.source(&f.meta(), "source-unconsciousness"), f.target);
+    effect.conditions[0].condition = Condition::Unconscious;
+    let before = f.campaign.clone();
+    let action = EffectLifecycleAction {
+        step: 0,
+        operation: EffectLifecycleOperation::Install {
+            effects: vec![effect.clone()],
+        },
+    };
+    assert!(
+        dmd_rules::tactical_effect_adapter::apply_effect_operation(
+            &f.campaign,
+            &effect.source.command,
+            &action
+        )
+        .is_err()
+    );
+    assert_eq!(f.campaign, before);
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .clear();
+    f.attached(action.operation);
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .prone = false;
+    assert!(dmd_rules::tactical_effect_adapter::validate_effect_attachment(&f.campaign).is_err());
+    let pack =
+        dmd_rules::RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+            .unwrap();
+    assert!(dmd_rules::validate_state(&f.campaign, &pack).is_err());
+}
+
+#[test]
+fn suppressed_unconsciousness_reappears_through_the_attachment_without_forcing_immune_prone() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Prone);
+    let mut strong = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    strong.conditions[0].condition = Condition::Poisoned;
+    strong.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 2,
+    });
+    let id = strong.id;
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![strong],
+    });
+    let mut weak = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    weak.conditions[0].condition = Condition::Unconscious;
+    weak.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 1,
+    });
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![weak],
+    });
+    assert!(
+        !dmd_rules::active_conditions(f.campaign.rules.as_ref().unwrap(), f.target)
+            .contains(&Condition::Unconscious)
+    );
+    f.attached(EffectLifecycleOperation::EndEffect {
+        effect: id,
+        reason: EffectEndReason::Expired,
+    });
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert!(dmd_rules::active_conditions(rules, f.target).contains(&Condition::Unconscious));
+    assert!(!rules.entities[&f.target].prone);
+    assert!(!dmd_rules::active_conditions(rules, f.target).contains(&Condition::Prone));
+}
+
+#[test]
+fn suppressed_immune_condition_cannot_be_installed_and_strand_later_removal() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Unconscious);
+    let mut strong = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    strong.conditions[0].condition = Condition::Poisoned;
+    strong.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 2,
+    });
+    let strong_id = strong.id;
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![strong],
+    });
+    let mut weak = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    weak.conditions[0].condition = Condition::Unconscious;
+    weak.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 1,
+    });
+    let before = f.campaign.clone();
+    let meta = weak.source.command.clone();
+    let operation = EffectLifecycleAction {
+        step: 0,
+        operation: EffectLifecycleOperation::Install {
+            effects: vec![weak],
+        },
+    };
+    assert!(
+        dmd_rules::tactical_effect_adapter::apply_effect_operation(&before, &meta, &operation)
+            .is_err()
+    );
+    assert_eq!(before, f.campaign);
+    f.attached(EffectLifecycleOperation::EndEffect {
+        effect: strong_id,
+        reason: EffectEndReason::Expired,
+    });
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert!(rules.tactical_effects.as_ref().unwrap().effects.is_empty());
+    assert!(dmd_rules::active_conditions(rules, f.target).is_empty());
+}
+
+#[test]
+fn attached_concentration_projects_sources_and_replaces_the_whole_group() {
+    let mut f = Fixture::new();
+    let group = ConcentrationGroup {
+        id: EffectId::new(),
+        source: f.source(&f.meta(), "charm-person"),
+        expires: TacticalEffectExpiry::Never,
+        stage: ConcentrationStage::Casting,
+    };
+    // Begin needs its source command to be exactly the accepted operation.
+    let meta = group.source.command.clone();
+    f.campaign = dmd_rules::tactical_effect_adapter::apply_effect_operation(
+        &f.campaign,
+        &meta,
+        &EffectLifecycleAction {
+            step: 0,
+            operation: EffectLifecycleOperation::BeginConcentration {
+                group: group.clone(),
+            },
+        },
+    )
+    .unwrap()
+    .0;
+    f.campaign.applied_event_sequence += 1;
+    let mut charm = f.effect(group.source.clone(), f.target);
+    charm.conditions[0].condition = Condition::Charmed;
+    charm.concentration_group = Some(group.id);
+    let mut fear = f.effect(group.source.clone(), f.other);
+    fear.conditions[0].condition = Condition::Frightened;
+    fear.concentration_group = Some(group.id);
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![charm, fear],
+    });
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert!(
+        rules.effects.is_empty(),
+        "no duplicated persistent condition views"
+    );
+    assert!(!dmd_rules::tactical_conditions::may_harm(
+        rules, f.target, f.caster
+    ));
+    assert!(dmd_rules::active_conditions(rules, f.other).contains(&Condition::Frightened));
+    assert_eq!(rules.entities[&f.caster].concentration, Some(group.id));
+    let meta = f.meta();
+    let replacement = ConcentrationGroup {
+        id: EffectId::new(),
+        source: f.source(&meta, "bless"),
+        expires: TacticalEffectExpiry::Never,
+        stage: ConcentrationStage::Casting,
+    };
+    let (next, ended) = dmd_rules::tactical_effect_adapter::apply_effect_operation(
+        &f.campaign,
+        &meta,
+        &EffectLifecycleAction {
+            step: 0,
+            operation: EffectLifecycleOperation::BeginConcentration {
+                group: replacement.clone(),
+            },
+        },
+    )
+    .unwrap();
+    assert_eq!(ended.len(), 3);
+    let rules = next.rules.as_ref().unwrap();
+    assert!(dmd_rules::tactical_conditions::may_harm(
+        rules, f.target, f.caster
+    ));
+    assert!(!dmd_rules::active_conditions(rules, f.other).contains(&Condition::Frightened));
+    assert_eq!(
+        rules.entities[&f.caster].concentration,
+        Some(replacement.id)
+    );
+}
+
+#[test]
+fn attached_incapacitation_breaks_concentration_but_preserves_unrelated_conditions() {
+    let mut f = Fixture::new();
+    let meta = f.meta();
+    let group = ConcentrationGroup {
+        id: EffectId::new(),
+        source: f.source(&meta, "bless"),
+        expires: TacticalEffectExpiry::Never,
+        stage: ConcentrationStage::Casting,
+    };
+    f.campaign = dmd_rules::tactical_effect_adapter::apply_effect_operation(
+        &f.campaign,
+        &meta,
+        &EffectLifecycleAction {
+            step: 0,
+            operation: EffectLifecycleOperation::BeginConcentration {
+                group: group.clone(),
+            },
+        },
+    )
+    .unwrap()
+    .0;
+    f.campaign.applied_event_sequence += 1;
+    let mut blessed = f.effect(group.source.clone(), f.target);
+    blessed.conditions.clear();
+    blessed.concentration_group = Some(group.id);
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![blessed],
+    });
+    let mut paralysis = f.effect(f.source(&f.meta(), "hold-person"), f.caster);
+    paralysis.source.actor = f.other;
+    let paralysis_id = paralysis.id;
+    let ended = f.attached(EffectLifecycleOperation::Install {
+        effects: vec![paralysis],
+    });
+    assert!(
+        ended
+            .iter()
+            .any(|e| e.id == group.id && e.reason == EffectEndReason::ConcentrationBroken)
+    );
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert_eq!(rules.entities[&f.caster].concentration, None);
+    assert!(dmd_rules::active_conditions(rules, f.caster).contains(&Condition::Incapacitated));
+    assert_eq!(rules.tactical_effects.as_ref().unwrap().effects.len(), 1);
+    assert_eq!(
+        rules.tactical_effects.as_ref().unwrap().effects[0].id,
+        paralysis_id
+    );
+}
+
+#[test]
+fn attachment_rejects_cross_authority_identity_collision_without_mutation() {
+    let mut f = Fixture::new();
+    let mut effect = f.effect(f.source(&f.meta(), "test-condition"), f.target);
+    effect.conditions[0].condition = Condition::Poisoned;
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .effects
+        .push(ActiveEffect {
+            id: effect.conditions[0].id,
+            source: f.caster,
+            target: f.other,
+            condition: Some(Condition::Poisoned),
+            label: "Existing".into(),
+            expires: Expiry::Never,
+            concentration_owner: None,
+        });
+    let before = f.campaign.clone();
+    let meta = effect.source.command.clone();
+    assert!(
+        dmd_rules::tactical_effect_adapter::apply_effect_operation(
+            &f.campaign,
+            &meta,
+            &EffectLifecycleAction {
+                step: 0,
+                operation: EffectLifecycleOperation::Install {
+                    effects: vec![effect]
+                }
+            }
+        )
+        .is_err()
+    );
+    assert_eq!(f.campaign, before);
 }

@@ -347,6 +347,10 @@ pub struct RulesState {
     pub entities: HashMap<EntityId, MechanicalEntity>,
     pub house_rules: HouseRules,
     pub effects: Vec<ActiveEffect>,
+    /// Grouped source authority outlives an encounter; its derived condition views
+    /// are never stored again in the legacy effect collection.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_effects: Option<crate::TacticalEffects>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tactical_inventory: Option<crate::TacticalInventory>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

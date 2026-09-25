@@ -527,6 +527,7 @@ async fn schema_two_database_and_format_one_export_upgrade_preserve_exact_old_an
         entities: Default::default(),
         house_rules: HouseRules::default(),
         effects: vec![],
+        tactical_effects: None,
         tactical_inventory: None,
         tactical_creatures: None,
         pending: None,

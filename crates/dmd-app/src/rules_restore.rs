@@ -79,9 +79,11 @@ pub(crate) fn validate_rules_export(
         .first_key_value()
         .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
 
-    // Source creature and physical grants must replay from their original table commands.
+    // Source creatures, physical grants and effects must replay their authorizing commands.
     if anchor.rules.as_ref().is_some_and(|rules| {
-        rules.tactical_inventory.is_some() || rules.tactical_creatures.is_some()
+        rules.tactical_effects.is_some()
+            || rules.tactical_inventory.is_some()
+            || rules.tactical_creatures.is_some()
     }) {
         return Err("tactical recovery requires its original pre-tactical anchor".into());
     }
@@ -631,6 +633,28 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let Some(rules) = &state.rules else {
         return origins;
     };
+    if let Some(effects) = &rules.tactical_effects {
+        origins.extend(effects.groups.iter().map(|g| &g.source.command));
+        for effect in &effects.effects {
+            origins.push(&effect.source.command);
+            if let Some(stamp) = &effect.established_at {
+                origins.push(&stamp.command);
+            }
+        }
+        if let Some(stamp) = &effects.last_operation {
+            origins.push(&stamp.command);
+        }
+        for trigger in &effects.pending {
+            origins.push(&trigger.source.command);
+            origins.push(&trigger.origin.command);
+        }
+        origins.extend(
+            effects
+                .trigger_uses
+                .iter()
+                .map(|usage| &usage.origin.command),
+        );
+    }
     origins.extend(
         rules
             .rulings

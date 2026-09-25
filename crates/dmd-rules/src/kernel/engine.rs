@@ -34,6 +34,15 @@ pub fn resolve(
             "physical equipment requires the tactical action path",
         ));
     }
+    if state
+        .rules
+        .as_ref()
+        .is_some_and(|r| r.tactical_effects.is_some())
+    {
+        return Err(prerequisite(
+            "grouped source effects require the tactical action path",
+        ));
+    }
     if state.rules.as_ref().is_some_and(|r| r.pending.is_some())
         && !matches!(
             action,
@@ -88,6 +97,7 @@ pub fn resolve(
                         table.contract.house_rules.clone()
                     }),
                 effects: vec![],
+                tactical_effects: None,
                 tactical_inventory: None,
                 tactical_creatures: None,
                 pending: None,
@@ -125,6 +135,7 @@ pub fn resolve(
             entities: map,
             house_rules: house_rules.clone(),
             effects: vec![],
+            tactical_effects: None,
             tactical_inventory: None,
             tactical_creatures: None,
             pending: None,
