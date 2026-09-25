@@ -44,15 +44,21 @@ playable execution. NPC policy helpers alone do not satisfy autonomous encounter
 
 ## Status and next action
 
-The source boundary, private form and real SQLite reopen/restore regressions are
-implemented as a Rust-unverified candidate. Svelte check reports zero errors/warnings;
-all 16 frontend tests and the production build pass. Logs: sibling tooling
-`gate4-creature-ui-{check,tests,build}.log`. No Rust build has run on this branch yet because
-falling and source attacks hold the serialized compiler queue. Exact-head canonical
-verification and independent review are still required.
+Corrected source `6136aeb02c9a5af5142a5962e26f6e2ba01e17ba` passes canonical
+`./scripts/verify`: 356 Windows Rust tests, workspace/all-target check, strict Clippy,
+formatting, genericity and architecture checks (8 cases, 1 platform skip). Log: sibling
+tooling `gate4-creature-canonical.log`. All six exact-source CI checks pass: Linux
+`36109228463` (357 Rust tests, including the additional Unix symlink case) and Windows
+`36109228457` (MSRV and stable, including offline installer packaging).
 
-Next: commit/open a draft PR for exact-head CI, then run
-focused Rust and canonical verification when the compiler is released. Remaining
+Svelte check reports zero errors/warnings; all 16 frontend tests and the production
+build pass. Frontend bytes are unchanged from tested source `53cbbe9` to `6136aeb`.
+Logs: sibling tooling `gate4-creature-ui-{check,tests,build}.log`.
+
+Next: review the final evidence-only diff, verify implementation/lockfile/frontend
+parity with `6136aeb`, await all required CI on that final head and merge PR30 with
+expected-head protection. Verify fetched main tree parity and post-merge checks,
+then reconcile encounter integration and start the effect-state attachment slice. Remaining
 Gate4 NPC decisions, attack features, shared effects and packaged encounter acceptance
 stay active; no Gate5 work or reduced gate acceptance is authorized.
 
@@ -70,9 +76,11 @@ stay active; no Gate5 work or reduced gate acceptance is authorized.
 - PR29 post-merge main `ac35c1d` checks are all green: Linux `36107189850` and
   Windows `36107189841`, including stable offline installer packaging.
 
-Independent environment reviewer inspected the full extraction and source closure with
-no actionable finding before this candidate commit. Exact committed-head review and
-Rust/canonical checks remain pending; no gate or slice completion is claimed.
+The environment reviewer inspected the complete extraction at `53cbbe9` and the exact
+`6136aeb` correction with no actionable finding. This review is independent of root's
+extraction/composition correction; the reviewer originally authored some pure source
+modules, whose prior review remains recorded in their implementation plans. Gate4
+completion is not claimed; final evidence-head review/CI and merge remain pending.
 
 ## First exact-head CI finding
 
@@ -82,10 +90,13 @@ roll completion: the inventory validator called the whole CampaignState validato
 the rules child had cleared pending, before its table parent cleared roll_context.
 The same dependency existed after PC equipment preparation; this regression exposed it.
 
-Factor identity/world reference checks into `CampaignState::validate_references` and use
+The correction factors identity/world reference checks into `CampaignState::validate_references` and uses
 those plus inventory/source checks inside the inventory reducer. Full `validate` retains
 all existing attachment, encounter and table invariants, and the app validates the whole
 completed table transition before commit. Tests retain actual PC check/Second Wind and
 add a deliberately incomplete final table context that still fails validation and restore.
 This is an application-composition fix; no final invariant or historical event changes.
-Correction verification is pending on the next head.
+Both Linux and Windows canonical suites pass the actual PC check, Second Wind,
+independent SQLite reopen/restore, malformed final table-context and four foreign
+physical-item reference regressions. The original failing candidate is superseded by
+`6136aeb`; its partial CI is not counted as passing verification.
