@@ -17,12 +17,16 @@ pub(super) fn is_failure(
         TacticalRollRole::DeathSave
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
+            | TacticalRollRole::SpellSave
     ) {
         return Ok(false);
     }
     let Some(result) = result else {
         return Ok(true);
     };
+    if pending.key.role == TacticalRollRole::SpellSave {
+        return super::casting::save_failed(state, pending, Some(result));
+    }
     let request = super::continuations::request(state, &pending.work, pending.key)?
         .ok_or_else(|| invalid("automatic failure has no raw roll"))?;
     let roll = request.resolve(result)?;
@@ -31,11 +35,29 @@ pub(super) fn is_failure(
             Ok(roll.kept_dice[0].value != 20 && (roll.kept_dice[0].value == 1 || roll.total < 10))
         }
         TacticalWorkKind::ConcentrationSave { damage_taken, .. } => {
-            Ok(i64::from(roll.total) < i64::from((damage_taken / 2).clamp(10, 30)))
+            Ok(!crate::test_outcome::ability_test_success(
+                &roll,
+                (damage_taken / 2).clamp(10, 30) as i32,
+                &state
+                    .rules
+                    .as_ref()
+                    .ok_or(RulesError::Uninitialized)?
+                    .house_rules,
+            )?)
         }
         TacticalWorkKind::Effect { ticket } => {
             match super::continuations::ticket(state, *ticket)?.payload {
-                EffectTriggerPayload::SavingThrow { dc, .. } => Ok(roll.total < i32::from(dc)),
+                EffectTriggerPayload::SavingThrow { dc, .. } => {
+                    Ok(!crate::test_outcome::ability_test_success(
+                        &roll,
+                        i32::from(dc),
+                        &state
+                            .rules
+                            .as_ref()
+                            .ok_or(RulesError::Uninitialized)?
+                            .house_rules,
+                    )?)
+                }
                 _ => Err(invalid("failed save source has no saving throw")),
             }
         }

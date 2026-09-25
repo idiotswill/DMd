@@ -198,7 +198,9 @@ pub(super) fn plan(
                 u32::from(*reach_feet) * 2,
             )
         }
-        TacticalAttackSource::Weapon(_) => return Err(invalid("physical weapon is not intrinsic")),
+        TacticalAttackSource::Weapon(_) | TacticalAttackSource::Spell { .. } => {
+            return Err(invalid("attack is not an intrinsic melee source"));
+        }
     };
     if distance > reach
         || attack.delivery != TacticalAttackDelivery::Melee

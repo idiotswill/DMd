@@ -551,10 +551,13 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 TacticalRollRole::DeathSave
                 | TacticalRollRole::EffectSave
                 | TacticalRollRole::Attack
+                | TacticalRollRole::SpellSave
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),
-                TacticalRollRole::EffectDamage | TacticalRollRole::AttackDamage => None,
+                TacticalRollRole::EffectDamage
+                | TacticalRollRole::AttackDamage
+                | TacticalRollRole::SpellAmount => None,
             };
             if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {
                 return Err(invalid("invalid tactical roll dice"));

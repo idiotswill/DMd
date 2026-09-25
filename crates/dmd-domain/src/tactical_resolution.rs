@@ -16,6 +16,8 @@ pub enum TacticalRollRole {
     CreatureRecharge,
     Attack,
     AttackDamage,
+    SpellSave,
+    SpellAmount,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -41,6 +43,8 @@ impl TacticalRollKey {
             TacticalRollRole::CreatureRecharge => 6,
             TacticalRollRole::Attack => 7,
             TacticalRollRole::AttackDamage => 8,
+            TacticalRollRole::SpellSave => 11,
+            TacticalRollRole::SpellAmount => 12,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -53,6 +57,13 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    SpellProgram {
+        cast: u16,
+        at: crate::SpellProgramOccurrence,
+    },
+    FinishSpell {
+        cast: u16,
+    },
     MoveSegment,
     MovementOpportunity {
         reactor: EntityId,
@@ -60,6 +71,10 @@ pub enum TacticalWorkKind {
     AttackRoll,
     AttackDamage,
     FinishAttack,
+    /// SRD14: resolve sharing another creature's space with other End effects.
+    EndOccupiedSpace {
+        actor: EntityId,
+    },
     DeathSave {
         actor: EntityId,
     },
@@ -141,6 +156,8 @@ pub struct TacticalResolution {
     pub attack: Option<crate::TacticalAttack>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub movement: Option<Box<crate::TacticalMovement>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub casts: Vec<crate::TacticalCasting>,
     pub next_occurrence: u16,
 }
 

@@ -18,6 +18,7 @@ mod tactical_movement;
 pub mod tactical_spells;
 mod tactical_vitality_adapter;
 pub mod tactical_weapons;
+mod test_outcome;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {

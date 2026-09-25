@@ -42,6 +42,7 @@ pub(super) fn begin(
         legendary_window: None,
         attack: None,
         movement: Some(Box::new(movement)),
+        casts: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;

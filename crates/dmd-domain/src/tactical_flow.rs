@@ -112,4 +112,7 @@ pub struct TacticalFlow {
     pub save_decisions: Vec<TacticalSaveDecision>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ground_items: Vec<crate::TacticalGroundItem>,
+    /// Historical reached-place evidence survives the next turn's budget reset.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub last_movement: Option<crate::TacticalMovementResult>,
 }
