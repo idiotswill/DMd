@@ -304,36 +304,28 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     ));
                 }
             }
-            TacticalWorkKind::ResumeHit { attack_origin } => {
-                let key = TacticalRollKey {
-                    origin: resolution.origin.id,
-                    occurrence: parent.occurrence,
-                    role: TacticalRollRole::Attack,
-                    subject: state
-                        .rules
-                        .as_ref()
-                        .ok_or(RulesError::Uninitialized)?
-                        .rolls
-                        .iter()
-                        .find_map(|roll| match roll.purpose {
-                            PendingPurpose::TacticalResolution { key, .. }
-                                if key.origin == resolution.origin.id
-                                    && key.occurrence == parent.occurrence =>
-                            {
-                                Some(key.subject)
-                            }
-                            _ => None,
-                        })
-                        .ok_or_else(|| invalid("retired hit lacks its accepted attack"))?,
-                };
-                if state
+            TacticalWorkKind::ResumeHit { attack_origin, attack_roll } => {
+                // Nested opportunity attacks and later spell rays have their own
+                // issuance origins. Bind the exact accepted request rather than
+                // guessing its key from the root movement/casting command.
+                let roll = state
                     .rules
                     .as_ref()
                     .ok_or(RulesError::Uninitialized)?
                     .rolls
                     .iter()
-                    .find(|roll| roll.request.id == key.request_id())
-                    .is_none_or(|roll| roll.issued_by.id != attack_origin)
+                    .find(|roll| roll.request.id == attack_roll)
+                    .ok_or_else(|| invalid("retired hit lacks its accepted attack"))?;
+                let PendingPurpose::TacticalResolution { encounter: encounter_id, key } = roll.purpose else {
+                    return Err(invalid("retired hit is not an accepted tactical attack"));
+                };
+                if encounter_id != encounter(state)?.id
+                    || key.role != TacticalRollRole::Attack
+                    || key.occurrence != parent.occurrence
+                    || key.request_id() != attack_roll
+                    || roll.issued_by.id != attack_origin
+                    || roll.issued_by.session_id != resolution.origin.session_id
+                    || roll.issued_by.expected_event_sequence < resolution.origin.expected_event_sequence
                 {
                     return Err(invalid(
                         "retired hit resume differs from its original attack",

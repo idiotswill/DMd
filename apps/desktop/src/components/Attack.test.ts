@@ -62,7 +62,7 @@ it('resets source-incompatible choices when switching weapons and clears vanishe
 
 it('removes a previous actor weapon form when the viewing channel changes',async()=>{
   const user=userEvent.setup();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},attack_options:options()};
   const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction:vi.fn()});
   expect(screen.getByText('Weapon attack')).toBeTruthy();
@@ -78,7 +78,7 @@ it('removes a previous actor weapon form when the viewing channel changes',async
 
 it('sends owned knockout and Graze decisions and removes them on a channel change',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:{actor:'actor',host_adjudication:false,choices:[]},may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,attack_decision:{actor:'actor',kind:'Knockout'}};
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:{actor:'actor',host_adjudication:false,choices:[]},may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,attack_decision:{actor:'actor',kind:'Knockout'}};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
   await user.click(screen.getByRole('button',{name:'Knock out'}));
   expect(onAction).toHaveBeenLastCalledWith({ChooseAttackKnockout:{choice:'KnockOut'}});
@@ -98,7 +98,7 @@ it('offers Light and Nick after the action is spent and removes an expended foll
   const user=userEvent.setup();const onAction=vi.fn();const initial=options();
   initial.weapons[0].purposes=[{LightBonus:{trigger:'accepted-attack'}},{Nick:{trigger:'accepted-attack'}}];
   initial.weapons[1].purposes=[];
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},attack_options:initial};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
   await user.selectOptions(screen.getByLabelText('Target'),'target');

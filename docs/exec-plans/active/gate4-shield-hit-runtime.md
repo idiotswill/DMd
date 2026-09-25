@@ -98,13 +98,25 @@ arrival orders and complete unrelated DTO/revision/transcript invariance through
 private selection. A later general multi-respondent family retains its own semantic
 boundary and must not infer priority from arrival or default choices.
 
-Root's compatibility canonical run owns the local heavy slot; no build runs from
-this branch yet. Initial owner-safe hit DTOs, role-specific opaque capabilities and transport admission
+The compatibility canonical run passed on facd988; final cbe9575 Linux CI passes,
+and Windows has passed regressions while native packaging remains pending. The
+local disk/commit-memory failure is recovered with 28 GB free. All further local
+compilation is serialized with one job and CARGO_INCREMENTAL=0; aftermath focused
+verification currently owns the heavy slot. No build has run from this branch yet.
+Initial owner-safe hit DTOs, role-specific opaque capabilities and transport admission
 are authored. Damage effect observations retain an optional earlier cause while
 lifecycle stamps remain the actual execution command; original None images stay
 unchanged. Finish exhaustive integration and desktop controls, then genuine source
 regressions. Rules fixture/test authoring may use an isolated child branch with a
 separate writer; no concurrent writes to this branch. This is incomplete WIP, not a
 verified production milestone.
+Desktop response controls and their direct/real outbox retry cases are authored.
+The genuine player-owned source SQLite case is drafted and deliberately awaits
+PR43 before registration/compilation. Isolated app/rules fixture drivers retain
+single-command raw helpers and explicit current-window decisions. Static review
+found a nested-attack ancestry mistake: ResumeHit now retains the exact accepted
+roll ID, validated against its parent AttackRoll occurrence, tactical purpose and
+actual issuance origin. It cannot guess that origin from the outer movement or
+casting resolution. Targeted opportunity-attack and later-ray tests must prove it.
 Integrate verified PR42 and corrected PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.

@@ -125,6 +125,7 @@ pub enum TacticalWorkKind {
     },
     ResumeHit {
         attack_origin: CommandId,
+        attack_roll: RollRequestId,
     },
     /// SRD14: resolve sharing another creature's space with other End effects.
     EndOccupiedSpace {

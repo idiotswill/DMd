@@ -148,7 +148,13 @@ pub(super) fn open(
         selected_cast: None,
         completed_shield: None,
     }));
-    push_frame(state, vec![TacticalWorkKind::ResumeHit { attack_origin }])
+    push_frame(
+        state,
+        vec![TacticalWorkKind::ResumeHit {
+            attack_origin,
+            attack_roll,
+        }],
+    )
 }
 
 pub(super) fn waiting(state: &CampaignState) -> bool {
@@ -471,6 +477,7 @@ pub(super) fn damage_cause(state: &CampaignState) -> Result<&CommandMeta, RulesE
 pub(super) fn resume(
     state: &mut CampaignState,
     attack_origin: CommandId,
+    attack_roll: RollRequestId,
 ) -> Result<(), RulesError> {
     let hit = review(state)?;
     let attack = resolution(state)?
@@ -479,6 +486,7 @@ pub(super) fn resume(
         .ok_or_else(|| invalid("resumed hit has no attack"))?;
     if hit.stage != TacticalHitReviewStage::Resolved
         || hit.attack_origin != attack_origin
+        || hit.attack_roll != attack_roll
         || attack.origin.id != attack_origin
         || attack.stage != TacticalAttackStage::HitReview
     {
@@ -591,7 +599,8 @@ pub(super) fn validate_work(
         return Err(invalid("hit response work belongs to another trigger"));
     }
     match work.kind {
-        TacticalWorkKind::ResumeHit { attack_origin } if attack_origin == hit.attack_origin => (),
+        TacticalWorkKind::ResumeHit { attack_origin, attack_roll }
+            if attack_origin == hit.attack_origin && attack_roll == hit.attack_roll => (),
         TacticalWorkKind::CommitShield { cast }
             if hit.selected_cast == Some(cast) && hit.stage == TacticalHitReviewStage::Casting =>
         {
