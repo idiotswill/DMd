@@ -1,8 +1,11 @@
 # Gate 4 source areas in the durable table
 
 Writer: root. Branch `codex/gate4-area-integration`, initially based on reviewed
-PR33 source `49fac8c95b0e1178dece7c2332d8c23f24e298dd` while its combined verification
-runs. Reconcile the protected PR33 merge and fetched main before opening this PR.
+PR33 source `49fac8c95b0e1178dece7c2332d8c23f24e298dd` during combined verification.
+PR33 is now merged as `21cf176fd7f328a90c84dc0ee644d5eac3110639`; fetched main has
+exact full-tree parity with its reviewed final head8cb3084. That final head is
+already an ancestor here. Merge23a6708 joins the equivalent squash ancestry only,
+after both checks, with no tree change or unexamined main changes discarded.
 Gate 4 remains active; this is a bounded dependency integration, not gate acceptance.
 
 ## Objective and scope
@@ -79,5 +82,12 @@ were additive area test registration and current OA evidence; the entire code/te
 tree remains byte-identical to c5b2871. Protocol's subsequent app compilation found
 the newer OA scene fixture lacked the required area_grid_policy field. Set it to
 None in both integrations, preserving all scenario assertions and production code.
-This branch still requires its own combined canonical/UI verification and main
-reconciliation; evidence from the protocol batch does not replace those checks.
+This branch still requires its own combined canonical/UI verification; evidence
+from the protocol batch does not replace those checks.
+
+PR33's final evidence head8cb3084 passed all six required checks: Linux36135055490
+and Windows36135055461, followed by expected-head-protected squash merge and fetched
+full-tree parity. Post-merge runs36136799545/36136799353 are in progress. Main
+reconciliation is now complete as recorded above; next open this bounded area PR
+as a draft and perform its combined canonical/UI verification and independent
+final review. The production closure audit records the remaining gate obligations.

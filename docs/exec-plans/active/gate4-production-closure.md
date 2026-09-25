@@ -7,17 +7,19 @@ the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
 ## Audited baseline
 
-Fetched main12ed29a contains PR32's actual turn execution. PR33 candidate8cb3084
-adds physical/source attacks, paid shields, movement/OA, falling and Immediate
-source casting. Its code/test6291776 has canonical/UI/native verification; final
-evidence-head CI/merge remains separately required. Area integration43b9a3a carries
+PR33 is now merged as fetched main21cf176, with exact full-tree parity to reviewed
+head8cb3084 and all six final-head CI checks. It adds physical/source attacks,
+paid shields, movement/OA, falling and Immediate source casting to PR32's actual
+turn execution. Post-merge CI remains pending. Area integration43b9a3a carries
 the reviewed area source and newer physical fixtures; its combined tests are still
 pending. These states must not be described as already shipped together.
 
 Protocol sourcea84f8d4 has reviewed opaque requests/audiences, historical presentation
 and transaction boundaries. After host memory recovered,55 UI tests/check/build and
 four persistence tests passed; the app compile found one missing non-area fixture
-field, corrected in16b9bf4. The app/strict-lint batch is running, not yet evidence.
+field, corrected in16b9bf4. The app batch then passed22 rules-runtime and9 runnable
+cases but hit default-stack overflow in an existing ordinary table scenario;
+root is diagnosing it before further acceptance. Strict lint remains pending.
 Ready4f2532b/dd5123d has reviewed authored execution-version/ancestry/defense/physical
 declaration foundations and ADR028, but no compiler evidence or actual response
 windows. Mage source hooks are integrated there and are likewise uncompiled.
