@@ -1,6 +1,10 @@
 # Gate 4 — Source creature control at the table
 
-Status: planned; implementation and verification pending.
+Status: implemented in draft PR43; verification in progress. Source `26241a9`
+passes native Windows CI, 693 Rust tests and packaging. Its Linux PR merge with
+main `d82d7b2` passes all checks and 694 Rust tests. The local default-stack and
+source-control confirmation also passes. Genuine PR42 corpus integration and final
+combined verification are pending; this is not acceptance.
 Sole writer: environment_audit. Branch: `codex/gate4-source-creature-control`.
 Authorized base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`.
 Fetch on 2026-09-25 found main `a84c5a1`; the owner of integration deliberately
@@ -22,8 +26,8 @@ ADR028 separates actor control from execution-version and ordering ownership.
 No reaction windows, new execution version, spell-grant expansion, NPC autonomy,
 full class catalog, or natural-language NPC declarations are implemented by this
 slice. Existing own-turn source mechanics and PC conversation remain authoritative.
-No build, frontend run, push or PR until coordinated with root; another worker owns
-the shared heavy-process slot at plan creation.
+Builds, frontend runs and integration use the shared heavy-process slot coordinated
+with root. Draft PR43 is authorized and open; merging remains root-owned.
 
 ## Audited starting boundaries
 
@@ -175,13 +179,12 @@ guards now recognize 1 or 2; historical app replay determines which version belo
 to each state. Export3 is unchanged; older readers reject record2/new TableState
 authority, and older export/state envelopes explicitly reject the new field.
 
-Current work is uncompiled: real Mage activation/assignment, source-only session,
+The implementation covers real Mage activation/assignment, source-only session,
 owned initiative, material-backed Mage Armor, held-work transfer rejection,
-revocation/exact retry, file reopen and hostile portable restore tests are drafted.
-UI tests exercise actual review/activation, assignment, actor selection, self-cast
-and raw-roll submissions with retained retries. No compiler/frontend has run in
-this slice. Next: format and review this coherent draft, then run focused tests in
-the explicitly granted shared slot; fix actual failures before any success claim.
+revocation/exact retry, file reopen and hostile portable restore. UI tests exercise
+actual review/activation, assignment, actor selection, self-cast and raw-roll
+submissions with retained retries. The first checkpoint was deliberately uncompiled;
+the executed results and subsequent corrections are recorded below.
 
 ## PR43 review and first CI correction
 
@@ -197,7 +200,8 @@ There is no stack-limit increase. Initial Windows run 36177838848/job 1082126799
 passed 71 frontend tests and failed the new Mage selector scenario. Its logged DOM
 shows no selected source actor; the fixture now waits for the actual actor selector
 to be enabled, selects it and requires persisted actor selection before casting.
-Both fixes await execution on the new head.
+The later local/CI runs below distinguish the successful UI correction from the
+marker boxing, which was insufficient to fix the Windows default-stack failure.
 
 Root review also found generic trusted Host tactical authorization could substitute
 for the new player's source decisions. An activated-table-only admission guard now
@@ -211,9 +215,8 @@ query successes/errors after campaign, channel or revision changes.
 
 The existing CreateCreature setup still requires earlier real PC creation; this slice
 adds source-only attendance and encounter participation after that existing setup,
-not a replacement character-creation path. No local compiler or frontend run has yet
-been authorized. Next: independent review of this concrete follow-up, push for fresh
-CI, then the assigned bounded local batch when the preceding build owner releases.
+not a replacement character-creation path. Independent source review preceded the
+authorized local batch and fresh CI; no earlier checks are attributed to later source.
 
 Local verification at `9638f64`: Svelte check 0 errors/0 warnings, all 76 frontend
 tests and production build (137 modules) passed. The first default-worker Vitest
@@ -245,7 +248,43 @@ source semantics even when an assigned actor shares that group; the new guard ow
 individual public requests and voluntary actor decisions, not a retrospective rewrite
 of grouped initiative. Source-control activation does not change execution versions.
 
-Heavy slot returned to root for PR42 canonical. Next: review/commit these concrete
-failure corrections, run fresh CI, and resume the unchanged-default-stack scenario
-plus source-control/remaining app checks only after explicit slot release. Genuine
-PR42 pre-change @2 corpora will be integrated after their reviewed prerequisite merges.
+The failure corrections are committed as `26241a97ab9aef19161564a15f5acf2baea11a45`.
+Independent exact-head review confirms the unchanged transaction semantics and the
+deterministic Host/source-owner/capability corruption selectors.
+
+Linux CI run 36181359111 is green for this PR head: genericity, architecture,
+MSRV, check, strict Clippy and 694 Rust tests, with zero failures or ignored tests.
+Its standard PR checkout is merge `95f1a61c9559bf5dbef7028bf66003251c4f554e`,
+combining branch `26241a9` with main `d82d7b2`; it is not a literal branch-tree run.
+Actual rust-job 108224247410 logs include all 46 table cases passing: the original
+normal-scene regression, genuine Mage ownership/raw/self-casting/cold retry and all
+named hostile restores, plus the qualified old-v1 corpus. The table suite took
+1179.34 seconds.
+Windows run 36181359026 has passed both frontend steps and MSRV; its completed
+MSRV log confirms 76 frontend tests, Svelte 0 errors/0 warnings and 137 build modules.
+Stable job 108224247419 checked out literal `26241a9`, passed check/lint and all
+693 Rust tests (zero failed/ignored), including 45 table cases. Actual logs confirm
+the normal-scene default-stack test and both source-control scenarios passed. The
+native table suite took 987.14 seconds. The Linux count additionally includes three
+main Night Hag cases and one Unix manifest test; Windows has three desktop host tests.
+Release compilation finished at 20:14:40 UTC and the NSIS bundle at 20:16:49 UTC.
+Artifact 10885613281 is `dmd-windows-26241a97ab9aef19161564a15f5acf2baea11a45`,
+231628602 bytes, SHA256
+`050fdbd8cb0012b14dc0ef1b5699aae1b522bcb5c8987ad2b2d3b1f486761eb5`.
+All six workflow jobs are green; native gameplay acceptance beyond the tests is not
+claimed.
+
+Root released the heavy slot after PR42 canonical succeeded. Local session 50690
+then passed the normal-scene regression (1 test, 7.27 seconds) and both source-control
+cases (2 tests, 123.94 seconds), with zero failures/ignored. It ran serially with
+jobs1 and RUST_MIN_STACK removed, after refreshing the shared crate roots; no stack
+override or assertions were removed. Logs are
+`tooling/source-control-262-default-stack.log` and
+`tooling/source-control-262-cases.log`. The process exited zero and the heavy slot was
+explicitly released to the next worker.
+
+Next: integrate the genuine PR42 pre-change @2 corpora only after their reviewed
+prerequisite merges, preserve their captured bytes, add the exhaustive source-channel
+test-helper match, and run the combined compatibility/canonical checks in the next
+authorized slot. Do not conflate this source-control boundary with later live reaction
+execution or claim Gate 4 completion.
