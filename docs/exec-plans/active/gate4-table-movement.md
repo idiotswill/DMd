@@ -103,3 +103,12 @@ Versatile two-handed grips across six held/free/blocked arrangements. Every opti
 cross-checked against the actual reaction weapon planner with no equipment change,
 including source damage and unchanged state. This is projection evidence, not journaled
 acquisition or a new starting shop. The regression is attached and awaiting compilation.
+
+The projection regression now passes all12 source-plan/hand-arrangement comparisons.
+The first compile exposed only an incorrect test import of the domain TableContract;
+correcting that import left production code unchanged. Strict workspace/all-target
+Clippy and formatting/diff checks also pass. Durable logs are
+`tooling/gate4-opportunity-projection-tests.log` and
+`tooling/gate4-movement-workspace-clippy.log`. Together with the earlier59 application
+tests this verifies the current table movement/attack checkpoint; complete movement
+privacy, falling and damaging-reaction/concentration integration still remain open.

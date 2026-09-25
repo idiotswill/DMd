@@ -2,7 +2,7 @@
 //! The characters and starting gear are created through the real table runtime.
 //! Additional source weapons represent already-acquired physical campaign items.
 use super::*;
-use crate::{CampaignRuntime, TableAction, TableContract, TableViewer};
+use crate::{CampaignRuntime, TableAction, TableViewer};
 use dmd_rules::tactical_weapons::*;
 use std::path::Path;
 
