@@ -71,6 +71,11 @@ after completion, OA before departure. Actual costs, raw faces, source identitie
 item custody, partial movement and unrelated parent work survive nested reactions.
 No auto-selected PC response, hidden reaction count, fabricated source effect install,
 free off-turn equip permission, duplicate damage/slot/reaction or second queue.
+Same-trigger responses are collected privately, then competing accepted responses
+require current-turn ordering (or explicit occurrence-scoped host delegation). Network
+arrival is never fictional priority. Child-created triggers have separate nested
+windows, and remaining accepted intents are revalidated after each selected response.
+ADR028 records this application interpretation of SRD pp.10/120/186–187.
 
 Current PC catalog expansion stays Gate6. Player-controlled source-creature assignment
 is a separate still-required Gate4 interface; host-created source NPCs are the genuine
@@ -113,6 +118,9 @@ Authored checkpoint:
   self-only formula boundary is also rechecked against foreign-target rewrites.
   A genuine source plan Held→Released leaf regression now covers both; it is not
   presented as public Ready response or table acceptance.
+- Review also found a legacy non-area liquid-choice projection trying to read current
+  ancestry. It now retains actor ordering without a trace; a replayed legacy movement
+  pause regression covers projection and actual continued choice. This fix is unrun.
 
 Next: independent bounded source review, then the granted one-job domain/rules check,
 focused turn/effect/casting/area/source-hook tests and strict lint. Record actual failures

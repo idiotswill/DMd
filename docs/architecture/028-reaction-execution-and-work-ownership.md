@@ -52,6 +52,34 @@ range, reaction/slot availability and current source timing before accepting a
 response. A string circumstance, opaque transport handle or retained offer alone
 does not grant permission. Optional responses remain explicit controller choices.
 
+## Same-trigger timing and private decisions
+
+SRD p.10 places a Reaction immediately after its trigger unless its description
+specifies otherwise; Ready acts after its perceptible trigger finishes (pp.186–187).
+Counterspell interrupts a spell still being cast (p.120), while an Opportunity Attack
+precedes departure (p.15). These are distinct retained timing boundaries. SRD p.187
+assigns the order of things happening at the same time to the current-turn controller.
+The source does not prescribe a network response protocol; the following collection
+and ordering stages are the application's interpretation of those timing rules.
+
+Every eligible controller receives only its own source-safe offer and retains an
+explicit accept/decline decision against the same canonical trigger occurrence.
+Command arrival does not select which accepted reaction happens first. Once the
+same-occurrence decisions are collected, competing accepted responses are ordered by
+the current-turn controller. If information needed for that choice is private, the
+controller must explicitly delegate this occurrence's ordering to the host; the
+application neither reveals hidden offers nor silently substitutes host or transport
+priority. Such consent covers only the identified competitors at that boundary.
+
+After each chosen response and its nested consequences finish, remaining responses
+are rechecked for current source timing, resources, perception and other prerequisites.
+A retained acceptance is intent, not prepaid permission: an invalidated response
+cannot spend resources or act on an expired target. A new trigger caused by the
+selected child response gets its own nested window and its own decisions before the
+parent competitors resume. It does not join the parent's simultaneous set merely
+because both windows were transported during the same wall-clock interval. Existing
+area-ordering consent does not delegate these independent reaction choices.
+
 ## Compatibility and verification obligations
 
 Old Begin JSON must round-trip without an added default field, replay to the old
@@ -66,3 +94,6 @@ work and forged scope/ancestry. Application tests must exercise genuine creation
 physical source resources, cold SQLite reopen, exact accepted retry, independent
 semantic replay and hostile current/historical anchors. Until those pass, the new
 contracts and source helpers are implementation milestones, not Gate4 completion.
+Timing regressions must accept the same private decisions in opposite arrival orders,
+preserve the current-turn controller's material order choice, and distinguish a
+Counterspell of a selected child spell from another response to the original spell.

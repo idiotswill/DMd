@@ -214,6 +214,11 @@ pub fn tactical_frame_host_ordering(resolution: &TacticalResolution) -> Result<b
         .enumerate()
         .find(|(_, fall)| fall.stage == TacticalFallStage::LandingChoice)
     {
+        if resolution.work_trace.is_none() {
+            // Old non-area liquid choices belong to their actor; their saved
+            // executor never retained a causal ancestry image.
+            return Ok(false);
+        }
         let work = resolution
             .work_trace
             .as_ref()

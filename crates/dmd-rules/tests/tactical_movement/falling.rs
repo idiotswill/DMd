@@ -50,6 +50,37 @@ fn fall(f: &Fixture) -> &TacticalFall {
 }
 
 #[test]
+fn legacy_liquid_choice_keeps_actor_ordering_without_new_ancestry() {
+    let mut f = ledge(30, true);
+    let meta = f.meta(Some(0));
+    let action = walk(&[point(20, 10, 30), point(30, 10, 30)]);
+    let current = resolve_tactical(&f.state, &meta, &action, &f.pack).unwrap();
+    // This settled legacy image predates the execution-version upgrade. Replay
+    // must reconstruct its old pause, rather than adding current ancestry.
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 1;
+    let legacy = replay_tactical(&f.state, &current.event, &f.pack).unwrap();
+    f.state = serde_json::from_slice(&serde_json::to_vec(&legacy.next_state).unwrap()).unwrap();
+    f.state.applied_event_sequence += 1;
+    validate_tactical_state(&f.state).unwrap();
+    let resolution = f.flow().resolution.as_ref().unwrap();
+    assert!(resolution.work_trace.is_none());
+    assert_eq!(fall(&f).stage, TacticalFallStage::LandingChoice);
+    assert!(!tactical_frame_host_ordering(resolution).unwrap());
+    f.run(
+        Some(0),
+        TacticalAction::ChooseLiquidLanding { choice: None },
+    );
+    assert_eq!(f.request().dice, [DieSpec { count: 1, sides: 6 }]);
+}
+
+#[test]
 fn a_real_step_off_support_pauses_damage_before_later_travel_and_replays_landing() {
     let mut f = ledge(40, false);
     let original = step_off(&mut f, 40);
