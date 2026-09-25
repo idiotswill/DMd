@@ -124,3 +124,12 @@ error: its Inspiration reroll had no Inspiration grant. Grant that resource in t
 initial fixture before initiative, as the existing attack reroll regression does;
 retain the actual expenditure, original raw die and replay assertions. No production
 rule or rejection is relaxed. Full verification still awaits the corrected head.
+
+Root imported area evidence718 and reconciled main172a15a only after verified
+full-tree equality to718 and ancestry inclusion. Protocol PR35 sourceee0a9c9 then
+merged without conflicts in58dd03c. Inspection confirms the Second Wind changes
+remain additive to the extracted projection, modern transport and strict restore
+paths. Its exact envelope remains independently authenticated. This combined branch
+will be reviewed and verified locally after protocol's serialized canonical batch;
+fresh CI must cover the combined source. Stack PR36 on PR35 until protocol merges,
+then reconcile its verified squash and retarget main. Savage Attacker stays separate.
