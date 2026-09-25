@@ -67,3 +67,9 @@ Formatting and whitespace checks pass. Independent bounded integration review is
 clear: shared area/continuation/restore/choice code and the SQLite scenario match
 the reviewed area source, while current shields and roll-channel behavior remain.
 This checkpoint is unbuilt; no combined tests, main reconciliation or merge is claimed.
+
+PR33's reviewed test cleanup correction54520a9 is carried forward: native Windows
+had completed the OA assertions but reported a sharing violation at file removal.
+The area fixture has the same final cleanup pattern, so it now drops closed runtime/
+pool handles and uses the same bounded Windows-sharing retry helper. Every gameplay,
+retry, replay and restore assertion stays intact; file removal must still succeed.
