@@ -272,6 +272,23 @@ impl ReplayEventApplier for RulesReplayApplier {
         event: &StoredJournalEvent,
     ) -> Result<(), ReplayApplyError> {
         let next = match (event.payload.kind.as_str(), event.payload.schema_version) {
+            (
+                dmd_rules::tactical::TACTICAL_EVENT_KIND,
+                dmd_rules::tactical::TACTICAL_EVENT_VERSION,
+            ) => {
+                if state.table.is_some() {
+                    return Err(ReplayApplyError::InvalidTransition(
+                        "raw tactical event bypasses the table command boundary".into(),
+                    ));
+                }
+                let tactical_event: dmd_rules::tactical::TacticalEvent =
+                    serde_json::from_str(&event.payload.json)
+                        .map_err(|error| invalid_replay_payload(event, error))?;
+                validate_replay_envelope(event, &tactical_event.meta)?;
+                dmd_rules::tactical::replay_tactical(state, &tactical_event, &self.pack)
+                    .map_err(|error| ReplayApplyError::InvalidTransition(error.to_string()))?
+                    .next_state
+            }
             (RULES_EVENT_KIND, RULES_EVENT_VERSION) => {
                 if state.table.is_some() {
                     return Err(ReplayApplyError::InvalidTransition(

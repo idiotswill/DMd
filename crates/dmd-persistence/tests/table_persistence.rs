@@ -530,6 +530,7 @@ async fn schema_two_database_and_format_one_export_upgrade_preserve_exact_old_an
         tactical_effects: None,
         tactical_inventory: None,
         tactical_creatures: None,
+        tactical_recovery: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],

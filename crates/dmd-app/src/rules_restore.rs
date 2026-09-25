@@ -9,6 +9,9 @@ use dmd_domain::{
 use dmd_persistence::{
     CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow, SessionChange,
 };
+use dmd_rules::tactical::{
+    TACTICAL_EVENT_KIND, TACTICAL_EVENT_VERSION, TacticalAction, TacticalEvent, TacticalOutcome,
+};
 use dmd_rules::{RULES_EVENT_KIND, RULES_EVENT_VERSION, RulesAction, RulesEvent, RulesPack};
 
 use crate::table_engine::{replay_table, validate_table};
@@ -16,6 +19,7 @@ use crate::{TABLE_EVENT_KIND, TABLE_EVENT_VERSION, TableAction, TableEvent, Tabl
 
 enum RecoveryEvent {
     Rules(Box<RulesEvent>),
+    Tactical(Box<TacticalEvent>),
     Table(Box<TableEvent>),
 }
 
@@ -23,6 +27,7 @@ impl RecoveryEvent {
     fn meta(&self) -> &CommandMeta {
         match self {
             Self::Rules(event) => &event.meta,
+            Self::Tactical(event) => &event.meta,
             Self::Table(event) => &event.meta,
         }
     }
@@ -30,6 +35,7 @@ impl RecoveryEvent {
     fn rules_event(&self) -> Option<&RulesEvent> {
         match self {
             Self::Rules(event) => Some(event),
+            Self::Tactical(_) => None,
             Self::Table(event) => event.rules_event.as_ref(),
         }
     }
@@ -37,6 +43,7 @@ impl RecoveryEvent {
     fn command_kind(&self) -> &'static str {
         match self {
             Self::Rules(_) => "rules.action",
+            Self::Tactical(_) => "tactical.action",
             Self::Table(_) => "table.action",
         }
     }
@@ -78,15 +85,23 @@ pub(crate) fn validate_rules_export(
     let (&anchor_sequence, anchor) = snapshots
         .first_key_value()
         .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
-
-    // Source creatures, physical grants and effects must replay their authorizing commands.
-    if anchor.rules.as_ref().is_some_and(|rules| {
-        rules.tactical_effects.is_some()
-            || rules.tactical_inventory.is_some()
-            || rules.tactical_creatures.is_some()
-    }) {
+    // New tactical authority has always been event-sourced. Unlike pre-journal legacy
+    // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
+    // Keep the original pre-tactical anchor so every source-derived payload is replayed.
+    if anchor
+        .encounter
+        .as_ref()
+        .is_some_and(|encounter| encounter.flow.is_some())
+        || anchor.rules.as_ref().is_some_and(|rules| {
+            rules.tactical_effects.is_some()
+                || rules.tactical_inventory.is_some()
+                || rules.tactical_recovery.is_some()
+                || rules.tactical_creatures.is_some()
+        })
+    {
         return Err("tactical recovery requires its original pre-tactical anchor".into());
     }
+
     let mut audits = HashMap::new();
     for row in &export.command_audit {
         let meta = audit_meta(row)?;
@@ -98,10 +113,14 @@ pub(crate) fn validate_rules_export(
     let mut rules_commands = HashSet::new();
     for row in &export.event_journal {
         let sequence = nonnegative(row.sequence, "event sequence")?;
-        if row.event_kind != RULES_EVENT_KIND && row.event_kind != TABLE_EVENT_KIND {
+        if row.event_kind != RULES_EVENT_KIND
+            && row.event_kind != TABLE_EVENT_KIND
+            && row.event_kind != TACTICAL_EVENT_KIND
+        {
             if sequence > anchor_sequence
                 || row.event_kind.starts_with("rules.")
                 || row.event_kind.starts_with("table.")
+                || row.event_kind.starts_with("tactical.")
             {
                 return Err(format!(
                     "unsupported rules recovery event {}@{} at {sequence}",
@@ -114,6 +133,8 @@ pub(crate) fn validate_rules_export(
         }
         let expected_version = if row.event_kind == RULES_EVENT_KIND {
             RULES_EVENT_VERSION
+        } else if row.event_kind == TACTICAL_EVENT_KIND {
+            TACTICAL_EVENT_VERSION
         } else {
             TABLE_EVENT_VERSION
         };
@@ -127,6 +148,11 @@ pub(crate) fn validate_rules_export(
             RecoveryEvent::Rules(
                 serde_json::from_str(&row.payload_json)
                     .map_err(|error| format!("rules event {sequence}: {error}"))?,
+            )
+        } else if row.event_kind == TACTICAL_EVENT_KIND {
+            RecoveryEvent::Tactical(
+                serde_json::from_str(&row.payload_json)
+                    .map_err(|error| format!("tactical event {sequence}: {error}"))?,
             )
         } else {
             RecoveryEvent::Table(
@@ -151,9 +177,13 @@ pub(crate) fn validate_rules_export(
         }
     }
     for (id, (audit, _)) in &audits {
-        if (audit.command_kind.starts_with("rules.") || audit.command_kind.starts_with("table."))
-            && (!matches!(audit.command_kind.as_str(), "rules.action" | "table.action")
-                || audit.command_schema_version != 1
+        if (audit.command_kind.starts_with("rules.")
+            || audit.command_kind.starts_with("table.")
+            || audit.command_kind.starts_with("tactical."))
+            && (!matches!(
+                audit.command_kind.as_str(),
+                "rules.action" | "table.action" | "tactical.action"
+            ) || audit.command_schema_version != 1
                 || !rules_commands.contains(id))
         {
             return Err("rules command audit lacks its supported typed event".into());
@@ -229,6 +259,14 @@ pub(crate) fn validate_rules_export(
             ));
         }
         replayed = match event {
+            RecoveryEvent::Tactical(event) => {
+                if replayed.table.is_some() {
+                    return Err("raw tactical event bypasses the table command boundary".into());
+                }
+                dmd_rules::tactical::replay_tactical(&replayed, event, pack)
+                    .map_err(|error| format!("tactical replay at {sequence}: {error}"))?
+                    .next_state
+            }
             RecoveryEvent::Rules(event) => {
                 if replayed.table.is_some() {
                     return Err("raw rules event bypasses the table command boundary".into());
@@ -365,6 +403,17 @@ fn validate_event(
         ));
     }
     match event {
+        RecoveryEvent::Tactical(event) => {
+            let action: TacticalAction = serde_json::from_str(&audit.payload_json)
+                .map_err(|e| format!("invalid tactical command action: {e}"))?;
+            let outcome: TacticalOutcome = serde_json::from_str(&audit.resolution_explanation)
+                .map_err(|e| format!("invalid tactical audit outcome: {e}"))?;
+            if action != event.action || outcome != event.outcome {
+                return Err(format!(
+                    "tactical event action/outcome disagrees with audit at {sequence}"
+                ));
+            }
+        }
         RecoveryEvent::Rules(event) => {
             let action: RulesAction = serde_json::from_str(&audit.payload_json)
                 .map_err(|error| format!("invalid rules command action: {error}"))?;
@@ -396,6 +445,64 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if let TableAction::CreateCreature { .. } = &event.action {
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err(
+                "Creature preparation has incompatible authority or nested mechanics.".into(),
+            );
+        }
+        return Ok(());
+    }
+    if let TableAction::PrepareBattlefield { setup } = &event.action {
+        let matched = event.tactical_event.as_ref().is_some_and(|nested| {
+            nested.meta == event.meta && matches!(&nested.action,
+                TacticalAction::Establish { encounter } if encounter.id == setup.encounter_id
+                    && encounter.scene_id == setup.scene_id && encounter.battlefield == setup.battlefield
+                    && encounter.geometry_ruling == setup.geometry_ruling && encounter.origin == event.meta
+                    && encounter.flow.is_none() && encounter.knowledge.is_empty())
+        });
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+            || !matched
+        {
+            return Err("battlefield setup disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
+    if let TableAction::Tactical { action } = &event.action {
+        let valid_authority = match event.meta.issuer {
+            CommandIssuer::Player(_) => matches!(event.meta.actor, Some(AgentRef::Entity(_))),
+            CommandIssuer::Admin | CommandIssuer::System => event.meta.actor.is_none(),
+            CommandIssuer::Import => false,
+        };
+        if !valid_authority
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+            || event
+                .tactical_event
+                .as_ref()
+                .is_none_or(|nested| nested.meta != event.meta || &nested.action != action)
+        {
+            return Err("table tactical action disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
+    if event.tactical_event.is_some() {
+        return Err("non-tactical table action contains unsolicited encounter authority".into());
+    }
     let player_action = matches!(
         event.action,
         TableAction::Declare { .. }
@@ -630,38 +737,124 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    if let Some(encounter) = &state.encounter {
+        origins.push(&encounter.origin);
+        if let Some(flow) = &encounter.flow {
+            origins.push(&flow.origin);
+            if let Some(movement) = &flow.last_movement {
+                origins.extend([&movement.original, &movement.cause]);
+            }
+            if let Some(resolution) = &flow.resolution {
+                origins.push(&resolution.origin);
+                for fall in &resolution.falls {
+                    origins.push(&fall.origin);
+                    if let dmd_domain::TacticalFallCause::MovementEnd { movement, .. } = &fall.cause
+                    {
+                        origins.push(movement);
+                    }
+                    match &fall.stage {
+                        dmd_domain::TacticalFallStage::LandingCheck { accepted_by, .. } => {
+                            origins.push(accepted_by)
+                        }
+                        dmd_domain::TacticalFallStage::Damage { landing } => {
+                            origins.extend(landing.as_ref().map(|landing| &landing.accepted_by))
+                        }
+                        dmd_domain::TacticalFallStage::Complete {
+                            landing,
+                            resolved_by,
+                            ..
+                        } => {
+                            origins.extend(landing.as_ref().map(|landing| &landing.accepted_by));
+                            origins.push(resolved_by);
+                        }
+                        dmd_domain::TacticalFallStage::Queued
+                        | dmd_domain::TacticalFallStage::LandingChoice => {}
+                    }
+                }
+                for record in &resolution.casts {
+                    origins.extend([&record.cast.plan.origin, &record.cast.last_operation]);
+                    origins.extend(
+                        record
+                            .creature_activation
+                            .as_ref()
+                            .map(|activation| &activation.origin),
+                    );
+                }
+                if let Some(attack) = &resolution.attack {
+                    origins.push(&attack.origin);
+                    if let Some(weapon) = attack.weapon() {
+                        origins.push(&weapon.equipment_before.command);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::Opportunity(window) =
+                        &attack.admission
+                    {
+                        origins.push(&window.origin);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::Spell { casting_origin } =
+                        &attack.admission
+                    {
+                        origins.push(casting_origin);
+                    }
+                    if let dmd_domain::TacticalAttackAdmission::CreatureAction { approach } =
+                        &attack.admission
+                    {
+                        origins.extend(approach.as_ref().map(|approach| &approach.origin));
+                    }
+                }
+                if let Some(movement) = &resolution.movement {
+                    origins.push(&movement.origin);
+                    origins.extend(movement.initial_progress_origin.as_ref());
+                    origins.extend(movement.traversed.iter().map(|step| &step.cause));
+                    origins.extend(movement.decisions.iter().map(|decision| &decision.origin));
+                    origins.extend(movement.opportunity.as_ref().map(|window| &window.origin));
+                }
+                if let Some(window) = &resolution.legendary_window {
+                    origins.push(&window.origin);
+                }
+                if let Some(failed) = &resolution.failed_save {
+                    origins.push(&failed.issued_by);
+                    origins.push(&failed.resolved_by);
+                }
+            }
+            origins.extend(flow.dodges.iter().map(|dodge| &dodge.origin));
+            origins.extend(flow.ground_items.iter().map(|item| &item.origin));
+            if let Some(origin) = &flow.budget.disengaged {
+                origins.push(origin);
+            }
+            origins.extend(flow.budget.movement_origin.as_ref());
+            for decision in &flow.save_decisions {
+                origins.push(&decision.issued_by);
+                origins.push(&decision.resolved_by);
+            }
+            origins.extend(
+                flow.budget
+                    .weapon_history
+                    .iter()
+                    .map(|receipt| &receipt.origin),
+            );
+        }
+        for knowledge in &encounter.knowledge {
+            origins.extend(knowledge.contacts.iter().map(|c| &c.origin));
+            origins.extend(knowledge.terrain.iter().map(|c| &c.origin));
+        }
+    }
     let Some(rules) = &state.rules else {
         return origins;
     };
-    if let Some(effects) = &rules.tactical_effects {
-        origins.extend(effects.groups.iter().map(|g| &g.source.command));
-        for effect in &effects.effects {
-            origins.push(&effect.source.command);
-            if let Some(stamp) = &effect.established_at {
-                origins.push(&stamp.command);
+    if let Some(recovery) = &rules.tactical_recovery {
+        for record in recovery.values() {
+            if let Some(knockout) = &record.knockout {
+                origins.push(&knockout.origin.command);
+            }
+            if let Some(rest) = &record.knockout_rest {
+                origins.push(&rest.knockout_origin.command);
+                origins.push(&rest.started_by.command);
+            }
+            if let Some(stable) = &record.stable {
+                origins.push(&stable.origin.command);
             }
         }
-        if let Some(stamp) = &effects.last_operation {
-            origins.push(&stamp.command);
-        }
-        for trigger in &effects.pending {
-            origins.push(&trigger.source.command);
-            origins.push(&trigger.origin.command);
-        }
-        origins.extend(
-            effects
-                .trigger_uses
-                .iter()
-                .map(|usage| &usage.origin.command),
-        );
     }
-    origins.extend(
-        rules
-            .rulings
-            .iter()
-            .map(|record| &record.command)
-            .collect::<Vec<_>>(),
-    );
     if let Some(creatures) = &rules.tactical_creatures {
         origins.extend(creatures.profiles.iter().map(|profile| &profile.origin));
         for runtime in &creatures.runtime {
@@ -691,6 +884,35 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.extend(inventory.receipts.iter().map(|receipt| &receipt.command));
         origins.extend(inventory.loadouts.iter().map(|loadout| &loadout.command));
     }
+    if let Some(effects) = &rules.tactical_effects {
+        origins.extend(effects.groups.iter().map(|g| &g.source.command));
+        for effect in &effects.effects {
+            origins.push(&effect.source.command);
+            if let Some(stamp) = &effect.established_at {
+                origins.push(&stamp.command);
+            }
+        }
+        if let Some(stamp) = &effects.last_operation {
+            origins.push(&stamp.command);
+        }
+        for trigger in &effects.pending {
+            origins.push(&trigger.source.command);
+            origins.push(&trigger.origin.command);
+        }
+        origins.extend(
+            effects
+                .trigger_uses
+                .iter()
+                .map(|usage| &usage.origin.command),
+        );
+    }
+    origins.extend(
+        rules
+            .rulings
+            .iter()
+            .map(|record| &record.command)
+            .collect::<Vec<_>>(),
+    );
     if let Some(permission) = &rules.permission {
         origins.push(&permission.issued_by);
     }
@@ -734,13 +956,17 @@ fn validate_origins(
         if let Some((audit, meta)) = audits.get(&origin.id) {
             if origin != meta
                 || audit.accepted != 1
-                || !matches!(audit.command_kind.as_str(), "rules.action" | "table.action")
+                || !matches!(
+                    audit.command_kind.as_str(),
+                    "rules.action" | "table.action" | "tactical.action"
+                )
                 || !commands.contains_key(&origin.id)
                 || (pending.map(|pending| &pending.origin) != Some(origin)
-                    && !commands.get(&origin.id).is_some_and(|event| {
-                        matches!(event, RecoveryEvent::Table(event)
-                            if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. }))
-                    })
+                    && !commands
+                        .get(&origin.id)
+                        .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
+                    && !commands.get(&origin.id).is_some_and(|event| matches!(event,
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())
@@ -757,6 +983,31 @@ fn validate_origins(
             return Err(
                 "rules request/result/permission origin lacks an authoritative audit".into(),
             );
+        }
+    }
+    if let Some(movement) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .and_then(|flow| flow.last_movement.as_ref())
+    {
+        let action = commands
+            .get(&movement.original.id)
+            .and_then(|event| match event {
+                RecoveryEvent::Tactical(event) => Some((&event.action, &event.outcome)),
+                RecoveryEvent::Table(event) => match &event.action {
+                    TableAction::Tactical { action } => event
+                        .tactical_event
+                        .as_ref()
+                        .map(|nested| (action, &nested.outcome)),
+                    _ => None,
+                },
+                RecoveryEvent::Rules(_) => None,
+            });
+        if !matches!(action, Some((TacticalAction::Move { path }, outcome))
+            if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
+        {
+            return Err("movement receipt disagrees with its originating Move action".into());
         }
     }
     if let Some(pending) = pending
@@ -780,7 +1031,7 @@ fn validate_origins(
                 }
                 _ => false,
             },
-            RecoveryEvent::Rules(_) => false,
+            RecoveryEvent::Rules(_) | RecoveryEvent::Tactical(_) => false,
         };
         if !matches {
             return Err("table pending decision disagrees with its originating action".into());

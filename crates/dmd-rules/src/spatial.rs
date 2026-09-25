@@ -1,6 +1,7 @@
 //! Deterministic SRD 5.2.1 geometry/perception queries. Nothing here commits a command.
 //! Half-foot integer units preserve Tiny spaces and exact heights without floating point.
 mod areas;
+mod falling;
 mod geometry;
 mod movement;
 mod perception;
@@ -8,6 +9,7 @@ mod perception;
 mod tests;
 pub use areas::*;
 use dmd_domain::*;
+pub use falling::*;
 pub use geometry::{CoverAssessment, cover_from, grid_distance, segment_intersects};
 pub use movement::*;
 pub use perception::*;

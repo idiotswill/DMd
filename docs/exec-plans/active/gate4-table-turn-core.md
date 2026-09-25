@@ -100,3 +100,17 @@ explicit unsupported authority/restore regressions. Reuse the reviewed pure phys
 drop geometry for held-item consequences; do not activate a fall or movement resolver.
 Then request full independent extraction review and wait for the serialized compiler
 after shield/area checks. Final code still requires canonical and exact-head CI.
+
+Initial extraction is now present. It preserves final wire types and fixed raw-role
+tags, but explicitly rejects inactive vertical actions, cursor/work records, turn
+budgets and future raw-history roles. Pure spatial drop geometry is reused for
+Unconscious held-item custody/AC; every tactical image requires dry floor positions.
+The existing complete source turn/death/recovery/concentration/recharge/LR tests are
+ported; the previous ordinary Attack admission assertion becomes explicit rejection
+in this slice, with its full source attack test retained on the integration branch.
+New serialization regressions cover unopened work kinds, budgets, fall cursor and
+elevation. Rust formatting succeeds; source is not compiled yet. Svelte check passes
+with zero errors/warnings; the focused frontend test run is in progress. Next add the
+real cold SQLite round/retry/restore case, obtain independent full extraction review,
+then verify source on the queued compiler and CI. No intermediate test fixture or
+interface result is claimed as complete encounter play.

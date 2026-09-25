@@ -149,6 +149,7 @@ fn encounter_state() -> CampaignState {
         tactical_effects: None,
         tactical_inventory: None,
         tactical_creatures: None,
+        tactical_recovery: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -181,6 +182,7 @@ fn encounter_state() -> CampaignState {
     };
     let position = SpatialPoint { x: 10, y: 10, z: 0 };
     initial.encounter = Some(TacticalEncounter {
+        flow: None,
         id: EncounterId::new(),
         scene_id,
         battlefield: Battlefield {
@@ -505,6 +507,7 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "duplicate",
         "duplicate_encounter",
         "tactical_inventory",
+        "tactical_recovery",
         "duplicate_inventory",
         "shadowed_inventory",
         "tactical_effects",
@@ -533,6 +536,10 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_inventory"] =
                     json!(dmd_domain::TacticalInventory::default());
+            }
+            "tactical_recovery" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_recovery"] = json!({});
             }
             "tactical_effects" | "duplicate_effects" | "shadowed_effects" => {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
@@ -764,37 +771,36 @@ fn every_legacy_snapshot_path_rejects_future_encounter_authority() {
 }
 
 #[test]
-fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
+fn old_saves_reject_even_empty_well_formed_tactical_authority() {
     let codec = CampaignStateSnapshotCodec::new();
-    let mut current = encounter_state();
-    current.encounter = None;
-    current.rules.as_mut().unwrap().timing = None;
-    current.rules.as_mut().unwrap().tactical_inventory =
-        Some(dmd_domain::TacticalInventory::default());
-    assert!(
-        codec
-            .decode_state(4, &current.encode_json().unwrap())
-            .is_ok()
-    );
-    for version in 1..=3 {
-        current.schema_version = version;
-        let json = current.encode_json().unwrap();
-        assert!(matches!(
-            codec.decode_state(version, &json),
-            Err(SnapshotCodecError::MigrationFailed { .. })
-        ));
-        for replacement in [
-            "\"tactical_inventory\":null,\"tactical_inventory\":",
-            "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
-        ] {
-            assert!(
-                codec
-                    .decode_state(
-                        version,
-                        &json.replacen("\"tactical_inventory\":", replacement, 1)
-                    )
-                    .is_err()
-            );
+    for authority in ["effects", "inventory", "recovery", "creatures"] {
+        let mut current = encounter_state();
+        current.encounter = None;
+        current.rules.as_mut().unwrap().timing = None;
+        if authority == "inventory" {
+            current.rules.as_mut().unwrap().tactical_inventory =
+                Some(dmd_domain::TacticalInventory::default());
+        } else if authority == "creatures" {
+            current.rules.as_mut().unwrap().tactical_creatures =
+                Some(dmd_domain::TacticalCreatures::default());
+        } else if authority == "recovery" {
+            current.rules.as_mut().unwrap().tactical_recovery =
+                Some(std::collections::HashMap::new());
+        } else {
+            current.rules.as_mut().unwrap().tactical_effects =
+                Some(dmd_domain::TacticalEffects::default());
+        }
+        assert!(
+            codec
+                .decode_state(4, &current.encode_json().unwrap())
+                .is_ok()
+        );
+        for version in 1..=3 {
+            current.schema_version = version;
+            assert!(matches!(
+                codec.decode_state(version, &current.encode_json().unwrap()),
+                Err(SnapshotCodecError::MigrationFailed { .. })
+            ));
         }
     }
 }
@@ -1258,4 +1264,40 @@ fn built_in_snapshot_upgrade_is_explicit_and_cannot_be_replaced() {
             ..
         })
     ));
+}
+
+#[test]
+fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_inventory =
+        Some(dmd_domain::TacticalInventory::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        let json = current.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_inventory\":null,\"tactical_inventory\":",
+            "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_inventory\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
 }

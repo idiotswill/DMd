@@ -70,6 +70,7 @@ fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
         || legacy.rules.as_ref().is_some_and(|rules| {
             rules.tactical_effects.is_some()
                 || rules.tactical_inventory.is_some()
+                || rules.tactical_recovery.is_some()
                 || rules.tactical_creatures.is_some()
         })
     {
@@ -79,8 +80,10 @@ fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
 }
 
 pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
-    // Typed fields reject duplicates, including a second null hiding a first value.
-    // Established legacy preflights retain their original migration checksums.
+    // Probe only the newly recognized nested fields. Established legacy preflights
+    // remain in their original migrations (including the all-chain rollback test).
+    // Typed fields reject duplicates; a Value-only probe could hide a first non-null
+    // value behind a duplicate null field. Unknown old members are deliberately ignored.
     #[derive(serde::Deserialize)]
     struct Probe {
         rules: Option<RulesProbe>,
@@ -89,15 +92,17 @@ pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
     struct RulesProbe {
         tactical_effects: Option<serde_json::Value>,
         tactical_inventory: Option<serde_json::Value>,
+        tactical_recovery: Option<serde_json::Value>,
         tactical_creatures: Option<serde_json::Value>,
     }
     let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
     if probe.rules.is_some_and(|rules| {
         rules.tactical_effects.is_some()
             || rules.tactical_inventory.is_some()
+            || rules.tactical_recovery.is_some()
             || rules.tactical_creatures.is_some()
     }) {
-        return Err("legacy state unexpectedly contains tactical setup authority".into());
+        return Err("legacy state unexpectedly contains tactical effect authority".into());
     }
     Ok(())
 }

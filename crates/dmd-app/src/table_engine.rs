@@ -26,6 +26,7 @@ pub(crate) fn resolve_table(
     let mut next = state.clone();
     let mut session_change = None;
     let mut rules_event = None;
+    let mut tactical_event = None;
     let mut mechanics = None;
     let message = match action {
         TableAction::UpdateContract { contract } => {
@@ -141,11 +142,13 @@ pub(crate) fn resolve_table(
                     .rules
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_some())
-                || state.encounter.is_some()
+                || state
+                    .encounter
+                    .as_ref()
+                    .is_some_and(|encounter| encounter.flow.is_some())
             {
                 return Err(
-                    "Finish pending decisions and prepare equipment before battlefield setup."
-                        .into(),
+                    "Finish pending decisions and prepare equipment before initiative.".into(),
                 );
             }
             next = crate::table_equipment::prepare(state, meta, *character_id, item_ids, pack)?;
@@ -165,6 +168,43 @@ pub(crate) fn resolve_table(
             next = crate::table_creatures::create(state, meta, creation, pack)?;
             // Private preparation must not teach players an actor's name or existence.
             "Host preparation recorded.".into()
+        }
+        TableAction::Tactical { action } => {
+            active(state, meta)?;
+            match meta.issuer {
+                CommandIssuer::Player(_) => {
+                    player_channel_for_encounter(state, meta, true)?;
+                }
+                _ => host(meta)?,
+            }
+            if table(state)?.pending.is_some() || table(state)?.roll_context.is_some() {
+                return Err("Finish the pending table decision before an encounter action.".into());
+            }
+            if matches!(
+                action,
+                dmd_rules::tactical::TacticalAction::Establish { .. }
+            ) {
+                return Err(
+                    "Use battlefield setup to place source-derived characters and creatures."
+                        .into(),
+                );
+            }
+            let transition = dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
+                .map_err(|error| error.to_string())?;
+            next = transition.next_state;
+            tactical_event = Some(transition.event);
+            // Detailed outcomes belong to the viewer-specific tactical projection.
+            // This transcript is shared by the whole table, including unaware PCs.
+            "Encounter action recorded.".into()
+        }
+        TableAction::PrepareBattlefield { setup } => {
+            host(meta)?;
+            active(state, meta)?;
+            idle(state)?;
+            let transition = crate::table_tactical::prepare(state, meta, setup, pack)?;
+            next = transition.next_state;
+            tactical_event = Some(transition.event);
+            "The encounter map is ready.".into()
         }
         TableAction::StartSession {
             id,
@@ -218,6 +258,16 @@ pub(crate) fn resolve_table(
         TableAction::EndSession => {
             host(meta)?;
             idle(&next)?;
+            if next
+                .encounter
+                .as_ref()
+                .is_some_and(|encounter| encounter.flow.is_some())
+            {
+                return Err(
+                    "Finish the encounter before ending its session. You can quit and resume now."
+                        .into(),
+                );
+            }
             let binding = active(&next, meta)?;
             let expected = binding.as_session(meta.campaign_id);
             let mut ended = expected.clone();
@@ -503,6 +553,7 @@ pub(crate) fn resolve_table(
             action: action.clone(),
             outcome: TableOutcome { message, mechanics },
             rules_event,
+            tactical_event,
         },
         session_change,
     })
@@ -607,6 +658,14 @@ pub(crate) fn player_channel(
     state: &CampaignState,
     meta: &CommandMeta,
 ) -> Result<(PlayerId, CharacterId, EntityId, PlaySessionId), String> {
+    player_channel_for_encounter(state, meta, false)
+}
+
+fn player_channel_for_encounter(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    allow_dead_participant: bool,
+) -> Result<(PlayerId, CharacterId, EntityId, PlaySessionId), String> {
     let CommandIssuer::Player(player) = meta.issuer else {
         return Err("Select an attending player for this declaration.".into());
     };
@@ -620,7 +679,18 @@ pub(crate) fn player_channel(
         .find(|pc| {
             pc.entity_id == actor
                 && pc.controlling_player_id == Some(player)
-                && pc.status == CharacterStatus::Active
+                && (pc.status == CharacterStatus::Active
+                    || allow_dead_participant
+                        && pc.status == CharacterStatus::Dead
+                        && state
+                            .encounter
+                            .as_ref()
+                            .and_then(|encounter| encounter.flow.as_ref())
+                            .is_some_and(|flow| {
+                                flow.combatants
+                                    .iter()
+                                    .any(|combatant| combatant.actor == actor)
+                            }))
         })
         .ok_or("The selected player does not control that active character.")?;
     table(state)?.validate_attendance(session.session_id, player, character.id)?;

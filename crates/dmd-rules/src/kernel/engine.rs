@@ -34,13 +34,14 @@ pub fn resolve(
             "physical equipment requires the tactical action path",
         ));
     }
-    if state
-        .rules
-        .as_ref()
-        .is_some_and(|r| r.tactical_effects.is_some())
+    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+        || state
+            .rules
+            .as_ref()
+            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some())
     {
         return Err(prerequisite(
-            "grouped source effects require the tactical action path",
+            "active tactical state requires the tactical command path",
         ));
     }
     if state.rules.as_ref().is_some_and(|r| r.pending.is_some())
@@ -87,6 +88,7 @@ pub fn resolve(
             rules.permission = None;
         } else {
             next.rules = Some(RulesState {
+                tactical_recovery: None,
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
                 entities: std::collections::HashMap::from([(*entity_id, built.mechanics)]),
@@ -130,6 +132,7 @@ pub fn resolve(
             return Err(invalid("duplicate/empty mechanical initialization"));
         }
         next.rules = Some(RulesState {
+            tactical_recovery: None,
             pack_id: pack.id.clone(),
             pack_version: pack.version.clone(),
             entities: map,
@@ -1359,6 +1362,11 @@ fn submit(
     });
     let (mut success, mut critical, mut amount) = (None, false, None);
     match &pending.purpose {
+        PendingPurpose::TacticalInitiative { .. } | PendingPurpose::TacticalResolution { .. } => {
+            return Err(prerequisite(
+                "tactical rolls require their recorded continuation",
+            ));
+        }
         PendingPurpose::Test { kind, dc, .. } => {
             let face = roll.kept_dice[0].value;
             if matches!(kind, TestKind::DeathSave) {
@@ -1387,15 +1395,11 @@ fn submit(
                     }
                 }
             } else if !matches!(kind, TestKind::Initiative) {
-                success = Some(
-                    if rules.house_rules.ability_test_natural_extremes && face == 20 {
-                        true
-                    } else if rules.house_rules.ability_test_natural_extremes && face == 1 {
-                        false
-                    } else {
-                        roll.total >= *dc
-                    },
-                );
+                success = Some(crate::test_outcome::ability_test_success(
+                    &roll,
+                    *dc,
+                    &rules.house_rules,
+                )?);
             }
         }
         PendingPurpose::Attack {
@@ -1693,7 +1697,7 @@ fn recover(e: &mut MechanicalEntity, kind: RestKind) {
         }
     }
 }
-fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: WorldInstant) {
+pub(crate) fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: WorldInstant) {
     if rules.rests.iter().any(|r| {
         r.actor == actor && r.kind == RestKind::Long && now.0.saturating_sub(r.started_at.0) >= 3600
     }) {
@@ -1705,6 +1709,16 @@ fn interrupt_rest(rules: &mut RulesState, actor: EntityId, now: WorldInstant) {
         }
     }
     rules.rests.retain(|r| r.actor != actor);
+    if let Some(recovery) = rules
+        .tactical_recovery
+        .as_mut()
+        .and_then(|records| records.get_mut(&actor))
+    {
+        recovery.knockout_rest = None;
+        if let Some(knockout) = &mut recovery.knockout {
+            knockout.short_rest_started_at = None;
+        }
+    }
 }
 fn finish_rest(
     state: &CampaignState,

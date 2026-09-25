@@ -1,4 +1,5 @@
 import { invoke } from '@tauri-apps/api/core';
+import type { BattlefieldSetup, TacticalAction, TacticalView } from './tactical-api';
 
 export type Id = string;
 export const ABILITIES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const;
@@ -55,8 +56,9 @@ export interface RollRequest { id: Id; roller: Id | null; dice: { sides: number;
 export interface TableView {
   campaign_id: Id; name: string; event_sequence: number; contract: TableContract; players: Player[]; characters: CharacterView[];
   active_session: { session_id: Id; display_name: string; started_at_world: number; participants: Participant[] } | null;
-  creature_setup?: CreatureSetupView | null;
   pending: PendingDecision | null; roll: RollRequest | null; situation_title: string; situation_description: string;
+  tactical?: TacticalView | null;
+  creature_setup?: CreatureSetupView | null;
   transcript: { id: string; event_sequence: number; kind: string; speaker: string; text: string }[]; recap: string[];
 }
 export type TableAction =
@@ -64,6 +66,7 @@ export type TableAction =
   | { CreateCharacter: { character_id: Id; entity_id: Id; player_id: Id; input: CharacterInput } }
   | { PrepareEquipment: { character_id: Id; item_ids: Id[] } }
   | { CreateCreature: { creation: CreatureCreation } }
+  | { PrepareBattlefield: { setup: BattlefieldSetup } } | { Tactical: { action: TacticalAction } }
   | { StartSession: { id: Id; name: string; participants: Participant[] } } | 'EndSession'
   | { SetSituation: { situation: Situation } }
   | { CancelDecision: { pending_id: Id; revision: number } }
@@ -102,7 +105,7 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (request.action === 'EndSession') return true;
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
-  return ['UpdateContract','AddPlayer','CreateCharacter','CreateCreature','PrepareEquipment','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
+  return ['UpdateContract','AddPlayer','CreateCharacter','CreateCreature','PrepareEquipment','PrepareBattlefield','Tactical','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
 }
 export function loadRequest(): UnconfirmedRequest | null {
   const value = localStorage.getItem(REQUEST_KEY);
@@ -124,7 +127,7 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
-  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',CreateCreature:'Prepare a source creature',PrepareEquipment:'Prepare starting equipment',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
+  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',CreateCreature:'Prepare a source creature',PrepareEquipment:'Prepare starting equipment',PrepareBattlefield:'Prepare the encounter map',Tactical:'Resolve an encounter action',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
   return labels[typeof request.request.action === 'string' ? request.request.action : Object.keys(request.request.action)[0]];
 }
 
