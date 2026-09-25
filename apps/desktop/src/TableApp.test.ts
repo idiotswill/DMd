@@ -8,6 +8,34 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
+  it('retries NPC creation after uncertain delivery and restart with the same source and item IDs',async()=>{
+    const user=userEvent.setup();
+    const view=emptyView();
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.creature_setup={catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,abilities:['Scimitar','Shortbow'],omitted_features:[]}],creatures:[]};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Host preparation recorded.',mechanics:null}}));
+    const first=render(TableApp);
+    await user.click(await screen.findByRole('button',{name:'Setup and host controls'}));
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Prepare creature'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.type(screen.getByLabelText('Creature name'),'Private sentry');
+    await user.clear(screen.getByLabelText('Starting ammunition per type'));
+    await user.type(screen.getByLabelText('Starting ammunition per type'),'7');
+    await user.click(screen.getByRole('button',{name:'Prepare creature'}));
+    await screen.findByRole('alert');
+    const request=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(request.request.action.CreateCreature.creation).toMatchObject({name:'Private sentry',definition_id:'goblin-warrior',size:'Small',additional_languages:[],ammunition_units:7});
+    expect(new Set(request.request.action.CreateCreature.creation.item_ids).size).toBe(5);
+    expect(request.request.channel).toBe('Host');
+    expect(request.request.expected_event_sequence).toBe(view.event_sequence);
+    first.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,request.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,request.request);
+  });
   it('persists an actual casting form submission and retries its original targets and material after restart',async()=>{
     const user=userEvent.setup();const view=emptyView();
     const choice={actor:'source-caster',spell_id:'hold-person',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature',material:{Material:{item:'actual-component'}},mode:'Immediate'} as const;

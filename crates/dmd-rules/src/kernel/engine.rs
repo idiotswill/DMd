@@ -35,11 +35,10 @@ pub fn resolve(
         ));
     }
     if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
-        || state.rules.as_ref().is_some_and(|r| {
-            r.tactical_effects.is_some()
-                || r.tactical_recovery.is_some()
-                || r.tactical_creatures.is_some()
-        })
+        || state
+            .rules
+            .as_ref()
+            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some())
     {
         return Err(prerequisite(
             "active tactical state requires the tactical command path",
@@ -312,6 +311,15 @@ fn apply(
             adjudicate(rules, meta, ruling)?;
             entity(rules, *actor)?;
             authorize(state, meta, *actor)?;
+            if rules
+                .tactical_creatures
+                .as_ref()
+                .is_some_and(|creatures| creatures.profile(*actor).is_some())
+            {
+                return Err(prerequisite(
+                    "source creature tests require their source action path",
+                ));
+            }
             if !(0..=100).contains(dc) {
                 return Err(invalid("test DC outside supported range"));
             }

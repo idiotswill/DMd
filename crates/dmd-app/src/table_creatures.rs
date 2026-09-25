@@ -86,6 +86,9 @@ pub(crate) fn create(
     pack: &RulesPack,
 ) -> Result<CampaignState, String> {
     bounded_text(&creation.name, 200)?;
+    if state.rules.is_none() {
+        return Err("Create a player character before preparing creatures.".into());
+    }
     if creation.entity_id.0.is_nil() || state.entities.contains_key(&creation.entity_id) {
         return Err("Choose a new creature identity.".into());
     }

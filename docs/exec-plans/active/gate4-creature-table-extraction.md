@@ -1,8 +1,8 @@
 # Gate 4 source creatures through private table setup
 
-Writer: root. Prospective branch: `codex/gate4-creature-table`, from refreshed main
-after PR29 equipment preparation is verified and merged. Integration reference:
-`cd3ba7a`; existing source and table plans remain the detailed implementation history.
+Writer: root. Branch: `codex/gate4-creature-table`, from refreshed main
+`ac35c1d65d27239f704cde1422209a0f106fb0e1` after verified PR29 merge. Integration reference:
+`220ee804d7344564a265f02c4d42cb57a7e560c2`; existing source and table plans remain the detailed implementation history.
 
 ## Objective and boundaries
 
@@ -44,9 +44,59 @@ playable execution. NPC policy helpers alone do not satisfy autonomous encounter
 
 ## Status and next action
 
-Planning only. PR29 remains under canonical/Windows verification. No extraction branch
-or implementation exists yet. Next: merge verified PR29, refresh main and inspect the
-source/profile/gear dependency closure to create the coherent implementation branch.
-Do not infer this slice's evidence from the broader integration branch. Remaining
+Corrected source `6136aeb02c9a5af5142a5962e26f6e2ba01e17ba` passes canonical
+`./scripts/verify`: 356 Windows Rust tests, workspace/all-target check, strict Clippy,
+formatting, genericity and architecture checks (8 cases, 1 platform skip). Log: sibling
+tooling `gate4-creature-canonical.log`. All six exact-source CI checks pass: Linux
+`36109228463` (357 Rust tests, including the additional Unix symlink case) and Windows
+`36109228457` (MSRV and stable, including offline installer packaging).
+
+Svelte check reports zero errors/warnings; all 16 frontend tests and the production
+build pass. Frontend bytes are unchanged from tested source `53cbbe9` to `6136aeb`.
+Logs: sibling tooling `gate4-creature-ui-{check,tests,build}.log`.
+
+Next: review the final evidence-only diff, verify implementation/lockfile/frontend
+parity with `6136aeb`, await all required CI on that final head and merge PR30 with
+expected-head protection. Verify fetched main tree parity and post-merge checks,
+then reconcile encounter integration and start the effect-state attachment slice. Remaining
 Gate4 NPC decisions, attack features, shared effects and packaged encounter acceptance
 stay active; no Gate5 work or reduced gate acceptance is authorized.
+
+## Extraction decisions
+
+- Creature profile/schedule/policy and physical gear module closure is copied from
+  encounter integration `220ee80` without shared queue/effect/recovery coupling.
+  Pure capability operations remain internal building blocks, not table-playability evidence.
+- Retain source-aware level 0/Hit Dice validation, and preserve existing PC tests and
+  Second Wind. Legacy RequestTest explicitly rejects source NPC actors because their
+  printed modifiers require the forthcoming source tactical path.
+- Actual host form requires an existing player character, matching the mechanical-state
+  prerequisite; preparation remains private, and copy clearly states encounter play is
+  not yet shipped in this bounded build. Full Gate4 acceptance remains unchanged.
+- PR29 post-merge main `ac35c1d` checks are all green: Linux `36107189850` and
+  Windows `36107189841`, including stable offline installer packaging.
+
+The environment reviewer inspected the complete extraction at `53cbbe9` and the exact
+`6136aeb` correction with no actionable finding. This review is independent of root's
+extraction/composition correction; the reviewer originally authored some pure source
+modules, whose prior review remains recorded in their implementation plans. Gate4
+completion is not claimed; final evidence-head review/CI and merge remain pending.
+
+## First exact-head CI finding
+
+Draft PR30 source `53cbbe9` compiled and passed strict Clippy/Linux MSRV/architecture
+and genericity checks. Its new actual PC check after NPC preparation failed at physical
+roll completion: the inventory validator called the whole CampaignState validator while
+the rules child had cleared pending, before its table parent cleared roll_context.
+The same dependency existed after PC equipment preparation; this regression exposed it.
+
+The correction factors identity/world reference checks into `CampaignState::validate_references` and uses
+those plus inventory/source checks inside the inventory reducer. Full `validate` retains
+all existing attachment, encounter and table invariants, and the app validates the whole
+completed table transition before commit. Tests retain actual PC check/Second Wind and
+add a deliberately incomplete final table context that still fails validation and restore.
+This is an application-composition fix; no final invariant or historical event changes.
+Both Linux and Windows canonical suites pass the actual PC check, Second Wind,
+independent SQLite reopen/restore, malformed final table-context and four foreign
+physical-item reference regressions. The original failing candidate is superseded by
+`6136aeb`; its partial CI is not counted as passing verification.

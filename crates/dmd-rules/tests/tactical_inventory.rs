@@ -793,3 +793,22 @@ fn loose_npc_gear_requires_valid_physical_state_without_a_pc_grant_or_loadout() 
     item.state = ItemState::Custom("sealed".into());
     f.valid(); // Source equipment rules do not redefine unrelated campaign objects.
 }
+
+#[test]
+fn inventory_still_rejects_foreign_item_ownership_and_custody_references() {
+    let mut fixture = Fixture::new();
+    fixture.grant();
+    for corruption in 0..4 {
+        let mut state = fixture.state.clone();
+        let item = state.items.get_mut(&fixture.item("dagger")).unwrap();
+        match corruption {
+            0 => item.campaign_id = CampaignId::new(),
+            1 => item.owner = Ownership::Entity(EntityId::new()),
+            2 => item.custody = Custody::Entity(EntityId::new()),
+            3 => item.custody = Custody::Container(ItemId::new()),
+            _ => unreachable!(),
+        }
+        assert!(!state.validate_references().is_empty());
+        assert!(validate_tactical_inventory(&state, &fixture.inventory, &fixture.pack).is_err());
+    }
+}

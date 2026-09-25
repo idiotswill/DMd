@@ -8,6 +8,8 @@ use std::path::Path;
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]
 mod table_casting_cases;
+#[path = "support/table_creature_cases.rs"]
+mod table_creature_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
 #[path = "support/table_tactical_cases.rs"]
