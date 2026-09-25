@@ -195,3 +195,15 @@ and uses the bounded Windows sharing-lock cleanup helper reviewed for PR33. That
 CI run exposed OS32 only after all of its gameplay assertions had completed; this
 fixture retains every protocol assertion and still fails if deletion cannot finish.
 The expanded protocol/UI batch remains unrun pending the shared heavy-build slot.
+
+Before that batch, root requested deliberate integration of physical PR33 source
+`54520a9`. Squashed ancestry required resolving equivalent added files against the
+independently reviewed area aggregate `c79ddc5`. The combined domain/rules trees
+match that aggregate exactly; newer dead-target, shield-training, cold-round and
+genuine OA/dead SQLite regressions are retained. The projection extraction already
+contains the authoritative roll-channel correction, so the old in-method view body
+was not restored over it. Modern revision/handle tests coexist with shield, area
+and prepared-map dice tests. Unrelated plan moves/statuses follow current PR33;
+ADR027 and this protocol plan remain owned here. Reconcile the eventual protected
+PR33 squash/main head before opening a protocol PR. This merge has formatting and
+tree-parity evidence only until the next executable batch finishes.

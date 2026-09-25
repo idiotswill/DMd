@@ -1,7 +1,8 @@
 # Gate 4 initiative and durable turn work through the table
 
-Writer: root. Planned branch `codex/gate4-table-turn-core`, from refreshed main after
-verified PR31. Reference integration is `1a9d3b0`; later reviewed area/shield changes
+Writer: root. Branch `codex/gate4-table-turn-core`, from fetched merged main
+`f8e02c9ab20e73636f82a3414bfd12831b5cd880` after verified PR31. Reference integration
+is `9fd73da`; later reviewed area/shield changes
 remain separate. This plan is checked in before extraction.
 
 ## Objective and boundaries
@@ -60,10 +61,12 @@ or temporary authoritative adapter.
 
 ## Current state and next action
 
-Planning only. PR31 corrected0486c77 has independent review and all six source CI
-checks green (376 Linux Rust tests); root canonical Windows verification is running.
-After verified PR31 merge, refresh main and create the planned branch. Inspect the
-actual final core before extraction; no source/code/test claim exists for this slice.
+PR31 merged with expected-head protection at `61739b48a753f71047996a3483a84c5afadd2ed4`
+after fresh final evidence-head review, source/lock parity and all six final checks
+(Linux `36122086428`, Windows `36122086408`, including offline installer). Fetched
+main `f8e02c9` has identical full-tree content. Post-merge runs `36122812303` and
+`36122812557` are in progress. This fresh branch has its plan committed before code;
+no source/code/test acceptance exists yet for the extracted slice.
 
 Read-only dependency review confirms the turn closure is separable while retaining
 the existing scheduler. Keep vitality/drop-held/live-AC and knockout-rest proof,
@@ -84,10 +87,129 @@ attempts interrupted by system memory exhaustion remain failed attempts.
 
 PR31 source verification is now complete:375 Windows Rust tests and all canonical
 guards/lints; evidence head `61739b4` has fresh independent review and final CI is
-running. Integration imports its immunity fix, source regressions and legacy null
+green. Integration imports its immunity fix, source regressions and legacy null
 shadow coverage. The combined condition query preserves legacy ActiveEffect posture
 even after recovery attaches, while new grouped/recovery conditions respect immunity.
 The historical query regression now covers that attachment too. This combined
 production change is formatted/reviewed locally but still needs focused runtime
 verification with the extracted turn slice; PR31's simpler source pass is not that
 evidence. Automatic duplicate enum/module declarations were removed during merge.
+
+Next extract the bounded source closure, adapt existing real table scenarios and add
+explicit unsupported authority/restore regressions. Reuse the reviewed pure physical
+drop geometry for held-item consequences; do not activate a fall or movement resolver.
+Then request full independent extraction review and wait for the serialized compiler
+after shield/area checks. Final code still requires canonical and exact-head CI.
+
+Initial extraction is now present. It preserves final wire types and fixed raw-role
+tags, but explicitly rejects inactive vertical actions, cursor/work records, turn
+budgets and future raw-history roles. Pure spatial drop geometry is reused for
+Unconscious held-item custody/AC; every tactical image requires dry floor positions.
+The existing complete source turn/death/recovery/concentration/recharge/LR tests are
+ported; the previous ordinary Attack admission assertion becomes explicit rejection
+in this slice, with its full source attack test retained on the integration branch.
+New serialization regressions cover unopened work kinds, budgets, fall cursor and
+elevation. Rust formatting succeeds; source is not compiled yet. Svelte check passes
+with zero errors/warnings; the focused frontend test run is in progress. Next add the
+real cold SQLite round/retry/restore case, obtain independent full extraction review,
+then verify source on the queued compiler and CI. No intermediate test fixture or
+interface result is claimed as complete encounter play.
+
+## Review correction and durable round regression
+
+PR32 initial source `d475b5e` received independent full extraction review. It found
+one UI blocker: map existence incorrectly selected the tactical raw-dice handler
+for ordinary checks and Second Wind before initiative. The correction derives a
+`TableRollChannel` from the actual visible pending purpose. A private/absent roll
+has no channel; projection does not expose an otherwise hidden pending purpose.
+Three UI regressions cover the two ordinary dice types and tactical initiative.
+The new disk-SQLite round exercises ordinary check/Second Wind after map setup,
+initiative, Dodge/Dash and round advance. Each accepted phase is also executed on
+an export-restored mirror; original disk reopen and exact command retry must retain
+state, journal and audit, while new-nonce stale and foreign input fail. Forged
+future budget authority is rejected before writes in both current and backfilled
+snapshot forms. This new Rust regression is not yet compiled or accepted.
+
+Initial CI Linux `36123469257` failed on actual E0599 output: the extraction omitted
+the existing UUID v5 workspace feature and its locked sha1_smol dependency while
+retaining deterministic tactical identity methods. Copying the exact integration
+manifest/lock restores that required dependency without a version update. Final
+verification must run again on the corrected head; no old green check applies.
+
+PR31 post-merge verification now passes all six jobs on `f8e02c9`: Linux
+`36122812303`, Windows `36122812557`, including the offline installer. Svelte
+check on the PR32 routing correction passes with zero errors/warnings; frontend
+tests/build are running. The serialized Rust compiler remains with the area slice
+after completed shield verification, with turn-core next. Next compile this source,
+fix any actual failures, obtain correction review and canonical/exact-head CI.
+
+Independent exact correction review at `e81717e` is clear. The first new UI run
+caught only a test expectation using the viewer shape for an input channel; the
+actual request correctly includes both player and character identity. Correcting
+that expectation yields all22 frontend tests and a successful126-module production
+build. No production change was needed for that test failure. Logs are
+`tooling/gate4-turn-core-ui-tests-r3.log` and `gate4-turn-core-ui-build-r3.log`.
+
+The next initial compile on Linux `36124444841` exposed two older spatial/source
+test constructors missing the newly explicit `flow: None`. Both fixtures retain
+their previous behavior with that field added. Actual compiler output was read;
+all tests/lints still require a successful run after this correction.
+
+Source `70b8333` now passes all425 Linux Rust tests, MSRV, strict Clippy and guards
+in run36124985437, and both native Windows jobs including the installer in
+36124985423. The only final source correction from286f410 is the unavailable-work
+request match returning its existing error directly to satisfy needless_return.
+Independent delta review is clear. The local canonical run has passed compilation
+and strict Clippy and is compiling tests; its final result remains pending.
+
+The Windows workflow previously ran only dmd-desktop's Rust tests. Actual default-
+stack failures in later tactical SQLite scenarios demonstrate that this omits a
+relevant platform regression boundary. The stable Windows job now runs the whole
+workspace, including dmd-app/persistence recovery, with the default stack. It retains
+MSRV checks and packaging. This verification change must pass on the final PR head;
+the earlier Windows source green does not prove that newly broadened test step.
+
+ADR026 is included with its previously reviewed decision text and an explicit
+architecture-versus-implementation status; references in this plan now resolve on
+main after merge. The central Gate4 plan retains the active followup obligations.
+
+## Canonical source completion and final-head verification
+
+The local canonical `./scripts/verify` completed successfully after memory was freed:
+424 Windows GNU Rust tests, formatting, workspace/all-target check, strict workspace
+all-target Clippy, genericity guard and architecture guard (8 cases,1 platform skip).
+The actual disk-SQLite round passes with the default Windows stack. Log:
+`tooling/gate4-turn-core-canonical.log` outside the repository. No stack limit, test
+assertion, source rule or verification check was weakened. Source is `70b8333`;
+all Rust/app/content/script/manifest/lock files remain identical through9c22b74.
+
+Independent full extraction, routing correction and fixture/lint delta review are
+clear.22 frontend tests and Svelte/build evidence remain as recorded above. All six
+source CI jobs passed; the9c22b74 Windows workflow expansion adds whole-workspace
+native tests because later actual SQLite scenarios exposed Windows-only stack risk.
+Its Linux run36126126492 passes; native Windows36126126314 is in progress. The
+workflow/ADR/evidence delta has separate independent review with no blocker.
+
+Next verify this final evidence-only head (including the expanded native Windows
+tests and installer), obtain exact final-head signoff and protected merge; fetch
+main, prove full-tree parity and finish post-merge checks. Then proceed directly
+within Gate4 to the physical encounter/source-casting integration on a fresh branch.
+No Gate4 completion or Gate5 entry is claimed by this prerequisite slice.
+
+Final evidence head6f4109f passed all four Linux jobs (36126953489) and Windows
+MSRV. The newly expanded stable Windows workspace tests (36126953528,
+job108045163822) exposed a test comparison defect: cold_step compared two exports
+including their request-time exported_at_utc. The actual complete failed values
+differ only by that timestamp crossing from11:04:57 to11:04:58; all persisted
+fields are identical. Normalize only this non-persisted export timestamp, following
+the existing rules-runtime regression convention; preserve full equality of every
+durable field, row and creation timestamp. No production code changes or test
+requirements are weakened. The corrected head requires fresh review and CI before
+merge; the previous canonical source pass remains evidence for production only.
+
+Corrected final25be7f6c5f31e60a065f009c52ab44c852639aed passed fresh exact review
+and all six jobs: Linux36127754177 (425 Rust tests), Windows36127754144 (427 native
+Rust tests, MSRV/stable and offline installer). Merge used expected-head protection
+and produced12ed29a72eb3d66ad8565caf358ae573a91aa0dc. A fresh fetch confirms exact
+full-tree parity. Post-merge checks are pending. Continue the already planned physical
+encounter/source-casting slice on its fresh branch; Gate4 acceptance remains open.

@@ -12,6 +12,69 @@ fn resistance_save(ability: Ability) -> EffectTriggerPayload {
 }
 
 #[test]
+fn vertical_actions_require_their_actual_source_and_pending_window() {
+    let mut f = Fixture::new();
+    f.begin();
+    for action in [
+        TacticalAction::Move { path: vec![] },
+        TacticalAction::DeclineOpportunity,
+        TacticalAction::ChooseLiquidLanding { choice: None },
+        TacticalAction::CreatureAttack {
+            target: f.actors[1],
+            feature_id: "claw".into(),
+            weapon: None,
+        },
+    ] {
+        f.rejected(Some(0), action);
+    }
+    f.run(Some(0), TacticalAction::Dodge);
+    assert!(f.rules().timing.as_ref().unwrap().action_spent);
+}
+
+#[test]
+fn restored_turn_work_requires_its_retained_source_and_continuation() {
+    let mut f = Fixture::new();
+    f.effect(0, resistance_save(Ability::Wisdom), vec![]);
+    f.begin();
+    for kind in [
+        TacticalWorkKind::BeginFall { fall: 0 },
+        TacticalWorkKind::LiquidLandingCheck { fall: 0 },
+        TacticalWorkKind::FallDamage { fall: 0 },
+        TacticalWorkKind::SpellProgram {
+            cast: 0,
+            at: SpellProgramOccurrence { node: 0, target: 0 },
+        },
+        TacticalWorkKind::FinishSpell { cast: 0 },
+        TacticalWorkKind::MoveSegment,
+        TacticalWorkKind::MovementOpportunity {
+            reactor: f.actors[1],
+        },
+        TacticalWorkKind::AttackRoll,
+        TacticalWorkKind::AttackDamage,
+        TacticalWorkKind::FinishAttack,
+    ] {
+        let mut forged = f.state.clone();
+        forged
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap()
+            .pending
+            .as_mut()
+            .unwrap()
+            .work
+            .kind = kind;
+        let restored: CampaignState = serde_json::from_str(&forged.encode_json().unwrap()).unwrap();
+        assert!(validate_tactical_state(&restored).is_err());
+    }
+}
+
+#[test]
 fn occupied_end_space_uses_actual_volume_size_exceptions_and_prone_immunity() {
     for (own, other, immune, overlap, prone) in [
         (

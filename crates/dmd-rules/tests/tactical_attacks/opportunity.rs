@@ -67,6 +67,48 @@ fn creature(f: &mut Fixture, id: &str, size: CreatureSize) {
 }
 
 #[test]
+fn lethal_opportunity_damage_finishes_attack_and_stops_the_original_move() {
+    let mut f = Fixture::new();
+    f.arm("longsword", false, false);
+    f.entity_mut(1).hp = 1;
+    f.entity_mut(1).max_hp = 1;
+    start_crossing(&mut f);
+    f.run(
+        Some(0),
+        TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::UnarmedDamage {
+                ability: Ability::Strength,
+            },
+        },
+    );
+    f.roll(0, &[15]);
+    f.run(
+        Some(0),
+        TacticalAction::ChooseAttackKnockout {
+            choice: KnockoutChoice::NormalDamage,
+        },
+    );
+    assert!(f.rules().entities[&f.actors[1]].death.dead);
+    assert!(f.flow().resolution.is_none());
+    assert!(f.rules().pending.is_none());
+    assert_eq!(
+        f.state.encounter.as_ref().unwrap().participants[1]
+            .position
+            .x,
+        20
+    );
+    assert_eq!(f.flow().budget.movement_spent, 0);
+    assert!(
+        f.rules()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .contains(&f.actors[0])
+    );
+}
+
+#[test]
 fn unarmed_reaction_has_real_fixed_damage_without_invented_inventory_or_action_cost() {
     let mut f = Fixture::new();
     f.arm("longsword", false, false);

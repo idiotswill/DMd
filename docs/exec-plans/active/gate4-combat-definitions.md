@@ -1,6 +1,6 @@
 # Gate 4 tactical source definitions
 
-Status: **Completed foundation slice — merged PR #23; Gate 4 remains active.**
+Status: Implemented and source-reviewed; integrated in PR #23, exact-head merge checks pending.
 Branch `codex/gate4-combat-definitions`, based on `14a94d6`.
 
 ## Objective and boundaries
@@ -73,14 +73,3 @@ manifest declaration and proves application rejection leaves history unchanged. 
 source review found no remaining represented-content blocker. Next: complete exact-head
 PR #23 verification, then wire these definitions through the authoritative encounter/table
 path. Unrepresented tactical mechanisms remain Gate 4 work.
-
-## Merged evidence
-
-PR #23 merged as `580f487944608d8c7c7220c7a410a779386ad615`. The exact reviewed
-head `0b910b846199f975baa763f6ed9bbc3e88474049` passed canonical `./scripts/verify`
-with 249 Rust tests and all six PR CI jobs, including native Windows MSRV/stable
-checks and packaging. Merged-main Linux run 36044061166 and Windows run 36044061140
-also passed. The merge retained exact reviewed tree `dd26b376192a6202e4f9d83fed02f5b42b1b0a71`.
-The next action is the active encounter-execution plan; historical next-action
-notes above describe this slice before its final integration. Complete encounter
-execution, source-family coverage and packaged desktop acceptance remain Gate 4.

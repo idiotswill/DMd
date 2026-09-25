@@ -558,7 +558,7 @@
         189
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -582,7 +582,7 @@
         186
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -609,7 +609,7 @@
         191
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -634,7 +634,7 @@
         190
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -658,7 +658,7 @@
         190
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -684,7 +684,7 @@
         191
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -704,7 +704,7 @@
         188
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -722,7 +722,7 @@
         190
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -738,7 +738,7 @@
         16
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -756,7 +756,7 @@
         92
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -776,7 +776,7 @@
         257
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],
@@ -802,7 +802,7 @@
         190
       ],
       "legal_to_ship": true,
-      "status": "intentionally_deferred",
+      "status": "implementing",
       "mechanical_tests": [],
       "production_integration": [],
       "player_acceptance": [],

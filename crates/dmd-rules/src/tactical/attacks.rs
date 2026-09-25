@@ -69,7 +69,7 @@ fn begin_with_source(
     }
     // A retained truth ID is not permission to query a hidden creature's range.
     // Check actor knowledge before any target geometry or source range planning.
-    planning::require_located_target(state, actor, choice.target)?;
+    planning::admit_target(state, actor, choice.target)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let timing = rules
         .timing

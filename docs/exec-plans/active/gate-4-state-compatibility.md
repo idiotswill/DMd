@@ -1,6 +1,6 @@
 # Gate 4 — Encounter state compatibility
 
-Status: **Completed foundation slice — merged PR #23; Gate 4 remains active.**
+Status: **Implemented and independently reviewed; integrated in PR #23, exact-head merge checks pending.**
 
 ## Objective and branch
 
@@ -69,14 +69,3 @@ Send-future regression after Windows CI exposed SQLx Acquire lifetime inference.
 already-acquired `run_direct` path retains the same migration/savepoint behavior. Final
 integrated verification and CI are prerequisites for merging the exact PR head. Encounter
 continuation semantics and desktop acceptance remain in the active gate plan.
-
-## Merged evidence
-
-PR #23 merged as `580f487944608d8c7c7220c7a410a779386ad615`. The exact reviewed
-head `0b910b846199f975baa763f6ed9bbc3e88474049` passed canonical `./scripts/verify`
-with 249 Rust tests and all six PR CI jobs, including native Windows MSRV/stable
-checks and packaging. Merged-main Linux run 36044061166 and Windows run 36044061140
-also passed. The merge retained exact reviewed tree `dd26b376192a6202e4f9d83fed02f5b42b1b0a71`.
-The next action is the active encounter-execution plan; historical next-action
-notes above describe this slice before its final integration. Complete encounter
-execution, source-family coverage and packaged desktop acceptance remain Gate 4.

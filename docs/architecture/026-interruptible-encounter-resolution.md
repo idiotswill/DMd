@@ -1,6 +1,12 @@
 # ADR 026 — Interruptible, replayable encounter resolution
 
-Status: **Proposed — Gate 4 implementation pending.**
+Status: **Accepted architecture — Gate 4 implementation and integrated acceptance ongoing.**
+
+The table turn-core slice implements initiative, turn boundaries and durable work.
+Physical attack/movement/fall and spell paths are separately verified followups;
+later paragraphs define their required behavior rather than claim shipped support.
+Audience-aware presentation history and player transport privacy remain an active
+implementation obligation before Gate 4 acceptance.
 
 ## Problem
 

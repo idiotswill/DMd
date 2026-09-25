@@ -13,14 +13,20 @@ mod table_attack_cases;
 mod table_casting_cases;
 #[path = "support/table_creature_cases.rs"]
 mod table_creature_cases;
+#[path = "support/table_dead_target_cases.rs"]
+mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_oa_concentration_cases.rs"]
+mod table_oa_concentration_cases;
 #[path = "support/table_projection_cases.rs"]
 mod table_projection_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
+#[path = "support/table_turn_core_cases.rs"]
+mod table_turn_core_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
