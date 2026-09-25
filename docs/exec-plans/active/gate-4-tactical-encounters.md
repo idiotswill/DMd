@@ -216,8 +216,46 @@ the separate turn-core cold-round regression is preserved on its bounded PR bran
 The18 spell mechanism
 families remain active where unfinished, including Ready, interruptions, zones, barriers,
 summons, forms and source-linked effects; do not promote pure catalog coverage to playability.
+Reviewed spell training correction1b39980 is integrated as456272e: an untrained
+Shield alone does not prohibit casting, while actual occupied hands and untrained
+worn armor remain enforced. All43 spell tests and strict domain/rules all-target
+Clippy pass; paired genuine component and prepared-caster regressions have independent
+review. Full combined/app verification remains required. PR32 final25be7f6 contains
+only a test comparison correction beyond its canonical production source: export
+request time is normalized while every persisted field still compares exactly.
+The expanded native Windows test step exposed that second-boundary test defect;
+fresh final CI is required before merging.
+
+PR32 subsequently passed fresh final review and all six checks at25be7f6: Linux
+36127754177 (425 Rust tests), Windows36127754144 (427 native Rust tests and installer).
+Protected merge produced12ed29a72eb3d66ad8565caf358ae573a91aa0dc, with fetched
+full-tree parity. Post-merge CI is pending. Fresh codex/gate4-physical-encounters
+starts there, with plan5d250ba preceding source extraction from reference0fd7ddc.
+Its actual damaging OA/concentration continuation and combined full verification
+remain required; prior leaf/source checks do not establish acceptance of this tree.
+Separate area checkpointa45fe57 has current17 source and65 app tests, strict3crate
+all-target Clippy and clear review. It remains outside this physical PR; protocol
+and Ready source branches continue independently, with serialized local builds.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
 and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
+
+PR32 post-merge checks subsequently all pass on main12ed29a (Linux36129020814,
+Windows36129020852). PR33 initial combined extractionb7f5dfb has all six CI checks,
+590 Linux and592 native Windows Rust tests, with independent source/app review.
+Review fixed ordinary/intrinsic dead-target admission before resources; the common
+guard checks actor knowledge first and does not affect retained lethal validation.
+All71 affected attack tests pass, including living zero-HP, hidden target and lethal
+OA completion. Genuine damaging-OA/concentration/cold-recovery testf13224e passes
+and is independently reviewed, integrated as5e3f89a. Actual lethal/dead-target
+SQLite regression9910ce7 also passes after a two-line fixture mutability correction,
+retaining zero durable writes and valid lethal replay. Final code/test6291776 passes
+canonical verification (595 Windows GNU Rust tests, strict workspace lint, formatting
+and both guards),45 desktop tests, zero Svelte diagnostics and production build.
+All six code-head CI checks pass: Linux36133381708 (596 Rust tests),
+Windows36133381673 (598 native Rust tests, MSRV/stable and offline installer).
+The final evidence-only head still requires review and fresh CI before protected
+merge, fetched full-tree parity and post-merge verification. The12 Gate4 ledger families now
+say implementing, with scopes and evidence arrays unchanged and no gate acceptance.
 
 Continue encounter execution and the effects/equipment/damage integrations from merged
 foundation main. Complete all twelve ledger

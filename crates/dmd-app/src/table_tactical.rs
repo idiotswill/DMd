@@ -4,8 +4,16 @@ use dmd_rules::{RulesPack, tactical::*};
 
 use crate::{TableBattlefieldSetup, table_engine::table};
 
+#[path = "table_attacks.rs"]
+mod attacks;
+#[path = "table_casting.rs"]
+mod casting;
 #[path = "table_tactical_choices.rs"]
 mod choices;
+#[path = "table_movement.rs"]
+mod movement;
+#[path = "table_shields.rs"]
+mod shields;
 
 pub(crate) fn view(
     state: &CampaignState,
@@ -165,12 +173,90 @@ pub(crate) fn view(
                 _ => None,
             })
             .filter(|actor| host || own.contains(actor)),
-        attack_options: None,
-        casting_options: None,
-        movement_options: None,
-        opportunity: None,
-        liquid_landing: None,
-        attack_decision: None,
+        attack_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                attacks::options(state, actor)?
+            }
+            _ => None,
+        },
+        shield_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                shields::options(state, actor)?
+            }
+            _ => None,
+        },
+        casting_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                casting::options(state, actor)?
+            }
+            _ => None,
+        },
+        movement_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                movement::options(state, actor)?
+            }
+            _ => None,
+        },
+        opportunity: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.movement.as_ref())
+            .and_then(|movement| movement.opportunity.as_ref())
+            .filter(|window| host || own.contains(&window.reactor))
+            .map(|window| movement::opportunity(state, window))
+            .transpose()?,
+        liquid_landing: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| {
+                resolution
+                    .falls
+                    .iter()
+                    .find(|fall| fall.stage == TacticalFallStage::LandingChoice)
+            })
+            .filter(|fall| host || own.contains(&fall.actor))
+            .map(|fall| crate::TableLiquidLandingView { actor: fall.actor }),
+        attack_decision: flow
+            .and_then(|flow| flow.resolution.as_ref())
+            .and_then(|resolution| resolution.attack.as_ref())
+            .filter(|attack| host || own.contains(&attack.actor))
+            .and_then(|attack| {
+                let kind = match attack.stage {
+                    TacticalAttackStage::KnockoutChoice => crate::TableAttackDecisionKind::Knockout,
+                    TacticalAttackStage::MasteryChoice => crate::TableAttackDecisionKind::Graze,
+                    _ => return None,
+                };
+                Some(crate::TableAttackDecision {
+                    actor: attack.actor,
+                    kind,
+                })
+            }),
         budget: flow
             .filter(|_| host || active.is_some_and(|actor| own.contains(&actor)))
             .and_then(|flow| {

@@ -1,9 +1,14 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod attacks;
+mod casting;
 mod continuations;
 mod creature_bridge;
 mod failed_save;
+mod falling;
 mod initiative;
+mod movement;
+mod shields;
 mod turn_validation;
 mod turns;
 mod validation;
@@ -20,6 +25,11 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    DonShield {
+        shield: ItemId,
+        hand: Hand,
+    },
+    DoffShield,
     CreatureWeaponAttack {
         feature_id: String,
         choice: CreatureWeaponUseChoice,
@@ -216,18 +226,45 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
-        TacticalAction::CreatureWeaponAttack { .. }
-        | TacticalAction::CreatureAttack { .. }
-        | TacticalAction::ChooseLiquidLanding { .. }
-        | TacticalAction::CastSpell { .. }
-        | TacticalAction::Move { .. }
-        | TacticalAction::DeclineOpportunity
-        | TacticalAction::OpportunityAttack { .. }
-        | TacticalAction::Attack { .. }
-        | TacticalAction::ChooseAttackKnockout { .. }
-        | TacticalAction::ChooseAttackMastery { .. }
-        | TacticalAction::StartAttackAction => {
-            return Err(prerequisite("this tactical action is not yet available"));
+        TacticalAction::DonShield { shield, hand } => {
+            shields::change(&mut next, meta, Some((*shield, *hand)), pack)?
+        }
+        TacticalAction::DoffShield => shields::change(&mut next, meta, None, pack)?,
+        TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
+            attacks::begin_creature_weapon(&mut next, meta, feature_id, choice, pack)?
+        }
+        TacticalAction::CreatureAttack {
+            target,
+            feature_id,
+            weapon,
+        } => {
+            attacks::begin_creature_attack(&mut next, meta, *target, feature_id, *weapon)?;
+        }
+        TacticalAction::ChooseLiquidLanding { choice } => {
+            falling::choose(&mut next, meta, *choice)?
+        }
+        TacticalAction::CastSpell { choice, targets } => {
+            casting::begin(&mut next, meta, choice, targets)?;
+        }
+        TacticalAction::Move { path } => movement::begin(&mut next, meta, path)?,
+        TacticalAction::DeclineOpportunity => movement::decline(&mut next, meta)?,
+        TacticalAction::OpportunityAttack { choice } => {
+            let window = movement::selected_opportunity(&next)?.clone();
+            attacks::begin_opportunity_attack(
+                &mut next,
+                meta,
+                window.reactor,
+                window.mover,
+                choice,
+                pack,
+            )?;
+        }
+        TacticalAction::Attack { choice } => attacks::begin(&mut next, meta, choice, pack)?,
+        TacticalAction::ChooseAttackKnockout { choice } => {
+            attacks::choose_knockout(&mut next, meta, *choice)?
+        }
+        TacticalAction::ChooseAttackMastery { choice } => {
+            attacks::choose_mastery(&mut next, meta, choice)?
         }
         TacticalAction::Establish {
             encounter: authored,
@@ -343,7 +380,8 @@ pub fn resolve_tactical(
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage
         | TacticalAction::Dodge
-        | TacticalAction::StandProne => turns::core_action(&mut next, meta, action)?,
+        | TacticalAction::StandProne
+        | TacticalAction::StartAttackAction => turns::core_action(&mut next, meta, action)?,
     }
     crate::validate_state(&next, pack)?;
     validate_tactical_state(&next)?;

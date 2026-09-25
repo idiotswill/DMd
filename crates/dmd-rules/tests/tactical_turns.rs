@@ -12,11 +12,10 @@ fn resistance_save(ability: Ability) -> EffectTriggerPayload {
 }
 
 #[test]
-fn unavailable_vertical_actions_never_spend_the_turn_or_install_work() {
+fn vertical_actions_require_their_actual_source_and_pending_window() {
     let mut f = Fixture::new();
     f.begin();
     for action in [
-        TacticalAction::StartAttackAction,
         TacticalAction::Move { path: vec![] },
         TacticalAction::DeclineOpportunity,
         TacticalAction::ChooseLiquidLanding { choice: None },
@@ -26,17 +25,14 @@ fn unavailable_vertical_actions_never_spend_the_turn_or_install_work() {
             weapon: None,
         },
     ] {
-        let before = f.state.clone();
-        let error = resolve_tactical(&f.state, &f.meta(Some(0)), &action, &f.pack).unwrap_err();
-        assert!(error.to_string().contains("not yet available"), "{error}");
-        assert_eq!(f.state, before);
+        f.rejected(Some(0), action);
     }
     f.run(Some(0), TacticalAction::Dodge);
     assert!(f.rules().timing.as_ref().unwrap().action_spent);
 }
 
 #[test]
-fn restored_turn_images_reject_unavailable_work_and_budget_authority() {
+fn restored_turn_work_requires_its_retained_source_and_continuation() {
     let mut f = Fixture::new();
     f.effect(0, resistance_save(Ability::Wisdom), vec![]);
     f.begin();
@@ -74,105 +70,7 @@ fn restored_turn_images_reject_unavailable_work_and_budget_authority() {
             .work
             .kind = kind;
         let restored: CampaignState = serde_json::from_str(&forged.encode_json().unwrap()).unwrap();
-        let error = validate_tactical_state(&restored).unwrap_err();
-        assert!(error.to_string().contains("not yet available"), "{error}");
-    }
-    for case in 0..7 {
-        let mut forged = f.state.clone();
-        let budget = &mut forged
-            .encounter
-            .as_mut()
-            .unwrap()
-            .flow
-            .as_mut()
-            .unwrap()
-            .budget;
-        match case {
-            0 => budget.movement_progress = Some(TacticalMovementProgress::default()),
-            1 => budget.movement_origin = Some(f.meta(Some(0))),
-            2 => budget.attacks_remaining = 1,
-            3 => {
-                budget.attack_window = Some(WeaponActionWindow {
-                    id: CommandId::new(),
-                    kind: WeaponActionKind::AttackAction,
-                })
-            }
-            4 => budget.other_slot_casters.push(f.actors[1]),
-            5 => budget.object_interaction_spent = true,
-            _ => {
-                forged
-                    .rules
-                    .as_mut()
-                    .unwrap()
-                    .timing
-                    .as_mut()
-                    .unwrap()
-                    .slot_spent_this_turn = true
-            }
-        }
-        let restored: CampaignState = serde_json::from_str(&forged.encode_json().unwrap()).unwrap();
-        let error = validate_tactical_state(&restored).unwrap_err();
-        assert!(
-            error
-                .to_string()
-                .contains("unavailable tactical action authority"),
-            "{error}"
-        );
-    }
-    let mut forged = f.state.clone();
-    let position = forged.encounter.as_ref().unwrap().participants[0].position;
-    forged
-        .encounter
-        .as_mut()
-        .unwrap()
-        .flow
-        .as_mut()
-        .unwrap()
-        .resolution
-        .as_mut()
-        .unwrap()
-        .falls
-        .push(TacticalFall {
-            origin: f.meta(Some(0)),
-            actor: f.actors[0],
-            cause: TacticalFallCause::Unsupported,
-            path: SpatialFall {
-                from: position,
-                to: position,
-                surface: FallSurface::Floor,
-            },
-            stage: TacticalFallStage::Queued,
-        });
-    let error = validate_tactical_state(&forged).unwrap_err();
-    assert!(
-        error
-            .to_string()
-            .contains("unavailable tactical continuation"),
-        "{error}"
-    );
-}
-
-#[test]
-fn every_turn_image_rejects_unsupported_elevation_before_any_clock_or_budget_change() {
-    let mut f = Fixture::new();
-    for active in [false, true] {
-        if active {
-            f.begin();
-        }
-        let mut forged = f.state.clone();
-        forged.encounter.as_mut().unwrap().participants[0]
-            .position
-            .z = 10;
-        let before = forged.clone();
-        let error = validate_tactical_state(&forged).unwrap_err();
-        assert!(
-            error.to_string().contains("supported dry floor positions"),
-            "{error}"
-        );
-        assert!(
-            resolve_tactical(&forged, &f.meta(Some(0)), &TacticalAction::EndTurn, &f.pack).is_err()
-        );
-        assert_eq!(forged, before);
+        assert!(validate_tactical_state(&restored).is_err());
     }
 }
 
@@ -662,7 +560,7 @@ fn recharge_follows_own_start_preserves_triggering_player_and_raw_history_before
     assert_eq!(record.ticket.origin, end.meta);
     assert!(f.creature_runtime(1).recharge[0].available);
     assert_eq!(f.rules().rolls.last().unwrap().result, raw);
-    f.run(None, TacticalAction::Dodge);
+    f.run(None, TacticalAction::StartAttackAction);
 }
 
 #[test]
@@ -1527,7 +1425,7 @@ fn stabilization_requests_raw_d4_and_retains_source_cause_and_wake_time() {
 }
 
 #[test]
-fn turn_budgets_round_time_selected_dash_speed_and_dodge_are_single_authority() {
+fn turn_budgets_round_time_selected_dash_speed_dodge_and_attack_window_are_single_authority() {
     let mut f = Fixture::new();
     f.begin();
     f.rejected(Some(1), TacticalAction::EndTurn);
@@ -1574,8 +1472,18 @@ fn turn_budgets_round_time_selected_dash_speed_and_dodge_are_single_authority() 
             .len(),
         1
     );
-    f.rejected(Some(0), TacticalAction::StartAttackAction);
-    assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+    let event = f.run(Some(0), TacticalAction::StartAttackAction);
+    let budget = &f
+        .state
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap()
+        .budget;
+    assert_eq!(budget.attacks_remaining, 1);
+    assert_eq!(budget.attack_window.unwrap().id, event.meta.id);
     f.run(Some(0), TacticalAction::EndTurn);
     assert!(
         f.state

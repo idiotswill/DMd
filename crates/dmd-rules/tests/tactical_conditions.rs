@@ -8,6 +8,7 @@ fn fixture() -> (RulesState, EntityId, EntityId, EntityId) {
     let c = EntityId::new();
     (
         RulesState {
+            tactical_recovery: None,
             pack_id: "srd-5.2".into(),
             pack_version: "5.2.1".into(),
             entities: HashMap::from([
@@ -17,7 +18,6 @@ fn fixture() -> (RulesState, EntityId, EntityId, EntityId) {
             ]),
             house_rules: HouseRules::default(),
             effects: vec![],
-            tactical_recovery: None,
             tactical_effects: None,
             tactical_inventory: None,
             tactical_creatures: None,

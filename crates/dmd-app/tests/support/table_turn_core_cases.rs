@@ -250,7 +250,7 @@ async fn complete_round(f: &mut Fixture, url: &str) {
             .dodges
             .is_empty()
     );
-    for player in f.players {
+    for (index, player) in f.players.iter().copied().enumerate() {
         let view = f
             .runtime
             .table_view(f.campaign, TableViewer::Player(player))
@@ -259,27 +259,60 @@ async fn complete_round(f: &mut Fixture, url: &str) {
         let tactical = view.tactical.unwrap();
         assert!(tactical.battlefield.is_none());
         assert!(tactical.participants.is_empty());
-        assert!(tactical.attack_options.is_none());
+        assert_eq!(
+            tactical
+                .attack_options
+                .as_ref()
+                .map(|options| options.actor),
+            (index == 0).then_some(f.actors[0])
+        );
         assert!(tactical.casting_options.is_none());
-        assert!(tactical.movement_options.is_none());
+        assert_eq!(
+            tactical
+                .movement_options
+                .as_ref()
+                .map(|options| options.actor),
+            (index == 0).then_some(f.actors[0])
+        );
     }
 }
 
-async fn reject_future_authority(f: &Fixture) {
+async fn reject_forged_authority(f: &Fixture) {
     let export = export_campaign(&f.pool, f.campaign).await.unwrap();
-    for backfill in [false, true] {
+    for (case, backfill) in (0..7).flat_map(|case| [false, true].map(|backfill| (case, backfill))) {
         let mut forged = export.clone();
         let mut state = current(f).await;
-        state
+        let budget = &mut state
             .encounter
             .as_mut()
             .unwrap()
             .flow
             .as_mut()
             .unwrap()
-            .budget
-            .other_slot_casters
-            .push(f.actors[1]);
+            .budget;
+        match case {
+            0 => budget.movement_progress = Some(TacticalMovementProgress::default()),
+            1 => budget.movement_origin = Some(f.player_meta(0).await),
+            2 => budget.attacks_remaining = 1,
+            3 => {
+                budget.attack_window = Some(WeaponActionWindow {
+                    id: CommandId::new(),
+                    kind: WeaponActionKind::AttackAction,
+                })
+            }
+            4 => budget.other_slot_casters.push(f.actors[1]),
+            5 => budget.object_interaction_spent = true,
+            _ => {
+                state
+                    .rules
+                    .as_mut()
+                    .unwrap()
+                    .timing
+                    .as_mut()
+                    .unwrap()
+                    .slot_spent_this_turn = true
+            }
+        }
         forged.current_state.state_json = state.encode_json().unwrap();
         if backfill {
             forged.snapshots = vec![dmd_persistence::SnapshotRow {
@@ -291,11 +324,15 @@ async fn reject_future_authority(f: &Fixture) {
             }];
         }
         // The envelope parses, so only real application/source authentication can
-        // reject this otherwise well-typed future authority before any writes.
+        // reject invented action authority before any writes, even though the
+        // corresponding real feature is now implemented.
         forged.upgraded().unwrap();
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let restored = runtime(pool.clone());
-        assert!(restored.restore_campaign(&forged).await.is_err());
+        assert!(
+            restored.restore_campaign(&forged).await.is_err(),
+            "accepted forged budget case {case}, backfill {backfill}"
+        );
         for table in [
             "campaign_state_current",
             "campaign_lifecycle",
@@ -325,7 +362,10 @@ async fn complete_table_round_survives_every_disk_reopen_retry_and_semantic_rest
     Box::pin(ordinary_checks_on_prepared_map(&mut f, &url)).await;
     Box::pin(initiative(&mut f, &url)).await;
     Box::pin(complete_round(&mut f, &url)).await;
-    Box::pin(reject_future_authority(&f)).await;
+    Box::pin(reject_forged_authority(&f)).await;
     f.pool.close().await;
-    std::fs::remove_dir_all(directory).unwrap();
+    drop(f);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
 }

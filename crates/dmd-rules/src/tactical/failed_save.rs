@@ -25,7 +25,7 @@ pub(super) fn is_failure(
         return Ok(true);
     };
     if pending.key.role == TacticalRollRole::SpellSave {
-        return Err(prerequisite("spell work is not yet available"));
+        return super::casting::save_failed(state, pending, Some(result));
     }
     let request = super::continuations::request(state, &pending.work, pending.key)?
         .ok_or_else(|| invalid("automatic failure has no raw roll"))?;

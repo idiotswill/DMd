@@ -283,13 +283,42 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
+        if super::falling::selected(state)?.is_some()
+            || resolution(state)?
+                .movement
+                .as_ref()
+                .is_some_and(|m| m.opportunity.is_some())
+            || resolution(state)?.attack.as_ref().is_some_and(|a| {
+                matches!(
+                    a.stage,
+                    TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+                )
+            })
+        {
+            while resolution(state)?.frames.last().is_some_and(Vec::is_empty) {
+                resolution_mut(state)?.frames.pop();
+            }
+        }
+        super::movement::prune(state, meta)?;
         if resolution(state)?.pending.is_some()
+            || super::falling::selected(state)?.is_some()
             || resolution(state)?.failed_save.is_some()
             || resolution(state)?.legendary_window.is_some()
+            || resolution(state)?
+                .movement
+                .as_ref()
+                .is_some_and(|m| m.opportunity.is_some())
+            || resolution(state)?.attack.as_ref().is_some_and(|a| {
+                matches!(
+                    a.stage,
+                    TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+                )
+            })
         {
             return Ok(());
         }
         // Ending a group can cancel sibling tickets. They cannot remain a phantom choice.
+        super::falling::queue_losses(state, meta)?;
         let live: Vec<_> = effects(state)?.pending.iter().map(|t| t.id).collect();
         let r = resolution_mut(state)?;
         for frame in &mut r.frames {
@@ -359,8 +388,19 @@ pub(super) fn choose(
         authorize(state, meta, resolution(state)?.turn_actor)?;
     }
     if resolution(state)?.pending.is_some()
+        || super::falling::selected(state)?.is_some()
         || resolution(state)?.failed_save.is_some()
         || resolution(state)?.legendary_window.is_some()
+        || resolution(state)?
+            .movement
+            .as_ref()
+            .is_some_and(|m| m.opportunity.is_some())
+        || resolution(state)?.attack.as_ref().is_some_and(|a| {
+            matches!(
+                a.stage,
+                TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+            )
+        })
     {
         return Err(RulesError::Pending);
     }
@@ -501,6 +541,16 @@ pub(super) fn core_action(
                 actor,
                 origin: meta.clone(),
                 declared_on_turn: number,
+            });
+        }
+        TacticalAction::StartAttackAction => {
+            // Supported PC class is Fighter 1. Source Multiattack also uses the Attack
+            // action (SRD257), but its pinned routine is selected through the creature
+            // feature path; this ordinary Attack choice grants one attack.
+            budget::start_attack_action(rules, &mut turn_budget, actor, 1)?;
+            turn_budget.attack_window = Some(WeaponActionWindow {
+                id: meta.id,
+                kind: WeaponActionKind::AttackAction,
             });
         }
         _ => return Err(invalid("not a core turn action")),
