@@ -265,3 +265,10 @@ cancellation, retries the accepted request after another reopen and rejects a co
 invented replacement declaration. It requires the unrelated audience's entire modern
 view, revision and transcript to remain identical. These changes are format-checked
 but have not run; Medicine still owns the serialized local compiler slot.
+
+CI on c39365e failed one new pending-dice reducer fixture on both Linux and native
+Windows: setting HP to zero without Prone violates the existing vitality invariant.
+The fixture now includes the required Prone state; production validation and all
+assertions remain unchanged. All six local Ready reducer tests pass after correction.
+The prior native log also confirms the actual Ready SQLite case and all40 table-loop
+tests passed, plus61 UI tests/static/build. Full corrected-head CI is still required.

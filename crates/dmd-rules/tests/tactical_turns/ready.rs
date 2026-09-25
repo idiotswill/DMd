@@ -62,6 +62,7 @@ fn ready_abandonment_waits_for_another_actors_pending_dice() {
     f.begin();
     f.run(Some(0), ready_move());
     f.entity_mut(1).hp = 0;
+    f.entity_mut(1).prone = true;
     f.run(Some(0), TacticalAction::EndTurn);
     assert!(f.rules().pending.is_some());
     f.rejected(Some(0), TacticalAction::AbandonReady { actor: f.actors[0] });
