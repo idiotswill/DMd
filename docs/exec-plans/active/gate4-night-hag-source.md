@@ -4,9 +4,10 @@ Writer: bootstrap_audit. Branch: `codex/gate4-night-hag-source`.
 Base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`, the frozen PR38 foundation
 candidate; its verification/merge remains root-owned. This independent source slice
 does not begin the reserved main-based live-response branch.
-Status: source and production-path regression authored; the 20 focused source/profile
-tests pass. The new application case is compiling under the root-assigned sole build
-slot. No canonical, CI, packaged or gate-acceptance claim is made.
+Status: 20 focused source/profile checks, the genuine six-dart cold application case,
+historical presentation-v1 replay, and all 67 UI tests/check/build pass. Canonical local
+verification is next under the root-assigned sole build slot. No CI, packaged,
+simultaneous-dart interaction or gate-acceptance claim is made.
 
 ## Objective and authority
 
@@ -46,6 +47,33 @@ not grant a new prepared PC spell or waive Verbal/Somatic components.
   that trait is implemented. This slice's outbound Magic Missile has no target save.
 - No claim of a complete Night Hag, full creature catalog, Shield/Counterspell
   response, packaged acceptance, or completed Gate4 family/gate.
+- Root's full source/UI review identified inherited timing wording which becomes
+  misleading when this new spell is selectable. The generic casting form now says
+  "Choose all targets before casting" and retains the repeated-target hint; it no
+  longer asserts a fictional sequence of strikes. This small UI correction is part
+  of this slice; no shared spell scheduler edits are included.
+
+## Mandatory simultaneous-dart follow-up (Gate4, not a later gate)
+
+SRD146 says Magic Missile's darts all strike simultaneously. SRD187 assigns ordering
+of simultaneous things to the current turn's controller. The inherited shared casting
+driver currently pushes one single-item program frame per selected dart, applies that
+dart's vitality/concentration children before the next, and rechecks live dead-target
+and spell-defense facts. It has no explicit simultaneous-strike batch or independently
+authenticated same-time consequence-order decision. ADR026's shared saving-throw damage
+rule (SRD16) does not by itself settle this no-save spell's interaction boundaries.
+
+The real app regression here uses one surviving target without concentration or an
+intervening effect, so it proves the genuine source grant, six raw d4 amounts, ordinary
+damage, source Action/no-slot payment and durable retries. It does not close source
+timing for death, concentration/defense changes between darts, or off-turn Ready release.
+The shared live-response/casting work must establish the source strike milestone and
+its target set before consequences, preserve actual current-turn ordering authority,
+and test multi-target/repeated-target interactions plus before-first-dart Shield prevention.
+The correct amount/consequence grouping must be source-reviewed explicitly; this plan
+does not invent a combined damage occurrence or waive separate raw evidence. That is
+mandatory active Gate4 work, beyond this source-data slice, and must be resolved before
+claiming full Magic Missile execution or its reaction acceptance scenario complete.
 
 ## Acceptance and intended changes
 
@@ -70,10 +98,11 @@ historical catalog digest or accepted response. The exact old eight-entry v1 sna
 stays unchanged. Current app host creation is autonomous source ownership; this is
 not evidence for the separately required player-controlled response path.
 
-Independent reviewer environment_audit confirmed the full pinned page311 data and is
-reviewing the authored diff. Root's first read of the definition, attribution and full
-app scenario found no blocker. Root released the sole heavy slot after the captured-save
-verifier completed; this writer now owns the serialized focused checks.
+Independent reviewer environment_audit confirmed the full pinned page311 data and
+reviewed every authored source/app fixture phase without a blocker. Root independently
+reviewed committed source head01aa162 and found no blocker, then requested the precise
+UI wording correction and explicit timing follow-up above. Root released the sole heavy
+slot after the captured-save verifier completed; this writer owns serialized verification.
 
 Source verification: `cargo test -p dmd-rules --test tactical_definitions --test
 tactical_creature_profiles` passed 13+7 tests on the authored tree (log outside the
@@ -86,7 +115,24 @@ A parsed comparison against base100c7da proves all nine previous creature defini
 and every other tactical top-level value unchanged. The frozen v1 catalog has no diff.
 No runtime, schema, authority, reaction scheduler or current catalog adapter needed edits.
 
-Exact next action: complete the real SQLite six-dart source casting test and historical
-catalog replay, correct concrete failures without weakening evidence, then commit for
-independent exact review before canonical verification. No PR or merge is authorized
-for this subtask yet.
+The genuine `night_hag_current_catalog_casts_six_real_darts_through_cold_owned_transport`
+app case passed on the default stack in 449.58s. Each of six raw amount requests is
+executed after file reopen, mirrored from portable export, reopened/retried exactly,
+and refused on altered nonce/body reuse without durable changes. The scenario also
+rejects three instead of six targets, a fake Slot resource, a Prepared grant, and an
+ungranted Shield before cost. Log: `../tooling/night-hag-app-focused.log`.
+
+`cargo test -p dmd-app --test legacy_savage_replay -- --nocapture` passed the genuine
+historical producer fixture in 62.74s with the newly extended content installed. This
+exercises frozen v1 host digests, owned dice, upgrade and retry, not a regenerated
+current fixture. Log: `../tooling/night-hag-legacy-focused.log`.
+
+After Rust completed, `npm run check`, `npm test`, and `npm run build` passed: zero
+Svelte errors/warnings, 67 tests, and the production bundle. The adjusted existing
+Casting test retains exact source/target selection while checking the truthful hint.
+Log: `../tooling/night-hag-ui.log`. The installed dependency records match the locked
+workspace package records; no package/lock change is part of this slice.
+
+Exact next action: run canonical `./scripts/verify` on the committed source/UI tree,
+record exact evidence and obtain final delta review, then release the heavy slot and
+report this bounded prerequisite to root. No PR or merge is authorized for this subtask.
