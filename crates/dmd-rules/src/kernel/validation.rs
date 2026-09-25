@@ -151,16 +151,26 @@ pub(super) fn ruling_valid(ruling: &Ruling, houses: &HouseRules) -> Result<(), R
     }
 }
 pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
-    let mut result: HashSet<_> = rules
-        .effects
-        .iter()
+    // Historical legacy consequences retain their event-v1 interpretation.
+    let legacy_unconscious = rules.entities.get(&id).is_some_and(|e| e.hp == 0)
+        || rules
+            .effects
+            .iter()
+            .any(|e| e.target == id && e.condition == Some(Condition::Unconscious));
+    let mut result: HashSet<_> = crate::tactical_effect_adapter::condition_effects(rules)
         .filter(|e| e.target == id)
         .filter_map(|e| e.condition)
         .collect();
     if rules.entities.get(&id).is_some_and(|e| e.hp == 0) {
         result.insert(Condition::Unconscious);
     }
-    if result.contains(&Condition::Unconscious) {
+    if result.contains(&Condition::Unconscious)
+        && (legacy_unconscious
+            || rules
+                .entities
+                .get(&id)
+                .is_none_or(|e| !e.condition_immunities.contains(&Condition::Prone)))
+    {
         result.insert(Condition::Prone);
     }
     if rules.entities.get(&id).is_some_and(|e| e.prone) {
@@ -392,6 +402,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     if rules.entities.is_empty() {
         return Err(invalid("empty mechanical state"));
     }
+    crate::tactical_effect_adapter::validate_effect_attachment(state)?;
     if let Some(creatures) = &rules.tactical_creatures {
         crate::tactical_creatures::validate_tactical_creatures(state, creatures)
             .map_err(|error| invalid(error.to_string()))?;
@@ -473,10 +484,15 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             return Err(invalid("Savage Attacker references no valid combat turn"));
         }
         if let Some(effect_id) = e.concentration
-            && (!rules
+            && (!(rules
                 .effects
                 .iter()
                 .any(|x| x.id == effect_id && x.concentration_owner == Some(e.entity_id))
+                || rules.tactical_effects.as_ref().is_some_and(|effects| {
+                    effects
+                        .group_for_owner(e.entity_id)
+                        .is_some_and(|g| g.id == effect_id)
+                }))
                 || conditions(rules, e.entity_id).contains(&Condition::Incapacitated)
                 || e.death.dead)
         {

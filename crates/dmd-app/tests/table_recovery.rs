@@ -219,6 +219,40 @@ fn snapshot(export: &CampaignExport) -> SnapshotRow {
 }
 
 #[tokio::test]
+async fn new_effect_authority_requires_real_history_and_the_original_anchor() {
+    let f = Fixture::new().await;
+    let export = f.export().await;
+    for corruption in 0..3 {
+        let mut forged = export.clone();
+        let mut state = current(&forged);
+        let mut effects = TacticalEffects::default();
+        if corruption == 2 {
+            // Validly shaped metadata is not evidence that an effect operation occurred.
+            effects.last_operation = Some(EffectOperationStamp {
+                command: f.meta(false, false).await,
+                step: 0,
+            });
+        }
+        state.rules.as_mut().unwrap().tactical_effects = Some(effects);
+        assert!(state.validate().is_empty());
+        forged.current_state.state_json = state.encode_json().unwrap();
+        if corruption == 1 {
+            // A matching later anchor must not authenticate its own tactical authority.
+            forged.snapshots = vec![snapshot(&forged)];
+        }
+        rejects_before_writing(&forged, &format!("invented effect authority {corruption}")).await;
+    }
+    let (target, restored) = runtime().await;
+    restored.restore_campaign(&export).await.unwrap();
+    assert_eq!(
+        restored.open_campaign(f.campaign).await.unwrap().state(),
+        f.runtime.open_campaign(f.campaign).await.unwrap().state()
+    );
+    target.close().await;
+    f.pool.close().await;
+}
+
+#[tokio::test]
 async fn pending_decision_anchors_require_exact_declared_text_revision_and_origin() {
     let f = Fixture::new().await;
     f.execute(

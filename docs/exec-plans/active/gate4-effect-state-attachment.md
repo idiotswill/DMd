@@ -68,7 +68,24 @@ and final evidence-head reviews. Final head `78166c6` passes all six checks: Lin
 parity was verified. Fetched merged main `beaad44` has exact full-tree parity with that
 head. Post-merge checks are running.
 
-This fresh branch starts from that fetched main. Next extract the reviewed source
-adapter/condition closure, add source Prone-immunity and historical-semantics regressions,
-then verify the actual app/schema/origin boundaries. Preserve every PR30 physical
-reference and composite table validation fix. No Rust evidence for this extraction yet.
+This fresh branch starts from that fetched main. The adapter/condition closure is
+extracted from `16f97e7`, including the previously reviewed internal held-cast duration
+operation and its tests. No new player effect-install endpoint exists. Legacy commands
+fail closed only when grouped authority is attached; ordinary existing campaigns and
+the PR30 PC/NPC preparation path retain absent-attachment behavior.
+
+New regressions cover grouped Unconscious with/without Prone immunity, inability to
+install an immune condition, malformed missing Prone, retained posture after expiry,
+suppressed Unconscious reappearance and historical legacy query parity. Only grouped
+conditions receive the new immunity consequence; legacy HP-zero/ActiveEffect behavior
+keeps its old interpretation. Source-authorized vitality/held-item dropping is not
+copied without its queue dependencies or claimed as a complete condition path here.
+
+Typed legacy save and transactional database preflight reject non-null effect authority
+and both duplicate-null orders. Real table export/restore rejects invented current,
+backfilled-anchor and operation-origin authority before writes, while an untouched
+export restores identically. Existing physical-reference/composite table regressions
+remain intact. Rust formatting and whitespace checks pass; all new runtime tests are
+written but uncompiled. Next commit/open the draft, obtain full exact-source review,
+run focused/canonical verification when the serialized compiler reaches root, and
+verify final-head Linux/Windows CI before merging. Gate4 remains active.

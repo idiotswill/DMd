@@ -28,6 +28,13 @@ pub enum EffectLifecycleOperation {
     BeginConcentration {
         group: ConcentrationGroup,
     },
+    /// Internal source cast commit/release only. This cannot create a group or
+    /// refresh an already-active spell. Install activates it after target saves.
+    SetCastingDuration {
+        group: EffectId,
+        source: EffectSource,
+        expires: TacticalEffectExpiry,
+    },
     Install {
         effects: Vec<TacticalEffect>,
     },
@@ -672,6 +679,41 @@ pub fn apply_effect_lifecycle(
                 remove_group(&mut result, id, EffectEndReason::ConcentrationReplaced);
             }
             result.next_effects.groups.push(group.clone());
+        }
+        EffectLifecycleOperation::SetCastingDuration {
+            group,
+            source,
+            expires,
+        } => {
+            if result
+                .next_effects
+                .pending
+                .iter()
+                .any(|ticket| ticket.effect == *group)
+            {
+                return Err(invalid("casting group has an unresolved expiry"));
+            }
+            let casting = result
+                .next_effects
+                .groups
+                .iter_mut()
+                .find(|g| g.id == *group)
+                .ok_or_else(|| invalid("casting duration references an unknown group"))?;
+            if casting.stage != ConcentrationStage::Casting || casting.source != *source {
+                return Err(invalid(
+                    "casting duration differs from its unactivated source group",
+                ));
+            }
+            if matches!(casting.expires, TacticalEffectExpiry::AtTime(at) if at <= campaign.clock.now)
+            {
+                return Err(invalid("expired casting cannot receive a new duration"));
+            }
+            if matches!(expires, TacticalEffectExpiry::Never)
+                || matches!(expires, TacticalEffectExpiry::AtTime(at) if *at <= campaign.clock.now)
+            {
+                return Err(invalid("casting duration must have a future source expiry"));
+            }
+            casting.expires = expires.clone();
         }
         EffectLifecycleOperation::Install { effects } => {
             if effects.is_empty() {
