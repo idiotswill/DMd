@@ -210,6 +210,10 @@ pub struct TacticalResolution {
     pub falls: Vec<crate::TacticalFall>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub areas: Vec<crate::TacticalArea>,
+    /// Absent in legacy execution. Current execution records exact causal work
+    /// ancestry rather than inferring authority from any live source record.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub work_trace: Option<crate::TacticalWorkTrace>,
     pub next_occurrence: u16,
 }
 

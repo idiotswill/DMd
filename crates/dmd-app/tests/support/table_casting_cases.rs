@@ -176,7 +176,11 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
         .collect();
     f.host(
         TableAction::Tactical {
-            action: TacticalAction::Begin { combatants, groups },
+            action: TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                combatants,
+                groups,
+            },
         },
         Some(f.session),
     )

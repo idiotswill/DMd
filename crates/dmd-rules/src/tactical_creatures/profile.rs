@@ -222,7 +222,7 @@ pub fn initial_creature_mechanics(
     let mut entity = MechanicalEntity::basic(profile.actor);
     entity.level = 0; // Explicit non-PC sentinel. Never an inferred CR/HD character level.
     entity.ability_scores = statistics.ability_scores;
-    entity.armor = ArmorClass::Fixed(u16::from(statistics.armor_class));
+    entity.armor = ArmorClass::Fixed(creature_unprepared_armor_class(source));
     entity.max_hp = max_hp;
     entity.hp = max_hp;
     entity.hit_dice = HitDice {
@@ -245,6 +245,16 @@ pub fn initial_creature_mechanics(
     entity.spellcasting = None;
     entity.resources.clear();
     Ok(entity)
+}
+
+/// Printed prepared defenses describe the source's example, not an accepted
+/// spell in this campaign. Timed effects are applied by the shared AC query.
+pub fn creature_unprepared_armor_class(source: &CreatureDefinition) -> u16 {
+    if source.statistics.prepared_defense.is_some() {
+        (10 + ability_modifier(source.statistics.ability_scores[Ability::Dexterity.index()])) as u16
+    } else {
+        u16::from(source.statistics.armor_class)
+    }
 }
 
 pub fn validate_creature_profile(

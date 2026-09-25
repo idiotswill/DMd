@@ -1,6 +1,8 @@
 use dmd_domain::*;
 use dmd_rules::tactical_effects::*;
 use std::collections::HashMap;
+#[path = "tactical_effects/defenses.rs"]
+mod defenses;
 
 struct Fixture {
     campaign: CampaignState,
@@ -107,6 +109,7 @@ impl Fixture {
                 id: EffectId::new(),
                 condition: Condition::Paralyzed,
             }],
+            defenses: vec![],
             triggers: Vec::new(),
         }
     }

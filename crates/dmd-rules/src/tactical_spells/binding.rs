@@ -10,6 +10,7 @@ pub enum ExecutableSpellKind {
     SavingThrowCondition,
     AutomaticDamage,
     AttackDamage,
+    Defense,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -74,8 +75,9 @@ fn spatial(error: crate::spatial::SpatialError) -> RulesError {
 }
 
 /// A program must have a complete executable path before spending anything. This
-/// closed first slice does not silently discard lights, object ignition, movement,
-/// behavior commands, protection or reaction clauses. Their work remains Gate 4.
+/// closed set does not silently discard lights, object ignition, movement or
+/// behavior clauses. Program support is separate from activation: the ordinary
+/// casting path still refuses reaction spells without a retained trigger window.
 pub fn executable_spell_kind(plan: &SpellCastPlan) -> Result<ExecutableSpellKind, RulesError> {
     validate_spell_plan(plan)?;
     match plan.program.nodes.as_slice() {
@@ -85,6 +87,11 @@ pub fn executable_spell_kind(plan: &SpellCastPlan) -> Result<ExecutableSpellKind
         // Ignition applies to the object alternative only. Binding below explicitly
         // limits this path to creatures before any expenditure (e.g. Fire Bolt).
         [SpellProgramNode::AttackDamage { .. }] => Ok(ExecutableSpellKind::AttackDamage),
+        [SpellProgramNode::BaseArmorClass { .. }]
+        | [
+            SpellProgramNode::ArmorClassBonus { .. },
+            SpellProgramNode::PreventSpellDamage { .. },
+        ] => Ok(ExecutableSpellKind::Defense),
         _ => Err(unavailable(
             "this source program still requires its complete tactical execution path",
         )),
@@ -256,6 +263,7 @@ pub fn bind_spell(
         ));
     };
     let (minimum, maximum, repeated, requires_sight, required_type) = match &plan.program.targets {
+        SpellTargetRule::Caster => (1, 1, false, false, None),
         SpellTargetRule::Creatures {
             maximum,
             requires_sight,
@@ -293,6 +301,21 @@ pub fn bind_spell(
     {
         return Err(invalid(
             "chosen target occurrences disagree with source selector",
+        ));
+    }
+    if matches!(plan.program.targets, SpellTargetRule::Caster)
+        && actors.as_slice() != [plan.choice.actor]
+    {
+        return Err(invalid("self spell requires the caster as its only target"));
+    }
+    if matches!(
+        plan.program.nodes.as_slice(),
+        [SpellProgramNode::BaseArmorClass { .. }]
+    ) && (actors.as_slice() != [plan.choice.actor]
+        || !crate::tactical_defenses::ordinary_unarmored_formula(state, plan.choice.actor)?)
+    {
+        return Err(unavailable(
+            "this armor formula requires the caster's ordinary unarmored defense; other willing targets and competing formulas need their explicit choices",
         ));
     }
     let mut targets = Vec::with_capacity(actors.len());
@@ -351,8 +374,10 @@ pub fn bind_spell(
                 return Err(unavailable("total cover prevents direct spell targeting"));
             }
         }
-        if kind != ExecutableSpellKind::Healing
-            && !crate::tactical_conditions::may_harm(rules, plan.choice.actor, actor)
+        if !matches!(
+            kind,
+            ExecutableSpellKind::Healing | ExecutableSpellKind::Defense
+        ) && !crate::tactical_conditions::may_harm(rules, plan.choice.actor, actor)
         {
             return Err(unavailable("the caster cannot harm this target"));
         }

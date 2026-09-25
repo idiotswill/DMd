@@ -293,6 +293,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: self
                     .actors
                     .into_iter()

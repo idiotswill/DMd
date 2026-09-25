@@ -272,6 +272,13 @@ pub struct TableCreatureView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     pub encounter_id: EncounterId,
+    /// Omitted for legacy flows so their historical presentation bytes remain
+    /// unchanged. Only explicitly versioned new/upgraded state adds this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<TacticalExecutionVersion>,
+    /// Private held choices; omission preserves prior empty/legacy projections.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ready: Vec<TableReadyView>,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
     pub phase: String,
@@ -300,6 +307,13 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
     pub shield_options: Option<TableShieldOptions>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableReadyView {
+    pub actor: EntityId,
+    pub action: String,
+    pub may_abandon: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

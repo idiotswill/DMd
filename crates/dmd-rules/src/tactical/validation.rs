@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
     let encounter = encounter(state)?;
     let f = flow(state)?;
-    if f.version != 1
+    if !matches!(f.version, 1 | 2)
         || f.origin.campaign_id != state.campaign_id()
         || f.origin.expected_event_sequence > state.applied_event_sequence
         || f.combatants.is_empty()

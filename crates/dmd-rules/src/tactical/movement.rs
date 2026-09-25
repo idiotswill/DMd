@@ -31,6 +31,7 @@ pub(super) fn begin(
         .and_then(|r| r.timing.as_ref())
         .ok_or_else(|| invalid("Movement timing is absent."))?
         .turn_number;
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -45,6 +46,7 @@ pub(super) fn begin(
         casts: vec![],
         falls: vec![],
         areas: vec![],
+        work_trace,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;

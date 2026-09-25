@@ -210,6 +210,14 @@ fn retained_spell_partition_rejects_omitted_duplicate_and_foreign_work() {
 }
 
 fn fanatic() -> (Fixture, SpellCastChoice) {
+    source_caster("cultist-fanatic", "hold-person", vec![])
+}
+
+fn source_caster(
+    definition: &str,
+    spell: &str,
+    additional_languages: Vec<String>,
+) -> (Fixture, SpellCastChoice) {
     let mut f = Fixture::new();
     f.arm("club", false, false); // Genuine Human target with its source profile.
     let actor = f.actors[1];
@@ -231,9 +239,9 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
         &meta,
         actor,
         &CreatureBuildChoice {
-            definition_id: "cultist-fanatic".into(),
+            definition_id: definition.into(),
             size: CreatureSize::Medium,
-            additional_languages: vec![],
+            additional_languages,
             hit_points: CreatureHitPointChoice::Average,
             controller: CreatureController::Player(f.players[1]),
             in_lair: false,
@@ -256,7 +264,7 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
         profiles: vec![built.profile],
         runtime: vec![built.runtime],
     });
-    let allocations = creature_equipment_plan("cultist-fanatic", 0).unwrap();
+    let allocations = creature_equipment_plan(definition, 0).unwrap();
     let ids = allocations
         .iter()
         .map(|_| ItemId::new())
@@ -266,7 +274,7 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
         .state
         .items
         .values()
-        .find(|item| item.definition_id == "spell-material:hold-person")
+        .find(|item| item.definition_id == format!("spell-material:{spell}"))
         .unwrap()
         .id;
     f.state.applied_event_sequence += 1;
@@ -276,7 +284,7 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
         f,
         SpellCastChoice {
             actor,
-            spell_id: "hold-person".into(),
+            spell_id: spell.into(),
             grant: SpellGrantChoice::CreatureFeature {
                 feature_id: "spellcasting".into(),
             },
@@ -285,6 +293,209 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
             mode: SpellCastMode::Immediate,
         },
     )
+}
+
+#[test]
+fn real_source_mage_casts_mage_armor_with_material_and_audited_timed_defense() {
+    let (mut f, choice) = source_caster(
+        "mage",
+        "mage-armor",
+        vec!["Dwarvish".into(), "Elvish".into(), "Gnomish".into()],
+    );
+    let actor = choice.actor;
+    assert_eq!(f.rules().entities[&actor].armor, ArmorClass::Fixed(12));
+    assert_eq!(
+        dmd_rules::tactical_defenses::effective_armor_class(&f.state, actor).unwrap(),
+        12
+    );
+    // Public CastSpell cannot invent Shield's required hit/target trigger, even
+    // with an actual source grant and its shared Protective Magic use available.
+    let shield = SpellCastChoice {
+        actor,
+        spell_id: "shield".into(),
+        grant: SpellGrantChoice::CreatureFeature {
+            feature_id: "protective-magic".into(),
+        },
+        resource: SpellResourceChoice::SourceFeature,
+        material: SpellMaterialChoice::None,
+        mode: SpellCastMode::Immediate,
+    };
+    f.rejected(
+        Some(1),
+        TacticalAction::CastSpell {
+            choice: shield,
+            targets: SpellTargetChoice::Entities(vec![actor]),
+        },
+    );
+    let targets = SpellTargetChoice::Entities(vec![actor]);
+    let mut no_material = choice.clone();
+    no_material.material = SpellMaterialChoice::None;
+    f.rejected(
+        Some(1),
+        TacticalAction::CastSpell {
+            choice: no_material,
+            targets: targets.clone(),
+        },
+    );
+    f.rejected(
+        Some(0),
+        TacticalAction::CastSpell {
+            choice: choice.clone(),
+            targets: targets.clone(),
+        },
+    );
+    let cast = f.run(
+        Some(1),
+        TacticalAction::CastSpell {
+            choice: choice.clone(),
+            targets,
+        },
+    );
+    assert!(f.flow().resolution.is_none());
+    assert!(f.rules().timing.as_ref().unwrap().action_spent);
+    assert_eq!(f.rules().entities[&actor].armor, ArmorClass::Fixed(12));
+    assert_eq!(
+        dmd_rules::tactical_defenses::effective_armor_class(&f.state, actor).unwrap(),
+        15
+    );
+    let effects = f.rules().tactical_effects.as_ref().unwrap();
+    let effect = effects
+        .effects
+        .iter()
+        .find(|effect| effect.source.definition_id == "mage-armor")
+        .unwrap();
+    assert_eq!(effect.source.command, cast.meta);
+    assert_eq!(effect.established_at.as_ref().unwrap().command, cast.meta);
+    assert_eq!(
+        effect.expires,
+        TacticalEffectExpiry::AtTime(WorldInstant(f.state.clock.now.0 + 28_800))
+    );
+    assert_eq!(
+        effect.defenses,
+        vec![EffectDefense::BaseArmorClass {
+            base: 13,
+            ability: Ability::Dexterity,
+            ends_when_wearing_armor: true,
+        }]
+    );
+    assert!(effect.concentration_group.is_none());
+    let answer = query(
+        &f.state,
+        CommandIssuer::Admin,
+        &RulesQuery::Character { actor },
+        &f.pack,
+    )
+    .unwrap();
+    assert!(matches!(
+        answer,
+        RulesAnswer::Character {
+            armor_class: 15,
+            ..
+        }
+    ));
+}
+
+#[test]
+fn source_ready_defense_leaf_releases_hold_only_concentration_and_rejects_foreign_retained_target()
+{
+    use dmd_rules::tactical_spells::*;
+    let (mut f, choice) = source_caster(
+        "mage",
+        "mage-armor",
+        vec!["Dwarvish".into(), "Elvish".into(), "Gnomish".into()],
+    );
+    let origin = f.meta(Some(1));
+    let source = apply_creature_schedule(
+        &f.state,
+        f.rules().tactical_creatures.as_ref().unwrap(),
+        &origin,
+        &CreatureScheduleOperation::BeginFeature {
+            actor: choice.actor,
+            selection: CreatureFeatureSelection {
+                feature_id: "spellcasting".into(),
+                spell_id: Some("mage-armor".into()),
+                simple_action: None,
+            },
+            steps: vec![],
+        },
+    )
+    .unwrap();
+    let feature = source.feature.as_ref().unwrap();
+    let plan = plan_spell_from_feature(
+        &f.state,
+        feature,
+        choice.material,
+        SpellCastMode::Ready {
+            trigger: "The other creature moves".into(),
+        },
+        0,
+    )
+    .unwrap();
+    let targets = SpellTargetChoice::Entities(vec![choice.actor]);
+    let bound = bind_spell(&f.state, &plan, &targets).unwrap();
+    let mut context = SpellCastContext {
+        now: f.state.clock.now,
+        turn_number: f.rules().timing.as_ref().unwrap().turn_number,
+        current_actor: choice.actor,
+        can_act: true,
+        concentration: None,
+    };
+    let begun = begin_cast(&plan, &context).unwrap();
+    context.concentration = plan.concentration_group;
+    assert!(context.concentration.is_some());
+    let held = advance_cast(&begun.cast, &origin, &context, SpellCastAdvance::Commit).unwrap();
+    assert_eq!(held.cast.phase, SpellCastPhase::Held);
+    // This is explicitly a source-leaf lifecycle regression; the future public
+    // Ready response must still authenticate witnessing and apply all obligations.
+    f.state.applied_event_sequence += 1;
+    let response = f.meta(Some(1));
+    context.current_actor = f.actors[0];
+    context.turn_number += 1;
+    let released = advance_cast(
+        &held.cast,
+        &response,
+        &context,
+        SpellCastAdvance::ReleaseReady,
+    )
+    .unwrap();
+    assert!(
+        released
+            .obligations
+            .iter()
+            .any(|obligation| matches!(obligation,
+        SpellCastObligation::EndConcentration { actor, group }
+        if *actor == choice.actor && Some(*group) == plan.concentration_group))
+    );
+    let record = retain_spell_cast(released.cast, &bound, targets, Some(feature)).unwrap();
+    let at = SpellProgramOccurrence { node: 0, target: 0 };
+    let effect = spell_defense_effect(&f.state, &record, at)
+        .unwrap()
+        .unwrap();
+    assert!(effect.concentration_group.is_none());
+    assert_eq!(
+        effect.expires,
+        TacticalEffectExpiry::AtTime(WorldInstant(f.state.clock.now.0 + 28_800))
+    );
+    let installed = dmd_rules::tactical_effect_adapter::apply_effect_operation(
+        &f.state,
+        &response,
+        &EffectLifecycleAction {
+            step: 0,
+            operation: EffectLifecycleOperation::Install {
+                effects: vec![effect],
+            },
+        },
+    )
+    .unwrap()
+    .0;
+    assert_eq!(
+        dmd_rules::tactical_defenses::effective_armor_class(&installed, choice.actor).unwrap(),
+        15
+    );
+    let mut forged = record;
+    forged.selection = Some(SpellTargetChoice::Entities(vec![f.actors[0]]));
+    forged.targets[0].actor = f.actors[0];
+    assert!(validate_retained_spell(&forged).is_err());
 }
 
 #[test]

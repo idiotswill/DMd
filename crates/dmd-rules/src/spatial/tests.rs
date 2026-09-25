@@ -546,6 +546,7 @@ fn lifecycle_frightened_blocks_approach_without_a_duplicate_legacy_effect() {
             id: EffectId::new(),
             condition: Condition::Frightened,
         }],
+        defenses: vec![],
         triggers: vec![],
     };
     f.state = crate::tactical_effect_adapter::apply_effect_operation(

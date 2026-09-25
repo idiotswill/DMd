@@ -261,3 +261,4 @@ pub mod tactical;
 pub mod tactical_budget;
 pub mod tactical_conditions;
 pub mod tactical_damage;
+pub mod tactical_defenses;

@@ -131,6 +131,7 @@ fn begin(f: &mut Fixture) {
     f.run(
         None,
         TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
             combatants: actors
                 .iter()
                 .map(|actor| TacticalCombatant {
@@ -498,6 +499,111 @@ fn area_partition_source_and_raw_evidence_corruption_reject_without_mutation() {
         }
         assert!(validate_tactical_state(&bad).is_err(), "forgery {mutation}");
     }
+}
+
+#[test]
+fn source_area_ordering_follows_exact_work_ancestry_without_authorizing_an_independent_frame() {
+    let (mut f, _) = fixture("chimera", true);
+    begin(&mut f);
+    f.run(Some(0), action(&f));
+    raw(&mut f, &[1; 7]);
+    let current = f.flow().resolution.as_deref().unwrap();
+    assert!(tactical_frame_host_ordering(current).unwrap());
+    let occurrence = current.frames.last().unwrap()[0].occurrence;
+    f.run(None, TacticalAction::ChooseTurnWork { occurrence });
+    let current = f.flow().resolution.as_deref().unwrap();
+    assert!(
+        tactical_frame_host_ordering(current).unwrap(),
+        "the pending raw save retains the same private invocation indicator"
+    );
+    assert!(current.work_trace.as_ref().unwrap().active.is_none());
+    for case in 0..5 {
+        let mut forged = f.state.clone();
+        let r = forged
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap();
+        let pending = r.pending.as_ref().unwrap().work.occurrence;
+        let trace = r.work_trace.as_mut().unwrap();
+        let index = trace
+            .nodes
+            .iter()
+            .position(|node| node.work.occurrence == pending)
+            .unwrap();
+        match case {
+            0 => trace.nodes.remove(index),
+            1 => {
+                trace.nodes[index].parent = Some(pending);
+                trace.nodes[index].clone()
+            }
+            2 => {
+                trace.nodes[index].work.kind = TacticalWorkKind::MoveSegment;
+                trace.nodes[index].clone()
+            }
+            3 => {
+                trace.active = Some(pending);
+                trace.nodes[index].clone()
+            }
+            4 => {
+                r.work_trace = None;
+                current.work_trace.as_ref().unwrap().nodes[0].clone()
+            }
+            _ => unreachable!(),
+        };
+        assert!(
+            validate_tactical_state(&forged).is_err(),
+            "trace corruption {case}"
+        );
+    }
+    // A projection-level boundary fixture retains the genuine admitted area,
+    // then places an independent action above it. Presence of that unrelated
+    // area must not become a host-ordering permission for the new action.
+    let mut nested = current.clone();
+    nested.pending = None;
+    let work = TacticalWorkItem {
+        occurrence: nested.next_occurrence,
+        kind: TacticalWorkKind::MoveSegment,
+    };
+    nested.next_occurrence += 1;
+    nested
+        .work_trace
+        .as_mut()
+        .unwrap()
+        .nodes
+        .push(TacticalWorkNode {
+            work: work.clone(),
+            parent: None,
+        });
+    nested.frames.push(vec![work.clone()]);
+    assert!(!tactical_frame_host_ordering(&nested).unwrap());
+    let parent = current
+        .work_trace
+        .as_ref()
+        .unwrap()
+        .nodes
+        .iter()
+        .find(|node| matches!(node.work.kind, TacticalWorkKind::AreaDamageRoll { .. }))
+        .unwrap()
+        .work
+        .occurrence;
+    nested
+        .work_trace
+        .as_mut()
+        .unwrap()
+        .nodes
+        .last_mut()
+        .unwrap()
+        .parent = Some(parent);
+    assert!(
+        tactical_frame_host_ordering(&nested).is_err(),
+        "an independent action cannot inherit area consent by reparenting"
+    );
 }
 
 #[test]

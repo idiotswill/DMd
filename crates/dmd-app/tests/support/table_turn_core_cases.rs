@@ -519,7 +519,7 @@ async fn reject_forged_second_wind(f: &Fixture) {
         .as_mut()
         .unwrap()
         .second_wind_remaining = 0;
-    let work = &mut forged
+    let resolution = forged
         .encounter
         .as_mut()
         .unwrap()
@@ -528,15 +528,25 @@ async fn reject_forged_second_wind(f: &Fixture) {
         .unwrap()
         .resolution
         .as_mut()
-        .unwrap()
-        .pending
-        .as_mut()
-        .unwrap()
-        .work;
+        .unwrap();
+    let work = &mut resolution.pending.as_mut().unwrap().work;
     let TacticalWorkKind::SecondWind { uses_before, .. } = &mut work.kind else {
         panic!()
     };
     *uses_before = 1;
+    // Current execution also retains the identical source work in its causal
+    // trace. Forge both images coherently so this still tests semantic history,
+    // rather than stopping at a mismatched redundant work record.
+    let changed = work.clone();
+    let occurrence = changed.occurrence;
+    if let Some(trace) = &mut resolution.work_trace {
+        trace
+            .nodes
+            .iter_mut()
+            .find(|node| node.work.occurrence == occurrence)
+            .unwrap()
+            .work = changed;
+    }
     // This invented extra expenditure is structurally coherent; only the real
     // accepted history proves that exactly one of the two uses was spent.
     dmd_rules::tactical::validate_tactical_state(&forged).unwrap();

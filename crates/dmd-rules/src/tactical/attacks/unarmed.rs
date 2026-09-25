@@ -132,6 +132,7 @@ pub(in crate::tactical) fn begin(
     budget.movement_progress = None;
     budget.movement_origin = None;
     flow_mut(state)?.budget = budget;
+    let work_trace = super::super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -146,6 +147,7 @@ pub(in crate::tactical) fn begin(
         casts: vec![],
         falls: vec![],
         areas: vec![],
+        work_trace,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

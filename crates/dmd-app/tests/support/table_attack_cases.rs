@@ -43,6 +43,7 @@ pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: f.actors[0],

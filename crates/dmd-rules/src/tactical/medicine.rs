@@ -80,6 +80,7 @@ pub(super) fn begin(
     crate::tactical_budget::spend_cost(rules, actor, crate::tactical_budget::TacticalCost::Action)?;
     crate::kernel::interrupt_rest(rules, actor, state.clock.now);
     let turn_number = rules.timing.as_ref().unwrap().turn_number;
+    let work_trace = super::work_trace::initial(state)?;
     let flow = flow_mut(state)?;
     flow.budget.movement_progress = None;
     flow.budget.movement_origin = None;
@@ -97,6 +98,7 @@ pub(super) fn begin(
         casts: vec![],
         falls: vec![],
         areas: vec![],
+        work_trace,
         next_occurrence: 0,
     }));
     push_frame(

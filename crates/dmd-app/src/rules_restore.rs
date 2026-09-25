@@ -797,6 +797,15 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            for ready in &flow.ready {
+                origins.push(&ready.origin);
+                if let Some(held) = &ready.held_spell {
+                    origins.extend([&held.cast.plan.origin, &held.cast.last_operation]);
+                    if let Some(activation) = &held.creature_activation {
+                        origins.push(&activation.origin);
+                    }
+                }
+            }
             if let Some(movement) = &flow.last_movement {
                 origins.extend([&movement.original, &movement.cause]);
             }

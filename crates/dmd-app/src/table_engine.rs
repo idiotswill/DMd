@@ -11,11 +11,43 @@ pub(crate) struct TableTransition {
     pub session_change: Option<SessionChange>,
 }
 
+fn tactical_transition(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &dmd_rules::tactical::TacticalAction,
+    pack: &RulesPack,
+    historical: Option<&TableEvent>,
+) -> Result<dmd_rules::tactical::TacticalTransition, String> {
+    let transition = if let Some(event) = historical {
+        let child = event
+            .tactical_event
+            .as_ref()
+            .ok_or("Historical encounter action lacks its exact source event.")?;
+        if child.meta != *meta || child.action != *action {
+            return Err("Historical encounter event differs from its table envelope.".into());
+        }
+        dmd_rules::tactical::replay_tactical(state, child, pack)
+    } else {
+        dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
+    };
+    transition.map_err(|error| error.to_string())
+}
+
 pub(crate) fn resolve_table(
     state: &CampaignState,
     meta: &CommandMeta,
     action: &TableAction,
     pack: &RulesPack,
+) -> Result<TableTransition, String> {
+    resolve_table_internal(state, meta, action, pack, None)
+}
+
+fn resolve_table_internal(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &TableAction,
+    pack: &RulesPack,
+    historical: Option<&TableEvent>,
 ) -> Result<TableTransition, String> {
     if meta.campaign_id != state.campaign_id()
         || meta.expected_event_sequence != state.applied_event_sequence
@@ -189,8 +221,7 @@ pub(crate) fn resolve_table(
                         .into(),
                 );
             }
-            let transition = dmd_rules::tactical::resolve_tactical(state, meta, action, pack)
-                .map_err(|error| error.to_string())?;
+            let transition = tactical_transition(state, meta, action, pack, historical)?;
             next = transition.next_state;
             tactical_event = Some(transition.event);
             // Detailed outcomes belong to the viewer-specific tactical projection.
@@ -368,13 +399,13 @@ pub(crate) fn resolve_table(
                     return Err("Second Wind needs the declaring character's turn.".into());
                 }
                 table_mut(&mut next)?.pending = None;
-                let transition = dmd_rules::tactical::resolve_tactical(
+                let transition = tactical_transition(
                     &next,
                     meta,
                     &dmd_rules::tactical::TacticalAction::SecondWind,
                     pack,
-                )
-                .map_err(|error| error.to_string())?;
+                    historical,
+                )?;
                 next = transition.next_state;
                 tactical_event = Some(transition.event);
                 "Second Wind is paid. Report the requested physical d10.".into()
@@ -594,7 +625,7 @@ pub(crate) fn replay_table(
     event: &TableEvent,
     pack: &RulesPack,
 ) -> Result<TableTransition, String> {
-    let transition = resolve_table(state, &event.meta, &event.action, pack)?;
+    let transition = resolve_table_internal(state, &event.meta, &event.action, pack, Some(event))?;
     if transition.event != *event {
         return Err("Table event disagrees with deterministic replay.".into());
     }

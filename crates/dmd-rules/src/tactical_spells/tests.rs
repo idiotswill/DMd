@@ -751,6 +751,7 @@ fn add_flow(
             dodges: vec![],
             save_decisions: vec![],
             ground_items: vec![],
+            ready: vec![],
         }),
     });
     state.rules.as_mut().unwrap().timing = Some(CombatTiming {

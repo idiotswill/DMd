@@ -43,6 +43,46 @@ fn fixture() -> (CampaignState, CommandMeta, EntityId) {
     };
     (state, meta, actor)
 }
+
+#[test]
+fn mage_import_requires_real_preparation_and_retains_exact_physical_components() {
+    let (state, meta, actor) = fixture();
+    let mut selection = choice("mage", CreatureSize::Small);
+    selection.additional_languages = vec!["Elvish".into(), "Dwarvish".into(), "Draconic".into()];
+    let built = build_creature(&state, &meta, actor, &selection).unwrap();
+    assert_eq!(built.mechanics.armor, ArmorClass::Fixed(12));
+    assert_eq!(built.mechanics.hp, 81);
+    assert_eq!(built.mechanics.hit_dice.maximum, 18);
+    assert!(built.mechanics.prepared_spells.is_empty());
+    assert!(built.mechanics.spellcasting.is_none());
+    assert_eq!(
+        built.runtime.limited_uses,
+        [CreatureLimitedUse {
+            feature_id: "protective-magic".into(),
+            spell_id: None,
+            spent: 0
+        }]
+    );
+    validate_creature_profile(&state, &built.profile, &built.mechanics).unwrap();
+    let mut forged = built.mechanics.clone();
+    forged.armor = ArmorClass::Fixed(15);
+    assert!(validate_creature_profile(&state, &built.profile, &forged).is_err());
+    let equipment =
+        dmd_rules::tactical_creature_equipment::creature_equipment_plan("mage", 0).unwrap();
+    assert_eq!(
+        equipment
+            .iter()
+            .map(|e| (e.definition_id.as_str(), e.quantity))
+            .collect::<Vec<_>>(),
+        vec![("spell-material:mage-armor", 1), ("wand", 1)]
+    );
+    let wand = dmd_rules::tactical_inventory::equipment_definition("wand").unwrap();
+    assert_eq!(wand.source_page, 96);
+    assert_eq!(
+        wand.stacking,
+        dmd_rules::tactical_inventory::ItemStacking::Individual
+    );
+}
 fn choice(id: &str, size: CreatureSize) -> CreatureBuildChoice {
     CreatureBuildChoice {
         definition_id: id.into(),

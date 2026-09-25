@@ -256,6 +256,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: self
                     .actors
                     .into_iter()
@@ -970,6 +971,7 @@ fn initiative_cannot_smuggle_a_structurally_coherent_movement_receipt() {
     f.run(
         None,
         TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
             combatants: f
                 .actors
                 .into_iter()

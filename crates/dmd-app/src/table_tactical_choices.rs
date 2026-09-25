@@ -9,7 +9,8 @@ pub(super) fn continuation(
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
-    if !resolution.areas.is_empty() && !host {
+    let host_ordering = dmd_rules::tactical::tactical_frame_host_ordering(resolution).ok()?;
+    if host_ordering && !resolution.areas.is_empty() && !host {
         // Always one generic owned invocation indicator and zero work cards,
         // independent of private target count, phase and nested consequences.
         return own
@@ -149,7 +150,7 @@ pub(super) fn continuation(
     };
     Some(crate::TableTacticalContinuation {
         actor: resolution.turn_actor,
-        host_adjudication: after_turn || !resolution.areas.is_empty(),
+        host_adjudication: host_ordering,
         choices,
     })
 }
@@ -308,6 +309,7 @@ mod tests {
             casts: vec![],
             falls: vec![],
             areas: vec![],
+            work_trace: None,
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);
@@ -368,6 +370,7 @@ mod tests {
             movement: None,
             casts: vec![],
             falls: vec![],
+            work_trace: None,
             next_occurrence: 100,
             areas: vec![TacticalArea {
                 occurrence: 0,

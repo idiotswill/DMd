@@ -168,6 +168,7 @@ pub(super) fn begin(
     let budget = &mut flow_mut(state)?.budget;
     budget.movement_progress = None;
     budget.movement_origin = None;
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -182,6 +183,7 @@ pub(super) fn begin(
         casts: vec![],
         falls: vec![],
         areas: vec![record],
+        work_trace,
         next_occurrence: 1,
     }));
     push_frame(state, vec![TacticalWorkKind::FinishArea { area: 0 }])?;
