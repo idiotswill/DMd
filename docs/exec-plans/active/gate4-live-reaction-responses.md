@@ -137,7 +137,7 @@ have independently passed unchanged-source file restore, cold reopen, all ten ex
 original transport retries, complete export equality and all29 unchanged SQLite
 table counts. Root prepared a reviewed, uncompiled permanent regression module
 outside the repository before this branch existed. Copy those exact exports and
-their provenance now, preserve LF bytes, and commit their baseline tests before any
+their provenance now, preserve original bytes, and commit their baseline tests before any
 new executor behavior. Do not claim the new test module has run until it does.
 
 A separate disposable harness is prepared to capture the original accepted
