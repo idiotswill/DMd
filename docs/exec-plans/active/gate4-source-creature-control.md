@@ -142,8 +142,40 @@ shapes and version-dispatch each acceptance path, including trusted internal tab
 commits after presentation initialization. Restore origin allowlists must be narrow,
 with semantic action replay proving the actual change, not broad table-event permission.
 
-A genuine old source-controlled fixture may not be constructible through the current
-public table API. Root has been asked for an existing corpus; search authenticated
-old/internal paths before claiming that evidence. Begin with the marker/control reducer
-and explicit compatibility types, keeping old projectors unchanged until fixture
-capture is settled. No compiler or frontend process until root releases the slot.
+The original 100c7da route audit is complete: there is no InitializeTable action.
+`create_table_campaign` constructs an empty sequence-zero table; its same-ID retry
+only accepts matching initial creation. `CreateCreature` is the only table source
+constructor and fixes its controller to Autonomous. Raw `execute_rules` and
+`execute_tactical` reject table campaigns. `RulesAction::Initialize` accepts only
+mechanical entities and explicitly initializes `tactical_creatures` to None; it
+cannot carry source profiles or controller provenance. Pure `build_creature` and
+`SetContext` can produce Player-owned typed source state but no shipped accepted
+table route imports that state. Restore also rejects source-bearing first anchors.
+No genuine old Player-source table corpus is claimed or fabricated. The pure
+SetContext projection/adoption test is expressly qualified, while both checked-in
+pre-change table corpora are independently restored and their existing bindings and
+exported historical bytes are compared unchanged.
+
+Implementation now drafts transport v2 with an additive SourceCreature channel.
+Host and Player serialized variants remain unchanged. Activation itself uses v2
+with the genuine preceding v1 Host revision; only the explicit activation action
+may cross that boundary. Its audit@3, TableState marker, projection2 and binding2
+commit together. Every subsequent fresh action/observation requires v2, including
+trusted legacy entry points; accepted old requests recover before current checks.
+The v1 projector stays PC-only. V2 adds authenticated source ownership, tactical
+raw requests and self-target spell choices. Old CreateCreature and execution
+versions are unchanged. Source-only attendance/map admission requires a real
+present controller and an assigned source actor, rather than a fabricated PC.
+
+SQL0011 has no version constraint to migrate. Its six Rust loader/insert/portable
+guards now recognize 1 or 2; historical app replay determines which version belongs
+to each state. Export3 is unchanged; older readers reject record2/new TableState
+authority, and older export/state envelopes explicitly reject the new field.
+
+Current work is uncompiled: real Mage activation/assignment, source-only session,
+owned initiative, material-backed Mage Armor, held-work transfer rejection,
+revocation/exact retry, file reopen and hostile portable restore tests are drafted.
+UI tests exercise actual review/activation, assignment, actor selection, self-cast
+and raw-roll submissions with retained retries. No compiler/frontend has run in
+this slice. Next: format and review this coherent draft, then run focused tests in
+the explicitly granted shared slot; fix actual failures before any success claim.

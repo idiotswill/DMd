@@ -16,6 +16,7 @@ mod table_creatures;
 mod table_engine;
 mod table_equipment;
 mod table_runtime;
+mod table_source_control;
 mod table_tactical;
 
 use dmd_domain::{

@@ -4,10 +4,72 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
-vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn()} }));
+vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('reviews and enables source control with the original v1 revision retained in its v2 activation retry',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.sourceControlOptions).mockResolvedValue({enabled:false,settled:true,adopted:[],actors:[]});
+    vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
+    const mounted=render(TableApp);
+    await user.click(await screen.findByRole('button',{name:'Setup and host controls'}));
+    await user.click(screen.getByRole('button',{name:'Review source creature control'}));
+    await user.click(await screen.findByRole('button',{name:'Enable source creature control'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({version:2,revision:view.revision,channel:'Host',action:{EnableSourceActorAccess:{adopted:[]}}});
+    mounted.unmount();
+    vi.mocked(tableApi.view).mockResolvedValue({...view,revision:'new-revision',source_control:{version:2,actors:[]}});
+    render(TableApp);await user.click(await screen.findByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(tableApi.action).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(tableApi.action).mock.calls[1][0]).toEqual(saved.request);
+  });
+  it('assigns a real source actor from host controls without creating a character',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:'Autonomous',hp:81,max_hp:81}]};
+    vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));render(TableApp);
+    await user.click(await screen.findByRole('button',{name:'Setup and host controls'}));
+    await user.selectOptions(screen.getByLabelText('Controller for Source Mage'),'player');
+    await user.click(screen.getByRole('button',{name:'Assign control of Source Mage'}));
+    await screen.findByText('Delivery uncertain.');
+    expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({version:2,channel:'Host',action:{SetSourceCreatureController:{actor:'mage',controller:{Player:'player'}}}});
+  });
+  it('selects its assigned Mage and retries an actual self cast after ownership changes',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.active_session={session_id:'session',display_name:'Source session',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
+    view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
+    const choice={actor:'mage',spell_id:'mage-armor',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature' as const,material:{Material:{item:'leather'}},mode:'Immediate' as const};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:1,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'mage',variants:[{choice,label:'Mage Armor',concentration:false,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'mage',label:'Self'}]}],unavailable:[]}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));const mounted=render(TableApp);
+    await user.selectOptions(await screen.findByLabelText('Controlled actor'),'mage');
+    await user.selectOptions(await screen.findByLabelText('Spell and resource'),JSON.stringify(choice));
+    await user.selectOptions(screen.getByLabelText('Spell target 1'),'mage');
+    await user.click(screen.getByRole('button',{name:'Cast spell'}));await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({version:2,channel:{SourceCreature:{player_id:'player',actor:'mage'}},action:{Tactical:{action:{CastSpell:{choice,targets:{Entities:['mage']}}}}}});
+    expect(screen.queryByLabelText('Your declaration, question or correction')).toBeNull();
+    mounted.unmount();vi.mocked(tableApi.view).mockResolvedValue({...view,revision:'new',source_control:{version:2,actors:[]}});
+    render(TableApp);await user.click(await screen.findByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(tableApi.action).toHaveBeenCalledTimes(2));expect(vi.mocked(tableApi.action).mock.calls[1][0]).toEqual(saved.request);
+  });
+  it('submits an owned source initiative through its opaque raw-roll capability',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.active_session={session_id:'session',display_name:'Source session',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
+    view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
+    view.roll={id:'opaque-initiative',roller:'mage',dice:[{count:1,sides:20}],modifier:2,mode:'Normal',visibility:'Public',reason:'Initiative'};view.roll_channel='Tactical';
+    vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player',sourceActorId:'mage'}));render(TableApp);
+    await user.type(await screen.findByLabelText('Die 1 · d20'),'12');await user.click(screen.getByRole('button',{name:'Report these faces'}));await screen.findByText('Delivery uncertain.');
+    expect(tableApi.rollOptions).toHaveBeenCalledWith({campaign_id:'campaign',revision:view.revision,roll_id:'opaque-initiative',channel:{SourceCreature:{player_id:'player',actor:'mage'}}});
+    expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({version:2,channel:{SourceCreature:{player_id:'player',actor:'mage'}},action:{Tactical:{action:{SubmitRoll:{result:{request_id:'opaque-initiative',source:'Physical',dice:[{sides:20,value:12}]}}}}}});
+  });
   it('prepares a newly queried source without using the historical catalog',async()=>{
     const user=userEvent.setup(); const view=emptyView();
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];

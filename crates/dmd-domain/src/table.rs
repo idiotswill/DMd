@@ -203,6 +203,9 @@ pub struct TableState {
     pub pending: Option<PendingTableDecision>,
     pub roll_context: Option<TableRollContext>,
     pub situation: TableSituation,
+    /// Absent keeps the original PC-only table presentation and transport semantics.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_actor_access: Option<crate::TableSourceActorAccess>,
 }
 
 impl TableState {
@@ -215,11 +218,15 @@ impl TableState {
             pending: None,
             roll_context: None,
             situation: TableSituation::default(),
+            source_actor_access: None,
         }
     }
 
     pub fn validate(&self, state: &CampaignState) -> Result<(), String> {
         self.contract.validate()?;
+        if let Some(access) = &self.source_actor_access {
+            access.validate(state)?;
+        }
         if self.contract.ruleset != state.campaign.ruleset {
             return Err("table and campaign rules identities disagree".into());
         }
