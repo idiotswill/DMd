@@ -187,3 +187,11 @@ review, but have not run. Desktop tests now call the actual presented applicatio
 service instead of retaining a test-only copy of the former identity derivation.
 The shared heavy-build slot is with root PR33; this branch is read/edit-only until
 explicit handoff. No new test result is implied by the reviewed draft.
+
+Fresh IPC/UI review of `baf5d2f` is clear, including exact modern retry bodies,
+recovery-only legacy endpoints and the actual presented-service desktop test.
+The concurrent file fixture also now drops every closed runtime/pool before cleanup
+and uses the bounded Windows sharing-lock cleanup helper reviewed for PR33. That
+CI run exposed OS32 only after all of its gameplay assertions had completed; this
+fixture retains every protocol assertion and still fails if deletion cannot finish.
+The expanded protocol/UI batch remains unrun pending the shared heavy-build slot.

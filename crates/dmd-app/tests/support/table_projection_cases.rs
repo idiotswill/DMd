@@ -586,7 +586,14 @@ async fn concurrent_file_case() {
     reopened_export.exported_at_utc = after.exported_at_utc.clone();
     assert_eq!(reopened_export, after);
     reopened_pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(reopened);
+    drop(reopened_pool);
+    drop(peer);
+    drop(peer_pool);
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }
 
 #[tokio::test]

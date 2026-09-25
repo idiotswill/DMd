@@ -48,6 +48,9 @@ fn input(name: &str) -> CharacterCreationInput {
     }
 }
 
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
+
 struct Fixture {
     runtime: CampaignRuntime,
     pool: sqlx::SqlitePool,
