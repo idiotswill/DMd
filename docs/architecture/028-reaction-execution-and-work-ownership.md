@@ -87,6 +87,34 @@ parent competitors resume. It does not join the parent's simultaneous set merely
 because both windows were transported during the same wall-clock interval. Existing
 area-ordering consent does not delegate these independent reaction choices.
 
+### A total order without disclosing private competitors
+
+The uniform turn-controller decision records an explicit ordering instruction over
+potential respondents, independently of which respondents accepted. It is not a
+list of the private accepted set. The controller may rank any currently known
+participants and place the unlisted participants before or after that list, using
+either forward or reverse established initiative order within the unlisted set.
+The existing initiative order is already total, including resolved ties. Selecting
+this fallback is an actual controller choice; the application supplies no automatic
+default and never uses UUID or network arrival as fictional priority. Exact-trigger
+host delegation remains a separate explicit option.
+
+This lets the controller make a material ordering choice even when some competitors
+are unseen, without revealing their count, identities or offers. Ranked identities
+are admitted against the controller's existing knowledge, not reaction eligibility;
+the same known-participant controls appear with zero, one or many hidden responses.
+Once all decisions are collected, apply the recorded total-order instruction to
+the accepted set and revalidate each selected response as above. The instruction
+may be supplied before private collection completes; it is immutable after its
+acceptance and applies only to this occurrence. Each child trigger requires its own
+explicit instruction, even if its parent chose the same initiative direction.
+
+This is an application interpretation of the controller's source ordering authority,
+not an automatic host override. Tests must show that reversing the instruction can
+change the first eligible responder, that opposite network arrival produces the same
+selected order, and that unknown or ineligible respondents never alter the ordering
+controls, unrelated audience digest or revision during private collection.
+
 ## Compatibility and verification obligations
 
 Old Begin JSON must round-trip without an added default field, replay to the old

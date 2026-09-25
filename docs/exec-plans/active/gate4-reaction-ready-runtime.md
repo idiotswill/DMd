@@ -164,3 +164,13 @@ foundation checks, not full application, CI or completed reaction/Ready evidence
 Next: add complete nested reaction windows and actual Ready response integration,
 then reconcile current main/protocol and explicit live Begin emission. Domain types,
 declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
+
+Root resolved the open private-ordering design seam in ADR028: every uniform public
+trigger asks for an explicit total-order instruction over potential respondents.
+The current-turn controller can rank known participants and choose forward/reverse
+established initiative for the unlisted set, placed before or after the named list,
+or explicitly delegate this occurrence to the host. Controls do not depend on actual
+private eligibility/acceptance. No automatic fallback or arrival priority is allowed.
+Apply the selected instruction only after private collection, revalidating each
+intent and giving each nested trigger its own decision. This is a documented design
+decision; no new runtime or privacy test result is claimed yet.
