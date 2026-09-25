@@ -124,9 +124,15 @@ the still-required damaging reaction and concentration sequence.
 Casting checkpoint `81c1a4e` passed96 integration tests and strict domain/rules
 all-target Clippy, including the sealed source spell-attack adapter and EndTurn
 occupied-space consequence. It remains to be integrated through the table UI and
-recovery boundary. The movement author now owns the shared queue to integrate falling,
-accepted-prefix travel privacy and durable stop receipts. Whole-route hidden geometry
-preflight remains a known defect until that correction passes its regression matrix.
+recovery boundary. Root merged that rules checkpoint as `f34b42c`. Movement checkpoint
+`4a6f879` plus departure helper `5435743` are integrated as `140b737`/`7c7ef03`; the
+four production/test movement files exactly match the reviewed source checkpoint.
+The source branch passed42 attack/OA,18 movement and24 turn tests plus strict
+domain/rules all-target Clippy. Accepted-prefix travel privacy and durable stop receipts
+now have reducer evidence. Casting's new roll/work variants and receipt audit attachment
+are still awaiting the separate table-casting application branch, so this newly merged
+integration head does not yet have whole-application verification. Falling queue
+attachment remains the movement author's active follow-up.
 Root owns fresh main-based `codex/gate4-equipment-table`: attaching physical inventory,
 its durable host preparation and private current sheet, source mastery choices and
 save migration/replay defenses. Its extracted UI passed13 tests, zero Svelte diagnostics
