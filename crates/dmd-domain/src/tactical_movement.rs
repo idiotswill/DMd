@@ -131,6 +131,8 @@ pub enum TacticalMovementEnd {
     Completed,
     Stopped,
     Interrupted,
+    /// A source fall landed the actor and canceled its remaining voluntary travel.
+    Fell,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

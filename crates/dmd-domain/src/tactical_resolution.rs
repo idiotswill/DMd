@@ -16,6 +16,8 @@ pub enum TacticalRollRole {
     CreatureRecharge,
     Attack,
     AttackDamage,
+    FallDamage,
+    LiquidLandingCheck,
     SpellSave,
     SpellAmount,
 }
@@ -43,6 +45,8 @@ impl TacticalRollKey {
             TacticalRollRole::CreatureRecharge => 6,
             TacticalRollRole::Attack => 7,
             TacticalRollRole::AttackDamage => 8,
+            TacticalRollRole::FallDamage => 9,
+            TacticalRollRole::LiquidLandingCheck => 10,
             TacticalRollRole::SpellSave => 11,
             TacticalRollRole::SpellAmount => 12,
         };
@@ -57,6 +61,15 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    BeginFall {
+        fall: u16,
+    },
+    LiquidLandingCheck {
+        fall: u16,
+    },
+    FallDamage {
+        fall: u16,
+    },
     SpellProgram {
         cast: u16,
         at: crate::SpellProgramOccurrence,
@@ -158,6 +171,9 @@ pub struct TacticalResolution {
     pub movement: Option<Box<crate::TacticalMovement>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub casts: Vec<crate::TacticalCasting>,
+    /// Source occurrences share the existing frames; this is not a second queue.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub falls: Vec<crate::TacticalFall>,
     pub next_occurrence: u16,
 }
 

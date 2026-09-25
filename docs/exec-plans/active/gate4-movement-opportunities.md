@@ -579,3 +579,11 @@ restore and player-safe owned-choice projection before application acceptance.
 Next: finalize the bounded retained-work contract, implement shared source admission/
 request/landing validation and focused integration tests, then request the serialized
 compiler slot and independent review. This plan is checked in before source edits.
+
+Initial domain-only contract adds `TacticalResolution.falls`, the three fall work
+variants and deterministic roles described above, `TacticalFallCause` (committed
+MovementEnd or source FlightLost), Queued/Complete stages, and the coarse Fell movement
+result. Complete retains accepted landing-check evidence, an optional actual damage
+roll key and its resolving command. This contract checkpoint has formatting/whitespace
+checks only: exhaustive rules/application matches and initializers deliberately follow
+with the coherent implementation. It is not a compiling or runnable release checkpoint.

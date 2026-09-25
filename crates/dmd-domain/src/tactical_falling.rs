@@ -1,5 +1,5 @@
 //! Retained falling causes. The shared tactical cursor, not this record, owns work.
-use crate::{CommandMeta, EntityId, RollResult, SpatialPoint};
+use crate::{CommandMeta, EntityId, RollResult, SpatialPoint, TacticalRollKey};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -29,6 +29,8 @@ pub enum LiquidLandingChoice {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalFallStage {
+    /// Retained source occurrence awaiting its place in the existing work frames.
+    Queued,
     /// A possible liquid Reaction remains an explicit controller decision.
     LandingChoice,
     LandingCheck {
@@ -39,6 +41,25 @@ pub enum TacticalFallStage {
         /// None means no Reaction was used. The raw result remains in RulesState.
         landing: Option<TacticalLiquidLanding>,
     },
+    Complete {
+        landing: Option<TacticalLiquidLanding>,
+        /// None for a short fall or an already dead body; no fabricated raw roll.
+        damage: Option<TacticalRollKey>,
+        resolved_by: CommandMeta,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TacticalFallCause {
+    /// A committed final ordinary-movement segment ended without physical support.
+    MovementEnd {
+        movement: CommandMeta,
+        /// Zero-based submitted step which was actually committed before falling.
+        step_index: u16,
+    },
+    /// Current source mechanics no longer sustain this creature's flight.
+    FlightLost,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -54,6 +75,7 @@ pub struct TacticalLiquidLanding {
 pub struct TacticalFall {
     pub origin: CommandMeta,
     pub actor: EntityId,
+    pub cause: TacticalFallCause,
     pub path: SpatialFall,
     pub stage: TacticalFallStage,
 }
