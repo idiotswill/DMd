@@ -21,6 +21,8 @@ mod second_wind;
 mod shields;
 #[path = "tactical_attacks/spell.rs"]
 mod spell;
+#[path = "tactical_attacks/unarmed.rs"]
+mod unarmed;
 
 struct Fixture {
     state: CampaignState,

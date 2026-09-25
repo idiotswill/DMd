@@ -29,6 +29,9 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    UnarmedStrike {
+        target: EntityId,
+    },
     FirstAid {
         target: EntityId,
         purpose: MedicinePurpose,
@@ -244,6 +247,9 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::UnarmedStrike { target } => {
+            attacks::begin_unarmed(&mut next, meta, *target)?;
+        }
         TacticalAction::SubmitSavageAttacker { roll } => {
             attacks::submit_savage(&mut next, meta, roll, pack)?;
         }
