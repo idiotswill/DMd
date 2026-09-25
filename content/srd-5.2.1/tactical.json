@@ -1696,6 +1696,165 @@
         121,
         122
       ]
+    },
+    {
+      "id": "command",
+      "name": "Command",
+      "level": 1,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 60
+        }
+      },
+      "targets": {
+        "Creatures": {
+          "maximum": 1,
+          "creature_type": null,
+          "requires_sight": true
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": false,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "SaveCommand": {
+            "ability": "Wisdom",
+            "choices": [
+              "Approach",
+              "Drop",
+              "Flee",
+              "Grovel",
+              "Halt"
+            ]
+          }
+        }
+      ],
+      "upcast": {
+        "AdditionalTargets": {
+          "count": 1
+        }
+      },
+      "source_pages": [
+        116
+      ]
+    },
+    {
+      "id": "scorching-ray",
+      "name": "Scorching Ray",
+      "level": 2,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 120
+        }
+      },
+      "targets": {
+        "Rays": {
+          "count": 3
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": null
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "RangedSpellAttack": {
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Fire"
+            },
+            "extra_die_at_levels": [],
+            "ignite_unworn_uncarried_target": false
+          }
+        }
+      ],
+      "upcast": {
+        "AdditionalRays": {
+          "count": 1
+        }
+      },
+      "source_pages": [
+        159
+      ]
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "level": 3,
+      "casting_time": "Action",
+      "range": {
+        "Distance": {
+          "feet": 150
+        }
+      },
+      "targets": {
+        "Area": {
+          "shape": {
+            "Sphere": {
+              "radius_feet": 20
+            }
+          }
+        }
+      },
+      "components": {
+        "verbal": true,
+        "somatic": true,
+        "material": {
+          "description": "a ball of bat guano and sulfur",
+          "minimum_cost_cp": 0,
+          "consumed": false
+        }
+      },
+      "duration": "Instantaneous",
+      "effects": [
+        {
+          "SaveDamage": {
+            "ability": "Dexterity",
+            "damage": {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 8,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Fire"
+            },
+            "half_on_success": true,
+            "push_on_failure_feet": 0
+          }
+        },
+        "IgniteUnwornUncarriedObjects"
+      ],
+      "upcast": {
+        "ExtraDamageDie": {
+          "die": {
+            "count": 1,
+            "sides": 6
+          }
+        }
+      },
+      "source_pages": [
+        131
+      ]
     }
   ],
   "creatures": [
@@ -2531,10 +2690,7 @@
       "coverage": {
         "SelectedFeatures": {
           "omitted": [
-            "multiattack",
-            "spellcasting",
-            "commanding-presence",
-            "fiery-rays",
+            "spellcasting-detect-magic",
             "experience-points-in-lair"
           ]
         }
@@ -2629,6 +2785,70 @@
         }
       ],
       "features": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "activation": "Action",
+          "feature": {
+            "MultiattackRoutine": {
+              "slots": [
+                {
+                  "options": [
+                    {
+                      "feature_id": "rend",
+                      "spell_id": null,
+                      "simple_action": null
+                    },
+                    {
+                      "feature_id": "spellcasting",
+                      "spell_id": "scorching-ray",
+                      "simple_action": null
+                    }
+                  ]
+                },
+                {
+                  "options": [
+                    {
+                      "feature_id": "rend",
+                      "spell_id": null,
+                      "simple_action": null
+                    },
+                    {
+                      "feature_id": "spellcasting",
+                      "spell_id": "scorching-ray",
+                      "simple_action": null
+                    }
+                  ]
+                },
+                {
+                  "options": [
+                    {
+                      "feature_id": "rend",
+                      "spell_id": null,
+                      "simple_action": null
+                    },
+                    {
+                      "feature_id": "spellcasting",
+                      "spell_id": "scorching-ray",
+                      "simple_action": null
+                    }
+                  ]
+                }
+              ],
+              "limits": [
+                {
+                  "selection": {
+                    "feature_id": "spellcasting",
+                    "spell_id": "scorching-ray",
+                    "simple_action": null
+                  },
+                  "maximum": 1
+                }
+              ]
+            }
+          },
+          "source_page": 318
+        },
         {
           "id": "rend",
           "name": "Rend",
@@ -2725,6 +2945,101 @@
             "MoveThenAttack": {
               "speed_divisor": 2,
               "attack_id": "rend"
+            }
+          },
+          "source_page": 319
+        },
+        {
+          "id": "spellcasting",
+          "name": "Spellcasting",
+          "activation": "Action",
+          "spell_component_waivers": {
+            "verbal": false,
+            "somatic": false,
+            "material": true
+          },
+          "feature": {
+            "Spellcasting": {
+              "ability": "Charisma",
+              "save_dc": 20,
+              "attack_bonus": 12,
+              "spells": [
+                {
+                  "spell_id": "command",
+                  "cast_level": 2,
+                  "uses_per_long_rest": null
+                },
+                {
+                  "spell_id": "scorching-ray",
+                  "cast_level": 2,
+                  "uses_per_long_rest": null
+                },
+                {
+                  "spell_id": "fireball",
+                  "cast_level": 3,
+                  "uses_per_long_rest": 1
+                }
+              ]
+            }
+          },
+          "source_page": 319
+        },
+        {
+          "id": "commanding-presence",
+          "name": "Commanding Presence",
+          "activation": {
+            "Legendary": {
+              "cost": 1
+            }
+          },
+          "usage": "OnceUntilOwnTurnStart",
+          "spell_component_waivers": {
+            "verbal": false,
+            "somatic": false,
+            "material": true
+          },
+          "feature": {
+            "Spellcasting": {
+              "ability": "Charisma",
+              "save_dc": 20,
+              "attack_bonus": 12,
+              "spells": [
+                {
+                  "spell_id": "command",
+                  "cast_level": 2,
+                  "uses_per_long_rest": null
+                }
+              ]
+            }
+          },
+          "source_page": 319
+        },
+        {
+          "id": "fiery-rays",
+          "name": "Fiery Rays",
+          "activation": {
+            "Legendary": {
+              "cost": 1
+            }
+          },
+          "usage": "OnceUntilOwnTurnStart",
+          "spell_component_waivers": {
+            "verbal": false,
+            "somatic": false,
+            "material": true
+          },
+          "feature": {
+            "Spellcasting": {
+              "ability": "Charisma",
+              "save_dc": 20,
+              "attack_bonus": 12,
+              "spells": [
+                {
+                  "spell_id": "scorching-ray",
+                  "cast_level": 2,
+                  "uses_per_long_rest": null
+                }
+              ]
             }
           },
           "source_page": 319
@@ -2906,6 +3221,299 @@
       "legendary_budget": null,
       "source_pages": [
         278
+      ]
+    },
+    {
+      "id": "chimera",
+      "name": "Chimera",
+      "coverage": "CompleteStatBlock",
+      "statistics": {
+        "size": "Large",
+        "allowed_sizes": [
+          "Large"
+        ],
+        "creature_type": "Monstrosity",
+        "creature_tags": [],
+        "alignment": "Chaotic Evil",
+        "armor_class": 14,
+        "hit_points": 114,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 12,
+              "sides": 10
+            }
+          ],
+          "fixed": 48
+        },
+        "ability_scores": [
+          19,
+          11,
+          19,
+          3,
+          14,
+          10
+        ],
+        "saving_throw_modifiers": [
+          4,
+          0,
+          4,
+          -4,
+          2,
+          0
+        ],
+        "initiative_modifier": 0,
+        "proficiency_bonus": 3,
+        "challenge_rating": "6",
+        "experience_points": 2300,
+        "speeds": {
+          "walk": 30,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 60,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Perception",
+            "modifier": 8
+          }
+        ],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 60,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 18
+        },
+        "damage_resistances": [],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [],
+        "exhaustion_immune": false,
+        "languages": [
+          "Draconic"
+        ],
+        "additional_languages": 0,
+        "can_speak": false,
+        "gear": []
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "multiattack",
+          "name": "Multiattack",
+          "activation": "Action",
+          "feature": {
+            "MultiattackRoutine": {
+              "slots": [
+                {
+                  "options": [
+                    {
+                      "feature_id": "ram",
+                      "spell_id": null,
+                      "simple_action": null
+                    }
+                  ]
+                },
+                {
+                  "options": [
+                    {
+                      "feature_id": "bite",
+                      "spell_id": null,
+                      "simple_action": null
+                    }
+                  ]
+                },
+                {
+                  "options": [
+                    {
+                      "feature_id": "claw",
+                      "spell_id": null,
+                      "simple_action": null
+                    },
+                    {
+                      "feature_id": "fire-breath",
+                      "spell_id": null,
+                      "simple_action": null
+                    }
+                  ]
+                }
+              ],
+              "limits": []
+            }
+          },
+          "source_page": 273
+        },
+        {
+          "id": "bite",
+          "name": "Bite",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 7,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 4
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 2,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 0
+                  },
+                  "damage_type": "Piercing"
+                }
+              ],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 273
+        },
+        {
+          "id": "claw",
+          "name": "Claw",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 7,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 6
+                      }
+                    ],
+                    "fixed": 4
+                  },
+                  "damage_type": "Slashing"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": []
+            }
+          },
+          "source_page": 273
+        },
+        {
+          "id": "ram",
+          "name": "Ram",
+          "activation": "Action",
+          "feature": {
+            "Attack": {
+              "bonus": 7,
+              "delivery": {
+                "Melee": {
+                  "reach_feet": 5
+                }
+              },
+              "damage": [
+                {
+                  "amount": {
+                    "dice": [
+                      {
+                        "count": 1,
+                        "sides": 12
+                      }
+                    ],
+                    "fixed": 4
+                  },
+                  "damage_type": "Bludgeoning"
+                }
+              ],
+              "extra_damage_if_attack_had_advantage": [],
+              "conditional_hits": [
+                {
+                  "requirement": {
+                    "TargetSizeAtMost": {
+                      "size": "Medium"
+                    }
+                  },
+                  "effects": [
+                    {
+                      "Condition": {
+                        "condition": "Prone"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "source_page": 273
+        },
+        {
+          "id": "fire-breath",
+          "name": "Fire Breath",
+          "activation": "Action",
+          "feature": {
+            "SaveArea": {
+              "dc": 15,
+              "area": {
+                "Cone": {
+                  "length_feet": 15
+                }
+              },
+              "effect": {
+                "SaveDamage": {
+                  "ability": "Dexterity",
+                  "damage": {
+                    "amount": {
+                      "dice": [
+                        {
+                          "count": 7,
+                          "sides": 8
+                        }
+                      ],
+                      "fixed": 0
+                    },
+                    "damage_type": "Fire"
+                  },
+                  "half_on_success": true,
+                  "push_on_failure_feet": 0
+                }
+              },
+              "recharge": {
+                "die_sides": 6,
+                "minimum": 5,
+                "maximum": 6
+              }
+            }
+          },
+          "source_page": 273
+        }
+      ],
+      "legendary_budget": null,
+      "source_pages": [
+        273
       ]
     }
   ]
