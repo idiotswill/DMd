@@ -94,8 +94,8 @@ Reviewed source: cea43b3bd9b83ddae45a24bd2ffb261252096574 (2026-09-25).
 
 ## Risks and exact next action
 
-The next commit changes evidence documents only; source parity to cea43 must be
-verified. Await all six checks on that final head, refresh PR/main, inspect its full
+Changes after cea43 are evidence documents and strengthened test setup; production
+code parity to cea43 must be verified. Await all six checks on that final head, refresh PR/main, inspect its full
 diff and merge PR39 with expected-head protection. Then fetch main, check full-tree
 parity and post-merge checks; record the resulting hashes in the next Gate4 checkpoint.
 Only one heavy local Rust/frontend job may run at once.
@@ -105,3 +105,10 @@ ancestry without reinterpreting legacy accepted history. General Help, Utilize,
 contact adjudication, post-combat finish and every other unresolved Gate4 family
 remain required. This slice does not close Gate4, narrow the twelve-family ledger
 or eighteen-spell-mechanism matrix, or authorize Gate5.
+
+The subsequent cross-slice review found the barrier fixture overlapped occupied space
+and the incapacitated-helper fixture lacked required Prone state. Both now begin from
+valid aggregates, asserted before rejecting first aid. The barrier occupies an empty
+gap within the five-foot contact bound and actually exercises contact rejection;
+no production validator was weakened. All four strengthened Medicine reducer tests
+pass locally. Final-head CI must include these test corrections before merge.

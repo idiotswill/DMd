@@ -107,33 +107,42 @@ fn first_aid_checks_knowledge_contact_vitality_and_paid_request_without_mutation
             }
             2 => f.zero_hp_target(true),
             3 => f.entity_mut(1).hp = 1,
-            4 => f.entity_mut(0).hp = 0,
-            5 => f
-                .state
-                .encounter
-                .as_mut()
-                .unwrap()
-                .battlefield
-                .obstacles
-                .push(SpatialObstacle {
-                    id: "clear-barrier".into(),
-                    volume: SpatialBox {
-                        min: SpatialPoint { x: 19, y: 10, z: 0 },
-                        max: SpatialPoint {
-                            x: 21,
-                            y: 20,
-                            z: 20,
+            4 => {
+                f.entity_mut(0).hp = 0;
+                f.entity_mut(0).prone = true;
+            }
+            5 => {
+                f.state.encounter.as_mut().unwrap().participants[1]
+                    .position
+                    .x = 30;
+                f.state
+                    .encounter
+                    .as_mut()
+                    .unwrap()
+                    .battlefield
+                    .obstacles
+                    .push(SpatialObstacle {
+                        id: "clear-barrier".into(),
+                        volume: SpatialBox {
+                            min: SpatialPoint { x: 20, y: 10, z: 0 },
+                            max: SpatialPoint {
+                                x: 26,
+                                y: 20,
+                                z: 20,
+                            },
                         },
-                    },
-                    blocks_movement: true,
-                    blocks_sight: false,
-                    observable: true,
-                    cover: CoverDegree::None,
-                }),
+                        blocks_movement: true,
+                        blocks_sight: false,
+                        observable: true,
+                        cover: CoverDegree::None,
+                    });
+            }
             _ => {
                 f.run(Some(0), TacticalAction::Dodge);
             }
         }
+        validate_state(&f.state, &f.pack).unwrap();
+        validate_tactical_state(&f.state).unwrap();
         f.rejected(Some(0), aid(&f, MedicinePurpose::Stabilize));
     }
     let mut f = fixture();
