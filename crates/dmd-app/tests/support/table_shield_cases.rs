@@ -67,7 +67,9 @@ async fn paid_source_shield_bow_shield_controls_survive_cold_retry_and_hostile_r
     Box::pin(don_and_validate_restore(&f, npc, shield)).await;
     f.pool.close().await;
     drop(f);
-    std::fs::remove_file(database).unwrap();
+    sqlite_test_cleanup::remove_closed_file(&database)
+        .await
+        .unwrap();
     let _ = std::fs::remove_dir(directory);
 }
 

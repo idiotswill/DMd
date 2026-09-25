@@ -905,9 +905,14 @@ async fn second_wind_pending_roll_resources_and_transcript_survive_database_reop
             .await
             .is_err()
     );
+    drop(state);
     drop(reopened);
     reopened_pool.close().await;
-    std::fs::remove_dir_all(directory).unwrap();
+    drop(reopened_pool);
+    drop(pool);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -1122,7 +1127,9 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
     bad_pool.close().await;
     f.pool.close().await;
     drop(f);
-    std::fs::remove_file(database).unwrap();
+    sqlite_test_cleanup::remove_closed_file(&database)
+        .await
+        .unwrap();
     // SQLite may retain journal sidecars until pool handles finish dropping.
     let _ = std::fs::remove_dir(directory);
 }
