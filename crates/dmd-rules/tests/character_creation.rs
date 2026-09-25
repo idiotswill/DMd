@@ -711,6 +711,7 @@ fn combat_bonus_budget_and_savage_attacker_keep_source_choices_and_replay() {
     );
     t.submit(&[20]);
     let raw = SavageAttackerRoll {
+        weapon_dice: None,
         first: t.raw(&[4, 4]),
         second: t.raw(&[1, 2]),
         chosen: DamageRollChoice::Second,
@@ -899,6 +900,7 @@ fn savage_attacker_records_inspiration_and_rejects_invalid_or_repeated_choices()
     );
     t.submit(&[20]);
     let choice = SavageAttackerRoll {
+        weapon_dice: None,
         first: t.raw(&[1, 1]),
         second: t.raw(&[3, 3]),
         chosen: DamageRollChoice::First,

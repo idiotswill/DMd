@@ -130,8 +130,10 @@ fn unarmed_reaction_has_real_fixed_damage_without_invented_inventory_or_action_c
         TacticalAttackSource::Unarmed { .. }
     ));
     assert_eq!(f.request().modifier, 5);
+    assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
     f.roll(0, &[20]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 46); // Fixed 1+3 does not double.
+    assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
     assert_eq!(f.state.items, inventory);
     assert!(f.flow().budget.weapon_history.is_empty());
     assert!(!f.rules().timing.as_ref().unwrap().action_spent);

@@ -4,10 +4,39 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
-vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn()} }));
+vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn()} }));
 
-beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
+beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); });
 describe('durable UI retry',()=>{
+  it('queries the owned roll and retries the original two-set tactical request',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.roll={id:'opaque-damage',roller:'actor',dice:[{count:2,sides:4}],modifier:3,mode:'Normal',visibility:'Public',reason:'Attack damage'};
+    view.roll_channel='Tactical';
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:{weapon_dice:2,heroic_inspiration:false}});
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Damage accepted.'}}));
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
+    render(TableApp);
+    await screen.findByLabelText('Use Savage Attacker (once per turn)');
+    expect(tableApi.rollOptions).toHaveBeenCalledWith({campaign_id:'campaign',channel:{Player:{player_id:'player',character_id:'pc'}},revision:view.revision,roll_id:'opaque-damage'});
+    await user.type(screen.getByLabelText('Die 1 · d4'),'1');await user.type(screen.getByLabelText('Die 2 · d4'),'2');
+    await user.click(screen.getByLabelText('Use Savage Attacker (once per turn)'));
+    await user.type(screen.getByLabelText('Second weapon die 1 · d4'),'3');await user.type(screen.getByLabelText('Second weapon die 2 · d4'),'4');
+    await user.selectOptions(screen.getByLabelText('Damage set to use'),'First');
+    await user.click(screen.getByRole('button',{name:'Report these faces'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!) as UnconfirmedRequest;
+    const expectedRoll={weapon_dice:2,chosen:'First',inspiration:null,
+      first:{request_id:'opaque-damage',source:'Physical',dice:[{sides:4,value:1},{sides:4,value:2}]},
+      second:{request_id:'opaque-damage',source:'Physical',dice:[{sides:4,value:3},{sides:4,value:4}]}};
+    expect(saved).toMatchObject({kind:'action',request:{revision:view.revision,action:{Tactical:{action:{SubmitSavageAttacker:{roll:expectedRoll}}}}}});
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
   it('retries an actual source area declaration with its original aim and host ordering',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Crossing',started_at_world:0,participants:[]};

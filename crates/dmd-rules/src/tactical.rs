@@ -18,6 +18,7 @@ mod turns;
 mod validation;
 mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
+pub use attacks::savage_attacker_dice;
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use initiative::preview_initiative_circumstances;
@@ -38,6 +39,9 @@ pub enum TacticalAction {
     Ready {
         trigger: ReadyTrigger,
         action: ReadyAction,
+    },
+    SubmitSavageAttacker {
+        roll: SavageAttackerRoll,
     },
     SecondWind,
     DonShield {
@@ -259,6 +263,7 @@ fn resolve_with_policy(
         && !matches!(
             action,
             TacticalAction::SubmitRoll { .. }
+                | TacticalAction::SubmitSavageAttacker { .. }
                 | TacticalAction::SubmitRollWithInspiration { .. }
                 | TacticalAction::VoluntarilyFailSave
         )
@@ -283,6 +288,9 @@ fn resolve_with_policy(
         }
         TacticalAction::Ready { trigger, action } => {
             ready::declare(&mut next, meta, trigger, action)?;
+        }
+        TacticalAction::SubmitSavageAttacker { roll } => {
+            attacks::submit_savage(&mut next, meta, roll, pack)?;
         }
         TacticalAction::DonShield { shield, hand } => {
             shields::change(&mut next, meta, Some((*shield, *hand)), pack)?

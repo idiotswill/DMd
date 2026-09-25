@@ -46,7 +46,7 @@ pub(super) fn archery_bonus(entity: &MechanicalEntity, ranged: bool) -> i32 {
         0
     }
 }
-pub(super) fn savage_result(
+pub(crate) fn savage_result(
     request: &RollRequest,
     roll: &SavageAttackerRoll,
 ) -> Result<RollResult, RulesError> {
@@ -54,6 +54,14 @@ pub(super) fn savage_result(
     request.resolve(&roll.second)?;
     if roll.first.source != roll.second.source {
         return Err(invalid("Savage Attacker source differs between sets"));
+    }
+    if let Some(count) = roll.weapon_dice {
+        if request.mode != RollMode::Normal || count == 0 || count > roll.first.dice.len() {
+            return Err(invalid("invalid Savage Attacker weapon dice prefix"));
+        }
+        if roll.first.dice[count..] != roll.second.dice[count..] {
+            return Err(invalid("Savage Attacker cannot reroll added damage dice"));
+        }
     }
     let mut first = roll.first.clone();
     let mut second = roll.second.clone();
@@ -71,6 +79,15 @@ pub(super) fn savage_result(
         }
         *die = inspiration.replacement;
         request.resolve(result)?;
+        // A nonweapon die was rolled once. Both full-set representations must
+        // share its one Inspiration replacement regardless of the selected set.
+        if roll
+            .weapon_dice
+            .is_some_and(|count| inspiration.die_index >= count)
+        {
+            first.dice[inspiration.die_index] = inspiration.replacement;
+            second.dice[inspiration.die_index] = inspiration.replacement;
+        }
     }
     Ok(match roll.chosen {
         DamageRollChoice::First => first,
@@ -628,7 +645,15 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         }
         if let Some(savage) = &roll.savage_attacker
             && (roll.original_result.is_some()
-                || !matches!(roll.purpose, PendingPurpose::Damage { .. })
+                || !match roll.purpose {
+                    PendingPurpose::Damage { .. } => savage.weapon_dice.is_none(),
+                    PendingPurpose::TacticalResolution { key, .. }
+                        if key.role == TacticalRollRole::AttackDamage =>
+                    {
+                        savage.weapon_dice.is_some()
+                    }
+                    _ => false,
+                }
                 || savage_result(&roll.request, savage)? != roll.result)
         {
             return Err(invalid("invalid Savage Attacker raw choice record"));

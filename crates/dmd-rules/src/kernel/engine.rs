@@ -580,6 +580,9 @@ fn apply(
             Ok(RulesOutcome::Changed)
         }
         RulesAction::SubmitSavageAttacker { roll } => {
+            if roll.weapon_dice.is_some() {
+                return Err(invalid("tactical weapon dice require the tactical path"));
+            }
             let pending = rules.pending.as_ref().ok_or(RulesError::NoPending)?;
             let actor = pending
                 .request
