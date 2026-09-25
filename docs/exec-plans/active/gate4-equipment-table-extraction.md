@@ -74,7 +74,7 @@ bytes remain those of the passing build.
 ## Verified source and final merge procedure
 
 Canonical `./scripts/verify` completed successfully on `88b468a`: formatting, locked
-workspace/all-target check, strict workspace/all-target Clippy,332 Rust tests, genericity
+workspace/all-target check, strict workspace/all-target Clippy,331 Windows Rust tests, genericity
 guard and architecture guard (8 tests,1 skipped). The real SQLite file is closed/reopened
 before the original preparation command is retried; independent export/restore preserves
 the accepted state. Forged unknown and genuine-but-unrelated command origins and replacement
@@ -82,7 +82,7 @@ anchors reject before target writes. Schema compatibility tests preserve older m
 chains and reject both duplicate/null-shadow orders. Local evidence is retained at
 `tooling/gate4-equipment-canonical.log` outside the repository.
 
-All six source-head CI jobs passed: Linux36105066731 and Windows36105066712, including
+All six source-head CI jobs passed: Linux36105066731 (332 Rust tests) and Windows36105066712, including
 MSRV1.88 and stable offline-installer packaging. The frontend passed13 tests, zero Svelte
 errors/warnings and a production build; its actual preparation-button test retains every
 generated item identity after uncertain delivery and restart.
