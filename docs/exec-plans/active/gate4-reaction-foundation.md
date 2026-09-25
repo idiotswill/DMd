@@ -1,6 +1,6 @@
 # Gate4 — Owned work and reaction prerequisites
 
-Status: implementation authored; final integration/review/verification pending.
+Status: combined implementation reviewed; canonical/UI pass; final-head CI and protected merge pending.
 Writer: root. Branch: codex/gate4-reaction-ready-runtime. PR38 targets main.
 Authority: AGENTS, product definition, Gate04, ADR026/028 and the unchanged umbrella
 plan gate4-reaction-ready-runtime.md. This plan bounds one reviewable PR, not the gate.
@@ -49,9 +49,11 @@ Medicine PR39 is merged at main487239c3f14685ba0c2a998574080aedb8b57a9e. Exact
 source a0b4b57 passed all six checks (655 Linux/657 native Rust,60 UI and installer);
 fetched full-tree parity and all six main checks are verified. Imported Unarmed
 f400d347 has canonical production parity with f9602a8 (661 GNU/662 Linux/664 native
-Rust,61 UI). Its independent full-diff review has no blocking findings; final native
-CI and its protected merge remain pending. Reconcile that squash only after proving
-source ancestry and full-tree equality.
+Rust,61 UI). All six final f400 checks pass (Linux36166645612, Windows36166645636;
+662/664 Rust,61 UI and installer10880017473). PR40 is merged as
+a84c5a11359e8e91a3cfa0d2e6a5946082df3da2 with fetched full-tree parity. Verified
+reconciliation d0d84e2 keeps the entire fb83db7 tree unchanged. Its main checks
+36169863765/36169863809 are running. Independent full-diff review found no blocker.
 
 Composition review found SubmitSavageAttacker missing from legacy continuation
 admission. A genuine f9602a8 file-SQLite backup at event14 preserves the original
@@ -69,7 +71,19 @@ Untouched historical fixture + current-query checks pass locally (61.16s). Actua
 Mage creation from queried metadata passes file reopen, exact retry and independent
 restore (3.69s); unbootstrapped, cross-campaign and expired host revisions are refused
 without writes. Desktop checks report zero errors/warnings, all67 UI tests pass and
-the136-module production build passes. Complete combined Rust verification is pending.
+the136-module production build passes. Full canonical verification of exact source
+fb83db7821adfce39f24f4de0707e95a3b49df34 now passes687 GNU Rust tests, including all43
+real table-loop cases (476.24s), strict all-target Clippy and both repository guards.
+No failure was omitted. Independent reviews covered replay/source/work/Ready/privacy
+and the entire catalog/query/UI delta. Original eight-entry catalog chronology is
+verified: all entries predate the first presentation-v1 storage/application commits.
+
+The same canonical run supplied genuine ReactionsV1 file backups at unarmed
+AttackRoll/event13, KnockoutChoice/event22 and paid Ready/event13. Their untouched
+exports contain13/22/13 events,8/17/8 projection records and1/8/1 bindings respectively.
+They remain outside the repository for the fresh live-response compatibility tests;
+recorded source is fb83db7, whose code/tree was unchanged by d0d84e2 reconciliation.
+No new response semantics may be introduced before these old saves are retained.
 
 One heavy local build/test runs at a time. Supporting reviewers are available again;
 root remains the sole branch writer. Preserve strict old digest validation, never
@@ -79,11 +93,11 @@ active after this prerequisite PR merges; all Gate4 obligations remain binding.
 
 ## Exact next action
 
-Finish current desktop check/test/build, inspect actual failures and review the full
-composed diff. Commit and push the coherent catalog compatibility fix; run canonical
-verification plus all six exact-head checks. Capture a genuine ReactionsV1 save from
-that source while its canonical unarmed integration runs, before introducing live
-reaction pauses. Reconcile PR40's verified squash, then merge PR38 only at its exact
-verified head. Prove fetched main tree equality and post-merge checks. Create the
-fresh live-response branch from main and implement the required follow-up. Do not
-pause at this slice boundary or advance beyond Gate4.
+Final changes after verified source fb83db7 are the proven main reconciliation and
+evidence/planning documents only. Verify that parity, run all six checks on the final
+head and inspect actual completed logs/artifact. Merge PR38 with expected-head
+protection only after exact-head review/checks pass. Fetch main, prove full-tree
+parity and record post-merge checks. Then create the fresh live-response branch,
+commit the genuine old saves and their replay regressions before new semantics,
+and execute the source/control/response follow-up. Do not pause at this slice
+boundary or advance beyond Gate4. The complete gate ledger remains binding.

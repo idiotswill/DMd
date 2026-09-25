@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-medicine-help`.
 Base: verified Second Wind head c04e3b6; its main squash is b86e222.
-Status: PR39 merged with verified full-tree parity; post-merge checks running.
+Status: PR39 merged; full-tree parity and all six post-merge checks pass.
 
 ## Objective and authority
 
@@ -122,3 +122,7 @@ valid aggregates, asserted before rejecting first aid. The barrier occupies an e
 gap within the five-foot contact bound and actually exercises contact rejection;
 no production validator was weakened. All four strengthened Medicine reducer tests
 pass locally. Final-head CI must include these test corrections before merge.
+
+Post-merge confirmation: all six main checks36165482851/36165482845 pass for
+487239c3f14685ba0c2a998574080aedb8b57a9e. Earlier pending notes are superseded.
+General Help/Utilize and the other recorded Gate4 obligations remain required.

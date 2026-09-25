@@ -65,3 +65,56 @@ with a retained target version, and preserve both earlier continuation allowlist
 including Savage Attacker's two-set submission. Capture a genuine ReactionsV1 save
 before changing semantics; a fixture regenerated with the new executor cannot prove
 that earlier accepted attacks avoid newly introduced reaction pauses.
+
+## Source and integration audit before implementation
+
+Read-only review of fb83db7 confirms Magic Missile currently has a definition but no
+table-admitted caster grant. Pinned SRD p311 Night Hag Spellcasting grants at-will
+level4 Magic Missile with a material-only waiver. A source-derived SelectedFeatures
+profile is the narrow existing CreatureFeature/SourceFeature path for actual
+before-first-dart acceptance; retain printed statistics and explicitly enumerate
+omitted attacks, traits and spells. Do not invent a Mage spell list. Night Hag's
+Magic Resistance also matters if a scenario asks it to make a magical save: either
+implement that source trait or do not claim such a scenario is source-complete.
+The alternative Wand of Magic Missiles (p251) needs a new item grant/charge path,
+dawn recharge and last-charge destruction, so it is not merely a definition entry.
+
+Shield must interrupt after the original raw hit but before damage, retain the
+authenticated pre-reaction facts and evaluate the resulting hit against current
+source defenses. Preserve natural20, prior attack/ammo payment and the original
+raw acceptance's causality. Nested reaction casting must use the same resolution;
+ordinary casting::begin replaces it and cannot safely serve as that entry point.
+Mage Protective Magic's shared three-use feature and Reaction are paid only after
+current source/component/control revalidation. Magic Missile opens its targeted
+window before any dart, once per targeted actor rather than once per dart.
+
+ReactionsV1 can retain a paid physical Ready declaration even with no resolution or
+raw request. The new upgrade must reject that state until legitimate abandonment/
+expiry, or explicitly authenticate a documented adoption policy. Checking only an
+empty resolution would silently make an older declaration executable. Audit every
+exact-version predicate in Ready, work ancestry, live admission and table projection.
+
+Required first vertical cases: real Mage hit/Shield/miss; natural20 and later attacks;
+owner-Start expiry, shared uses/exhaustion and blocked V/S; opportunity-parent resume;
+source Night Hag targeting; private uniform ordering and hidden-offer invariance;
+cold reopen at each decision, exact retry and forged trigger/fact/cause rejection.
+Counterspell and all Ready mechanisms remain required here after that first path.
+
+The current production builder creates Human Fighter1/Soldier/Skilled PCs and only
+autonomous source NPCs. It cannot yet create a player Shield respondent. Rules-level
+Player creature control alone is insufficient: table metadata, encounter admission,
+owned projections, tactical raw-roll visibility and desktop controls still assume a
+PC CharacterId. Add genuine journaled host assignment of source-creature control,
+initially before encounter setup, preserving source context and disallowing transfer
+through pending work. Keep authenticated attending-player identity separate from the
+owned responding actor; derive that actor from validated current ownership and an
+audience-bound capability, never a client assertion or fabricated PC row. Extend
+source-aware tactical projections/roll controls without broadening legacy PC kernel
+queries or changing historical audience digests. Bind control provenance during
+semantic replay and handle every new projection at an explicit compatible boundary.
+
+The required player path is normal player/PC creation, genuine Mage creation, host
+control assignment, session/encounter admission, another actor's hit, player-only
+Shield offer and player acceptance, followed by cold exact retry. Wrong player,
+host substitution, forged actor, absent attendance and reassignment during the pause
+must fail. This remains Gate4 ownership work; injected profiles cannot prove it.

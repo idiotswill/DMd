@@ -5,27 +5,31 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR39
+## Current checkpoint after PR40
 
-Fetched main is487239c3f14685ba0c2a998574080aedb8b57a9e. PR39 first aid is merged
-with exact source/main full-tree parity. Finala0b4b57 passes all six checks
-36162218754/36162218749 (655 Linux/657 native Rust,60 desktop tests and fresh offline
-installer). Its production code matches canonical654-GNU sourcecea43; all four
-strengthened valid-fixture Medicine tests also pass locally. Post-merge checks
-36165482851/36165482845 are running. General Help/Utilize remain required.
+Fetched main is a84c5a11359e8e91a3cfa0d2e6a5946082df3da2. PR39 first aid and PR40
+unarmed damage are merged with exact reviewed-source/main full-tree parity. PR39's
+six post-main checks36165482851/36165482845 pass. PR40 final f400d347 passes all six
+checks36166645612/36166645636:662 Linux/664 native Rust,61 UI and installer10880017473.
+Its production code matches canonical661-GNU sourcef9602a8. Main checks
+36169863765/36169863809 are running. Grapple/Shove/Escape/dragging/equipment/PvP and
+general Help/Utilize remain required; neither slice closes its entire family.
 
-Unarmed PR40 combinedsourcef9602a8 passes canonical661 GNU Rust tests, all61 desktop
-tests/check/build, and all six source checks36163502155/36163502287 (662 Linux/664
-native Rust and fresh installer). First-aid reconciliationf2e6f84 preserves that
-complete tree. Full15-file review is complete; final evidence-head checks and protected
-merge remain pending. Grapple/Shove/Escape/dragging/equipment/PvP obligations remain.
+Reaction PR38 sourcefb83db7 passes canonical687 GNU Rust tests including all43 actual
+table-loop scenarios, strict lint, both guards, zero desktop static diagnostics,
+67 UI tests and136-module build. Independent full-diff reviews found no blocker.
+A genuine old Savage pause revealed missing continuation admission and a changed
+host catalog hash. Both are fixed and proven against untouched old history; current
+creature choices use an authenticated read-only query. Reconciliationd0d84e2 preserves
+the source's whole tree. Final evidence-head CI/protected merge remain pending.
 
-Reaction PR38 is bounded to replay/work ownership/source/physical Ready lifetime;
-the active live-response follow-up retains all Shield/Counterspell/release/held-spell
-acceptance in Gate4. Full composition verification remains pending. Fresh review found
-an omitted legacy Savage two-set continuation; a genuine event14 old-executor SQLite
-capture now anchors its correction/regression. That new regression is not yet passing
-evidence. No actual response-window completion or gate closure is claimed.
+The foundation is still limited to replay/work ownership/source/physical Ready
+lifetime. The active live-response plan retains all Shield/Counterspell/release/held
+spell acceptance, genuine source casting and player-controlled creature admission.
+Real ReactionsV1 attack/knockout/Ready saves were captured before new semantics.
+No response-window completion or gate closure is claimed. A separate plan-only
+finish/timing branch records proposed Aftermath and elapsed-time handling; it has
+no implementation or passing production acceptance yet.
 
 ## Earlier checkpoint after PR37
 

@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-unarmed-actions`.
 Base: fetched main cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
-Status: combined source reviewed and verified; final evidence-head CI and protected merge pending.
+Status: PR40 merged with verified full-tree parity; post-merge checks running.
 
 ## Objective and authority
 
@@ -48,7 +48,7 @@ The source has no minimum-one damage clause; the existing damage floor remains z
    blocking and current-contact target selection; component checks/test/build.
 4. Separate full-diff review, serial focused/fast/canonical verification and all six
    exact-head Linux/native checks. Protected merge, fetched tree parity and post-merge
-   verification. Supporting agents are quota-blocked; root is sole writer/reviewer.
+   verification. Root is sole writer; independent final-head review also completed.
 
 ## Current evidence and exact next action
 
@@ -67,12 +67,17 @@ ancestor here; reconciliationf2e6f84 preserves the entire f9602a8 tree unchanged
 Root separately reviewed the complete15-file Unarmed diff after the first-aid merge,
 including source/cost reconstruction, valid negative fixtures and actual SQLite/UI.
 
-Changes after f9602a8 are verified main reconciliation and evidence documents only.
-Require all six checks on the final head, refresh PR/main, verify production parity
-and merge PR40 with expected-head protection. Fetch main and verify full-tree parity
-and post-merge checks; record hashes in the next checkpoint. Only one heavy local
-Rust/frontend job may run. No Grapple/Shove/Escape, equipment allowance or PvP-consent
-completion is claimed; the twelve-family ledger and eighteen mechanisms remain.
+Final f400d34740f919eb67efa796ab7d44686f924dbf has independent full17-file review,
+verified production parity and all six passing checks36166645612/36166645636:
+662 Linux/664 native Rust,61 UI, zero static diagnostics and fresh installer
+10880017473 (231291314bytes). Protected squash merged PR40 as
+a84c5a11359e8e91a3cfa0d2e6a5946082df3da2. Fetched source/main trees both equal
+c3d15edacc6b2892749e61a8548651743e006e68. Post-merge runs36169863765/36169863809
+are running; finish recording their results in the continuing Gate4 evidence.
+
+Only one heavy local Rust/frontend job may run. No Grapple/Shove/Escape, equipment
+allowance or PvP-consent completion is claimed; the full twelve-family ledger and
+eighteen spell mechanisms remain. Continue the approved active Gate4 work.
 
 ## Earlier implementation history
 
