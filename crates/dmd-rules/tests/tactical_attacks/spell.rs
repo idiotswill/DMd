@@ -118,7 +118,7 @@ fn pending_attack(f: &Fixture) -> &TacticalAttack {
         .unwrap()
 }
 
-fn focus(f: &mut Fixture) -> EffectId {
+pub(super) fn focus(f: &mut Fixture) -> EffectId {
     let meta = f.meta(None);
     let id = EffectId::new();
     f.state = tactical_effect_adapter::apply_effect_operation(

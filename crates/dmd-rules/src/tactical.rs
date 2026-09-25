@@ -23,6 +23,11 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    CreatureAttack {
+        target: EntityId,
+        feature_id: String,
+        weapon: Option<ItemId>,
+    },
     CastSpell {
         choice: SpellCastChoice,
         targets: SpellTargetChoice,
@@ -207,6 +212,13 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::CreatureAttack {
+            target,
+            feature_id,
+            weapon,
+        } => {
+            attacks::begin_creature_attack(&mut next, meta, *target, feature_id, *weapon)?;
+        }
         TacticalAction::CastSpell { choice, targets } => {
             casting::begin(&mut next, meta, choice, targets)?;
         }
