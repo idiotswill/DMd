@@ -1,8 +1,6 @@
 //! Local input boundary: the renderer selects a channel; this adapter derives authority.
 //! Gameplay, durable acknowledgement and content validation stay in `dmd-app`.
 
-#[cfg(test)]
-use dmd_domain::{AgentRef, CharacterId, CommandIssuer, CommandMeta, PlayerId};
 use std::path::PathBuf;
 
 use dmd_app::{
@@ -71,15 +69,6 @@ pub struct DesktopError {
 impl DesktopError {
     fn storage() -> Self {
         Self { code: "local_storage", message: "DMd could not open its local data. Check that your user data folder is writable, then retry.".into(), retryable: true }
-    }
-
-    #[cfg(test)]
-    fn selection(message: &str) -> Self {
-        Self {
-            code: "channel_selection",
-            message: message.into(),
-            retryable: false,
-        }
     }
 }
 
@@ -154,51 +143,6 @@ pub struct TableTextRequest {
     session_id: Option<PlaySessionId>,
     channel: LocalChannel,
     text: String,
-}
-
-#[cfg(test)]
-async fn command_meta(
-    runtime: &CampaignRuntime,
-    command_id: CommandId,
-    campaign_id: CampaignId,
-    expected_event_sequence: u64,
-    session_id: Option<PlaySessionId>,
-    channel: LocalChannel,
-) -> Result<CommandMeta, DesktopError> {
-    let (issuer, actor) = match channel {
-        LocalChannel::Host => (CommandIssuer::Admin, None),
-        LocalChannel::Player {
-            player_id,
-            character_id,
-        } => {
-            // Use persistent identity, not current attendance: accepted request retries after a
-            // session ends must reconstruct the original metadata for application idempotency.
-            let view = runtime
-                .table_view(campaign_id, TableViewer::Player(player_id))
-                .await?;
-            let character = view
-                .characters
-                .iter()
-                .find(|character| {
-                    character.character_id == character_id && character.player_id == Some(player_id)
-                })
-                .ok_or_else(|| {
-                    DesktopError::selection("Select a character controlled by this player.")
-                })?;
-            (
-                CommandIssuer::Player(player_id),
-                Some(AgentRef::Entity(character.entity_id)),
-            )
-        }
-    };
-    Ok(CommandMeta {
-        id: command_id,
-        campaign_id,
-        session_id,
-        issuer,
-        actor,
-        expected_event_sequence,
-    })
 }
 
 #[tauri::command]
@@ -325,7 +269,8 @@ pub async fn desktop_submit_table(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use dmd_domain::{AttendanceStatus, EntityId, SessionParticipant};
+    use dmd_app::{TABLE_TRANSPORT_VERSION, TableTransportInput, TableTransportRequest};
+    use dmd_domain::{AttendanceStatus, CharacterId, EntityId, PlayerId, SessionParticipant};
     use serde_json::json;
 
     #[test]
@@ -362,6 +307,22 @@ mod tests {
         let mut forged = request;
         forged["channel"] = json!({"Player": {"player_id": PlayerId::new(), "character_id": CharacterId::new(), "actor": EntityId::new()}});
         assert!(serde_json::from_value::<TableActionRequest>(forged).is_err());
+        let modern = json!({
+            "version": TABLE_TRANSPORT_VERSION,
+            "command_id": CommandId::new(), "campaign_id": CampaignId::new(),
+            "revision": CommandId::new(), "session_id": null, "channel": "Host",
+            "input": {"Action": "EndSession"}
+        });
+        assert!(serde_json::from_value::<TableTransportRequest>(modern.clone()).is_ok());
+        for (field, value) in [
+            ("issuer", json!("System")),
+            ("actor", json!({"Entity": EntityId::new()})),
+            ("expected_event_sequence", json!(0)),
+        ] {
+            let mut forged = modern.clone();
+            forged[field] = value;
+            assert!(serde_json::from_value::<TableTransportRequest>(forged).is_err());
+        }
     }
 
     #[tokio::test]
@@ -426,79 +387,64 @@ mod tests {
             },
         )
         .await;
-        let head = runtime
-            .table_view(campaign, TableViewer::Host)
-            .await
-            .unwrap()
-            .event_sequence;
-        let id = CommandId::new();
-        assert!(
-            command_meta(
-                &runtime,
-                id,
-                campaign,
-                head,
-                Some(session),
-                LocalChannel::Player {
-                    player_id: stranger,
-                    character_id: character,
-                }
-            )
-            .await
-            .is_err()
-        );
-        let original = command_meta(
-            &runtime,
-            id,
-            campaign,
-            head,
-            Some(session),
-            LocalChannel::Player {
-                player_id: player,
-                character_id: character,
-            },
-        )
-        .await
-        .unwrap();
-        assert_eq!(original.issuer, CommandIssuer::Player(player));
-        assert_eq!(original.actor, Some(AgentRef::Entity(entity)));
-        let result = runtime
-            .submit_table_text(original.clone(), "How do I roll with advantage?")
+        let stranger_view = runtime
+            .presented_table_view(campaign, TableViewer::Player(stranger))
             .await
             .unwrap();
-        host_action(&runtime, campaign, Some(session), TableAction::EndSession).await;
-        let ended_head = runtime
-            .table_view(campaign, TableViewer::Host)
-            .await
-            .unwrap()
-            .event_sequence;
-        let retry = command_meta(
-            &runtime,
-            id,
-            campaign,
-            head,
-            Some(session),
-            LocalChannel::Player {
-                player_id: player,
+        let mut original = TableTransportRequest {
+            version: TABLE_TRANSPORT_VERSION,
+            command_id: CommandId::new(),
+            campaign_id: campaign,
+            session_id: Some(session),
+            channel: LocalChannel::Player {
+                player_id: stranger,
                 character_id: character,
             },
-        )
-        .await
-        .unwrap();
-        assert_eq!(retry, original);
+            revision: stranger_view.revision,
+            input: TableTransportInput::Text {
+                text: "How do I roll with advantage?".into(),
+            },
+        };
+        assert!(
+            matches!(runtime.submit_presented_table(original.clone()).await,
+            Err(RunnableCampaignError::TableRejected(message)) if message.contains("controlled by this player"))
+        );
+        original.channel = LocalChannel::Player {
+            player_id: player,
+            character_id: character,
+        };
+        original.revision = runtime
+            .presented_table_view(campaign, TableViewer::Player(player))
+            .await
+            .unwrap()
+            .revision;
+        let result = runtime
+            .submit_presented_table(original.clone())
+            .await
+            .unwrap();
+        let rendered = serde_json::to_string(&result).unwrap();
+        assert!(!rendered.contains("event_sequence"));
+        assert!(!rendered.contains("issuer"));
+        host_action(&runtime, campaign, Some(session), TableAction::EndSession).await;
+        let ended_head = runtime
+            .presented_table_view(campaign, TableViewer::Host)
+            .await
+            .unwrap()
+            .diagnostics
+            .unwrap()
+            .canonical_event_sequence;
         assert_eq!(
-            runtime
-                .submit_table_text(retry, "How do I roll with advantage?")
-                .await
-                .unwrap(),
+            runtime.submit_presented_table(original).await.unwrap(),
             result
         );
         assert_eq!(
             runtime
-                .table_view(campaign, TableViewer::Host)
+                .presented_table_view(campaign, TableViewer::Host)
                 .await
                 .unwrap()
-                .event_sequence,
+                .diagnostics
+                .unwrap()
+                .canonical_event_sequence,
             ended_head
         );
     }
@@ -509,21 +455,21 @@ mod tests {
         session: Option<PlaySessionId>,
         action: TableAction,
     ) {
-        let head = runtime
-            .table_view(campaign, TableViewer::Host)
+        let view = runtime
+            .presented_table_view(campaign, TableViewer::Host)
             .await
-            .unwrap()
-            .event_sequence;
-        let meta = command_meta(
-            runtime,
-            CommandId::new(),
-            campaign,
-            head,
-            session,
-            LocalChannel::Host,
-        )
-        .await
-        .unwrap();
-        runtime.execute_table(meta, action).await.unwrap();
+            .unwrap();
+        runtime
+            .submit_presented_table(TableTransportRequest {
+                version: TABLE_TRANSPORT_VERSION,
+                command_id: CommandId::new(),
+                campaign_id: campaign,
+                session_id: session,
+                channel: LocalChannel::Host,
+                revision: view.revision,
+                input: TableTransportInput::Action(Box::new(action)),
+            })
+            .await
+            .unwrap();
     }
 }

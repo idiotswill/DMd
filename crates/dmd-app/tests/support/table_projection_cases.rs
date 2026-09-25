@@ -393,6 +393,17 @@ async fn protocol_restore_rejects_removed_and_changed_authority_before_any_write
     changed.table_projection_history[0].changes[0].visible_digest = "0".repeat(64);
     corruptions.push(changed);
     let mut changed = exported.clone();
+    changed
+        .table_projection_history
+        .last_mut()
+        .unwrap()
+        .changes
+        .iter_mut()
+        .find(|change| change.audience == dmd_persistence::ProjectionAudience::Player(f.players[0]))
+        .unwrap()
+        .revision = dmd_persistence::ProjectionRevision(CommandId::new().0);
+    corruptions.push(changed);
+    let mut changed = exported.clone();
     changed.table_projection_history[0].transcript[0]
         .audiences
         .push(dmd_persistence::ProjectionAudience::Player(f.players[1]));
@@ -452,6 +463,32 @@ async fn protocol_roll_handles_hide_canonical_ids_and_reject_direct_raw_addressi
     assert_no_head(&presented);
     let opaque = presented.roll.as_ref().unwrap().id;
     assert_ne!(opaque, canonical);
+    let mut wrong_capability = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let handle = wrong_capability
+        .table_projection_history
+        .iter_mut()
+        .flat_map(|record| &mut record.changes)
+        .filter(|change| {
+            change.audience == dmd_persistence::ProjectionAudience::Player(f.players[0])
+        })
+        .flat_map(|change| &mut change.handles)
+        .find(|handle| handle.opaque == opaque.0)
+        .unwrap();
+    handle.capability = dmd_persistence::ProjectionCapability::Roll {
+        canonical: RollRequestId::new(),
+    };
+    let rejected_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    assert!(
+        runtime(rejected_pool.clone())
+            .restore_campaign(&wrong_capability)
+            .await
+            .is_err()
+    );
+    let rows: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current")
+        .fetch_one(&rejected_pool)
+        .await
+        .unwrap();
+    assert_eq!(rows, 0);
     let mut raw = request(
         &f,
         &presented,
@@ -476,5 +513,132 @@ async fn protocol_roll_handles_hide_canonical_ids_and_reject_direct_raw_addressi
     assert_eq!(
         restored.submit_presented_table(raw).await.unwrap(),
         accepted
+    );
+}
+
+#[tokio::test]
+async fn protocol_concurrent_requests_are_serialized_and_exact_response_survives_file_reopen() {
+    Box::pin(concurrent_file_case()).await;
+}
+async fn concurrent_file_case() {
+    let path = std::env::temp_dir().join(format!("dmd-protocol-{}.sqlite", CommandId::new().0));
+    let pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
+    let f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    let first_view = view(&f, 0).await;
+    let baseline = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let original = request(&f, &first_view, text("I climb the ledge"));
+    // Independent connections contend on the same on-disk writer lock. They
+    // cannot both pass a stale check outside the acceptance transaction.
+    let peer_pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
+    let peer = runtime(peer_pool.clone());
+    let (one, two) = tokio::join!(
+        Box::pin(f.runtime.submit_presented_table(original.clone())),
+        Box::pin(peer.submit_presented_table(original.clone())),
+    );
+    let accepted = one.unwrap();
+    assert_eq!(two.unwrap(), accepted);
+    let once = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(once.event_journal.len(), baseline.event_journal.len() + 1);
+    assert_eq!(once.table_transport_bindings.len(), 1);
+    withdraw(&f).await;
+    let current = view(&f, 0).await;
+    let a = request(&f, &current, text("I climb the ledge"));
+    let b = request(&f, &current, text("I wait by the ledge"));
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let (one, two) = tokio::join!(
+        Box::pin(f.runtime.submit_presented_table(a)),
+        Box::pin(peer.submit_presented_table(b)),
+    );
+    assert_ne!(
+        one.is_ok(),
+        two.is_ok(),
+        "one visible revision has one winner"
+    );
+    let rejected = if let Err(error) = one {
+        error
+    } else {
+        two.unwrap_err()
+    };
+    assert!(matches!(rejected, RunnableCampaignError::TableRejected(_)));
+    let after = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(after.event_journal.len(), before.event_journal.len() + 1);
+    assert_eq!(
+        after.table_transport_bindings.len(),
+        before.table_transport_bindings.len() + 1
+    );
+    let presented = view(&f, 0).await;
+    peer_pool.close().await;
+    f.pool.close().await;
+    let reopened_pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
+    let reopened = runtime(reopened_pool.clone());
+    assert_eq!(
+        reopened.submit_presented_table(original).await.unwrap(),
+        accepted
+    );
+    assert_eq!(
+        reopened
+            .presented_table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap(),
+        presented
+    );
+    let mut reopened_export = export_campaign(&reopened_pool, f.campaign).await.unwrap();
+    reopened_export.exported_at_utc = after.exported_at_utc.clone();
+    assert_eq!(reopened_export, after);
+    reopened_pool.close().await;
+    std::fs::remove_file(path).unwrap();
+}
+
+#[tokio::test]
+async fn protocol_party_observation_uses_original_membership_after_later_join_and_restore() {
+    let mut f = Box::pin(Fixture::new()).await;
+    let original = request(&f, &view(&f, 0).await, text("thanks"));
+    f.runtime.submit_presented_table(original).await.unwrap();
+    let old_member = view(&f, 1).await;
+    assert!(
+        old_member
+            .transcript
+            .iter()
+            .any(|entry| entry.text.starts_with("thanks\n"))
+    );
+    f.host(TableAction::EndSession, Some(f.session)).await;
+    let new_player = PlayerId::new();
+    f.host(
+        TableAction::AddPlayer {
+            id: new_player,
+            name: "Later member".into(),
+        },
+        None,
+    )
+    .await;
+    let later = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Player(new_player))
+        .await
+        .unwrap();
+    assert!(
+        !later
+            .transcript
+            .iter()
+            .any(|entry| entry.text.starts_with("thanks\n"))
+    );
+    let exported = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let restored = runtime(open_sqlite("sqlite::memory:").await.unwrap());
+    restored.restore_campaign(&exported).await.unwrap();
+    assert_eq!(
+        restored
+            .presented_table_view(f.campaign, TableViewer::Player(new_player))
+            .await
+            .unwrap(),
+        later
+    );
+    assert!(
+        restored
+            .presented_table_view(f.campaign, TableViewer::Player(f.players[1]))
+            .await
+            .unwrap()
+            .transcript
+            .iter()
+            .any(|entry| entry.text.starts_with("thanks\n"))
     );
 }

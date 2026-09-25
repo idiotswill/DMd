@@ -171,3 +171,19 @@ file reopen/concurrent acceptance and historical party-membership regressions.
 Then check the desktop/UI with a single worker and run the appropriate backend batch
 after the shared compiler is released. Native packaged privacy acceptance remains
 root-owned and outstanding.
+
+Backend checkpoint `7aff85c` has a fresh independent bounded review of the complete
+history/transaction/legacy-recovery paths and eight tests; no remaining finding was
+reported. Desktop envelope migration `d6c1e69` remains pending executable checks.
+Verified area application `a45fe57` was merged as `7c5abe9`, keeping paid shield controls,
+explicit area ordering consent, controller-owned dice and opaque work handles.
+
+The next draft adds three cases (eleven protocol cases total): genuine hidden Wolf
+AreaSave selection/raw completion with two accepted private commands; independent
+SQLite-connection contention and exact on-disk reopen; and historical Party membership
+after a later player joins. Hostile restore additionally changes a returned revision
+and canonical roll capability. The three new scenarios have independent read-only
+review, but have not run. Desktop tests now call the actual presented application
+service instead of retaining a test-only copy of the former identity derivation.
+The shared heavy-build slot is with root PR33; this branch is read/edit-only until
+explicit handoff. No new test result is implied by the reviewed draft.
