@@ -281,6 +281,8 @@ pub struct TableTacticalView {
     pub legendary_action: Option<EntityId>,
     /// Physical choices for an authorized current actor; no target combat statistics.
     pub attack_options: Option<TableAttackOptions>,
+    /// Only the current caster's controller or host receives source casting choices.
+    pub casting_options: Option<TableCastingOptions>,
     pub attack_decision: Option<TableAttackDecision>,
     pub movement_options: Option<TableMovementOptions>,
     pub opportunity: Option<TableOpportunityView>,
@@ -346,6 +348,25 @@ pub struct TableWeaponChoice {
 pub struct TableAttackTarget {
     pub actor: EntityId,
     pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCastingOptions {
+    pub actor: EntityId,
+    pub variants: Vec<TableCastingVariant>,
+    /// Owned-source limitations, never hidden target eligibility or statistics.
+    pub unavailable: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCastingVariant {
+    pub choice: SpellCastChoice,
+    pub label: String,
+    pub concentration: bool,
+    pub minimum_targets: u8,
+    pub maximum_targets: u8,
+    pub repeated_targets: bool,
+    pub targets: Vec<TableAttackTarget>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

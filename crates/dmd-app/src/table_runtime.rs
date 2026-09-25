@@ -55,7 +55,8 @@ fn roll_label(purpose: &PendingPurpose) -> String {
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::TacticalResolution { key, .. } => match key.role {
             TacticalRollRole::DeathSave => "Death saving throw",
-            TacticalRollRole::EffectSave => "Saving throw",
+            TacticalRollRole::EffectSave | TacticalRollRole::SpellSave => "Saving throw",
+            TacticalRollRole::SpellAmount => "Spell effect roll",
             TacticalRollRole::EffectDamage => "Effect damage",
             TacticalRollRole::Concentration => {
                 "Constitution saving throw to maintain concentration"

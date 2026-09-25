@@ -53,6 +53,20 @@ test will document this boundary without expanding authority to make a test pass
 
 Compiler ownership is serialized: movement tests, then root's equipment extraction
 canonical verification precede this app slice. Read-only inspection and scoped edits
-may proceed now; no Rust build starts without the explicit handoff. Next: inspect
-current roll projection/action authorization and accepted-record origin collection,
-then make those boundaries understand the tested cast records and source work.
+may proceed now; no Rust build starts without the explicit handoff.
+
+The first application draft now contains private source/cost/component/target options,
+the ordinary casting form and controller/stale-choice checks, source roll labels,
+cast/attack and completed-movement origin auditing. A completed movement must point
+to an accepted direct or nested Move with the exact requested path count and active
+actor; the existing original-anchor replay proves the remaining receipt facts.
+Read-only source review found no blocker in the candidate projection. Svelte check
+reports zero errors/warnings and all four new casting UI tests pass. No Rust build
+or native acceptance is claimed for this draft. The new SQLite scenario uses real
+Cultist Fanatic Hold Person and Adult Red Dragon Scorching Ray grants, preserves
+player save ownership and source-material identities, and checks disk close/reopen,
+accepted retry, hostile missing-origin restore and individual ray/concentration causes.
+It is authored but not yet compiled. The pinned-kernel Magic Missile rejection is
+also authored. Next: merge the parent's verified movement dependency, then use the
+released compiler slot for the new app tests, source rejection and strict Clippy;
+fix actual failures before final source/frontend review and native integration.

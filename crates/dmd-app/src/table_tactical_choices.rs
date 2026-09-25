@@ -62,6 +62,18 @@ pub(super) fn continuation(
                             TacticalWorkKind::MovementOpportunity { reactor } => {
                                 (Some(*reactor), "Opportunity attack")
                             }
+                            TacticalWorkKind::SpellProgram { cast, .. }
+                            | TacticalWorkKind::FinishSpell { cast } => (
+                                resolution
+                                    .casts
+                                    .iter()
+                                    .find(|record| record.cast.plan.occurrence == *cast)
+                                    .map(|record| record.cast.plan.choice.actor),
+                                "Spell consequence",
+                            ),
+                            TacticalWorkKind::EndOccupiedSpace { actor } => {
+                                (Some(*actor), "Resolve occupied space")
+                            }
                         };
                         // Owning the turn grants ordering authority, not knowledge of another
                         // actor's health, concentration, hidden source, DC or location.
@@ -101,6 +113,7 @@ pub(super) fn save_actor(
         TacticalRollRole::DeathSave
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
+            | TacticalRollRole::SpellSave
     ) {
         return None;
     }
@@ -166,6 +179,29 @@ mod tests {
         };
         assert_eq!(save_actor(&pending, &own, false), None);
         assert_eq!(save_actor(&pending, &HashSet::new(), true), None);
+        // Amount keys name the target, while the real roller is the caster. They
+        // never enable a voluntary save-failure choice for either participant.
+        let caster = EntityId::new();
+        pending.request.roller = Some(caster);
+        pending.purpose = PendingPurpose::TacticalResolution {
+            encounter: EncounterId::new(),
+            key: TacticalRollKey {
+                role: TacticalRollRole::SpellAmount,
+                ..key
+            },
+        };
+        assert_eq!(save_actor(&pending, &HashSet::from([caster]), false), None);
+        assert_eq!(save_actor(&pending, &own, false), None);
+        pending.request.roller = Some(actor);
+        pending.purpose = PendingPurpose::TacticalResolution {
+            encounter: EncounterId::new(),
+            key: TacticalRollKey {
+                role: TacticalRollRole::SpellSave,
+                ..key
+            },
+        };
+        assert_eq!(save_actor(&pending, &own, false), Some(actor));
+        assert_eq!(save_actor(&pending, &HashSet::from([caster]), false), None);
     }
 
     #[test]
@@ -205,6 +241,7 @@ mod tests {
             legendary_window: None,
             attack: None,
             movement: None,
+            casts: vec![],
             next_occurrence: 13,
         };
         let own = HashSet::from([own_actor]);

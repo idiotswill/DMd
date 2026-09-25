@@ -15,6 +15,19 @@ export interface AttackOptions {
   weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[] }[];
   targets: { actor: Id; label: string }[];
 }
+export interface SpellCastChoice {
+  actor: Id; spell_id: string;
+  grant: 'Prepared' | { CreatureFeature: { feature_id: string } };
+  resource: 'Cantrip' | 'SourceFeature' | { Slot: { level: number } };
+  material: 'None' | { Material: { item: Id } } | { Focus: { item: Id } } | { ComponentPouch: { item: Id } };
+  mode: 'Immediate';
+}
+export interface CastingVariant {
+  choice: SpellCastChoice; label: string; concentration: boolean;
+  minimum_targets: number; maximum_targets: number; repeated_targets: boolean;
+  targets: { actor: Id; label: string }[];
+}
+export interface CastingOptions { actor: Id; variants: CastingVariant[]; unavailable: string[] }
 
 export interface Point { x: number; y: number; z: number }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
@@ -39,6 +52,7 @@ export type TacticalAction =
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
   | { Attack: { choice: WeaponUseChoice } }
+  | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
@@ -61,6 +75,7 @@ export interface TacticalView {
   legendary_resistance: Id | null;
   legendary_action: Id | null;
   attack_options?: AttackOptions | null;
+  casting_options?: CastingOptions | null;
   movement_options?: MovementOptions | null;
   opportunity?: OpportunityView | null;
   attack_decision?: { actor: Id; kind: 'Knockout' | 'Graze' } | null;
