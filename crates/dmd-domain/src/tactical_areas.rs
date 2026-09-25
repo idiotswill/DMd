@@ -20,6 +20,14 @@ pub enum TacticalAreaGridPolicy {
     OccupiedCellCentersV1,
 }
 
+/// Per-invocation ordering authority. Raw saves and source optional choices are
+/// never delegated by this declaration. There is intentionally no default.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TacticalAreaOrdering {
+    Host,
+    DelegateToHost,
+}
+
 /// `toward` specifies a direction from `origin`, not a victim or a target location
 /// with a sight requirement. The source fixes all dimensions and the allowed shape.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -76,6 +84,7 @@ pub struct TacticalArea {
     /// Allocated by the one shared resolution, never a vector index or random ID.
     pub occurrence: u16,
     pub source: TacticalAreaSource,
+    pub ordering: TacticalAreaOrdering,
     pub aim: TacticalAreaAim,
     pub policy: TacticalAreaGridPolicy,
     pub geometry_origin: CommandMeta,

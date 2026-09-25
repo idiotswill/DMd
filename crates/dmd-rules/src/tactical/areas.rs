@@ -76,12 +76,14 @@ pub(super) fn begin(
     meta: &CommandMeta,
     feature_id: &str,
     aim: TacticalAreaAim,
+    ordering: TacticalAreaOrdering,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
     }
     let actor = active(state)?;
     authorize(state, meta, actor)?;
+    validate_ordering(state, meta, actor, ordering)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     // A cone-dependent rejection would disclose a hidden charmer; omitting them
     // would invent a source exception. This bounded path is unavailable while
@@ -136,6 +138,7 @@ pub(super) fn begin(
     }
     let record = TacticalArea {
         occurrence: 0,
+        ordering,
         source: TacticalAreaSource {
             actor,
             pin: source.source().clone(),
@@ -184,6 +187,28 @@ pub(super) fn begin(
     push_frame(state, vec![TacticalWorkKind::FinishArea { area: 0 }])?;
     push_frame(state, vec![TacticalWorkKind::AreaDamageRoll { area: 0 }])?;
     pump(state, meta)
+}
+
+pub(super) fn validate_ordering(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    ordering: TacticalAreaOrdering,
+) -> Result<(), RulesError> {
+    let valid = if let Some(player) = controller(state, actor) {
+        ordering == TacticalAreaOrdering::DelegateToHost
+            && meta.issuer == CommandIssuer::Player(player)
+            && meta.actor == Some(AgentRef::Entity(actor))
+    } else {
+        ordering == TacticalAreaOrdering::Host
+            && matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System)
+    };
+    if !valid {
+        return Err(prerequisite(
+            "the source controller must explicitly authorize this ability's host ordering",
+        ));
+    }
+    Ok(())
 }
 
 pub(super) fn key(

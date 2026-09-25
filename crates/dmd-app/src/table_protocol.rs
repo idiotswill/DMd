@@ -285,11 +285,28 @@ pub struct TableTacticalView {
     pub attack_options: Option<TableAttackOptions>,
     /// Only the current caster's controller or host receives source casting choices.
     pub casting_options: Option<TableCastingOptions>,
+    pub area_options: Option<TableAreaOptions>,
     pub attack_decision: Option<TableAttackDecision>,
     pub movement_options: Option<TableMovementOptions>,
     pub opportunity: Option<TableOpportunityView>,
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAreaOptions {
+    pub actor: EntityId,
+    pub controller: Option<PlayerId>,
+    pub source_space: SpatialBox,
+    pub variants: Vec<TableAreaVariant>,
+    pub unavailable: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAreaVariant {
+    pub feature_id: String,
+    pub label: String,
+    pub length_feet: u32,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

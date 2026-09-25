@@ -22,7 +22,7 @@ Relevant source and adjudication rationale remains in gate4-area-resolution.md.
 
 ## Private ordering contract
 
-Draft for parent review: player-controlled source area use explicitly delegates
+Parent-approved contract: player-controlled source area use explicitly delegates
 the simultaneous ordering of this invocation's consequences to the host before
 geometry is evaluated. The UI makes that decision visible and never preselects it.
 Only the actual controller may supply this consent, retained in the accepted
@@ -35,7 +35,7 @@ reveal victim count through a changing delegation prompt.
 This is an explicit transfer of ordering authority, not a fabricated PC decision
 or a source claim that the host always decides. If a player declines, the current
 action is not submitted. Further player-selected private ordering policies remain
-active work until this contract is reviewed against acceptance requirements.
+active Gate4 work rather than an implied permission to expose hidden ordering.
 Existing non-area generic consequence-card behavior is tracked separately; it is
 not used for area victim cards.
 
@@ -61,7 +61,38 @@ lines. Exchange coherent checkpoints before merging; no concurrent shared branch
 ## Current status
 
 Source imports are complete; one additive conflict preserved both CreatureArea
-and CreatureWeaponAttack. No app implementation or verification claimed yet.
-Next: approve/implement explicit ordering contract, then projection and forms.
+and CreatureWeaponAttack. The application draft now includes source-only options,
+the explicit unchecked map-policy form, aim/delegation form, host consequence
+labels, uniform zero player area cards, and typed journal-origin checks. Required
+ordering has no wire default and is validated before geometry or source costs.
+Three public reducer regressions exercise absent/forged consent, retained consent,
+host-source admission, delegated ordering and unchanged raw-save authority. A
+projection test checks identical player output across empty, hidden and nested
+work. Five UI tests exercise policy/consent, exact retained retry payload, channel
+authority, cancel/reset and pending locks.
+
+The real SQLite draft uses genuinely created Host-controlled Chimera/Cultist/Wolf
+sources plus a supported player character. It establishes real concentration,
+then breathes through mist, resolving one shared raw amount, independent saves
+and concentration. It checks cold disk reopen, accepted retry, portable restore,
+forged consent/origin/declaration rejection and semantic replay. Source area-to-
+fall displaced-history behavior already has a public reducer regression; the
+new app test does not claim a combined area/falling native acceptance scenario.
+
+Current creation exposes Host-controlled creatures only. The Player source
+consent route is a tested reducer/UI contract, not a claimed supported creation
+or table-controller feature; the app's owned observer set still uses Characters.
+No new player source grant or fabricated controller path was added for coverage.
+
+Validation in progress: Svelte static check passes with zero errors or warnings
+after correcting a test payload to use the existing TableAction envelope. All43
+frontend tests pass; a subsequent viewer-change consent-reset strengthening also
+passes all5 area tests, static check and the mounted133-module production build.
+Rust fmt/diff checks pass, but Rust compilation/tests
+remain explicitly pending behind the global falling-app and shield build slots.
+Environment_audit independently reviewed the consent/ordering boundary and found
+no blocker. Full application exact-head review and tests remain pending.
+Next: finish UI checks, then use the authorized compiler handoff for focused area
+rules and app/SQLite tests, fix actual failures, and run strict lint.
 Remaining Charmed-area adjudication, full source catalogs, other effect families,
 and real packaged/native evidence are unchanged from the active Gate4 plans.

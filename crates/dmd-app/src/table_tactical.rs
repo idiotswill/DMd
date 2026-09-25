@@ -4,6 +4,8 @@ use dmd_rules::{RulesPack, tactical::*};
 
 use crate::{TableBattlefieldSetup, table_engine::table};
 
+#[path = "table_areas.rs"]
+mod areas;
 #[path = "table_attacks.rs"]
 mod attacks;
 #[path = "table_casting.rs"]
@@ -152,7 +154,7 @@ pub(crate) fn view(
         ties,
         continuation: flow
             .and_then(|flow| flow.resolution.as_ref())
-            .and_then(|resolution| choices::continuation(resolution, &own, host)),
+            .and_then(|resolution| choices::continuation(resolution, &own, host, Some(encounter))),
         may_fail_save: state
             .rules
             .as_ref()
@@ -181,6 +183,19 @@ pub(crate) fn view(
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 attacks::options(state, actor)?
+            }
+            _ => None,
+        },
+        area_options: match active.filter(|actor| host || own.contains(actor)) {
+            Some(actor)
+                if flow.is_some_and(|flow| {
+                    flow.phase == TacticalPhase::Active && flow.resolution.is_none()
+                }) && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|rules| rules.pending.is_none()) =>
+            {
+                areas::options(state, actor)?
             }
             _ => None,
         },

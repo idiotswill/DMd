@@ -32,6 +32,7 @@ pub enum TacticalAction {
     CreatureArea {
         feature_id: String,
         aim: TacticalAreaAim,
+        ordering: TacticalAreaOrdering,
     },
     CreatureAttack {
         target: EntityId,
@@ -228,8 +229,12 @@ pub fn resolve_tactical(
         TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
             attacks::begin_creature_weapon(&mut next, meta, feature_id, choice, pack)?
         }
-        TacticalAction::CreatureArea { feature_id, aim } => {
-            areas::begin(&mut next, meta, feature_id, *aim)?;
+        TacticalAction::CreatureArea {
+            feature_id,
+            aim,
+            ordering,
+        } => {
+            areas::begin(&mut next, meta, feature_id, *aim, *ordering)?;
         }
         TacticalAction::CreatureAttack {
             target,
