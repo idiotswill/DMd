@@ -92,3 +92,11 @@ the documentation delta, verify all checks on the final PR head, merge with expe
 protection, fetch and compare the merged tree, then check post-merge CI. Reconcile the encounter
 integration branch and proceed with private source creature setup on a fresh main-based branch.
 Gate4 remains active; this slice does not claim encounter or gate acceptance.
+
+## Merged-main confirmation
+
+PR29 merged as `ac35c1d65d27239f704cde1422209a0f106fb0e1`, fetched with exact full-tree
+parity against reviewed final head `c4d992a96e4351eec9cab7abfa2ba062bd79bff3`.
+All six post-merge checks passed: Linux run36107189850 and Windows run36107189841,
+including stable offline installer packaging. Root reconciled the integrated superset
+as18330c5 and continued to NPC setup draft PR30. Full Gate4 acceptance remains pending.

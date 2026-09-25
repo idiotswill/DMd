@@ -98,16 +98,18 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ### 2026-09-25 integration checkpoint
 
-Main is now `d12b2a68b82592cc59622062d6ab1668defa20ed`. Bounded prerequisite
-PRs24 (effects),25 (damage/vitality),26 (physical inventory) and27 (source creature
-definitions) have merged after exact-head verification. PR27's merged tree equals
-its reviewed final head; all six post-merge jobs passed in Linux run36101900611 and
-Windows run36101900631, including stable packaging.
-PR28 (physical weapon plans) also merged: canonical329 Rust tests passed on source
-`32970a1`; final docs-only head `1c5ebb9` retained exact source bytes, received fresh
-review and passed all six CI jobs. Its merged full tree equals that exact reviewed
-head; all six post-merge jobs passed in Linux36103736797 and Windows36103736775,
-including packaging. Integration merge is `cac466c`.
+Main is now `ac35c1d65d27239f704cde1422209a0f106fb0e1`. Bounded prerequisite
+PRs24 (effects),25 (damage/vitality),26 (physical inventory),27 (source creature
+definitions) and28 (physical weapon plans) passed exact-head verification and merged.
+Their detailed exact-head/local/post-merge evidence remains in their execution plans.
+PR29 (physical equipment through the table) also merged: Windows canonical verification
+passed331 Rust tests on source `88b468a`; Linux runs332 because of its Unix-only symlink
+case. The final docs-only head `c4d992a` retained all source bytes, received independent
+review and all six final checks. Merged main `ac35c1d` has exact full tree parity with
+that final head; all six post-merge jobs passed in Linux36107189850 and
+Windows36107189841, including stable offline installer packaging. Root reconciliation
+`18330c5` retains the integration's wider source/flow authority and ports PR29's real
+file-reopen, forged-origin/null-shadow and actual equipment-button regressions.
 These source/reducer slices do not establish playable encounter acceptance by themselves.
 
 The separate encounter integration branch includes source creature setup/gear,
@@ -122,21 +124,34 @@ passed at `56a8d35`. Miss/decline restore tests do not prove
 the still-required damaging reaction and concentration sequence.
 
 Casting checkpoint `81c1a4e` passed96 integration tests and strict domain/rules
-all-target Clippy, including the sealed source spell-attack adapter and EndTurn
-occupied-space consequence. It remains to be integrated through the table UI and
-recovery boundary. Root merged that rules checkpoint as `f34b42c`. Movement checkpoint
-`4a6f879` plus departure helper `5435743` are integrated as `140b737`/`7c7ef03`; the
-four production/test movement files exactly match the reviewed source checkpoint.
-The source branch passed42 attack/OA,18 movement and24 turn tests plus strict
-domain/rules all-target Clippy. Accepted-prefix travel privacy and durable stop receipts
-now have reducer evidence. Casting's new roll/work variants and receipt audit attachment
-are still awaiting the separate table-casting application branch, so this newly merged
-integration head does not yet have whole-application verification. Falling queue
-attachment remains the movement author's active follow-up.
-Root owns fresh main-based `codex/gate4-equipment-table`: attaching physical inventory,
-its durable host preparation and private current sheet, source mastery choices and
-save migration/replay defenses. Its extracted UI passed13 tests, zero Svelte diagnostics
-and the production build; Rust/canonical/review/CI remain pending for that branch.
+all-target Clippy, including the source spell-attack adapter and EndTurn occupied-space
+consequence. Movement `4a6f879` plus departure helper `5435743` are integrated; the source
+branch passed42 attack/OA,18 movement and24 turn tests plus strict Clippy. Source Charge
+`2a16e37`/evidence `bf2e38d` passed94 attack/movement/turn cases and strict Clippy, with
+fresh review, and is integrated as `1132e48`/`dc62e56`.
+
+The table-casting checkpoint `9fe100a` passed61 app tests,35 frontend tests, zero Svelte
+diagnostics, production UI build and strict domain/rules/app all-target Clippy. Its real
+SQLite scenario covers Cultist Hold Person, player save, Dragon rays, separate
+concentration children, hidden target exclusion, file reopen and exact retry/restore.
+Final copy/Charge-origin changes have the focused rerun evidence recorded in its plan;
+independent exact-head app/UI review is clear. Root merged it cleanly as `220ee80` after
+PR29 reconciliation. This integrated combination still requires its own full verification;
+it is not interchangeable with the separately verified source heads.
+
+Root's fresh main-based `codex/gate4-creature-table` is draft PR30, candidate `53cbbe9`.
+It extracts source profiles and actual NPC gear, host-only setup, optional state attachment,
+legacy/replay origin guards and the real form. Existing PC checks/Second Wind are retained;
+legacy source-NPC checks reject the wrong PC formula. New SQLite tests cover creation,
+file reopen, identical retry, eight restore corruptions and ordinary player activity afterward.
+Frontend16 tests/Svelte/build and independent full extraction review are clear; Rust and
+canonical/exact-head CI remain pending. Do not infer verification from the integration.
+
+Falling queue attachment and actual source physical weapon attacks are separate active
+branches using the serialized compiler. New source SaveArea breath work has a plan on
+`codex/gate4-area-resolution`; it does not claim area execution yet. The18 spell mechanism
+families remain active where unfinished, including Ready, interruptions, zones, barriers,
+summons, forms and source-linked effects; do not promote pure catalog coverage to playability.
 Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
 and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
 
