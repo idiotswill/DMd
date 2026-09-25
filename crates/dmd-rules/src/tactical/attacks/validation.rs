@@ -23,8 +23,15 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         return Ok(());
     };
-    validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
-    authorize(state, &attack.origin, attack.actor)?;
+    if matches!(attack.admission, TacticalAttackAdmission::Spell { .. }) {
+        // The accepted command that advances an earlier spell can truthfully be
+        // another actor's save. The sealed retained casting proves the caster.
+        validate_equipment_change_origin(state, &attack.origin, attack.actor)
+            .map_err(|e| invalid(&e))?;
+    } else {
+        validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
+        authorize(state, &attack.origin, attack.actor)?;
+    }
     opportunity::validate_admission(state, attack)?;
     if attack.automatic_miss {
         return Err(invalid(
@@ -76,7 +83,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         _ => (),
     }
-    if attack.actor == attack.target
+    if (attack.actor == attack.target
+        && !matches!(attack.source, TacticalAttackSource::Spell { .. }))
         || attack.damage.is_empty()
         || attack.damage.len() > 16
         || !(-1000..=1000).contains(&attack.attack_modifier)
@@ -260,6 +268,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
 }
 
 fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(), RulesError> {
+    if matches!(attack.source, TacticalAttackSource::Spell { .. }) {
+        return spell::validate_source(state, attack);
+    }
     let Some(weapon) = attack.weapon() else {
         let plan = intrinsic::plan(state, attack)?;
         if attack.stage == TacticalAttackStage::MasteryChoice

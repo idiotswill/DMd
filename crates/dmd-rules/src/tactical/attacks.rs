@@ -3,12 +3,20 @@
 mod intrinsic;
 mod opportunity;
 mod planning;
+mod spell;
 mod validation;
 use super::turns::*;
 use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options};
+pub(super) use spell::begin_spell_attack;
+pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
+    match attack.source {
+        TacticalAttackSource::Spell { cast, at, .. } => Some((cast, at)),
+        _ => None,
+    }
+}
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     validation::validate(state)
 }
@@ -219,7 +227,10 @@ pub(super) fn key(
         _ => return Err(invalid("not attack dice work")),
     };
     Ok(TacticalRollKey {
-        origin: attack.origin.id,
+        origin: match &attack.admission {
+            TacticalAttackAdmission::Spell { casting_origin } => casting_origin.id,
+            _ => attack.origin.id,
+        },
         role,
         subject: attack.target,
         occurrence: work.occurrence,
@@ -559,6 +570,8 @@ fn complete(
             .find(|r| r.origin.id == attack.origin.id)
             .ok_or_else(|| invalid("attack receipt absent"))?;
         receipt.outcome = outcome;
+    } else if matches!(attack.source, TacticalAttackSource::Spell { .. }) {
+        spell::complete(state, attack)?;
     } else {
         intrinsic::complete(state, attack, outcome)?;
     }
