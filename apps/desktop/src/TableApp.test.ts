@@ -8,6 +8,54 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('retries explicit aftermath unchanged after restart, then closes and resumes with the retained controller',async()=>{
+    const user=userEvent.setup();let view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'first-session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementation(async received=>{
+      if(received.action==='EndSession') view={...view,revision:'closed',active_session:null};
+      else if(typeof received.action==='object' && 'StartSession' in received.action) {
+        const start=received.action.StartSession;
+        view={...view,revision:'resumed',active_session:{session_id:start.id,display_name:start.name,started_at_world:0,participants:start.participants}};
+      } else view={...view,revision:'concluded',tactical:{...view.tactical!,aftermath:{cadence:'ContinueExistingOrder',host_ruling:'Keep the current cadence.',may_pause_session:true}}};
+      return {command_id:received.command_id,revision:view.revision,outcome:{message:'Accepted.'}};
+    });
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Private host timing ruling').closest('fieldset')?.disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    expect((screen.getByRole('button',{name:'End and save session'}) as HTMLButtonElement).disabled).toBe(true);
+    await user.click(screen.getByRole('button',{name:'Table and sheets'}));
+    await user.click(screen.getByRole('checkbox',{name:/As host, keep/}));
+    await user.type(screen.getByLabelText('Private host timing ruling'),'Keep the current cadence.');
+    await user.click(screen.getByRole('button',{name:'Conclude hostilities and retain timing'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({channel:'Host',session_id:'first-session',revision:'visible-revision',action:{Tactical:{action:{ConcludeHostilities:{cadence:'ContinueExistingOrder',ruling:'Keep the current cadence.'}}}}});
+    mounted.unmount();render(TableApp);
+    await waitFor(()=>expect((screen.getByRole('button',{name:'Retry original request'}) as HTMLButtonElement).disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+    await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    await waitFor(()=>expect((screen.getByRole('button',{name:'End and save session'}) as HTMLButtonElement).disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'End and save session'}));
+    await screen.findByLabelText('Session name');
+    expect(vi.mocked(tableApi.action).mock.calls[2][0]).toMatchObject({session_id:'first-session',revision:'concluded',action:'EndSession'});
+    await waitFor(()=>expect(screen.getByLabelText('Session name').closest('fieldset')?.disabled).toBe(false));
+    await user.type(screen.getByLabelText('Session name'),'Aftermath continued');
+    await user.click(screen.getByLabelText('Sam is present'));
+    await user.selectOptions(screen.getByLabelText("Sam's character"),'pc');
+    await user.click(screen.getByRole('button',{name:'Start session'}));
+    await waitFor(()=>expect(tableApi.action).toHaveBeenCalledTimes(4));
+    const resumed=vi.mocked(tableApi.action).mock.calls[3][0];
+    expect(resumed).toMatchObject({revision:'closed',channel:'Host',action:{StartSession:{name:'Aftermath continued',participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]}}});
+    expect(resumed.session_id).not.toBe('first-session');
+    expect(typeof resumed.action==='object' && 'StartSession' in resumed.action && resumed.action.StartSession.id).toBe(resumed.session_id);
+  });
   it('prepares a newly queried source without using the historical catalog',async()=>{
     const user=userEvent.setup(); const view=emptyView();
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];

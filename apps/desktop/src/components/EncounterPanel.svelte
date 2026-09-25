@@ -42,6 +42,7 @@
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
   {#if tactical.aftermath}
     <p>Hostilities concluded. Ongoing saves, durations and readied actions continue in the existing turn order. Renewed activity uses this same cadence.</p>
+    {#if host}<p>To resume another session on this cadence, include every retained player controller and their existing character or source creature, including dead characters.</p>{/if}
     {#if host && tactical.aftermath.host_ruling}<details><summary>Private host timing ruling</summary><p>{tactical.aftermath.host_ruling}</p></details>{/if}
   {:else if host && !legacy && tactical.phase==='active'}
     <AftermathForm disabled={disabled||pendingRoll||pendingDecision} {onAction}/>

@@ -113,7 +113,21 @@ async fn cold_step(f: &mut Fixture, url: &str, request: TableTransportRequest) {
     let mirrored = Box::pin(mirror.submit_presented_table(request.clone()))
         .await
         .unwrap();
-    assert_eq!(result, mirrored);
+    match (&result, &mirrored) {
+        (TableTransportResult::Accepted(left), TableTransportResult::Accepted(right)) => {
+            assert_eq!(left.command_id, right.command_id);
+            assert_eq!(left.outcome, right.outcome);
+        }
+        _ => panic!("an action must be accepted as an action in both databases"),
+    }
+    // New audience revisions are intentionally random in independent databases;
+    // accepted retries within each database must retain that database's response.
+    assert_eq!(
+        Box::pin(mirror.submit_presented_table(request.clone()))
+            .await
+            .unwrap(),
+        mirrored
+    );
     let expected = state(f).await;
     assert_eq!(
         mirror.open_campaign(f.campaign).await.unwrap().state(),
@@ -175,6 +189,30 @@ async fn session_rollover(f: &mut Fixture, url: &str) {
     assert!(view(f, None).await.active_session.is_none());
     // Neither quitting nor opening a different real session advances game time.
     f.session = PlaySessionId::new();
+    let mut absent = participants(f);
+    absent[1].attendance = AttendanceStatus::Absent;
+    Box::pin(rejected(
+        f,
+        None,
+        TableAction::StartSession {
+            id: f.session,
+            name: "Missing retained controller".into(),
+            participants: absent,
+        },
+    ))
+    .await;
+    let mut unbound = participants(f);
+    unbound[1].character_id = None;
+    Box::pin(rejected(
+        f,
+        None,
+        TableAction::StartSession {
+            id: f.session,
+            name: "Missing retained character binding".into(),
+            participants: unbound,
+        },
+    ))
+    .await;
     let start = TableAction::StartSession {
         id: f.session,
         name: "Aftermath resumed".into(),
@@ -241,7 +279,7 @@ async fn conclude(f: &mut Fixture, url: &str) {
 }
 async fn reject_forged_conclusion(f: &Fixture) {
     let original = export_campaign(&f.pool, f.campaign).await.unwrap();
-    for kind in 0..4 {
+    for kind in 0..5 {
         let mut export = original.clone();
         let mut image = CampaignState::decode_json(&export.current_state.state_json).unwrap();
         let flow = image.encounter.as_mut().unwrap().flow.as_mut().unwrap();
@@ -250,13 +288,22 @@ async fn reject_forged_conclusion(f: &Fixture) {
             1 => flow.aftermath.as_mut().unwrap().ruling = "Invented accepted ruling".into(),
             2 => flow.aftermath = None,
             3 => flow.aftermath.as_mut().unwrap().concluded_on_turn.actor = f.actors[0],
+            4 => {}
             _ => unreachable!(),
         }
         export.current_state.state_json = serde_json::to_string(&image).unwrap();
-        assert_ne!(
-            export.current_state.state_json,
-            original.current_state.state_json
-        );
+        if kind == 4 {
+            // A believable post-conclusion image cannot replace the original
+            // pre-tactical anchor and authorize its own retained cadence.
+            export.snapshots = vec![dmd_persistence::SnapshotRow {
+                campaign_id: f.campaign.0.to_string(),
+                event_sequence: image.applied_event_sequence as i64,
+                state_schema_version: i64::from(image.schema_version),
+                state_json: export.current_state.state_json.clone(),
+                created_at_utc: export.exported_at_utc.clone(),
+            }];
+        }
+        assert_ne!(export, original, "case {kind} must alter the export");
         export
             .upgraded()
             .expect("generic export structure remains valid");

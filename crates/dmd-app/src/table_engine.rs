@@ -292,6 +292,7 @@ fn resolve_table_internal(
                     }
                 }
             }
+            require_aftermath_attendance(&next, participants)?;
             let binding = ActiveTableSession {
                 session_id: *id,
                 display_name: name.trim().into(),
@@ -723,6 +724,51 @@ fn idle(state: &CampaignState) -> Result<(), String> {
     }
     Ok(())
 }
+/// An aftermath session cannot omit an existing owner and later strand their
+/// mandatory turn/save. No host replacement or implicit attendance is introduced.
+fn require_aftermath_attendance(
+    state: &CampaignState,
+    participants: &[SessionParticipant],
+) -> Result<(), String> {
+    let Some(flow) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .filter(|flow| flow.aftermath.is_some())
+    else {
+        return Ok(());
+    };
+    for combatant in &flow.combatants {
+        if let Some(character) = state
+            .characters
+            .values()
+            .find(|character| character.entity_id == combatant.actor)
+            && let Some(player) = character.controlling_player_id
+            && !participants.iter().any(|participant| {
+                participant.player_id == player
+                    && participant.character_id == Some(character.id)
+                    && participant.attendance == AttendanceStatus::Present
+            })
+        {
+            return Err("Resume aftermath with every retained character's controller present and bound to that character, including dead characters.".into());
+        }
+        if let Some(CreatureController::Player(player)) = state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_creatures.as_ref())
+            .and_then(|creatures| creatures.runtime(combatant.actor))
+            .map(|runtime| runtime.controller)
+            && !participants.iter().any(|participant| {
+                participant.player_id == player
+                    && participant.attendance == AttendanceStatus::Present
+            })
+        {
+            return Err("Resume aftermath with every retained source creature's controller explicitly present.".into());
+        }
+    }
+    Ok(())
+}
+
 fn active<'a>(
     state: &'a CampaignState,
     meta: &CommandMeta,

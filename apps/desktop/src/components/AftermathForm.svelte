@@ -14,7 +14,7 @@
     <p>The encounter map and turn order remain in use for ongoing saves, durations and readied actions. This does not heal anyone, restore resources or advance time.</p>
     <label class="check"><input type="checkbox" required bind:checked={continueCadence} />As host, keep the existing turn order for aftermath timing.</label>
     <label>Private host timing ruling<textarea required maxlength="2000" rows="2" bind:value={ruling}></textarea></label>
-    <p class="muted">This is a GM timing choice. Players still decide their actions and report their own dice. You can end the session once pending work is settled, then resume the same cadence.</p>
+    <p class="muted">This is a GM timing choice. Players still decide their actions and report their own dice. You can end the session once pending work is settled. Resuming requires every retained participant's player to be present with their existing character or source creature, including dead characters.</p>
     <button type="submit" disabled={!continueCadence || !ruling.trim()}>Conclude hostilities and retain timing</button>
   </fieldset>
 </form>

@@ -4,14 +4,14 @@ Implementation lead and sole branch writer: bootstrap_audit, delegated by root.
 Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance is
 claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 
-Current baseline is merged main `d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38`.
+Current baseline is merged main `d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278`.
 Status: the first aftermath source/app/UI implementation and its regressions are
 authored but **uncompiled and unexecuted**. Only formatting and diff checks have run.
-No production acceptance, PR, push or merge is claimed. The new current-main Night
-Hag dependency `d82d7b2` will be merged after this coherent source checkpoint; reviewed
-PR42/43 compatibility and source-control dependencies remain subsequent integrations.
-Normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to authoritative
-main. The branch's two genuine commits since `8cb3084` changed only this plan;
+No production acceptance, PR, push or upstream merge is claimed. Night Hag main
+merged normally at `4244f64` after source checkpoint `eac4dd4`; reviewed PR42/43
+compatibility and source-control dependencies remain subsequent integrations.
+Initial normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to
+authoritative `d5d1db7` main. The branch's two genuine commits since `8cb3084` changed only this plan;
 after the merge, the full tree differs from main only by this file. No independent
 production source was discarded. PR41, historical-compatibility PR42 and source-control
 PR43 must be reconciled at reviewed checkpoints before final integrated acceptance.
@@ -38,8 +38,13 @@ new battlefield setup. Those mandatory Gate4 obligations remain below as follow-
   actions can still occur on the retained cadence if hostile activity renews.
 - EndSession permits only quiescent marked aftermath, never a pending continuation.
   A new session can bind a retained dead character for its existing encounter
-  decisions, without admitting dead actors into fresh initiative. Attendance remains
-  explicit; absent controllers are never replaced by host decisions.
+  decisions, without admitting dead actors into fresh initiative. A resumed session
+  requires every retained player controller explicitly Present with its established
+  character/source binding. Missing/absent owners are rejected before session creation:
+  no attendance-update action exists to recover a stranded future mandatory save.
+  Absent controllers are never replaced by host decisions. PR43's reviewed source
+  control channel must be integrated and tested for the actual player-owned NPC path;
+  the current base has no public player-source controls.
 - Preserve old JSON by omitting the boxed marker and projection when absent. Add
   strict validation, original-action provenance and pre-tactical-anchor protection;
   keep exact accepted retry and historical/live execution separation unchanged.
@@ -287,6 +292,21 @@ production writes. Authored first-slice changes now include:
 - Three UI cases cover explicit choice, uncertain-request lock, host/current-executor
   ownership and ruling privacy. The small shared medicine preparation helper is only
   exposed to the sibling test module; its existing scenario remains unchanged.
+- A fourth UI case now drives the actual TableApp conclusion form, unconfirmed
+  restart/exact envelope retry, EndSession affordance and new StartSession controller
+  binding. This is a mocked IPC/component test, not native packaged acceptance. The
+  SQLite corruption matrix also replaces the complete snapshot list with the current
+  post-conclusion image to prove it cannot self-authorize as a recovery anchor.
+- Root-approved fail-closed session attendance checks now reject an absent retained
+  controller or omitted PC binding without durable writes; each real session rollover
+  tests both refusals before starting with all genuine owners. Host text explains the
+  requirement. Verified Night Hag main merged cleanly as `4244f64`; aftermath source
+  was unchanged by that prerequisite merge.
+- Independent review caught a fixture-only false comparison: two newly accepted
+  commands in independent databases generate distinct random audience revisions.
+  The test now compares accepted command/outcome and semantic state across mirrors,
+  while requiring byte/exact full-response equality on retries within each database.
+  No production protocol or assertion of durable retry identity was weakened.
 
 `cargo fmt --all` and `git diff --check` pass. **No Rust compiler, tests, frontend
 check or build has run on this source.** Default Windows stack and historical corpus
