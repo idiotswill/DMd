@@ -80,5 +80,9 @@ PR33 source49fac8c passed this scenario in the full596-test Linux run. Native Wi
 finished all scenario assertions but failed at final temp-file removal (OS32 sharing
 violation). Root's independently reviewed correction closes pools and drops runtime/
 fixture handles before bounded Windows-only sharing-error retries. Cleanup remains
-asserted and every scenario assertion is unchanged. The corrected combined head must
-pass canonical and native CI before this integration is accepted.
+asserted and every scenario assertion is unchanged. Final combined code/test6291776
+passes canonical verification (595 Windows GNU Rust tests), desktop45/check/build,
+Linux36133381708 (596 Rust tests) and Windows36133381673 (598 native Rust tests,
+MSRV/stable and installer). All six checks pass, including this real scenario.
+Final evidence-head review/CI, protected merge and post-merge verification remain
+in the integration plan; no whole-gate completion is claimed.

@@ -80,12 +80,19 @@ heads never substitute for this combined verification.
 
 ## Current evidence and next action
 
-PR33 is open at https://github.com/idiotswill/DMd/pull/33. Initial extraction
-`b7f5dfb` passed all six checks: Linux36129213345 (590 Rust tests) and
-Windows36129213349 (MSRV/stable including whole-workspace tests and installer).
+PR33 is open at https://github.com/idiotswill/DMd/pull/33. Final code/test head
+`629177634572740ed637da5b5640fc49bbc08083` passes canonical local verification:
+595 Windows GNU Rust tests, strict workspace all-target Clippy, formatting/check
+and both repository guards. Log: `../tooling/pr33-canonical-final.log`.
+The desktop passes45 tests, Svelte check with zero errors/warnings and a production
+build (133 modules); logs are `../tooling/pr33-ui-{check,test,build}.log`.
+All six checks pass on that exact head: Linux36133381708 (596 Rust tests) and
+Windows36133381673 (598 native Rust tests, MSRV/stable and offline installer).
+The final native run includes both actual OA/concentration and lethal/dead-target
+disk recovery scenarios, with the bounded sharing-error fixture cleanup below.
 Three independent bounded reviews cover combined source/admission, movement/attack/
 fall recovery and application/projection/restore paths. The dead-target finding
-below is corrected; the final combined head still needs its own full verification.
+below is corrected, and independent review cleared the test-only cleanup deltas.
 
 The admission correction is `a58d4dc`; all 71 affected attack tests pass locally
 after correcting the two new fixture assumptions documented below. The genuine OA
@@ -93,8 +100,11 @@ test is integrated as `5e3f89a`, with its focused source result and independent
 review clear. The real lethal/dead-target SQLite test is integrated as `9910ce7`
 after independent review and passes on the default Windows stack after a two-line
 test-helper mutability correction (one scenario, 9.66 seconds). All lethal/retry/
-next-turn/zero-write/replay/restore assertions ran. Full canonical verification, UI checks,
-fresh final CI, protected merge and post-merge checks remain required.
+next-turn/zero-write/replay/restore assertions ran. Combined canonical, desktop and
+native evidence is now recorded above. This evidence-only update needs its own
+review and all six final-head CI checks before expected-head-protected merge.
+Then fetch main, prove full-tree parity and inspect post-merge checks; do not merge
+using only the preceding code-head checks.
 
 PR32's post-merge checks are now all green on main `12ed29a`: Linux36129020814 and
 Windows36129020852. No base/source reconciliation is pending. The twelve Gate4
