@@ -62,7 +62,19 @@ genuine casting application,8-hour expiry and armor-don ending behavior. A Shiel
 effect is separate from wearing armor. No special Mage timer or permanent AC15 is
 introduced.
 
-## Verification and next action
+## Current verification and next action
+
+This source is integrated into PR38. Root's a61e95d canonical run passed664 GNU Rust
+tests, strict lint and both guards; its six exact-head checks pass, including667 native
+Rust tests and packaging. The source/profile/scheduler cases below are compiled and
+passing in that foundation. Actual live Shield/Counterspell windows remain absent.
+The later Savage/Ready-abandonment/Medicine composition643cdf3 is now in CI and must
+receive fresh canonical/UI/exact-head review before the foundation merges. Root owns
+all further integration after supporting-agent quota exhaustion. Follow
+`gate4-reaction-foundation.md` and `gate4-live-reaction-responses.md`; no Gate4 runtime
+mechanism is deferred or satisfied by the source helpers alone.
+
+## Earlier implementation checkpoint (superseded by evidence above)
 
 Plan written before implementation. Read current source/descriptor/scheduler files,
 settle included Mage Armor representation, add bounded source descriptors/adapters

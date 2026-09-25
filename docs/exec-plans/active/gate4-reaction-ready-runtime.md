@@ -116,7 +116,7 @@ bounded entry here. Other Ready actions, unimplemented spell families and generi
 natural circumstances remain explicit active work until complete typed adapters or
 retained host adjudications exist. Unsupported requests fail before costs.
 
-## Validation and exact next action
+## Earlier implementation history
 
 Inherited training correction:43 focused spell tests and strict domain/rules all-target
 Clippy passed at `1b39980`, with independent source/fixture signoff. Those checks do
@@ -288,3 +288,15 @@ The fixture now includes the required Prone state; production validation and all
 assertions remain unchanged. All six local Ready reducer tests pass after correction.
 The prior native log also confirms the actual Ready SQLite case and all40 table-loop
 tests passed, plus61 UI tests/static/build. Full corrected-head CI is still required.
+
+## Current composition and exact next action (2026-09-25)
+
+PR38 is now bounded by gate4-reaction-foundation.md; this umbrella remains active
+through actual response execution. Normal merge643cdf3 imports Medicine a0b4b57.
+Its four adjacent code/UI conflicts retain both features, initialize Medicine's
+current work_trace and explicitly version its new Begin/UI fixtures. Source Medicine
+has prior canonical654 GNU/655 Linux/657 native evidence and its strengthened four
+cases pass; combined execution is new and unverified. Run canonical/UI and exact-head
+CI on the composition, reconcile PR39's actual squash only after tree/ancestry proof,
+then finish the foundation review/merge and start the fresh live-response branch.
+Do not treat cancelled pre-integration CI as a full pass or mark this umbrella done.
