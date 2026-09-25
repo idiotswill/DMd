@@ -119,7 +119,14 @@ pub(super) fn start(
                 }
                 Err(error) => return Err(error),
             };
-            let options = options(state, &movement, reactor, &segment)?;
+            let options = match options(state, &movement, reactor, &segment) {
+                Ok(options) => options,
+                Err(RulesError::Prerequisite(_)) => {
+                    finish_movement(state, meta, TacticalMovementEnd::Stopped)?;
+                    return Ok(true);
+                }
+                Err(error) => return Err(error),
+            };
             if !options.is_empty() {
                 current_mut(state)?.opportunity = Some(TacticalOpportunityWindow {
                     origin: meta.clone(),
@@ -179,7 +186,14 @@ pub(super) fn prune(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
     };
     for reactor in queued {
         let still_due = match &segment {
-            Some(segment) => !options(state, &movement, reactor, segment)?.is_empty(),
+            Some(segment) => match options(state, &movement, reactor, segment) {
+                Ok(options) => !options.is_empty(),
+                // Keep the MoveSegment underneath existing children. It rechecks
+                // this unresolved source crossing and stops before departing;
+                // do not remove a parent needed by an already accepted attack.
+                Err(RulesError::Prerequisite(_)) => false,
+                Err(error) => return Err(error),
+            },
             None => false,
         };
         if !still_due {
@@ -195,18 +209,35 @@ pub(super) fn prune(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
 fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     let movement = current(state)?.clone();
     if usize::from(movement.next_step) == movement.path.len() {
-        resolution_mut(state)?.movement = None;
-        return Ok(());
+        return finish_movement(state, meta, TacticalMovementEnd::Completed);
     }
     let segment = match crate::tactical_movement::next_segment(state, &movement) {
         Ok(segment) => segment,
         Err(RulesError::Prerequisite(_)) => {
             // A reaction's accepted consequences must remain committed even if they
             // make the remaining path impossible. Never roll back damage to finish it.
-            resolution_mut(state)?.movement = None;
-            flow_mut(state)?.budget.movement_progress = None;
-            flow_mut(state)?.budget.movement_origin = None;
-            return Ok(());
+            let expected = movement
+                .traversed
+                .last()
+                .map_or(movement.initial_position, |receipt| receipt.to);
+            let displaced = encounter(state)?
+                .participant(movement.actor)
+                .is_none_or(|actor| actor.position != expected);
+            let capability_lost = crate::tactical_movement::capability(
+                state,
+                movement.actor,
+                movement.path[usize::from(movement.next_step)].mode,
+            )
+            .is_err();
+            return finish_movement(
+                state,
+                meta,
+                if displaced || capability_lost {
+                    TacticalMovementEnd::Interrupted
+                } else {
+                    TacticalMovementEnd::Stopped
+                },
+            );
         }
         Err(error) => return Err(error),
     };
@@ -222,10 +253,17 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             decision.reactor == actor
                 && decision.kind != TacticalOpportunityDecisionKind::Unavailable
         });
-        if actor != movement.actor
-            && !answered
-            && !options(state, &movement, actor, &segment)?.is_empty()
-        {
+        if actor == movement.actor || answered {
+            continue;
+        }
+        let options = match options(state, &movement, actor, &segment) {
+            Ok(options) => options,
+            Err(RulesError::Prerequisite(_)) => {
+                return finish_movement(state, meta, TacticalMovementEnd::Stopped);
+            }
+            Err(error) => return Err(error),
+        };
+        if !options.is_empty() {
             opportunities.push(actor);
         }
     }
@@ -296,6 +334,50 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
     movement.decisions.clear();
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
     refresh_dodges(state)
+}
+
+fn finish_movement(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    reason: TacticalMovementEnd,
+) -> Result<(), RulesError> {
+    let movement = current(state)?.clone();
+    let result = TacticalMovementResult {
+        original: movement.origin.clone(),
+        cause: meta.clone(),
+        actor: movement.actor,
+        turn_number: resolution(state)?.turn_number,
+        start: movement.initial_position,
+        endpoint: encounter(state)?
+            .participant(movement.actor)
+            .ok_or_else(|| invalid("Mover disappeared before movement completed."))?
+            .position,
+        requested_steps: u16::try_from(movement.path.len())
+            .map_err(|_| invalid("Movement path capacity."))?,
+        completed_steps: movement.next_step,
+        spent_before: movement.initial_spent,
+        spent_after: flow(state)?.budget.movement_spent,
+        reason,
+    };
+    let resolution = resolution_mut(state)?;
+    resolution.movement = None;
+    // Only this movement's future crossings are canceled. Independent attack,
+    // casting, concentration and effect children retain their original queue/order.
+    for frame in &mut resolution.frames {
+        frame.retain(|work| {
+            !matches!(
+                work.kind,
+                TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. }
+            )
+        });
+    }
+    let flow = flow_mut(state)?;
+    flow.last_movement = Some(result);
+    if reason != TacticalMovementEnd::Completed {
+        flow.budget.movement_progress = None;
+        flow.budget.movement_origin = None;
+    }
+    crate::tactical_movement::validate_result(state)
 }
 
 /// The attack adapter calls this before spending any reaction. It cannot accept a

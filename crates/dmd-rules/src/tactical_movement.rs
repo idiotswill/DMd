@@ -81,6 +81,142 @@ pub(crate) fn validate_budget_progress(state: &CampaignState) -> Result<(), Rule
     Ok(())
 }
 
+/// Proposal shape uses only submitted points and the mover's own grid. It must not
+/// inspect the map's remote occupants, solids, support, terrain or path cost.
+fn validate_path_shape(
+    start: SpatialPoint,
+    size: CreatureSize,
+    path: &[TacticalMoveStep],
+) -> Result<(), RulesError> {
+    if path.is_empty() || path.len() > 1024 {
+        return Err(invalid(
+            "Movement needs between one and 1024 adjacent steps.",
+        ));
+    }
+    let alignment = if size == CreatureSize::Tiny { 5 } else { 10 };
+    let mut position = start;
+    for step in path {
+        step.destination.validate().map_err(invalid)?;
+        if step.destination.x.rem_euclid(alignment) != 0
+            || step.destination.y.rem_euclid(alignment) != 0
+        {
+            return Err(prerequisite(
+                "Destination is not aligned to this actor's grid.",
+            ));
+        }
+        let distance = grid_distance(position, step.destination)
+            .map_err(|error| invalid(error.to_string()))?;
+        if distance == 0 || distance > 10 {
+            return Err(prerequisite(
+                "Movement steps must be distinct adjacent positions.",
+            ));
+        }
+        if step.mode == MovementMode::Teleport {
+            return Err(prerequisite("Teleportation requires its source feature."));
+        }
+        position = step.destination;
+    }
+    Ok(())
+}
+
+/// Own source capability only, distinct from whether a particular place can be
+/// reached. A later source interruption rechecks this before the next real step.
+pub(crate) fn capability(
+    state: &CampaignState,
+    actor: EntityId,
+    mode: MovementMode,
+) -> Result<(), RulesError> {
+    let mover = encounter(state)?
+        .participant(actor)
+        .ok_or_else(|| invalid("Mover is absent."))?;
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let conditions = crate::active_conditions(rules, actor);
+    if conditions.contains(&Condition::Prone) && mode != MovementMode::Crawl {
+        return Err(prerequisite("Prone movement must crawl."));
+    }
+    let base = match mode {
+        MovementMode::Walk | MovementMode::Crawl | MovementMode::Jump => mover.movement.walk,
+        MovementMode::Climb => mover.movement.climb.unwrap_or(mover.movement.walk),
+        MovementMode::Swim => mover.movement.swim.unwrap_or(mover.movement.walk),
+        MovementMode::Fly => mover
+            .movement
+            .fly
+            .ok_or_else(|| prerequisite("Actor has no Fly Speed."))?,
+        MovementMode::Burrow => mover
+            .movement
+            .burrow
+            .ok_or_else(|| prerequisite("Actor has no Burrow Speed."))?,
+        MovementMode::Teleport => {
+            return Err(prerequisite("Teleportation requires its source feature."));
+        }
+    };
+    if crate::tactical_conditions::effective_speed(rules, actor, base)? == 0 {
+        return Err(prerequisite(
+            "The actor's current source state prevents this movement.",
+        ));
+    }
+    if mode == MovementMode::Fly
+        && !mover.movement.hover
+        && conditions.contains(&Condition::Incapacitated)
+    {
+        return Err(prerequisite(
+            "Unsupported flight cannot continue while incapacitated.",
+        ));
+    }
+    Ok(())
+}
+
+pub(crate) fn validate_result(state: &CampaignState) -> Result<(), RulesError> {
+    let Some(flow) = encounter(state)?.flow.as_ref() else {
+        return Ok(());
+    };
+    let Some(result) = &flow.last_movement else {
+        return Ok(());
+    };
+    if !matches!(flow.phase, TacticalPhase::Active | TacticalPhase::Finished) {
+        return Err(invalid("Movement result precedes the first combat turn."));
+    }
+    validate_equipment_origin(state, &result.original, result.actor).map_err(invalid)?;
+    validate_equipment_change_origin(state, &result.cause, result.actor).map_err(invalid)?;
+    result.start.validate().map_err(invalid)?;
+    result.endpoint.validate().map_err(invalid)?;
+    let cost = result
+        .spent_after
+        .checked_sub(result.spent_before)
+        .ok_or_else(|| invalid("Movement result refunds accepted expenditure."))?;
+    let sequence = result.original.expected_event_sequence;
+    if result.requested_steps == 0
+        || result.requested_steps > 1024
+        || result.completed_steps > result.requested_steps
+        || result.spent_after > 10_000
+        || result.turn_number == 0
+        || state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.timing.as_ref())
+            .is_some_and(|timing| result.turn_number > timing.turn_number)
+        || result.cause.expected_event_sequence < sequence
+        || (result.cause.expected_event_sequence == sequence && result.cause != result.original)
+        || (result.cause.id == result.original.id && result.cause != result.original)
+        || cost < u32::from(result.completed_steps)
+        || cost > u32::from(result.completed_steps) * 30
+        || (result.reason == TacticalMovementEnd::Completed)
+            != (result.completed_steps == result.requested_steps)
+        || (result.completed_steps == 0
+            && result.reason != TacticalMovementEnd::Interrupted
+            && result.endpoint != result.start)
+        || (result.reason != TacticalMovementEnd::Interrupted
+            && grid_distance(result.start, result.endpoint)
+                .map_err(|error| invalid(error.to_string()))?
+                > u32::from(result.completed_steps) * 10)
+    {
+        return Err(invalid(
+            "Movement result has incompatible source, counts or expenditure.",
+        ));
+    }
+    Ok(())
+}
+
 /// Internal source adapter query. The actor must be the current turn's mover; the
 /// returned command and geometry are captured before the attack consumes progress.
 #[expect(
@@ -180,6 +316,9 @@ fn evaluate(
     )
     .map_err(|error| match error {
         SpatialError::Illegal(message) => prerequisite(message),
+        // The cumulative runtime work/movement bound is reached only at this real
+        // segment; it must not undo a prefix already accepted in the same attempt.
+        SpatialError::Capacity => prerequisite("Movement reached its bounded execution capacity."),
         other => invalid(other.to_string()),
     })
 }
@@ -213,20 +352,18 @@ pub(crate) fn admit(
             "Ordinary movement belongs to the current turn.",
         ));
     }
-    let plan = evaluate(state, actor, path, true)?;
-    if plan.falls_at_end {
-        return Err(prerequisite(
-            "That destination requires a falling continuation.",
-        ));
+    let mover = encounter
+        .participant(actor)
+        .ok_or_else(|| invalid("Mover is absent."))?;
+    validate_path_shape(mover.position, mover.size, path)?;
+    for step in path {
+        capability(state, actor, step.mode)?;
     }
     Ok(TacticalMovement {
         origin: meta.clone(),
         actor,
         path: path.to_vec(),
-        initial_position: encounter
-            .participant(actor)
-            .ok_or_else(|| invalid("Mover is absent."))?
-            .position,
+        initial_position: mover.position,
         initial_spent: flow.budget.movement_spent,
         initial_progress: progress(state)?,
         initial_progress_origin: flow.budget.movement_origin.clone(),
@@ -249,6 +386,19 @@ pub(crate) fn next_segment(
         .path
         .get(index)
         .ok_or_else(|| invalid("Movement cursor is complete."))?;
+    let expected_position = movement
+        .traversed
+        .last()
+        .map_or(movement.initial_position, |receipt| receipt.to);
+    if encounter(state)?
+        .participant(movement.actor)
+        .is_none_or(|mover| mover.position != expected_position)
+    {
+        return Err(prerequisite(
+            "Accepted displacement interrupted the remaining movement.",
+        ));
+    }
+    capability(state, movement.actor, step.mode)?;
     let plan = evaluate(
         state,
         movement.actor,
@@ -283,6 +433,10 @@ pub(crate) fn validate_history(
         return Err(invalid("Invalid retained movement bounds/cursor."));
     }
     movement.initial_position.validate().map_err(invalid)?;
+    let mover = encounter(state)?
+        .participant(movement.actor)
+        .ok_or_else(|| invalid("Mover is absent."))?;
+    validate_path_shape(movement.initial_position, mover.size, &movement.path)?;
     validate_progress(&movement.initial_progress, movement.initial_spent)?;
     if (movement.initial_progress != TacticalMovementProgress::default())
         != movement.initial_progress_origin.is_some()

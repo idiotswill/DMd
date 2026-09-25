@@ -170,3 +170,241 @@ and reconstructed accepted attack admissions receive those checks. Two additiona
 malformed-anchor cases cover foreign campaign and pre-movement origin. They remain
 unrun pending the same serialized combined build; the attack adapter retains its
 separate upper bound against the actual accepted reaction command.
+
+Independent falling leaf review of `dd8730c` found one concrete source-query issue:
+Frightened can reference a real source outside the current encounter. Landing checks
+now test encounter participation before asking spatial sight, matching attack
+admission. A regression checks off-map Normal versus visible-source Disadvantage.
+The reviewer found no other blocker in the bounded geometry/source leaf; eight new
+falling tests remain unrun and runtime attachment remains incomplete.
+
+Parent approved a bounded optional `last_movement` receipt when falling is attached:
+retain the original accepted Move command, actual resolving cause, endpoint, completed
+steps and source-derived completion/interruption/fall reason. Both commands must join
+restore audit comparison. Cancel only this movement's remaining segment/opportunity
+frames on actual falling displacement; preserve unrelated attack, concentration,
+casting and other consequence work. An OA causing a fall is required regression
+evidence. The explicit stop outcome is not yet implemented by this leaf checkpoint.
+
+Landing outcome now preserves the campaign's existing opted-in
+`ability_test_natural_extremes` policy. Default RAW still compares the actual total
+with DC15; the explicit house rule changes natural1/20 outcomes without rewriting
+faces. A ninth leaf regression covers both policies at totals that distinguish them.
+Parent assigned the matching shared tactical-save/failed-save/LR consistency fix to
+casting integration; that broader change is outside this leaf's ownership.
+
+## Required movement privacy correction before acceptance
+
+Parent review identified a remaining oracle: `admit` currently evaluates the complete
+path against hidden authoritative occupancy/solids/difficult terrain before any move
+is accepted. Normalizing error text is insufficient because success/failure itself
+can reveal distant truth. The current movement checkpoint is not gate-accepted.
+
+At the stopped-movement/falling handoff, admission must validate only bounded proposal
+syntax, grid steps, mover-owned source capabilities and known budget lower bounds.
+Malformed or unavailable capabilities still reject atomically. A valid travel attempt
+is accepted, then the existing true per-segment evaluator commits each legal prefix
+and stops only when the actual next crossing meets obstruction or exhausts movement.
+The durable stop receipt discloses the reached place/coarse interruption only, never
+a hidden actor or obstacle ID. This intentionally replaces the draft whole-path
+hidden-truth rejection contract without waiving collision or budget correctness.
+
+Regression pairs must compare near/far/absent hidden walls and remote invisible
+creatures: distant hidden placement cannot change admission; different stops must
+correspond to actual attempted crossings and retained prefix position/cost. Reaction-
+caused displacement invalidates the unfinished remainder with a derived receipt and
+must preserve unrelated consequence frames. Root approved this correction; it follows
+casting's shared queue handoff rather than competing with that writer.
+
+## Falling leaf verification checkpoint
+
+Reviewed opportunity adapter `f69dee6` is integrated by dependency-only merge `03cac39`.
+The merge retained both writers' plans; no shared-queue behavior was changed here.
+Domain/rules library mtimes were refreshed before compilation to avoid reuse of newer
+artifacts from another worktree's shared target. On this source tree, all 41 spatial
+unit tests passed, including the complete nine-case falling leaf suite.
+
+Strict Clippy identified `filter_map(bool::then)` in the new solid-surface collector.
+Replacing it with equivalent `filter` plus `map` preserved predicate, order and landing
+data. The nine falling tests then passed again, and strict library Clippy for both
+`dmd-domain` and `dmd-rules` passed. `cargo fmt --check` required one export-order fix;
+the subsequent formatting and diff checks passed. No falling gameplay execution is
+implied: retained falling work, raw-roll queue attachment, actual landing/vitality,
+movement stop receipts and the privacy correction above remain required integration.
+
+The falling source/geometry received independent read-only review with the off-map
+Frightened query correction closed at `8c6f271`. A separate reviewer cleared the exact
+natural-extremes policy delta `3bc7e36`. Compiler ownership is released to root for its
+application integration checks; casting still owns the shared dispatcher/pump until
+its coherent checkpoint is handed off.
+
+## Prepared privacy and stop regression matrix
+
+These are the next implementation scenarios, not passing tests or an attached new
+validator. Reuse the existing serialized `tactical_movement` reducer fixture and its
+exact `replay_tactical` comparison; do not create a parallel movement engine.
+
+- Clone one valid initial state and one command ID. Keep mover `(10,10,0)` and the
+  adjacent route through x=20,30,40,50 unchanged; place other participants off-path.
+  Compare an unobservable solid at
+  x=25, at x=45, and no solid. Each structurally valid attempt must be accepted.
+  Actual segment collision should leave prefixes at x=10/cost0, x=30/cost20, and
+  x=50/cost40 respectively. Use physically blocking but non-observable geometry so
+  the actor cannot learn the remote obstacle through preview. Stops contain the
+  original Move command, actual causing command, reached endpoint and coarse reason;
+  no obstacle ID, name or unvisited position enters the public result.
+- Move the same invisible, otherwise unchanged participant between remote path and
+  off-path locations, with no hostile reaction relationship. Admission cannot reveal
+  its placement. Only an attempted occupied crossing can stop the accepted prefix,
+  without identifying the occupant or adding a remembered contact as a side effect.
+- Compare identical own Speed/Dash budgets with hidden difficult terrain present or
+  absent. Spend only committed segment cost; exhaustion retains the legal prefix.
+  Include a source-legal route longer than the remaining budget so the old whole-route
+  over-budget rejection fixture is replaced explicitly, not silently deleted.
+- Retain atomic rejection for malformed/empty/over-capacity paths, non-adjacent or
+  misaligned points, Teleport without a source, unavailable Fly/Burrow capability,
+  and voluntary movement forbidden by the actor's own state. These do not need remote
+  geometry to decide. A later interruption rechecks changed source state per segment.
+- At a genuine pre-crossing OA pause, serialize/restore and accept the same reaction
+  metadata on both images. Damage or source displacement that invalidates the next
+  segment must preserve the already-paid reaction and completed movement prefix.
+  Falling must land the actor before any invalid remainder can advance. Prune only
+  this movement's future segment/opportunity work and preserve independent attack,
+  concentration, casting and effect children in the single shared queue.
+- Corrupt retained stop cause, original Move ID, completed-step count, endpoint,
+  spent cost and unfinished-work association separately. Structural validation and
+  post-anchor semantic replay must reject invented receipts; the application must
+  collect both command origins and exercise a fresh SQLite export/restore continuation.
+
+Implementation should separate proposal-shape/source-capability checks from the
+existing true one-segment evaluator. Do not sanitize an entire encounter into a fake
+map to obtain a successful preview. A visible stop is evidence of an attempted local
+crossing; generic rejection text alone cannot repair a whole-path success oracle.
+
+## Independent opportunity-grip projection regression
+
+The parent application now filters reaction grips by current physical hands. The
+standalone `crates/dmd-app/src/table_opportunity_tests.rs` contribution exercises
+that private projection against `prepare_weapon_attack` in a Reaction window. It
+uses runtime-created legal PCs and materialized starting equipment, then an explicitly
+isolated read-only acquisition snapshot for a real Greatsword and Quarterstaff. It
+does not claim an acquisition event or expand the starter shop.
+
+Both required Two-Handed and Versatile two-handed use are checked with the weapon
+in either hand plus a free hand, already in both hands, blocked by a held shield or
+other weapon, and absent from both hands. Positive plans check the actual source
+damage dice; the projection retains the sole witnessed mover target, preserves legal
+one-handed Versatile use, and leaves the complete input state unchanged. No equipment
+change permission is supplied to the Reaction planner.
+
+This branch does not contain the parent's new `table_movement` module, so the file is
+intentionally unattached here. Parent integration must include it as a `#[cfg(test)]`
+child module using `#[path = "table_opportunity_tests.rs"] mod tests;` in
+`table_movement.rs`. The parent subsequently reported the attached test passed all
+12 grip comparisons, alongside 59 application tests and strict workspace Clippy.
+That is parent integration evidence, not an application build from this branch.
+Direct Rust formatting and `git diff --check` passed here.
+
+## Active privacy and accepted-prefix slice
+
+The parent released `tactical/movement.rs`, pure `tactical_movement.rs`, domain
+movement/flow receipt types and movement tests. Shared casting/continuations/turns/
+turn-validation/dispatch remain owned by the casting author. Dependency merge includes
+shared cast contract `0aae8c0` and reviewed spell attack adapter `5402050`; this is not
+a fresh build claim.
+
+Implement proposal-shape and actor-local capability admission without reading remote
+collision, occupancy, terrain or costs. Preserve the existing one-segment spatial
+evaluator as the sole geometry/cost authority. A valid accepted attempt commits its
+legal prefix and stores a coarse result when it completes or reaches an obstruction,
+budget limit or source interruption. Do not expose a hidden blocker ID or unvisited
+position. Source capability errors and malformed proposals remain atomic rejections.
+
+Add optional/default `TacticalFlow.last_movement` containing original Move and actual
+cause metadata, actor, global turn number, start/actual endpoint, requested/completed
+step counts and movement expenditure before/after. Historical receipts are not compared
+with a later turn's current position/budget. Structural checks reject incoherent anchor
+images; exact semantic event replay remains authority for the full original path and
+outcome. Parent owns application origin collection and fresh SQLite recovery coverage.
+Queued falling and interruption-induced landing remain the subsequent shared-queue
+slice; this work must not silently waive that outstanding Gate4 acceptance.
+
+Implemented bounded admission/result validation and replaced the prior all-or-nothing
+blocked/over-budget fixture with the explicit privacy/reached-prefix matrix above.
+
+Independent review identified a required shared-turn interaction: a valid transit
+segment may enter an ally's space before an unseen later obstruction or unexpected
+cost stops movement there. The accepted prefix remains committed. SRD14 makes the
+mover Prone if it ends its turn sharing another creature's space, unless it is Tiny
+or larger than that creature. The movement regression verifies the involuntary stop
+and ability to leave later without premature Prone. The casting author's verified
+shared checkpoint `81c1a4e` was merged before testing and includes the actual
+source-ordered end-turn consequence. The movement test also takes the alternative
+of ending the turn in the occupied space and verifies Prone while retaining the
+original reached-place receipt.
+
+The same review found a relevant opportunity-cover error outside the segment
+evaluator. A source `Prerequisite` for uncertain cover must stop departure at the
+reached prefix, not roll back the accepted Move or silently cross an unresolved OA.
+The attack author supplies a source-options query that filters actual departure
+(`before <= reach < after`) before cover adjudication. Movement handles that bounded
+error as `Stopped`; identity/corruption errors remain failures. Pruning a queued
+unavailable opportunity retains the original MoveSegment under any already active
+attack/concentration children, so its later recheck stops safely without orphaning
+their retained movement admission. The new regression first moves inside reach,
+then attempts departure through the ambiguous cover.
+
+### Source checkpoint and verification
+
+Dependency-only merges include shared casting checkpoint `81c1a4e`. The reviewed
+departure helper `5435743` was cherry-picked as `3e066ed`; its new test now passes
+with this branch's movement implementation. No new parallel queue was introduced.
+The receipt validator runs before the shared turn validator's inactive early return:
+Initiative/InitiativeTies cannot contain movement results, and Finished snapshots
+still validate historical metadata, counts and expenditure.
+
+Focused local verification on the final production source tree:
+
+- 42 attack/casting/opportunity tests passed, including the newly integrated
+  within-reach/uncertain-cover regression.
+- 18 movement tests and 24 turn tests passed. Movement fixtures round-trip both
+  state and events through JSON, re-run semantic replay, and compare complete states.
+  Coverage includes hidden near/far/absent solids, unseen creature occupancy, hidden
+  difficult terrain, actual-prefix stops, independent reaction ownership, knockout
+  and concentration interruptions, source-invalid intent, and malformed receipts.
+- Initial test compilation exposed an ambiguous test-module import and UUID-display
+  typo; both were corrected. The next run passed 42 attack tests and 17 movement
+  tests; the remaining fixture incorrectly supplied one initiative die for Invisible
+  Advantage. Supplying two dice for either non-Normal mode fixed the fixture without
+  changing source rules. The final 18 movement and 24 turn tests passed afterward.
+- Strict domain/rules all-target Clippy passed with `-D warnings` on the final tree.
+  Final formatting and whitespace checks also passed.
+
+Durable local logs outside the repository are
+`../tooling/logs/gate4-movement-privacy-tests-20260925-r2.log` (42 attack passes and
+the diagnosed fixture failure), `...-r3.log` (18 movement and 24 turn passes), and
+`../tooling/logs/gate4-movement-privacy-clippy-20260925.log`.
+
+Independent source review by the attack author covered the complete privacy/prefix
+implementation and the final inactive/occupied-space additions. No remaining finding
+was reported; exact committed-head confirmation follows the final checks.
+
+### Integration boundary and next action
+
+Parent application integration must collect
+`encounter.flow.last_movement.original` and `.cause` as command origins. Where the
+journal exists, bind `original` to its actual accepted Move action, actor and requested
+step count; metadata equality alone does not prove movement occurred. Replay from the
+earliest supported anchor compares every reached snapshot and the final state. The
+existing rejection of initial anchors containing live tactical flow remains required.
+The optional/default, omitted-when-empty field is within the unreleased tactical flow
+extension; no separate SQL projection or schema migration is introduced here.
+
+After focused checks and commit, release the compiler to the parent for application
+restore regressions and canonical integration verification. Then implement queued
+falling using the already verified source/geometry leaf and this same shared resolution.
+Final unsupported endpoints currently stop before departure; interruption-induced
+landing and fall damage are still outstanding Gate 4 acceptance. They must preserve
+unrelated accepted attack/casting/concentration work and both original movement and
+actual causing commands. This checkpoint does not claim complete movement, tactical
+combat, desktop acceptance, or the end of Gate 4.
