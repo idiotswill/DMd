@@ -92,12 +92,24 @@ pub enum TacticalAttackSource {
 #[serde(deny_unknown_fields)]
 pub enum TacticalAttackAdmission {
     OwnTurn,
+    /// One source stat-block Action, with optional actual immediately preceding
+    /// movement retained before the action clears continuous travel.
+    CreatureAction {
+        approach: Option<TacticalChargeApproach>,
+    },
     Opportunity(Box<crate::TacticalOpportunityWindow>),
     /// Casting identity is distinct from TacticalAttack.origin: a prior ray's
     /// consequence can be completed by another actor's actual accepted command.
     Spell {
         casting_origin: CommandMeta,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalChargeApproach {
+    pub origin: CommandMeta,
+    pub movement: crate::TacticalStraightMovement,
 }
 
 /// Reconstructed against canonical source and original choices before damage changes

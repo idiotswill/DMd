@@ -80,7 +80,9 @@ pub(super) fn plan(
     let mut prone = false;
     let (modifier, components, reach) = match &attack.source {
         TacticalAttackSource::Unarmed { ability } => {
-            if *ability != Ability::Strength {
+            if *ability != Ability::Strength
+                || !matches!(attack.admission, TacticalAttackAdmission::Opportunity(_))
+            {
                 return Err(prerequisite(
                     "this source grants only Strength Unarmed Strikes",
                 ));
@@ -144,7 +146,7 @@ pub(super) fn plan(
             } = &feature.feature
             else {
                 return Err(prerequisite(
-                    "an opportunity requires a source melee attack",
+                    "this continuation requires a source melee attack",
                 ));
             };
             let required =
@@ -169,10 +171,14 @@ pub(super) fn plan(
                     HitRequirement::TargetSizeAtMost { size: maximum } => {
                         target.size <= size(maximum)
                     }
-                    // This adapter currently admits source features only through an
-                    // opportunity. The reactor is not the moving actor, so its own
-                    // immediately preceding straight approach cannot be this trigger.
-                    HitRequirement::Charge { .. } => false,
+                    HitRequirement::Charge {
+                        straight_feet,
+                        target_size_at_most,
+                    } => {
+                        target.size <= size(target_size_at_most)
+                            && creature::approach_distance(state, attack)?
+                                .is_some_and(|distance| distance >= u32::from(straight_feet) * 2)
+                    }
                 };
                 for effect in &conditional.effects {
                     match effect {
@@ -204,10 +210,14 @@ pub(super) fn plan(
     };
     if distance > reach
         || attack.delivery != TacticalAttackDelivery::Melee
-        || !matches!(attack.admission, TacticalAttackAdmission::Opportunity(_))
+        || !matches!(
+            attack.admission,
+            TacticalAttackAdmission::Opportunity(_)
+                | TacticalAttackAdmission::CreatureAction { .. }
+        )
     {
         return Err(prerequisite(
-            "intrinsic melee attack differs from its retained opportunity",
+            "intrinsic melee attack differs from its retained source admission",
         ));
     }
     Ok(IntrinsicPlan {

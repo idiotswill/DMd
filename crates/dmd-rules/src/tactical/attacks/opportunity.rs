@@ -310,6 +310,9 @@ pub(super) fn validate_admission(
                 return Err(invalid("ordinary attack differs from its own-turn origin"));
             }
         }
+        TacticalAttackAdmission::CreatureAction { .. } => {
+            creature::validate_admission(state, attack)?
+        }
         TacticalAttackAdmission::Opportunity(window) => {
             validate_equipment_change_origin(state, &window.origin, window.reactor)
                 .map_err(|e| invalid(&e))?;

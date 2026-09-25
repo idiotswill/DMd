@@ -1,5 +1,6 @@
 //! Closed physical attack work. All requests and costs are derived from source data;
 //! this sibling composes with the existing turn pump, never a second command queue.
+mod creature;
 mod intrinsic;
 mod opportunity;
 mod planning;
@@ -9,6 +10,7 @@ use super::turns::*;
 use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
+pub(super) use creature::begin_creature_attack;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
 pub(super) use spell::begin_spell_attack;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
