@@ -214,3 +214,38 @@ adds source-only attendance and encounter participation after that existing setu
 not a replacement character-creation path. No local compiler or frontend run has yet
 been authorized. Next: independent review of this concrete follow-up, push for fresh
 CI, then the assigned bounded local batch when the preceding build owner releases.
+
+Local verification at `9638f64`: Svelte check 0 errors/0 warnings, all 76 frontend
+tests and production build (137 modules) passed. The first default-worker Vitest
+attempt was deliberately interrupted after observing parallel workers; its partial
+results are not counted. The successful rerun used `--maxWorkers=1`. Logs are
+`tooling/source-control-ui-check.log`, `source-control-ui-test-serial.log` and
+`source-control-ui-build.log` outside the repository.
+
+The default-stack `normal_scene` still overflowed locally after the marker boxing.
+Temporary markers and a debugger trace located real CreateCharacter source-definition
+deserialization after campaign creation/AddPlayer; they have been removed. The
+public execute future occupied 19,248 bytes inside parent futures. The next candidate
+heap-pins the unchanged legacy transaction futures at their existing execute/observe
+public wrappers. It changes neither transaction semantics nor stack limits. This
+candidate needs execution; logs retain both failed diagnostics and the backtrace.
+
+Linux run 36179064153 reached 44 passing table cases and a hostile-restore assertion
+failure. Static investigation found the fixture used random-CommandId binding order
+as acceptance order: its downgrade could select an already-v1 row and do nothing.
+Historical rows are now compared by immutable ID; the version downgrade selects an
+actual v2 Host binding, while audience/channel/response changes select the Mage
+owner's accepted SourceCreature raw-roll binding and token changes select its player
+Roll capability. Every named corruption must differ before the unchanged zero-write
+rejection assertions. A fresh run must still prove every negative case.
+
+Existing identical-monster initiative grouping remains a documented Host initiative
+authority exception. Groups and their representative roll retain the established
+source semantics even when an assigned actor shares that group; the new guard owns
+individual public requests and voluntary actor decisions, not a retrospective rewrite
+of grouped initiative. Source-control activation does not change execution versions.
+
+Heavy slot returned to root for PR42 canonical. Next: review/commit these concrete
+failure corrections, run fresh CI, and resume the unchanged-default-stack scenario
+plus source-control/remaining app checks only after explicit slot release. Genuine
+PR42 pre-change @2 corpora will be integrated after their reviewed prerequisite merges.

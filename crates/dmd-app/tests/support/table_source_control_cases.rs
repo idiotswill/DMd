@@ -156,10 +156,16 @@ async fn source_control_real_mage_ownership_raw_dice_self_cast_and_cold_retry() 
         &after.table_projection_history[..prefix.table_projection_history.len()],
         &prefix.table_projection_history
     );
-    assert_eq!(
-        &after.table_transport_bindings[..prefix.table_transport_bindings.len()],
-        &prefix.table_transport_bindings
-    );
+    // Bindings are ordered by random CommandId, never by acceptance time.
+    for original in &prefix.table_transport_bindings {
+        assert_eq!(
+            after
+                .table_transport_bindings
+                .iter()
+                .find(|binding| binding.meta.id == original.meta.id),
+            Some(original)
+        );
+    }
     assert!(
         after.table_projection_history[prefix.table_projection_history.len()..]
             .iter()
@@ -698,36 +704,59 @@ async fn restore_and_reject_forgery(f: &Fixture, export: &CampaignExport, mage: 
         f.runtime.open_campaign(f.campaign).await.unwrap().state()
     );
     pool.close().await;
+    let binding_id = export
+        .table_transport_bindings
+        .iter()
+        .find(|binding| binding.version == 2 && binding.audience == ProjectionAudience::Host)
+        .expect("genuine activated Host binding")
+        .meta
+        .id;
+    let source_binding_id = export.table_transport_bindings.iter().find(|binding| {
+        let original:TableTransportRequest=serde_json::from_str(&binding.request_json).unwrap();
+        binding.version==2 && matches!(original.channel,TableTransportChannel::SourceCreature{player_id,actor} if player_id==f.players[0] && actor==mage)
+            && matches!(original.input,TableTransportInput::Action(action) if matches!(*action,TableAction::Tactical{action:TacticalAction::SubmitRoll{..}}))
+    }).expect("genuine owned source raw-roll binding").meta.id;
     let mut cases = Vec::new();
     let mut bad = export.clone();
     bad.table_projection_history.clear();
     bad.table_transport_bindings.clear();
-    cases.push(bad);
+    cases.push(("dropped presentation history", bad));
     let mut bad = export.clone();
     bad.table_projection_history.last_mut().unwrap().version = 1;
-    cases.push(bad);
+    cases.push(("downgraded projection version", bad));
     let mut bad = export.clone();
-    bad.table_transport_bindings.last_mut().unwrap().version = 1;
-    cases.push(bad);
+    bad.table_transport_bindings
+        .iter_mut()
+        .find(|binding| binding.meta.id == binding_id)
+        .unwrap()
+        .version = 1;
+    cases.push(("downgraded v2 binding", bad));
     let mut bad = export.clone();
-    bad.table_transport_bindings.last_mut().unwrap().audience =
-        ProjectionAudience::Player(f.players[1]);
-    cases.push(bad);
+    bad.table_transport_bindings
+        .iter_mut()
+        .find(|binding| binding.meta.id == source_binding_id)
+        .unwrap()
+        .audience = ProjectionAudience::Player(f.players[1]);
+    cases.push(("foreign binding audience", bad));
     let mut bad = export.clone();
-    let binding = bad.table_transport_bindings.last_mut().unwrap();
+    let binding = bad
+        .table_transport_bindings
+        .iter_mut()
+        .find(|binding| binding.meta.id == source_binding_id)
+        .unwrap();
     let mut input: TableTransportRequest = serde_json::from_str(&binding.request_json).unwrap();
     input.channel = TableTransportChannel::SourceCreature {
         player_id: f.players[1],
         actor: mage,
     };
     binding.request_json = serde_json::to_string(&input).unwrap();
-    cases.push(bad);
+    cases.push(("foreign source request channel", bad));
     let mut bad = export.clone();
     bad.current_state.state_json = bad
         .current_state
         .state_json
         .replace("SourceActorsV1", "InventedControl");
-    cases.push(bad);
+    cases.push(("unknown source-access version", bad));
     for kind in 0..4 {
         let mut bad = export.clone();
         let mut changed = CampaignState::decode_json(&bad.current_state.state_json).unwrap();
@@ -815,28 +844,50 @@ async fn restore_and_reject_forgery(f: &Fixture, export: &CampaignExport, mage: 
             state_json: bad.current_state.state_json.clone(),
             created_at_utc: "2026-09-25 00:00:00".into(),
         });
-        cases.push(bad);
+        cases.push((
+            [
+                "removed activation marker",
+                "invented activation command",
+                "invented control command",
+                "invented adoption",
+            ][kind],
+            bad,
+        ));
     }
     let mut bad = export.clone();
     bad.table_transport_bindings
-        .last_mut()
+        .iter_mut()
+        .find(|binding| binding.meta.id == source_binding_id)
         .unwrap()
         .response_json = "{}".into();
-    cases.push(bad);
+    cases.push(("changed accepted response", bad));
     let mut bad = export.clone();
     let capability = bad
         .table_projection_history
         .iter_mut()
         .flat_map(|record| &mut record.changes)
+        .filter(|change| change.audience == ProjectionAudience::Player(f.players[0]))
         .flat_map(|change| &mut change.handles)
-        .next()
+        .find(|handle| {
+            matches!(
+                handle.capability,
+                dmd_persistence::ProjectionCapability::Roll { .. }
+            )
+        })
         .unwrap();
     capability.opaque = uuid::Uuid::new_v4();
-    cases.push(bad);
-    for bad in cases {
+    cases.push(("changed opaque capability", bad));
+    for (label, bad) in cases {
+        assert_ne!(
+            &bad, export,
+            "{label} must actually alter the source export"
+        );
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
         let app = runtime(pool.clone());
-        assert!(Box::pin(app.restore_campaign(&bad)).await.is_err());
+        assert!(
+            Box::pin(app.restore_campaign(&bad)).await.is_err(),
+            "{label}"
+        );
         for table in [
             "campaign_state_current",
             "campaign_lifecycle",
@@ -850,7 +901,7 @@ async fn restore_and_reject_forgery(f: &Fixture, export: &CampaignExport, mage: 
                 .fetch_one(&pool)
                 .await
                 .unwrap();
-            assert_eq!(count, 0, "{table}");
+            assert_eq!(count, 0, "{label}: {table}");
         }
         pool.close().await;
     }
