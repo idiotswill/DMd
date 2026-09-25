@@ -364,5 +364,8 @@ async fn complete_table_round_survives_every_disk_reopen_retry_and_semantic_rest
     Box::pin(complete_round(&mut f, &url)).await;
     Box::pin(reject_forged_authority(&f)).await;
     f.pool.close().await;
-    std::fs::remove_dir_all(directory).unwrap();
+    drop(f);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
 }

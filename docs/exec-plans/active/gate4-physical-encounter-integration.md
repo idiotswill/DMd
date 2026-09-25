@@ -129,6 +129,15 @@ lock errors32/33 for at most1.9 seconds; persistent or other failures still fail
 cleanup. No gameplay assertion or production source changes. Fresh canonical/UI/
 exact-head CI remain required on the correction.
 
+Exact cleanup head54520a9 then passed canonical verification locally:595 Windows GNU
+Rust tests, workspace all-target Clippy, formatting/check and both guards. Its
+native Windows36132430076 confirmed the corrected OA scenario passes, but caught
+the same final-file sharing error in the older casting recovery fixture. The same
+reviewed close/drop/bounded-sharing cleanup is therefore applied across this table
+suite's disk fixtures. Recursive fixture cleanup additionally verifies the resolved
+directory is a DMd-named direct child of the system temporary directory. No source
+or scenario assertions change. Reverify this final test tree before merging.
+
 Reviewed source training correction1b39980 is integrated in456272e. It follows SRD177:
 untrained Shield use removes its AC bonus but does not itself forbid casting;
 untrained worn armor and occupied component hands still prohibit the affected cast.
