@@ -91,3 +91,12 @@ full-tree parity. Post-merge runs36136799545/36136799353 are in progress. Main
 reconciliation is now complete as recorded above; next open this bounded area PR
 as a draft and perform its combined canonical/UI verification and independent
 final review. The production closure audit records the remaining gate obligations.
+
+PR34 is open at https://github.com/idiotswill/DMd/pull/34. Initial513c239 passed all
+four Linux jobs36137072485 and Windows MSRV. Native stable36137072496 failed at
+the existing ordinary table scenario with STATUS_STACK_OVERFLOW; no area gameplay
+assertion failed. The parallel protocol integration reproduced the same nested
+fixture problem on default-stack GNU: direct real create/open/action calls passed,
+but fixture wrappers overflowed. Heap-pinning four shared setup futures fixed the
+unchanged scenario and is now applied here too. No production change, assertion
+removal or stack-size override. Fresh local canonical and exact-head CI are required.
