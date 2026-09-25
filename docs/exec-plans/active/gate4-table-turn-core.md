@@ -149,3 +149,8 @@ actual request correctly includes both player and character identity. Correcting
 that expectation yields all22 frontend tests and a successful126-module production
 build. No production change was needed for that test failure. Logs are
 `tooling/gate4-turn-core-ui-tests-r3.log` and `gate4-turn-core-ui-build-r3.log`.
+
+The next initial compile on Linux `36124444841` exposed two older spatial/source
+test constructors missing the newly explicit `flow: None`. Both fixtures retain
+their previous behavior with that field added. Actual compiler output was read;
+all tests/lints still require a successful run after this correction.
