@@ -1,6 +1,6 @@
 # Gate 4 — Actual reaction and Ready execution
 
-Status: **Active; 483 foundation tests and strict lint pass; application integration and actual responses remain unverified/incomplete.**
+Status: **Active; a61e95d foundation passes canonical verification and all six CI checks; actual reaction responses remain incomplete.**
 Branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
 Writer: root, taking over after rules_architecture reached its account usage limit.
 The authored/reviewed checkpoint is dd5123d; root owns its first executable batch,
@@ -28,15 +28,15 @@ exceptions; a string trigger or client-provided permission is never state author
   `f3daf22`; its prior 65-app-test/strict-lint evidence remains inherited only.
 - Root's physical/casting extraction does not change the integrated production tree
   except separately reviewed corrections. Coordinate any such changes explicitly.
-- Environment_audit owns the durable audience/retry protocol. Do not edit its storage
-  or app-protocol files concurrently. Reaction views/actions must adopt its actual
-  actor/audience decision contracts before integrated acceptance.
+- The durable audience/retry protocol is merged through PR35. Supporting agents are
+  quota-blocked; root is the sole active writer. Reaction views/actions must adopt
+  the protocol's actual actor/audience contracts before integrated acceptance.
 - Bootstrap's genuine OA/concentration test is reviewed separately. It now owns source
   Mage/Counterspell/Mage Armor definitions/profile/equipment plus a private reaction
   feature hook; dependencies `5f15783` and `01e857c` are integrated here. Those changes
   remain uncompiled. This writer owns effect/program/retained/shared composition.
-- Rust compiler is globally serialized: root PR33 canonical, then protocol, then this
-  bounded domain/rules checkpoint. No compiler permission until explicit handoff.
+- Local Rust/frontend execution is globally serialized. Medicine's combined canonical
+  job currently owns the shared target; this work may edit/review without compiling.
 - Root owns encounter finish separately. It must reject nonempty Ready records and
   unresolved reaction/roll/work until this slice provides explicit abandonment.
   Abandonment retains the actual controller's command, refunds nothing, and ends only
@@ -226,3 +226,23 @@ Rust evaluates the assignment value before its target, so moving the cloned work
 also moved the occurrence captured by the target-search closure (E0382). Retain
 the copyable occurrence before that assignment; keep both forged work images and
 all semantic rejection assertions. Re-run full CI on the corrected combined head.
+
+## Current verified checkpoint
+
+Correcteda61e95d passes canonical verification locally:664 GNU Rust tests, strict
+all-target Clippy/check, formatting and both guards. Desktop checking reports zero
+errors/warnings,57 tests pass and the134-module production build passes. All six
+exact-head checks pass (Linux36150846605, Windows36150846528); actual native logs
+confirm667 Rust tests,57 UI tests and a fresh offline installer. These verify the
+foundation, legacy replay/upgrade and pure ordering function, not live reactions.
+
+Savage Attacker sourced901058 is merged into this branch as efcabf4. Fetched main
+cd8d4a4 has a byte-identical full tree to d901058; only after importing that source
+and proving ancestry did the branch reconcile the main squash. Adjacent typed-action
+conflicts retain both source variants. This new composition is not yet verified.
+
+Next: connect the retained trigger/window and explicit ordering instruction to the
+single scheduler, source response admission and audience-safe table choices. Shield
+hit windows are the first concrete vertical slice; Counterspell and physical/spell
+Ready releases remain mandatory acceptance here. Import Medicine after its verified
+merge and initialize its current-execution work ancestry. No Gate4 criterion moves.
