@@ -3763,6 +3763,151 @@
       "source_pages": [
         305
       ]
+    },
+    {
+      "id": "night-hag",
+      "name": "Night Hag",
+      "statistics": {
+        "size": "Medium",
+        "allowed_sizes": [
+          "Medium"
+        ],
+        "creature_type": "Fiend",
+        "creature_tags": [],
+        "alignment": "Neutral Evil",
+        "armor_class": 17,
+        "hit_points": 112,
+        "hit_point_formula": {
+          "dice": [
+            {
+              "count": 15,
+              "sides": 8
+            }
+          ],
+          "fixed": 45
+        },
+        "ability_scores": [
+          18,
+          15,
+          16,
+          16,
+          14,
+          16
+        ],
+        "saving_throw_modifiers": [
+          4,
+          2,
+          3,
+          3,
+          2,
+          3
+        ],
+        "initiative_modifier": 5,
+        "proficiency_bonus": 3,
+        "challenge_rating": "5",
+        "experience_points": 1800,
+        "speeds": {
+          "walk": 30,
+          "burrow": 0,
+          "climb": 0,
+          "fly": 0,
+          "swim": 0,
+          "hover": false
+        },
+        "skills": [
+          {
+            "skill": "Deception",
+            "modifier": 6
+          },
+          {
+            "skill": "Insight",
+            "modifier": 5
+          },
+          {
+            "skill": "Perception",
+            "modifier": 5
+          },
+          {
+            "skill": "Stealth",
+            "modifier": 5
+          }
+        ],
+        "senses": {
+          "blindsight": 0,
+          "darkvision": 120,
+          "tremorsense": 0,
+          "truesight": 0,
+          "passive_perception": 15
+        },
+        "damage_resistances": [
+          "Cold",
+          "Fire"
+        ],
+        "damage_vulnerabilities": [],
+        "damage_immunities": [],
+        "condition_immunities": [
+          "Charmed"
+        ],
+        "exhaustion_immune": false,
+        "languages": [
+          "Abyssal",
+          "Common",
+          "Infernal",
+          "Primordial"
+        ],
+        "additional_languages": 0,
+        "can_speak": true,
+        "gear": []
+      },
+      "traits": [],
+      "features": [
+        {
+          "id": "spellcasting",
+          "name": "Spellcasting",
+          "activation": "Action",
+          "feature": {
+            "Spellcasting": {
+              "ability": "Intelligence",
+              "save_dc": 14,
+              "attack_bonus": null,
+              "spells": [
+                {
+                  "spell_id": "magic-missile",
+                  "cast_level": 4,
+                  "uses_per_long_rest": null
+                }
+              ]
+            }
+          },
+          "source_page": 311,
+          "spell_component_waivers": {
+            "verbal": false,
+            "somatic": false,
+            "material": true
+          }
+        }
+      ],
+      "legendary_budget": null,
+      "coverage": {
+        "SelectedFeatures": {
+          "omitted": [
+            "coven-magic",
+            "magic-resistance",
+            "soul-bag",
+            "multiattack",
+            "claw",
+            "nightmare-haunting",
+            "spellcasting-detect-magic",
+            "spellcasting-etherealness",
+            "spellcasting-phantasmal-killer",
+            "spellcasting-plane-shift",
+            "shape-shift"
+          ]
+        }
+      },
+      "source_pages": [
+        311
+      ]
     }
   ]
 }

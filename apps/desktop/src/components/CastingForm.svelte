@@ -49,7 +49,7 @@
           <button type="button" class="secondary" disabled={targets.length>=selected.maximum_targets} onclick={()=>targets=[...targets,'']}>Add spell target</button>
           <button type="button" class="secondary" disabled={targets.length<=selected.minimum_targets} onclick={()=>targets=targets.slice(0,-1)}>Remove last spell target</button>
         {/if}
-        {#if selected.maximum_targets>1}<p>Targets resolve in the chosen order.{selected.repeated_targets?' You may choose the same target more than once.':''}</p>{/if}
+        {#if selected.maximum_targets>1}<p>Choose all targets before casting.{selected.repeated_targets?' You may choose the same target more than once.':''}</p>{/if}
       {/if}
       <p>Actions, resources, components and targeting are checked again when you cast. Physical dice are requested from their controller.</p>
       <button disabled={!valid}>Cast spell</button>

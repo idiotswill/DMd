@@ -540,3 +540,123 @@ fn malformed_reaction_or_prepared_defense_source_is_rejected() {
         mage(v)["features"][0]["feature"]["Spellcasting"]["spells"][0]["spell_id"] = json!("shield")
     });
 }
+
+#[test]
+fn night_hag_selected_spellcasting_preserves_printed_statistics_and_omissions() {
+    let p = pack();
+    let hag = p.creature("night-hag").unwrap();
+    let stats = &hag.statistics;
+    assert_eq!(hag.source_pages, [311]);
+    assert_eq!(stats.size, SourceSize::Medium);
+    assert_eq!(stats.allowed_sizes, [SourceSize::Medium]);
+    assert_eq!(stats.creature_type, CreatureType::Fiend);
+    assert!(stats.creature_tags.is_empty());
+    assert_eq!(stats.alignment, "Neutral Evil");
+    assert_eq!((stats.armor_class, stats.hit_points), (17, 112));
+    assert_eq!(
+        stats.hit_point_formula.dice,
+        [DieSpec {
+            count: 15,
+            sides: 8
+        }]
+    );
+    assert_eq!(stats.hit_point_formula.fixed, 45);
+    assert_eq!(stats.ability_scores, [18, 15, 16, 16, 14, 16]);
+    assert_eq!(stats.saving_throw_modifiers, [4, 2, 3, 3, 2, 3]);
+    assert_eq!((stats.initiative_modifier, stats.proficiency_bonus), (5, 3));
+    assert_eq!(
+        (stats.challenge_rating.as_str(), stats.experience_points),
+        ("5", 1800)
+    );
+    assert_eq!(stats.speeds.walk, 30);
+    assert_eq!(
+        (
+            stats.speeds.fly,
+            stats.speeds.climb,
+            stats.speeds.swim,
+            stats.speeds.burrow
+        ),
+        (0, 0, 0, 0)
+    );
+    assert!(!stats.speeds.hover);
+    assert_eq!(
+        stats
+            .skills
+            .iter()
+            .map(|s| (s.skill, s.modifier))
+            .collect::<Vec<_>>(),
+        vec![
+            (dmd_domain::Skill::Deception, 6),
+            (dmd_domain::Skill::Insight, 5),
+            (dmd_domain::Skill::Perception, 5),
+            (dmd_domain::Skill::Stealth, 5),
+        ]
+    );
+    assert_eq!(
+        (stats.senses.darkvision, stats.senses.passive_perception),
+        (120, 15)
+    );
+    assert_eq!(
+        (
+            stats.senses.blindsight,
+            stats.senses.tremorsense,
+            stats.senses.truesight
+        ),
+        (0, 0, 0)
+    );
+    assert_eq!(
+        stats.damage_resistances,
+        [DamageType::Cold, DamageType::Fire]
+    );
+    assert!(stats.damage_immunities.is_empty() && stats.damage_vulnerabilities.is_empty());
+    assert_eq!(stats.condition_immunities, [Condition::Charmed]);
+    assert!(!stats.exhaustion_immune);
+    assert_eq!(
+        stats.languages,
+        ["Abyssal", "Common", "Infernal", "Primordial"]
+    );
+    assert_eq!(stats.additional_languages, 0);
+    assert!(stats.can_speak && stats.gear.is_empty());
+    assert!(stats.prepared_defense.is_none());
+    assert!(hag.traits.is_empty() && hag.legendary_budget.is_none());
+    assert_eq!(hag.features.len(), 1);
+    let feature = &hag.features[0];
+    assert_eq!(feature.id, "spellcasting");
+    assert_eq!(feature.activation, FeatureActivation::Action);
+    assert_eq!(feature.source_page, 311);
+    assert!(feature.usage.is_none());
+    assert_eq!(
+        serde_json::to_value(feature.spell_component_waivers).unwrap(),
+        json!({"verbal":false,"somatic":false,"material":true})
+    );
+    let MonsterFeature::Spellcasting {
+        ability,
+        save_dc,
+        attack_bonus,
+        spells,
+    } = &feature.feature
+    else {
+        panic!("source spellcasting")
+    };
+    assert_eq!(
+        (*ability, *save_dc, *attack_bonus),
+        (Ability::Intelligence, Some(14), None)
+    );
+    assert_eq!(spells.len(), 1);
+    assert_eq!(
+        (
+            spells[0].spell_id.as_str(),
+            spells[0].cast_level,
+            spells[0].uses_per_long_rest
+        ),
+        ("magic-missile", 4, None)
+    );
+    assert_eq!(
+        serde_json::to_value(&hag.coverage).unwrap(),
+        json!({"SelectedFeatures":{"omitted":[
+            "coven-magic", "magic-resistance", "soul-bag", "multiattack", "claw", "nightmare-haunting",
+            "spellcasting-detect-magic", "spellcasting-etherealness", "spellcasting-phantasmal-killer",
+            "spellcasting-plane-shift", "shape-shift"
+        ]}})
+    );
+}
