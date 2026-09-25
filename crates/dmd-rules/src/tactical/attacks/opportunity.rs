@@ -301,6 +301,9 @@ pub(super) fn validate_admission(
 ) -> Result<(), RulesError> {
     let resolution = resolution(state)?;
     match &attack.admission {
+        TacticalAttackAdmission::UnarmedAction { window } => {
+            super::unarmed::validate_admission(state, attack, *window)?;
+        }
         TacticalAttackAdmission::OwnTurn => {
             if attack.origin != resolution.origin
                 || attack.actor != resolution.turn_actor

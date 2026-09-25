@@ -9,12 +9,14 @@
   import OpportunityForm from './OpportunityForm.svelte';
   import LiquidLandingForm from './LiquidLandingForm.svelte';
   import ShieldForm from './ShieldForm.svelte';
+  import UnarmedForm from './UnarmedForm.svelte';
   let { tactical, characters, host, actor, player, disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
+  const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
     const order=[...(tieOrder[total] ?? actors)];const to=index+step;
     if(to<0||to>=order.length)return;[order[index],order[to]]=[order[to],order[index]];
@@ -42,6 +44,7 @@
     <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button>
       {#if activeCharacter?.second_wind_remaining != null}<button disabled={tactical.budget.bonus_action_spent||activeCharacter.second_wind_remaining===0} onclick={()=>onAction('SecondWind')}>Second Wind · {activeCharacter.second_wind_remaining} uses</button>{/if}
       <button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
+    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<UnarmedForm targets={unarmedTargets} disabled={disabled||pendingRoll||!!tactical.continuation||(tactical.budget.action_spent&&tactical.budget.attacks_remaining===0)} {onAction}/>{/key}
   {/if}
   {#if tactical.area_options && (host || actor===tactical.area_options.actor)}
     {#key `${host}:${player}:${actor}:${tactical.area_options.actor}`}<AreaForm options={tactical.area_options} {host} {player} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}

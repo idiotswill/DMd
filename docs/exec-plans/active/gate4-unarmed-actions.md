@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-unarmed-actions`.
 Base: fetched main cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
-Status: planned; no implementation or verification yet.
+Status: source, desktop and recovery tests authored; focused executable verification running.
 
 ## Objective and authority
 
@@ -52,8 +52,33 @@ The source has no minimum-one damage clause; the existing damage floor remains z
 
 ## Risks and next action
 
-Only one heavy local Rust/frontend job may run; PR39 canonical owns that slot now.
-First implement the typed admission and source/cost adapter, then actual UI and
-recovery tests. Later integrate verified first aid and reaction execution versions,
+Only one heavy local Rust/frontend job may run; the Unarmed reducer batch owns that
+slot now. Source admission and the paid window adapter, actual UI and recovery tests
+are authored. Formatting/whitespace checks pass; no executable pass is claimed yet. Later integrate verified first aid and reaction execution versions,
 initializing current work ancestry without reinterpreting old accepted history.
 The complete Gate4 twelve-family ledger and eighteen-mechanism matrix stay binding.
+
+## Draft implementation and review
+
+UnarmedStrike carries only the target. Its typed UnarmedAction admission retains the
+actual AttackAction window, pays one attack, interrupts rest, clears continuous travel
+and enters the existing physical attack queue. Validation rederives Strength/source
+proficiency, exhaustion, conditions, reach, cover and armor training. Legacy own-turn
+weapon and opportunity wire images remain unchanged. Body attacks do not receive the
+source's underwater weapon-only penalty (SRD p16). Fixed damage floors at zero, has
+no damage die and never spends Savage Attacker or creates a weapon receipt.
+
+Six reducer tests cover full hands, ownership, failed/no-cost admission, actual open
+Attack windows, forged source/cost, natural extremes, zero damage, knockout, Poisoned,
+exhaustion, Inspiration and PC/creature armor/proficiency. A new file-SQLite test uses
+normal campaign/PC/source Goblin creation and three rounds of fixed damage into an
+actual knockout choice. Each attack/raw die/knockout crosses cold reopen, accepted
+retry and independent restore. A structurally coherent invented Bonus Action must
+fail semantic restoration without rows. Desktop coverage checks own current contacts,
+foreign/remembered exclusion, paid attack availability and pending work.
+
+Root separately inspected all changed source and test files. Further executable
+failures must be corrected without weakening assertions. Next: finish focused tests,
+open draft CI early, run actual file-SQLite/UI checks, then canonical/full-head review.
+Equipment changes accompanying an unarmed attack, Grapple/Shove/Escape and PvP consent
+remain explicit Gate4 work, not an implicit relaxation of those source requirements.
