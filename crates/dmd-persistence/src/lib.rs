@@ -4,6 +4,7 @@ pub mod observation_store;
 pub mod projection_store;
 pub mod session_store;
 pub mod snapshot_replay;
+pub mod table_projection_store;
 
 pub use journal_store::*;
 pub use lifecycle::*;
@@ -11,6 +12,7 @@ pub use observation_store::*;
 pub use projection_store::*;
 pub use session_store::*;
 pub use snapshot_replay::*;
+pub use table_projection_store::*;
 
 use sqlx::{
     SqlitePool,

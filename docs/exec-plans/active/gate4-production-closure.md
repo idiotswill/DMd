@@ -13,8 +13,9 @@ paid shields, movement/OA, falling and Immediate source casting to PR32's actual
 turn execution. All six post-merge checks36136799545/36136799353 passed. Area PR34
 source f65f2a4 now passes combined canonical verification (624 GNU tests),51 desktop
 tests/check/build,625 Linux and627 native Windows Rust tests, MSRV and packaging.
-Its final evidence-head verification/merge remains pending. These states must not
-be described as already shipped together.
+Final7182786 passed all six exact-head checks and merged as172a15a with fetched
+full-tree parity. All six post-merge checks36143545617/36143545410 passed. Area
+and physical execution are now shipped together; remaining drafts are not.
 
 Protocol PR35 sourcec399a78 has reviewed opaque requests/audiences, historical
 presentation and transaction boundaries, and deliberate current-main/area integration.
@@ -22,22 +23,30 @@ After memory recovery,55 UI tests/check/build and four persistence tests passed.
 The default-stack fixture failure was fixed without changing assertions or stack
 limits. Its full app run passed77 tests and found one receipt-error classification
 regression; the correction passed both original legacy and strengthened modern outage
-tests plus strict domain/rules/persistence/app all-target lint. Current Linux CI
-36140154092 passes all four jobs and640 Rust tests. Native CI and complete current
-local canonical verification remain pending; this draft is stacked on area PR34.
+tests plus strict domain/rules/persistence/app all-target lint. All six source checks
+36140154092/36140154128 pass (640 Linux/642 native Windows Rust tests, MSRV,
+frontend and packaging). Full local canonical passes639 GNU tests and all guards/
+strict lint. The code remains unchanged at main-reconciliationee0a9c9; final
+documentation-head checks and protected merge remain pending. PR35 targets main.
 Ready4f2532b/dd5123d has reviewed execution-version/ancestry/defense/declaration
 foundations and ADR028. The first domain/rules all-target check passed, and the test
 batch passed206 tests before a stale Shield-unsupported expectation failed.25f99ab
 corrects that expectation and strengthens the unspent-actor reaction admission
-regression; rerun/lint remains pending. Actual response windows remain unimplemented.
+regression. All483 domain/rules tests and strict all-target Clippy now pass on25f99ab,
+recorded in11bf550. Actual response windows remain unimplemented.
 
 The supporting agents subsequently reached their account usage limit. Root retains
 the serial compiler slot and owns further verification/integration; no unfinished
 agent checkpoint is promoted to verified behavior. Root's finish plan is c6b1299 on
 `codex/gate4-encounter-finish` and is still plan-only. Fighter PR36 now has a source-
 paid Second Wind draft with real tactical/table/UI and cold-recovery cases. Initial
-CI found a missing exhaustive historical dice-role arm, corrected to require1d10;
-fresh verification is pending. Savage Attacker remains separate active work.
+CI corrected a missing historical dice-role arm, a declared-action restore join and
+an Inspiration fixture grant. Combined841e660 passes644 Linux Rust tests. Native
+Windows exposed an existing area-retry stack overflow; f669389 pins the nested
+helper futures and is under fresh canonical/native verification. Savage Attacker
+PR37 has a draft source-bound two-set/turn/physical UI path and read-only owned roll
+options. Its first CI found a collapsible-if lint; correction and cold-recovery/UI
+regressions are being added. Neither draft is accepted or gate-complete.
 
 ## Concrete remaining production paths
 

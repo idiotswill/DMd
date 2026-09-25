@@ -1,7 +1,9 @@
 # Gate 4 source areas in the durable table
 
-Status: source f65f2a4 verified locally and on all six CI checks; final evidence
-head, expected-head merge and post-merge verification remain pending. PR34 is draft.
+Status: bounded source-area slice merged and verified. PR34 final head7182786
+passed all six checks36142136680/36142136860, then expected-head-protected squash
+merge produced172a15a8ec48a71c762788e07dfdb3009a9a1500. Fetched full-tree parity
+passed; all six post-merge checks36143545617/36143545410 passed, including packaging.
 
 Writer: root. Branch `codex/gate4-area-integration`, initially based on reviewed
 PR33 source `49fac8c95b0e1178dece7c2332d8c23f24e298dd` during combined verification.
