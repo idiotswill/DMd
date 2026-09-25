@@ -141,6 +141,7 @@ async fn source_control_real_mage_ownership_raw_dice_self_cast_and_cold_retry() 
     let (mage, old_request, old_response) = Box::pin(create_mage(&f)).await;
     let prefix = export_campaign(&f.pool, f.campaign).await.unwrap();
     let (activation, assignment) = Box::pin(enable_and_assign(&f, mage)).await;
+    Box::pin(reject_nonprivileged_source_attendance_probe(&f, mage)).await;
     Box::pin(reopen(&mut f, &path)).await;
     assert_eq!(
         Box::pin(f.runtime.submit_presented_table(old_request.clone()))
@@ -375,6 +376,57 @@ async fn enable_and_assign(
             .contains("Private source Mage")
     );
     (activation, assignment)
+}
+
+async fn reject_nonprivileged_source_attendance_probe(f: &Fixture, mage: EntityId) {
+    accept(
+        f,
+        TableTransportChannel::Host,
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(f.players[1]),
+        },
+    )
+    .await;
+    let forbidden = request(
+        f,
+        TableTransportChannel::Player {
+            player_id: f.players[0],
+            character_id: f.characters[0],
+        },
+        TableAction::Tactical {
+            action: TacticalAction::Begin {
+                execution: TacticalExecutionVersion::ReactionsV1,
+                combatants: vec![TacticalCombatant {
+                    actor: mage,
+                    source: TacticalSource::Creature {
+                        definition_id: "mage".into(),
+                    },
+                    surprised: false,
+                }],
+                groups: vec![InitiativeGroup {
+                    actors: vec![mage],
+                    request_id: RollRequestId::new(),
+                }],
+            },
+        },
+    )
+    .await;
+    // An attending PC has a valid channel, but no initiative authority. Its
+    // refusal must not disclose the selected private source owner's attendance.
+    assert_eq!(
+        unchanged_rejection_message(f, forbidden).await,
+        "issuer is not authorized for this action"
+    );
+    accept(
+        f,
+        TableTransportChannel::Host,
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(f.players[0]),
+        },
+    )
+    .await;
 }
 
 async fn prepare_owned_turn(f: &mut Fixture, mage: EntityId) -> TableTransportRequest {

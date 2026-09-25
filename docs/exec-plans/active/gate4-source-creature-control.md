@@ -357,3 +357,7 @@ this new guard. Assignment and activation already authenticate Host first. Deskt
 source is unchanged from the verified frontend head. The next heavy slot runs
 focused Rust/source/adoption and genuine corpus cases, then releases briefly for
 the parent's Shield rules cases before full canonical verification.
+The actual SQLite scenario also assigns the prepared Mage to an absent player,
+then submits Begin through the other attending PC's valid channel. It requires
+the ordinary unauthorized-action message and unchanged complete normalized export,
+before the Host returns control to the legitimate present owner.
