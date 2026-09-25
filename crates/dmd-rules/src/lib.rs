@@ -8,14 +8,15 @@ pub use kernel::*;
 pub mod character_creation;
 pub use character_creation::*;
 pub mod spatial;
-pub mod tactical_conditions;
 pub mod tactical_creature_equipment;
 pub mod tactical_creatures;
 pub mod tactical_definitions;
 pub mod tactical_effect_adapter;
 pub mod tactical_effects;
 pub mod tactical_inventory;
+mod tactical_vitality_adapter;
 pub mod tactical_weapons;
+mod test_outcome;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 pub enum RollError {
@@ -252,4 +253,7 @@ mod tests {
         );
     }
 }
+pub mod tactical;
+pub mod tactical_budget;
+pub mod tactical_conditions;
 pub mod tactical_damage;

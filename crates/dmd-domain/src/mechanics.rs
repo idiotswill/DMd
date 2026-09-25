@@ -268,6 +268,14 @@ pub enum TestKind {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum PendingPurpose {
+    TacticalResolution {
+        encounter: crate::EncounterId,
+        key: crate::TacticalRollKey,
+    },
+    TacticalInitiative {
+        encounter: crate::EncounterId,
+        group_index: usize,
+    },
     Test {
         kind: TestKind,
         dc: i32,
@@ -342,13 +350,15 @@ pub struct ActionPermission {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RulesState {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_recovery: Option<HashMap<EntityId, crate::TacticalRecovery>>,
     pub pack_id: String,
     pub pack_version: String,
     pub entities: HashMap<EntityId, MechanicalEntity>,
     pub house_rules: HouseRules,
     pub effects: Vec<ActiveEffect>,
-    /// Grouped source authority outlives an encounter; its derived condition views
-    /// are never stored again in the legacy effect collection.
+    /// Grouped, interruptible effects are authoritative independently of encounter lifetime.
+    /// Absent on historical campaigns; projected condition views must never be stored above.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tactical_effects: Option<crate::TacticalEffects>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

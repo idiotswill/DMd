@@ -2,13 +2,16 @@ use std::path::{Path, PathBuf};
 
 mod rules_restore;
 mod rules_runtime;
+mod tactical_runtime;
 pub use rules_runtime::*;
+pub use tactical_runtime::TacticalReceipt;
 mod table_protocol;
 pub use table_protocol::*;
 mod table_creatures;
 mod table_engine;
 mod table_equipment;
 mod table_runtime;
+mod table_tactical;
 
 use dmd_domain::{
     CampaignId, CampaignState, CatalogLoadError, ContentCatalog, ContentResolutionError,
@@ -208,7 +211,10 @@ impl CampaignRuntime {
     }
 
     fn uses_rules(state: &CampaignState) -> bool {
-        state.rules.is_some() || state.table.is_some() || state.campaign.ruleset.id == "srd-5.2"
+        state.rules.is_some()
+            || state.table.is_some()
+            || state.encounter.is_some()
+            || state.campaign.ruleset.id == "srd-5.2"
     }
 
     fn has_rules_history(
@@ -217,10 +223,14 @@ impl CampaignRuntime {
     ) -> Result<bool, RunnableCampaignError> {
         let mut found = Self::uses_rules(current)
             || export.command_audit.iter().any(|audit| {
-                audit.command_kind.starts_with("rules.") || audit.command_kind.starts_with("table.")
+                audit.command_kind.starts_with("rules.")
+                    || audit.command_kind.starts_with("table.")
+                    || audit.command_kind.starts_with("tactical.")
             })
             || export.event_journal.iter().any(|event| {
-                event.event_kind.starts_with("rules.") || event.event_kind.starts_with("table.")
+                event.event_kind.starts_with("rules.")
+                    || event.event_kind.starts_with("table.")
+                    || event.event_kind.starts_with("tactical.")
             })
             || export
                 .observations

@@ -75,7 +75,7 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 - Initial read-only audits separately examine rules/timing, spatial/perception and desktop/
   persistence integration. Existing mechanics are reusable primitives, not complete combat.
 - Final-main baseline is clean; no repository movement was found on entry.
-- PR #23 implements the schema-4 spatial/perception/content foundation and installed-byte
+- PR #23 merged as `580f487944608d8c7c7220c7a410a779386ad615` with the schema-4 spatial/perception/content foundation and installed-byte
   pin. It does not claim encounter execution or Gate 4 acceptance. Independent reviews
   cover source definitions, migration/recovery and spatial privacy/geometry. Review fixes
   include Unaware perception, selected-speed Dash, darkness, cover and bounded projections.
@@ -84,7 +84,9 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
   in PR #23 after full verification and Linux/native Windows checks. The first Windows run
   exposed SQLx Acquire lifetime inference at the desktop boundary; direct acquired-connection
   migration plus a spawned-future regression addresses it without weakening transactionality.
-- `codex/gate4-encounter-runtime` owns versioned encounter commands, persisted initiative,
+- Exact PR head `0b910b8` passed canonical verification with 249 Rust tests and all six
+  CI jobs. Merged-main Linux run 36044061166 and Windows run 36044061140 also passed.
+- `codex/gate4-encounter-execution` owns versioned encounter commands, persisted initiative,
   player-approved ties and upcoming interrupts; `codex/gate4-effect-lifecycle` owns grouped
   concentration, suppression and ordered trigger tickets. Both are unaccepted followups.
   The full source audit retains summons, transformations, interrupted casting, forced actions,
@@ -94,6 +96,129 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ## Exact next action
 
-Finish exact-head review and full local/native CI verification of PR #23, merge with expected
-head protection, then continue the encounter and effects slices. Complete all twelve ledger
+### 2026-09-25 integration checkpoint
+
+Main is now `f8e02c9ab20e73636f82a3414bfd12831b5cd880`. Bounded prerequisite
+PRs24 (effects),25 (damage/vitality),26 (physical inventory),27 (source definitions),
+28 (physical weapon plans),29 (actual equipment preparation) and30 (private NPC
+preparation) passed exact-head verification and merged. Detailed evidence remains in
+their plans. PR29 canonical source88b468a passed331 Windows Rust tests (332 Linux);
+its finalc4d992a and postmergeac35 passed all six checks, including offline installer.
+
+PR30 canonical source6136aeb passed356 Windows Rust tests (357 Linux), strict full
+workspace Clippy and both guards. The actual PC-roll regression exposed and fixed
+composite validation calling the table parent before its child transition completed;
+full final-state invariants and foreign physical-reference rejection remain intact.
+Final evidence-only78166c6 received independent full-source/correction/final review,
+source-byte parity and all six checks (Linux36111205928/Windows36111206026). Expected-
+head merge producedbeaad44; fetched full-tree parity and all six postmerge checks
+(Linux36112003062/Windows36112002720) pass. Real form retries/SQLite reopen/export/
+restore and PC checks/Second Wind after NPC setup are verified; encounter execution
+is not claimed by those slices. Root reconciled current main asd046810.
+
+The separate encounter integration branch includes source creature setup/gear,
+initiative/turns, physical attacks and Light/Nick choices, KO recovery, raw dice,
+movement proposals and owned source/weapon opportunity choices. All59 application
+tests passed at `e5d1c2d`'s code (including17 table-loop and3 recovery cases); the
+subsequent main merge `ea21c76` preserves the catalog's matching validator fix.
+The movement UI passed30 tests, Svelte validation and a production build. A fresh
+review found the legal two-handed reaction projection gap; its fix is present and
+the dedicated12-comparison grip regression and strict workspace all-target Clippy
+passed at `56a8d35`. Miss/decline restore tests do not prove
+the still-required damaging reaction and concentration sequence.
+
+Casting checkpoint `81c1a4e` passed96 integration tests and strict domain/rules
+all-target Clippy, including the source spell-attack adapter and EndTurn occupied-space
+consequence. Movement `4a6f879` plus departure helper `5435743` are integrated; the source
+branch passed42 attack/OA,18 movement and24 turn tests plus strict Clippy. Source Charge
+`2a16e37`/evidence `bf2e38d` passed94 attack/movement/turn cases and strict Clippy, with
+fresh review, and is integrated as `1132e48`/`dc62e56`.
+
+The table-casting checkpoint `9fe100a` passed61 app tests,35 frontend tests, zero Svelte
+diagnostics, production UI build and strict domain/rules/app all-target Clippy. Its real
+SQLite scenario covers Cultist Hold Person, player save, Dragon rays, separate
+concentration children, hidden target exclusion, file reopen and exact retry/restore.
+Final copy/Charge-origin changes have the focused rerun evidence recorded in its plan;
+independent exact-head app/UI review is clear. Root merged it cleanly as `220ee80` after
+PR29 reconciliation. This integrated combination still requires its own full verification;
+it is not interchangeable with the separately verified source heads.
+
+PR31 is merged as `f8e02c9` after375 Windows Rust tests and full canonical checks at
+source0486c77, exact final review at61739b4 and all six final CI jobs
+(Linux36122086428/Windows36122086408). It attaches lifecycle authority/condition
+queries/concentration, legacy typed save guards, recovery origins and original-anchor
+enforcement. Review fixed suppressed immune conditions that could strand stronger
+effect removal. Expected-head merge, fetched full-tree parity and all six post-merge
+jobs pass (Linux36122812303/Windows36122812557, including offline installer).
+Integration6796581 preserves the source fix with tactical recovery/legacy posture;
+5127efc strengthens that query regression. Combined backend verification is pending.
+
+Fresh main-based PR32 (`codex/gate4-table-turn-core`) extracts initiative, durable
+start/end turn work and budget control with inactive future actions/cursors explicitly
+rejected. Exact source70b8333 passes full local canonical verification:424 Windows
+Rust tests, strict workspace Clippy, formatting/check and both repository guards.
+Linux36124985437 passes425 Rust tests and all four jobs; Windows36124985423 passes
+MSRV/stable including offline installer. Independent full extraction and correction
+reviews are clear,22 UI tests pass, Svelte has zero diagnostics and build succeeds.
+Review fixed ordinary dice after map setup routing through the wrong handler. The
+new disk-SQLite test executes ordinary checks, initiative and a whole round on both
+real and independently restored runtimes, then verifies cold retry and forged restore
+rejection; it passes the default Windows stack. Initial extraction compile/lint
+failures are fixed and retained in the slice plan. Followup9c22b74 changes only docs
+and broadens native Windows CI from desktop-only to the full workspace; Linux is
+green there, with the expanded Windows test/packaging step still pending. Final
+evidence-head review/CI and expected-head merge remain required.
+
+The next physical encounter slice includes reviewed Immediate-only source casting:
+a genuine damaging opportunity-attack/concentration case needs a legitimately cast
+ongoing spell. No arbitrary effect installer or synthetic state substitutes for that
+prerequisite. Exact combined source/app recovery review remains mandatory; areas,
+Ready/reaction magic and privacy protocol remain separate active Gate4 obligations.
+
+Source weapons1ab9e7 passed104 focused cases (62 attack,18 movement,24 turn) and
+strict domain/rules Clippy, with independent exact review. Integrated as8fa4484.
+Falling sourceebbff59 has final12 falling+43 spatial cases and strict Clippy; earlier
+95-case combined evidence predates its last two source fixes and is not final-head
+proof. Root integrated its seven-source chain throughb4360d2, then app/UI27c458
+as4fa4212. App/UI37 tests/check/build passed on its source branch; actual SQLite
+falling verification exposed an oversized async test future. Test-only32ad5be boxes
+independent phases and now passes all62 app tests, strict three-crate Clippy and the
+liquid landing/recovery cases on the default Windows stack. Integrated as9fd73da.
+Earlier runs exhausted system committed memory; those remain failed attempts. After
+owner freed memory, integrationd046810 passed38 UI tests/check/build. No user
+applications were closed.
+
+Area source2703f96 passed131 distinct rules cases (10 leaf,67 attack including14area,
+30 movement,24 turn) and strict domain/rules Clippy, with exact review. Source-faithful
+breaths use explicit GM occupied-cell sample/cover policy, shared amount and all saves
+before damage, settled fall state before admission and retained source/geometry proof.
+Area app integration and explicit controller delegation for hidden simultaneous work
+are active on a separate branch. Its697a238 source passes17 current area rules cases;
+actual SQLite app verification is running. Privacy audit exposed canonical sequence
+and generic transcript command-count leakage. A separate owned branch plans durable
+per-audience revisions and acceptance-time presentation history, without reducing
+ordering agency or claiming timing invisibility.
+
+Shield slice16ff104 has independent exact review and121 affected rules tests, all65
+app tests,42 UI tests, zero Svelte diagnostics, production build and strict
+domain/rules/app all-target Clippy. Real SQLite cases retain physical source weapon
+identity, paid shield transitions, AC/training, pending raw dice, restart/retry and
+hostile restore rejection. Its pre-code plan and source are integrated as ee13cff/
+e64c53f. Combined integration and eventual main PR verification remain pending.
+
+The reviewed PR32 visible-purpose dice routing fix is also reconciled into this
+integration branch. The only overlap was additive TableApp test insertion; both
+shield and dice scenarios are retained, and the older initiative fixture now declares
+its actual Tactical roll channel. This combined frontend passes45 tests and Svelte
+check with zero diagnostics. Backend evidence still needs the combined source run;
+the separate turn-core cold-round regression is preserved on its bounded PR branch.
+
+The18 spell mechanism
+families remain active where unfinished, including Ready, interruptions, zones, barriers,
+summons, forms and source-linked effects; do not promote pure catalog coverage to playability.
+Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
+and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
+
+Continue encounter execution and the effects/equipment/damage integrations from merged
+foundation main. Complete all twelve ledger
 families and packaged encounter acceptance before the Gate 4 owner pause; do not enter Gate 5.

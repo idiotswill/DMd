@@ -79,6 +79,7 @@ impl Fixture {
             .collect(),
             house_rules: HouseRules::default(),
             effects: vec![],
+            tactical_recovery: None,
             tactical_effects: None,
             tactical_inventory: None,
             tactical_creatures: None,
@@ -131,6 +132,7 @@ impl Fixture {
             enemies: vec![],
         };
         state.encounter = Some(TacticalEncounter {
+            flow: None,
             id: EncounterId::new(),
             scene_id: SceneId::new(),
             battlefield: Battlefield {

@@ -151,8 +151,10 @@ pub(super) fn ruling_valid(ruling: &Ruling, houses: &HouseRules) -> Result<(), R
     }
 }
 pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
-    // Historical legacy consequences retain their event-v1 interpretation.
-    let legacy_unconscious = rules.entities.get(&id).is_some_and(|e| e.hp == 0)
+    // Existing event-v1 effects retain their historical posture consequence even
+    // after new turn/recovery authority is attached. New source conditions obey immunity.
+    let legacy_unconscious = (rules.tactical_recovery.is_none()
+        && rules.entities.get(&id).is_some_and(|e| e.hp == 0))
         || rules
             .effects
             .iter()
@@ -161,8 +163,21 @@ pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
         .filter(|e| e.target == id)
         .filter_map(|e| e.condition)
         .collect();
-    if rules.entities.get(&id).is_some_and(|e| e.hp == 0) {
+    if rules.entities.get(&id).is_some_and(|e| {
+        e.hp == 0
+            && (rules.tactical_recovery.is_none()
+                || !e.condition_immunities.contains(&Condition::Unconscious))
+    }) {
         result.insert(Condition::Unconscious);
+    }
+    if let Some((entity, recovery)) = rules
+        .entities
+        .get(&id)
+        .zip(rules.tactical_recovery.as_ref().and_then(|r| r.get(&id)))
+    {
+        result.extend(crate::tactical_damage::recovery_conditions(
+            entity, recovery,
+        ));
     }
     if result.contains(&Condition::Unconscious)
         && (legacy_unconscious
@@ -285,7 +300,12 @@ pub(super) fn validate_entity(
     }
     if (creature_profile.is_none() && !(1..=20).contains(&e.level))
         || e.ability_scores.iter().any(|s| !(1..=30).contains(s))
-        || e.max_hp == 0
+        || (e.max_hp == 0
+            && !(e.death.dead
+                && state
+                    .rules
+                    .as_ref()
+                    .is_some_and(|r| r.tactical_recovery.is_some())))
         || e.max_hp > 1_000_000
         || e.hp > e.max_hp
         || e.temporary_hp > 1_000_000
@@ -305,7 +325,16 @@ pub(super) fn validate_entity(
     {
         return Err(invalid("inconsistent death state"));
     }
-    if (e.hp == 0 && !e.death.dead && (!e.prone || !e.uses_death_saves))
+    if (e.hp == 0
+        && !e.death.dead
+        && ((!e.prone
+            && !(state
+                .rules
+                .as_ref()
+                .is_some_and(|r| r.tactical_recovery.is_some())
+                && (e.condition_immunities.contains(&Condition::Unconscious)
+                    || e.condition_immunities.contains(&Condition::Prone))))
+            || !e.uses_death_saves))
         || (e.death.dead && (e.death.stable || e.death.successes != 0 || e.death.failures != 0))
     {
         return Err(invalid("inconsistent zero-HP/death conditions"));
@@ -403,6 +432,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
         return Err(invalid("empty mechanical state"));
     }
     crate::tactical_effect_adapter::validate_effect_attachment(state)?;
+    crate::tactical_vitality_adapter::validate_attachment(state)?;
     if let Some(creatures) = &rules.tactical_creatures {
         crate::tactical_creatures::validate_tactical_creatures(state, creatures)
             .map_err(|error| invalid(error.to_string()))?;
@@ -507,7 +537,8 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             .ok_or_else(|| invalid("recorded roll without actor"))?;
         entity(rules, roller)?;
         match &roll.purpose {
-            PendingPurpose::Test { .. }
+            PendingPurpose::TacticalInitiative { .. }
+            | PendingPurpose::Test { .. }
             | PendingPurpose::Attack { .. }
             | PendingPurpose::Concentration { .. }
                 if roll.request.dice
@@ -519,6 +550,48 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 return Err(invalid("recorded d20 test has invalid dice"));
             }
             _ => (),
+        }
+        if let PendingPurpose::TacticalResolution { key, .. } = &roll.purpose {
+            if !matches!(
+                key.role,
+                TacticalRollRole::DeathSave
+                    | TacticalRollRole::EffectSave
+                    | TacticalRollRole::EffectDamage
+                    | TacticalRollRole::Concentration
+                    | TacticalRollRole::StableRecovery
+                    | TacticalRollRole::CreatureRecharge
+            ) {
+                return Err(invalid("unavailable tactical roll history"));
+            }
+            if key.request_id() != roll.request.id || !rules.entities.contains_key(&key.subject) {
+                return Err(invalid("invalid tactical roll identity"));
+            }
+            let expected = match key.role {
+                TacticalRollRole::DeathSave
+                | TacticalRollRole::EffectSave
+                | TacticalRollRole::Attack
+                | TacticalRollRole::SpellSave
+                | TacticalRollRole::LiquidLandingCheck
+                | TacticalRollRole::Concentration => Some(20),
+                TacticalRollRole::StableRecovery => Some(4),
+                TacticalRollRole::CreatureRecharge => Some(6),
+                TacticalRollRole::EffectDamage
+                | TacticalRollRole::AttackDamage
+                | TacticalRollRole::FallDamage
+                | TacticalRollRole::SpellAmount => None,
+            };
+            if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {
+                return Err(invalid("invalid tactical roll dice"));
+            }
+            if key.role == TacticalRollRole::FallDamage
+                && (roll.request.dice.len() != 1
+                    || roll.request.dice[0].sides != 6
+                    || !(1..=20).contains(&roll.request.dice[0].count)
+                    || roll.request.modifier != 0
+                    || roll.request.mode != RollMode::Normal)
+            {
+                return Err(invalid("invalid source falling damage dice"));
+            }
         }
         match &roll.purpose {
             PendingPurpose::Attack { target, .. }
@@ -616,7 +689,24 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     let mut rests = HashSet::new();
     for r in &rules.rests {
         entity(rules, r.actor)?;
-        if !rests.insert(r.actor) || r.started_at > state.clock.now || rules.timing.is_some() {
+        let participant_in_combat = rules.timing.as_ref().is_some_and(|timing| {
+            // Tactical encounters may involve only part of the campaign. Legacy
+            // event semantics retain their original campaign-wide restriction.
+            state.encounter.as_ref().is_none_or(|e| e.flow.is_none())
+                || timing.order.iter().any(|entry| entry.actor == r.actor)
+        });
+        let source_knockout_rest = state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+            && r.kind == RestKind::Short
+            && rules
+                .tactical_recovery
+                .as_ref()
+                .and_then(|records| records.get(&r.actor))
+                .and_then(|recovery| recovery.knockout_rest.as_ref())
+                .is_some_and(|proof| proof.started_at == r.started_at);
+        if !rests.insert(r.actor)
+            || r.started_at > state.clock.now
+            || (participant_in_combat && !source_knockout_rest)
+        {
             return Err(invalid("invalid rest state"));
         }
     }
@@ -645,5 +735,6 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             pack.attack(&p.content_id)?;
         }
     }
+    crate::tactical::validate_tactical_state(state)?;
     Ok(())
 }

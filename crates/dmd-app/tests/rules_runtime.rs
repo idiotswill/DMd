@@ -9,6 +9,9 @@ use dmd_domain::*;
 use dmd_persistence::{export_campaign, load_command_audit, open_sqlite, replay_campaign_to_head};
 use dmd_rules::{RulesAction, RulesAnswer, RulesError, RulesOutcome, RulesPack, RulesQuery};
 
+#[path = "support/tactical_runtime_cases.rs"]
+mod tactical_runtime_cases;
+
 struct Fixture {
     directory: PathBuf,
     content: PathBuf,

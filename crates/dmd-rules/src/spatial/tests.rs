@@ -142,6 +142,7 @@ impl Fixture {
         })
         .collect();
         let encounter = TacticalEncounter {
+            flow: None,
             id: EncounterId::new(),
             scene_id: scene,
             battlefield: Battlefield {

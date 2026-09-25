@@ -17,6 +17,7 @@ fn fixture() -> (RulesState, EntityId, EntityId, EntityId) {
             ]),
             house_rules: HouseRules::default(),
             effects: vec![],
+            tactical_recovery: None,
             tactical_effects: None,
             tactical_inventory: None,
             tactical_creatures: None,

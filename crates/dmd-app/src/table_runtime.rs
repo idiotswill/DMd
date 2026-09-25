@@ -2,8 +2,8 @@
 use crate::{
     CampaignRuntime, CharacterCreationOptions, RunnableCampaignError, TABLE_EVENT_KIND,
     TABLE_EVENT_VERSION, TableAction, TableCampaignSummary, TableCharacterView, TableEvent,
-    TableObservationBody, TableReceipt, TableSaveBonus, TableSheetDetails, TableSkillBonus,
-    TableTextResult, TableTranscriptEntry, TableView, TableViewer,
+    TableObservationBody, TableReceipt, TableRollChannel, TableSaveBonus, TableSheetDetails,
+    TableSkillBonus, TableTextResult, TableTranscriptEntry, TableView, TableViewer,
     rules_runtime::load_rules_pack,
     table_engine::{player_channel, resolve_table, table},
 };
@@ -22,7 +22,7 @@ fn recovery(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
 }
 
-fn roll_label(purpose: &PendingPurpose) -> String {
+fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> String {
     let ability_name = |ability: &Ability| match ability {
         Ability::Strength => "Strength",
         Ability::Dexterity => "Dexterity",
@@ -52,6 +52,51 @@ fn roll_label(purpose: &PendingPurpose) -> String {
         Skill::Survival => "Survival",
     };
     match purpose {
+        PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
+        PendingPurpose::TacticalResolution { key, .. } => match key.role {
+            TacticalRollRole::DeathSave => "Death saving throw",
+            TacticalRollRole::EffectSave | TacticalRollRole::SpellSave => "Saving throw",
+            TacticalRollRole::SpellAmount => "Spell effect roll",
+            TacticalRollRole::EffectDamage => "Effect damage",
+            TacticalRollRole::Concentration => {
+                "Constitution saving throw to maintain concentration"
+            }
+            TacticalRollRole::StableRecovery => "Stable recovery time",
+            TacticalRollRole::CreatureRecharge => "Ability recharge",
+            TacticalRollRole::Attack => "Attack roll",
+            TacticalRollRole::AttackDamage => "Attack damage",
+            TacticalRollRole::FallDamage => "Falling damage",
+            TacticalRollRole::LiquidLandingCheck => {
+                let landing = state
+                    .encounter
+                    .as_ref()
+                    .and_then(|encounter| encounter.flow.as_ref())
+                    .and_then(|flow| flow.resolution.as_ref())
+                    .and_then(|resolution| {
+                        let pending = resolution
+                            .pending
+                            .as_ref()
+                            .filter(|pending| pending.key == *key)?;
+                        let TacticalWorkKind::LiquidLandingCheck { fall } = pending.work.kind
+                        else {
+                            return None;
+                        };
+                        resolution.falls.get(usize::from(fall))
+                    });
+                match landing.map(|fall| &fall.stage) {
+                    Some(TacticalFallStage::LandingCheck {
+                        choice: LiquidLandingChoice::Athletics,
+                        ..
+                    }) => "Strength (Athletics) liquid landing check",
+                    Some(TacticalFallStage::LandingCheck {
+                        choice: LiquidLandingChoice::Acrobatics,
+                        ..
+                    }) => "Dexterity (Acrobatics) liquid landing check",
+                    _ => "Liquid landing check",
+                }
+            }
+        }
+        .into(),
         PendingPurpose::Test { kind, .. } => match kind {
             TestKind::Check { ability, skill } => match skill {
                 Some(skill) => format!("{} ({}) check", ability_name(ability), skill_name(skill)),
@@ -602,6 +647,7 @@ impl CampaignRuntime {
             });
         }
         characters.sort_by_key(|character| character.character_id.0);
+        let mut roll_channel = None;
         let roll = if state.rules.is_some() {
             match dmd_rules::query(state, issuer, &RulesQuery::PendingRoll, &pack)? {
                 RulesAnswer::PendingRoll(Some(mut request)) => {
@@ -612,7 +658,12 @@ impl CampaignRuntime {
                         .filter(|pending| pending.request.id == request.id)
                         .ok_or_else(|| recovery("Visible roll has no matching pending purpose."))?;
                     // Presentation only: leave the persisted request and its replay inputs intact.
-                    request.reason = roll_label(&pending.purpose);
+                    request.reason = roll_label(&pending.purpose, state);
+                    roll_channel = Some(match pending.purpose {
+                        PendingPurpose::TacticalInitiative { .. }
+                        | PendingPurpose::TacticalResolution { .. } => TableRollChannel::Tactical,
+                        _ => TableRollChannel::Table,
+                    });
                     Some(request)
                 }
                 _ => None,
@@ -752,6 +803,8 @@ impl CampaignRuntime {
             active_session: table.active_session.clone(),
             pending,
             roll,
+            roll_channel,
+            tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
             creature_setup: crate::table_creatures::view(
                 state,
                 matches!(viewer, TableViewer::Host),

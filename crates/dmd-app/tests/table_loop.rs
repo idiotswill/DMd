@@ -6,6 +6,10 @@ use std::path::Path;
 
 #[path = "support/table_creature_cases.rs"]
 mod table_creature_cases;
+#[path = "support/table_tactical_cases.rs"]
+mod table_tactical_cases;
+#[path = "support/table_turn_core_cases.rs"]
+mod table_turn_core_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
@@ -47,10 +51,23 @@ impl Fixture {
         Self::with_contract(TableContract::default()).await
     }
     async fn with_contract(contract: TableContract) -> Self {
+        Self::with_creation(contract, None).await
+    }
+    async fn with_creation(
+        contract: TableContract,
+        first_character: Option<CharacterCreationInput>,
+    ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
-        Self::with_pool(contract, pool).await
+        Self::with_creation_pool(contract, first_character, pool).await
     }
     async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
+        Self::with_creation_pool(contract, None, pool).await
+    }
+    async fn with_creation_pool(
+        contract: TableContract,
+        first_character: Option<CharacterCreationInput>,
+        pool: sqlx::SqlitePool,
+    ) -> Self {
         let runtime = CampaignRuntime::from_content_root(
             pool.clone(),
             Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
@@ -82,7 +99,13 @@ impl Fixture {
                     character_id: f.characters[i],
                     entity_id: f.actors[i],
                     player_id: f.players[i],
-                    input: input(&format!("Character {i}")),
+                    input: if i == 0 {
+                        first_character
+                            .clone()
+                            .unwrap_or_else(|| input("Character 0"))
+                    } else {
+                        input("Character 1")
+                    },
                 },
                 None,
             )

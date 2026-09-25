@@ -91,6 +91,10 @@ fn pending_with_recency(
 ) -> Result<(), RulesError> {
     command(state, &p.issued_by)?;
     if check_recency
+        && !matches!(
+            p.purpose,
+            PendingPurpose::TacticalInitiative { .. } | PendingPurpose::TacticalResolution { .. }
+        )
         && state
             .applied_event_sequence
             .saturating_sub(p.issued_by.expected_event_sequence)
@@ -107,6 +111,9 @@ fn pending_with_recency(
         sides: 20,
     }];
     match &p.purpose {
+        PendingPurpose::TacticalInitiative { .. } | PendingPurpose::TacticalResolution { .. } => {
+            crate::tactical::validate_tactical_pending(state, p)?;
+        }
         PendingPurpose::Test {
             kind,
             dc,
