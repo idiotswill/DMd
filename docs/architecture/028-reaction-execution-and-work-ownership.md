@@ -127,6 +127,82 @@ change the first eligible responder, that opposite network arrival produces the 
 selected order, and that unknown or ineligible respondents never alter the ordering
 controls, unrelated audience digest or revision during private collection.
 
+## Magic Missile target responses and same-time impacts
+
+This decision is approved for the next bounded Gate4 executor, provisionally
+`ShieldMissileV1` (flow4), but is not an implementation or acceptance claim. The
+current flow3 behavior remains unchanged until that versioned runtime is verified.
+The detailed plan is `docs/exec-plans/active/gate4-shield-missile-runtime.md`.
+
+SRD5.2.1 p146 gives each Magic Missile dart its own 1d4+1 Force damage and requires
+the darts to strike simultaneously. Shield responds to being targeted by that spell
+(pp161–162), and p187 assigns same-time order to the current-turn controller. The
+p16 shared-roll rule addresses simultaneous saving-throw targets; it does not by
+itself establish one shared Magic Missile d4. The source does not fully specify
+network collection or the grouping of repeated-target damage/consequence work.
+The following is the application's explicit adjudication of those boundaries.
+
+The real cast command binds every dart occurrence and its chosen target, including
+repeated targets, before any target response or damage face. There is one private
+Shield respondent per distinct targeted creature. Every target owner acknowledges
+collection even if no response is available; this is cost-free coordination, not a
+fictional action or spent Reaction. The uniform current-turn ordering stage is
+independent of private eligibility/acceptance. It uses the same explicit potential-
+participant order and exact-trigger delegation rules as other reaction collection.
+Each selected respondent casts or declines through a fresh current-head command;
+permission and costs are rederived from its actual source, components and budgets.
+All selected pre-impact Shield responses finish before amount collection proceeds.
+
+Collect and retain a separate actual d4 face for every admitted dart before the
+first missile vitality change. The approved first implementation retains all faces,
+including darts whose damage Shield prevents. No shared roll or invented zero face
+replaces those records. A deterministic order of requesting amounts is bookkeeping;
+it does not choose impact order. Only one existing raw request is pending at a time.
+
+After collection, put every committed dart impact in one sibling work frame. The
+actual current-turn controller selects individual occurrences, with meaningful
+source-safe labels that distinguish darts even when their target actor is the same.
+Neither transport arrival nor an actor-only ranking can decide that material order.
+The earlier response-order delegation and an unrelated area's delegation do not
+authorize the impact set or a child-created response window.
+
+Each selected dart is a separate Force damage instance, using ordinary defenses,
+temporary HP and vitality. Each actual damaging instance can produce its own
+concentration save or damage-at-zero failure under SRD pp17–18/179. It is not an
+attack, critical hit or melee knockout source. Normal nested consequence frames
+drain before selecting the next sibling impact; concentration loss can therefore
+remove dependent effects before the next dart resolves. This is not a global HP
+aggregation or a requirement to defer all consequences until every HP mutation.
+
+Committed strike identity survives those consequences. Do not re-run the original
+cast's range/perception/source permission or erase/retarget a remaining dart because
+a prior child changes position, incapacitates/kills the caster or ends concentration.
+An already-dead recipient gets a retained no-effect completion for its selected
+occurrence, without revival or invented corpse HP. Preserve every original target,
+accepted face, impact occurrence and causal receipt; damage prevention does not open
+a new target-trigger window after the amounts are known. Distinguish original cast,
+trigger, amount acceptance, selected response and later execution metadata rather
+than retiming a command or fabricating an issuer.
+
+These records live inside the existing resolution and frame stack. A typed parent
+distinguishes hit-Shield from missile-target Shield; no fabricated attack or second
+queue stands in for missile targeting. The complete partition must prove that every
+dart occurs once across amount collection, pending impact/children and completion.
+Independent response casts keep their own authority boundary in retained ancestry.
+
+Flow1, flow2 and flow3 accepted behavior remains frozen, including flow3's sequential
+Magic Missile and saved hit-response pauses. Numeric flow0 remains invalid, absent
+pre-tactical authority remains absent, and the original unit upgrade remains1→2.
+New live Begin/forward upgrade admission and feature support for hit-Shield are
+explicitly versioned; source program fingerprints, existing roll-role tags and old
+transport/presentation bytes are not rewritten. Before flow4 runtime work, genuine
+unchanged-flow3 missile and owned Shield scenarios must pass and their actual pause
+exports, accepted bindings and pre-tactical anchors must be restored and frozen.
+The new slice may develop after that capture gate while PR45 verification finishes;
+its acceptance/merge requires reconciling verified PR45 main and checking the exact
+integrated head. Counterspell, Ready release and off-turn missile producers remain
+separate required Gate4 work with their own source and ownership acceptance.
+
 ## Compatibility and verification obligations
 
 Old Begin JSON must round-trip without an added default field, replay to the old
