@@ -31,6 +31,7 @@ fn main() {
             host::desktop_table_action,
             host::desktop_table_text,
             host::desktop_submit_table,
+            host::desktop_roll_options,
         ])
         .run(tauri::generate_context!())
         .expect("DMd could not start its desktop window");

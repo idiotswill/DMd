@@ -56,3 +56,13 @@ limitation. Protocol canonical currently owns the local heavy compiler slot.
 Next: implement the pure raw-pool validation and source-derived tactical admission,
 then actual transport/UI and cold-recovery coverage. Do not claim declaration/schema
 or leaf tests alone as end-user feature or Gate4 completion.
+
+Compatibility decision: new live roll affordances use a read-only, snapshot-consistent
+query authorized by the audience revision, opaque roll handle and selected roller.
+They do not enter or alter immutable v1 presentation digests or accepted retry bodies.
+Adding availability fields to the old replayed DTO would reinterpret historical
+digests, so that approach is rejected. Old campaign/transport history remains under
+its original projection. This query grants no action authority: the submitted typed
+action rederives source, payment, dice and turn under the normal writer transaction.
+Tests must prove the query writes nothing, foreign/stale handles fail, an older
+initialized presentation remains valid, and accepted modern retries stay exact.

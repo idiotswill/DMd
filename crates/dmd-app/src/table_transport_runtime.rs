@@ -112,6 +112,19 @@ fn derive_intent(
                         }
                         result.request_id = roll(result.request_id)?;
                     }
+                    TacticalAction::SubmitSavageAttacker { roll: sets } => {
+                        if sets.first.source != RollSource::Physical
+                            || sets.second.source != RollSource::Physical
+                            || sets.first.request_id != sets.second.request_id
+                        {
+                            return Err(
+                                "Both physical sets must answer the same visible roll.".into()
+                            );
+                        }
+                        let canonical = roll(sets.first.request_id)?;
+                        sets.first.request_id = canonical;
+                        sets.second.request_id = canonical;
+                    }
                     _ => {}
                 },
                 _ => {}
@@ -299,6 +312,69 @@ pub(crate) fn validate_observation_binding(
 }
 
 impl CampaignRuntime {
+    pub async fn table_roll_options(
+        &self,
+        request: TableRollOptionsRequest,
+    ) -> Result<TableRollOptions, RunnableCampaignError> {
+        // A read transaction provides one snapshot; this neither bootstraps nor
+        // rewrites accepted audience digests, bindings, responses or game state.
+        let mut tx = self.pool.begin().await.map_err(recovery)?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
+        let (state, pack) = self.protocol_pack(&export)?;
+        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        let visible = history
+            .latest
+            .get(&request.channel.audience())
+            .filter(|entry| entry.revision == request.revision)
+            .ok_or_else(|| rejected("Refresh the current roll before viewing its options."))?;
+        let canonical = visible
+            .handles
+            .iter()
+            .find_map(|handle| match handle.capability {
+                ProjectionCapability::Roll { canonical } if handle.opaque == request.roll_id.0 => {
+                    Some(canonical)
+                }
+                _ => None,
+            })
+            .ok_or_else(|| rejected("That roll is not available in this view."))?;
+        let pending = state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.pending.as_ref())
+            .filter(|pending| pending.request.id == canonical)
+            .ok_or_else(|| rejected("That roll has already changed."))?;
+        let actor = pending
+            .request
+            .roller
+            .ok_or_else(|| recovery("Pending roller absent."))?;
+        if let TableTransportChannel::Player {
+            player_id,
+            character_id,
+        } = request.channel
+        {
+            if !state
+                .characters
+                .get(&character_id)
+                .is_some_and(|character| {
+                    character.controlling_player_id == Some(player_id)
+                        && character.entity_id == actor
+                })
+            {
+                return Err(rejected("Select the character who owns this roll."));
+            }
+        }
+        let savage_attacker = dmd_rules::tactical::savage_attacker_dice(&state, &pack)
+            .ok()
+            .map(|weapon_dice| TableSavageAttackerOption {
+                weapon_dice,
+                heroic_inspiration: state.rules.as_ref().unwrap().entities[&actor]
+                    .heroic_inspiration,
+            });
+        tx.commit().await.map_err(recovery)?;
+        Ok(TableRollOptions { savage_attacker })
+    }
     pub async fn recover_legacy_table_request(
         &self,
         request: LegacyTableRequest,

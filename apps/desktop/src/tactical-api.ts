@@ -54,7 +54,15 @@ export interface BattlefieldSetup {
   area_grid_policy?: 'OccupiedCellCentersV1' | null;
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
+export interface SavageAttackerRoll {
+  weapon_dice: number;
+  first: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] };
+  second: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] };
+  chosen: 'First' | 'Second';
+  inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
+}
 export type TacticalAction =
+  | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
   | { CreatureWeaponAttack: { feature_id: string; choice: Omit<WeaponUseChoice,'delivery'|'ability'|'purpose'> } }

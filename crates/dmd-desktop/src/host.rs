@@ -266,6 +266,14 @@ pub async fn desktop_submit_table(
         .submit_presented_table(request)
         .await?)
 }
+
+#[tauri::command]
+pub async fn desktop_roll_options(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableRollOptionsRequest,
+) -> Result<dmd_app::TableRollOptions, DesktopError> {
+    Ok(host.runtime().await?.table_roll_options(request).await?)
+}
 #[cfg(test)]
 mod tests {
     use super::*;
