@@ -383,7 +383,10 @@ pub(super) fn choose(
                 .iter()
                 .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
     });
-    if after_turn {
+    if after_turn || !resolution(state)?.areas.is_empty() {
+        // This dedicated source invocation retained explicit controller consent
+        // before targeting. Ordering permission ends when its cursor completes;
+        // raw save/reaction/resistance authority is deliberately unaffected.
         privileged(meta)?;
     } else {
         authorize(state, meta, resolution(state)?.turn_actor)?;

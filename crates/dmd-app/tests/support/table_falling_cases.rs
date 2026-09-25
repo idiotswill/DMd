@@ -86,6 +86,7 @@ async fn prepare_ledge(f: &mut Fixture) {
                     enemies: vec![],
                 }],
                 creatures: vec![],
+                area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
                     reason: "An authored platform and liquid surface with first-contact landing."

@@ -193,6 +193,7 @@ fn action(f: &Fixture) -> TacticalAction {
     TacticalAction::CreatureArea {
         feature_id: "fire-breath".into(),
         aim: aim(f),
+        ordering: TacticalAreaOrdering::DelegateToHost,
     }
 }
 fn record(f: &Fixture) -> &TacticalArea {
@@ -215,7 +216,7 @@ fn choose(f: &mut Fixture, actor: EntityId, save: bool) {
         })
         .unwrap()
         .occurrence;
-    f.run(Some(0), TacticalAction::ChooseTurnWork { occurrence: work });
+    f.run(None, TacticalAction::ChooseTurnWork { occurrence: work });
 }
 fn focus(f: &mut Fixture, actor: EntityId) -> EffectId {
     // Imported legitimate concentration state isolates damage obligations. This
@@ -707,6 +708,7 @@ fn actual_area_damage_pumps_new_falling_before_idle_without_rebinding_its_old_vi
         TacticalAction::CreatureArea {
             feature_id: "fire-breath".into(),
             aim: selected,
+            ordering: TacticalAreaOrdering::DelegateToHost,
         },
     );
     raw(&mut f, &[1; 7]);
@@ -838,4 +840,113 @@ fn completed_area_save_must_reconstruct_its_source_request_before_other_saves_fi
     assert!(
         matches!(validate_tactical_state(&bad), Err(RulesError::Invalid(message)) if message.contains("source request"))
     );
+}
+
+#[test]
+fn area_ordering_requires_explicit_controller_consent_before_geometry_or_cost() {
+    let (mut f, _) = fixture("chimera", true);
+    begin(&mut f);
+    let accepted = action(&f);
+    let mut missing = serde_json::to_value(&accepted).unwrap();
+    missing["CreatureArea"]
+        .as_object_mut()
+        .unwrap()
+        .remove("ordering");
+    assert!(serde_json::from_value::<TacticalAction>(missing).is_err());
+    f.rejected(None, accepted.clone());
+    f.rejected(Some(1), accepted.clone());
+    let mut hostile = accepted.clone();
+    if let TacticalAction::CreatureArea { ordering, aim, .. } = &mut hostile {
+        *ordering = TacticalAreaOrdering::Host;
+        aim.origin.x = i32::MAX;
+    }
+    let error = resolve_tactical(&f.state, &f.meta(Some(0)), &hostile, &f.pack).unwrap_err();
+    assert!(
+        error.to_string().contains("explicitly authorize"),
+        "{error}"
+    );
+    f.rejected(Some(0), hostile);
+    let event = f.run(Some(0), accepted);
+    assert_eq!(record(&f).source.invocation, event.meta);
+    assert_eq!(record(&f).ordering, TacticalAreaOrdering::DelegateToHost);
+    let mut forged = f.state.clone();
+    forged
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .areas[0]
+        .ordering = TacticalAreaOrdering::Host;
+    assert!(validate_tactical_state(&forged).is_err());
+}
+
+#[test]
+fn delegated_area_ordering_keeps_each_save_with_its_actual_controller() {
+    let (mut f, _) = fixture("chimera", true);
+    begin(&mut f);
+    f.run(Some(0), action(&f));
+    f.roll(0, &[1; 7]);
+    let resolution = f.flow().resolution.as_ref().unwrap();
+    let occurrence = resolution
+        .frames
+        .last()
+        .unwrap()
+        .iter()
+        .find(|work| {
+            matches!(work.kind, TacticalWorkKind::AreaSave { target, .. }
+            if resolution.areas[0].targets[usize::from(target)].actor == f.actors[1])
+        })
+        .unwrap()
+        .occurrence;
+    f.rejected(Some(0), TacticalAction::ChooseTurnWork { occurrence });
+    f.rejected(Some(1), TacticalAction::ChooseTurnWork { occurrence });
+    f.run(None, TacticalAction::ChooseTurnWork { occurrence });
+    let raw = f.raw(&[10]);
+    f.rejected(Some(0), TacticalAction::SubmitRoll { result: raw });
+    f.roll(1, &[10]);
+    assert_eq!(
+        record(&f)
+            .targets
+            .iter()
+            .filter(|target| target.save.is_some())
+            .count(),
+        1
+    );
+    assert_eq!(record(&f).ordering, TacticalAreaOrdering::DelegateToHost);
+}
+
+#[test]
+fn host_source_area_uses_host_ordering_without_player_consent_fabrication() {
+    let (mut f, _) = fixture("chimera", false);
+    f.state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_creatures
+        .as_mut()
+        .unwrap()
+        .runtime
+        .iter_mut()
+        .find(|runtime| runtime.actor == f.actors[0])
+        .unwrap()
+        .controller = CreatureController::Host;
+    begin(&mut f);
+    f.rejected(None, action(&f));
+    f.run(
+        None,
+        TacticalAction::CreatureArea {
+            feature_id: "fire-breath".into(),
+            aim: aim(&f),
+            ordering: TacticalAreaOrdering::Host,
+        },
+    );
+    assert_eq!(record(&f).ordering, TacticalAreaOrdering::Host);
+    raw(&mut f, &[1; 7]);
+    f.roll(1, &[10]);
+    assert!(f.flow().resolution.is_none());
 }

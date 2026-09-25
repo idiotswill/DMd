@@ -131,6 +131,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             ));
         }
         authorize(state, &r.source.invocation, r.source.actor)?;
+        validate_ordering(state, &r.source.invocation, r.source.actor, r.ordering)?;
         provenance(state, r, &r.source.invocation, r.source.actor)?;
         r.aim.origin.validate().map_err(|e| invalid(&e))?;
         r.aim.toward.validate().map_err(|e| invalid(&e))?;
