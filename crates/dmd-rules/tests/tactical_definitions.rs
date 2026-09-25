@@ -369,3 +369,43 @@ fn chimera_and_dragon_mixed_routines_retain_real_substitution_limits() {
             [1]["feature_id"] = json!("multiattack")
     });
 }
+
+#[test]
+fn mixed_multiattack_limits_require_a_complete_feasible_assignment() {
+    let mut value: Value = serde_json::from_str(TACTICAL_DEFINITIONS_JSON).unwrap();
+    let dragon = value["creatures"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|creature| creature["id"] == "adult-red-dragon")
+        .unwrap();
+    let routine = &mut dragon["features"][0]["feature"]["MultiattackRoutine"];
+    let attack = routine["slots"][0]["options"][0].clone();
+    let ray = routine["slots"][0]["options"][1].clone();
+    // An early greedy ray choice must be reassigned to leave it for the only-ray slot.
+    routine["slots"] = json!([
+        {"options": [ray.clone(), attack.clone()]},
+        {"options": [ray.clone()]},
+        {"options": [attack]},
+    ]);
+    let text = serde_json::to_string(&value).unwrap();
+    TacticalDefinitions::from_json(&text).expect("a complete non-greedy source assignment exists");
+    let dragon = value["creatures"]
+        .as_array_mut()
+        .unwrap()
+        .iter_mut()
+        .find(|creature| creature["id"] == "adult-red-dragon")
+        .unwrap();
+    dragon["features"][0]["feature"]["MultiattackRoutine"]["slots"] = json!([
+        {"options": [ray.clone()]},
+        {"options": [ray.clone()]},
+        {"options": [ray]},
+    ]);
+    let error =
+        TacticalDefinitions::from_json(&serde_json::to_string(&value).unwrap()).unwrap_err();
+    assert!(
+        error
+            .to_string()
+            .contains("shared limits prevent completing")
+    );
+}
