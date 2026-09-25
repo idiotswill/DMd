@@ -30,9 +30,13 @@ production. Root will supply the reviewed admission-fix commit before compilatio
 
 ## Verification and next action
 
-Plan committed before test implementation. Compiler is reserved to root for PR33
-canonical/UI; no compiler run is authorized here until explicit handoff. Author
-the boxed phases using existing public source-scene test helpers, get read-only
-review, integrate root's fix, then run the focused scenario and record actual
-evidence. Root owns final combined verification, PR integration and gate decisions.
+Plan committed before test implementation. The complete boxed file-SQLite case is
+now authored in `crates/dmd-app/tests/support/table_dead_target_cases.rs`, reusing
+the actual public source-scene and raw-roll helpers. It also cold-retries the valid
+original lethal declaration before advancing turns, then reopens after the rejected
+fresh declaration and checks replay/portable restore again. Formatting and diff
+checks pass; **the new test is uncompiled** pending root's production fix. Root now
+owns the compiler and will integrate this test into its focused/canonical batch,
+avoiding a second conflicting build. Read-only review and actual test evidence remain
+required before acceptance. Root owns PR integration and final gate decisions.
 Gate4 remains active; no native or whole-gate acceptance is claimed.

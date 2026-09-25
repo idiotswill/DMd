@@ -10,6 +10,8 @@ mod table_attack_cases;
 mod table_casting_cases;
 #[path = "support/table_creature_cases.rs"]
 mod table_creature_cases;
+#[path = "support/table_dead_target_cases.rs"]
+mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
