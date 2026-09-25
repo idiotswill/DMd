@@ -55,3 +55,15 @@ encounter finish. All remain within Gate 4. No complete ledger family is promote
 Commit this plan before applying the area sequence. Then reconcile overlap against
 the current PR33 source, retaining every newer parent behavior. Do not open or merge
 the followup until PR33 is verified and merged. Record exact combined evidence here.
+
+## Integration checkpoint
+
+The area sequence is integrated through `c79ddc5` after pre-code plan `584f75c`.
+Two conflicts were additive: preserve both shield and area options in the tactical
+view, and add the area outbox retry while retaining the paid-shield and pending-dice
+routing tests. The resulting diff against PR33 has 54 files, 4,552 additions and
+11 deletions; no physical source file or existing recovery module is removed.
+Formatting and whitespace checks pass. Independent bounded integration review is
+clear: shared area/continuation/restore/choice code and the SQLite scenario match
+the reviewed area source, while current shields and roll-channel behavior remain.
+This checkpoint is unbuilt; no combined tests, main reconciliation or merge is claimed.
