@@ -1,8 +1,10 @@
 # Gate 4 casting at the table
 
-Writer: root on `codex/gate4-encounter-execution`. Dependency: the independently
-reviewed and executable shared casting/attack checkpoint from the casting and attack
-branches. No unverified shared implementation is considered an accepted dependency.
+Writer: bootstrap_audit on `codex/gate4-table-casting`, in its own worktree from
+root integration `cac466c`. Dependency: independently reviewed shared casting/attack
+checkpoint `81c1a4ea91babdcb93d4f6944cfb53695d50b805`, merged before app edits.
+Shared rules/domain queue files remain owned by the movement writer; this slice
+owns application projections/restore auditing, the desktop form/API and focused tests.
 
 ## Objective and constraints
 
@@ -36,9 +38,21 @@ effects. No synthesized prepared spell, creature feature or pre-paid permission.
 
 ## Current status and next action
 
-Plan created before app casting implementation. The shared driver has a clean but
-uncompiled checkpoint; the separate sealed spell attack adapter has two independent
-read reviews and six unrun regressions. Combined executable verification is queued
-behind root's current weapon slice and reaction projection checks. No casting success
-or desktop availability is claimed at this point. Next: receive the verified shared
-checkpoint, inspect its exact merge, then adapt audit, roll and owned-choice boundaries.
+The dependency passed 96 combined integration tests and strict domain/rules
+all-target Clippy; its 131-test rules unit evidence and exact limits are in the
+casting integration plan. No desktop casting availability or Gate4 acceptance is
+claimed. The final full shared-driver review found no outstanding blocker.
+
+Implementation order: first adapt retained origins and real roll ownership, then
+source-derived private casting choices and the form through the existing table
+envelope, then independent SQLite restart/retry and UI ownership/stale-choice tests.
+No new command transport, second queue, prepared grant or source material exemption.
+Magic Missile is not currently admitted by the pinned kernel's prepared-spell
+validator and is absent from the supported NPC grants; an unchanged public rejection
+test will document this boundary without expanding authority to make a test pass.
+
+Compiler ownership is serialized: movement tests, then root's equipment extraction
+canonical verification precede this app slice. Read-only inspection and scoped edits
+may proceed now; no Rust build starts without the explicit handoff. Next: inspect
+current roll projection/action authorization and accepted-record origin collection,
+then make those boundaries understand the tested cast records and source work.
