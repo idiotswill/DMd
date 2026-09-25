@@ -353,17 +353,15 @@ impl CampaignRuntime {
             player_id,
             character_id,
         } = request.channel
-        {
-            if !state
+            && !state
                 .characters
                 .get(&character_id)
                 .is_some_and(|character| {
                     character.controlling_player_id == Some(player_id)
                         && character.entity_id == actor
                 })
-            {
-                return Err(rejected("Select the character who owns this roll."));
-            }
+        {
+            return Err(rejected("Select the character who owns this roll."));
         }
         let savage_attacker = dmd_rules::tactical::savage_attacker_dice(&state, &pack)
             .ok()

@@ -66,3 +66,13 @@ its original projection. This query grants no action authority: the submitted ty
 action rederives source, payment, dice and turn under the normal writer transaction.
 Tests must prove the query writes nothing, foreign/stale handles fail, an older
 initialized presentation remains valid, and accepted modern retries stay exact.
+
+Draft922b22f is PR37, stacked on PR36. Linux36145262618 passed MSRV and both guards,
+then strict Clippy rejected a nested player-channel `if`; collapse it without changing
+authorization. Compilation reached the application. The tests were not reached by
+that job. New authored coverage now includes a genuine file-SQLite critical dagger
+hit, preexisting presentation history, read-only/foreign option queries, normalized
+opaque dice, independent restored continuation, cold exact retry and current-state
+forgeries that remain structurally valid but contradict the journal. Two roll-form
+cases and one full table/outbox retry case exercise the actual source controls.
+These tests remain unrun pending the serialized local slot and corrected CI.
