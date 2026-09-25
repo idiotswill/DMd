@@ -119,6 +119,16 @@ port the reviewed Immediate-only implementation and preserve the one scheduler.
 Full Ready/reactions, remaining spells, NPC morale/knowledge,
 improvisation, encounter finish and packaged integrated acceptance remain Gate4 work.
 
+Combined source `49fac8c` passes all four Linux jobs in36131323977, including596
+Rust tests and both new real recovery scenarios. Native Windows36131323987 passed
+frontend checks and MSRV, but its stable workspace test run failed after every OA
+scenario assertion, at final temporary-file removal with Windows sharing error32.
+The other24 table-loop scenarios passed. A reviewed test-only correction closes
+the pools, explicitly drops the fixtures/runtimes and retries only Windows sharing/
+lock errors32/33 for at most1.9 seconds; persistent or other failures still fail
+cleanup. No gameplay assertion or production source changes. Fresh canonical/UI/
+exact-head CI remain required on the correction.
+
 Reviewed source training correction1b39980 is integrated in456272e. It follows SRD177:
 untrained Shield use removes its AC bonus but does not itself forbid casting;
 untrained worn armor and occupied component hands still prohibit the affected cast.
