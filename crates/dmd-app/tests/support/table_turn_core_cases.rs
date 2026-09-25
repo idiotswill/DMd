@@ -79,10 +79,12 @@ async fn cold_step(f: &mut Fixture, url: &str, meta: CommandMeta, action: TableA
     assert_eq!(retried.event_sequence, accepted.event_sequence);
     assert_eq!(retried.outcome, accepted.outcome);
     assert_eq!(current(f).await, state);
-    assert_eq!(
-        export_campaign(&f.pool, f.campaign).await.unwrap(),
-        before_retry
-    );
+    let mut after_retry = export_campaign(&f.pool, f.campaign).await.unwrap();
+    // This timestamp describes the export request, not a persisted campaign row.
+    // Reopening and retrying may cross a wall-clock second; all durable fields
+    // must still match exactly, including their own creation timestamps.
+    after_retry.exported_at_utc = before_retry.exported_at_utc.clone();
+    assert_eq!(after_retry, before_retry);
 
     let mut stale = meta;
     stale.id = CommandId::new();

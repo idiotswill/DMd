@@ -195,3 +195,14 @@ tests and installer), obtain exact final-head signoff and protected merge; fetch
 main, prove full-tree parity and finish post-merge checks. Then proceed directly
 within Gate4 to the physical encounter/source-casting integration on a fresh branch.
 No Gate4 completion or Gate5 entry is claimed by this prerequisite slice.
+
+Final evidence head6f4109f passed all four Linux jobs (36126953489) and Windows
+MSRV. The newly expanded stable Windows workspace tests (36126953528,
+job108045163822) exposed a test comparison defect: cold_step compared two exports
+including their request-time exported_at_utc. The actual complete failed values
+differ only by that timestamp crossing from11:04:57 to11:04:58; all persisted
+fields are identical. Normalize only this non-persisted export timestamp, following
+the existing rules-runtime regression convention; preserve full equality of every
+durable field, row and creation timestamp. No production code changes or test
+requirements are weakened. The corrected head requires fresh review and CI before
+merge; the previous canonical source pass remains evidence for production only.
