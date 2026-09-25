@@ -770,6 +770,11 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                     {
                         origins.push(casting_origin);
                     }
+                    if let dmd_domain::TacticalAttackAdmission::CreatureAction { approach } =
+                        &attack.admission
+                    {
+                        origins.extend(approach.as_ref().map(|approach| &approach.origin));
+                    }
                 }
                 if let Some(movement) = &resolution.movement {
                     origins.push(&movement.origin);

@@ -210,7 +210,7 @@ pub(super) fn options(
         }
         if result.variants.len() == before {
             result.unavailable.push(if unsupported {
-                format!("{}: this spell's complete effect path is not available yet.", spell.name)
+                format!("{}: this spell cannot be cast here yet.", spell.name)
             } else {
                 format!("{}: no legal cast is available. Check remaining actions and uses, free hands, armor training, specified materials and targets within range.", spell.name)
             });

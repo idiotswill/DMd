@@ -6,7 +6,7 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { CastingOptions, TacticalView } from '../tactical-api';
 
 function options():CastingOptions {
-  return {actor:'caster',unavailable:['Fireball: this spell\'s complete effect path is not available yet.'],variants:[{
+  return {actor:'caster',unavailable:['Fireball: this spell cannot be cast here yet.'],variants:[{
     choice:{actor:'caster',spell_id:'scorching-ray',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature',material:'None',mode:'Immediate'},
     label:'Scorching Ray — source ability',concentration:false,minimum_targets:3,maximum_targets:3,repeated_targets:true,
     targets:[{actor:'guard',label:'Visible guard'},{actor:'archer',label:'Visible archer'}],
@@ -28,7 +28,7 @@ it('sends actual source choices and explicit repeated ray order without derived 
   await user.selectOptions(screen.getByLabelText('Spell target 3'),'guard');
   await user.click(screen.getByRole('button',{name:'Cast spell'}));
   expect(onAction).toHaveBeenCalledExactlyOnceWith({CastSpell:{choice:source.variants[0].choice,targets:{Entities:['guard','archer','guard']}}});
-  expect(screen.getByText(/Fireball:.*not available/)).toBeTruthy();
+  expect(screen.getByText(/Fireball:.*cannot be cast/)).toBeTruthy();
   expect(screen.queryByRole('option',{name:/Fireball/})).toBeNull();
 });
 
@@ -75,5 +75,5 @@ it('resets drafts on controller change and hides another actor casting choices',
   expect((screen.getByLabelText('Spell and resource') as HTMLSelectElement).value).toBe('');
   await component.rerender({actor:'other',player:'other-owner'});
   expect(screen.queryByText('Cast a spell')).toBeNull();
-  expect(screen.queryByText(/Fireball:.*not available/)).toBeNull();
+  expect(screen.queryByText(/Fireball:.*cannot be cast/)).toBeNull();
 });

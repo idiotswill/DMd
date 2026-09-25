@@ -38,41 +38,40 @@ effects. No synthesized prepared spell, creature feature or pre-paid permission.
 
 ## Current status and next action
 
-The dependency passed 96 combined integration tests and strict domain/rules
-all-target Clippy; its 131-test rules unit evidence and exact limits are in the
-casting integration plan. No desktop casting availability or Gate4 acceptance is
-claimed. The final full shared-driver review found no outstanding blocker.
+The application/form implementation is complete for the currently admitted immediate
+source programs. Root's verified movement and Charge dependencies are merged. There
+is no new command transport, second queue, prepared grant or source material exemption.
+The pinned kernel still excludes Magic Missile from imported prepared lists; the
+public unchanged-rejection regression passes without altering that source boundary.
+Broader casting mechanisms and final native/Gate4 acceptance remain open.
 
-Implementation order: first adapt retained origins and real roll ownership, then
-source-derived private casting choices and the form through the existing table
-envelope, then independent SQLite restart/retry and UI ownership/stale-choice tests.
-No new command transport, second queue, prepared grant or source material exemption.
-Magic Missile is not currently admitted by the pinned kernel's prepared-spell
-validator and is absent from the supported NPC grants; an unchanged public rejection
-test will document this boundary without expanding authority to make a test pass.
+Private choices use actual source spells, finite uses/slots, real materials and the
+acting creature's perception. Source planning and cost previews operate on discarded
+values. Wrong-type applicability is not disclosed or used to remove legal targets.
+The ordinary form retains explicit target order and physical IDs; accepted retries
+preserve the entire original command, channel, head, material and target selection.
+Saving/amount requests use the real roller. Cast origins, last operations, enclosing
+activations, source attack origins and Charge approach origins are audited. Completed
+movement points to an accepted direct/nested Move with the exact path count and active
+actor; the original pre-tactical anchor and semantic replay prove remaining facts.
 
-Compiler ownership is serialized: movement tests, then root's equipment extraction
-canonical verification precede this app slice. Read-only inspection and scoped edits
-may proceed now; no Rust build starts without the explicit handoff.
+Validation on Windows (default stack): all 61 `dmd-app` tests; the additional pinned
+kernel rejection; strict domain/rules/app all-target Clippy; Svelte zero errors/warnings;
+all 35 frontend tests and the mounted Vite production build. The final text-only change
+to the unavailable-spell explanation passed the SQLite casting test, four form tests
+and strict Clippy again. No native gameplay/package acceptance is implied.
+`source_casting_keeps_player_saves_ray_causes_and_cold_retry_authority` uses genuine
+Cultist Fanatic Hold Person and Adult Red Dragon Scorching Ray, checks player saves,
+real source materials, hidden targets behind an opaque wall, wrong-type target privacy,
+unchanged source counters on preview, disk close/reopen, accepted retry, hostile missing
+origin rejection and distinct ray/concentration causes. Existing table, equipment,
+movement, rules and recovery regressions remain green. Local evidence is under the
+workspace's outside-repository `research/gate4-casting/`: `table-app-tests.txt`,
+`table-source-rejection.txt`, `table-final-clippy.txt`, `table-final-casting.txt`,
+`table-ui-tests.txt` and `table-ui-build.txt`.
 
-The first application draft now contains private source/cost/component/target options,
-the ordinary casting form and controller/stale-choice checks, source roll labels,
-cast/attack and completed-movement origin auditing. A completed movement must point
-to an accepted direct or nested Move with the exact requested path count and active
-actor; the existing original-anchor replay proves the remaining receipt facts.
-Read-only source review found no blocker in the candidate projection. Svelte check
-reports zero errors/warnings and all four new casting UI tests pass. No Rust build
-or native acceptance is claimed for this draft. The new SQLite scenario uses real
-Cultist Fanatic Hold Person and Adult Red Dragon Scorching Ray grants, preserves
-player save ownership and source-material identities, and checks disk close/reopen,
-accepted retry, hostile missing-origin restore and individual ray/concentration causes.
-The first actual SQLite test passed on the default Windows test stack, including
-the hidden creature behind an opaque wall and unchanged state after preview. Its
-log is outside the repository at `research/gate4-casting/table-first-tests.txt`.
-The complete frontend suite passed 34 tests and the mounted production build; the
-subsequent actual-form casting/restart regression passed with all 14 focused retry
-and casting tests and Svelte zero errors/warnings. No native acceptance is implied.
-The pinned-kernel Magic Missile rejection remains unrun. Next: merge the parent's
-verified Charge dependency, attach its approach origin, then run the app regression
-suite, source rejection and strict Clippy; obtain final independent application
-review before handing the slice to packaged integration.
+Independent candidate-projection and recovery-origin reviews found no blocker; the
+final full app/UI review has been requested. Compiler ownership was released after
+the final focused check. Next: finish that review, integrate the exact checked slice,
+run the parent's canonical/CI and packaged acceptance, and adapt falling origins and
+owned choices only after its coherent source checkpoint. Do not mark Gate4 complete.
