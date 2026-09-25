@@ -95,7 +95,7 @@ pub(super) fn key(
         | TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
         | TacticalWorkKind::FinishAttack => {
-            Err(prerequisite("this tactical work is not yet available"))
+            return Err(prerequisite("this tactical work is not yet available"));
         }
         TacticalWorkKind::DeathSave { actor } => (TacticalRollRole::DeathSave, *actor),
         TacticalWorkKind::StableRecovery { actor, .. } => {
@@ -211,7 +211,7 @@ pub(super) fn request(
         | TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
         | TacticalWorkKind::FinishAttack => {
-            return Err(prerequisite("this tactical work is not yet available"));
+            Err(prerequisite("this tactical work is not yet available"))
         }
         TacticalWorkKind::DeathSave { actor } => {
             let context = crate::tactical_vitality_adapter::context(
