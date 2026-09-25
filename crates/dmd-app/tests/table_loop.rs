@@ -6,6 +6,8 @@ use std::path::Path;
 
 #[path = "support/sqlite_test_cleanup.rs"]
 mod sqlite_test_cleanup;
+#[path = "support/table_area_cases.rs"]
+mod table_area_cases;
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]
@@ -62,20 +64,22 @@ struct Fixture {
 }
 impl Fixture {
     async fn new() -> Self {
-        Self::with_contract(TableContract::default()).await
+        Box::pin(Self::with_contract(TableContract::default())).await
     }
     async fn with_contract(contract: TableContract) -> Self {
-        Self::with_creation(contract, None).await
+        Box::pin(Self::with_creation(contract, None)).await
     }
     async fn with_creation(
         contract: TableContract,
         first_character: Option<CharacterCreationInput>,
     ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
-        Self::with_creation_pool(contract, first_character, pool).await
+        // Keep nested setup phases on the heap so each caller's scenario does not
+        // carry another copy of the complete async creation/transaction frame.
+        Box::pin(Self::with_creation_pool(contract, first_character, pool)).await
     }
     async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
-        Self::with_creation_pool(contract, None, pool).await
+        Box::pin(Self::with_creation_pool(contract, None, pool)).await
     }
     async fn with_creation_pool(
         contract: TableContract,

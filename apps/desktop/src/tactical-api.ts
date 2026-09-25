@@ -30,6 +30,10 @@ export interface CastingVariant {
 export interface CastingOptions { actor: Id; variants: CastingVariant[]; unavailable: string[] }
 export interface ShieldOptions { actor: Id; donned: Id|null; shields: { item: Id; hands: Hand[] }[] }
 
+export interface AreaOptions {
+  actor: Id; controller: Id | null; source_space: Volume;
+  variants: { feature_id: string; label: string; length_feet: number }[]; unavailable: string[];
+}
 export interface Point { x: number; y: number; z: number }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
@@ -47,6 +51,7 @@ export interface BattlefieldSetup {
   encounter_id: Id; scene_id: Id; location_id: Id; name: string; battlefield: Battlefield;
   characters: { character_id: Id; position: Point; height: number; allies: Id[]; enemies: Id[] }[];
   creatures: { actor: Id; public_label: string; position: Point; height: number; allies: Id[]; enemies: Id[] }[];
+  area_grid_policy?: 'OccupiedCellCentersV1' | null;
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
 export type TacticalAction =
@@ -55,6 +60,7 @@ export type TacticalAction =
   | 'EndTurn' | 'Disengage' | 'Dodge' | 'StandProne' | 'StartAttackAction' | 'VoluntarilyFailSave'
   | 'UseLegendaryResistance' | 'DeclineLegendaryResistance' | 'DeclineLegendaryAction'
   | { Attack: { choice: WeaponUseChoice } }
+  | { CreatureArea: { feature_id: string; aim: { origin: Point; toward: Point; include_origin: boolean }; ordering: 'Host' | 'DelegateToHost' } }
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
@@ -80,6 +86,7 @@ export interface TacticalView {
   legendary_action: Id | null;
   attack_options?: AttackOptions | null;
   casting_options?: CastingOptions | null;
+  area_options?: AreaOptions | null;
   movement_options?: MovementOptions | null;
   opportunity?: OpportunityView | null;
   liquid_landing?: { actor: Id } | null;

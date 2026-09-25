@@ -995,6 +995,7 @@ impl Fixture {
                 .collect(),
             knowledge: vec![],
             origin: f.meta(None),
+            area_grid_policy: None,
             geometry_ruling: Ruling {
                 basis: RulingBasis::GmAdjudication,
                 reason: "Explicit flat field".into(),

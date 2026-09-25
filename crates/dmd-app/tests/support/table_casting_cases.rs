@@ -129,6 +129,7 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
                         enemies: vec![],
                     },
                 ],
+                area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
                     reason: "Open visible courtyard and explicit creature positions.".into(),

@@ -420,6 +420,7 @@ pub(super) async fn prepare_source_scene_at(
                     allies: vec![],
                     enemies: vec![f.actors[0]],
                 }],
+                area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
                     reason: "Host established visible terrain and public descriptors.".into(),
@@ -495,6 +496,7 @@ pub(super) async fn prepare(f: &Fixture) {
                         })
                         .collect(),
                     creatures: vec![],
+                    area_grid_policy: None,
                     geometry_ruling: Ruling {
                         basis: RulingBasis::GmAdjudication,
                         reason: "Host established bounded physical terrain.".into(),

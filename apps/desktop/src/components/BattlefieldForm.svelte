@@ -4,6 +4,7 @@
   import type { BattlefieldSetup } from '../tactical-api';
   let { characters, creatures = [], disabled = false, onPrepare }: { characters: CharacterView[]; creatures?: CreatureView[]; disabled?: boolean; onPrepare: (setup: BattlefieldSetup) => void } = $props();
   let name = $state('Encounter'); let width = $state(50); let depth = $state(50);
+  let areaPolicy = $state(false);
   let light = $state<'Bright'|'Dim'|'Darkness'>('Bright');
   let reason = $state('The host established the terrain and starting positions from the current scene.');
   const footprint = (size:string) => ({Tiny:2.5,Small:5,Medium:5,Large:10,Huge:15,Gargantuan:20}[size] ?? 5);
@@ -29,6 +30,7 @@
         terrain: regions.filter(r=>r.kind==='difficult').map((r,index)=>({id:`terrain-${index}`,volume:volume(r),difficult:true,observable:true,water:false,climbable:false,burrowable:false,supports_top:false,surface:null,obscuration:'None',magical_darkness:false})), lights:[] },
       characters: selected.filter(p=>p.characterId).map(p=>({character_id:p.characterId!,...placement(p)})),
       creatures: selected.filter(p=>!p.characterId).map(p=>({actor:p.actor,public_label:p.publicLabel,...placement(p)})),
+      area_grid_policy: areaPolicy ? 'OccupiedCellCentersV1' : null,
       geometry_ruling:{basis:'GmAdjudication',reason} });
   }
 </script>
@@ -36,6 +38,11 @@
   <p>Place the current scene in feet. Characters keep their saved equipment and source movement speeds.</p>
   <label>Location name<input required maxlength="200" bind:value={name} /></label>
   <div class="form-grid"><label>Width (feet)<input type="number" min="10" max="250" step="5" required bind:value={width} /></label><label>Depth (feet)<input type="number" min="10" max="250" step="5" required bind:value={depth} /></label><label>Light<select bind:value={light}><option>Bright</option><option>Dim</option><option>Darkness</option></select></label></div>
+  <fieldset><legend>Area targeting on this map</legend>
+    <label><input type="checkbox" bind:checked={areaPolicy} />Use occupied-space sampling for area abilities</label>
+    <p>For each creature, test the center of every occupied part of a 5-foot square and height band. Small portions use their own midpoint, rounded down to the nearest half foot. One reachable point inside the shape includes the creature; a completely blocked creature is excluded.</p>
+    <p>Solid terrain blocking at least half or three quarters of those points grants half or three-quarters cover. Authored cover and intervening creatures use the greatest cover benefit. Areas follow clear paths from the chosen origin and do not spread around corners. Leave this unchecked to keep area abilities unavailable on this map.</p>
+  </fieldset>
   <h3>Starting positions</h3>
   <p>Matching team names are allies; different named teams are enemies. Leave a team blank for neutral participants.</p>
   {#each positions as position}<div class="form-grid"><label><input type="checkbox" bind:checked={position.included} />{position.name}{position.prepared ? '' : ' — equipment needs preparation'}</label><label>{position.name}: east (feet)<input type="number" min="0" max={width-position.space} step="0.5" required disabled={!position.included} bind:value={position.x} /></label><label>{position.name}: south (feet)<input type="number" min="0" max={depth-position.space} step="0.5" required disabled={!position.included} bind:value={position.y} /></label><label>{position.name}: height (feet)<input type="number" min="0.5" max="40" step="0.5" required disabled={!position.included} bind:value={position.height} /></label>{#if !position.characterId}<label>{position.name}: visible description<input required maxlength="200" disabled={!position.included} bind:value={position.publicLabel} /></label>{/if}<label>{position.name}: team<input maxlength="100" disabled={!position.included} bind:value={position.team} /></label></div>{/each}

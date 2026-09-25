@@ -729,6 +729,7 @@ fn add_flow(
         participants: vec![],
         knowledge: vec![],
         origin: meta.clone(),
+        area_grid_policy: None,
         geometry_ruling: Ruling {
             basis: RulingBasis::Srd { page: 13 },
             reason: "Source timing fixture".into(),

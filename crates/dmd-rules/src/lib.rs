@@ -8,6 +8,7 @@ pub use kernel::*;
 pub mod character_creation;
 pub use character_creation::*;
 pub mod spatial;
+pub mod tactical_areas;
 pub mod tactical_creature_equipment;
 pub mod tactical_creatures;
 pub mod tactical_definitions;

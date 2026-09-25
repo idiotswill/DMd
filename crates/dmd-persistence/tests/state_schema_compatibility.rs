@@ -234,6 +234,7 @@ fn encounter_state() -> CampaignState {
             }],
         }],
         origin,
+        area_grid_policy: None,
         geometry_ruling: Ruling {
             basis: RulingBasis::GmAdjudication,
             reason: "The host established this room.".into(),
