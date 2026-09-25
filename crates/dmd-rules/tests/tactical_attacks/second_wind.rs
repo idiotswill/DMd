@@ -4,6 +4,7 @@ fn fighter() -> Fixture {
     let mut f = Fixture::new();
     f.arm("club", false, false);
     f.entity_mut(0).hp = 1;
+    f.entity_mut(0).heroic_inspiration = true;
     f.begin();
     f
 }

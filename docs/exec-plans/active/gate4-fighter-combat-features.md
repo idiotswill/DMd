@@ -117,3 +117,10 @@ legacy nested rules, despite the new strict nested-adjudication validator. Add o
 the matching, previously validated Adjudicate→SecondWind envelope to that origin
 join. Keep exact metadata, accepted audit, pre-tactical anchor and full semantic
 replay checks. The unchanged cold case must pass on the new head before acceptance.
+
+Linux36142366967 on8549b56 passed all application cases, including the unchanged
+cold-declaration restore regression. The reducer suite then exposed a fixture setup
+error: its Inspiration reroll had no Inspiration grant. Grant that resource in the
+initial fixture before initiative, as the existing attack reroll regression does;
+retain the actual expenditure, original raw die and replay assertions. No production
+rule or rejection is relaxed. Full verification still awaits the corrected head.
