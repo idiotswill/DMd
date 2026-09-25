@@ -1,6 +1,7 @@
 # Gate 4 durable player projection protocol
 
-Writer: environment_audit. Branch `codex/gate4-player-projection-privacy`, base
+Writer: root (taken over after the supporting agent reached its usage limit).
+Original writer: environment_audit. Branch `codex/gate4-player-projection-privacy`, base
 `9fd73da`. Root owns canonical integration and PRs; area owns combat ordering and
 shared tactical work. This branch owns transport/presentation persistence, application
 projection/retry composition, desktop IPC and the corresponding UI boundary.
@@ -207,3 +208,24 @@ and prepared-map dice tests. Unrelated plan moves/statuses follow current PR33;
 ADR027 and this protocol plan remain owned here. Reconcile the eventual protected
 PR33 squash/main head before opening a protocol PR. This merge has formatting and
 tree-parity evidence only until the next executable batch finishes.
+
+Current-source verification was attempted after root released the heavy slot, on
+`a84f8d4` (the reviewed PR33 cleanup followup is included). The first UI check failed
+inside PowerShell's binder before a source result. A direct serial retry reached
+Vite but its esbuild child could not spawn; Node then reported `Committing semi
+space failed` at roughly 68 MB heap. This is observed host commit-memory exhaustion,
+not a TypeScript/test assertion failure. Heavy work stopped; no Rust batch or
+additional UI retry was started, and no user process was killed. Root and the next
+compiler owner were notified. Resume the same frontend/backend batch only once
+the shared host has sufficient memory; all current-phase acceptance remains open.
+
+After memory recovered, the serial frontend batch passed on a84f8d4:55 tests,
+zero Svelte errors/warnings and production build134 modules. Logs end in
+`gate4-protocol-ui-{check,tests,build}-r3.log`. The current persistence batch also
+passes all4 protocol/transaction cases (`gate4-protocol-storage-current.log`).
+The following app compile exposed one integration fixture omission: the newer OA
+scene constructor lacked area's required `area_grid_policy` field. It now supplies
+None, like the other non-area scenes; production and all assertions are unchanged.
+Root took over the stopped branch and sole compiler slot, and will rerun app tests
+and strict lint. Eleven protocol cases, combined app acceptance and native package
+verification remain pending until their actual results are recorded.
