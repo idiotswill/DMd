@@ -1,11 +1,12 @@
 # Gate 4 — Source creature control at the table
 
-Status: implemented in draft PR43; verification in progress. Source `26241a9`
-passes native Windows CI, 693 Rust tests and packaging. Its Linux PR merge with
-main `d82d7b2` passes all checks and 694 Rust tests. The local default-stack and
-source-control confirmation also passes. Verified main `2798b6b` and its genuine
-PR42 corpus are now integrated. Final combined verification is pending; this is
-not acceptance.
+Status: final verification candidate in draft PR43. Verified main `2798b6b` and
+its genuine PR42 corpus are integrated. Production/test source `90c9230` passes
+eight focused Rust tests, including actual source control and genuine replay,
+and exact-head native CI passes all 77 UI tests, static checks and frontend build.
+Full canonical verification, final-head Linux/native checks and packaging remain
+merge conditions. Earlier source evidence below is historical, not acceptance
+of this candidate or completion of Gate 4.
 Sole writer: source_control_recovery, taking over environment_audit's preserved
 branch. Branch: `codex/gate4-source-creature-control`.
 Authorized base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`.
@@ -361,3 +362,50 @@ The actual SQLite scenario also assigns the prepared Mage to an absent player,
 then submits Begin through the other attending PC's valid channel. It requires
 the ordinary unauthorized-action message and unchanged complete normalized export,
 before the Host returns control to the legitimate present owner.
+
+## Final candidate evidence and merge conditions
+
+Source `90c92306d6741f6e2ac35ef182cb3b2e6993671f` was fetched and matched the
+remote PR branch. Main still resolves to the integrated `2798b6b`. Independent
+review is clear through that source, including the attendance authorization order,
+the real zero-write privacy regression, and the desktop PC-channel recovery fix.
+
+The completed local focused batch used the default thread stack, jobs1 and
+CARGO_INCREMENTAL=0 after refreshing the four shared-target crate roots. All
+commands exited zero, with no failed or ignored tests:
+
+- `cargo test --locked -p dmd-app --lib table_source_control -- --nocapture`:
+  two qualified typed adoption/projection cases, 0.13 seconds.
+- `cargo test --locked -p dmd-app --test table_loop source_control -- --nocapture`:
+  two actual source-control/cold-recovery cases, 177.26 seconds. This includes
+  absent-owner Begin and transfer refusal, ordinary nonprivileged Unauthorized
+  refusal without attendance disclosure, and continued legitimate Mage play.
+- `cargo test --locked -p dmd-app --test legacy_reactions_v1_replay -- --nocapture`:
+  all four genuine old-executor captures, 99.83 seconds. Captured JSON bytes are
+  unchanged; only the exhaustive request-helper channel match was extended.
+
+Logs are outside the repository under `tooling/source-control-90-adoption.log`,
+`source-control-90-cases.log` and `source-control-90-corpus.log`. The completed
+exact-head Windows MSRV job 108252619017 in run 36190004111 also proves all 77
+frontend tests, Svelte zero errors/warnings and the 137-module production build
+on literal `90c9230`. Linux guards, MSRV, format, check and strict lint pass;
+the full Linux/native Rust runs and installer are still pending at this record.
+
+The prerequisite main has its own completed post-merge evidence, separate from
+this candidate: Linux run 36188457488 passes 695 Rust tests across 54 suites,
+including all 44 table cases. Windows run 36188457455 passes 697 Rust tests,
+67 UI tests, zero Svelte errors/warnings and a 136-module build, then produces
+the fresh EXE and NSIS installer. Artifact 10888336544 is 231464157 bytes with
+SHA256 `7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a`.
+Those results belong to literal main `2798b6b`, not PR43.
+
+Next action: commit this documentation reconciliation, run canonical
+`./scripts/verify` on that exact final candidate in the returned heavy slot, and
+record the actual result and final six CI checks in PR43's body. Keep the default
+stack, jobs1 and CARGO_INCREMENTAL=0. Require full canonical success, final-head
+Linux and native success, packaging evidence, and final exact-diff review before
+the root performs an expected-head protected merge. Do not label pending checks
+as passed or reuse earlier-head CI as final-head evidence. Root then verifies
+post-merge main and reconciles the Gate 4 umbrella; this plan remains active until
+that evidence is recorded. Later Shield and aftermath integration and their
+production-path acceptance remain separate required Gate 4 work.
