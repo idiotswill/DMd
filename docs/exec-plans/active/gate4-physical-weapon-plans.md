@@ -39,3 +39,26 @@ this branch yet. The pure helpers are already used in the separate encounter bra
 but real command authority, atomic resource updates, persistence/restore, complete
 mastery execution and packaged Gate4 encounter acceptance remain active integration
 work. Next: extract only the listed dependency files and inspect the complete diff.
+
+## Reviewed and verified source checkpoint
+
+[PR28](https://github.com/idiotswill/DMd/pull/28) source head
+`32970a11a3ae6e889723901d8d82cc6b771fc826` passed canonical `./scripts/verify`:
+329 Rust tests, formatting, workspace/all-target checks, strict workspace/all-target
+Clippy, genericity guard and architecture guard (eight tests, one platform-specific
+skip). Durable local log: `tooling/gate4-weapons-canonical.log` outside the repository.
+All six jobs passed in [Linux CI](https://github.com/idiotswill/DMd/actions/runs/36102146446)
+and [Windows desktop](https://github.com/idiotswill/DMd/actions/runs/36102146444), including
+MSRV compatibility and stable release packaging.
+
+Fresh independent full-diff review checked pinned SRD16,48,89–91,177 against all
+planner/equipment/history/mastery code,17 weapon tests and the character-grant delta.
+No concrete source, identity, choice or history defect remains. The explicit source
+armor exclusion, unchanged starter shop and source-plan-only scope remain documented.
+Root separately inspected the complete dependency and relevant source/test boundaries.
+
+This final evidence update is documentation only. Require its exact delta review,
+code equality with the verified source head and its own final-head CI before protected
+merge. Fetch main, compare the resulting tree and check post-merge CI before dependent
+integration. Actual source attacks, mastery execution and complete Gate4 acceptance
+remain active work; this verification does not substitute for those production paths.
