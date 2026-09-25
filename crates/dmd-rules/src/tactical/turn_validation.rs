@@ -78,6 +78,7 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::Medicine { .. } => super::medicine::validate_work(state, work)?,
         TacticalWorkKind::SecondWind { .. } => super::second_wind::validate_work(state, work)?,
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }

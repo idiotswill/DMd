@@ -8,6 +8,7 @@ mod creature_bridge;
 mod failed_save;
 mod falling;
 mod initiative;
+mod medicine;
 mod movement;
 mod reaction_order;
 mod ready;
@@ -42,6 +43,10 @@ pub enum TacticalAction {
     },
     AbandonReady {
         actor: EntityId,
+    },
+    FirstAid {
+        target: EntityId,
+        purpose: MedicinePurpose,
     },
     SubmitSavageAttacker {
         roll: SavageAttackerRoll,
@@ -461,6 +466,9 @@ fn resolve_with_policy(
         TacticalAction::DeclineLegendaryResistance => failed_save::choose(&mut next, meta, false)?,
         TacticalAction::DeclineLegendaryAction => creature_bridge::decline(&mut next, meta)?,
         TacticalAction::SecondWind => second_wind::begin(&mut next, meta, pack)?,
+        TacticalAction::FirstAid { target, purpose } => {
+            medicine::begin(&mut next, meta, *target, *purpose)?;
+        }
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage

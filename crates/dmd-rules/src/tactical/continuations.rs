@@ -108,6 +108,7 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::Medicine { target, .. } => (TacticalRollRole::Medicine, *target),
         TacticalWorkKind::SecondWind { actor, .. } => (TacticalRollRole::SecondWind, *actor),
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }
@@ -173,13 +174,16 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
                 | TacticalRollRole::SpellSave
                 | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
+                | TacticalRollRole::Medicine
         )
     {
         return Ruling {
             basis: RulingBasis::HouseRule {
                 id: "ability-test-natural-extremes".into(),
             },
-            reason: if role == TacticalRollRole::LiquidLandingCheck {
+            reason: if role == TacticalRollRole::Medicine {
+                "The table's explicit natural-1/20 rule applies to this Medicine check."
+            } else if role == TacticalRollRole::LiquidLandingCheck {
                 "The table's explicit natural-1/20 rule applies to this landing check."
             } else {
                 "The table's explicit natural-1/20 rule applies to this saving throw."
@@ -188,6 +192,7 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::Medicine => (18, "First aid requires a DC 10 Wisdom (Medicine) check."),
         TacticalRollRole::SecondWind => (48, "Second Wind heals 1d10 plus Fighter level."),
         TacticalRollRole::AreaSave => (16, "Saving throw against the accepted source area."),
         TacticalRollRole::AreaDamage => {
@@ -238,6 +243,7 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::Medicine { .. } => super::medicine::request(state, work, key),
         TacticalWorkKind::SecondWind { .. } => super::second_wind::request(state, work, key),
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }
@@ -404,7 +410,9 @@ fn start_inner(
             let actor = *actor;
             return super::creature_bridge::offer(state, meta, work, actor);
         }
-        TacticalWorkKind::CreatureRecharge { .. } | TacticalWorkKind::SecondWind { .. } => (),
+        TacticalWorkKind::CreatureRecharge { .. }
+        | TacticalWorkKind::SecondWind { .. }
+        | TacticalWorkKind::Medicine { .. } => (),
         TacticalWorkKind::Effect { ticket: id } => {
             let trigger = ticket(state, *id)?;
             if !trigger_is_applicable(effects(state)?, trigger)
@@ -653,6 +661,31 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::Medicine {
+            target, purpose, ..
+        } => {
+            if forced_success {
+                return Err(invalid("A saving throw override cannot change Medicine."));
+            }
+            let roll = raw.ok_or_else(|| invalid("Medicine requires its actual d20 check."))?;
+            let succeeded = crate::test_outcome::ability_test_success(
+                &roll,
+                10,
+                &state
+                    .rules
+                    .as_ref()
+                    .ok_or(RulesError::Uninitialized)?
+                    .house_rules,
+            )?;
+            apply_vitality(
+                state,
+                meta,
+                target,
+                pending.work.occurrence,
+                VitalityOperation::MedicineOutcome { purpose, succeeded },
+                None,
+            )?;
+        }
         TacticalWorkKind::SecondWind { actor, .. } => {
             if forced_success {
                 return Err(invalid("a saving throw override cannot change Second Wind"));

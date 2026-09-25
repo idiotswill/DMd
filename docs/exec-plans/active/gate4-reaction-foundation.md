@@ -32,7 +32,8 @@ Counterspell, Ready release or held magic. The follow-up plan owns all such exec
   by its controller while idle. No refund, time advance or unrelated effect cleanup.
 - Real file-SQLite reopening, private full-DTO/revision preservation, accepted retry,
   independent continuation and hostile restore rejection; actual desktop controls.
-- Integrate verified Medicine main, initialize its work ancestry and review the full
+- Integrate the reviewed Medicine source and reconcile its actual verified main merge,
+  initialize its work ancestry and review the full
   composition. Run canonical local verification, desktop check/test/build and all six
   exact-head checks. Protected squash, fetched full-tree parity and post-merge checks.
 
@@ -55,7 +56,12 @@ its post-merge evidence is recorded; the umbrella and follow-up stay active afte
 
 ## Exact next action
 
-Finish PR39's strengthened tests and protected merge, import actual main normally,
-initialize Medicine work_trace and update its hostile fixture consistently. Complete
+Medicine a0b4b57 is imported normally while its final checks run; its production code
+is identical to the canonical/CI-verified cea43 and its strengthened reducer cases
+pass. Four adjacent source/UI conflicts retain both features; Medicine now initializes
+work_trace and its app/UI fixtures explicitly select ReactionsV1. The coherent timing
+forgery still changes authoritative budget, so no redundant work image needs changing.
+Finish PR39's protected merge; prove source/main full-tree equality and ancestry before
+reconciling its squash. No combined verification result is inherited. Complete
 combined verification and review. Merge PR38 only against its exact verified head,
 then create a fresh live-response branch from fetched main and execute the follow-up.
