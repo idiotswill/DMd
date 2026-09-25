@@ -506,12 +506,13 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "encounter",
         "duplicate",
         "duplicate_encounter",
-        "tactical_effects",
         "tactical_inventory",
         "tactical_recovery",
-        "tactical_creatures",
         "duplicate_inventory",
         "shadowed_inventory",
+        "tactical_effects",
+        "duplicate_effects",
+        "shadowed_effects",
         "tactical_creatures",
         "duplicate_creatures",
         "shadowed_creatures",
@@ -531,10 +532,6 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "encounter" => {
                 value["encounter"] = json!({"unknown_pending_action": "must not be erased"})
             }
-            "tactical_effects" => {
-                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
-                value["rules"]["tactical_effects"] = json!(dmd_domain::TacticalEffects::default());
-            }
             "tactical_inventory" | "duplicate_inventory" | "shadowed_inventory" => {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_inventory"] =
@@ -543,6 +540,10 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "tactical_recovery" => {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
                 value["rules"]["tactical_recovery"] = json!({});
+            }
+            "tactical_effects" | "duplicate_effects" | "shadowed_effects" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_effects"] = json!(dmd_domain::TacticalEffects::default());
             }
             "tactical_creatures" | "duplicate_creatures" | "shadowed_creatures" => {
                 value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
@@ -560,6 +561,16 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "shadowed_inventory" => value.to_string().replacen(
                 "\"tactical_inventory\":",
                 "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+                1,
+            ),
+            "duplicate_effects" => value.to_string().replacen(
+                "\"tactical_effects\":",
+                "\"tactical_effects\":null,\"tactical_effects\":",
+                1,
+            ),
+            "shadowed_effects" => value.to_string().replacen(
+                "\"tactical_effects\":",
+                "\"tactical_effects\":{},\"tactical_effects\":null,\"ignored\":",
                 1,
             ),
             "duplicate_creatures" => value.to_string().replacen(
@@ -823,6 +834,41 @@ fn legacy_saves_reject_creatures_authority_and_duplicate_null_shadows() {
                     .decode_state(
                         version,
                         &json.replacen("\"tactical_creatures\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
+}
+
+#[test]
+fn legacy_saves_reject_effects_authority_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_effects = Some(dmd_domain::TacticalEffects::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        let json = current.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_effects\":null,\"tactical_effects\":",
+            "\"tactical_effects\":{},\"tactical_effects\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_effects\":", replacement, 1)
                     )
                     .is_err()
             );

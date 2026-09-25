@@ -151,6 +151,14 @@ pub(super) fn ruling_valid(ruling: &Ruling, houses: &HouseRules) -> Result<(), R
     }
 }
 pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
+    // Existing event-v1 effects retain their historical posture consequence even
+    // after new turn/recovery authority is attached. New source conditions obey immunity.
+    let legacy_unconscious = (rules.tactical_recovery.is_none()
+        && rules.entities.get(&id).is_some_and(|e| e.hp == 0))
+        || rules
+            .effects
+            .iter()
+            .any(|e| e.target == id && e.condition == Some(Condition::Unconscious));
     let mut result: HashSet<_> = crate::tactical_effect_adapter::condition_effects(rules)
         .filter(|e| e.target == id)
         .filter_map(|e| e.condition)
@@ -172,11 +180,11 @@ pub fn conditions(rules: &RulesState, id: EntityId) -> HashSet<Condition> {
         ));
     }
     if result.contains(&Condition::Unconscious)
-        && !(rules.tactical_recovery.is_some()
-            && rules
+        && (legacy_unconscious
+            || rules
                 .entities
                 .get(&id)
-                .is_some_and(|e| e.condition_immunities.contains(&Condition::Prone)))
+                .is_none_or(|e| !e.condition_immunities.contains(&Condition::Prone)))
     {
         result.insert(Condition::Prone);
     }

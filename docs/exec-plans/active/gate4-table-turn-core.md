@@ -81,3 +81,13 @@ build. These are integration-branch frontend checks, not turn-core extraction or
 backend acceptance. Logs: `tooling/gate4-integrated-ui-tests-r2.log` and
 `tooling/gate4-integrated-ui-build-r2.log` outside the repository. Earlier UI/Rust
 attempts interrupted by system memory exhaustion remain failed attempts.
+
+PR31 source verification is now complete:375 Windows Rust tests and all canonical
+guards/lints; evidence head `61739b4` has fresh independent review and final CI is
+running. Integration imports its immunity fix, source regressions and legacy null
+shadow coverage. The combined condition query preserves legacy ActiveEffect posture
+even after recovery attaches, while new grouped/recovery conditions respect immunity.
+The historical query regression now covers that attachment too. This combined
+production change is formatted/reviewed locally but still needs focused runtime
+verification with the extracted turn slice; PR31's simpler source pass is not that
+evidence. Automatic duplicate enum/module declarations were removed during merge.

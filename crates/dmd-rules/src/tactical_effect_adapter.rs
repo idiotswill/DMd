@@ -53,12 +53,26 @@ pub fn validate_effect_attachment(state: &CampaignState) -> Result<(), RulesErro
             ));
         }
     }
+    // Suppression must not hide an impossible retained condition: otherwise ending
+    // the stronger effect could fail and strand both source instances forever.
+    for effect in &effects.effects {
+        if let TacticalEffectTarget::Creature(target) = effect.target
+            && effect.conditions.iter().any(|condition| {
+                rules.entities[&target]
+                    .condition_immunities
+                    .contains(&condition.condition)
+            })
+        {
+            return Err(RulesError::Invalid(
+                "grouped condition conflicts with target immunity".into(),
+            ));
+        }
+    }
     for view in active_effect_views(effects) {
         let target = &rules.entities[&view.target];
-        if view
-            .condition
-            .is_some_and(|c| target.condition_immunities.contains(&c))
-            || (view.condition == Some(Condition::Unconscious) && !target.prone)
+        if view.condition == Some(Condition::Unconscious)
+            && !target.condition_immunities.contains(&Condition::Prone)
+            && !target.prone
         {
             return Err(RulesError::Invalid(
                 "invalid tactical condition consequence".into(),
@@ -157,8 +171,17 @@ fn install(state: &mut CampaignState, previous: &TacticalEffects, next: Tactical
             .concentration = Some(id);
     }
     rules.tactical_effects = Some(next);
-    let unconscious: Vec<_> = condition_effects(rules)
+    let unconscious: Vec<_> = rules
+        .tactical_effects
+        .as_ref()
+        .into_iter()
+        .flat_map(active_effect_views)
         .filter(|effect| effect.condition == Some(Condition::Unconscious))
+        .filter(|effect| {
+            !rules.entities[&effect.target]
+                .condition_immunities
+                .contains(&Condition::Prone)
+        })
         .map(|effect| effect.target)
         .collect();
     for actor in unconscious {

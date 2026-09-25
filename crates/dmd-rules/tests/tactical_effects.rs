@@ -1099,6 +1099,228 @@ impl Fixture {
 }
 
 #[test]
+fn attached_unconsciousness_respects_prone_immunity_and_keeps_legacy_semantics() {
+    for immune in [false, true] {
+        let mut f = Fixture::new();
+        if immune {
+            f.campaign
+                .rules
+                .as_mut()
+                .unwrap()
+                .entities
+                .get_mut(&f.target)
+                .unwrap()
+                .condition_immunities
+                .insert(Condition::Prone);
+        }
+        let mut effect = f.effect(f.source(&f.meta(), "source-unconsciousness"), f.target);
+        effect.conditions[0].condition = Condition::Unconscious;
+        let id = effect.id;
+        f.attached(EffectLifecycleOperation::Install {
+            effects: vec![effect],
+        });
+        let pack =
+            dmd_rules::RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+                .unwrap();
+        dmd_rules::validate_state(&f.campaign, &pack).unwrap();
+        let rules = f.campaign.rules.as_ref().unwrap();
+        let conditions = dmd_rules::active_conditions(rules, f.target);
+        assert!(conditions.contains(&Condition::Unconscious));
+        assert!(conditions.contains(&Condition::Incapacitated));
+        assert_eq!(conditions.contains(&Condition::Prone), !immune);
+        assert_eq!(rules.entities[&f.target].prone, !immune);
+        assert_eq!(
+            dmd_rules::tactical_conditions::effective_speed(rules, f.target, 60).unwrap(),
+            0
+        );
+        assert!(rules.effects.is_empty());
+        f.attached(EffectLifecycleOperation::EndEffect {
+            effect: id,
+            reason: EffectEndReason::Dismissed,
+        });
+        dmd_rules::validate_state(&f.campaign, &pack).unwrap();
+        let rules = f.campaign.rules.as_ref().unwrap();
+        assert!(!dmd_rules::active_conditions(rules, f.target).contains(&Condition::Unconscious));
+        assert_eq!(
+            rules.entities[&f.target].prone, !immune,
+            "ending the condition never stands a creature up"
+        );
+    }
+
+    // Legacy event-v1 consequences are preserved even when an empty new attachment exists.
+    let mut f = Fixture::new();
+    let rules = f.campaign.rules.as_mut().unwrap();
+    let target = rules.entities.get_mut(&f.target).unwrap();
+    target.condition_immunities.insert(Condition::Prone);
+    target.prone = true;
+    rules.effects.push(ActiveEffect {
+        id: EffectId::new(),
+        source: f.caster,
+        target: f.target,
+        condition: Some(Condition::Unconscious),
+        label: "Historical effect".into(),
+        expires: Expiry::Never,
+        concentration_owner: None,
+    });
+    let historical = dmd_rules::active_conditions(rules, f.target);
+    assert!(historical.contains(&Condition::Prone));
+    rules.tactical_effects = Some(TacticalEffects::default());
+    assert_eq!(historical, dmd_rules::active_conditions(rules, f.target));
+    rules.tactical_recovery = Some(Default::default());
+    assert_eq!(historical, dmd_rules::active_conditions(rules, f.target));
+}
+
+#[test]
+fn attachment_rejects_unconscious_immunity_and_missing_required_prone_atomically() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Unconscious);
+    let mut effect = f.effect(f.source(&f.meta(), "source-unconsciousness"), f.target);
+    effect.conditions[0].condition = Condition::Unconscious;
+    let before = f.campaign.clone();
+    let action = EffectLifecycleAction {
+        step: 0,
+        operation: EffectLifecycleOperation::Install {
+            effects: vec![effect.clone()],
+        },
+    };
+    assert!(
+        dmd_rules::tactical_effect_adapter::apply_effect_operation(
+            &f.campaign,
+            &effect.source.command,
+            &action
+        )
+        .is_err()
+    );
+    assert_eq!(f.campaign, before);
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .clear();
+    f.attached(action.operation);
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .prone = false;
+    assert!(dmd_rules::tactical_effect_adapter::validate_effect_attachment(&f.campaign).is_err());
+    let pack =
+        dmd_rules::RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))
+            .unwrap();
+    assert!(dmd_rules::validate_state(&f.campaign, &pack).is_err());
+}
+
+#[test]
+fn suppressed_unconsciousness_reappears_through_the_attachment_without_forcing_immune_prone() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Prone);
+    let mut strong = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    strong.conditions[0].condition = Condition::Poisoned;
+    strong.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 2,
+    });
+    let id = strong.id;
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![strong],
+    });
+    let mut weak = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    weak.conditions[0].condition = Condition::Unconscious;
+    weak.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 1,
+    });
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![weak],
+    });
+    assert!(
+        !dmd_rules::active_conditions(f.campaign.rules.as_ref().unwrap(), f.target)
+            .contains(&Condition::Unconscious)
+    );
+    f.attached(EffectLifecycleOperation::EndEffect {
+        effect: id,
+        reason: EffectEndReason::Expired,
+    });
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert!(dmd_rules::active_conditions(rules, f.target).contains(&Condition::Unconscious));
+    assert!(!rules.entities[&f.target].prone);
+    assert!(!dmd_rules::active_conditions(rules, f.target).contains(&Condition::Prone));
+}
+
+#[test]
+fn suppressed_immune_condition_cannot_be_installed_and_strand_later_removal() {
+    let mut f = Fixture::new();
+    f.campaign
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.target)
+        .unwrap()
+        .condition_immunities
+        .insert(Condition::Unconscious);
+    let mut strong = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    strong.conditions[0].condition = Condition::Poisoned;
+    strong.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 2,
+    });
+    let strong_id = strong.id;
+    f.attached(EffectLifecycleOperation::Install {
+        effects: vec![strong],
+    });
+    let mut weak = f.effect(f.source(&f.meta(), "overlapping-condition"), f.target);
+    weak.conditions[0].condition = Condition::Unconscious;
+    weak.overlap = Some(EffectOverlap {
+        key: "same-source".into(),
+        potency: 1,
+    });
+    let before = f.campaign.clone();
+    let meta = weak.source.command.clone();
+    let operation = EffectLifecycleAction {
+        step: 0,
+        operation: EffectLifecycleOperation::Install {
+            effects: vec![weak],
+        },
+    };
+    assert!(
+        dmd_rules::tactical_effect_adapter::apply_effect_operation(&before, &meta, &operation)
+            .is_err()
+    );
+    assert_eq!(before, f.campaign);
+    f.attached(EffectLifecycleOperation::EndEffect {
+        effect: strong_id,
+        reason: EffectEndReason::Expired,
+    });
+    let rules = f.campaign.rules.as_ref().unwrap();
+    assert!(rules.tactical_effects.as_ref().unwrap().effects.is_empty());
+    assert!(dmd_rules::active_conditions(rules, f.target).is_empty());
+}
+
+#[test]
 fn attached_concentration_projects_sources_and_replaces_the_whole_group() {
     let mut f = Fixture::new();
     let group = ConcentrationGroup {

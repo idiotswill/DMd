@@ -1,7 +1,7 @@
 # Gate 4 effect authority and condition queries
 
-Writer: root. Prospective branch: `codex/gate4-effect-state-attachment`, from
-refreshed main after verified NPC setup PR30. Integration reference: `df75fb8`;
+Writer: root. Branch: `codex/gate4-effect-state-attachment`, from
+refreshed main `beaad44c459a65ba674eeca747096a406eab0d78` after verified NPC setup PR30. Integration reference: `df75fb8`;
 the reviewed pure lifecycle reducer is already on main through PR24.
 
 ## Objective and boundaries
@@ -61,7 +61,53 @@ multi-round encounter acceptance remain active. No Gate5 work is authorized.
 
 ## Status and exact next action
 
-Planning only; no extraction branch or new effect implementation yet. PR30 corrected
-source6136aeb has passed357 Linux Rust tests and strict lint; local canonical verification
-and Windows packaging are still running. Finish PR30 verification/merge, refresh main,
-then create this bounded branch and re-read the actual source before editing.
+PR30 merged with expected-head protection after independent full extraction/correction
+and final evidence-head reviews. Final head `78166c6` passes all six checks: Linux
+`36111205928` and Windows `36111206026`, including offline installer. Canonical source
+`6136aeb` passes356 Windows Rust tests and all guards/lints; final source/lock/frontend
+parity was verified. Fetched merged main `beaad44` has exact full-tree parity with that
+head. All six post-merge checks passed on `beaad44`: Linux `36112003062` and
+Windows `36112002720`, including the offline installer.
+
+This fresh branch starts from that fetched main. The adapter/condition closure is
+extracted from `16f97e7`, including the previously reviewed internal held-cast duration
+operation and its tests. No new player effect-install endpoint exists. Legacy commands
+fail closed only when grouped authority is attached; ordinary existing campaigns and
+the PR30 PC/NPC preparation path retain absent-attachment behavior.
+
+New regressions cover grouped Unconscious with/without Prone immunity, inability to
+install an immune condition, malformed missing Prone, retained posture after expiry,
+suppressed Unconscious reappearance and historical legacy query parity. Only grouped
+conditions receive the new immunity consequence; legacy HP-zero/ActiveEffect behavior
+keeps its old interpretation. Source-authorized vitality/held-item dropping is not
+copied without its queue dependencies or claimed as a complete condition path here.
+
+Typed legacy save and transactional database preflight reject non-null effect authority
+and both duplicate-null orders. Real table export/restore rejects invented current,
+backfilled-anchor and operation-origin authority before writes, while an untouched
+export restores identically. Existing physical-reference/composite table regressions
+remain intact. Draft PR31 records this bounded attachment. Gate4 remains active.
+
+Initial exact-head CI at `ab627a9` found four test-only collection API errors: condition
+immunities use a BTreeSet, so the fixtures must insert rather than push. The full
+independent review also found that checking immunity only on effective views allowed
+a weaker immune condition to hide under suppression and later prevent stronger-effect
+removal. Validation now checks every retained grouped condition, with a regression
+that rejects the invalid weak installation atomically and then expires the stronger
+valid effect. The existing valid suppressed-condition reappearance test remains.
+Corrected source `0486c77c91e0f14c6657f9106e83fa97211aeee6` now passes full Windows
+`./scripts/verify`:375 Rust tests, formatting, workspace/all-target compilation,
+strict Clippy, genericity guard and architecture guard (8 checks,1 platform skip).
+The completed local log is `tooling/gate4-effect-state-canonical.log` outside this
+repository. Earlier memory-interrupted runs and the initial fixture compile failure
+are not counted as passing. No frontend source changed in this slice.
+
+Independent full-diff and correction reviews are clear on `0486c77`. All six source
+CI jobs pass: Linux `36112860014` (376 Rust tests, including the Unix-only case;
+Rust job108000057910), Windows `36112860090`, including MSRV and offline installer.
+This final evidence edit changes documentation only. Next verify source/lock parity,
+obtain a final evidence-head review and all six exact-head checks, then merge PR31
+with expected-head protection. Fetch merged main, verify full-tree parity and its
+post-merge checks, then start the planned real table initiative/turn slice on a fresh
+branch. Remaining physical actions, spell mechanisms and complete packaged encounter
+acceptance stay in active Gate4; this bridge does not complete that gate.
