@@ -182,9 +182,21 @@ After supplying the actual language choices, all 14 Shield cases pass locally
 on the default Windows GNU stack (57.29 seconds; jobs1, incremental0), including
 uniform acknowledgments, both intent/order arrivals, original damage provenance,
 Graze, shared resource exhaustion, component/Reaction blocks, selected ownership,
-OA retained movement, later rays and current/retired source corruption. Logs:
+OA retained movement, later rays and retained hit/source/effect corruption. Logs:
 `tooling/shield-hit-tactical-attacks.log` and `tooling/shield-hit-focused-r2.log`
 outside the repository. Source-control now owns the canonical-verification slot.
 The test fixture correction has a separate independent static review. Run fresh
 CI on this corrected candidate; final canonical, player-source SQLite and desktop
 integration acceptance remain required before merge.
+
+### Development integration order
+
+PR43 candidate a119d7f has a complete clear source/delta review and eight passing
+focused Rust cases; its canonical and exact-head CI are running. Integrate that
+reviewed candidate normally into this development branch now to complete the
+dependent source channel, ownership guards, actual SQLite registration and desktop
+test wiring without idling during verification. This replaces the earlier
+development-only wait for its merge, not the acceptance requirement: PR43 must
+finish verification and merge first. Reconcile any subsequent PR43 correction and
+the fetched merged main before Shield's final canonical/exact-head acceptance.
+The shared local build slot remains with PR43; no concurrent compilation.
