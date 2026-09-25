@@ -165,10 +165,7 @@ pub(super) fn begin(
                 *state = apply_spell_casting_cost(state, actor, cost)?;
             }
             SpellCastObligation::RequireCreatureFeatureReceipt { .. }
-                if record.creature_activation.is_some() =>
-            {
-                ()
-            }
+                if record.creature_activation.is_some() => {}
             SpellCastObligation::BeginConcentration { group } => {
                 effect_operation(
                     state,
@@ -221,12 +218,12 @@ fn commit(state: &mut CampaignState, meta: &CommandMeta, cast: u16) -> Result<()
         SpellCastAdvance::Commit
     };
     let transition = advance_cast(&record.cast, meta, &context, operation)?;
-    resolution_mut(state)?
+    *resolution_mut(state)?
         .casts
         .iter_mut()
         .find(|r| r.cast.plan.occurrence == cast)
         .ok_or_else(|| invalid("casting vanished before commit"))?
-        .cast = Box::new(transition.cast);
+        .cast = transition.cast;
     for obligation in transition.obligations {
         match obligation {
             SpellCastObligation::CommitExpenditure { actor, expenditure } => {
@@ -545,29 +542,6 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_retained_spell(record)?;
         let plan = &record.cast.plan;
         let actor = plan.choice.actor;
-        if !ids.insert(plan.occurrence)
-            || plan.occurrence >= r.next_occurrence
-            || !matches!(
-                record.cast.phase,
-                SpellCastPhase::Committed | SpellCastPhase::Released
-            )
-            || record.cast.started_at > state.clock.now
-            || record.cast.started_on_turn > r.turn_number
-            || plan.origin.expected_event_sequence < r.origin.expected_event_sequence
-            || record.cast.last_operation.expected_event_sequence > state.applied_event_sequence
-            || !flow(state)?
-                .combatants
-                .iter()
-                .any(|combatant| combatant.actor == actor)
-        {
-            return Err(invalid(
-                "invalid retained tactical cast timing, identity or phase",
-            ));
-        }
-        validate_equipment_change_origin(state, &plan.origin, actor).map_err(|e| invalid(&e))?;
-        validate_equipment_change_origin(state, &record.cast.last_operation, actor)
-            .map_err(|e| invalid(&e))?;
-        authorize(state, &plan.origin, actor)?;
         if let SpellGrantChoice::CreatureFeature { feature_id } = &plan.choice.grant {
             // The canonical program proves what a source can cast; this binding
             // also proves that the retained actor actually has that source.
@@ -592,6 +566,31 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 ));
             }
         }
+        if !ids.insert(plan.occurrence)
+            || plan.occurrence >= r.next_occurrence
+            || !matches!(
+                record.cast.phase,
+                SpellCastPhase::Committed | SpellCastPhase::Released
+            )
+            || record.cast.started_at > state.clock.now
+            || record.cast.started_on_turn > r.turn_number
+            || plan.origin.expected_event_sequence < r.origin.expected_event_sequence
+            || (plan.origin.expected_event_sequence == r.origin.expected_event_sequence
+                && plan.origin != r.origin)
+            || record.cast.last_operation.expected_event_sequence > state.applied_event_sequence
+            || !flow(state)?
+                .combatants
+                .iter()
+                .any(|combatant| combatant.actor == actor)
+        {
+            return Err(invalid(
+                "invalid retained tactical cast timing, identity or phase",
+            ));
+        }
+        validate_equipment_change_origin(state, &plan.origin, actor).map_err(|e| invalid(&e))?;
+        validate_equipment_change_origin(state, &record.cast.last_operation, actor)
+            .map_err(|e| invalid(&e))?;
+        authorize(state, &plan.origin, actor)?;
         let mut partition: std::collections::HashSet<_> =
             record.completed.iter().copied().collect();
         let mut finish_count = 0;

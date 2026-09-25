@@ -71,6 +71,10 @@ pub enum TacticalWorkKind {
     AttackRoll,
     AttackDamage,
     FinishAttack,
+    /// SRD14: resolve sharing another creature's space with other End effects.
+    EndOccupiedSpace {
+        actor: EntityId,
+    },
     DeathSave {
         actor: EntityId,
     },

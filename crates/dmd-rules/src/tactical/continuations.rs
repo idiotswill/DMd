@@ -133,6 +133,9 @@ pub(super) fn key(
             return Err(invalid("Legendary Action choice has no roll"));
         }
         TacticalWorkKind::RecoverStable { .. } => return Err(invalid("wake-up has no roll")),
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            return Err(invalid("occupied-space consequence has no roll"));
+        }
     };
     Ok(TacticalRollKey {
         origin: resolution(state)?.origin.id,
@@ -275,6 +278,9 @@ pub(super) fn request(
             Err(invalid("legendary decision has no raw roll"))
         }
         TacticalWorkKind::RecoverStable { .. } => Err(invalid("stable wake-up has no raw roll")),
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            Err(invalid("occupied-space consequence has no raw roll"))
+        }
     }
 }
 
@@ -290,6 +296,21 @@ pub(super) fn start(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::EndOccupiedSpace { actor } => {
+            // Another simultaneous consequence may have moved the actor or
+            // changed its size/immunity. Re-evaluate actual geometry at resolution.
+            if end_space_prone(state, *actor)? {
+                state
+                    .rules
+                    .as_mut()
+                    .ok_or(RulesError::Uninitialized)?
+                    .entities
+                    .get_mut(actor)
+                    .ok_or_else(|| invalid("ending actor mechanics are absent"))?
+                    .prone = true;
+            }
+            return Ok(());
+        }
         TacticalWorkKind::SpellProgram { cast, at } => {
             if super::casting::start(state, meta, *cast, *at)? {
                 return Ok(());
@@ -527,6 +548,9 @@ pub(super) fn finish(
         .transpose()?;
     resolution_mut(state)?.pending = None;
     match pending.work.kind {
+        TacticalWorkKind::EndOccupiedSpace { .. } => {
+            return Err(invalid("occupied-space consequence cannot await dice"));
+        }
         TacticalWorkKind::SpellProgram { .. } => {
             return super::casting::finish(state, meta, &pending, result, forced_success);
         }

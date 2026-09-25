@@ -32,6 +32,34 @@ pub(super) fn effects(state: &CampaignState) -> Result<&TacticalEffects, RulesEr
         .and_then(|r| r.tactical_effects.as_ref())
         .ok_or_else(|| invalid("missing effect attachment"))
 }
+pub(super) fn end_space_prone(state: &CampaignState, actor: EntityId) -> Result<bool, RulesError> {
+    let encounter = encounter(state)?;
+    let participant = encounter
+        .participant(actor)
+        .ok_or_else(|| invalid("ending actor is absent"))?;
+    let entity = state
+        .rules
+        .as_ref()
+        .ok_or(RulesError::Uninitialized)?
+        .entities
+        .get(&actor)
+        .ok_or_else(|| invalid("ending actor mechanics are absent"))?;
+    if participant.size == CreatureSize::Tiny
+        || entity.condition_immunities.contains(&Condition::Prone)
+    {
+        return Ok(false);
+    }
+    let volume = participant.volume().map_err(|error| invalid(&error))?;
+    for other in &encounter.participants {
+        if other.entity_id != actor
+            && other.size.rank() >= participant.size.rank()
+            && volume.intersects(other.volume().map_err(|error| invalid(&error))?)
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
 pub(super) fn effect_operation(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -221,6 +249,9 @@ fn begin_boundary_from(
         })),
     )?;
     let mut work = new_effect_work(state)?;
+    if boundary == TurnBoundary::End && end_space_prone(state, actor)? {
+        work.push(TacticalWorkKind::EndOccupiedSpace { actor });
+    }
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     if boundary == TurnBoundary::Start {
         let entity = &rules.entities[&actor];

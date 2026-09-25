@@ -126,6 +126,14 @@ fn validate_work(
             *actor
         }
         TacticalWorkKind::RecoverStable { actor } => *actor,
+        TacticalWorkKind::EndOccupiedSpace { actor } => {
+            if *actor != r.turn_actor || r.boundary != TurnBoundary::End {
+                return Err(invalid(
+                    "occupied-space consequence is outside owner's End boundary",
+                ));
+            }
+            *actor
+        }
         TacticalWorkKind::CreatureRecharge { actor, feature_id } => {
             let ticket = super::creature_bridge::recharge(state, *actor, feature_id)?;
             if *actor != r.turn_actor
@@ -210,6 +218,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         let mut occurrences = HashSet::new();
         let mut ticket_ids = HashSet::new();
+        let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
             + usize::from(r.failed_save.is_some())
             + usize::from(r.legendary_window.is_some())
@@ -242,6 +251,12 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 return Err(invalid("duplicate consequence occurrence"));
             }
             validate_work(state, r, work)?;
+            if matches!(work.kind, TacticalWorkKind::EndOccupiedSpace { .. }) {
+                occupied_space_count += 1;
+                if occupied_space_count > 1 {
+                    return Err(invalid("duplicate occupied-space End consequence"));
+                }
+            }
             if let TacticalWorkKind::Effect { ticket } = work.kind
                 && !ticket_ids.insert(ticket)
             {

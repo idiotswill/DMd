@@ -133,7 +133,7 @@ fn casting_rejects_range_ready_and_wrong_source_before_payment() {
 fn retained_spell_partition_rejects_omitted_duplicate_and_foreign_work() {
     let mut f = imported_healer();
     f.run(Some(0), heal(&f));
-    for tamper in 0..4 {
+    for tamper in 0..5 {
         let mut corrupt = f.state.clone();
         let r = corrupt
             .encounter
@@ -151,7 +151,15 @@ fn retained_spell_partition_rejects_omitted_duplicate_and_foreign_work() {
                 .completed
                 .push(SpellProgramOccurrence { node: 0, target: 0 }),
             2 => r.casts[0].cast.plan.occurrence = r.next_occurrence,
-            _ => r.casts[0].cast.plan.origin.actor = Some(AgentRef::Entity(f.actors[1])),
+            3 => r.casts[0].cast.plan.origin.actor = Some(AgentRef::Entity(f.actors[1])),
+            _ => {
+                // Canonical equal-head metadata still cannot invent a different
+                // accepted cast command from the actual resolution origin.
+                let cast = &mut r.casts[0].cast;
+                cast.plan.origin.id = CommandId::new();
+                cast.last_operation = cast.plan.origin.clone();
+                dmd_rules::tactical_spells::validate_spell_cast(cast).unwrap();
+            }
         }
         assert!(validate_tactical_state(&corrupt).is_err());
     }
@@ -174,6 +182,13 @@ fn fanatic() -> (Fixture, SpellCastChoice) {
     let mut f = Fixture::new();
     f.arm("club", false, false); // Genuine Human target with its source profile.
     let actor = f.actors[1];
+    // The generic weapon fixture makes this second actor the lender. This case
+    // creates a new source creature instead; the Human owns its existing club.
+    for item in f.state.items.values_mut() {
+        if item.owner == Ownership::Entity(actor) {
+            item.owner = Ownership::Entity(f.actors[0]);
+        }
+    }
     f.state
         .characters
         .retain(|_, character| character.entity_id != actor);
@@ -282,6 +297,13 @@ fn spell_save_extremes_follow_only_the_explicit_table_policy_and_preserve_raw_tw
             .unwrap()
             .house_rules
             .ability_test_natural_extremes = house;
+        f.state
+            .table
+            .as_mut()
+            .unwrap()
+            .contract
+            .house_rules
+            .ability_test_natural_extremes = house;
         f.run(
             Some(1),
             TacticalAction::CastSpell {
@@ -344,5 +366,102 @@ fn canonical_creature_spell_cannot_be_reassigned_to_an_actor_without_its_source(
     // The standalone record remains canonical: its program really is Hold Person
     // from the Cultist source. The attached Human actor has no such source grant.
     dmd_rules::tactical_spells::validate_retained_spell(record).unwrap();
-    assert!(validate_tactical_state(&corrupt).is_err());
+    let error = validate_tactical_state(&corrupt).unwrap_err().to_string();
+    assert!(
+        error.contains("retained source caster profile is absent"),
+        "{error}"
+    );
+}
+
+#[test]
+fn accepted_leveled_cast_interrupts_source_rest_but_cantrip_and_rejection_preserve_it() {
+    use dmd_rules::tactical_damage::{VitalityContext, VitalityDefenses, reduce_vitality};
+    for cantrip in [false, true] {
+        let mut f = imported_healer();
+        let actor = f.actors[0];
+        f.entity_mut(0).prepared_spells.insert("fire-bolt".into());
+        let mut context = VitalityContext {
+            origin: VitalityOrigin {
+                command: f.meta(None),
+                occurrence: 0,
+            },
+            now: f.state.clock.now,
+            conditions: Default::default(),
+            underwater: false,
+            defenses: VitalityDefenses::default(),
+            death_save_mode: RollMode::Normal,
+            death_save_bonus: 0,
+        };
+        let knocked = reduce_vitality(
+            &f.rules().entities[&actor],
+            &TacticalRecovery::default(),
+            &context,
+            &VitalityOperation::Damage {
+                packet: DamagePacket {
+                    cause: DamageCause::Attack {
+                        attacker: f.actors[1],
+                        melee: true,
+                        critical: false,
+                    },
+                    components: vec![DamageComponent {
+                        damage_type: DamageType::Bludgeoning,
+                        amounts: vec![100],
+                        adjustments: vec![],
+                    }],
+                },
+                knockout: Some(KnockoutChoice::KnockOut),
+            },
+        )
+        .unwrap();
+        f.state.applied_event_sequence += 1;
+        context.origin.command = f.meta(None);
+        let awake = reduce_vitality(
+            &knocked.entity,
+            &knocked.recovery,
+            &context,
+            &VitalityOperation::Heal { amount: 1 },
+        )
+        .unwrap();
+        let rules = f.state.rules.as_mut().unwrap();
+        rules.entities.insert(actor, awake.entity);
+        rules
+            .tactical_recovery
+            .get_or_insert_default()
+            .insert(actor, awake.recovery);
+        rules.rests.push(RestProgress {
+            actor,
+            kind: RestKind::Short,
+            started_at: f.state.clock.now,
+        });
+        f.state.applied_event_sequence += 1;
+        validate_state(&f.state, &f.pack).unwrap();
+        let mut action = heal(&f);
+        if let TacticalAction::CastSpell { choice, .. } = &mut action
+            && cantrip
+        {
+            choice.spell_id = "fire-bolt".into();
+            choice.resource = SpellResourceChoice::Cantrip;
+        }
+        let mut rejected = action.clone();
+        if let TacticalAction::CastSpell { choice, .. } = &mut rejected {
+            choice.mode = SpellCastMode::Ready {
+                trigger: "The gate opens".into(),
+            };
+        }
+        f.rejected(Some(0), rejected);
+        assert!(f.rules().rests.iter().any(|rest| rest.actor == actor));
+        f.run(Some(0), action);
+        assert_eq!(
+            f.rules().rests.iter().any(|rest| rest.actor == actor),
+            cantrip
+        );
+        assert_eq!(
+            f.rules().tactical_recovery.as_ref().unwrap()[&actor]
+                .knockout_rest
+                .is_some(),
+            cantrip
+        );
+        f.roll(0, if cantrip { &[1, 1] } else { &[2, 3] });
+        assert!(f.flow().resolution.is_none());
+    }
 }

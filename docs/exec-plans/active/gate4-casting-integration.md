@@ -190,3 +190,63 @@ Movement domain receipt `616ffa8` is integrated with the two required initialize
 its actual stop/receipt writer retains ownership of movement files. Next verification
 is the coordinated casting/attack, movement, turn, source-spell and effect batch,
 then strict domain/rules lint. Earlier leaf evidence does not cover this integration.
+
+## Verified bounded shared integration
+
+The actual public resolver now runs Cure Wounds, Fire Bolt, source Cultist Hold
+Person and source Dragon Scorching Ray through the existing tactical resolution.
+Prepared casting in these fixtures is imported mechanical state, not a new starter
+character class option. No Magic Missile grant is invented: its amount leaf remains
+tested separately until a source-supported public grant is installed. Seven casting
+cases and six source-attack cases exercise accepted payment, physical material IDs,
+source use counters, separate ray keys, actual continuation cause after another
+player's save, paid dead-target completion, individual controller choices and replay
+after every accepted action. Ready and unsupported programs reject before costs.
+
+The restored attachment binds canonical creature spells to the actual immutable
+actor profile and rejects differing accepted metadata at the same event head. Its
+exact target-work partition covers pending save/amount work, live spell attacks,
+completed occurrences and one finish frame. Application replay must still prove
+historical source admission and resource payment; structural validation is not a
+replacement for that accepted-event audit.
+
+Source SRD14 shared-space behavior is one `EndOccupiedSpace` work item alongside
+other simultaneous End effects. It derives positive 3D volume overlap, honors Tiny,
+strictly larger size and Prone immunity, rechecks geometry at actual application,
+and preserves the controller's End ordering. It introduces no roll or other
+creature identity in its durable work. Source SRD187 rest coverage proves accepted
+non-cantrip casting interrupts the real knockout-rest record while a cantrip or
+definite rejected declaration preserves it. Explicit natural-extremes regressions
+cover spell saves, effect saves, concentration and source Legendary Resistance;
+ordinary RAW and the separate death-save rules retain their outcomes and raw faces.
+
+Verification completed on the final implementation tree:
+
+- `cargo test -p dmd-rules --test tactical_attacks --test tactical_movement
+  --test tactical_turns --test tactical_effects`: **96 passed** (41,10,24,21).
+- `cargo clippy -p dmd-domain -p dmd-rules --all-targets -- -D warnings`: passed.
+- Formatting and diff whitespace checks passed.
+- The broader rules unit suite passed **131 tests** during this batch, including
+  41 source-spell and 33 vitality cases. The subsequent shared-driver metadata
+  tightening and lint-only changes were covered by the final integration/lint run.
+
+External logs under `research/gate4-casting/` are
+`shared-final-second-tests.txt`, `shared-final-second-clippy.txt` and
+`shared-unit-tests.txt`. Earlier logs retain the actual fixture failures: a dragon
+incorrectly requested ammunition despite lacking a ranged weapon, and the generic
+borrowed-club fixture accidentally made the newly created Cultist an existing item
+owner. Fixtures were corrected to real source allocation preconditions. Three
+strict-lint issues were fixed without suppressions. No larger stack setting or
+native acceptance claim is part of this evidence.
+
+Independent reviews by environment_audit and rules_architecture cover the source
+leaves, sealed spell attack adapter, restore guards, rest/policy changes and complete
+shared-space consequence. The final full shared-driver review and application
+integration remain pending root coordination. App work must handle SpellSave11,
+SpellAmount12 (amount roller is the caster, not key.subject), CastSpell action
+metadata and a generic shared-space End label, then run accepted-record restore
+auditing and the packaged flow. Movement owns its subsequent privacy/stop delta and
+receives shared queue ownership for falling after this checkpoint. No second queue
+is permitted. Ready triggers, Counterspell, area/zone binding, further source effect
+families, source multiattack/legendary nested casting and late target decisions
+remain active Gate4 obligations. This checkpoint does not accept Gate4.
