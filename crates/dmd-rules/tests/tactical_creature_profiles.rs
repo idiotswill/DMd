@@ -95,6 +95,84 @@ fn choice(id: &str, size: CreatureSize) -> CreatureBuildChoice {
 }
 
 #[test]
+fn night_hag_profile_has_source_saves_and_at_will_grant_without_pc_slots_or_gear() {
+    let (state, meta, actor) = fixture();
+    let selection = choice("night-hag", CreatureSize::Medium);
+    let built = build_creature(&state, &meta, actor, &selection).unwrap();
+    assert_eq!(built.mechanics.armor, ArmorClass::Fixed(17));
+    assert_eq!((built.mechanics.hp, built.mechanics.max_hp), (112, 112));
+    assert_eq!(
+        built.mechanics.hit_dice,
+        HitDice {
+            sides: 8,
+            maximum: 15,
+            remaining: 15
+        }
+    );
+    assert_eq!(built.mechanics.level, 0);
+    assert!(built.mechanics.prepared_spells.is_empty());
+    assert!(built.mechanics.spellcasting.is_none());
+    assert!(built.mechanics.resources.is_empty());
+    assert!(built.runtime.limited_uses.is_empty() && built.runtime.recharge.is_empty());
+    assert_eq!(
+        built.mechanics.resistances,
+        [DamageType::Cold, DamageType::Fire].into()
+    );
+    assert_eq!(
+        built.mechanics.condition_immunities,
+        [Condition::Charmed].into()
+    );
+    assert_eq!(built.movement.walk, 60);
+    assert_eq!(built.senses.darkvision, 240);
+    for (ability, modifier) in [
+        (Ability::Strength, 4),
+        (Ability::Dexterity, 2),
+        (Ability::Constitution, 3),
+        (Ability::Intelligence, 3),
+        (Ability::Wisdom, 2),
+        (Ability::Charisma, 3),
+    ] {
+        assert_eq!(
+            creature_test_modifier(
+                &built.profile,
+                &built.mechanics,
+                &TestKind::Save { ability }
+            )
+            .unwrap(),
+            modifier
+        );
+    }
+    assert_eq!(
+        creature_test_modifier(&built.profile, &built.mechanics, &TestKind::Initiative).unwrap(),
+        5
+    );
+    validate_creature_profile(&state, &built.profile, &built.mechanics).unwrap();
+    let mut forged = built.profile.clone();
+    forged.source.definition_fingerprint = "0000000000000000".into();
+    assert!(validate_creature_profile(&state, &forged, &built.mechanics).is_err());
+    assert!(
+        build_creature(
+            &state,
+            &meta,
+            actor,
+            &choice("night-hag", CreatureSize::Small)
+        )
+        .is_err()
+    );
+    let mut invented_language = selection;
+    invented_language.additional_languages.push("Elvish".into());
+    assert!(build_creature(&state, &meta, actor, &invented_language).is_err());
+    assert!(
+        dmd_rules::tactical_creature_equipment::creature_equipment_plan("night-hag", 0)
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        dmd_rules::tactical_creature_equipment::creature_equipment_plan("night-hag", 1).is_err()
+    );
+}
+
+#[test]
 fn source_statistics_use_real_hit_dice_and_explicit_modifiers_without_fake_pc_levels() {
     let (state, meta, actor) = fixture();
     let built = build_creature(
