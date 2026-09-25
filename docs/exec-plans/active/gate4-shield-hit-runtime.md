@@ -143,3 +143,27 @@ SQLite draft now also restores an actual earlier hit image as a valid backfilled
 snapshot, then rejects a forged retired-window cover value with current state intact.
 Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.
+
+### Current checkpoint, 2026-09-25 21:28 UTC
+
+Candidate 8aa1915 passes all-target compiler checking, strict Clippy, Rust 1.88
+and both guards. Linux36189578700 and Windows36189578714 are still running their
+full runtime suites; this is not runtime acceptance. The unchanged frontend has
+72 passing tests, zero static diagnostics and a 137-module build. No local Rust
+test from this branch has completed yet. The serialized slot is with PR43 for
+its exact90c9230 focused checks, followed by root's tactical_attacks binary and
+then PR43 canonical verification. The former disk/memory blocker is resolved.
+
+PR42 post-main Linux36188457488 passes all four jobs (695 Rust tests, 54 suites,
+44 table cases). Windows36188457455 has passed its native regressions and MSRV;
+release packaging is pending. Verify the final artifact and counts before the
+post-main claim is complete.
+
+Independent review of the drafted player-owned Mage file-SQLite scenario found
+that the shared fixture originally made that owner absent. Accepted EndSession
+and StartSession commands now establish both controllers as Present before source
+or battlefield setup. Its table contract records the agreed practice encounter;
+this is policy prose, not evidence of typed PvP consent enforcement. The reviewed
+AC12-to17, original attack+5, critical damage6, shared-use2, mirror/exact-retry and
+retired-snapshot corruption assertions are sound. This module is still deliberately
+unregistered and unrun until verified PR43 integration.

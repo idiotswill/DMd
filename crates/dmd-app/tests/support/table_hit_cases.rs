@@ -179,6 +179,25 @@ fn raw(view: TablePresentedView, values: &[u16]) -> TableTransportInput {
 }
 
 async fn prepare(f: &mut Fixture, path: &Path) -> EntityId {
+    // The shared fixture initially marks player 1 absent. Establish the actual
+    // controllers' attendance through accepted session commands before combat.
+    f.host(TableAction::EndSession, Some(f.session)).await;
+    f.session = PlaySessionId::new();
+    f.host(
+        TableAction::StartSession {
+            id: f.session,
+            name: "Agreed practice encounter".into(),
+            participants: (0..2)
+                .map(|index| SessionParticipant {
+                    player_id: f.players[index],
+                    character_id: Some(f.characters[index]),
+                    attendance: AttendanceStatus::Present,
+                })
+                .collect(),
+        },
+        Some(f.session),
+    )
+    .await;
     let host = view(f, &TableTransportChannel::Host).await;
     let catalog = f
         .runtime
@@ -284,13 +303,14 @@ async fn prepare(f: &mut Fixture, path: &Path) -> EntityId {
         })),
     ))
     .await;
+    let controller = CreatureController::Player(f.players[1]);
     Box::pin(step(
         f,
         path,
         TableTransportChannel::Host,
         TableTransportInput::Action(Box::new(TableAction::SetSourceCreatureController {
             actor: mage,
-            controller: CreatureController::Player(f.players[1]),
+            controller,
         })),
     ))
     .await;
@@ -655,12 +675,12 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
         item_id: "dagger".into(),
         quantity: 1,
     });
-    let mut f = Box::pin(Fixture::with_creation_pool(
-        TableContract::default(),
-        Some(creation),
-        pool,
-    ))
-    .await;
+    let contract = TableContract {
+        pvp_policy:
+            "Both players consent to this practice encounter, including the controlled Mage.".into(),
+        ..TableContract::default()
+    };
+    let mut f = Box::pin(Fixture::with_creation_pool(contract, Some(creation), pool)).await;
     let mage = Box::pin(prepare(&mut f, &path)).await;
     // First response arrives before ordering; no cost or unrelated visible change.
     Box::pin(hit(&mut f, &path, mage, 10)).await;
