@@ -62,6 +62,7 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
   | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'

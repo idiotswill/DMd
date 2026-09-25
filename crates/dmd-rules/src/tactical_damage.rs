@@ -630,16 +630,24 @@ pub fn reduce_vitality(
                 next.entity.temporary_hp = *amount;
             }
         }
-        VitalityOperation::Medicine { purpose, total } => {
-            if !(-10_000..=10_000).contains(total) {
-                return Err(invalid("Medicine total outside bounds"));
-            }
+        VitalityOperation::Medicine { purpose, .. }
+        | VitalityOperation::MedicineOutcome { purpose, .. } => {
+            let succeeded = match operation {
+                VitalityOperation::Medicine { total, .. } => {
+                    if !(-10_000..=10_000).contains(total) {
+                        return Err(invalid("Medicine total outside bounds"));
+                    }
+                    *total >= 10
+                }
+                VitalityOperation::MedicineOutcome { succeeded, .. } => *succeeded,
+                _ => unreachable!(),
+            };
             match purpose {
                 MedicinePurpose::EndKnockout => {
                     if recovery.knockout.is_none() {
                         return Err(prerequisite("no knockout condition to end"));
                     }
-                    if *total >= 10 {
+                    if succeeded {
                         next.recovery.knockout = None;
                     }
                 }
@@ -647,7 +655,7 @@ pub fn reduce_vitality(
                     if entity.hp != 0 || entity.death.stable {
                         return Err(prerequisite("no unstable zero-HP creature to stabilize"));
                     }
-                    if *total >= 10 {
+                    if succeeded {
                         stabilize(&mut next, context);
                     }
                 }
