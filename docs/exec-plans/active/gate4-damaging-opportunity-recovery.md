@@ -55,11 +55,21 @@ Hold Person origin/material assertions, four malformed-origin restore cases,
 cold retries at each suspension, changed-body nonce rejection, and mirrored
 continuation. Static review corrected Host visibility expectations: Host remains
 privileged; another Player cannot take the reactor's decision or raw roll.
-Formatting and whitespace checks pass. The scenario is deliberately uncompiled
-until the protocol writer releases the shared compiler. No production files
-are owned here. Root's independently authored cold-round module is a separate
+Formatting and whitespace checks pass. No production files are owned here.
+Root's independently authored cold-round module is a separate
 additive registration in `table_loop.rs`; preserve both during integration.
-Compiler belongs to the protocol writer after the verified area batch. Request
-read-only source/authority review now, then run the focused case at handoff.
+On exact code head `f13224ebfc9d73d7b8955c0f6596d5d777bd45db`, the first
+`cargo test -p dmd-app --test table_loop table_oa_concentration_cases:: -- --nocapture`
+compile and run passed: **1 scenario, 0 failures, 22 unrelated cases filtered**,
+17.75 seconds execution, default Windows test-thread stack. Domain/rules/app source
+timestamps were refreshed before compiling against the shared target cache; jobs=1.
+The local log is `../research/gate4-oa-concentration/focused-first.log`.
+No fixture/source correction or stack override was needed. Every boxed phase ran,
+including all four structurally valid forged-export rejection cases with zero
+aggregate writes. The global compiler was explicitly released to root for PR33's
+combined canonical verification. This focused result does not claim full-workspace
+verification or independent review; root must include this test in that exact-head
+run. Read-only source/authority review is requested from the separate Ready writer;
+its result and final combined evidence remain pending.
 General privacy protocol, native combat acceptance, Ready/reactions and all other
 open Gate4 requirements remain unchanged.
