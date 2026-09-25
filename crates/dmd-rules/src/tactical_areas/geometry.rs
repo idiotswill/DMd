@@ -109,7 +109,7 @@ pub fn bind_area_geometry(
     let mut targets = vec![];
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let mut participants = encounter.participants.iter().collect::<Vec<_>>();
-    participants.sort_by_key(|participant| participant.entity_id);
+    participants.sort_by_key(|participant| participant.entity_id.0);
     for participant in participants {
         let actor = participant.entity_id;
         let Some(entity) = rules.entities.get(&actor) else {

@@ -203,6 +203,39 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                 saves.insert(index as u16);
                 provenance(state, r, &save.resolved_by, target.actor)?;
                 let raw = accepted(state, r, save.key, TacticalRollRole::AreaSave, target.actor)?;
+                if r.stage == TacticalAreaStage::SavingThrows {
+                    let expected = request(
+                        state,
+                        &TacticalWorkItem {
+                            occurrence: save.key.occurrence,
+                            kind: TacticalWorkKind::AreaSave {
+                                area: r.occurrence,
+                                target: index as u16,
+                            },
+                        },
+                        save.key,
+                    )?;
+                    if let Some(raw) = raw {
+                        if expected.as_ref() != Some(&raw.request) {
+                            return Err(invalid(
+                                "completed area save differs from its source request",
+                            ));
+                        }
+                    } else {
+                        let expected_failure = if expected.is_some() {
+                            TacticalSaveFailure::Voluntary
+                        } else {
+                            TacticalSaveFailure::Automatic
+                        };
+                        if !flow(state)?.save_decisions.iter().any(|decision| {
+                            decision.key == save.key && decision.failure == expected_failure
+                        }) {
+                            return Err(invalid(
+                                "completed area failure differs from its source disposition",
+                            ));
+                        }
+                    }
+                }
                 let ordinary = if let Some(raw) = raw {
                     if save.resolved_by.expected_event_sequence
                         < raw.accepted_by.expected_event_sequence

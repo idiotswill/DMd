@@ -106,12 +106,11 @@ and old absent fields omitted from serialization.
 
 The public CreatureArea source action, roles13/14 and areas[] record now stage one
 amount, all target saves, a simultaneous damage frame and completion in the same
-TacticalResolution. Twelve public reducer tests are drafted alongside the ten leaf
+TacticalResolution. Fourteen public reducer tests now accompany the ten leaf
 tests. They cover three source breath grants/costs/recharge, mixed defenses and
 independent concentration, explicit house policy, automatic/voluntary/Legendary
 Resistance saves, zero-HP source damage, raw/partition/source corruption, hidden
-victims, stored cover, old policy bytes and pending physical consequences. They
-have not been compiled. Target saving throws precede the simultaneous damage frame so
+victims, stored cover, old policy bytes and pending physical consequences. All have passed locally. Target saving throws precede the simultaneous damage frame so
 one target's death/concentration loss cannot retroactively change another save.
 
 Parent approved two explicit admission boundaries after review. Any active sourced
@@ -126,10 +125,46 @@ Thus pre-damage validation rebinds exact source geometry/cover and verifies the
 initial source invocation. After damage starts it retains historical membership;
 event replay from the accepted setup/pre-tactical anchor remains required proof.
 
-Next: acquire the serialized compiler slot and run the ten area leaf and twelve
-public tests, then repair actual findings, broaden the affected suites and obtain
-fresh independent exact source review. App/UI area action/privacy/label/origin and
-meaningful GM policy explanation remain integration work, not completed acceptance.
+The first compiler rejected sorting EntityId directly; the deterministic sort now
+uses its UUID value. The source fixture initially passed level-zero NPC mechanics
+through the legacy initializer without its profile; it now installs the actual
+source build and profile together after basic initialization, matching the other
+source fixtures. The runtime tests also corrected an invalid space-containing map
+identifier and a corruption case that swapped an empty frame instead of the actual
+save/phase frames. The existing whole-state validator already rejects unsupported
+idle falling before area admission; a stronger real action scenario now proves
+area damage causes falling, landing finishes, and another victim's concentration
+pause retains the original area volume after displacement. No validation was
+weakened to make a fixture pass.
+
+Independent review also required completed-save requests to reconstruct their
+source modifiers/mode/disposition while other saves remain pending. This is now
+checked before damage and tested against an arithmetic-consistent forged modifier.
+Post-damage requests remain historical facts authenticated by journal replay.
+
+Local Windows verification on the final source tree:
+
+- Ten area leaf tests passed (`research/gate4-areas/leaf-third.txt`).
+- Fourteen public area cases passed (`runtime-fourth.txt`), including semantic
+  replay and serialization at every accepted transition.
+- The affected full suites passed:67 attack,30 movement/falling,24 turn tests
+  (`shared-suite.txt`), including the fourteen area cases. Together with the leaf
+  tests this is131 distinct rules tests.
+- `cargo clippy -p dmd-domain -p dmd-rules --all-targets -- -D warnings` passed
+  (`clippy-first.txt`); format/diff checks passed. The global compiler was released
+  directly to the movement app writer after completion.
+
+The geometry leaf and complete driver have independent source reviews; exact
+final-delta review is requested after this evidence checkpoint. Root owns canonical
+workspace/CI verification. App/UI area action/privacy/labels/origins and meaningful
+GM policy explanation remain integration work, not completed acceptance. Existing
+generic simultaneous cards must not expose one card per hidden victim. A playable
+explicit controller delegation/ordering contract is required before area UI exposure;
+source turn-control ownership must be preserved without a count/order oracle.
+
+Next: final independent exact-head source review, then integrate application origin
+proof and the private ordering contract plus real SQLite and desktop controls.
+No packaged/native area acceptance has been run or claimed.
 
 Remaining tactical work is not reassigned to Gate6. Fireball must also implement
 its mandatory flammable unworn/uncarried-object ignition and Burning hazard
