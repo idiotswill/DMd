@@ -5,7 +5,8 @@ application, canonical and exact-head acceptance remain pending.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 is integrated. PR43 owns
-source-creature player control and must be integrated before player-path acceptance.
+source-creature player control; its reviewed a119d7f is integrated for development,
+with verified merged-main reconciliation required before player-path acceptance.
 
 ## Objective and authority
 
@@ -84,142 +85,91 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
    desktop checks/tests/build and all six final-head CI checks; full independent
    review; protected merge, fetched tree parity and final main evidence.
 
-## Validation and next action
+## Current verification checkpoint
 
-Typed version/window, source Shield admission, child commit/resume, original-damage
-cause, source reconstruction and strict retained invariants are authored but have
-not compiled or run. Independent review caught completed-occurrence reconstruction
-and an eligibility timing leak; both corrections are being implemented. Every hit
-target must acknowledge collection even when no Shield is available. Continue is
-cost-free coordination, legal for an incapacitated/ineligible target and owned by
-its actual controller; it is not an SRD Reaction or an invented fictional action.
-Affirmative intent and final casting require the genuine current source. This makes
-the public ordering/wait stage independent of private source eligibility. Test both
-arrival orders and complete unrelated DTO/revision/transcript invariance through
-private selection. A later general multi-respondent family retains its own semantic
-boundary and must not infer priority from arrival or default choices.
+Exact development head is 8b5cf52a250c5f381d22977391906cfedc53a630. It normally
+integrates reviewed source-control PR43 candidate a119d7f. That prerequisite still
+requires its final canonical run, all six checks and protected merge; reconcile
+the fetched merged main before final Shield acceptance. No Gate4 criterion is waived.
 
-The compatibility canonical run passed on facd988; final cbe9575 passed all six CI
-jobs with 695 Linux/697 native Rust and 67 UI tests, plus the fresh native installer.
-Protected PR42 main has the identical full tree ddfe5b58c0c55ad2aab6e367de295bf7c1760e5e;
-post-main runs 36188457488/36188457455 remain pending. The
-local disk/commit-memory failure is recovered with 28 GB free. All further local
-compilation is serialized with one job and CARGO_INCREMENTAL=0; aftermath focused
-verification currently owns the heavy slot. No build has run from this branch yet.
-Initial owner-safe hit DTOs, role-specific opaque capabilities and transport admission
-are authored. Damage effect observations retain an optional earlier cause while
-lifecycle stamps remain the actual execution command; original None images stay
-unchanged. Finish exhaustive integration and desktop controls, then genuine source
-regressions. Rules fixture/test authoring may use an isolated child branch with a
-separate writer; no concurrent writes to this branch. This is incomplete WIP, not a
-verified production milestone.
-Desktop response controls and their direct/real outbox retry cases are authored.
-The genuine player-owned source SQLite case is drafted and deliberately awaits
-PR43 before registration/compilation. Isolated app/rules fixture drivers retain
-single-command raw helpers and explicit current-window decisions. Static review
-found a nested-attack ancestry mistake: ResumeHit now retains the exact accepted
-roll ID, validated against its parent AttackRoll occurrence, tactical purpose and
-actual issuance origin. It cannot guess that origin from the outer movement or
-casting resolution. Targeted opportunity-attack and later-ray tests must prove it.
-Fourteen source Shield rules scenarios and explicit fresh-flow application drivers
-are integrated from isolated test writers. Only formatting and static diff checks
-have run; compiler, rules, desktop and SQLite evidence are still outstanding. An
-early draft PR may run remote diagnostics while the serialized local slot is busy.
-Its merge requires all acceptance above, including the player-owned source case.
-The first draft CI at d3e3ed3 caught an undeclared UUID dependency used by pure
-Shield option previews (Linux stable/MSRV jobs 108248022555/108248022760). The
-workspace already pins UUID; declare it directly in dmd-rules and regenerate the
-lock edge, then rerun the actual compiler checks. No failed check is waived.
-The same draft's Windows frontend step passed 72 tests, zero static errors/warnings
-and a 137-module build (job 108248022369); its Rust failure was the same missing
-dependency. Follow-up 53d1197 compiler jobs 108249026632/108249026705 exposed an
-unnecessary inferred Serde Default bound on optional hit keys and one test using
-set removal on a vector. Explicit deserialization bounds preserve absent fields
-without inventing default capabilities; the mutation test now removes by value.
-Runtime and final-head acceptance remain pending.
-Head 612253f passed all-target compiler checking, MSRV and both guards. Strict
-Clippy (job 108249924665) then reported two collapsible conditionals and an unused
-unit expression; all three are corrected without lint exemptions. The player-source
-SQLite draft now also restores an actual earlier hit image as a valid backfilled
-snapshot, then rejects a forged retired-window cover value with current state intact.
-Integrate corrected, verified PR43 before final acceptance. No gate pause and
-no movement into Gate5 at this PR boundary.
+- The fourteen Shield rules cases pass on the local default Windows GNU stack
+  (57.29 seconds, jobs1/incremental0). The prior full tactical-attacks run passed
+  all 107 existing cases and exposed a shared missing Mage-language fixture input
+  in the fourteen new cases. Supplying the real required three languages corrected
+  the fixture; production rules and assertions were unchanged. Logs are outside
+  the repository: tooling/shield-hit-tactical-attacks.log and
+  tooling/shield-hit-focused-r2.log.
+- Current Linux run36193351652 passes fast verification, strict Clippy, Rust1.88
+  and both guards; its full runtime step is still active. Native Windows
+  run36193351721 passes workspace/desktop lint and is testing; packaging is pending.
+  Windows MSRV job108263468702 passes at literal8b5cf52. Its actual log verifies
+  84 UI tests in15files, zero Svelte errors/warnings and138 built modules.
+- The genuine player-owned Mage SQLite case is registered and compiles, but has
+  not yet completed execution. Updated source-control cases now use fresh flow3;
+  four genuine old exports retain their original bytes. All runtime, canonical,
+  installer and final-head acceptance remain required.
+- Independent full production review and the actual source-control merge delta
+  32d937b plus equivalent fixture correction8b5cf52 are clear. Review covered both
+  parents, v1/v2 replay/projections, source authority, activation/attendance,
+  role-specific opaque response routing, both UI test sets and actual scenario
+  registration. Static review is not a runtime result.
 
-### Current checkpoint, 2026-09-25 21:27 UTC
+Source-control currently owns the only heavy local build slot for its canonical
+verification. Do not compile or touch shared target inputs until it releases the
+slot. The earlier disk/committed-memory shortage is resolved; use one job,
+CARGO_INCREMENTAL=0 and the default test stack.
 
-Candidate 8aa1915 passes all-target compiler checking, strict Clippy, Rust 1.88
-and both guards. Linux36189578700 and Windows36189578714 are still running their
-full runtime suites; this is not runtime acceptance. The unchanged frontend has
-72 passing tests, zero static diagnostics and a 137-module build. No local Rust
-test from this branch has completed yet. The serialized slot is with PR43 for
-its exact90c9230 focused checks, followed by root's tactical_attacks binary and
-then PR43 canonical verification. The former disk/memory blocker is resolved.
+### Integration and recovery decisions
 
-PR42 post-main Linux36188457488 passes all four jobs (695 Rust tests, 54 suites,
-44 table cases). Windows36188457455 passes both jobs with 697 native Rust tests,
-67 UI tests, zero static diagnostics, 136-module build and fresh executable/NSIS.
-All six post-main checks are complete. Artifact10888336544 is 231464157 bytes,
-SHA2567cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
+The v2 source channel derives privileged-response authority from the actual
+retained target. A fresh Begin3/UpgradeTo3 refuses unactivated player-owned
+sources before they can become stranded; older Begin versions and unit upgrade
+are unchanged. This additional guard runs behind privileged issuer checks so an
+unauthorized Begin cannot disclose source-access state. The typed-state unit case
+separately covers activation and historical admission.
 
-Independent review of the drafted player-owned Mage file-SQLite scenario found
-that the shared fixture originally made that owner absent. Accepted EndSession
-and StartSession commands now establish both controllers as Present before source
-or battlefield setup. Its table contract records the agreed practice encounter;
-this is policy prose, not evidence of typed PvP consent enforcement. The reviewed
-AC12-to17, original attack+5, critical damage6, shared-use2, mirror/exact-retry and
-retired-snapshot corruption assertions are sound. This module is still deliberately
-unregistered and unrun until verified PR43 integration.
+The real SQLite fixture establishes both controllers as Present with accepted
+EndSession/StartSession commands, creates the Mage through the content catalog,
+assigns its owner, and supplies physical attack dice. Its table contract records
+an agreed practice encounter; that prose does not prove typed PvP enforcement.
+Cold independent continuation, exact retry, wrong-controller/Host theft, raw
+canonical bypass, whole unrelated DTO invariance, original damage cause and
+forged current/retired snapshots are all asserted. The prior hit snapshot is an
+actual captured earlier image backfilled as a recovery anchor, not an old fixture.
 
-### Focused runtime checkpoint, 2026-09-25 21:35 UTC
+Desktop tests retain both integration parents and exercise a selected source's
+Shield/outbox retry across ownership changes. Host cannot substitute an owned
+source response; an explicitly issued delegated ordering capability still works.
+Every target acknowledges collection even without an available Shield. Continue
+is free controller coordination, available when incapacitated; it is not a
+fictional action or spent Reaction. This prevents eligibility-dependent public
+ordering/timing from exposing private source information.
 
-Linux candidate 8aa1915 passed all 44 application table scenarios and the four
-genuine legacy/reaction corpora. Its tactical_attacks binary then passed 107
-existing cases but failed all 14 new Shield scenarios at their shared initial
-source construction: the fixture omitted the Mage's required three additional
-languages. Local default-stack run a0dc8e5 reproduced the same 107/14 result
-(131.72 seconds), so no assertion or production source was weakened.
+ResumeHit retains the exact accepted roll identity and authenticates its parent
+AttackRoll occurrence, tactical role/purpose and issuance origin. It does not infer
+that origin from the outer movement or casting resolution. Passing rules cases
+cover an opportunity attack and a later Scorching Ray with distinct ancestry.
 
-After supplying the actual language choices, all 14 Shield cases pass locally
-on the default Windows GNU stack (57.29 seconds; jobs1, incremental0), including
-uniform acknowledgments, both intent/order arrivals, original damage provenance,
-Graze, shared resource exhaustion, component/Reaction blocks, selected ownership,
-OA retained movement, later rays and retained hit/source/effect corruption. Logs:
-`tooling/shield-hit-tactical-attacks.log` and `tooling/shield-hit-focused-r2.log`
-outside the repository. Source-control now owns the canonical-verification slot.
-The test fixture correction has a separate independent static review. Run fresh
-CI on this corrected candidate; final canonical, player-source SQLite and desktop
-integration acceptance remain required before merge.
+Early compiler diagnostics required the existing workspace UUID dependency, an
+explicit Serde bound for optional opaque hit keys, a correct vector-removal test,
+and strict-lint idioms. Final integrated32d937b passed compilation/MSRV; Clippy
+identified a manual hand-membership scan, corrected equivalently in8b5cf52.
+No lint exemption, assertion weakening or invented default capability was used.
 
-### Development integration order
+### Verified prerequisite and next action
 
-PR43 candidate a119d7f has a complete clear source/delta review and eight passing
-focused Rust cases; its canonical and exact-head CI are running. Integrate that
-reviewed candidate normally into this development branch now to complete the
-dependent source channel, ownership guards, actual SQLite registration and desktop
-test wiring without idling during verification. This replaces the earlier
-development-only wait for its merge, not the acceptance requirement: PR43 must
-finish verification and merge first. Reconcile any subsequent PR43 correction and
-the fetched merged main before Shield's final canonical/exact-head acceptance.
-The shared local build slot remains with PR43; no concurrent compilation.
+PR42 merged as2798b6b1d6263b5e321a1903d9fb4f2331b73895 with full-tree parity to
+reviewed cbe9575 atddfe5b58c0c55ad2aab6e367de295bf7c1760e5e. All six post-main
+checks pass: Linux36188457488 has695 Rust/44table cases; Windows36188457455 has697
+Rust,67UI,zero static diagnostics,136modules and fresh EXE/NSIS. Artifact10888336544
+is231464157bytes with SHA256
+7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
 
-The normal development merge now wires HitResponse into the v2 source channel,
-retains v1 projection compatibility and derives privileged-response authority from
-the actual retained target. A fresh Begin3/UpgradeTo3 guard refuses unactivated
-player-owned sources before they can become stranded; old Begin versions and the
-unit upgrade remain unchanged. That check remains behind the privileged issuer
-gate so an unauthorized Begin cannot disclose source-access state. The qualified
-typed-state regression covers activation and historic admission separately.
-
-The actual player-owned Mage SQLite case is registered. Fresh source-control
-fixtures now begin with flow3; original captured exports are unchanged. Explicit
-test-controller helpers use SourceCreature plus the current presentation version
-when that actor is assigned. The desktop integration retains both parents' tests,
-adds selected-source Shield/outbox retry across ownership changes, and hides owned
-source casting from Host while preserving issued delegated ordering. These
-integration additions have formatting/diff checking only; compiler, independent
-review and actual execution are pending.
-
-Integrated candidate32d937b passes all-target compilation, declared MSRV and both
-guards. Strict Clippy job108262766479 identified one manual vector membership scan
-in the newly registered SQLite fixture; replace it with `contains`, preserving the
-same hand-occupancy assertion. Runtime and integration review remain pending.
+Read any current CI failure before changing source. Once PR43 verification and
+protected merge complete, fetch/integrate main, then run the registered player
+Shield SQLite case and modified source-control unit/application cases on the
+default stack. Complete canonical verification, final all-six-head CI with fresh
+packaging, full delta review, expected-head merge and fetched tree parity. Record
+post-main evidence in the PR. Continue the live-reaction umbrella inside Gate4;
+Magic Missile, Counterspell, Ready release/held spells and all other open tactical
+families remain required. Do not pause at this slice boundary or begin Gate5.
