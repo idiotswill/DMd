@@ -102,3 +102,10 @@ Bonus Action, depleted uses and pending-work controls. These tests have not run.
 Rustfmt and whitespace checks pass. Next: compile/fix this checkpoint after the
 already queued area UI, Ready correction and protocol canonical batches; then
 complete source Savage Attacker, current protocol/Ready integration and review.
+
+Draft PR36 isolates the Second Wind change against area PR34; Savage Attacker will
+follow separately within this same gate. Initial Linux36141460203 failed compilation
+at the exhaustive recorded-roll role validator: the new SecondWind role was missing.
+Add its actual single d10 constraint, preserving every prior role and validation.
+This is the first executable failure, not a passing source result; rerun CI on the
+corrected head while local heavy verification remains serialized.

@@ -565,6 +565,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),
+                TacticalRollRole::SecondWind => Some(10),
                 TacticalRollRole::EffectDamage
                 | TacticalRollRole::AttackDamage
                 | TacticalRollRole::FallDamage
