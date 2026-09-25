@@ -4,7 +4,9 @@ Writer: bootstrap_audit. Branch: `codex/gate4-night-hag-source`.
 Base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`, the frozen PR38 foundation
 candidate; its verification/merge remains root-owned. This independent source slice
 does not begin the reserved main-based live-response branch.
-Status: plan checked in before implementation; no compilation or tests run.
+Status: source and production-path regression authored; the 20 focused source/profile
+tests pass. The new application case is compiling under the root-assigned sole build
+slot. No canonical, CI, packaged or gate-acceptance claim is made.
 
 ## Objective and authority
 
@@ -68,11 +70,23 @@ historical catalog digest or accepted response. The exact old eight-entry v1 sna
 stays unchanged. Current app host creation is autonomous source ownership; this is
 not evidence for the separately required player-controlled response path.
 
-Independent reviewer environment_audit is checking source/model constraints read-only.
-Rules_architecture owns the heavy captured-save verification slot. This writer may
-author source and tests, but must not compile or run frontend tests until root releases
-the slot. No executable evidence is claimed yet.
+Independent reviewer environment_audit confirmed the full pinned page311 data and is
+reviewing the authored diff. Root's first read of the definition, attribution and full
+app scenario found no blocker. Root released the sole heavy slot after the captured-save
+verifier completed; this writer now owns the serialized focused checks.
 
-Exact next action: inspect existing source adapters, append the selected definition,
-update declared integrity and author the production regression without shared-runtime
-changes. Report concrete missing mechanisms before widening the agreed source scope.
+Source verification: `cargo test -p dmd-rules --test tactical_definitions --test
+tactical_creature_profiles` passed 13+7 tests on the authored tree (log outside the
+repository: `../tooling/night-hag-source-focused.log`). The source/profile tests cover
+the complete printed numeric/statistical fields, exact selected grant/component waiver,
+honest omissions, absence of PC spell resources, legal size/languages, physical allocation
+and rejection of a changed source fingerprint.
+
+A parsed comparison against base100c7da proves all nine previous creature definitions
+and every other tactical top-level value unchanged. The frozen v1 catalog has no diff.
+No runtime, schema, authority, reaction scheduler or current catalog adapter needed edits.
+
+Exact next action: complete the real SQLite six-dart source casting test and historical
+catalog replay, correct concrete failures without weakening evidence, then commit for
+independent exact review before canonical verification. No PR or merge is authorized
+for this subtask yet.
