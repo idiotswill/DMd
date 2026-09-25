@@ -96,6 +96,32 @@ work uses isolated worktrees; root coordinates interfaces, integrations, builds 
 
 ## Exact next action
 
+### 2026-09-25 integration checkpoint
+
+Main is now `0ff676dd0fceefa826230bdcafdfcb608fc571d7`. Bounded prerequisite
+PRs24 (effects),25 (damage/vitality),26 (physical inventory) and27 (source creature
+definitions) have merged after exact-head verification. PR27's merged tree equals
+its reviewed final head; post-merge Windows packaging is still running at this update.
+PR28 extracts pure physical weapon planning for independent review and canonical CI.
+These source/reducer slices do not establish playable encounter acceptance by themselves.
+
+The separate encounter integration branch includes source creature setup/gear,
+initiative/turns, physical attacks and Light/Nick choices, KO recovery, raw dice,
+movement proposals and owned source/weapon opportunity choices. All59 application
+tests passed at `e5d1c2d`'s code (including17 table-loop and3 recovery cases); the
+subsequent main merge `ea21c76` preserves the catalog's matching validator fix.
+The movement UI passed30 tests, Svelte validation and a production build. A fresh
+review found the legal two-handed reaction projection gap; its fix is present and
+dedicated regressions/strict Clippy are next. Miss/decline restore tests do not prove
+the still-required damaging reaction and concentration sequence.
+
+Casting owns the next shared continuation checkpoint, while the attack author owns
+the sealed spell-attack adapter. The movement author will then integrate falling,
+accepted-prefix travel privacy and durable stop receipts. Whole-route hidden geometry
+preflight remains a known defect until that correction passes its regression matrix.
+Remaining Gate4 mechanisms, NPC knowledge/morale, improvisation, encounter completion
+and the full packaged desktop scenario remain open. No Gate5 work is authorized here.
+
 Continue encounter execution and the effects/equipment/damage integrations from merged
 foundation main. Complete all twelve ledger
 families and packaged encounter acceptance before the Gate 4 owner pause; do not enter Gate 5.
