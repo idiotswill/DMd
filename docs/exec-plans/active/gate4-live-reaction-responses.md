@@ -137,8 +137,9 @@ zero static errors/warnings and native installer10881663666). Local canonical
 source fb83db7 passed687 GNU Rust tests, full lint/check/guards and all43 table-loop
 cases. Independent exact-head source/privacy/replay review is clear. The protected
 squash main d5d1db7 and reviewed100 both have tree801db9204a1418303ffada37d46cabf073fef159.
-Post-main Linux36176391117 and Windows36176391189 are running; no post-main pass is
-claimed yet. PR39 and PR40 post-main checks are all green. Gate4 remains unaccepted.
+Post-main Linux36176391117 and Windows36176391189 passed all six checks with688/690
+Rust tests,67 UI tests and native installer10883109174. The bounded foundation plan
+is archived. PR39 and PR40 post-main checks are all green. Gate4 remains unaccepted.
 
 The genuine flow2 attack/event13, knockout/event22 and paid-Ready/event13 exports
 have independently passed unchanged-source file restore, cold reopen, all ten exact
@@ -217,9 +218,14 @@ do not silently expand this compatibility PR into the whole reaction runtime.
 
 ## Parallel prerequisites and exact next action
 
-PR41 independently owns the source Night Hag grant and honest menu wording. Its
-reviewed source575a038 has20 focused source/profile tests, the real six-dart file
-case, old-history replay and67 UI tests passing; canonical/final CI remain pending.
+PR41 merged the source Night Hag grant and honest menu wording as
+d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Exact51210d1 passed canonical690 GNU
+Rust tests,691 Linux/693 native Rust and67 UI tests, all six checks, strict lint,
+guards and native packaging. Fetched main/source tree equality is verified at
+48aae57d58e13f3f1fdf1fd5904015999184c185. Post-main36179980349/36179980413 is pending.
+The reviewed source also has20 focused source/profile tests, the real six-dart file
+case and genuine old-history replay passing. PR42 integrated this main without
+production changes of its own.
 The source-control branch has its own writer/plan for real Mage ownership, actor
 selection, self-casting and raw dice with explicit table/transport/presentation
 activation. It does not change tactical execution versions. Integrate these only
@@ -233,7 +239,9 @@ acceptance, establish the simultaneous strike/target milestone, correct current-
 ordering and source amount/consequence grouping, with death, concentration, defense,
 repeated/multiple targets and off-turn Ready interactions. This stays in Gate4.
 
-Exact next action: commit this plan, then the untouched corpus and baseline replay/
-completion tests. Root owns this branch; only one heavy local verification process
-may run. Night Hag currently owns it, then the original-upgrade capture. Authoring
-and independent review may continue while waiting. No gate pause or scope waiver.
+Exact next action: verify the four-case corpus on this integrated main baseline,
+including full canonical verification and all six final-head CI checks. Root owns
+this branch and the heavy local slot; only one heavy verification process may run.
+Independent source-control stack/recovery fixes and aftermath authoring may continue
+without competing builds. Merge compatibility PR42 only after verified review, then
+create a fresh branch for actual versioned responses. No gate pause or scope waiver.

@@ -5,7 +5,25 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR40
+## Current checkpoint after PR41
+
+Fetched main is d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. PR38 foundation and
+PR41 selected Night Hag source are merged after all six exact-head checks, review
+and protected squash. Full-tree equality was verified after each merge. PR38's
+post-main checks36176391117/36176391189 all pass (688 Linux/690 native Rust,
+67 UI); its bounded plan is archived. PR41's exact51210d1 passed canonical690
+GNU Rust,691 Linux/693 native Rust and67 UI tests; post-main36179980349/36179980413
+is still pending. The source six-dart case does not prove simultaneous Magic Missile
+consequences; that remains active Gate4 work, as do live response windows.
+
+Compatibility PR42 retains four untouched old exports before the next execution
+boundary, including the original accepted1-to2 upgrade. Source-control PR43 remains
+unmerged: exact9638f64 CI exposed a Windows stack overflow and a hostile restore
+test failure, both requiring correction. The encounter-aftermath branch is under
+implementation, with no passing completion claim. All twelve ledger families and
+the full spell matrix remain binding.
+
+## Earlier checkpoint after PR40
 
 Fetched main is a84c5a11359e8e91a3cfa0d2e6a5946082df3da2. PR39 first aid and PR40
 unarmed damage are merged with exact reviewed-source/main full-tree parity. PR39's

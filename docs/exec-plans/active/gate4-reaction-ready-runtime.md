@@ -1,15 +1,18 @@
 # Gate 4 — Actual reaction and Ready execution
 
 Status: active Gate4 umbrella; live Shield/Counterspell/Ready responses remain incomplete.
-Root is the sole writer of PR38's integrated `codex/gate4-reaction-ready-runtime` branch.
-Current bounded status and exact next action are in `gate4-reaction-foundation.md`;
-required successor acceptance is in `gate4-live-reaction-responses.md`.
+Root owns compatibility PR42 on `codex/gate4-live-reaction-responses`.
+Completed PR38 evidence is in `../completed/gate4-reaction-foundation.md`;
+current bounded status and required successor acceptance are in
+`gate4-live-reaction-responses.md`.
 
 Verified sourcefb83db7 passes687 GNU Rust tests,43 actual table-loop cases, strict lint
 and both guards, plus67 UI tests/static/build. First aid PR39 and unarmed PR40 are
-merged; source/main reconciliations preserve their reviewed trees. Final PR38
-candidate checks and protected merge remain required. Genuine ReactionsV1 attack,
-knockout and paid-Ready saves have been captured before any new response semantics.
+merged; source/main reconciliations preserve their reviewed trees. PR38 merged as
+d5d1db7 with all six source and post-main checks passing. PR41 Night Hag merged as
+d82d7b2 after all six source checks; its post-main checks are still pending. Genuine
+ReactionsV1 attack, knockout, paid-Ready and original1-to2 upgrade saves are retained
+in PR42 before any new response semantics.
 Source casting, player-owned creature control, privacy, Counterspell and all Ready
 mechanisms remain mandatory Gate4 work. No family or gate closure is claimed.
 

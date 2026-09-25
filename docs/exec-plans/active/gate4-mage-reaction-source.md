@@ -2,7 +2,7 @@
 
 Status: source prerequisite integrated into PR38's foundation; no separate source
 implementation is active. Root owns the integrated reaction branch. Current evidence
-and next action are recorded in `gate4-reaction-foundation.md`; actual live source
+and merge evidence are recorded in `../completed/gate4-reaction-foundation.md`; actual live source
 responses and player control remain required by `gate4-live-reaction-responses.md`.
 The original source-branch ownership and test notes below are historical.
 
@@ -77,7 +77,7 @@ passing in that foundation. Actual live Shield/Counterspell windows remain absen
 The later Savage/Ready-abandonment/Medicine composition643cdf3 is now in CI and must
 receive fresh canonical/UI/exact-head review before the foundation merges. Root owns
 all further integration after supporting-agent quota exhaustion. Follow
-`gate4-reaction-foundation.md` and `gate4-live-reaction-responses.md`; no Gate4 runtime
+`../completed/gate4-reaction-foundation.md` and `gate4-live-reaction-responses.md`; no Gate4 runtime
 mechanism is deferred or satisfied by the source helpers alone.
 
 ## Earlier implementation checkpoint (superseded by evidence above)
