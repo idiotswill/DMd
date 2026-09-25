@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-unarmed-actions`.
 Base: fetched main cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
-Status: source, desktop and recovery tests authored; focused executable verification running.
+Status: combined source reviewed and verified; final evidence-head CI and protected merge pending.
 
 ## Objective and authority
 
@@ -10,8 +10,8 @@ Expose ordinary unarmed damage through the actual owned Attack action, physical 
 existing attack/vitality continuation, desktop controls and durable table history.
 This advances Gate04 actions/attacks and the product's physical dice, source fidelity,
 player authority and exact suspension requirements. Root AGENTS, product definition,
-Gate04, gate-execution protocol and ADR026 have been read. PR39 first aid and PR38
-reaction work remain independent in-progress slices; no next gate begins.
+Gate04, gate-execution protocol and ADR026 have been read. PR39 first aid is merged;
+PR38 reaction work remains an independent in-progress slice. No next gate begins.
 
 Pinned SRD5.2.1 p190 was read from the verified source extraction outside the repo.
 An Unarmed Strike uses a punch, kick, headbutt or similar blow within5ft. Its Damage
@@ -50,7 +50,34 @@ The source has no minimum-one damage clause; the existing damage floor remains z
    exact-head Linux/native checks. Protected merge, fetched tree parity and post-merge
    verification. Supporting agents are quota-blocked; root is sole writer/reviewer.
 
-## Risks and next action
+## Current evidence and exact next action
+
+Reviewed combined source: f9602a8454fe09958ef04ac3d6fc26ba8410d485 (2026-09-25).
+Local canonical verification passes661 GNU Rust tests, strict all-target Clippy,
+formatting/checking, genericity and architecture guards. The actual41 table-loop
+tests pass, including both first aid and unarmed cold/retry/semantic recovery cases.
+Combined desktop checking has zero errors/warnings; all61 tests and136-module build
+pass. All six source checks pass: Linux36163502155 has662 Rust tests; native Windows
+36163502287 has664 Rust tests,61 desktop tests and fresh offline installer
+artifact10876968168 (231299398bytes). Both declared MSRV checks pass.
+
+PR39 merged as487239c3f14685ba0c2a998574080aedb8b57a9e after all six final-head checks.
+Fetched full-tree equality to sourcea0b4b57 was verified. That source was already an
+ancestor here; reconciliationf2e6f84 preserves the entire f9602a8 tree unchanged.
+Root separately reviewed the complete15-file Unarmed diff after the first-aid merge,
+including source/cost reconstruction, valid negative fixtures and actual SQLite/UI.
+
+Changes after f9602a8 are verified main reconciliation and evidence documents only.
+Require all six checks on the final head, refresh PR/main, verify production parity
+and merge PR40 with expected-head protection. Fetch main and verify full-tree parity
+and post-merge checks; record hashes in the next checkpoint. Only one heavy local
+Rust/frontend job may run. No Grapple/Shove/Escape, equipment allowance or PvP-consent
+completion is claimed; the twelve-family ledger and eighteen mechanisms remain.
+
+## Earlier implementation history
+
+The following records earlier authored/focused stages; current evidence above supersedes
+their pending-check notes.
 
 Only one heavy local Rust/frontend job may run; the Unarmed reducer batch owns that
 slot now. Source admission and the paid window adapter, actual UI and recovery tests
