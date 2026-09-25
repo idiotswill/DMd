@@ -1,6 +1,163 @@
 use super::*;
 
 #[tokio::test]
+async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore() {
+    let directory =
+        std::env::temp_dir().join(format!("dmd-current-catalog-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let database = directory.join("campaign.sqlite");
+    let url = format!("sqlite://{}", database.display());
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Fixture::with_pool(TableContract::default(), pool).await;
+    let view = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let query = TableCreatureOptionsRequest {
+        campaign_id: f.campaign,
+        channel: TableTransportChannel::Host,
+        revision: view.revision,
+    };
+    let other = CampaignId::new();
+    f.runtime
+        .create_table_campaign(other, "Separate table", TableContract::default())
+        .await
+        .unwrap();
+    let untouched = export_campaign(&f.pool, other).await.unwrap();
+    assert!(untouched.table_projection_history.is_empty());
+    assert!(matches!(
+        f.runtime
+            .table_creature_options(TableCreatureOptionsRequest {
+                campaign_id: other,
+                ..query.clone()
+            })
+            .await,
+        Err(RunnableCampaignError::TableRejected(_))
+    ));
+    let mut unchanged = export_campaign(&f.pool, other).await.unwrap();
+    unchanged.exported_at_utc = untouched.exported_at_utc.clone();
+    assert_eq!(
+        unchanged, untouched,
+        "a query cannot bootstrap missing host history"
+    );
+    let other_view = f
+        .runtime
+        .presented_table_view(other, TableViewer::Host)
+        .await
+        .unwrap();
+    let original = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert!(matches!(
+        f.runtime
+            .table_creature_options(TableCreatureOptionsRequest {
+                revision: other_view.revision,
+                ..query.clone()
+            })
+            .await,
+        Err(RunnableCampaignError::TableRejected(_))
+    ));
+    let mut unchanged = export_campaign(&f.pool, f.campaign).await.unwrap();
+    unchanged.exported_at_utc = original.exported_at_utc.clone();
+    assert_eq!(
+        unchanged, original,
+        "a revision belongs to one campaign and audience"
+    );
+    let catalog = f
+        .runtime
+        .table_creature_options(query.clone())
+        .await
+        .unwrap();
+    let mage = catalog
+        .iter()
+        .find(|source| source.definition_id == "mage")
+        .unwrap();
+    let actor = EntityId::new();
+    let request = TableTransportRequest {
+        version: TABLE_TRANSPORT_VERSION,
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        channel: TableTransportChannel::Host,
+        revision: view.revision,
+        input: TableTransportInput::Action(Box::new(TableAction::CreateCreature {
+            creation: Box::new(TableCreatureCreation {
+                entity_id: actor,
+                name: "Prepared spellcaster".into(),
+                definition_id: mage.definition_id.clone(),
+                size: mage.sizes[0],
+                additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
+                ammunition_units: 0,
+                item_ids: (0..mage.item_count).map(|_| ItemId::new()).collect(),
+            }),
+        })),
+    };
+    let accepted = Box::pin(f.runtime.submit_presented_table(request.clone()))
+        .await
+        .unwrap();
+    let created = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    assert!(
+        created
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .profiles
+            .iter()
+            .any(|profile| profile.actor == actor && profile.source.definition_id == "mage")
+    );
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert!(
+        matches!(
+            f.runtime.table_creature_options(query).await,
+            Err(RunnableCampaignError::TableRejected(_))
+        ),
+        "old host revision must expire"
+    );
+    let mut after = export_campaign(&f.pool, f.campaign).await.unwrap();
+    after.exported_at_utc = before.exported_at_utc.clone();
+    assert_eq!(after, before);
+    f.pool.close().await;
+    f.pool = open_sqlite(&url).await.unwrap();
+    f.runtime = CampaignRuntime::from_content_root(
+        f.pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    assert_eq!(
+        Box::pin(f.runtime.submit_presented_table(request))
+            .await
+            .unwrap(),
+        accepted
+    );
+    let restored_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let restored = CampaignRuntime::from_content_root(
+        restored_pool.clone(),
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("../../content"),
+    );
+    Box::pin(restored.restore_campaign(&before)).await.unwrap();
+    assert_eq!(
+        restored.open_campaign(f.campaign).await.unwrap().state(),
+        &created
+    );
+    restored_pool.close().await;
+    f.pool.close().await;
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&database)
+        .await
+        .unwrap();
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
+}
+
+#[tokio::test]
 async fn source_creature_gear_is_atomic_private_and_restores_without_regranting() {
     // Separate independently awaited stages keep debug poll stack frames bounded.
     // All authority, privacy, replay and physical-inventory assertions remain active.

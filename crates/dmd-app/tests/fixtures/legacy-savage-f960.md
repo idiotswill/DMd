@@ -13,3 +13,9 @@ there are no observations or transport bindings at this pause. The regression ch
 restore/export equality, accepted legacy retry, owned two-set completion, cold exact
 retry and independent replay. It keeps fresh legacy actions blocked until a settled
 explicit upgrade. Do not regenerate this history using the newer executor.
+
+`src/table_creature_catalog_v1.json` preserves the eight-entry creature picker wire
+image serialized after this untouched export successfully restored under the
+pre-Mage catalog. All original host presentation hashes were checked before capture.
+That snapshot is compatibility data for presentation v1, not a current rules catalog;
+new creation choices are read from current sources by `table_creature_options`.

@@ -274,6 +274,17 @@ pub async fn desktop_roll_options(
 ) -> Result<dmd_app::TableRollOptions, DesktopError> {
     Ok(host.runtime().await?.table_roll_options(request).await?)
 }
+#[tauri::command]
+pub async fn desktop_creature_options(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableCreatureOptionsRequest,
+) -> Result<Vec<dmd_app::TableCreatureOption>, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .table_creature_options(request)
+        .await?)
+}
 #[cfg(test)]
 mod tests {
     use super::*;

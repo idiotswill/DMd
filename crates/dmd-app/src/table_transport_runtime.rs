@@ -312,6 +312,34 @@ pub(crate) fn validate_observation_binding(
 }
 
 impl CampaignRuntime {
+    pub async fn table_creature_options(
+        &self,
+        request: TableCreatureOptionsRequest,
+    ) -> Result<Vec<TableCreatureOption>, RunnableCampaignError> {
+        if request.channel != TableTransportChannel::Host {
+            return Err(rejected(
+                "Creature preparation is available only to the host.",
+            ));
+        }
+        // One read snapshot; never bootstrap a presentation revision or write history.
+        let mut tx = self.pool.begin().await.map_err(recovery)?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
+        let (_, pack) = self.protocol_pack(&export)?;
+        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        if history
+            .latest
+            .get(&ProjectionAudience::Host)
+            .map(|entry| entry.revision)
+            != Some(request.revision)
+        {
+            return Err(rejected("Refresh the table before preparing a creature."));
+        }
+        let catalog = crate::table_creatures::current_catalog().map_err(recovery)?;
+        tx.commit().await.map_err(recovery)?;
+        Ok(catalog)
+    }
     pub async fn table_roll_options(
         &self,
         request: TableRollOptionsRequest,

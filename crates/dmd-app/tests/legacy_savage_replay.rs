@@ -57,6 +57,7 @@ async fn genuine_legacy_savage_pause_finishes_owned_raw_sets_before_upgrade_and_
         copied, export,
         "preserve the actual historical presentation and journal bytes"
     );
+    verify_catalog_query(&app, &pool, campaign, owner, character.id).await;
     let original_retry = Box::pin(app.execute_table(event.meta.clone(), event.action.clone()))
         .await
         .unwrap();
@@ -247,4 +248,94 @@ async fn genuine_legacy_savage_pause_finishes_owned_raw_sets_before_upgrade_and_
     sqlite_test_cleanup::remove_closed_directory(&directory)
         .await
         .unwrap();
+}
+
+async fn verify_catalog_query(
+    app: &CampaignRuntime,
+    pool: &sqlx::SqlitePool,
+    campaign: CampaignId,
+    owner: PlayerId,
+    character: CharacterId,
+) {
+    let host = app
+        .presented_table_view(campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let player = app
+        .presented_table_view(campaign, TableViewer::Player(owner))
+        .await
+        .unwrap();
+    assert!(
+        !host
+            .creature_setup
+            .as_ref()
+            .unwrap()
+            .catalog
+            .iter()
+            .any(|entry| entry.definition_id == "mage")
+    );
+    let before = export_campaign(pool, campaign).await.unwrap();
+    let request = TableCreatureOptionsRequest {
+        campaign_id: campaign,
+        channel: TableTransportChannel::Host,
+        revision: host.revision,
+    };
+    let catalog = app.table_creature_options(request.clone()).await.unwrap();
+    let mage = catalog
+        .iter()
+        .find(|entry| entry.definition_id == "mage")
+        .unwrap();
+    assert_eq!(mage.additional_languages, 3);
+    assert_eq!(
+        mage.item_count,
+        dmd_rules::tactical_creature_equipment::creature_equipment_plan("mage", 0)
+            .unwrap()
+            .len()
+    );
+    assert!(
+        mage.abilities
+            .iter()
+            .any(|ability| ability == "Spellcasting")
+    );
+    assert!(!mage.omitted_features.is_empty());
+    assert_eq!(
+        app.table_creature_options(request.clone()).await.unwrap(),
+        catalog
+    );
+    for invalid in [
+        TableCreatureOptionsRequest {
+            channel: TableTransportChannel::Player {
+                player_id: owner,
+                character_id: character,
+            },
+            ..request.clone()
+        },
+        TableCreatureOptionsRequest {
+            revision: dmd_persistence::ProjectionRevision(CommandId::new().0),
+            ..request
+        },
+    ] {
+        assert!(matches!(
+            app.table_creature_options(invalid).await,
+            Err(RunnableCampaignError::TableRejected(_))
+        ));
+    }
+    assert_eq!(
+        app.presented_table_view(campaign, TableViewer::Host)
+            .await
+            .unwrap(),
+        host
+    );
+    assert_eq!(
+        app.presented_table_view(campaign, TableViewer::Player(owner))
+            .await
+            .unwrap(),
+        player
+    );
+    let mut after = export_campaign(pool, campaign).await.unwrap();
+    after.exported_at_utc = before.exported_at_utc.clone();
+    assert_eq!(
+        after, before,
+        "queries must not write state, history, bindings or revisions"
+    );
 }

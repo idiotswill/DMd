@@ -71,6 +71,22 @@ history. Existing raw rules/tactical APIs still reject table campaigns before wr
 
 ## Consequences and verification boundary
 
+### Evolving read-only choices
+
+Version1 presentation bytes are a historical contract, including the originally
+embedded creature picker. A later catalog entry must not change old host digests.
+Keep that picker as an immutable version1 wire snapshot, authenticated by genuine
+pre-change save replay. It is compatibility presentation only, never a rules grant.
+Current creature creation choices use a separate host/revision-bound read-only query,
+as current Savage Attacker choices already do. Such queries do not create revisions,
+rewrite history or prepay authority; the actual creation command still validates the
+current source, controller and physical identities. The desktop must show the current
+query result and discard replies after a campaign/channel/revision switch.
+
+Any change to authoritative source instances or existing presented game facts still
+needs its own compatible version policy; moving a picker does not license changing
+saved rules or ignoring historical digest validation.
+
 The renderer keeps its single durable outbox and saves the full original versioned
 request before invoking the desktop. Forms use visible revisions; raw game state,
 numeric heads, pending CommandMeta and internal work ordinals are absent from player

@@ -4,10 +4,69 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
-vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn()} }));
+vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn()} }));
 
-beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); });
+beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('prepares a newly queried source without using the historical catalog',async()=>{
+    const user=userEvent.setup(); const view=emptyView();
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.creature_setup={catalog:[],creatures:[]};
+    const mage={definition_id:'mage',name:'Mage',sizes:['Medium' as const],additional_languages:3,ammunition_required:false,item_count:2,abilities:['Spellcasting'],omitted_features:['light']};
+    vi.mocked(tableApi.creatureOptions).mockResolvedValue([mage]);
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    render(TableApp);
+    await user.click(await screen.findByRole('button',{name:'Setup and host controls'}));
+    await screen.findByRole('option',{name:'Mage'});
+    expect(tableApi.creatureOptions).toHaveBeenCalledWith({campaign_id:'campaign',channel:'Host',revision:view.revision});
+    await user.type(screen.getByLabelText(/Additional languages/),'dwarvish, elvish, draconic');
+    await user.click(screen.getByRole('button',{name:'Prepare creature'}));
+    await screen.findByRole('alert');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request.action.CreateCreature.creation).toMatchObject({definition_id:'mage',size:'Medium',additional_languages:['dwarvish','elvish','draconic'],ammunition_units:0});
+    expect(saved.request.action.CreateCreature.creation.item_ids).toHaveLength(2);
+  });
+  it.each(['campaign','channel','revision'] as const)('discards late catalog data and errors after a %s switch',async(change)=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.creature_setup={catalog:[],creatures:[]};
+    vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'First'},{id:'other',name:'Second'}]);
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    let resolveOld!:(value:Awaited<ReturnType<typeof tableApi.creatureOptions>>)=>void;
+    let rejectOld!:(reason:unknown)=>void;
+    const pending=new Promise<Awaited<ReturnType<typeof tableApi.creatureOptions>>>((resolve,reject)=>{resolveOld=resolve;rejectOld=reject;});
+    vi.mocked(tableApi.creatureOptions).mockReturnValueOnce(pending).mockResolvedValue([]);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(tableApi.creatureOptions).toHaveBeenCalledOnce());
+    await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    expect(screen.queryByLabelText('Creature source')).toBeNull();
+    const switchView=async()=>{
+      if(change==='campaign') { vi.mocked(tableApi.view).mockResolvedValue({...view,campaign_id:'other'}); await user.selectOptions(screen.getByLabelText('Campaign'),'other'); }
+      else if(change==='channel') await user.selectOptions(screen.getByLabelText('Local viewing and input channel'),'player');
+      else {vi.mocked(tableApi.view).mockResolvedValue({...view,revision:'new-revision'});await user.click(screen.getByRole('button',{name:'Refresh saved table'}));}
+      await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
+    };
+    await switchView();
+    resolveOld([{definition_id:'old-secret',name:'Old private source',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,abilities:[],omitted_features:[]}]);
+    await pending;
+    if(change!=='channel') await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    expect(screen.queryByRole('option',{name:'Old private source'})).toBeNull();
+    mounted.unmount();
+    // Repeat with an old error; it must not become the new table's error banner.
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    const failed=new Promise<Awaited<ReturnType<typeof tableApi.creatureOptions>>>((_,reject)=>{rejectOld=reject;});
+    vi.mocked(tableApi.creatureOptions).mockReturnValueOnce(failed);
+    render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
+    await switchView();
+    rejectOld('Old private error');
+    await failed.catch(()=>{});
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
   it('queries the owned roll and retries the original two-set tactical request',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
@@ -111,6 +170,7 @@ describe('durable UI retry',()=>{
     const view=emptyView();
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.creature_setup={catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,abilities:['Scimitar','Shortbow'],omitted_features:[]}],creatures:[]};
+    vi.mocked(tableApi.creatureOptions).mockResolvedValue(view.creature_setup.catalog);
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,revision:'accepted-revision',outcome:{message:'Host preparation recorded.'}}));

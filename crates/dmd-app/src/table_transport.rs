@@ -46,6 +46,15 @@ pub struct TableTransportRequest {
     pub input: TableTransportInput,
 }
 
+/// Current host creation choices do not alter immutable presentation v1 bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableCreatureOptionsRequest {
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+}
+
 /// Read-only live roll affordances are separate from immutable presentation v1.
 /// They are tied to the owned opaque request; accepting them still rederives rules.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

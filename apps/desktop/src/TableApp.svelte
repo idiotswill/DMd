@@ -11,12 +11,13 @@
   import EncounterPanel from './components/EncounterPanel.svelte';
   import { rawDice } from './table-api';
   import type { SavageAttackerRoll } from './tactical-api';
-  import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
+  import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type CreatureOption, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
   let campaigns = $state<{ id: string; name: string }[]>([]);
   let defaults = $state<TableContract | null>(null);
   let view = $state<TableView | null>(null);
   let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
+  let creatureCatalog = $state<CreatureOption[] | null>(null);
   let options = $state<CreationOptions | null>(null);
   let hostSituation = $state<Situation | null>(null);
   let campaignId = $state(''); let playerId = $state('');
@@ -25,6 +26,7 @@
   let busy = $state(true); let error = $state(''); let message = $state('');
   let retry = $state<UnconfirmedRequest | null>(null); let unreadableRetry = $state(false);
   let errorElement = $state<HTMLDivElement>();
+  let refreshGeneration = 0;
   const host = $derived(!playerId);
   const locked = $derived(busy || retry !== null || unreadableRetry);
   const binding = $derived(view?.active_session?.participants.find(p => p.player_id === playerId && p.attendance === 'Present' && p.character_id));
@@ -40,12 +42,14 @@
   async function showError(reason: unknown) { error = explain(reason); await tick(); errorElement?.focus(); }
   function rememberSelection() { saveSelection({ campaignId: campaignId || null, playerId: playerId || null }); }
   async function refresh() {
+    const generation = ++refreshGeneration;
     const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null; savageOption = null;
+    view = null; options = null; hostSituation = null; savageOption = null; creatureCatalog = null;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
-    if (campaignId !== target || playerId !== selectedPlayer) return;
+    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer) return;
     view = next; options = choices; hostSituation = situation ?? null; rememberSelection();
+    if (!selectedPlayer && next.creature_setup && !next.tactical) void loadCreatureCatalog(target, next.revision, generation);
     const attending = next.active_session?.participants.find(p=>p.player_id===selectedPlayer&&p.attendance==='Present'&&p.character_id);
     const selected = next.characters.find(c=>c.character_id===attending?.character_id);
     if (next.roll && next.roll_channel === 'Tactical'
@@ -53,8 +57,15 @@
         || selected?.entity_id===next.roll.roller)) {
       const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
         channel:selectedPlayer?{Player:{player_id:selectedPlayer,character_id:attending!.character_id!}}:'Host'});
-      if(campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) savageOption=answer.savage_attacker;
+      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) savageOption=answer.savage_attacker;
     }
+  }
+  async function loadCreatureCatalog(target: string, revision: string, generation: number) {
+    const current = () => generation === refreshGeneration && campaignId === target && !playerId && view?.revision === revision;
+    try {
+      const catalog = await tableApi.creatureOptions({campaign_id:target,channel:'Host',revision});
+      if (current()) creatureCatalog = catalog;
+    } catch (reason) { if (current()) await showError(reason); }
   }
   async function selectCampaign(id: string) {
     busy = true; error = ''; message = ''; campaignId = id; playerId = ''; page = 'play'; creating = false;
@@ -173,7 +184,7 @@
         {#if view.players.length}<section class="panel">{#key view.revision}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Finish or withdraw pending work before ending the session. Closing the app preserves pending work for later.</p></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
-      {#if !view.tactical && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}<CreatureForm setup={view.creature_setup} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/></section>{/if}
+      {#if !view.tactical && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}{#if creatureCatalog !== null}<CreatureForm setup={{...view.creature_setup,catalog:creatureCatalog}} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/>{:else}<p>Loading creature sources...</p>{/if}</section>{/if}
       {#if view.active_session && !view.tactical}<section class="panel">{#key view.revision}<BattlefieldForm characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>
