@@ -5,8 +5,9 @@ after bootstrap_audit's preserved implementation checkpoint.
 Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance is
 claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 
-Current baseline is verified main `2798b6b1d6263b5e321a1903d9fb4f2331b73895`,
-merged normally at `318b62e`. Draft PR: https://github.com/idiotswill/DMd/pull/44.
+Current baseline is merged main `e813e3a13911497902a3d4a55aec3c70653afb2a`,
+normally reconciled at `a3dac85` with exact tree parity to reviewed PR43 `a119d7f`.
+Draft PR: https://github.com/idiotswill/DMd/pull/44.
 Status: all original focused tests pass after environment recovery: four rules,
 two genuine file-SQLite scenarios and all 71 UI tests; Svelte reports no errors or
 warnings and the frontend build passes. A subsequent comparison-only fixture
@@ -14,12 +15,12 @@ refinement still needs execution. Canonical, integrated source-controller eviden
 and final exact-head CI remain outstanding. The first focused attempt hit OS112
 before any tests (details below). No production acceptance or upstream merge is
 claimed. Night Hag main merged normally at `4244f64`; the verified PR42 historical
-corpus is now integrated. Reviewed PR43 source control remains a dependency.
+corpus and reviewed PR43 source control are now integrated.
 Initial normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to
 authoritative `d5d1db7` main. At that initial merge, the branch's two genuine commits
 since `8cb3084` changed only this plan and the full tree differed from main only by
-this file. No independent production source was discarded. Source-control PR43 must
-still be reconciled at its reviewed checkpoint before final integrated acceptance.
+this file. No independent production source was discarded. Final integrated
+acceptance still requires canonical verification and all six checks on the final head.
 
 ### Reviewed source-controller development integration
 
@@ -75,6 +76,24 @@ downloaded log verifies Svelte 0 errors/0 warnings, 81 UI tests across 15 files 
 the 138-module production build. The stable job continues workspace/native checks.
 These preliminary results do not replace full exact-head acceptance. No local
 compiler or frontend process was started during PR43's canonical slot.
+
+Root subsequently completed PR43's protected merge as main
+`e813e3a13911497902a3d4a55aec3c70653afb2a`, whose entire tree equals reviewed `a119d7f`.
+The source-control writer reports canonical `./scripts/verify` exit0 on literal
+`a119d7f` (698 GNU Rust tests, 54 suites, all 46 table cases), all six exact-head CI
+checks, Linux 699 Rust tests and native 701 Rust/77 UI tests plus fresh packaging.
+Those establish the prerequisite source; literal post-merge main checks remain
+root's separately tracked evidence.
+
+PR44 normally reconciled this main as `a3dac856fd4d6b7318c6d844016403e694a7edb3`.
+Before resolving five duplicate-squash conflicts with the already reviewed
+integration, both main-to-`a119d7f` full-tree equality and that reviewed commit's
+ancestry in PR44 were verified. The reconciled tree exactly equals its prior local
+`fb2bef3` tree: `531f9ab982ce994adcd3d99cd246837d460d4561`. Thus no production,
+fixture, UI or other file changed during reconciliation. The main merge and evidence
+docs are initially held locally so the source-equivalent `f798432` remote full test
+runs can finish. Root's focused Shield verification takes the next shared slot;
+PR44's canonical run follows coordination, with default stacks/jobs1/incremental0.
 
 ## Authorized first production slice
 
