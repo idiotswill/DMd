@@ -275,6 +275,17 @@ pub async fn desktop_roll_options(
     Ok(host.runtime().await?.table_roll_options(request).await?)
 }
 #[tauri::command]
+pub async fn desktop_source_control_options(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableCreatureOptionsRequest,
+) -> Result<dmd_app::TableSourceControlOptions, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .table_source_control_options(request)
+        .await?)
+}
+#[tauri::command]
 pub async fn desktop_creature_options(
     host: State<'_, DesktopHost>,
     request: dmd_app::TableCreatureOptionsRequest,

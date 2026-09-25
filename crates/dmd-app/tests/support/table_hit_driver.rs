@@ -16,15 +16,18 @@ fn controller(state: &CampaignState, actor: EntityId) -> (TableViewer, TableTran
             },
         );
     }
-    assert!(
-        !state
-            .rules
-            .as_ref()
-            .and_then(|rules| rules.tactical_creatures.as_ref())
-            .and_then(|creatures| creatures.runtime(actor))
-            .is_some_and(|runtime| matches!(runtime.controller, CreatureController::Player(_))),
-        "Assigned source actors require the PR43 SourceCreature channel, never Host substitution"
-    );
+    if let Some(CreatureController::Player(player_id)) = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_creatures.as_ref())
+        .and_then(|creatures| creatures.runtime(actor))
+        .map(|runtime| runtime.controller)
+    {
+        return (
+            TableViewer::Player(player_id),
+            TableTransportChannel::SourceCreature { player_id, actor },
+        );
+    }
     (TableViewer::Host, TableTransportChannel::Host)
 }
 
@@ -92,7 +95,11 @@ pub(super) async fn decline_hit_responses(f: &Fixture) {
         .as_ref()
         .expect("the actual turn controller must own ordering");
     Box::pin(f.runtime.submit_presented_table(TableTransportRequest {
-        version: TABLE_TRANSPORT_VERSION,
+        version: if order_view.source_control.is_some() {
+            TABLE_SOURCE_TRANSPORT_VERSION
+        } else {
+            TABLE_TRANSPORT_VERSION
+        },
         command_id: CommandId::new(),
         campaign_id: f.campaign,
         session_id: Some(f.session),
@@ -126,7 +133,11 @@ pub(super) async fn decline_hit_responses(f: &Fixture) {
     assert_eq!(response.actor, target);
     assert!(!response.selected);
     Box::pin(f.runtime.submit_presented_table(TableTransportRequest {
-        version: TABLE_TRANSPORT_VERSION,
+        version: if target_view.source_control.is_some() {
+            TABLE_SOURCE_TRANSPORT_VERSION
+        } else {
+            TABLE_TRANSPORT_VERSION
+        },
         command_id: CommandId::new(),
         campaign_id: f.campaign,
         session_id: Some(f.session),

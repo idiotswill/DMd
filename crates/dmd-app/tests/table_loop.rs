@@ -17,6 +17,8 @@ mod table_creature_cases;
 mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_hit_cases.rs"]
+mod table_hit_cases;
 #[path = "support/table_hit_driver.rs"]
 mod table_hit_driver;
 #[path = "support/table_medicine_cases.rs"]
@@ -33,6 +35,8 @@ mod table_ready_cases;
 mod table_savage_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
+#[path = "support/table_source_control_cases.rs"]
+mod table_source_control_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 #[path = "support/table_turn_core_cases.rs"]

@@ -29,6 +29,14 @@ pub enum TableAction {
     CreateCreature {
         creation: Box<TableCreatureCreation>,
     },
+    /// Explicitly adopt the complete existing source-owner set at a settled boundary.
+    EnableSourceActorAccess {
+        adopted: Vec<TableSourceAdoption>,
+    },
+    SetSourceCreatureController {
+        actor: EntityId,
+        controller: CreatureController,
+    },
     Tactical {
         action: dmd_rules::tactical::TacticalAction,
     },
@@ -222,6 +230,8 @@ pub enum TableRollChannel {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_control: Option<TableSourceControlView>,
     pub campaign_id: CampaignId,
     pub name: String,
     pub event_sequence: u64,
@@ -239,6 +249,32 @@ pub struct TableView {
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+/// No command metadata or private actors belonging to another audience appear here.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSourceControlView {
+    pub version: u32,
+    pub actors: Vec<TableControlledSourceActor>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableControlledSourceActor {
+    pub actor: EntityId,
+    pub name: String,
+    pub definition_id: String,
+    pub controller: CreatureController,
+    pub hp: u32,
+    pub max_hp: u32,
+}
+
+/// Host-only current setup query; never part of historical presentation v1.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableSourceControlOptions {
+    pub enabled: bool,
+    pub settled: bool,
+    pub adopted: Vec<TableSourceAdoption>,
+    pub actors: Vec<TableControlledSourceActor>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

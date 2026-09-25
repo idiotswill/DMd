@@ -1,6 +1,7 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: active draft implementation; no runtime or verification completion claimed.
+Status: active integration draft; 14 focused Shield rules cases pass. Final
+application, canonical and exact-head acceptance remain pending.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 is integrated. PR43 owns
@@ -200,3 +201,20 @@ development-only wait for its merge, not the acceptance requirement: PR43 must
 finish verification and merge first. Reconcile any subsequent PR43 correction and
 the fetched merged main before Shield's final canonical/exact-head acceptance.
 The shared local build slot remains with PR43; no concurrent compilation.
+
+The normal development merge now wires HitResponse into the v2 source channel,
+retains v1 projection compatibility and derives privileged-response authority from
+the actual retained target. A fresh Begin3/UpgradeTo3 guard refuses unactivated
+player-owned sources before they can become stranded; old Begin versions and the
+unit upgrade remain unchanged. That check remains behind the privileged issuer
+gate so an unauthorized Begin cannot disclose source-access state. The qualified
+typed-state regression covers activation and historic admission separately.
+
+The actual player-owned Mage SQLite case is registered. Fresh source-control
+fixtures now begin with flow3; original captured exports are unchanged. Explicit
+test-controller helpers use SourceCreature plus the current presentation version
+when that actor is assigned. The desktop integration retains both parents' tests,
+adds selected-source Shield/outbox retry across ownership changes, and hides owned
+source casting from Host while preserving issued delegated ordering. These
+integration additions have formatting/diff checking only; compiler, independent
+review and actual execution are pending.

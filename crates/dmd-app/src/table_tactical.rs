@@ -23,15 +23,39 @@ pub(crate) fn view(
     state: &CampaignState,
     viewer: &crate::TableViewer,
 ) -> Result<Option<crate::TableTacticalView>, String> {
+    view_with_source_access(state, viewer, false)
+}
+
+pub(crate) fn view_v2(
+    state: &CampaignState,
+    viewer: &crate::TableViewer,
+) -> Result<Option<crate::TableTacticalView>, String> {
+    view_with_source_access(state, viewer, true)
+}
+
+fn view_with_source_access(
+    state: &CampaignState,
+    viewer: &crate::TableViewer,
+    source_access: bool,
+) -> Result<Option<crate::TableTacticalView>, String> {
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
     let host = matches!(viewer, crate::TableViewer::Host);
-    let own = state.characters.values().filter(|character| {
+    let mut own = state.characters.values().filter(|character| {
         matches!(viewer, crate::TableViewer::Player(player) if character.controlling_player_id == Some(*player))
             && matches!(character.status, CharacterStatus::Active | CharacterStatus::Dead)
             && encounter.participant(character.entity_id).is_some()
     }).map(|character| character.entity_id).collect::<std::collections::HashSet<_>>();
+    if source_access && let crate::TableViewer::Player(player) = viewer {
+        own.extend(
+            encounter
+                .participants
+                .iter()
+                .map(|participant| participant.entity_id)
+                .filter(|actor| crate::table_source_control::owns_source(state, *player, *actor)),
+        );
+    }
     let mut observers = own
         .iter()
         .map(|actor| {
@@ -267,7 +291,11 @@ pub(crate) fn view(
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
-                casting::options(state, actor)?
+                if source_access {
+                    casting::options_v2(state, actor)?
+                } else {
+                    casting::options(state, actor)?
+                }
             }
             _ => None,
         },
@@ -344,6 +372,22 @@ pub(crate) fn prepare(
         || setup.scene_id.0.is_nil()
         || setup.encounter_id.0.is_nil()
         || setup.characters.is_empty()
+            && !(crate::table_source_control::enabled(state)
+                && setup.creatures.iter().any(|placement| {
+                    table(state)
+                        .ok()
+                        .and_then(|table| table.active_session.as_ref())
+                        .is_some_and(|session| {
+                            session.participants.iter().any(|participant| {
+                                participant.attendance == AttendanceStatus::Present
+                                    && crate::table_source_control::owns_source(
+                                        state,
+                                        participant.player_id,
+                                        placement.actor,
+                                    )
+                            })
+                        })
+                }))
         || setup.characters.len().saturating_add(setup.creatures.len()) > 100
     {
         return Err("Choose a new encounter and scene with at least one character.".into());

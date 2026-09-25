@@ -50,10 +50,21 @@ describe('durable opaque desktop transport',()=>{
     expect(loadRequest()).toEqual(legacy);
   });
   it('contains mixed or unknown envelope versions instead of guessing a new context',()=>{
-    for(const request of [{...context,version:2},{...context,expected_event_sequence:3},{...context,revision:''}]){
+    for(const request of [{...context,version:3},{...context,version:'2'},{...context,expected_event_sequence:3},{...context,revision:''}]){
       localStorage.setItem(REQUEST_KEY,JSON.stringify({kind:'text',request:{...request,text:'Hello'}}));
       expect(()=>loadRequest()).toThrow('incomplete or incompatible');
       expect(invoke).not.toHaveBeenCalled();
+    }
+  });
+  it('retains source actor selection under version two and rejects older source-channel envelopes',async()=>{
+    const request={...context,version:2 as const,channel:{SourceCreature:{player_id:'player',actor:'mage'}},action:{Tactical:{action:'EndTurn' as const}}};
+    const saved:UnconfirmedRequest={kind:'action',request};saveRequest(saved);
+    expect(loadRequest()).toEqual(saved);
+    vi.mocked(invoke).mockResolvedValue({Accepted:{command_id:request.command_id,revision:'next',outcome:{message:'Recorded.'}}});
+    await tableApi.action(request);
+    expect(invoke).toHaveBeenCalledWith('desktop_submit_table',{request:{...context,version:2,channel:request.channel,input:{Action:request.action}}});
+    for(const changed of [{...request,version:1},{...request,action:'EndSession'},{...request,version:undefined,revision:undefined,expected_event_sequence:0}]){
+      localStorage.setItem(REQUEST_KEY,JSON.stringify({kind:'action',request:changed}));expect(()=>loadRequest()).toThrow('incompatible');
     }
   });
 });

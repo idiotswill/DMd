@@ -1,14 +1,14 @@
 <script lang="ts">
   import type { Id } from '../table-api';
   import type { HitDecision, HitView, ReactionUnlistedOrder, TacticalAction } from '../tactical-api';
-  let { hit, actor, host, disabled=false, onAction }: {
-    hit:HitView; actor:Id|null; host:boolean; disabled?:boolean; onAction:(action:TacticalAction)=>void;
+  let { hit, actor, host, playerControlledSources=[], disabled=false, onAction }: {
+    hit:HitView; actor:Id|null; host:boolean; playerControlledSources?:Id[]; disabled?:boolean; onAction:(action:TacticalAction)=>void;
   }=$props();
   let ranked=$state<Id[]>([]);
   let unlisted=$state<ReactionUnlistedOrder|''>('');
   let chosen=$state('');
   const mayOrder=$derived(!!hit.order && (host || actor===hit.order.actor));
-  const mayRespond=$derived(!!hit.response && (host || actor===hit.response.actor));
+  const mayRespond=$derived(!!hit.response && (host ? !playerControlledSources.includes(hit.response.actor) : actor===hit.response.actor));
   const selected=$derived(hit.response?.shield.find(choice=>JSON.stringify(choice)===chosen));
   $effect(()=>{
     const valid=ranked.filter(id=>hit.order?.participants.some(candidate=>candidate.actor===id));

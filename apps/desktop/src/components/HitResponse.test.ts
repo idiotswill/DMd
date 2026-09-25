@@ -8,6 +8,17 @@ import type { HitView, SpellCastChoice, TacticalView } from '../tactical-api';
 const choice:SpellCastChoice={actor:'mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'};
 const order:HitView={order:{key:'order-handle',actor:'turn-owner',participants:[{actor:'known',label:'Known participant'},{actor:'turn-owner',label:'Your character'}]},delegate:'delegate-handle',response:null};
 
+it('keeps a player-owned source response hidden from Host while allowing an issued ordering capability',async()=>{
+  const user=userEvent.setup(), onAction=vi.fn();
+  render(HitResponsePanel,{hit:{...order,delegate:null,response:{key:'private-response',actor:'mage',selected:true,shield:[choice]}},actor:null,host:true,playerControlledSources:['mage','turn-owner'],onAction});
+  expect(screen.queryByLabelText('Shield resource')).toBeNull();
+  expect(screen.queryByRole('button',{name:'Continue without casting'})).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Other participants'),'AfterForward');
+  await user.click(screen.getByRole('button',{name:'Use this order'}));
+  expect(onAction).toHaveBeenCalledOnce();
+  expect(onAction).toHaveBeenCalledWith({HitResponse:{handle:'order-handle',decision:{Order:{instruction:{ranked:[],unlisted:'AfterForward'}}}}});
+});
+
 it('requires an explicit total-order fallback and preserves the chosen ranked order and separate delegation',async()=>{
   const user=userEvent.setup(), onAction=vi.fn();
   render(HitResponsePanel,{hit:order,actor:'turn-owner',host:false,onAction});

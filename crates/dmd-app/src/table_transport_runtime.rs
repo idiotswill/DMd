@@ -24,7 +24,24 @@ fn request_meta(
     request: &TableTransportRequest,
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<CommandMeta, String> {
-    if request.version != TABLE_TRANSPORT_VERSION || request.campaign_id != state.campaign_id() {
+    let enabled = crate::table_source_control::enabled(state);
+    let activation = matches!(&request.input, TableTransportInput::Action(action)
+        if matches!(action.as_ref(), TableAction::EnableSourceActorAccess { .. }));
+    let supported = match request.version {
+        TABLE_TRANSPORT_VERSION => {
+            !enabled
+                && !activation
+                && !matches!(
+                    request.channel,
+                    TableTransportChannel::SourceCreature { .. }
+                )
+        }
+        TABLE_SOURCE_TRANSPORT_VERSION => {
+            enabled || activation && request.channel == TableTransportChannel::Host
+        }
+        _ => false,
+    };
+    if !supported || request.campaign_id != state.campaign_id() {
         return Err("Unsupported table request.".into());
     }
     if latest.get(&request.channel.audience()).map(|v| v.revision) != Some(request.revision) {
@@ -46,6 +63,15 @@ fn request_meta(
                 Some(AgentRef::Entity(character.entity_id)),
             )
         }
+        TableTransportChannel::SourceCreature { player_id, actor } => {
+            if !crate::table_source_control::owns_source(state, player_id, actor) {
+                return Err("Select a source creature controlled by this player.".into());
+            }
+            (
+                CommandIssuer::Player(player_id),
+                Some(AgentRef::Entity(actor)),
+            )
+        }
     };
     Ok(CommandMeta {
         id: request.command_id,
@@ -65,6 +91,20 @@ fn derive_intent(
     request: &TableTransportRequest,
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<Intent, String> {
+    let tactical_input = match &request.input {
+        TableTransportInput::SelectWork { .. } | TableTransportInput::HitResponse { .. } => true,
+        TableTransportInput::Action(action) => {
+            matches!(action.as_ref(), TableAction::Tactical { .. })
+        }
+        TableTransportInput::Text { .. } => false,
+    };
+    if matches!(
+        request.channel,
+        TableTransportChannel::SourceCreature { .. }
+    ) && !tactical_input
+    {
+        return Err("Source creature input currently uses the tactical controls.".into());
+    }
     let current = latest
         .get(&request.channel.audience())
         .ok_or("Unknown audience.")?;
@@ -267,6 +307,7 @@ fn check_binding(
     response: TableTransportResult,
 ) -> Result<(), String> {
     if &saved.meta != meta
+        || saved.version != request.version
         || saved.audience != request.channel.audience()
         || saved.projection_ordinal != history.ordinal
         || saved.acceptance != acceptance
@@ -294,16 +335,26 @@ pub(crate) fn validate_event_binding(
         .ok_or("event audit absent")?;
     let saved = binding(export, event.meta.id)?;
     if audit.command_schema_version == 1 {
-        if saved.is_some() {
+        if saved.is_some()
+            || crate::table_source_control::enabled(before)
+            || matches!(
+                event.action,
+                TableAction::EnableSourceActorAccess { .. }
+                    | TableAction::SetSourceCreatureController { .. }
+            )
+        {
             return Err("legacy acceptance has an unsolicited transport binding".into());
         }
         return Ok(());
     }
-    if audit.command_schema_version != 2 {
+    if !matches!(audit.command_schema_version, 2 | 3) {
         return Err("unsupported transport acceptance".into());
     }
     let envelope: TransportedTableAction =
         serde_json::from_str(&audit.payload_json).map_err(|e| e.to_string())?;
+    if u32::try_from(audit.command_schema_version).ok() != envelope.request.version.checked_add(1) {
+        return Err("transport request version disagrees with its canonical envelope".into());
+    }
     let meta = request_meta(before, &envelope.request, prior)?;
     let Intent::Action(action) = derive_intent(before, &envelope.request, prior)? else {
         return Err("observation request became a game command".into());
@@ -333,16 +384,19 @@ pub(crate) fn validate_observation_binding(
     let record = &observation.record;
     let saved = binding(export, CommandId(record.id.0))?;
     if record.payload_schema_version == 1 {
-        if saved.is_some() {
+        if saved.is_some() || crate::table_source_control::enabled(state) {
             return Err("legacy observation has an unsolicited transport binding".into());
         }
         return Ok(());
     }
-    if record.kind != "table.conversation" || record.payload_schema_version != 2 {
+    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2 | 3) {
         return Err("unsupported protocol observation".into());
     }
     let envelope: TransportedTableObservation =
         serde_json::from_str(&record.payload_json).map_err(|e| e.to_string())?;
+    if Some(record.payload_schema_version) != envelope.request.version.checked_add(1) {
+        return Err("observation request version disagrees with its canonical envelope".into());
+    }
     let meta = request_meta(state, &envelope.request, prior)?;
     let Intent::Observation(text) = derive_intent(state, &envelope.request, prior)? else {
         return Err("game action became a protocol observation".into());
@@ -350,7 +404,7 @@ pub(crate) fn validate_observation_binding(
     let (expected, mut expected_record) =
         crate::table_runtime::propose_observation(state, pack, &meta, record.id, &text)
             .map_err(|e| e.to_string())?;
-    expected_record.payload_schema_version = 2;
+    expected_record.payload_schema_version = record.payload_schema_version;
     expected_record.payload_json = json(&envelope)?;
     if expected != envelope.body || &expected_record != record {
         return Err("observation differs from its authenticated historical answer".into());
@@ -366,6 +420,39 @@ pub(crate) fn validate_observation_binding(
 }
 
 impl CampaignRuntime {
+    pub async fn table_source_control_options(
+        &self,
+        request: TableCreatureOptionsRequest,
+    ) -> Result<TableSourceControlOptions, RunnableCampaignError> {
+        if request.channel != TableTransportChannel::Host {
+            return Err(rejected("Source assignment is available only to the host."));
+        }
+        let mut tx = self.pool.begin().await.map_err(recovery)?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
+        let (state, pack) = self.protocol_pack(&export)?;
+        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        if history
+            .latest
+            .get(&ProjectionAudience::Host)
+            .map(|entry| entry.revision)
+            != Some(request.revision)
+        {
+            return Err(rejected(
+                "Refresh the table before assigning source control.",
+            ));
+        }
+        let result = TableSourceControlOptions {
+            enabled: crate::table_source_control::enabled(&state),
+            settled: crate::table_source_control::settled(&state).is_ok(),
+            adopted: crate::table_source_control::adoptions(&state).map_err(recovery)?,
+            actors: crate::table_source_control::visible_actors(&state, &TableViewer::Host)
+                .map_err(recovery)?,
+        };
+        tx.commit().await.map_err(recovery)?;
+        Ok(result)
+    }
     pub async fn table_creature_options(
         &self,
         request: TableCreatureOptionsRequest,
@@ -444,6 +531,15 @@ impl CampaignRuntime {
                 })
         {
             return Err(rejected("Select the character who owns this roll."));
+        }
+        if let TableTransportChannel::SourceCreature {
+            player_id,
+            actor: selected,
+        } = request.channel
+            && (selected != actor
+                || !crate::table_source_control::owns_source(&state, player_id, actor))
+        {
+            return Err(rejected("Select the source creature who owns this roll."));
         }
         let savage_attacker = dmd_rules::tactical::savage_attacker_dice(&state, &pack)
             .ok()
@@ -550,6 +646,7 @@ impl CampaignRuntime {
         crate::rules_restore::visit_rules_history(&export, &pack, |_, state, _| {
             if state.applied_event_sequence == meta.expected_event_sequence {
                 matched = match request.channel {
+                    TableTransportChannel::SourceCreature { .. } => false,
                     TableTransportChannel::Host => {
                         meta.issuer == CommandIssuer::Admin && meta.actor.is_none()
                     }
@@ -616,9 +713,18 @@ impl CampaignRuntime {
             tx.commit().await.map_err(recovery)?;
             return Ok(receipt);
         }
-        if !accept_new {
+        if !accept_new || crate::table_source_control::enabled(&state) {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",
+            ));
+        }
+        if matches!(
+            action,
+            TableAction::EnableSourceActorAccess { .. }
+                | TableAction::SetSourceCreatureController { .. }
+        ) {
+            return Err(rejected(
+                "Source-control changes require the versioned table transport.",
             ));
         }
         if export
@@ -731,7 +837,7 @@ impl CampaignRuntime {
             tx.commit().await.map_err(recovery)?;
             return Ok(body);
         }
-        if !accept_new {
+        if !accept_new || crate::table_source_control::enabled(&state) {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",
             ));
@@ -901,7 +1007,8 @@ impl CampaignRuntime {
                     action: *action,
                 };
                 let payload =
-                    SerializedRecord::encode("table.action", 2, &envelope).map_err(rejected)?;
+                    SerializedRecord::encode("table.action", request.version + 1, &envelope)
+                        .map_err(rejected)?;
                 let id = EventId::new();
                 let event = PendingEvent {
                     id,
@@ -964,7 +1071,7 @@ impl CampaignRuntime {
                 let id = ObservationId(meta.id.0);
                 let (body, mut observation) =
                     crate::table_runtime::propose_observation(&state, &pack, &meta, id, &text)?;
-                observation.payload_schema_version = 2;
+                observation.payload_schema_version = request.version + 1;
                 observation.payload_json = json(&TransportedTableObservation {
                     request: request.clone(),
                     body: body.clone(),
@@ -1002,7 +1109,7 @@ impl CampaignRuntime {
             }
         };
         let saved = TableTransportBinding {
-            version: 1,
+            version: request.version,
             meta,
             audience: request.channel.audience(),
             projection_ordinal: history.ordinal,
