@@ -527,3 +527,55 @@ Frightened query correction closed at `8c6f271`. A separate reviewer cleared the
 natural-extremes policy delta `3bc7e36`. Compiler ownership is released to root for its
 application integration checks; casting still owns the shared dispatcher/pump until
 its coherent checkpoint is handed off.
+
+## Active queued-falling integration
+
+The verified privacy checkpoint is `4a6f879`. Shared casting/continuation/turn/work
+ownership was released by the casting author after `81c1a4e`; the attack author
+retains attack-source modules and a coordinated CreatureAttack enum/dispatch addition.
+The parent owns the compiler during application/extraction verification. Do not run
+another Rust build here until the slot is explicitly granted.
+
+Extend the same `TacticalResolution` with bounded optional retained fall records and
+typed frame work, using the existing pure `tactical_falling` and `spatial::fall_destination`
+authorities. FallDamage uses deterministic role tag 9 and LiquidLandingCheck tag 10;
+existing cast tags 11/12 remain unchanged. Retain the original causing command and
+actual source-derived geometry, never client-provided collision or damage claims.
+
+Required source/queue behavior:
+
+- A legally committed last movement segment that lacks support schedules its actual
+  fall. Loss of non-Hover flight through Prone, Incapacitated, Speed 0 or death must
+  schedule landing before later movement or independent work resumes. Hover still
+  fails on death. No accepted state may silently complete with an unsupported dead
+  flyer suspended.
+- A conscious eligible creature falling into liquid may explicitly spend its own
+  Reaction and select Athletics or Acrobatics, or decline. Persist that exact decision
+  and raw request before pausing. Use source DC15 and the shared opt-in natural-extreme
+  check policy; this is a check, so Legendary Resistance/voluntary failed save are not
+  permissions to change it. Inspiration retains original/replacement raw faces.
+- Derive actual capped d6 damage from vertical half-foot distance; apply successful
+  liquid reduction before source defenses. Land the actor before vitality/drop-held
+  consequences so ground-item positions match physical truth. Dead bodies land without
+  fabricated living damage requests; immunity and damage below one full ten-foot band
+  do not create fake dice. Source Prone depends on actual damage taken and immunity.
+- Preserve the single authoritative raw-roll/history and vitality paths. Nested fall
+  damage, knockout/rest interruption, death/stabilization and concentration effects
+  finish before interrupted movement can resume. Prune only affected movement work;
+  retain unrelated accepted attack, casting and concentration frames.
+- A movement result may record `Fell`, carrying original Move plus the actual landing
+  cause, reached endpoint, original completed-step counts and paid movement cost. Fall
+  displacement consumes no additional voluntary movement. Historical receipt validation
+  and semantic replay must distinguish this source outcome from an invented teleport.
+
+Acceptance evidence must include ordinary ledge landing, water choice/decline and
+exact serialized restart, half-before-defense, short fall/no fabricated dice, solid and
+small supporting ledges, burrowable physical support, an already dead Hover body,
+reaction-caused airborne knockout/death before path continuation, correct dropped-item
+ground height, independent source siblings, foreign/stale/raw identity rejection, and
+forged fall geometry/source/work/Reaction receipts. Parent adds real SQLite export/
+restore and player-safe owned-choice projection before application acceptance.
+
+Next: finalize the bounded retained-work contract, implement shared source admission/
+request/landing validation and focused integration tests, then request the serialized
+compiler slot and independent review. This plan is checked in before source edits.
