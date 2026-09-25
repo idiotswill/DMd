@@ -6,6 +6,23 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
 import type { CharacterView } from '../table-api';
 
+it('abandons only an owned readied action and waits for pending work',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'encounter',phase:'active',round:2,active_actor:'other',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],ready:[{actor:'actor',action:'Movement',may_abandon:true}]};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  await user.click(screen.getByRole('button',{name:'Abandon readied action'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({AbandonReady:{actor:'actor'}});
+  await component.rerender({pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Abandon readied action'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({pendingRoll:false,actor:'other',player:'other-player'});
+  expect(screen.queryByRole('button',{name:'Abandon readied action'})).toBeNull();
+  await component.rerender({host:true,actor:null,player:null,tactical:{...tactical,ready:[{actor:'actor',action:'Movement',may_abandon:false}]}});
+  expect(screen.queryByRole('button',{name:'Abandon readied action'})).toBeNull();
+  await component.rerender({tactical:{...tactical,ready:[]}});
+  expect(screen.queryByText(/is readied/)).toBeNull();
+});
+
 it('keeps legacy continuations available and requires an explicit settled host upgrade',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
   const tactical:TacticalView={encounter_id:'old',phase:'active',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],

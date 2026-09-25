@@ -218,6 +218,7 @@ pub(crate) fn presented_view(
             let TableTacticalView {
                 encounter_id,
                 execution,
+                ready,
                 round,
                 active_actor,
                 phase,
@@ -268,6 +269,7 @@ pub(crate) fn presented_view(
             Ok::<_, &str>(TableTacticalView {
                 encounter_id,
                 execution,
+                ready,
                 round,
                 active_actor,
                 phase,

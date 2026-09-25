@@ -39,6 +39,12 @@
     {#if host}<button disabled={disabled||pendingRoll||pendingDecision} onclick={()=>onAction('UpgradeExecution')}>Continue saved encounter</button>{/if}
   {/if}
   <TacticalMap {tactical} {characters}/>
+  {#each tactical.ready ?? [] as ready}
+    <fieldset disabled={disabled||pendingRoll||pendingDecision}><legend>{name(ready.actor)} · Ready</legend>
+      <p>{ready.action} is readied. Abandoning it returns no spent Action and uses no Reaction.</p>
+      {#if ready.may_abandon && (host || actor===ready.actor)}<button class="secondary" onclick={()=>onAction({AbandonReady:{actor:ready.actor}})}>Abandon readied action</button>{/if}
+    </fieldset>
+  {/each}
   {#if tactical.initiative.length}<ol aria-label="Known initiative order">{#each tactical.initiative as entry}<li><strong>{entry.actor===tactical.active_actor?'Current turn: ':''}{entry.label}</strong>{entry.total===null?'':` · ${entry.total}`}</li>{/each}</ol>{/if}
   {#if host && tactical.phase==='setup'}<fieldset disabled={disabled||pendingRoll}><legend>Begin initiative</legend><p>Mark creatures surprised by combat starting. The rules apply their initiative disadvantage.</p>{#each tactical.participants as participant}<label><input type="checkbox" value={participant.entity_id} bind:group={surprised}/>{participant.public_label} is surprised</label>{/each}<button onclick={begin}>Roll initiative</button></fieldset>{/if}
   {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}

@@ -80,6 +80,37 @@ pub(super) fn declare(
     Ok(())
 }
 
+pub(super) fn abandon(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+) -> Result<(), RulesError> {
+    // A general host override is not the player's voluntary choice. Check the
+    // principal before looking up private declarations, including off-turn ones.
+    if controller(state, actor).is_some_and(|player| meta.issuer != CommandIssuer::Player(player)) {
+        return Err(RulesError::Unauthorized);
+    }
+    authorize(state, meta, actor)?;
+    let f = flow(state)?;
+    if f.phase != TacticalPhase::Active || f.resolution.is_some() {
+        return Err(RulesError::Pending);
+    }
+    let ready = f
+        .ready
+        .iter()
+        .find(|ready| ready.actor == actor)
+        .ok_or_else(|| prerequisite("No Ready declaration is held."))?;
+    if ready.held_spell.is_some() {
+        return Err(prerequisite(
+            "A held spell requires its source concentration cleanup.",
+        ));
+    }
+    // Removing the declaration never rewinds its paid Action, spends a Reaction,
+    // advances time, or changes an unrelated effect/concentration group.
+    flow_mut(state)?.ready.retain(|ready| ready.actor != actor);
+    Ok(())
+}
+
 pub(super) fn expire_owner(
     state: &mut CampaignState,
     _meta: &CommandMeta,

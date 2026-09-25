@@ -246,3 +246,22 @@ single scheduler, source response admission and audience-safe table choices. Shi
 hit windows are the first concrete vertical slice; Counterspell and physical/spell
 Ready releases remain mandatory acceptance here. Import Medicine after its verified
 merge and initialize its current-execution work ancestry. No Gate4 criterion moves.
+
+The next bounded implementation also supplies explicit abandonment of an owned
+physical Ready declaration. This is required before encounter finish can safely
+require quiescence. It is allowed only between resolutions, refunds no Action or
+Reaction, and does not advance a turn or end unrelated concentration. A host cannot
+make this meaningful choice for a player-controlled actor. The private Ready view
+omits empty lists to preserve legacy projection bytes; unrelated viewers must keep
+the same DTO/revision when only an owned declaration is abandoned. Held spells are
+still inadmissible at this checkpoint; their matching concentration cleanup remains
+part of the held-casting implementation. Verify actual table retry/reopen and UI.
+
+AbandonReady now has controller-only admission, off-turn idle handling and a private
+desktop control. Authored tests cover unchanged timing/effects, multiple declarations,
+host/foreign rejection and pending dice. A genuine file-SQLite case starts from normal
+creation/initiative, reopens the paid declaration, compares an independently restored
+cancellation, retries the accepted request after another reopen and rejects a coherent
+invented replacement declaration. It requires the unrelated audience's entire modern
+view, revision and transcript to remain identical. These changes are format-checked
+but have not run; Medicine still owns the serialized local compiler slot.

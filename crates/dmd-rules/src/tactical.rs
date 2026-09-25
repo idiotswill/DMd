@@ -40,6 +40,9 @@ pub enum TacticalAction {
         trigger: ReadyTrigger,
         action: ReadyAction,
     },
+    AbandonReady {
+        actor: EntityId,
+    },
     SubmitSavageAttacker {
         roll: SavageAttackerRoll,
     },
@@ -288,6 +291,9 @@ fn resolve_with_policy(
         }
         TacticalAction::Ready { trigger, action } => {
             ready::declare(&mut next, meta, trigger, action)?;
+        }
+        TacticalAction::AbandonReady { actor } => {
+            ready::abandon(&mut next, meta, *actor)?;
         }
         TacticalAction::SubmitSavageAttacker { roll } => {
             attacks::submit_savage(&mut next, meta, roll, pack)?;

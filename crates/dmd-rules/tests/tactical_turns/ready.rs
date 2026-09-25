@@ -21,6 +21,54 @@ fn declarations(state: &CampaignState) -> &[TacticalReady] {
 }
 
 #[test]
+fn ready_abandonment_is_owned_off_turn_and_never_refunds_or_clears_other_declarations() {
+    let mut f = Fixture::new();
+    f.begin();
+    f.run(Some(0), ready_move());
+    let abandon = TacticalAction::AbandonReady { actor: f.actors[0] };
+    f.rejected(Some(1), abandon.clone());
+    f.rejected(None, abandon.clone()); // Host authority does not replace the player's choice.
+    let timing = f.rules().timing.clone();
+    let effects = f.rules().tactical_effects.clone();
+    let before = f.state.clone();
+    let event = f.run(Some(0), abandon.clone());
+    let mut replayed = replay_tactical(&before, &event, &f.pack)
+        .unwrap()
+        .next_state;
+    replayed.applied_event_sequence += 1;
+    assert_eq!(replayed, f.state);
+    assert!(declarations(&f.state).is_empty());
+    assert_eq!(f.rules().timing, timing);
+    assert_eq!(f.rules().tactical_effects, effects);
+    f.rejected(Some(0), ready_move());
+    f.rejected(Some(0), abandon.clone());
+    f.run(Some(0), TacticalAction::EndTurn);
+    f.run(Some(1), TacticalAction::EndTurn);
+    f.run(Some(0), ready_move());
+    f.run(Some(0), TacticalAction::EndTurn);
+    f.run(Some(1), ready_move());
+    let timing = f.rules().timing.clone();
+    let clock = f.state.clock.clone();
+    f.run(Some(0), abandon);
+    assert_eq!(declarations(&f.state).len(), 1);
+    assert_eq!(declarations(&f.state)[0].actor, f.actors[1]);
+    assert_eq!(f.rules().timing, timing);
+    assert_eq!(f.state.clock, clock);
+}
+
+#[test]
+fn ready_abandonment_waits_for_another_actors_pending_dice() {
+    let mut f = Fixture::new();
+    f.begin();
+    f.run(Some(0), ready_move());
+    f.entity_mut(1).hp = 0;
+    f.run(Some(0), TacticalAction::EndTurn);
+    assert!(f.rules().pending.is_some());
+    f.rejected(Some(0), TacticalAction::AbandonReady { actor: f.actors[0] });
+    assert_eq!(declarations(&f.state).len(), 1);
+}
+
+#[test]
 fn ready_pays_action_only_survives_another_turn_and_expires_before_own_start() {
     let mut f = Fixture::new();
     f.begin();

@@ -110,6 +110,42 @@ pub(crate) fn view(
             .as_ref()
             .filter(|flow| flow.version == TacticalExecutionVersion::ReactionsV1.flow_version())
             .map(|_| TacticalExecutionVersion::ReactionsV1),
+        ready: flow
+            .into_iter()
+            .flat_map(|flow| &flow.ready)
+            .filter(|ready| host || own.contains(&ready.actor))
+            .map(|ready| {
+                let player_controlled = state.characters.values().any(|character| {
+                    character.entity_id == ready.actor
+                        && character.controlling_player_id.is_some()
+                        && matches!(
+                            character.status,
+                            CharacterStatus::Active | CharacterStatus::Dead
+                        )
+                }) || state
+                    .rules
+                    .as_ref()
+                    .and_then(|rules| rules.tactical_creatures.as_ref())
+                    .and_then(|creatures| creatures.runtime(ready.actor))
+                    .is_some_and(|runtime| {
+                        matches!(runtime.controller, CreatureController::Player(_))
+                    });
+                crate::TableReadyView {
+                    actor: ready.actor,
+                    action: match ready.action {
+                        ReadyAction::Attack => "Attack",
+                        ReadyAction::Move => "Movement",
+                        ReadyAction::Spell { .. } => "Spell",
+                    }
+                    .into(),
+                    may_abandon: if host {
+                        !player_controlled
+                    } else {
+                        own.contains(&ready.actor)
+                    },
+                }
+            })
+            .collect(),
         round: timing.map(|timing| timing.round),
         active_actor: active.filter(|actor| host || known.contains(actor)),
         phase,

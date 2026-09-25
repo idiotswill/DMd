@@ -63,6 +63,7 @@ export interface SavageAttackerRoll {
 }
 export type TacticalAction =
   | 'UpgradeExecution'
+  | { AbandonReady: { actor: Id } }
   | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
@@ -84,6 +85,7 @@ export type TacticalAction =
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
   execution?: 'ReactionsV1' | null;
+  ready?: { actor: Id; action: string; may_abandon: boolean }[];
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;
   participants: { entity_id: Id; public_label: string; position: Point; size: string }[];
