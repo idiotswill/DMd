@@ -370,6 +370,9 @@ pub(super) fn validate_admission(
                 TacticalAttackSource::Weapon(w) => TacticalMeleeSource::Weapon {
                     item: w.choice.weapon,
                 },
+                TacticalAttackSource::CreatureWeapon { .. } => {
+                    return Err(invalid("source Action is not this opportunity attack"));
+                }
                 TacticalAttackSource::Unarmed { .. } => TacticalMeleeSource::Unarmed,
                 TacticalAttackSource::CreatureFeature {
                     feature_id, weapon, ..

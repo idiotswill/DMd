@@ -204,7 +204,9 @@ pub(super) fn plan(
                 u32::from(*reach_feet) * 2,
             )
         }
-        TacticalAttackSource::Weapon(_) | TacticalAttackSource::Spell { .. } => {
+        TacticalAttackSource::Weapon(_)
+        | TacticalAttackSource::CreatureWeapon { .. }
+        | TacticalAttackSource::Spell { .. } => {
             return Err(invalid("attack is not an intrinsic melee source"));
         }
     };

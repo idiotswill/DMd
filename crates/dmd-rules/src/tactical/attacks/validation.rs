@@ -361,18 +361,22 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
     let equipped = inventory
         .loadout(attack.actor)
         .ok_or_else(|| invalid("attack loadout absent"))?;
+    let expected_damage = if matches!(attack.source, TacticalAttackSource::CreatureWeapon { .. }) {
+        creature_weapon::validate_source(state, attack, &plan)?
+    } else {
+        vec![AttackDamageComponent {
+            damage_type: plan.damage.damage_type,
+            dice: plan.damage.dice.clone(),
+            modifier: plan.damage.modifier,
+        }]
+    };
     if equipped.hands != plan.loadout_for_attack
         || equipped.worn_armor != weapon.equipment_before.worn_armor
         || equipped.shield != weapon.equipment_before.shield
         || equipped.command != attack.origin
         || attack.attack_modifier != plan.attack_modifier
         || attack.automatic_miss != plan.automatic_miss
-        || attack.damage
-            != [AttackDamageComponent {
-                damage_type: plan.damage.damage_type,
-                dice: plan.damage.dice.clone(),
-                modifier: plan.damage.modifier,
-            }]
+        || attack.damage != expected_damage
     {
         return Err(invalid("attack source or reserved equipment differs"));
     }

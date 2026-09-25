@@ -23,6 +23,10 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    CreatureWeaponAttack {
+        feature_id: String,
+        choice: CreatureWeaponUseChoice,
+    },
     CreatureAttack {
         target: EntityId,
         feature_id: String,
@@ -212,6 +216,9 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
+            attacks::begin_creature_weapon(&mut next, meta, feature_id, choice, pack)?
+        }
         TacticalAction::CreatureAttack {
             target,
             feature_id,

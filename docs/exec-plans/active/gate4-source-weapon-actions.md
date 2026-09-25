@@ -46,8 +46,7 @@ stays active, never silently reclassified as catalog work.
 
 ## Verification
 
-Build only after bootstrap releases the serialized slot and movement's falling batch
-if ready. Add public source-created/materialized Goblin scenarios: stowed scimitar
+Public source-created/materialized Goblin scenarios cover: stowed scimitar
 equips into the free hand beside the shield; stowed shortbow fails while shield is
 donned, and succeeds only with actual free hands; real ammo spends once and leaves
 a Spent tombstone; borrowed versus foreign/missing/wrong-kind items; short/long/out
@@ -55,7 +54,32 @@ of range and hidden-target privacy; Advantage and cancellation, critical extra d
 before/after equip, paused attack/damage/knockout/concentration replay; forged source,
 receipt, range, raw request, ammo count and grip rejection with unchanged inputs.
 
-Run focused attacks, movement and turn tests, then strict domain/rules all-target
-Clippy, format/diff checks and independent exact source review. Root owns canonical
-workspace/application/desktop verification and the eventual Gate4 summary. This is
-the planning checkpoint; no new source code or successful test claim yet.
+The focused batch passes all 104 tests: 62 attacks (including ten new source weapon
+cases), 18 movement and 24 turn cases, with no failures or ignored tests. Log:
+sibling `research/gate4-source-weapons/focused-second.txt`. The initial compilation
+found a test-only enum typo (`Missing` belongs to `Custody`); the correction preserves
+the intended missing-item assertion. Strict domain/rules all-target Clippy also
+passes (`research/gate4-source-weapons/clippy.txt`); format/diff checks pass.
+Independent exact committed-head review follows this tested source checkpoint.
+The complete reducer and ten scenarios have already received independent read-only
+source review with no blocker. Root owns canonical workspace/application/desktop
+verification and the eventual Gate4 summary.
+
+## Remaining production boundary
+
+The real source Goblin starts with its shield donned and its weapons stowed. Its
+Scimitar can use the normal attack equip allowance in the free hand. Switching to
+the Shortbow needs an actual paid Doff Shield action, which is still active Gate4
+work for the equipment controls. The bow tests use an explicitly prepared legal
+shield-free starting state; they do not prove that the tabletop can yet perform
+that transition. No source exception, free shield removal, or duplicate equip
+allowance is granted here.
+
+A subsequent static pass confirmed that the shared vitality reducer cannot resolve
+damage against an already-dead body. Source weapon admission now rejects that target
+before spending the Action or ammunition, after the generic location check. It does
+not reject a living target at zero HP, nor does retained validation retroactively
+reject a target killed by the committed attack. Two added regressions cover these
+boundaries and lethal completion with serialized replay. Independent delta review
+found no blocker, and both tests pass in the focused batch. Body/object durability
+remains separate active Gate4 work.

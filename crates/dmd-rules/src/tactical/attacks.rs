@@ -1,6 +1,7 @@
 //! Closed physical attack work. All requests and costs are derived from source data;
 //! this sibling composes with the existing turn pump, never a second command queue.
 mod creature;
+mod creature_weapon;
 mod intrinsic;
 mod opportunity;
 mod planning;
@@ -11,6 +12,7 @@ use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
 pub(super) use creature::begin_creature_attack;
+pub(super) use creature_weapon::begin_creature_weapon;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
 pub(super) use spell::begin_spell_attack;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
@@ -44,6 +46,16 @@ pub(super) fn begin(
     meta: &CommandMeta,
     choice: &WeaponUseChoice,
     pack: &RulesPack,
+) -> Result<(), RulesError> {
+    begin_with_source(state, meta, choice, pack, None)
+}
+
+fn begin_with_source(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: &WeaponUseChoice,
+    pack: &RulesPack,
+    source: Option<creature_weapon::PreparedCreatureWeapon>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -110,6 +122,14 @@ pub(super) fn begin(
         ));
     }
     let (mode, armor_class, critical_on_hit) = planning::hit_facts(state, actor, choice, &plan)?;
+    let damage = match &source {
+        Some(source) => source.damage(state, actor, &plan, mode)?,
+        None => vec![AttackDamageComponent {
+            damage_type: plan.damage.damage_type,
+            dice: plan.damage.dice.clone(),
+            modifier: plan.damage.modifier,
+        }],
+    };
     let ammunition = plan
         .ammunition
         .as_ref()
@@ -117,6 +137,12 @@ pub(super) fn begin(
             stack: spend.stack,
             quantity_before: state.items[&spend.stack].quantity,
         });
+    let weapon = Box::new(TacticalWeaponAttack {
+        choice: choice.clone(),
+        window,
+        equipment_before: equipment,
+        ammunition,
+    });
     let attack = TacticalAttack {
         origin: meta.clone(),
         actor,
@@ -126,23 +152,21 @@ pub(super) fn begin(
         } else {
             TacticalAttackDelivery::Ranged
         },
-        source: TacticalAttackSource::Weapon(Box::new(TacticalWeaponAttack {
-            choice: choice.clone(),
-            window,
-            equipment_before: equipment,
-            ammunition,
-        })),
-        admission: TacticalAttackAdmission::OwnTurn,
+        source: match &source {
+            Some(source) => source.attack_source(weapon),
+            None => TacticalAttackSource::Weapon(weapon),
+        },
+        admission: if source.is_some() {
+            TacticalAttackAdmission::CreatureAction { approach: None }
+        } else {
+            TacticalAttackAdmission::OwnTurn
+        },
         attack_modifier: plan.attack_modifier,
         mode,
         armor_class,
         critical_on_hit,
         automatic_miss: plan.automatic_miss,
-        damage: vec![AttackDamageComponent {
-            damage_type: plan.damage.damage_type,
-            dice: plan.damage.dice.clone(),
-            modifier: plan.damage.modifier,
-        }],
+        damage,
         stage: TacticalAttackStage::AttackRoll,
         attack_roll: None,
         damage_roll: None,
@@ -173,6 +197,9 @@ pub(super) fn begin(
     // Short Rest. Attacking is strenuous activity; only accepting the action
     // interrupts that rest, not inspecting or rejecting an attack proposal.
     crate::kernel::interrupt_rest(rules, actor, state.clock.now);
+    if let Some(source) = source {
+        rules.tactical_creatures = Some(source.next_creatures);
+    }
     let loadout = rules
         .tactical_inventory
         .as_mut()

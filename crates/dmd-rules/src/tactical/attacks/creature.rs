@@ -225,13 +225,25 @@ pub(super) fn validate_admission(
         .timing
         .as_ref()
         .ok_or_else(|| invalid("source timing absent"))?;
-    let TacticalAttackSource::CreatureFeature {
-        feature_id, weapon, ..
-    } = &attack.source
-    else {
-        return Err(invalid(
-            "source action lacks its canonical creature feature",
-        ));
+    let feature_id = match &attack.source {
+        TacticalAttackSource::CreatureFeature {
+            feature_id,
+            weapon: None,
+            ..
+        } => feature_id,
+        TacticalAttackSource::CreatureWeapon { feature_id, .. }
+            if matches!(
+                attack.admission,
+                TacticalAttackAdmission::CreatureAction { approach: None }
+            ) =>
+        {
+            feature_id
+        }
+        _ => {
+            return Err(invalid(
+                "source action lacks its canonical creature feature",
+            ));
+        }
     };
     let source =
         crate::tactical_creatures::source_for_profile(intrinsic::profile(state, attack.actor)?)
@@ -250,7 +262,6 @@ pub(super) fn validate_admission(
         || runtime.routine.is_some()
         || feature.activation != FeatureActivation::Action
         || feature.usage.is_some()
-        || weapon.is_some()
         || !timing.action_spent
         || flow(state)?.budget.attacks_remaining != 0
         || flow(state)?.budget.attack_window

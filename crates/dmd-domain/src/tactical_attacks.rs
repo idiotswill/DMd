@@ -63,12 +63,29 @@ pub struct TacticalWeaponAttack {
     pub ammunition: Option<AttackAmmunitionReservation>,
 }
 
+/// Physical choices for a printed creature weapon attack. Its canonical source
+/// supplies delivery and numerical facts, rather than a client-selected modifier.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CreatureWeaponUseChoice {
+    pub weapon: ItemId,
+    pub target: EntityId,
+    pub grip: crate::WeaponGrip,
+    pub ammunition: Option<ItemId>,
+    pub equipment_change: Option<crate::AttackEquipmentChange>,
+}
+
 /// Physical custody and item rules belong only to the weapon variant. Intrinsic
 /// sources retain canonical identity/choices, never placeholder items.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAttackSource {
     Weapon(Box<TacticalWeaponAttack>),
+    CreatureWeapon {
+        source: crate::CreatureSourcePin,
+        feature_id: String,
+        weapon: Box<TacticalWeaponAttack>,
+    },
     Unarmed {
         ability: Ability,
     },
@@ -139,13 +156,15 @@ pub struct TacticalAttack {
 impl TacticalAttack {
     pub fn weapon(&self) -> Option<&TacticalWeaponAttack> {
         match &self.source {
-            TacticalAttackSource::Weapon(weapon) => Some(weapon),
+            TacticalAttackSource::Weapon(weapon)
+            | TacticalAttackSource::CreatureWeapon { weapon, .. } => Some(weapon),
             _ => None,
         }
     }
     pub fn weapon_mut(&mut self) -> Option<&mut TacticalWeaponAttack> {
         match &mut self.source {
-            TacticalAttackSource::Weapon(weapon) => Some(weapon),
+            TacticalAttackSource::Weapon(weapon)
+            | TacticalAttackSource::CreatureWeapon { weapon, .. } => Some(weapon),
             _ => None,
         }
     }
