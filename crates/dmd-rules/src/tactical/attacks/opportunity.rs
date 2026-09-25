@@ -4,10 +4,13 @@ use crate::tactical_definitions::{
     AttackDelivery, MonsterFeature, WeaponHands, WeaponKind, WeaponProperty,
 };
 
-pub(in crate::tactical) fn opportunity_options(
+/// Departure distance is derived by the movement evaluator, never a controller
+/// modifier. Irrelevant reach options must not consult uncertain cover at all.
+pub(in crate::tactical) fn opportunity_options_for_crossing(
     state: &CampaignState,
     actor: EntityId,
     mover: EntityId,
+    after_distance: u32,
 ) -> Result<Vec<TacticalMeleeOption>, RulesError> {
     // A capability query must not reveal geometry behind an unknown truth ID.
     if planning::require_located_target(state, actor, mover).is_err() {
@@ -122,7 +125,7 @@ pub(in crate::tactical) fn opportunity_options(
     }
     let distance = crate::spatial::participant_distance(participant, target)
         .map_err(|e| invalid(&e.to_string()))?;
-    result.retain(|option| distance <= option.reach);
+    result.retain(|option| distance <= option.reach && option.reach < after_distance);
     if result.is_empty() {
         return Ok(result);
     }

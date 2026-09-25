@@ -90,7 +90,7 @@ fn options(
     after.position = segment.to;
     let after = participant_distance(enemy, &after).map_err(|e| invalid(&e.to_string()))?;
     Ok(
-        super::attacks::opportunity_options(state, reactor, movement.actor)?
+        super::attacks::opportunity_options_for_crossing(state, reactor, movement.actor, after)?
             .into_iter()
             .filter(|option| before <= option.reach && after > option.reach)
             .collect(),

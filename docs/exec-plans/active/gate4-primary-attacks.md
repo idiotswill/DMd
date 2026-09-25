@@ -256,3 +256,32 @@ not yet compiled; the next action is the single coordinated casting/attack test 
 after root releases the compiler. This intermediate source checkpoint is not green
 verification or a production acceptance claim. Root also needs to collect the new
 `attack.admission.Spell.casting_origin` alongside `attack.origin` and retained cast origins.
+
+The subsequent source checkpoint `5402050` adds the sixth regression for a permitted
+self-target spell. Independent exact source review found no blocker. The first actual
+combined test run compiled the source and exposed fixture errors: the dragon setup
+requested ammunition despite having no ammunition weapon. The two source-derived
+fixture counts were corrected to zero in `545a04`; no adapter behavior changed.
+The coordinated rerun passed all 40 attack, 10 movement and 21 turn tests (71 total),
+including all six spell-adapter cases. Its direct log is retained outside the repository
+at `research/gate4-casting/shared-third-tests.txt`. The casting author is completing
+the separately requested EndTurn shared-space consequence and final source/effect
+tests plus strict lint before providing a final combined checkpoint. This evidence
+does not yet cover that later shared change or full application acceptance.
+
+## Departure-specific opportunity filtering
+
+The movement privacy review found that a nearby enemy's uncertain cover was consulted
+even when the requested segment stayed within every usable melee reach. The source
+query now receives the movement evaluator's derived destination distance and excludes
+non-departing options before consulting cover. It retains the existing current-distance
+and real-source capability checks. There is one internal crossing query, with no
+unused compatibility wrapper or new controller-supplied modifier.
+
+A dedicated public-reducer regression constructs genuine uncertain cover, verifies the
+destination stays within reach, and expects the accepted move and its cost without an
+opportunity or reaction spend. The movement author separately owns preserving an
+accepted prefix when a later actual departure needs a geometry ruling. This narrow
+helper and its new regression are pending the next coordinated test batch; the 71-test
+evidence above predates this follow-up. The only coordinated movement-file change here
+is the query call; movement privacy handling remains in that author's branch.
