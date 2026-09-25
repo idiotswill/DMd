@@ -158,8 +158,9 @@ or any of29 SQLite table counts; independent file restore/export equality passed
 The104740-byte export's SHA256 is
 0aac1462c6e0d244127a5332e08e5ecb24a88e04c1425bc38a1d09c75a12b69d. It is copied as
 reactions-v1-upgrade-100c7da.json with original bytes preserved and documented
-provenance. Its new permanent regression is drafted but has not run yet; earlier
-three-case Linux evidence does not validate this additional test.
+provenance. Its permanent regression now passes with the other three genuine cases on source
+facd988. The four-case default-stack suite completed in91.74s; all twelve original
+transport bindings recover exact responses. Earlier three-case evidence is superseded.
 
 ## Execution-boundary decision before implementation
 
@@ -222,7 +223,11 @@ PR41 merged the source Night Hag grant and honest menu wording as
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Exact51210d1 passed canonical690 GNU
 Rust tests,691 Linux/693 native Rust and67 UI tests, all six checks, strict lint,
 guards and native packaging. Fetched main/source tree equality is verified at
-48aae57d58e13f3f1fdf1fd5904015999184c185. Post-main36179980349/36179980413 is pending.
+48aae57d58e13f3f1fdf1fd5904015999184c185. Post-main36179980349/36179980413 passed all six checks with691 Linux/693 native
+Rust,67 UI tests,0 static errors/warnings and136-module build. The fresh main installer
+artifact10885036510 is231472853bytes, SHA256
+fa039286525e126bebab9ba7d240766ae59fbd617013a06f474e639facea79f8.
+The bounded Night Hag source plan is archived.
 The reviewed source also has20 focused source/profile tests, the real six-dart file
 case and genuine old-history replay passing. PR42 integrated this main without
 production changes of its own.
@@ -239,9 +244,25 @@ acceptance, establish the simultaneous strike/target milestone, correct current-
 ordering and source amount/consequence grouping, with death, concentration, defense,
 repeated/multiple targets and off-turn Ready interactions. This stays in Gate4.
 
-Exact next action: verify the four-case corpus on this integrated main baseline,
-including full canonical verification and all six final-head CI checks. Root owns
-this branch and the heavy local slot; only one heavy verification process may run.
-Independent source-control stack/recovery fixes and aftermath authoring may continue
-without competing builds. Merge compatibility PR42 only after verified review, then
-create a fresh branch for actual versioned responses. No gate pause or scope waiver.
+## Compatibility candidate verification
+
+Exact source facd988b7b64ae50a6b4fed2da36721a5f14c4fe passed canonical
+`./scripts/verify`:694 GNU Rust tests across54 suites, all44 table scenarios,
+formatting, workspace/all-target check, strict all-target Clippy and both guards.
+The four genuine cases pass without enlarged stack or fixture edits. Linux
+36181013426 passed all four jobs and695 Rust tests. Windows36181013338 passed
+MSRV, frontend, strict lint and native regressions; packaging is still pending at
+this evidence checkpoint. Do not infer final Windows success from completed steps.
+Independent review of the complete compatibility module, original exports/hashes,
+all twelve bindings and integration delta is clear. The final documentation-only
+commit records this evidence and archives the verified source prerequisite; it
+changes no executable code or fixture bytes. Require all six checks on that final
+head and inspect its complete documentation delta before protected merge.
+
+Exact next action: finish final-head CI and merge compatibility PR42 with expected
+head protection, fetch/verify main tree parity and post-main checks, then integrate
+into the separate Shield implementation branch. That branch already exists for
+independent source work; it must not claim verified runtime or bypass prerequisites.
+The source-control and aftermath writers retain their separate branches. Heavy
+local verification is serialized: source-control focused fixes follow this completed
+canonical run, then aftermath verification. No gate pause or scope waiver.
