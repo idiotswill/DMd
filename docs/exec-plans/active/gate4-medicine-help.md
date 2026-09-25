@@ -2,7 +2,7 @@
 
 Writer: root. Branch: `codex/gate4-medicine-help`.
 Base: verified Second Wind head c04e3b6; its main squash is b86e222.
-Status: draft implementation and production-path tests authored; executable verification pending.
+Status: reviewed source and production-path verification pass; final evidence-head CI and protected merge pending.
 
 ## Objective and authority
 
@@ -49,55 +49,59 @@ the same DC10 check to end that source-owned unconsciousness without healing.
    tests/build; exact-head Linux/native Windows CI, protected merge, fetched tree
    equality and post-merge checks. No check from another head is final-head evidence.
 
-## Risks and next action
+## Implementation and review
 
-Supporting agents are quota-blocked; root owns implementation and a separate review
-pass. Only one heavy local Rust/frontend process may run. Savage Attacker desktop
-verification currently holds that slot. New work must later integrate with the
-explicit reaction execution version and work ancestry without changing old replay.
+FirstAid uses target/purpose, Action payment, source skill/conditions, raw role17 and
+the existing continuation queue. Pending validation reconstructs physical access,
+target eligibility and spent Action. An internal MedicineOutcome carries the resolved
+success under the explicit table natural-extremes policy; the raw die/total and old
+Medicine-total primitive retain their semantics. Clients cannot submit an outcome.
 
-Next: implement source admission and retained work using the existing Second Wind,
-landing-check and vitality patterns; then actual UI and recovery tests. Gate4 remains
-active and its full twelve-family ledger/eighteen-spell-mechanism matrix is binding.
+Contact uses occupied-space distance within five feet and an unobstructed center path
+against movement-blocking obstacles. This conservative table ruling is explicitly
+explained in the UI and is not attributed to a source numeric range. Ground must be
+settled; payment interrupts rest. Current actor contacts exclude remembered contacts.
+No historical projection DTO/digest changes. Ending knockout removes only its own
+source-owned unconsciousness, leaves unrelated conditions and never heals.
 
-The draft now uses FirstAid target/purpose, Action payment, source skill/conditions,
-role17 and the existing queue. Pending validation reconstructs physical access,
-target eligibility and the spent Action. The check uses the table's explicit natural-
-extremes policy while keeping the raw die and numeric total unchanged: an internal
-MedicineOutcome carries only the already resolved success to vitality consequences.
-The earlier Medicine total primitive keeps its original semantics. Neither primitive
-is a public table action or a way to submit an authoritative success flag.
+Four reducer tests cover actual Action payment, authority, contact/opaque barriers,
+Poisoned disadvantage, Inspiration, outcomes and independent unconsciousness. The
+file-SQLite test creates two PCs and a source Goblin Warrior through ordinary table
+flows, resolves its real critical scimitar attack and exercises both zero-HP and
+knockout care. Medicine and recovery dice cross cold reopening, opaque ownership,
+accepted retry and independent restored continuation. A coherent invented Bonus
+Action cost passes structural validation but semantic restore rejects with no rows.
+The desktop regression exercises actual controller/target/pending behavior.
 
-The desktop selects only this actor's current contacts (host uses the host map),
-excludes remembered contacts and exposes both care purposes. It explains the contact
-adjudication and no-healing behavior. It changes no historical projection DTO/digest.
-The default contact interpretation checks occupied-space distance within5ft and a
-center-to-center physical path against movement-blocking obstacles; this is a
-conservative table geometry ruling, not source text. Broader authored contact paths
-belong to the remaining Gate4 environment/adjudication work.
+Root performed a separate complete 20-file diff review; supporting agents remain
+quota-blocked. Reviewed integration b65d163 imports fetched Savage main cd8d4a4,
+retaining both adjacent Rust/TypeScript action variants. No confirmed open defect.
 
-Four reducer cases and one desktop case are authored. The genuine file-SQLite case
-creates two PCs and a source Goblin Warrior, resolves its critical scimitar attack,
-then tests normal zero-HP and explicit knockout consequences in separate campaigns.
-The helper's Medicine and patient's recovery dice use opaque requests, cold reopen,
-accepted retries and independent restored continuation. A structurally valid invented
-Bonus Action expenditure must fail semantic restore without writing rows. These
-tests have not run; formatting and whitespace checks pass. Next: draft PR CI, fix
-actual failures, separate review and serial canonical/desktop verification.
+## Verification evidence
 
-The fresh review added settled-ground admission and interruption of the helper's
-ongoing rest when its Action is paid. Additional authored assertions cover a visible
-but physically blocking barrier, Poisoned disadvantage and independent unconsciousness
-remaining after the source knockout ends. These follow-up changes are unverified.
+Reviewed source: cea43b3bd9b83ddae45a24bd2ffb261252096574 (2026-09-25).
 
-Sourcec5b3a14 passes native frontend static checking (zero errors/warnings),57 tests,
-135-module build and MSRV, with fast verification, strict lint and both Linux guards.
-The full Rust suites are still running and no full-pass claim is made. The reviewed
-production diff preserves the old vitality total operation and all old projection
-shapes; new clients cannot submit an authoritative Medicine outcome or total.
+- Local canonical `./scripts/verify`: 654 GNU Rust tests, strict all-target Clippy,
+  workspace checking/formatting, genericity and architecture guards all pass.
+- Local desktop: zero static errors/warnings, 60 tests and 135-module build pass.
+- All six exact-source checks pass: Linux run36155900135 and Windows36155900122.
+  Actual logs confirm 655 Linux and657 native Windows Rust tests; native desktop
+  has60 tests, zero errors/warnings and135-module build. Both declared MSRV jobs pass.
+- Native stable produced a fresh offline installer, artifact10875241131
+  (231256117bytes). This proves packaging, not an interactive human playtest.
+- Savage PR37 post-merge runs36155615130/36155615628 pass all six checks. The current
+  fetched main remains cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
 
-PR37 finald901058 passed all six checks and merged as current maincd8d4a4, with
-fetched full-tree parity. b65d163 integrates that main into first aid; conflicts were
-only adjacent Rust/TypeScript action variants and both features were retained. PR36
-post-merge checks are also all green. Next: complete combined CI and local canonical/
-desktop verification, review any actual failures, then final exact-head merge checks.
+## Risks and exact next action
+
+The next commit changes evidence documents only; source parity to cea43 must be
+verified. Await all six checks on that final head, refresh PR/main, inspect its full
+diff and merge PR39 with expected-head protection. Then fetch main, check full-tree
+parity and post-merge checks; record the resulting hashes in the next Gate4 checkpoint.
+Only one heavy local Rust/frontend job may run at once.
+
+PR38 must import this after the verified merge and initialize current execution work
+ancestry without reinterpreting legacy accepted history. General Help, Utilize,
+contact adjudication, post-combat finish and every other unresolved Gate4 family
+remain required. This slice does not close Gate4, narrow the twelve-family ledger
+or eighteen-spell-mechanism matrix, or authorize Gate5.

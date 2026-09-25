@@ -13,7 +13,7 @@ All six exact-head checks passed for each; fetched full-tree equality to each
 reviewed head was checked after protected squash. PR36's six post-merge checks
 36152298689/36152294368 pass. PR35's post-merge Linux/MSRV pass; its native tests,
 desktop and installer upload completed before its final cache cleanup was cancelled
-by the next main merge. PR37 post-merge checks remain pending.
+by the next main merge. PR37 post-merge runs36155615130/36155615628 pass all six checks.
 
 Savage source47fc passes649 local GNU/650 Linux/652 native Rust tests,59 desktop
 tests, static checking and build; finald901058 passes all six checks36152545195/
@@ -25,14 +25,21 @@ local canonical verification (664 GNU Rust tests, strict lint and both guards).
 Native CI has667 Rust tests,57 desktop tests and fresh offline packaging. Its legacy
 save upgrade, owned declaration, defense and ordering foundations are verified;
 actual Shield/Counterspell/Ready response windows remain unimplemented. Its local
-desktop batch is in progress. This is not accepted response or completed gate evidence.
+desktop check,57 tests and134-module build pass. This is not accepted response or completed gate evidence.
 
-First aid is draft PR39: owned Action/Medicine, current-contact desktop selection,
-stabilization/knockout and actual source-attack cold recovery tests are authored.
-Sourcec5b3a14 passed frontend checking,57 tests/build and native MSRV; full Rust
-tests have not completed. b65d163 imports verified main with only two additive
-typed-action conflicts resolved by retaining both features. Combined verification
-is still required. General Help and Utilize remain separate Gate4 obligations.
+First aid PR39 sourcecea43b3 passes full local canonical verification (654 GNU Rust
+tests, strict lint and both guards),60 desktop tests, static checking and135-module
+build. All six exact-source checks36155900135/36155900122 pass; actual logs confirm
+655 Linux/657 native Windows Rust tests and a fresh offline installer. Full-diff review
+covers source admission, owned Action/Medicine, current-contact desktop selection and
+actual source-attack cold recovery/semantic rejection. Final evidence-head checks and
+protected merge remain pending. General Help and Utilize remain Gate4 obligations.
+
+Reaction c39365e adds physical Ready abandonment and private UI/cold recovery tests.
+Its Linux/native Rust runs found an invalid zero-HP fixture (missing Prone); correction
+and complete verification remain pending. No live response-window completion claim.
+Unarmed damage is a separate planned branch with draft source/UI/cold recovery tests;
+ordinary Grapple/Shove/Escape and all related mechanics remain required.
 
 ## Earlier audit and implementation history
 
