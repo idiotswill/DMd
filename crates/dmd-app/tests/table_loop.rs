@@ -12,6 +12,8 @@ mod table_casting_cases;
 mod table_creature_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_oa_concentration_cases.rs"]
+mod table_oa_concentration_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]

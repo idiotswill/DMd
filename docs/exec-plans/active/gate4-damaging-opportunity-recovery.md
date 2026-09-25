@@ -38,8 +38,10 @@ original accepted movement resumes without borrowing the reactor's turn/Action.
    and prove semantic restore rejects before writing any aggregate rows.
 4. Verify reaction/Action/turn/movement budgets, original versus causal origins,
    concentration cleanup, final endpoint/cost and final semantic replay. Compare
-   all durable export data exactly; normalize only request-time `exported_at_utc`
-   when comparing independently captured exports.
+   all durable export data exactly across unchanged retries/rejections in the same
+   database; normalize only request-time `exported_at_utc`. Mirrored executions
+   compare source states and semantic replay, since independent accepted journal
+   rows correctly allocate distinct EventIds and acceptance timestamps.
 5. Heap-pin the test's large phases from the outset; retain the default Windows
    stack and production code. Run the focused scenario after the protocol compiler
    handoff, then appropriate app/strict-lint checks. Obtain independent exact-head
@@ -47,11 +49,17 @@ original accepted movement resumes without borrowing the reactor's turn/Action.
 
 ## Status, risk and next action
 
-Plan written before implementation. No new tests have run and no production files
+The complete scenario is authored in
+`crates/dmd-app/tests/support/table_oa_concentration_cases.rs`, including genuine
+Hold Person origin/material assertions, four malformed-origin restore cases,
+cold retries at each suspension, changed-body nonce rejection, and mirrored
+continuation. Static review corrected Host visibility expectations: Host remains
+privileged; another Player cannot take the reactor's decision or raw roll.
+Formatting and whitespace checks pass. The scenario is deliberately uncompiled
+until the protocol writer releases the shared compiler. No production files
 are owned here. Root's independently authored cold-round module is a separate
 additive registration in `table_loop.rs`; preserve both during integration.
-Compiler belongs to the protocol writer after the verified area batch. Start by
-deriving this fixture from existing creation, casting and movement tests, then
-request read-only source/authority review while waiting for the compiler slot.
+Compiler belongs to the protocol writer after the verified area batch. Request
+read-only source/authority review now, then run the focused case at handoff.
 General privacy protocol, native combat acceptance, Ready/reactions and all other
 open Gate4 requirements remain unchanged.
