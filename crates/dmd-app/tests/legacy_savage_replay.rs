@@ -241,6 +241,9 @@ async fn genuine_legacy_savage_pause_finishes_owned_raw_sets_before_upgrade_and_
     pool.close().await;
     drop(app);
     drop(pool);
+    sqlite_test_cleanup::remove_closed_file(&directory.join("campaign.sqlite"))
+        .await
+        .unwrap();
     sqlite_test_cleanup::remove_closed_directory(&directory)
         .await
         .unwrap();
