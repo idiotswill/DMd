@@ -22,6 +22,7 @@ pub enum TacticalRollRole {
     SpellAmount,
     AreaSave,
     AreaDamage,
+    SecondWind,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -53,6 +54,7 @@ impl TacticalRollKey {
             TacticalRollRole::SpellAmount => 12,
             TacticalRollRole::AreaSave => 13,
             TacticalRollRole::AreaDamage => 14,
+            TacticalRollRole::SecondWind => 16,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -65,6 +67,10 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    SecondWind {
+        actor: EntityId,
+        uses_before: u8,
+    },
     AreaDamageRoll {
         area: u16,
     },

@@ -154,18 +154,3 @@ then refresh the integration branch onto current main. That integration must att
 optional RulesState field/legacy-input guards, group concentration pointers, condition
 queries, authenticated replay and due-ticket continuation. All eighteen effect-family
 obligations and packaged encounter acceptance above remain active Gate 4 work.
-
-Integration checkpoint: PR #24 merged as `405112ff7209b2e923c8cbba941900b6c81cb388`.
-Final PR head `1dea01741d7aedcdfefc8a31eefa05d0d2c7edb0` passed full canonical verification
-(265 Rust tests), independent unchanged-code/documentation review, Linux CI340
-`36054128367` and Windows desktop20 `36054128519` (all six jobs). The merged main tree
-exactly equals the verified head tree `4a7d017ca9d79e8d278d58c8996056cb5ea02e28`.
-
-The developing encounter branch retains the optional RulesState attachment, group
-pointer synchronization, unified condition views, legacy codec/database guards and
-strict pre-tactical recovery-anchor requirements. Its 19 effect tests (16 source plus
-three attachment interactions), 13 schema compatibility tests and six tactical app tests
-passed at their earlier integration checkpoints. Those are historical evidence, not
-final combined-head or packaged encounter acceptance. The merge preserves the additional
-attachment tests and current optional-state fixture fields. Continue integrating the
-turn/source-casting pipeline; all eighteen mechanism families remain Gate 4 work.

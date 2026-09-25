@@ -14,7 +14,7 @@ describe('durable UI retry',()=>{
     view.tactical={encounter_id:'encounter',phase:'active',round:1,active_actor:'chimera',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],area_options:{actor:'chimera',controller:null,source_space:{min:{x:10,y:40,z:0},max:{x:30,y:60,z:12}},variants:[{feature_id:'fire-breath',label:'Fire Breath',length_feet:15}],unavailable:[]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
-    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Encounter action recorded.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
     const mounted=render(TableApp);
     await waitFor(()=>expect(screen.getByLabelText('Ability').closest('fieldset')?.hasAttribute('disabled')).toBe(false));
     await user.selectOptions(screen.getByLabelText('Ability'),'fire-breath');
@@ -23,7 +23,7 @@ describe('durable UI retry',()=>{
     const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
     expect(saved.request.action).toEqual({Tactical:{action:{CreatureArea:{feature_id:'fire-breath',aim:{origin:{x:30,y:50,z:6},toward:{x:40,y:50,z:6},include_origin:false},ordering:'Host'}}}});
     expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');
-    expect(saved.request.expected_event_sequence).toBe(view.event_sequence);
+    expect(saved.request.revision).toBe(view.revision);
     mounted.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -31,21 +31,20 @@ describe('durable UI retry',()=>{
     expect(tableApi.action).toHaveBeenCalledTimes(2);
     expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
   });
-
   it('retains the actual shield form item, hand and original action head through uncertain restart',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
     view.tactical={encounter_id:'encounter',phase:'active',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
-    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Encounter action recorded.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
     const first=render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Don shield'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Don shield'}));
     await screen.findByRole('alert');
     const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
     expect(saved.request.action).toEqual({Tactical:{action:{DonShield:{shield:'carried-shield',hand:'Right'}}}});
-    expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');expect(saved.request.expected_event_sequence).toBe(view.event_sequence);
+    expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');expect(saved.request.revision).toBe(view.revision);
     first.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -66,7 +65,7 @@ describe('durable UI retry',()=>{
     view.roll={id:'roll',roller:'actor',dice:[{count:1,sides}],modifier:2,mode:'Normal',visibility:'Public',reason:label};
     view.roll_channel=channel;
     vi.mocked(tableApi.view).mockResolvedValue(view);
-    vi.mocked(tableApi.action).mockImplementation(async received=>({command_id:received.command_id,event_sequence:20,already_accepted:false,outcome:{message:'Roll accepted.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockImplementation(async received=>({command_id:received.command_id,revision:'accepted-revision',outcome:{message:'Roll accepted.'}}));
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
     render(TableApp);
     const die=await screen.findByLabelText(`Die 1 · d${sides}`);
@@ -85,7 +84,7 @@ describe('durable UI retry',()=>{
     view.creature_setup={catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,abilities:['Scimitar','Shortbow'],omitted_features:[]}],creatures:[]};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
-    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Host preparation recorded.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,revision:'accepted-revision',outcome:{message:'Host preparation recorded.'}}));
     const first=render(TableApp);
     await user.click(await screen.findByRole('button',{name:'Setup and host controls'}));
     await waitFor(()=>expect(screen.getByRole('button',{name:'Prepare creature'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
@@ -98,7 +97,7 @@ describe('durable UI retry',()=>{
     expect(request.request.action.CreateCreature.creation).toMatchObject({name:'Private sentry',definition_id:'goblin-warrior',size:'Small',additional_languages:[],ammunition_units:7});
     expect(new Set(request.request.action.CreateCreature.creation.item_ids).size).toBe(5);
     expect(request.request.channel).toBe('Host');
-    expect(request.request.expected_event_sequence).toBe(view.event_sequence);
+    expect(request.request.revision).toBe(view.revision);
     first.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -113,7 +112,7 @@ describe('durable UI retry',()=>{
     view.tactical={encounter_id:'encounter',phase:'active',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
-    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Encounter action recorded.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
     const mounted=render(TableApp);
     await waitFor(()=>expect(screen.getByLabelText('Spell and resource').closest('fieldset')?.hasAttribute('disabled')).toBe(false));
     await user.selectOptions(screen.getByLabelText('Spell and resource'),JSON.stringify(choice));
@@ -123,7 +122,7 @@ describe('durable UI retry',()=>{
     const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
     expect(saved.request.action).toEqual({Tactical:{action:{CastSpell:{choice,targets:{Entities:['selected-target']}}}}});
     expect(saved.request.channel).toBe('Host');expect(saved.request.session_id).toBe('session');
-    expect(saved.request.expected_event_sequence).toBe(view.event_sequence);
+    expect(saved.request.revision).toBe(view.revision);
     mounted.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -135,7 +134,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup();
     const request:UnconfirmedRequest={kind:'action',request:{command_id:'npc-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{CreateCreature:{creation:{entity_id:'same-creature',name:'Private sentry',definition_id:'goblin-warrior',size:'Small',additional_languages:[],ammunition_units:7,item_ids:['arrows','armor','scimitar','shield','bow']}}}}};
     localStorage.setItem(REQUEST_KEY,JSON.stringify(request));
-    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockResolvedValueOnce({command_id:'npc-command',event_sequence:5,already_accepted:true,outcome:{message:'Host preparation recorded.',mechanics:null}});
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockResolvedValueOnce({command_id:'npc-command',revision:'accepted-revision',outcome:{message:'Host preparation recorded.'}});
     const first=render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));await screen.findByRole('alert');
@@ -185,7 +184,7 @@ describe('durable UI retry',()=>{
     }];
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
-    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Equipment ready.',mechanics:null}}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,revision:'accepted-revision',outcome:{message:'Equipment ready.'}}));
     const first=render(TableApp);
     await user.click(await screen.findByText('Equipment and features'));
     await waitFor(()=>expect(screen.getByRole('button',{name:"Prepare River's equipment"}).hasAttribute('disabled')).toBe(false));
@@ -197,7 +196,7 @@ describe('durable UI retry',()=>{
     expect(itemIds).toHaveLength(3);
     expect(new Set(itemIds).size).toBe(3);
     expect(request.request.channel).toBe('Host');
-    expect(request.request.expected_event_sequence).toBe(view.event_sequence);
+    expect(request.request.revision).toBe(view.revision);
     first.unmount();render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -210,7 +209,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup();
     const request: UnconfirmedRequest={kind:'action',request:{command_id:'same-command',campaign_id:'campaign',expected_event_sequence:4,session_id:null,channel:'Host',action:{AddPlayer:{id:'same-player',name:'Sam'}}}};
     localStorage.setItem(REQUEST_KEY,JSON.stringify(request));
-    vi.mocked(tableApi.action).mockImplementation(async received => { expect(received).toEqual(request.request); expect(JSON.parse(localStorage.getItem(REQUEST_KEY)!)).toEqual(request); return {command_id:'same-command',event_sequence:5,already_accepted:true,outcome:{message:'Sam joined.',mechanics:null}}; });
+    vi.mocked(tableApi.action).mockImplementation(async received => { expect(received).toEqual(request.request); expect(JSON.parse(localStorage.getItem(REQUEST_KEY)!)).toEqual(request); return {command_id:'same-command',revision:'accepted-revision',outcome:{message:'Sam joined.'}}; });
     render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
     await user.click(screen.getByRole('button',{name:'Retry original request'}));
@@ -255,7 +254,7 @@ describe('durable UI retry',()=>{
     view.characters=[{character_id:'pc',player_id:'one',entity_id:'actor',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.active_session={session_id:'session',display_name:'Evening',started_at_world:0,participants:[{player_id:'one',character_id:'pc',attendance:'Present'}]};
     vi.mocked(tableApi.view).mockResolvedValue(view);localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'one'}));
-    vi.mocked(tableApi.text).mockResolvedValue({Observed:{meta:{id:'question',campaign_id:'campaign',session_id:'session',issuer:{Player:'one'},actor:{Entity:'actor'},expected_event_sequence:19},text:'What is my health?',answer:'Private answer for One'}});
+    vi.mocked(tableApi.text).mockResolvedValue({Observed:{command_id:'question',revision:'answer-revision',text:'What is my health?',answer:'Private answer for One'}});
     render(TableApp);await waitFor(()=>expect(screen.getByRole('button',{name:'Send to the table'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
     await user.type(screen.getByLabelText('Your declaration, question or correction'),'What is my health?');await user.click(screen.getByRole('button',{name:'Send to the table'}));
     await screen.findByText('Private answer for One');await waitFor(()=>expect(screen.getByRole('combobox',{name:'Local viewing and input channel'}).hasAttribute('disabled')).toBe(false));

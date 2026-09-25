@@ -15,7 +15,9 @@ async fn source_creature_gear_is_atomic_private_and_restores_without_regranting(
     verify_player_check_after_setup(&mut f, actor).await;
     f.pool.close().await;
     drop(f);
-    std::fs::remove_file(database).unwrap();
+    sqlite_test_cleanup::remove_closed_file(&database)
+        .await
+        .unwrap();
     let _ = std::fs::remove_dir(directory);
 }
 

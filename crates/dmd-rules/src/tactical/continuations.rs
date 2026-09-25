@@ -108,6 +108,7 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::SecondWind { actor, .. } => (TacticalRollRole::SecondWind, *actor),
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }
         | TacticalWorkKind::BeginAreaDamage { .. }
@@ -187,6 +188,7 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::SecondWind => (48, "Second Wind heals 1d10 plus Fighter level."),
         TacticalRollRole::AreaSave => (16, "Saving throw against the accepted source area."),
         TacticalRollRole::AreaDamage => {
             (16, "One damage roll is shared by simultaneous area saves.")
@@ -236,6 +238,7 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::SecondWind { .. } => super::second_wind::request(state, work, key),
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }
         | TacticalWorkKind::BeginAreaDamage { .. }
@@ -401,7 +404,7 @@ fn start_inner(
             let actor = *actor;
             return super::creature_bridge::offer(state, meta, work, actor);
         }
-        TacticalWorkKind::CreatureRecharge { .. } => (),
+        TacticalWorkKind::CreatureRecharge { .. } | TacticalWorkKind::SecondWind { .. } => (),
         TacticalWorkKind::Effect { ticket: id } => {
             let trigger = ticket(state, *id)?;
             if !trigger_is_applicable(effects(state)?, trigger)
@@ -650,6 +653,24 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::SecondWind { actor, .. } => {
+            if forced_success {
+                return Err(invalid("a saving throw override cannot change Second Wind"));
+            }
+            let amount = raw
+                .ok_or_else(|| invalid("Second Wind requires its physical d10"))?
+                .total;
+            let amount =
+                u32::try_from(amount).map_err(|_| invalid("invalid Second Wind healing"))?;
+            apply_vitality(
+                state,
+                meta,
+                actor,
+                pending.work.occurrence,
+                VitalityOperation::Heal { amount },
+                None,
+            )?;
+        }
         TacticalWorkKind::AreaDamageRoll { .. }
         | TacticalWorkKind::AreaSave { .. }
         | TacticalWorkKind::BeginAreaDamage { .. }

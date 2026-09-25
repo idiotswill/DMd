@@ -593,8 +593,8 @@ impl CampaignState {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum StateInvariantViolation {
     InvalidEncounterState(String),
-    InvalidTacticalEffects(String),
     InvalidTacticalInventory(String),
+    InvalidTacticalEffects(String),
     InvalidTableState(String),
     CampaignMismatch {
         record_kind: String,

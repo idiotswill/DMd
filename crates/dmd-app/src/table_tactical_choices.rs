@@ -47,6 +47,9 @@ pub(super) fn continuation(
                     .iter()
                     .map(|work| {
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::SecondWind { actor, .. } => {
+                                (Some(*actor), "Second Wind healing")
+                            }
                             TacticalWorkKind::AreaDamageRoll { .. } => {
                                 (None, "Shared area damage roll")
                             }

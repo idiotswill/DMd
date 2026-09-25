@@ -11,6 +11,8 @@ mod creature;
 mod creature_weapon;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
+#[path = "tactical_attacks/second_wind.rs"]
+mod second_wind;
 #[path = "tactical_attacks/shields.rs"]
 mod shields;
 #[path = "tactical_attacks/spell.rs"]
@@ -214,6 +216,27 @@ impl Fixture {
             .entities
             .get_mut(&self.actors[index])
             .unwrap()
+    }
+    fn zero_hp_target(&mut self, dead: bool) {
+        self.entity_mut(1).hp = 0;
+        self.entity_mut(1).prone = true;
+        self.entity_mut(1).death.dead = dead;
+        if dead {
+            self.state
+                .entities
+                .get_mut(&self.actors[1])
+                .unwrap()
+                .existence = EntityExistence::Dead;
+            self.state
+                .characters
+                .values_mut()
+                .find(|character| character.entity_id == self.actors[1])
+                .unwrap()
+                .status = CharacterStatus::Dead;
+        }
+        validate_state(&self.state, &self.pack).unwrap();
+        validate_tactical_state(&self.state).unwrap();
+        assert!(self.state.validate().is_empty());
     }
     fn run(&mut self, actor: Option<usize>, action: TacticalAction) -> TacticalEvent {
         let meta = self.meta(actor);
@@ -535,6 +558,57 @@ fn source_attack_raw_damage_replays_and_preserves_same_turn_and_physical_ownersh
     f.rejected(Some(0), TacticalAction::Attack { choice });
     f.run(Some(0), TacticalAction::EndTurn);
     assert_eq!(f.rules().timing.as_ref().unwrap().turn_number, 2);
+}
+
+#[test]
+fn ordinary_attack_rejects_dead_body_before_cost_but_can_damage_living_zero_hp() {
+    for dead in [true, false] {
+        let mut f = Fixture::new();
+        let choice = f.arm("shortbow", false, true);
+        let ammunition = choice.ammunition.unwrap();
+        f.begin();
+        f.zero_hp_target(dead);
+        if dead {
+            let before = f.state.clone();
+            let error = resolve_tactical(
+                &f.state,
+                &f.meta(Some(0)),
+                &TacticalAction::Attack { choice },
+                &f.pack,
+            )
+            .unwrap_err();
+            assert!(
+                matches!(error, RulesError::Prerequisite(message) if message.contains("body/object"))
+            );
+            assert_eq!(f.state, before);
+            assert_eq!(f.state.items[&ammunition].quantity, 20);
+            assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+        } else {
+            f.run(Some(0), TacticalAction::Attack { choice });
+            assert_eq!(f.request().mode, RollMode::Normal);
+            f.roll(0, &[15]);
+            f.roll(0, &[1]);
+            assert_eq!(f.rules().entities[&f.actors[1]].death.failures, 1);
+            assert!(!f.rules().entities[&f.actors[1]].death.dead);
+            assert!(f.flow().resolution.is_none());
+            assert_eq!(f.state.items[&ammunition].quantity, 19);
+        }
+    }
+}
+
+#[test]
+fn lethal_ordinary_attack_finishes_with_replayable_dead_target() {
+    let mut f = Fixture::new();
+    let choice = f.arm("shortbow", false, true);
+    f.entity_mut(1).hp = 2;
+    f.entity_mut(1).max_hp = 2;
+    f.begin();
+    f.run(Some(0), TacticalAction::Attack { choice });
+    f.roll(0, &[15]);
+    f.roll(0, &[6]);
+    assert!(f.rules().entities[&f.actors[1]].death.dead);
+    assert!(f.flow().resolution.is_none());
+    assert!(f.rules().pending.is_none());
 }
 
 #[test]
@@ -1317,7 +1391,10 @@ fn hidden_target_range_cannot_be_probed_through_attack_rejection() {
     encounter.battlefield.bounds.max.x = 2000;
     f.begin();
     let mut errors = vec![];
-    for position in [60, 1000] {
+    for (position, dead) in [(60, false), (1000, false), (60, true), (1000, true)] {
+        if dead {
+            f.zero_hp_target(true);
+        }
         f.state.encounter.as_mut().unwrap().participants[1]
             .position
             .x = position;
@@ -1346,7 +1423,7 @@ fn hidden_target_range_cannot_be_probed_through_attack_rejection() {
     )
     .unwrap_err()
     .to_string();
-    assert_eq!(errors[0], errors[1]);
+    assert!(errors.iter().all(|error| *error == errors[0]));
     assert_eq!(errors[0], absent_error);
     assert!(errors[0].contains("currently located target"));
     assert_eq!(f.state.items[&choice.ammunition.unwrap()].quantity, 20);

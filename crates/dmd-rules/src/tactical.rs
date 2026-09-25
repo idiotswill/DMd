@@ -10,6 +10,7 @@ mod falling;
 mod initiative;
 mod movement;
 mod ready;
+mod second_wind;
 mod shields;
 mod turn_validation;
 mod turns;
@@ -36,6 +37,7 @@ pub enum TacticalAction {
         trigger: ReadyTrigger,
         action: ReadyAction,
     },
+    SecondWind,
     DonShield {
         shield: ItemId,
         hand: Hand,
@@ -442,6 +444,7 @@ fn resolve_with_policy(
         TacticalAction::UseLegendaryResistance => failed_save::choose(&mut next, meta, true)?,
         TacticalAction::DeclineLegendaryResistance => failed_save::choose(&mut next, meta, false)?,
         TacticalAction::DeclineLegendaryAction => creature_bridge::decline(&mut next, meta)?,
+        TacticalAction::SecondWind => second_wind::begin(&mut next, meta, pack)?,
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage

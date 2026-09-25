@@ -195,19 +195,7 @@ pub(in crate::tactical) fn begin_creature_weapon(
     }
     let actor = active(state)?;
     authorize(state, meta, actor)?;
-    planning::require_located_target(state, actor, selected.target)?;
-    // This source path resolves creature vitality, not object/body durability.
-    // Check only at admission: a committed attack can itself kill this target.
-    if state
-        .rules
-        .as_ref()
-        .and_then(|rules| rules.entities.get(&selected.target))
-        .is_some_and(|target| target.death.dead)
-    {
-        return Err(prerequisite(
-            "a dead body requires its body/object adjudication path",
-        ));
-    }
+    planning::admit_target(state, actor, selected.target)?;
     let facts = facts(state, actor, feature_id, selected.weapon)?;
     let current = state
         .rules

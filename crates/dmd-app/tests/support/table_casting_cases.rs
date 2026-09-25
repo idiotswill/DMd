@@ -312,6 +312,8 @@ async fn cold_retry(f: &Fixture, meta: &CommandMeta, action: &TableAction) {
     let restored = CampaignRuntime::from_content_root(pool.clone(), &content);
     restored.restore_campaign(&export).await.unwrap();
     pool.close().await;
+    drop(restored);
+    drop(pool);
     let reopened_pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
     let reopened = CampaignRuntime::from_content_root(reopened_pool.clone(), &content);
     let expected = f
@@ -347,7 +349,11 @@ async fn cold_retry(f: &Fixture, meta: &CommandMeta, action: &TableAction) {
         &expected
     );
     reopened_pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(reopened);
+    drop(reopened_pool);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }
 
 async fn finish_hold(f: &Fixture, cultist: EntityId, accepted: (CommandMeta, TableAction)) {

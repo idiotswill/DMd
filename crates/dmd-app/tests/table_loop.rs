@@ -13,12 +13,20 @@ mod table_attack_cases;
 mod table_casting_cases;
 #[path = "support/table_creature_cases.rs"]
 mod table_creature_cases;
+#[path = "support/table_dead_target_cases.rs"]
+mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_oa_concentration_cases.rs"]
+mod table_oa_concentration_cases;
+#[path = "support/table_projection_cases.rs"]
+mod table_projection_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
+#[path = "support/table_turn_core_cases.rs"]
+mod table_turn_core_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
@@ -46,6 +54,9 @@ fn input(name: &str) -> CharacterCreationInput {
     }
 }
 
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
+
 struct Fixture {
     runtime: CampaignRuntime,
     pool: sqlx::SqlitePool,
@@ -57,20 +68,22 @@ struct Fixture {
 }
 impl Fixture {
     async fn new() -> Self {
-        Self::with_contract(TableContract::default()).await
+        Box::pin(Self::with_contract(TableContract::default())).await
     }
     async fn with_contract(contract: TableContract) -> Self {
-        Self::with_creation(contract, None).await
+        Box::pin(Self::with_creation(contract, None)).await
     }
     async fn with_creation(
         contract: TableContract,
         first_character: Option<CharacterCreationInput>,
     ) -> Self {
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
-        Self::with_creation_pool(contract, first_character, pool).await
+        // Keep nested setup phases on the heap so each caller's scenario does not
+        // carry another copy of the complete async creation/transaction frame.
+        Box::pin(Self::with_creation_pool(contract, first_character, pool)).await
     }
     async fn with_pool(contract: TableContract, pool: sqlx::SqlitePool) -> Self {
-        Self::with_creation_pool(contract, None, pool).await
+        Box::pin(Self::with_creation_pool(contract, None, pool)).await
     }
     async fn with_creation_pool(
         contract: TableContract,
@@ -894,9 +907,14 @@ async fn second_wind_pending_roll_resources_and_transcript_survive_database_reop
             .await
             .is_err()
     );
+    drop(state);
     drop(reopened);
     reopened_pool.close().await;
-    std::fs::remove_dir_all(directory).unwrap();
+    drop(reopened_pool);
+    drop(pool);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
 }
 
 #[tokio::test]
@@ -1111,7 +1129,9 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
     bad_pool.close().await;
     f.pool.close().await;
     drop(f);
-    std::fs::remove_file(database).unwrap();
+    sqlite_test_cleanup::remove_closed_file(&database)
+        .await
+        .unwrap();
     // SQLite may retain journal sidecars until pool handles finish dropping.
     let _ = std::fs::remove_dir(directory);
 }

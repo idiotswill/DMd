@@ -382,7 +382,12 @@ async fn run_landing_case(choice: Option<LiquidLandingChoice>) {
     .await;
     mirror_pool.close().await;
     f.pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(mirror);
+    drop(mirror_pool);
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }
 
 async fn step_off_and_check_privacy(f: &Fixture) -> (u32, CommandMeta, CampaignState, TableView) {
