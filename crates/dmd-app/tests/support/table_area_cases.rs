@@ -242,7 +242,7 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
                     TableCreaturePlacement {
                         actor: actors[2],
                         public_label: "Unseen wolf".into(),
-                        position: point(50, 45, 0),
+                        position: point(50, 50, 0),
                         height: 10,
                         allies: vec![],
                         enemies: vec![],
@@ -622,14 +622,19 @@ async fn finish_area(
 
 #[tokio::test]
 async fn source_area_private_ordering_saves_concentration_and_cold_retry_use_sqlite() {
+    // Bound this multi-reopen test's polling frames on the normal Windows stack.
+    // Production calls and every persistence/replay assertion remain unchanged.
+    Box::pin(run_area_case()).await;
+}
+async fn run_area_case() {
     let path = std::env::temp_dir().join(format!("dmd-table-area-{}.sqlite", CommandId::new().0));
     let pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
-    let mut f = Fixture::with_pool(TableContract::default(), pool).await;
-    let actors = prepare(&mut f).await;
-    concentrate(&f, actors[0]).await;
-    let (meta, action) = begin_area(&f, actors[1], actors[2]).await;
+    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    let actors = Box::pin(prepare(&mut f)).await;
+    Box::pin(concentrate(&f, actors[0])).await;
+    let (meta, action) = Box::pin(begin_area(&f, actors[1], actors[2])).await;
     let pending = state(&f).await;
-    reject_forged_area(&f).await;
+    Box::pin(reject_forged_area(&f)).await;
     let export = export_campaign(&f.pool, f.campaign).await.unwrap();
     let mirror_pool = open_sqlite("sqlite::memory:").await.unwrap();
     let mirror = CampaignRuntime::from_content_root(mirror_pool.clone(), content());
@@ -652,7 +657,7 @@ async fn source_area_private_ordering_saves_concentration_and_cold_retry_use_sql
         pending,
         "uncertain accepted retry must not charge twice"
     );
-    finish_area(&mut f, actors, &path, &mirror).await;
+    Box::pin(finish_area(&mut f, actors, &path, &mirror)).await;
     let final_state = state(&f).await;
     reopen(&mut f, &path).await;
     assert!(
