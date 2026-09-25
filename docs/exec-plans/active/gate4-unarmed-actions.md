@@ -1,0 +1,59 @@
+# Gate 4 — Own-turn unarmed damage
+
+Writer: root. Branch: `codex/gate4-unarmed-actions`.
+Base: fetched main cd8d4a4432c9e83d1c0c8ce65b79591bec425c8a.
+Status: planned; no implementation or verification yet.
+
+## Objective and authority
+
+Expose ordinary unarmed damage through the actual owned Attack action, physical d20,
+existing attack/vitality continuation, desktop controls and durable table history.
+This advances Gate04 actions/attacks and the product's physical dice, source fidelity,
+player authority and exact suspension requirements. Root AGENTS, product definition,
+Gate04, gate-execution protocol and ADR026 have been read. PR39 first aid and PR38
+reaction work remain independent in-progress slices; no next gate begins.
+
+Pinned SRD5.2.1 p190 was read from the verified source extraction outside the repo.
+An Unarmed Strike uses a punch, kick, headbutt or similar blow within5ft. Its Damage
+option rolls Strength plus proficiency and deals1+Strength bludgeoning damage.
+It needs no free hand, unlike Grapple, and fixed damage is not doubled by a critical.
+The source has no minimum-one damage clause; the existing damage floor remains zero.
+
+## Scope and boundaries
+
+- One target-only typed action. No arbitrary ability, damage, DC, ItemId or grant.
+- Use current actor authority, precise target knowledge, source proficiency and
+  conditions, five-foot reach and the existing cover/geometry rules before payment.
+- Spend one existing Attack action attack. Start the normal one-attack action only
+  when needed; honor an already admitted remaining attack, with no new extra attacks.
+- Retain a typed own-turn unarmed admission tied to the paid attack window. Preserve
+  legacy Opportunity admission/wire and source attacks. No fictitious weapon receipt,
+  equipment change, ammunition cost, mastery or Savage Attacker weapon-dice benefit.
+- Enter the same attack roll/automatic fixed damage/knockout/concentration work.
+  Unsupported class-specific substitutions require source grants, not UI guesses.
+- The desktop uses existing actor-specific current contacts, like first aid, without
+  altering legacy projection shapes/digests. Explain the fixed damage and no damage die.
+- Grapple, Shove, Escape, dragging, remaining Help/actions/masteries, PvP-consent
+  enforcement and all reaction/spell mechanisms remain explicit Gate4 work. This
+  bounded damage path does not complete the grapple/unarmed family or the gate.
+
+## Acceptance and verification
+
+1. Source/cost/ownership/knowledge/range/full-hands admission and critical/fixed damage;
+   raw request, invalid input, Inspiration and forged paid-admission regressions.
+2. Actual table-created characters/source opponent, file SQLite cold reopen at raw
+   d20/knockout, exact accepted retry and independent semantic restore; coherent
+   invented cost/source history must reject without writing restored rows.
+3. Controller-owned desktop action, no optimistic budget/HP changes, pending-work
+   blocking and current-contact target selection; component checks/test/build.
+4. Separate full-diff review, serial focused/fast/canonical verification and all six
+   exact-head Linux/native checks. Protected merge, fetched tree parity and post-merge
+   verification. Supporting agents are quota-blocked; root is sole writer/reviewer.
+
+## Risks and next action
+
+Only one heavy local Rust/frontend job may run; PR39 canonical owns that slot now.
+First implement the typed admission and source/cost adapter, then actual UI and
+recovery tests. Later integrate verified first aid and reaction execution versions,
+initializing current work ancestry without reinterpreting old accepted history.
+The complete Gate4 twelve-family ledger and eighteen-mechanism matrix stay binding.
