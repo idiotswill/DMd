@@ -168,3 +168,23 @@ this is policy prose, not evidence of typed PvP consent enforcement. The reviewe
 AC12-to17, original attack+5, critical damage6, shared-use2, mirror/exact-retry and
 retired-snapshot corruption assertions are sound. This module is still deliberately
 unregistered and unrun until verified PR43 integration.
+
+### Focused runtime checkpoint, 2026-09-25 21:35 UTC
+
+Linux candidate 8aa1915 passed all 44 application table scenarios and the four
+genuine legacy/reaction corpora. Its tactical_attacks binary then passed 107
+existing cases but failed all 14 new Shield scenarios at their shared initial
+source construction: the fixture omitted the Mage's required three additional
+languages. Local default-stack run a0dc8e5 reproduced the same 107/14 result
+(131.72 seconds), so no assertion or production source was weakened.
+
+After supplying the actual language choices, all 14 Shield cases pass locally
+on the default Windows GNU stack (57.29 seconds; jobs1, incremental0), including
+uniform acknowledgments, both intent/order arrivals, original damage provenance,
+Graze, shared resource exhaustion, component/Reaction blocks, selected ownership,
+OA retained movement, later rays and current/retired source corruption. Logs:
+`tooling/shield-hit-tactical-attacks.log` and `tooling/shield-hit-focused-r2.log`
+outside the repository. Source-control now owns the canonical-verification slot.
+The test fixture correction has a separate independent static review. Run fresh
+CI on this corrected candidate; final canonical, player-source SQLite and desktop
+integration acceptance remain required before merge.

@@ -31,7 +31,11 @@ fn source_actor(f: &mut Fixture, index: usize, definition: &str, size: CreatureS
         &CreatureBuildChoice {
             definition_id: definition.into(),
             size,
-            additional_languages: vec![],
+            additional_languages: if definition == "mage" {
+                vec!["dwarvish".into(), "elvish".into(), "draconic".into()]
+            } else {
+                vec![]
+            },
             hit_points: CreatureHitPointChoice::Average,
             controller: CreatureController::Player(f.players[index]),
             in_lair: false,
