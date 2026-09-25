@@ -159,6 +159,7 @@ impl Fixture {
             participants,
             knowledge: vec![],
             origin: meta,
+            area_grid_policy: None,
             geometry_ruling: ruling,
         };
         encounter.validate(&state).unwrap();

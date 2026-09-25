@@ -44,6 +44,7 @@ pub(super) fn begin(
         movement: Some(Box::new(movement)),
         casts: vec![],
         falls: vec![],
+        areas: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;

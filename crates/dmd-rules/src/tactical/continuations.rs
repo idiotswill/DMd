@@ -84,6 +84,9 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if super::areas::is_work(&work.kind) {
+        return super::areas::key(state, work);
+    }
     if matches!(
         work.kind,
         TacticalWorkKind::BeginFall { .. }
@@ -105,6 +108,11 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => unreachable!("handled above"),
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => unreachable!("handled above"),
@@ -162,6 +170,7 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
             TacticalRollRole::EffectSave
                 | TacticalRollRole::Concentration
                 | TacticalRollRole::SpellSave
+                | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
         )
     {
@@ -178,6 +187,10 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::AreaSave => (16, "Saving throw against the accepted source area."),
+        TacticalRollRole::AreaDamage => {
+            (16, "One damage roll is shared by simultaneous area saves.")
+        }
         TacticalRollRole::FallDamage => (182, "Falling damage from the retained source distance."),
         TacticalRollRole::LiquidLandingCheck => (
             182,
@@ -223,6 +236,11 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => super::areas::request(state, work, key),
         TacticalWorkKind::BeginFall { .. } => Err(invalid("Fall choice has no raw roll.")),
         TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => {
             super::falling::request(state, work, key)
@@ -315,6 +333,9 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::areas::start(state, meta, &work)? {
+        return Ok(());
+    }
     if super::falling::start(state, meta, &work)? {
         return Ok(());
     }
@@ -325,6 +346,10 @@ pub(super) fn start(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. } | TacticalWorkKind::AreaSave { .. } => (),
+        TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => return Err(invalid("area phase was not handled")),
         TacticalWorkKind::BeginFall { .. } => return Err(invalid("Fall choice was not handled.")),
         TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => (),
         TacticalWorkKind::EndOccupiedSpace { actor } => {
@@ -537,6 +562,7 @@ pub(super) fn voluntarily_fail(
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
+            | TacticalRollRole::AreaSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -588,6 +614,13 @@ pub(super) fn finish(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => {
+            return super::areas::finish(state, meta, &pending, result, forced_success);
+        }
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => {

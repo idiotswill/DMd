@@ -153,6 +153,7 @@ impl Fixture {
             participants: vec![participant(actor), participant(other)],
             knowledge: vec![],
             origin: meta,
+            area_grid_policy: None,
             geometry_ruling: Ruling {
                 basis: RulingBasis::GmAdjudication,
                 reason: "fixture".into(),

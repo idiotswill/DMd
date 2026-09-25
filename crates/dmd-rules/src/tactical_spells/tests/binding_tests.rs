@@ -145,6 +145,7 @@ fn scene(spell: &str, level: u8, target_source: &str) -> (CampaignState, SpellCa
         participants: vec![participant(actor, point(10, 10, 0)), other],
         knowledge: vec![],
         origin: meta.clone(),
+        area_grid_policy: None,
         geometry_ruling: Ruling {
             basis: RulingBasis::GmAdjudication,
             reason: "Authored source test geometry".into(),
