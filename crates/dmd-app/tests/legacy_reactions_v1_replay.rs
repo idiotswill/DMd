@@ -107,7 +107,10 @@ impl Fixture {
     ) -> TableTransportRequest {
         let viewer = match channel {
             TableTransportChannel::Host => TableViewer::Host,
-            TableTransportChannel::Player { player_id, .. } => TableViewer::Player(player_id),
+            TableTransportChannel::Player { player_id, .. }
+            | TableTransportChannel::SourceCreature { player_id, .. } => {
+                TableViewer::Player(player_id)
+            }
         };
         let view = self
             .app

@@ -3,8 +3,9 @@
 Status: implemented in draft PR43; verification in progress. Source `26241a9`
 passes native Windows CI, 693 Rust tests and packaging. Its Linux PR merge with
 main `d82d7b2` passes all checks and 694 Rust tests. The local default-stack and
-source-control confirmation also passes. Genuine PR42 corpus integration and final
-combined verification are pending; this is not acceptance.
+source-control confirmation also passes. Verified main `2798b6b` and its genuine
+PR42 corpus are now integrated. Final combined verification is pending; this is
+not acceptance.
 Sole writer: source_control_recovery, taking over environment_audit's preserved
 branch. Branch: `codex/gate4-source-creature-control`.
 Authorized base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`.
@@ -297,3 +298,22 @@ or prior work was discarded. Wait for the parent's verified PR42 merge, then mer
 that exact main and adapt only the new corpus helper's exhaustive channel match.
 No heavy local checks run until the parent releases the shared slot; use jobs1,
 the default thread stack and CARGO_INCREMENTAL=0 after the disk recovery.
+
+## Genuine corpus integration candidate
+
+Merged verified Night Hag main `d82d7b2` normally, then fetched and merged PR42 main
+`2798b6b1d6263b5e321a1903d9fb4f2331b73895`. The parent verified the latter's complete
+tree parity with reviewed source `cbe9575`; its six CI jobs passed before protected
+merge. This branch preserves all four captured JSON files exactly. The sole test
+adaptation is an exhaustive SourceCreature-to-player-view arm in the new corpus
+request helper; its wire requests remain literal v1 because those tables have not
+activated source access. No previously verified production source changed during
+these integrations, and no new Shield executor is part of this branch.
+
+Publish the coherent integration candidate for fresh Linux/native CI while waiting
+for the shared heavy slot. Canonical `./scripts/verify`, focused genuine corpus
+acceptance, and final review must still succeed on the combined source. Earlier
+green heads are retained evidence, not a substitute for this candidate's checks.
+Integration format and diff checks pass. The four JSON files have no diff against
+verified main, and all four Rust production source trees have no diff against
+`26241a9`; inherited Night Hag content and test changes remain part of the candidate.
