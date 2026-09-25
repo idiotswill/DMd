@@ -66,12 +66,12 @@ fn dragon() -> Fixture {
         profiles: vec![built.profile],
         runtime: vec![built.runtime],
     });
-    let ids = creature_equipment_plan("adult-red-dragon", 20)
+    let ids = creature_equipment_plan("adult-red-dragon", 0)
         .unwrap()
         .iter()
         .map(|_| ItemId::new())
         .collect::<Vec<_>>();
-    f.state = materialize_creature_equipment(&f.state, &origin, actor, 20, &ids, &f.pack).unwrap();
+    f.state = materialize_creature_equipment(&f.state, &origin, actor, 0, &ids, &f.pack).unwrap();
     let e = f.state.encounter.as_mut().unwrap();
     e.participants[0].size = CreatureSize::Huge;
     e.participants[0].height = 30;
