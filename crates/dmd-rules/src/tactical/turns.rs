@@ -222,6 +222,7 @@ fn begin_boundary_from(
         attack: None,
         movement: None,
         casts: vec![],
+        falls: vec![],
         next_occurrence: first_occurrence,
     }));
     state
@@ -282,10 +283,11 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if resolution(state)?
-            .movement
-            .as_ref()
-            .is_some_and(|m| m.opportunity.is_some())
+        if super::falling::selected(state)?.is_some()
+            || resolution(state)?
+                .movement
+                .as_ref()
+                .is_some_and(|m| m.opportunity.is_some())
             || resolution(state)?.attack.as_ref().is_some_and(|a| {
                 matches!(
                     a.stage,
@@ -299,6 +301,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         }
         super::movement::prune(state, meta)?;
         if resolution(state)?.pending.is_some()
+            || super::falling::selected(state)?.is_some()
             || resolution(state)?.failed_save.is_some()
             || resolution(state)?.legendary_window.is_some()
             || resolution(state)?
@@ -315,6 +318,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             return Ok(());
         }
         // Ending a group can cancel sibling tickets. They cannot remain a phantom choice.
+        super::falling::queue_losses(state, meta)?;
         let live: Vec<_> = effects(state)?.pending.iter().map(|t| t.id).collect();
         let r = resolution_mut(state)?;
         for frame in &mut r.frames {
@@ -384,6 +388,7 @@ pub(super) fn choose(
         authorize(state, meta, resolution(state)?.turn_actor)?;
     }
     if resolution(state)?.pending.is_some()
+        || super::falling::selected(state)?.is_some()
         || resolution(state)?.failed_save.is_some()
         || resolution(state)?.legendary_window.is_some()
         || resolution(state)?

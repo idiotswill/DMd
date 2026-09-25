@@ -552,15 +552,26 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 | TacticalRollRole::EffectSave
                 | TacticalRollRole::Attack
                 | TacticalRollRole::SpellSave
+                | TacticalRollRole::LiquidLandingCheck
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),
                 TacticalRollRole::EffectDamage
                 | TacticalRollRole::AttackDamage
+                | TacticalRollRole::FallDamage
                 | TacticalRollRole::SpellAmount => None,
             };
             if expected.is_some_and(|sides| roll.request.dice != [DieSpec { count: 1, sides }]) {
                 return Err(invalid("invalid tactical roll dice"));
+            }
+            if key.role == TacticalRollRole::FallDamage
+                && (roll.request.dice.len() != 1
+                    || roll.request.dice[0].sides != 6
+                    || !(1..=20).contains(&roll.request.dice[0].count)
+                    || roll.request.modifier != 0
+                    || roll.request.mode != RollMode::Normal)
+            {
+                return Err(invalid("invalid source falling damage dice"));
             }
         }
         match &roll.purpose {

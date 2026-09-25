@@ -52,7 +52,7 @@ pub enum TacticalFallStage {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalFallCause {
-    /// A committed final ordinary-movement segment ended without physical support.
+    /// A committed ordinary-movement segment exhausted physical support.
     MovementEnd {
         movement: CommandMeta,
         /// Zero-based submitted step which was actually committed before falling.
@@ -60,6 +60,8 @@ pub enum TacticalFallCause {
     },
     /// Current source mechanics no longer sustain this creature's flight.
     FlightLost,
+    /// No physical support or sustaining movement remains (including interrupted jumps).
+    Unsupported,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

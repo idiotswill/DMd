@@ -7,6 +7,99 @@ fn horizontal_contact(body: SpatialBox, surface: SpatialBox) -> bool {
         && body.max.y > surface.min.y
 }
 
+/// Authored Burrow support means the entire foot space is within real penetrable
+/// ground at its current depth. Adjacent ground volumes may jointly cover it;
+/// merely clipping a wall's side cannot hold an otherwise airborne creature.
+pub(crate) fn buried_support(
+    encounter: &TacticalEncounter,
+    actor: &TacticalParticipant,
+) -> Result<bool, SpatialError> {
+    if actor.movement.burrow.is_none() {
+        return Ok(false);
+    }
+    let body = actor.volume().map_err(invalid)?;
+    let ground = encounter
+        .battlefield
+        .terrain
+        .iter()
+        .filter(|t| {
+            t.burrowable
+                && t.volume.min.z <= body.min.z
+                && body.min.z < t.volume.max.z
+                && horizontal_contact(body, t.volume)
+        })
+        .map(|t| t.volume)
+        .collect::<Vec<_>>();
+    if ground.is_empty() {
+        return Ok(false);
+    }
+    let mut xs = vec![body.min.x, body.max.x];
+    for part in &ground {
+        xs.push(part.min.x.clamp(body.min.x, body.max.x));
+        xs.push(part.max.x.clamp(body.min.x, body.max.x));
+    }
+    xs.sort_unstable();
+    xs.dedup();
+    for slab in xs.windows(2) {
+        let mut ys = ground
+            .iter()
+            .filter(|p| p.min.x <= slab[0] && p.max.x >= slab[1])
+            .map(|p| (p.min.y.max(body.min.y), p.max.y.min(body.max.y)))
+            .collect::<Vec<_>>();
+        ys.sort_unstable();
+        let mut covered = body.min.y;
+        for (from, to) in ys {
+            if from > covered {
+                break;
+            }
+            covered = covered.max(to);
+        }
+        if covered < body.max.y {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+pub(super) fn validate_physical_position(
+    encounter: &TacticalEncounter,
+    actor: &TacticalParticipant,
+) -> Result<(), SpatialError> {
+    let body = actor.volume().map_err(invalid)?;
+    if encounter
+        .battlefield
+        .obstacles
+        .iter()
+        .any(|o| o.blocks_movement && body.intersects(o.volume))
+    {
+        return Err(invalid(
+            "creature is embedded in a movement-blocking obstacle",
+        ));
+    }
+    let in_ground = encounter
+        .battlefield
+        .terrain
+        .iter()
+        .any(|t| t.burrowable && body.intersects(t.volume));
+    if (in_ground || actor.position.z < encounter.battlefield.floor_z)
+        && !buried_support(encounter, actor)?
+    {
+        return Err(invalid("underground creature lacks source Burrow support"));
+    }
+    Ok(())
+}
+
+/// Reject impossible initial positions before an accepted action can produce a drop
+/// or fall. Every admitted map has an authored floor; source Burrow positions remain
+/// legal. Nonblocking terrain and creature overlap are intentionally unaffected.
+pub fn validate_physical_positions(encounter: &TacticalEncounter) -> Result<(), SpatialError> {
+    encounter.validate_geometry().map_err(invalid)?;
+    for actor in &encounter.participants {
+        validate_physical_position(encounter, actor)?;
+    }
+    Ok(())
+}
+
 fn surface_order(surface: &FallSurface) -> (u8, &str) {
     match surface {
         FallSurface::SolidObstacle { id } => (0, id),
@@ -119,6 +212,14 @@ pub fn flight_loss_fall(
 ) -> Result<Option<SpatialFall>, SpatialError> {
     validate_encounter(encounter, state)?;
     let participant = participant(encounter, actor)?;
+    // A creature with a Fly Speed may currently be burrowing through actual ground.
+    // It is not airborne merely because its source profile also permits flight.
+    validate_physical_position(encounter, participant)?;
+    if participant.position.z == encounter.battlefield.floor_z
+        || buried_support(encounter, participant)?
+    {
+        return Ok(None);
+    }
     let Some(base) = participant.movement.fly else {
         return Ok(None);
     };
@@ -139,4 +240,21 @@ pub fn flight_loss_fall(
     } else {
         Ok(None)
     }
+}
+
+/// Dropped held objects settle independently of a creature's personal Fly/Hover.
+/// The holder footprint uses the same explicit first-contact map adjudication as
+/// creature landing; object size, breakage and collision damage are not invented.
+pub fn drop_destination(
+    encounter: &TacticalEncounter,
+    actor: EntityId,
+) -> Result<SpatialPoint, SpatialError> {
+    encounter.validate_geometry().map_err(invalid)?;
+    let holder = participant(encounter, actor)?;
+    validate_physical_position(encounter, holder)?;
+    if buried_support(encounter, holder)? {
+        // Real surrounding ground supports a drop at its actual buried location.
+        return Ok(holder.position);
+    }
+    Ok(fall_destination(encounter, actor)?.map_or(holder.position, |fall| fall.to))
 }

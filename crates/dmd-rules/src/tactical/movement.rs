@@ -43,6 +43,7 @@ pub(super) fn begin(
         attack: None,
         movement: Some(Box::new(movement)),
         casts: vec![],
+        falls: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
@@ -332,8 +333,30 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         .ok_or_else(|| invalid("Movement cursor overflow."))?;
     movement.offered.clear();
     movement.decisions.clear();
+    let movement = movement.clone();
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
+    if segment.falls_after {
+        super::falling::queue_movement_end(state, meta, &movement)?;
+    }
     refresh_dodges(state)
+}
+
+pub(super) fn landed(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+) -> Result<(), RulesError> {
+    if resolution(state)?
+        .movement
+        .as_ref()
+        .is_some_and(|movement| movement.actor == actor)
+    {
+        finish_movement(state, meta, TacticalMovementEnd::Fell)?;
+    } else if active(state)? == actor {
+        flow_mut(state)?.budget.movement_progress = None;
+        flow_mut(state)?.budget.movement_origin = None;
+    }
+    Ok(())
 }
 
 fn finish_movement(

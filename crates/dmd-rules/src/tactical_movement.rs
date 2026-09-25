@@ -200,15 +200,22 @@ pub(crate) fn validate_result(state: &CampaignState) -> Result<(), RulesError> {
         || (result.cause.id == result.original.id && result.cause != result.original)
         || cost < u32::from(result.completed_steps)
         || cost > u32::from(result.completed_steps) * 30
-        || (result.reason == TacticalMovementEnd::Completed)
-            != (result.completed_steps == result.requested_steps)
+        || (result.reason == TacticalMovementEnd::Completed
+            && result.completed_steps != result.requested_steps)
+        || (result.reason == TacticalMovementEnd::Stopped
+            && result.completed_steps == result.requested_steps)
         || (result.completed_steps == 0
-            && result.reason != TacticalMovementEnd::Interrupted
+            && !matches!(
+                result.reason,
+                TacticalMovementEnd::Interrupted | TacticalMovementEnd::Fell
+            )
             && result.endpoint != result.start)
-        || (result.reason != TacticalMovementEnd::Interrupted
-            && grid_distance(result.start, result.endpoint)
-                .map_err(|error| invalid(error.to_string()))?
-                > u32::from(result.completed_steps) * 10)
+        || (!matches!(
+            result.reason,
+            TacticalMovementEnd::Interrupted | TacticalMovementEnd::Fell
+        ) && grid_distance(result.start, result.endpoint)
+            .map_err(|error| invalid(error.to_string()))?
+            > u32::from(result.completed_steps) * 10)
     {
         return Err(invalid(
             "Movement result has incompatible source, counts or expenditure.",
@@ -401,11 +408,6 @@ pub(crate) fn next_segment(
         std::slice::from_ref(step),
         index + 1 == movement.path.len(),
     )?;
-    if index + 1 == movement.path.len() && plan.falls_at_end {
-        return Err(prerequisite(
-            "The remaining destination requires falling resolution.",
-        ));
-    }
     plan.segments
         .into_iter()
         .next()

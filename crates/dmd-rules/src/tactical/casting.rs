@@ -199,6 +199,7 @@ pub(super) fn begin(
         attack: None,
         movement: None,
         casts: vec![record],
+        falls: vec![],
         next_occurrence: 1,
     }));
     commit(state, meta, occurrence)?;

@@ -249,6 +249,8 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
     encounter
         .validate(state)
         .map_err(|e| RulesError::Invalid(e.to_string()))?;
+    crate::spatial::validate_physical_positions(encounter)
+        .map_err(|e| RulesError::Invalid(e.to_string()))?;
     let Some(f) = &encounter.flow else {
         return Ok(());
     };

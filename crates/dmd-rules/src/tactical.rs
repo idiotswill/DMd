@@ -5,6 +5,7 @@ mod casting;
 mod continuations;
 mod creature_bridge;
 mod failed_save;
+mod falling;
 mod initiative;
 mod movement;
 mod turn_validation;
@@ -31,6 +32,9 @@ pub enum TacticalAction {
         target: EntityId,
         feature_id: String,
         weapon: Option<ItemId>,
+    },
+    ChooseLiquidLanding {
+        choice: Option<LiquidLandingChoice>,
     },
     CastSpell {
         choice: SpellCastChoice,
@@ -225,6 +229,9 @@ pub fn resolve_tactical(
             weapon,
         } => {
             attacks::begin_creature_attack(&mut next, meta, *target, feature_id, *weapon)?;
+        }
+        TacticalAction::ChooseLiquidLanding { choice } => {
+            falling::choose(&mut next, meta, *choice)?
         }
         TacticalAction::CastSpell { choice, targets } => {
             casting::begin(&mut next, meta, choice, targets)?;

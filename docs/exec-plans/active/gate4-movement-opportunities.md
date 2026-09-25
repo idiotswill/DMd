@@ -587,3 +587,90 @@ result. Complete retains accepted landing-check evidence, an optional actual dam
 roll key and its resolving command. This contract checkpoint has formatting/whitespace
 checks only: exhaustive rules/application matches and initializers deliberately follow
 with the coherent implementation. It is not a compiling or runnable release checkpoint.
+
+### Queued falling implementation and review decisions
+
+The source implementation now records falling in the existing resolution, including
+an `Unsupported` cause for an interrupted airborne jump without a Fly Speed. A real
+Walk/Crawl step off a ledge commits that one step and its cost before the fall; a
+usable declared Jump preserves its airborne prefix until its declared end. Knockout
+or another loss of usable movement interrupts that prefix. Merely intersecting a
+climbable region does not give an interrupted jumper an unchosen grip.
+
+The liquid choice belongs to the falling actor, independently of the current turn
+controller. Its accepted command pays the Reaction once, then real raw check/damage
+requests survive serialization. Checks share the common opt-in natural-extreme
+outcome policy. Landing changes actual position, retains `Fell` with original Move
+and actual causing command, and preserves independent concentration/casting work.
+A fatal reaction lands the now-dead Hover body without inventing living damage dice.
+A knocked-out Hover creature remains aloft but drops its actual held ItemIds to the
+independently derived contact below it; no object damage or optional collision damage
+is invented.
+
+Authored geometry convention and admission are explicit: positive footprint overlap
+on a physical top is first contact. Dropped-object contact uses the holder footprint
+as an approximation, independent of personal Fly/Hover. Burrow support requires real
+Burrow capability and complete foot-space coverage by penetrable ground at that depth;
+adjacent ground volumes may jointly cover it. Side clipping does not count. Impossible
+solid-embedded/unsupported-underground initial positions reject at tactical establish,
+validation/restore, and before committing a movement segment. Nonblocking difficult or
+obscured regions, legal creature overlap and valid Burrow positions remain legal.
+Every admitted map supplies an authored floor, so the current immutable geometry can
+yield contact without inventing a floor or rolling back an accepted damaging action.
+Dynamic geometry/grip-release effects need their own source operation; this slice does
+not invent a climbing-failure rule from a region that merely permits climbing.
+
+Independent attack-author review found and closed two concrete issues: overly broad
+burrowable side contact, and the climbable-region exemption taking precedence over
+an actual interrupted Jump. The fixed regressions exercise both, including adjacent
+solid ground coverage, an embedded setup/restore refusal, and a real OA knockout next
+to climbable terrain. Initial compiler plumbing/import errors and two invalid test
+assumptions (dead actors entering initiative and the chosen reactor's grid reach) were
+corrected rather than weakening source rules. Exact tested checkpoint follows final
+source/spatial/lint checks.
+
+Application integration must include all fall command origins: `falls[].origin`,
+`cause.MovementEnd.movement`, `stage.LandingCheck.accepted_by`, retained liquid
+`landing.accepted_by`, and `stage.Complete.resolved_by`. Existing audit/journal replay
+must still reject fabricated initial live tactical anchors and compare every reached
+snapshot. Expose only the owned landing choice and source roll labels; surface IDs and
+hidden landing geometry remain private. Add `falls: vec![]` to independently authored
+resolution constructors, including the source CreatureAttack constructor. New fields
+remain within the unreleased, versioned tactical extension; there is no new SQL table,
+state schema version or separate queue. Source leaf commits must be integrated before
+the domain/queue commit because the parent's current tree lacks those leaf files.
+
+### Checkpoint verification and remaining integration
+
+The final production behavior passed 12 focused falling runtime scenarios and all 43
+spatial tests, including source leaves, privacy, path/area geometry and the new support
+regressions. Strict domain/rules all-target Clippy passed with `-D warnings` after a
+needless-borrow correction; final formatting and whitespace checks passed. Before the
+last bounded interrupted-Jump review fix, the complete 42 attack/casting, 29 movement
+and 24 turn batch passed (95 cases). After adding the Jump case, the attack suite again
+passed and the movement suite exposed only that new fixture's incorrectly chosen
+reaction distance. Correcting the fixture and prioritizing its actual Jump over the
+climbable region produced the final 12 focused passes. These are scoped verification
+claims, not a repeated full workspace or application verification claim.
+
+Durable logs outside the repository:
+
+- `../tooling/logs/gate4-queued-falling-integration-20260925.log`: 95 passing public
+  reducer scenarios before the final Jump extension.
+- `../tooling/logs/gate4-queued-falling-integration-20260925-r2.log`: 42 attacks pass,
+  29 movement pass and the diagnosed new fixture's reaction-position failure.
+- `../tooling/logs/gate4-queued-falling-tests-20260925-r5.log`: final 12 falling passes.
+- `../tooling/logs/gate4-queued-falling-spatial-20260925.log`: final 43 spatial passes.
+- `../tooling/logs/gate4-queued-falling-clippy-20260925-r2.log`: final strict all-target
+  domain/rules lint pass. The first lint log records the corrected needless borrow.
+
+Compiler ownership was released immediately to the parent for the priority equipment
+composition correction. This branch performs no further Rust builds without a new
+slot. Next: parent integrates the source leaf chain `dd8730c`, `8c6f271`, `3bc7e36`,
+`4cdae2c`, the plan/domain checkpoints `14d0aeb`, `eec8f01`, and this coherent source
+checkpoint; preserve newer parent app/source-attack edits and add their empty `falls`
+initializers. Independent exact-head review, parent full combined tests, real SQLite
+recovery/tamper rejection and owned player/host landing UI remain required before the
+feature contributes to application acceptance. Shared queue ownership can then pass
+to the coordinated area-effect author; subsequent fixes must be coordinated rather
+than editing those shared files concurrently. Gate 4 remains active.

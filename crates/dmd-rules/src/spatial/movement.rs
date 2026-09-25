@@ -64,6 +64,9 @@ pub struct MovementSegment {
     pub cost: u32,
     pub opportunities: Vec<OpportunityCrossing>,
     pub progress_after: TacticalMovementProgress,
+    /// A real committed crossing must resolve its fall before another path step.
+    /// Intermediate source-valid Jump segments retain their airborne continuation.
+    pub falls_after: bool,
 }
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MovementPlan {
@@ -294,17 +297,6 @@ fn region_at(
         .iter()
         .any(|t| test(t) && t.volume.intersects(volume))
 }
-fn supported(encounter: &TacticalEncounter, actor: &TacticalParticipant) -> bool {
-    actor.position.z == encounter.battlefield.floor_z
-        || encounter.battlefield.terrain.iter().any(|t| {
-            t.supports_top
-                && actor.position.z == t.volume.max.z
-                && actor.position.x >= t.volume.min.x
-                && actor.position.x + actor.size.footprint_units() <= t.volume.max.x
-                && actor.position.y >= t.volume.min.y
-                && actor.position.y + actor.size.footprint_units() <= t.volume.max.y
-        })
-}
 fn occupancy(
     encounter: &TacticalEncounter,
     state: &CampaignState,
@@ -503,6 +495,8 @@ pub fn evaluate_path_progress(
         let mut next = moving.clone();
         next.position = step.destination;
         let volume = next.volume().map_err(invalid)?;
+        super::falling::validate_physical_position(encounter, &next)
+            .map_err(|_| illegal("destination lacks legal physical support"))?;
         if !encounter.battlefield.bounds.encloses(volume)
             || physical_blocked(encounter, volume, step.mode)
         {
@@ -551,11 +545,6 @@ pub fn evaluate_path_progress(
                 return Err(illegal("prone movement must crawl"));
             }
             match step.mode {
-                MovementMode::Walk | MovementMode::Crawl if !supported(encounter, &next) => {
-                    return Err(illegal(
-                        "walking/crawling destination has no supporting surface",
-                    ));
-                }
                 MovementMode::Swim if !region_at(encounter, volume, |t| t.water) => {
                     return Err(illegal("swimming requires water"));
                 }
@@ -685,6 +674,14 @@ pub fn evaluate_path_progress(
             jump: jump_start.map(|(start, had_runup)| TacticalJumpProgress { start, had_runup }),
             straight,
         };
+        // Use the same authored physical-support/first-contact geometry as landing.
+        // A partial ledge contact is the explicit map convention documented there.
+        working.participants[index] = next.clone();
+        let unsupported = !matches!(
+            step.mode,
+            MovementMode::Fly | MovementMode::Climb | MovementMode::Swim | MovementMode::Burrow
+        ) && super::falling::fall_destination(&working, actor_id)?.is_some();
+        let falls_after = unsupported && (step.mode != MovementMode::Jump || last);
         segments.push(MovementSegment {
             from: moving.position,
             to: next.position,
@@ -692,19 +689,22 @@ pub fn evaluate_path_progress(
             cost: step_cost,
             opportunities,
             progress_after,
+            falls_after,
         });
         moving = next;
         working.participants[index] = moving.clone();
+        if falls_after {
+            break;
+        }
     }
-    let final_mode = path.steps.last().ok_or_else(|| invalid("empty path"))?.mode;
-    let falls_at_end = !supported(encounter, &moving)
-        && final_mode != MovementMode::Fly
-        && !region_at(encounter, moving.volume().map_err(invalid)?, |t| {
-            t.water || t.climbable || t.burrowable
-        });
-    if ends_move && final_mode == MovementMode::Jump && !falls_at_end {
-        // The declared jump has landed. A later jump needs its own immediate run-up,
-        // but a suspended intermediate segment preserves the unfinished jump instead.
+    let final_mode = segments.last().ok_or_else(|| invalid("empty path"))?.mode;
+    let falls_at_end = !matches!(
+        final_mode,
+        MovementMode::Fly | MovementMode::Climb | MovementMode::Swim | MovementMode::Burrow
+    ) && super::falling::fall_destination(&working, actor_id)?.is_some();
+    if ends_move && final_mode == MovementMode::Jump {
+        // The declared jump has ended, either on support or into its required fall.
+        // A later jump needs a new run-up; an intermediate segment retains this one.
         let last = segments
             .last_mut()
             .ok_or_else(|| invalid("empty movement result"))?;

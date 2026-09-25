@@ -170,17 +170,12 @@ pub fn resolve_liquid_landing(
     }
     let request = liquid_landing_request(state, actor, choice, request_id, visibility)?;
     let resolved = request.resolve(result)?;
-    let house_extremes = state
+    let house_rules = &state
         .rules
         .as_ref()
         .ok_or(RulesError::Uninitialized)?
-        .house_rules
-        .ability_test_natural_extremes;
-    let successful = match resolved.kept_dice[0].value {
-        20 if house_extremes => true,
-        1 if house_extremes => false,
-        _ => resolved.total >= 15,
-    };
+        .house_rules;
+    let successful = crate::test_outcome::ability_test_success(&resolved, 15, house_rules)?;
     Ok(LiquidLandingOutcome {
         actor,
         path: path.clone(),

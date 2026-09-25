@@ -152,14 +152,32 @@ pub(crate) fn drop_held(
     actor: EntityId,
     origin: &CommandMeta,
 ) -> Result<(), RulesError> {
+    if state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_inventory.as_ref())
+        .and_then(|inventory| {
+            inventory
+                .loadouts
+                .iter()
+                .find(|loadout| loadout.actor == actor)
+        })
+        .is_none_or(|loadout| {
+            !loadout
+                .hands
+                .hands
+                .iter()
+                .any(|hand| matches!(hand, HandAssignment::Item(_)))
+        })
+    {
+        return Ok(());
+    }
     let encounter = state
         .encounter
         .as_ref()
         .ok_or_else(|| invalid("drop requires tactical location"))?;
-    let position = encounter
-        .participant(actor)
-        .ok_or_else(|| invalid("drop actor absent"))?
-        .position;
+    let position = crate::spatial::drop_destination(encounter, actor)
+        .map_err(|error| invalid(error.to_string()))?;
     let location = state
         .scenes
         .get(&encounter.scene_id)

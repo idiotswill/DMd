@@ -78,6 +78,9 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::BeginFall { .. }
+        | TacticalWorkKind::LiquidLandingCheck { .. }
+        | TacticalWorkKind::FallDamage { .. } => super::falling::validate_work(state, work)?,
         TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. } => {
             super::casting::validate_work(state, work)?
         }
@@ -223,6 +226,13 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut ticket_ids = HashSet::new();
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
+            + usize::from(super::falling::selected(state)?.is_some())
+            + usize::from(r.attack.as_ref().is_some_and(|a| {
+                matches!(
+                    a.stage,
+                    TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+                )
+            }))
             + usize::from(r.failed_save.is_some())
             + usize::from(r.legendary_window.is_some())
             + usize::from(r.movement.as_ref().is_some_and(|m| m.opportunity.is_some()))
@@ -297,6 +307,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     .as_ref()
                     .ok_or_else(|| invalid("selected work lacks dice request"))?,
             )?;
+        } else if super::falling::selected(state)?.is_some() {
+            if rules.pending.is_some() {
+                return Err(invalid("liquid landing choice has competing dice"));
+            }
         } else if r.movement.as_ref().is_some_and(|m| m.opportunity.is_some()) {
             if rules.pending.is_some() {
                 return Err(invalid("movement opportunity has competing dice"));
@@ -422,5 +436,6 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
         provenance(state, &ground.origin, actor)?;
     }
+    super::falling::validate(state)?;
     Ok(())
 }

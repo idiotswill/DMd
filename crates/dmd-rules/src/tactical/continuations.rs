@@ -86,6 +86,14 @@ pub(super) fn key(
 ) -> Result<TacticalRollKey, RulesError> {
     if matches!(
         work.kind,
+        TacticalWorkKind::BeginFall { .. }
+            | TacticalWorkKind::LiquidLandingCheck { .. }
+            | TacticalWorkKind::FallDamage { .. }
+    ) {
+        return super::falling::key(state, work);
+    }
+    if matches!(
+        work.kind,
         TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. }
     ) {
         return super::casting::key(state, work);
@@ -97,6 +105,9 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::BeginFall { .. }
+        | TacticalWorkKind::LiquidLandingCheck { .. }
+        | TacticalWorkKind::FallDamage { .. } => unreachable!("handled above"),
         TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. } => {
             unreachable!("handled above")
         }
@@ -151,16 +162,27 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
             TacticalRollRole::EffectSave
                 | TacticalRollRole::Concentration
                 | TacticalRollRole::SpellSave
+                | TacticalRollRole::LiquidLandingCheck
         )
     {
         return Ruling {
             basis: RulingBasis::HouseRule {
                 id: "ability-test-natural-extremes".into(),
             },
-            reason: "The table's explicit natural-1/20 rule applies to this saving throw.".into(),
+            reason: if role == TacticalRollRole::LiquidLandingCheck {
+                "The table's explicit natural-1/20 rule applies to this landing check."
+            } else {
+                "The table's explicit natural-1/20 rule applies to this saving throw."
+            }
+            .into(),
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::FallDamage => (182, "Falling damage from the retained source distance."),
+        TacticalRollRole::LiquidLandingCheck => (
+            182,
+            "The creature's Reaction permits a DC 15 liquid landing check.",
+        ),
         TacticalRollRole::SpellSave => (
             105,
             "Saving throw from the accepted canonical spell program.",
@@ -201,6 +223,10 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::BeginFall { .. } => Err(invalid("Fall choice has no raw roll.")),
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => {
+            super::falling::request(state, work, key)
+        }
         TacticalWorkKind::SpellProgram { .. } => super::casting::request(state, work, key),
         TacticalWorkKind::FinishSpell { .. } => Err(invalid("spell cleanup has no raw roll")),
         TacticalWorkKind::MoveSegment | TacticalWorkKind::MovementOpportunity { .. } => {
@@ -289,6 +315,9 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::falling::start(state, meta, &work)? {
+        return Ok(());
+    }
     if super::movement::start(state, meta, &work)? {
         return Ok(());
     }
@@ -296,6 +325,8 @@ pub(super) fn start(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::BeginFall { .. } => return Err(invalid("Fall choice was not handled.")),
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. } => (),
         TacticalWorkKind::EndOccupiedSpace { actor } => {
             // Another simultaneous consequence may have moved the actor or
             // changed its size/immunity. Re-evaluate actual geometry at resolution.
@@ -547,7 +578,21 @@ pub(super) fn finish(
         })
         .transpose()?;
     resolution_mut(state)?.pending = None;
+    if matches!(
+        pending.work.kind,
+        TacticalWorkKind::LiquidLandingCheck { .. } | TacticalWorkKind::FallDamage { .. }
+    ) {
+        if forced_success {
+            return Err(invalid("A source save override cannot alter falling work."));
+        }
+        return super::falling::finish(state, meta, &pending, result);
+    }
     match pending.work.kind {
+        TacticalWorkKind::BeginFall { .. }
+        | TacticalWorkKind::LiquidLandingCheck { .. }
+        | TacticalWorkKind::FallDamage { .. } => {
+            return Err(invalid("Fall choice cannot await unrelated dice."));
+        }
         TacticalWorkKind::EndOccupiedSpace { .. } => {
             return Err(invalid("occupied-space consequence cannot await dice"));
         }
@@ -734,6 +779,18 @@ pub(super) fn apply_vitality(
     operation: VitalityOperation,
     damage_source: Option<EntityId>,
 ) -> Result<(), RulesError> {
+    apply_vitality_with_outcome(state, meta, actor, occurrence, operation, damage_source)
+        .map(|_| ())
+}
+
+pub(super) fn apply_vitality_with_outcome(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    occurrence: u16,
+    operation: VitalityOperation,
+    damage_source: Option<EntityId>,
+) -> Result<crate::tactical_damage::VitalityOutcome, RulesError> {
     let transition = crate::tactical_vitality_adapter::apply(
         state,
         actor,
@@ -812,5 +869,6 @@ pub(super) fn apply_vitality(
     }
     work.extend(new_effect_work(state)?);
     push_frame(state, work)?;
-    refresh_dodges(state)
+    refresh_dodges(state)?;
+    Ok(transition.outcome)
 }

@@ -2,6 +2,9 @@ use dmd_domain::*;
 use dmd_rules::{spatial, tactical::*, tactical_effects::*, tactical_inventory::*, *};
 use std::collections::HashMap;
 
+#[path = "tactical_movement/falling.rs"]
+mod falling;
+
 struct Fixture {
     state: CampaignState,
     pack: RulesPack,

@@ -499,3 +499,87 @@ fn liquid_landing_preserves_the_campaigns_opted_in_natural_extremes_policy() {
     assert!(!outcome(&f.state, &raw)); // RAW 20-5-10 fails; no rewritten natural face.
     assert_eq!(raw.dice[0].value, 20);
 }
+
+#[test]
+fn burrow_support_requires_actual_ground_coverage_and_keeps_nonblocking_regions_legal() {
+    let mut f = falling_fixture();
+    f.actor(f.a).movement.fly = Some(60);
+    f.actor(f.a).movement.burrow = Some(60);
+    f.condition(f.a, Condition::Incapacitated);
+    f.terrain("side-contact", volume(point(19, 10, 0), point(30, 20, 90)))
+        .burrowable = true;
+    assert!(validate_physical_positions(&f.encounter).is_err());
+    assert!(flight_loss_fall(&f.encounter, &f.state, f.a).is_err());
+    assert!(drop_destination(&f.encounter, f.a).is_err());
+    f.encounter.battlefield.terrain.clear();
+    // Adjacent authored ground pieces together support the full footprint.
+    f.terrain("earth-left", volume(point(10, 10, 0), point(15, 20, 90)))
+        .burrowable = true;
+    f.terrain("earth-right", volume(point(15, 10, 0), point(20, 20, 90)))
+        .burrowable = true;
+    validate_physical_positions(&f.encounter).unwrap();
+    assert!(
+        flight_loss_fall(&f.encounter, &f.state, f.a)
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        drop_destination(&f.encounter, f.a).unwrap(),
+        point(10, 10, 80)
+    );
+    f.actor(f.a).movement.burrow = None;
+    assert!(validate_physical_positions(&f.encounter).is_err());
+    f.encounter.battlefield.terrain.clear();
+    let fog = f.terrain("fog", volume(point(10, 10, 0), point(20, 20, 90)));
+    fog.difficult = true;
+    fog.obscuration = Obscuration::Heavy;
+    validate_physical_positions(&f.encounter).unwrap();
+    assert_eq!(
+        flight_loss_fall(&f.encounter, &f.state, f.a)
+            .unwrap()
+            .unwrap()
+            .to
+            .z,
+        0
+    );
+}
+
+#[test]
+fn walking_off_support_returns_only_the_prefix_before_falling_while_a_jump_continues() {
+    let mut f = falling_fixture();
+    f.wall(
+        "platform",
+        volume(point(0, 0, 0), point(20, 30, 80)),
+        CoverDegree::Total,
+        true,
+    );
+    let walk = f
+        .path(
+            &[
+                (point(20, 10, 80), MovementMode::Walk),
+                (point(30, 10, 80), MovementMode::Walk),
+            ],
+            MovementAllowance::default(),
+        )
+        .unwrap();
+    assert_eq!(walk.segments.len(), 1);
+    assert_eq!(walk.destination, point(20, 10, 80));
+    assert!(walk.falls_at_end && walk.segments[0].falls_after);
+    assert_eq!(walk.total_cost, 10);
+    let jump = f
+        .path(
+            &[
+                (point(20, 10, 80), MovementMode::Jump),
+                (point(30, 10, 80), MovementMode::Jump),
+            ],
+            MovementAllowance {
+                runup: 20,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(jump.segments.len(), 2);
+    assert!(!jump.segments[0].falls_after);
+    assert!(jump.segments[1].falls_after);
+    assert_eq!(jump.destination, point(30, 10, 80));
+}
