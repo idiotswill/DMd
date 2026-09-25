@@ -55,6 +55,7 @@ fn owned_unarmed_damage_spends_an_attack_with_full_hands_and_no_damage_dice_or_w
                 result: raw.clone(),
             },
         );
+        f.decline_hit_responses();
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 50 - damage);
         assert_eq!(f.rules().rolls.last().unwrap().result, raw);
         assert!(f.rules().pending.is_none());
@@ -127,7 +128,7 @@ fn unarmed_attack_uses_an_already_open_attack_action_and_rejects_forged_cost_or_
         }
         assert!(validate_tactical_state(&forged).is_err(), "case {case}");
     }
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 46);
 }
 
@@ -240,6 +241,7 @@ fn unarmed_conditions_exhaustion_and_inspiration_preserve_actual_raw_faces() {
             },
         },
     );
+    f.decline_hit_responses();
     let record = f.rules().rolls.last().unwrap();
     assert_eq!(record.original_result, Some(original));
     assert_eq!(
@@ -271,7 +273,7 @@ fn unarmed_worn_armor_training_and_creature_proficiency_use_actual_sources() {
         .worn_armor = Some(armor);
     trained.run(Some(0), strike(&trained));
     assert_eq!(trained.request().mode, RollMode::Normal);
-    trained.roll(0, &[15]);
+    trained.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(trained.rules().entities[&trained.actors[1]].hp, 46);
 
     // A source wolf has no armor training. Borrowed armor is a physical fixture,
@@ -302,7 +304,7 @@ fn unarmed_worn_armor_training_and_creature_proficiency_use_actual_sources() {
     untrained.begin();
     untrained.run(Some(0), strike(&untrained));
     assert_eq!(untrained.request().mode, RollMode::Disadvantage);
-    untrained.roll(0, &[20, 1]);
+    untrained.roll_then_decline_hit_responses(0, &[20, 1]);
     assert_eq!(untrained.rules().entities[&untrained.actors[1]].hp, 100);
 
     let mut f = creature_weapon::goblin();
@@ -313,7 +315,7 @@ fn unarmed_worn_armor_training_and_creature_proficiency_use_actual_sources() {
     f.run(Some(0), strike(&f));
     assert_eq!(f.request().modifier, strength + 2); // CR source proficiency, not a PC level.
     assert_eq!(f.request().mode, RollMode::Normal); // Actual source leather training.
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(
         f.rules().entities[&f.actors[1]].hp,
         100 - (1 + strength).max(0) as u32
@@ -326,12 +328,12 @@ fn unarmed_fixed_damage_has_zero_floor_and_a_real_melee_knockout_choice() {
     let mut weak = fixture();
     weak.entity_mut(0).ability_scores[Ability::Strength.index()] = 1;
     weak.run(Some(0), strike(&weak));
-    weak.roll(0, &[20]);
+    weak.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(weak.rules().entities[&weak.actors[1]].hp, 50);
     let mut f = fixture();
     f.entity_mut(1).hp = 3;
     f.run(Some(0), strike(&f));
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert!(f.rules().pending.is_none());
     assert_eq!(
         f.flow()

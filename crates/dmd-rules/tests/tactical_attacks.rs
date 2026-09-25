@@ -9,6 +9,8 @@ mod casting;
 mod creature;
 #[path = "tactical_attacks/creature_weapon.rs"]
 mod creature_weapon;
+#[path = "tactical_attacks/hit_shield.rs"]
+mod hit_shield;
 #[path = "tactical_attacks/medicine.rs"]
 mod medicine;
 #[path = "tactical_attacks/opportunity.rs"]
@@ -23,6 +25,9 @@ mod shields;
 mod spell;
 #[path = "tactical_attacks/unarmed.rs"]
 mod unarmed;
+
+#[path = "support/hit_responses.rs"]
+mod hit_responses;
 
 struct Fixture {
     state: CampaignState,
@@ -246,8 +251,11 @@ impl Fixture {
     }
     fn run(&mut self, actor: Option<usize>, action: TacticalAction) -> TacticalEvent {
         let meta = self.meta(actor);
+        self.run_meta(&meta, &action)
+    }
+    fn run_meta(&mut self, meta: &CommandMeta, action: &TacticalAction) -> TacticalEvent {
         let before = self.state.clone();
-        let transition = resolve_tactical(&self.state, &meta, &action, &self.pack).unwrap();
+        let transition = resolve_tactical(&self.state, meta, action, &self.pack).unwrap();
         let event: TacticalEvent =
             serde_json::from_slice(&serde_json::to_vec(&transition.event).unwrap()).unwrap();
         assert_eq!(
@@ -289,11 +297,49 @@ impl Fixture {
         let result = self.raw(values);
         self.run(Some(actor), TacticalAction::SubmitRoll { result });
     }
+    /// This test deliberately declines only the exact hit just produced. It
+    /// never submits any following damage, save, knockout or opportunity choice.
+    fn roll_then_decline_hit_responses(&mut self, actor: usize, values: &[u16]) {
+        self.roll(actor, values);
+        self.decline_hit_responses();
+    }
+    fn decline_hit_responses(&mut self) {
+        let Some(hit) = hit_responses::pending(&self.state) else {
+            return;
+        };
+        if hit.needs_order {
+            let owner = hit_responses::owner_index(
+                &self.state,
+                &self.actors,
+                &self.players,
+                hit.turn_actor,
+            );
+            self.run(
+                owner,
+                TacticalAction::OrderHitResponses {
+                    window: hit.window,
+                    instruction: hit_responses::forward_order(),
+                },
+            );
+        }
+        if hit.needs_response {
+            let owner =
+                hit_responses::owner_index(&self.state, &self.actors, &self.players, hit.target);
+            self.run(
+                owner,
+                TacticalAction::RespondToHit {
+                    window: hit.window,
+                    accept: false,
+                },
+            );
+        }
+        hit_responses::assert_settled(&self.state, hit.window);
+    }
     fn begin(&mut self) {
         self.run(
             None,
             TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants: self
                     .actors
                     .into_iter()
@@ -530,7 +576,7 @@ fn source_attack_raw_damage_replays_and_preserves_same_turn_and_physical_ownersh
     );
     f.rejected(Some(0), TacticalAction::EndTurn);
     let stale = f.meta(Some(0));
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.request().dice, vec![DieSpec { count: 1, sides: 8 }]);
     assert_eq!(f.request().modifier, 0);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, hp);
@@ -545,7 +591,7 @@ fn source_attack_raw_damage_replays_and_preserves_same_turn_and_physical_ownersh
         )
         .is_err()
     );
-    f.roll(0, &[8]);
+    f.roll_then_decline_hit_responses(0, &[8]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, hp - 11);
     assert!(f.flow().resolution.is_none());
     assert!(f.rules().pending.is_none());
@@ -592,8 +638,8 @@ fn ordinary_attack_rejects_dead_body_before_cost_but_can_damage_living_zero_hp()
         } else {
             f.run(Some(0), TacticalAction::Attack { choice });
             assert_eq!(f.request().mode, RollMode::Normal);
-            f.roll(0, &[15]);
-            f.roll(0, &[1]);
+            f.roll_then_decline_hit_responses(0, &[15]);
+            f.roll_then_decline_hit_responses(0, &[1]);
             assert_eq!(f.rules().entities[&f.actors[1]].death.failures, 1);
             assert!(!f.rules().entities[&f.actors[1]].death.dead);
             assert!(f.flow().resolution.is_none());
@@ -610,8 +656,8 @@ fn lethal_ordinary_attack_finishes_with_replayable_dead_target() {
     f.entity_mut(1).max_hp = 2;
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
-    f.roll(0, &[6]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[6]);
     assert!(f.rules().entities[&f.actors[1]].death.dead);
     assert!(f.flow().resolution.is_none());
     assert!(f.rules().pending.is_none());
@@ -625,7 +671,7 @@ fn natural_one_misses_and_twenty_doubles_only_damage_dice() {
         f.entity_mut(1).armor = ArmorClass::Fixed(if face == 1 { 5 } else { 30 });
         f.begin();
         f.run(Some(0), TacticalAction::Attack { choice });
-        f.roll(0, &[face]);
+        f.roll_then_decline_hit_responses(0, &[face]);
         if face == 1 {
             assert!(f.rules().pending.is_none());
             assert_eq!(f.rules().entities[&f.actors[1]].hp, 50);
@@ -635,7 +681,7 @@ fn natural_one_misses_and_twenty_doubles_only_damage_dice() {
             );
         } else {
             assert_eq!(f.request().dice, vec![DieSpec { count: 2, sides: 8 }]);
-            f.roll(0, &[8, 8]);
+            f.roll_then_decline_hit_responses(0, &[8, 8]);
             assert_eq!(f.rules().entities[&f.actors[1]].hp, 31);
         }
     }
@@ -664,7 +710,7 @@ fn ammunition_is_reserved_once_and_last_unit_retains_spent_identity() {
         ..f.raw(&[1])
     };
     f.rejected(Some(0), TacticalAction::SubmitRoll { result: bad });
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
     assert_eq!(f.state.items[&ammo].quantity, 0);
     f.run(Some(0), TacticalAction::EndTurn);
     f.run(Some(1), TacticalAction::EndTurn);
@@ -710,8 +756,8 @@ fn melee_knockout_is_owned_choice_before_hp_commit_and_survives_serialization() 
     f.entity_mut(1).hp = 3;
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
-    f.roll(0, &[8]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[8]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 3);
     assert!(f.rules().pending.is_none());
     assert_eq!(
@@ -917,7 +963,7 @@ fn after_attack_unequip_and_thrown_custody_wait_for_resolution() {
                 .hands
                 .contains(&HandAssignment::Item(choice.weapon))
         );
-        f.roll(0, if thrown { &[1, 1] } else { &[1] });
+        f.roll_then_decline_hit_responses(0, if thrown { &[1, 1] } else { &[1] });
         assert!(
             !f.loadout()
                 .hands
@@ -946,7 +992,7 @@ fn graze_is_a_real_optional_owned_damage_decision_without_another_attack_roll() 
         let choice = f.arm("greatsword", true, false);
         f.begin();
         f.run(Some(0), TacticalAction::Attack { choice });
-        f.roll(0, &[1]);
+        f.roll_then_decline_hit_responses(0, &[1]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 50);
         assert!(f.rules().pending.is_none());
         f.rejected(
@@ -1025,7 +1071,7 @@ fn restored_pending_attack_rejects_forged_modifiers_equipment_outcomes_and_damag
             "mutation {mutation}"
         );
     }
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let mut bad = f.state.clone();
     bad.rules
         .as_mut()
@@ -1071,7 +1117,7 @@ fn weapon_damage_enters_existing_concentration_work_with_correct_roller_and_raw_
     f.state.applied_event_sequence += 1;
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let original = f.raw(&[1]);
     f.run(
         Some(0),
@@ -1114,7 +1160,7 @@ fn weapon_damage_enters_existing_concentration_work_with_correct_roller_and_raw_
         },
     );
     f.rejected(Some(0), TacticalAction::EndTurn);
-    f.roll(1, &[1]);
+    f.roll_then_decline_hit_responses(1, &[1]);
     assert_eq!(f.rules().entities[&f.actors[1]].concentration, None);
     assert!(f.flow().resolution.is_none());
     assert_eq!(f.rules().timing.as_ref().unwrap().turn_number, 1);
@@ -1143,7 +1189,7 @@ fn nick_and_light_share_one_extra_attack_with_source_damage_modifier_and_action_
                 choice: first.clone(),
             },
         );
-        f.roll(0, &[1]);
+        f.roll_then_decline_hit_responses(0, &[1]);
         let mut extra = WeaponUseChoice {
             weapon: second,
             grip: WeaponGrip::OneHand(Hand::Right),
@@ -1164,8 +1210,8 @@ fn nick_and_light_share_one_extra_attack_with_source_damage_modifier_and_action_
                 choice: extra.clone(),
             },
         );
-        f.roll(0, &[15]);
-        f.roll(0, &[4]);
+        f.roll_then_decline_hit_responses(0, &[15]);
+        f.roll_then_decline_hit_responses(0, &[4]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 46); // Positive Strength is not added to this extra attack.
         assert_eq!(f.rules().timing.as_ref().unwrap().bonus_action_spent, !nick);
         extra.purpose = WeaponAttackPurpose::LightBonus {
@@ -1204,7 +1250,7 @@ fn nearby_blind_defender_does_not_impose_ranged_penalty_and_prone_cancels_advant
                 RollMode::Advantage
             }
         );
-        f.roll(0, if prone { &[1] } else { &[1, 1] });
+        f.roll_then_decline_hit_responses(0, if prone { &[1] } else { &[1, 1] });
     }
 }
 
@@ -1280,7 +1326,7 @@ fn an_attack_can_equip_a_carried_weapon_before_its_roll_without_changing_ownersh
         f.loadout().hands.hands[0],
         HandAssignment::Item(choice.weapon)
     );
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
     assert_eq!(
         f.loadout().hands.hands[0],
         HandAssignment::Item(choice.weapon)
@@ -1297,7 +1343,7 @@ fn forged_graze_pause_cannot_turn_an_accepted_hit_into_a_miss() {
     let choice = f.arm("greatsword", true, false);
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let mut forged = f.state.clone();
     forged.rules.as_mut().unwrap().pending = None;
     let resolution = forged
@@ -1321,7 +1367,7 @@ fn forged_graze_pause_cannot_turn_an_accepted_hit_into_a_miss() {
     let choice = g.arm("greatsword", true, false);
     g.begin();
     g.run(Some(0), TacticalAction::Attack { choice });
-    g.roll(0, &[1]);
+    g.roll_then_decline_hit_responses(0, &[1]);
     for field in 0..3 {
         let mut forged = g.state.clone();
         let attack = forged
@@ -1353,7 +1399,7 @@ fn fixed_weapon_damage_completes_without_fabricated_damage_faces() {
     let choice = f.arm("blowgun", false, true);
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 49); // Fixed 1 has no damage roll to add Dexterity to, or dice to double.
     assert!(f.rules().pending.is_none());
     assert!(f.flow().resolution.is_none());
@@ -1453,13 +1499,13 @@ fn nearby_paralyzed_target_makes_hits_critical_without_making_every_attack_hit()
         f.begin();
         f.run(Some(0), TacticalAction::Attack { choice });
         assert_eq!(f.request().mode, RollMode::Advantage);
-        f.roll(0, &[face, face]);
+        f.roll_then_decline_hit_responses(0, &[face, face]);
         if face == 3 {
             assert!(f.rules().pending.is_none());
             assert_eq!(f.rules().entities[&f.actors[1]].hp, 50);
         } else {
             assert_eq!(f.request().dice, vec![DieSpec { count: 2, sides: 8 }]);
-            f.roll(0, &[8, 8]);
+            f.roll_then_decline_hit_responses(0, &[8, 8]);
             assert_eq!(f.rules().entities[&f.actors[1]].hp, 31);
         }
     }

@@ -1,7 +1,8 @@
 # Gate 4 — Explicit Shield hit rules regression support
 
 Status: active; authoring only, no compiler or test execution claimed.
-Writer: rules_architecture, branch codex/gate4-shield-hit-rules-tests.
+Writer: shield_rules_recovery (taking over preserved rules_architecture work),
+branch codex/gate4-shield-hit-rules-tests.
 Base: e5f8fce0962c64f6c8fd38dc1ecdbfb4bc90e25c.
 
 ## Scope and source
@@ -41,3 +42,29 @@ with root. Root owns combined production/app verification and PR integration.
 - Base source and existing attack fixtures read. No tests run in this worktree.
 - Historical source branches, captured fixtures and application tests remain outside
   this writer's scope.
+- Fourteen source Shield regressions are authored, including both intent/order
+  arrivals; real source use, components and controller refusal; natural20, fixed
+  damage and Graze; three-use exhaustion and expiry; OA movement retention; and
+  multiple spell rays with distinct causal issuers under the original cast key.
+- Serialized hostile-state cases cover collecting and completed hit windows,
+  original roll/cause/work/cover, selected authority, source cast, cost, defense
+  effect and pending damage issuer. These are authored checks, not passing evidence.
+- The generic run/run_meta/roll helpers still submit one command each. Only named
+  roll_then_decline_hit_responses helpers add the explicit current-turn ordering
+  and actual target controller's Continue for the exact just-produced hit.
+- Static review fixed the shadowed window helper and removed inherited borrowed
+  ownership from source creation's initial image. Source fixtures are explicitly
+  reducer-level initial states, not application creation-path acceptance.
+- rustfmt on the three changed test entrypoints and their modules passed, and
+  git diff --check passed after memory/disk recovery. No compiler or test binary
+  ran: the shared heavy slot remains reserved by root for aftermath verification.
+
+## Exact next action
+
+Root integrates these tests with the production Shield branch and the historical
+ResumeHit request-ID binding fix. Then run the focused hit_shield, tactical_attacks,
+tactical_movement and tactical_turns targets under the default stack with one build
+job and CARGO_INCREMENTAL=0 before claiming any test passes. A source spell ray's
+roll key belongs to its original cast, while attack.origin and issued_by belong to
+the command that started that ray; an OA key belongs to its attack, not movement.
+Do not loosen historical validation to an arbitrary same-occurrence roll search.
