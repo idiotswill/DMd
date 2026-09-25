@@ -579,6 +579,72 @@ async fn reject_changed_hit_images(f: &Fixture) {
     }
 }
 
+async fn reject_changed_historical_hit(f: &Fixture, earlier: &CampaignState) {
+    let mut original = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let sequence = i64::try_from(earlier.applied_event_sequence).unwrap();
+    assert!(sequence < original.current_state.applied_event_sequence);
+    // Backfill an actual earlier application image as a recovery anchor. This
+    // tests an old, retired window rather than forging only the current image.
+    original
+        .snapshots
+        .retain(|row| row.event_sequence != sequence);
+    original.snapshots.push(dmd_persistence::SnapshotRow {
+        campaign_id: original.campaign_id.clone(),
+        event_sequence: sequence,
+        state_schema_version: i64::from(earlier.schema_version),
+        state_json: earlier.encode_json().unwrap(),
+        created_at_utc: original.exported_at_utc.clone(),
+    });
+    original.snapshots.sort_by_key(|row| row.event_sequence);
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    Box::pin(runtime(pool.clone()).restore_campaign(&original))
+        .await
+        .unwrap();
+    assert_eq!(
+        runtime(pool.clone())
+            .open_campaign(f.campaign)
+            .await
+            .unwrap()
+            .state(),
+        &state(f).await
+    );
+    pool.close().await;
+
+    let mut changed = earlier.clone();
+    changed
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .hit_review
+        .as_mut()
+        .unwrap()
+        .cover_bonus += 2;
+    original
+        .snapshots
+        .iter_mut()
+        .find(|row| row.event_sequence == sequence)
+        .unwrap()
+        .state_json = changed.encode_json().unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    assert!(
+        Box::pin(runtime(pool.clone()).restore_campaign(&original))
+            .await
+            .is_err()
+    );
+    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(count, 0);
+    pool.close().await;
+}
+
 #[tokio::test]
 async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_rejects_changed_hits()
 {
@@ -598,6 +664,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     let mage = Box::pin(prepare(&mut f, &path)).await;
     // First response arrives before ordering; no cost or unrelated visible change.
     Box::pin(hit(&mut f, &path, mage, 10)).await;
+    let earlier_hit = Box::new(state(&f).await);
     Box::pin(offer(&mut f, &path, mage)).await;
     Box::pin(order(&mut f, &path)).await;
     Box::pin(cast(&mut f, &path, mage)).await;
@@ -687,6 +754,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     Box::pin(step(&mut f, &path, pc, dice)).await;
     let final_state = state(&f).await;
     assert_eq!(final_state.rules.as_ref().unwrap().entities[&mage].hp, 75);
+    Box::pin(reject_changed_historical_hit(&f, &earlier_hit)).await;
     assert_eq!(
         final_state
             .rules

@@ -54,15 +54,15 @@ pub fn shield_choices(
         expected_event_sequence: state.applied_event_sequence,
     };
     let mut grants = Vec::new();
-    if entity.prepared_spells.iter().any(|spell| spell == "shield") {
-        if let Some(casting) = &entity.spellcasting {
-            for level in 1..=9u8 {
-                if casting.slots[usize::from(level - 1)] > 0 {
-                    grants.push((
-                        SpellGrantChoice::Prepared,
-                        SpellResourceChoice::Slot { level },
-                    ));
-                }
+    if entity.prepared_spells.iter().any(|spell| spell == "shield")
+        && let Some(casting) = &entity.spellcasting
+    {
+        for level in 1..=9u8 {
+            if casting.slots[usize::from(level - 1)] > 0 {
+                grants.push((
+                    SpellGrantChoice::Prepared,
+                    SpellResourceChoice::Slot { level },
+                ));
             }
         }
     }
@@ -604,10 +604,7 @@ pub(super) fn validate_work(
             attack_roll,
         } if attack_origin == hit.attack_origin && attack_roll == hit.attack_roll => (),
         TacticalWorkKind::CommitShield { cast }
-            if hit.selected_cast == Some(cast) && hit.stage == TacticalHitReviewStage::Casting =>
-        {
-            ()
-        }
+            if hit.selected_cast == Some(cast) && hit.stage == TacticalHitReviewStage::Casting => {}
         _ => {
             return Err(invalid(
                 "hit response work differs from its accepted window",

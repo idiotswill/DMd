@@ -136,5 +136,10 @@ unnecessary inferred Serde Default bound on optional hit keys and one test using
 set removal on a vector. Explicit deserialization bounds preserve absent fields
 without inventing default capabilities; the mutation test now removes by value.
 Runtime and final-head acceptance remain pending.
+Head 612253f passed all-target compiler checking, MSRV and both guards. Strict
+Clippy (job 108249924665) then reported two collapsible conditionals and an unused
+unit expression; all three are corrected without lint exemptions. The player-source
+SQLite draft now also restores an actual earlier hit image as a valid backfilled
+snapshot, then rejects a forged retired-window cover value with current state intact.
 Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.
