@@ -169,6 +169,11 @@ fn validate_armor_training(
                 "worn armor requires a supported source training category",
             ));
         }
+        // SRD177: lacking Shield training removes its AC bonus, but does not
+        // prohibit casting. Its occupied hand still matters to components below.
+        if category == "shield" {
+            continue;
+        }
         let trained_pc = state
             .table
             .as_ref()
@@ -187,9 +192,7 @@ fn validate_armor_training(
             .map_err(|e| invalid(&e.to_string()))?
             .unwrap_or(false);
         if !trained_pc && !trained_creature {
-            return Err(unavailable(
-                "casting requires training with the worn armor and shield",
-            ));
+            return Err(unavailable("casting requires training with the worn armor"));
         }
     }
     Ok(())

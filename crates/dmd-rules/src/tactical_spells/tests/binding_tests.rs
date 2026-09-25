@@ -372,6 +372,194 @@ fn physical_hands_and_armor_training_override_old_sheet_booleans() {
     assert!(bind_spell(&state, &plan, &SpellTargetChoice::Entities(vec![target])).is_err());
 }
 
+fn carried_item(state: &mut CampaignState, actor: EntityId, definition: &str) -> ItemId {
+    let id = ItemId::new();
+    state.items.insert(
+        id,
+        ItemInstance {
+            id,
+            campaign_id: state.campaign_id(),
+            definition_id: definition.into(),
+            display_name: "Renamed physical equipment".into(),
+            quantity: 1,
+            owner: Ownership::Unowned,
+            custody: Custody::Entity(actor),
+            state: ItemState::Intact,
+        },
+    );
+    id
+}
+
+#[test]
+fn untrained_shield_allows_casting_but_neither_supplies_a_hand_nor_trains_armor() {
+    // An imported prepared caster has no source armor-training grant. Exercise an
+    // executable V/S spell rather than claiming Shield's reaction executor exists.
+    let (mut state, plan, target) = scene("cure-wounds", 1, "wolf");
+    let actor = plan.choice.actor;
+    let shield = carried_item(&mut state, actor, "shield");
+    let dagger = carried_item(&mut state, actor, "dagger");
+    let armor = carried_item(&mut state, actor, "leather-armor");
+    {
+        let loadout = &mut state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts[0];
+        loadout.shield = Some(shield);
+        loadout.hands.hands = [HandAssignment::Item(shield), HandAssignment::Free];
+    }
+    let selected = SpellTargetChoice::Entities(vec![target]);
+    let before = state.clone();
+    let bound = bind_spell(&state, &plan, &selected).unwrap();
+    let restored: CampaignState =
+        serde_json::from_slice(&serde_json::to_vec(&state).unwrap()).unwrap();
+    assert_eq!(bind_spell(&restored, &plan, &selected).unwrap(), bound);
+    assert_eq!(state, before);
+
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts[0]
+        .hands
+        .hands[1] = HandAssignment::Item(dagger);
+    let before = state.clone();
+    assert!(
+        bind_spell(&state, &plan, &selected)
+            .unwrap_err()
+            .to_string()
+            .contains("somatic component")
+    );
+    assert_eq!(state, before);
+
+    {
+        let loadout = &mut state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts[0];
+        loadout.hands.hands[1] = HandAssignment::Free;
+        loadout.worn_armor = Some(armor);
+    }
+    let before = state.clone();
+    assert!(
+        bind_spell(&state, &plan, &selected)
+            .unwrap_err()
+            .to_string()
+            .contains("training with the worn armor")
+    );
+    assert_eq!(state, before);
+}
+
+#[test]
+fn genuine_source_armor_training_with_an_untrained_shield_keeps_component_limits() {
+    use crate::tactical_creatures::*;
+    let (mut state, meta, actor, current) =
+        source_fixture("cultist-fanatic", CreatureSize::Medium, "hold-person");
+    let step = apply_creature_schedule(
+        &state,
+        &current,
+        &meta,
+        &CreatureScheduleOperation::BeginFeature {
+            actor,
+            selection: CreatureFeatureSelection {
+                feature_id: "spellcasting".into(),
+                spell_id: Some("hold-person".into()),
+                simple_action: None,
+            },
+            steps: vec![],
+        },
+    )
+    .unwrap();
+    let feature = step.feature.unwrap();
+    state.rules.as_mut().unwrap().tactical_creatures = Some(step.next);
+    let location = LocationId::new();
+    let scene_id = state.encounter.as_ref().unwrap().scene_id;
+    state.locations.insert(
+        location,
+        Location {
+            id: location,
+            campaign_id: state.campaign_id(),
+            display_name: "Source room".into(),
+            parent_location_id: None,
+        },
+    );
+    state.entities.get_mut(&actor).unwrap().location_id = Some(location);
+    state.scenes.insert(
+        scene_id,
+        Scene {
+            id: scene_id,
+            campaign_id: state.campaign_id(),
+            location_id: location,
+            mode: SceneMode::Combat,
+            status: SceneStatus::Active,
+            started_at: state.clock.now,
+            presences: vec![ScenePresence {
+                entity_id: actor,
+                role: PresenceRole::Participant,
+            }],
+        },
+    );
+    let armor = carried_item(&mut state, actor, "leather-armor");
+    let shield = carried_item(&mut state, actor, "shield");
+    let dagger = carried_item(&mut state, actor, "dagger");
+    state.rules.as_mut().unwrap().tactical_inventory = Some(TacticalInventory {
+        loadouts: vec![ActorEquipmentLoadout {
+            actor,
+            hands: WeaponLoadout {
+                hands: [HandAssignment::Item(shield), HandAssignment::Free],
+            },
+            worn_armor: Some(armor),
+            shield: Some(shield),
+            command: meta,
+        }],
+        ..TacticalInventory::default()
+    });
+    let plan = plan_spell_from_feature(
+        &state,
+        &feature,
+        SpellMaterialChoice::None,
+        SpellCastMode::Immediate,
+        0,
+    )
+    .unwrap();
+    let selected = SpellTargetChoice::Entities(vec![actor]);
+    let before = state.clone();
+    let bound = bind_spell(&state, &plan, &selected).unwrap();
+    let restored: CampaignState =
+        serde_json::from_slice(&serde_json::to_vec(&state).unwrap()).unwrap();
+    assert_eq!(bind_spell(&restored, &plan, &selected).unwrap(), bound);
+    assert_eq!(state, before);
+    // The source waives M, not S: a Shield plus dagger cannot supply the hand.
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts[0]
+        .hands
+        .hands[1] = HandAssignment::Item(dagger);
+    let before = state.clone();
+    assert!(
+        bind_spell(&state, &plan, &selected)
+            .unwrap_err()
+            .to_string()
+            .contains("somatic component")
+    );
+    assert_eq!(state, before);
+}
+
 #[test]
 fn source_attack_proof_requires_committed_matching_cast_and_exact_ray() {
     let (state, plan, target) = scene("scorching-ray", 2, "wolf");
