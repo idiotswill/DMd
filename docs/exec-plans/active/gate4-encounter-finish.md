@@ -5,19 +5,21 @@ after bootstrap_audit's preserved implementation checkpoint.
 Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance is
 claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 
-Current baseline is merged main `d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278`.
-Status: the first aftermath implementation now compiles and all four focused rules
-tests pass after environment recovery. File-SQLite and frontend verification are in
-progress; canonical and exact-head CI remain outstanding. The first focused attempt
-hit OS112 before any tests (details below). No production acceptance or upstream
-merge is claimed. Night Hag main
-merged normally at `4244f64` after source checkpoint `eac4dd4`; reviewed PR42/43
-compatibility and source-control dependencies remain subsequent integrations.
+Current baseline is verified main `2798b6b1d6263b5e321a1903d9fb4f2331b73895`,
+merged normally at `318b62e`. Draft PR: https://github.com/idiotswill/DMd/pull/44.
+Status: all original focused tests pass after environment recovery: four rules,
+two genuine file-SQLite scenarios and all 71 UI tests; Svelte reports no errors or
+warnings and the frontend build passes. A subsequent comparison-only fixture
+refinement still needs execution. Canonical, integrated source-controller evidence
+and final exact-head CI remain outstanding. The first focused attempt hit OS112
+before any tests (details below). No production acceptance or upstream merge is
+claimed. Night Hag main merged normally at `4244f64`; the verified PR42 historical
+corpus is now integrated. Reviewed PR43 source control remains a dependency.
 Initial normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to
-authoritative `d5d1db7` main. The branch's two genuine commits since `8cb3084` changed only this plan;
-after the merge, the full tree differs from main only by this file. No independent
-production source was discarded. PR41, historical-compatibility PR42 and source-control
-PR43 must be reconciled at reviewed checkpoints before final integrated acceptance.
+authoritative `d5d1db7` main. At that initial merge, the branch's two genuine commits
+since `8cb3084` changed only this plan and the full tree differed from main only by
+this file. No independent production source was discarded. Source-control PR43 must
+still be reconciled at its reviewed checkpoint before final integrated acceptance.
 
 ## Authorized first production slice
 
@@ -228,7 +230,8 @@ secret simply because the host can inspect its remaining timing obligations.
 ## Required production regressions for the proposal
 
 These are the full finish workstream requirements, not existing passing evidence.
-The first slice has authored portions of 1, 2, 4, 6 and 7 below; they remain unrun.
+The first slice now validates portions of 1, 2, 4, 6 and 7 below. The complete
+requirements, especially timing release and second-encounter handoff, remain open.
 
 1. Create a genuine source Hold Person through the table, conclude while it is active,
    and retain the affected controller's repeated End save across session end/reopen,
@@ -313,12 +316,13 @@ production writes. Authored first-slice changes now include:
   while requiring byte/exact full-response equality on retries within each database.
   No production protocol or assertion of durable retry identity was weakened.
 
-`cargo fmt --all` and `git diff --check` passed on the implementation checkpoint.
-After environment recovery, all four focused rules cases pass on the default Windows
-stack. File-SQLite/frontend checks are running; historical corpus and canonical
-verification remain required. Fresh independent review is clear on exact `5e6536f`.
-Next: finish focused SQLite/UI under the explicit shared slot;
-integrate reviewed prerequisites and run final canonical verification afterward.
+`cargo fmt --all --check` and `git diff --check` pass after the normal PR42 merge
+and the comparison-only helper refinement. Original focused rules, SQLite and UI
+verification passed as detailed below. Fresh independent production review is clear
+on exact `5e6536f`; production source is unchanged by later documentation, helper
+and PR42 integration work. Next: integrate verified PR43, cover actual source-only
+controller session rollover, obtain a new shared slot for focused/refined-helper
+and canonical verification, then complete independent exact-head review and CI.
 Full release/new encounter remains mandatory Gate4 work and cannot be moved to Gate5/6
 or silently represented by the marker.
 
@@ -339,8 +343,8 @@ cache and rerunning with `CARGO_INCREMENTAL=0`. Automatic approval review blocke
 native PowerShell deletion before process creation with reason `blocked by policy`.
 No deletion occurred or alternate deletion route was attempted. Root subsequently
 confirmed environment recovery (28.3 GB disk space available) and reassigned the
-preserved work to aftermath_recovery. The same focused sequence is running with
-`CARGO_INCREMENTAL=0`; this status is not a passing-test or acceptance claim.
+preserved work to aftermath_recovery. The focused sequence subsequently passed with
+`CARGO_INCREMENTAL=0`, as recorded below. No blocked cleanup was retried.
 
 ### Focused verification recovery (2026-09-25)
 
@@ -348,5 +352,40 @@ On production checkpoint `5e6536f` plus plan-only edits, the identical focused r
 command completed successfully: 4 tests passed, 32 unrelated cases filtered, default
 Windows stack, jobs1 and `CARGO_INCREMENTAL=0` (session68456). Log:
 `DMD/tooling/aftermath-rules-recovery.log`. The two genuine file-SQLite aftermath
-cases are now compiling/running separately. Draft publication is authorized to obtain
-remote CI while remaining focused/canonical/integration evidence is collected.
+cases subsequently passed on source-equivalent head `378884f`: 2 passed, 44 filtered,
+1563.92 seconds (session28380, exit0, default Windows stack). Log:
+`DMD/tooling/aftermath-sqlite-recovery.log`. The magic case exercised genuine source
+Mage Armor and Hold Person, paid Ready, conclusion privacy/forged-history refusal,
+session rollover, physical repeated save and Ready expiry. The dying case retained
+the genuine Goblin attack's zero-HP result through physical death saves, repeated
+session rollovers, actual death and a final controller-owned dead-character turn.
+Both preserved every authored cold reopen, independent portable continuation,
+original retry, changed-body rejection and complete normalized export comparison.
+
+Frontend verification then passed on the same production sources (session45578,
+exit0): Svelte 0 errors/0 warnings; all 71 tests across 15 files, including the three
+aftermath controls and actual TableApp uncertain-request/session scenario; 137-module
+production build. Log: `DMD/tooling/aftermath-ui-recovery.log`. These component and
+SQLite results do not claim native packaged end-user acceptance. The heavy slot was
+released to the PR43 source-control integration writer before any later compilation.
+
+### Comparison-only fixture refinement and integration
+
+After the first complete passing run, root authorized a narrowly scoped helper
+refinement reviewed independently by shield_rules_recovery. The three current-state
+comparison reads in `cold_step` now decode actual post-commit persisted export images
+instead of reopening the primary/mirror campaigns solely to obtain the same state.
+The explicit real file close/open/`resume_campaign`, independent portable restore,
+both accepted command paths, both original retries, changed-body rejection and full
+normalized export equality all remain. No recovery checkpoint or assertion was
+removed. These removed opens validate current images/content rather than replaying
+the complete journal; no speed improvement is claimed before measurement. This
+refinement is formatted and statically reviewed but its execution remains pending.
+
+Verified main `2798b6b` was merged normally as `318b62e`. The integration brings the
+four genuine legacy reaction captures and their executable corpus without changing
+any aftermath production source or UI. Final PR44 acceptance still requires PR43's
+genuine player-owned source channel, its source-only aftermath session regression,
+canonical verification, independent final review and all six checks at the final
+exact PR head. Terminal release and new-encounter admission remain mandatory Gate4
+follow-up, not completion claims for this PR.

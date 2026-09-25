@@ -128,13 +128,18 @@ async fn cold_step(f: &mut Fixture, url: &str, request: TableTransportRequest) {
             .unwrap(),
         mirrored
     );
-    let expected = state(f).await;
+    // Both commands just validated and committed their actual current images.
+    // Compare those persisted images without opening each campaign again merely
+    // for inspection. The primary still crosses the real cold-resume boundary
+    // below; the mirror still came from a complete independent portable restore.
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let expected = CampaignState::decode_json(&saved.current_state.state_json).unwrap();
+    let mirrored_save = export_campaign(&mirror_pool, f.campaign).await.unwrap();
     assert_eq!(
-        mirror.open_campaign(f.campaign).await.unwrap().state(),
-        &expected
+        CampaignState::decode_json(&mirrored_save.current_state.state_json).unwrap(),
+        expected
     );
     mirror_pool.close().await;
-    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
     Box::pin(reopen(f, url)).await;
     assert_eq!(
         Box::pin(f.runtime.submit_presented_table(request.clone()))
@@ -152,7 +157,10 @@ async fn cold_step(f: &mut Fixture, url: &str, request: TableTransportRequest) {
     let mut retried = export_campaign(&f.pool, f.campaign).await.unwrap();
     retried.exported_at_utc = saved.exported_at_utc.clone();
     assert_eq!(retried, saved);
-    assert_eq!(state(f).await, expected);
+    assert_eq!(
+        CampaignState::decode_json(&retried.current_state.state_json).unwrap(),
+        expected
+    );
 }
 async fn cold_action(f: &mut Fixture, url: &str, player: Option<usize>, action: TableAction) {
     let request = request(f, player, action).await;
