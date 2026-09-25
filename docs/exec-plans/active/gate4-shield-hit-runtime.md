@@ -125,5 +125,9 @@ are integrated from isolated test writers. Only formatting and static diff check
 have run; compiler, rules, desktop and SQLite evidence are still outstanding. An
 early draft PR may run remote diagnostics while the serialized local slot is busy.
 Its merge requires all acceptance above, including the player-owned source case.
+The first draft CI at d3e3ed3 caught an undeclared UUID dependency used by pure
+Shield option previews (Linux stable/MSRV jobs 108248022555/108248022760). The
+workspace already pins UUID; declare it directly in dmd-rules and regenerate the
+lock edge, then rerun the actual compiler checks. No failed check is waived.
 Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.

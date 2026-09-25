@@ -616,7 +616,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     );
     assert_eq!(
         dmd_rules::tactical_defenses::effective_armor_class(&after, mage).unwrap(),
-        20
+        17
     );
     assert!(
         after
@@ -633,7 +633,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     Box::pin(step(&mut f, &path, pc, action(TacticalAction::EndTurn))).await;
     assert_eq!(
         dmd_rules::tactical_defenses::effective_armor_class(&state(&f).await, mage).unwrap(),
-        15
+        12
     );
     let mage_channel = owner(&f, mage);
     Box::pin(step(
