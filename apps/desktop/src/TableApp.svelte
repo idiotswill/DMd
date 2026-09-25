@@ -10,11 +10,13 @@
   import CreatureForm from './components/CreatureForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
   import { rawDice } from './table-api';
+  import type { SavageAttackerRoll } from './tactical-api';
   import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
   let campaigns = $state<{ id: string; name: string }[]>([]);
   let defaults = $state<TableContract | null>(null);
   let view = $state<TableView | null>(null);
+  let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
   let options = $state<CreationOptions | null>(null);
   let hostSituation = $state<Situation | null>(null);
   let campaignId = $state(''); let playerId = $state('');
@@ -39,11 +41,20 @@
   function rememberSelection() { saveSelection({ campaignId: campaignId || null, playerId: playerId || null }); }
   async function refresh() {
     const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null;
+    view = null; options = null; hostSituation = null; savageOption = null;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
     if (campaignId !== target || playerId !== selectedPlayer) return;
     view = next; options = choices; hostSituation = situation ?? null; rememberSelection();
+    const attending = next.active_session?.participants.find(p=>p.player_id===selectedPlayer&&p.attendance==='Present'&&p.character_id);
+    const selected = next.characters.find(c=>c.character_id===attending?.character_id);
+    if (next.roll && next.roll_channel === 'Tactical'
+      && ((!selectedPlayer && !next.characters.some(c=>c.entity_id===next.roll?.roller))
+        || selected?.entity_id===next.roll.roller)) {
+      const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
+        channel:selectedPlayer?{Player:{player_id:selectedPlayer,character_id:attending!.character_id!}}:'Host'});
+      if(campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) savageOption=answer.savage_attacker;
+    }
   }
   async function selectCampaign(id: string) {
     busy = true; error = ''; message = ''; campaignId = id; playerId = ''; page = 'play'; creating = false;
@@ -118,6 +129,9 @@
     }
     return act({SubmitPhysical:{request_id:view.roll.id,faces}});
   }
+  function reportSavage(roll: SavageAttackerRoll) {
+    return act({Tactical:{action:{SubmitSavageAttacker:{roll}}}});
+  }
   async function speak(event: SubmitEvent) {
     event.preventDefault();
     try { await send({ kind: 'text', request: { ...context(), text } }); } catch (reason) { await showError(reason); }
@@ -166,7 +180,7 @@
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
           {#if host}<button disabled={locked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending}<div class="actions"><button class="secondary" disabled={locked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={locked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{/if}
         </div>{/if}
-        {#if view.roll}{#if (!host && currentCharacter?.entity_id === view.roll.roller) || (host && !!view.tactical && !view.characters.some(character=>character.entity_id===view?.roll?.roller))}{#key view.roll.id}<RollForm request={view.roll} disabled={locked} onSubmit={reportFaces} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && currentCharacter?.entity_id === view.roll.roller) || (host && !!view.tactical && !view.characters.some(character=>character.entity_id===view?.roll?.roller))}{#key `${host}:${playerId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} disabled={locked} onSubmit={reportFaces} onSavage={reportSavage} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel tactical={view.tactical} characters={view.characters} {host} actor={currentCharacter?.entity_id??null} player={playerId||null} disabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}

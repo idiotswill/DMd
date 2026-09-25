@@ -23,6 +23,8 @@ mod table_medicine_cases;
 mod table_oa_concentration_cases;
 #[path = "support/table_projection_cases.rs"]
 mod table_projection_cases;
+#[path = "support/table_savage_cases.rs"]
+mod table_savage_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]

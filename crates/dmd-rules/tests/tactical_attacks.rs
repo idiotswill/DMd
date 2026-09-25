@@ -13,6 +13,8 @@ mod creature_weapon;
 mod medicine;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
+#[path = "tactical_attacks/savage.rs"]
+mod savage;
 #[path = "tactical_attacks/second_wind.rs"]
 mod second_wind;
 #[path = "tactical_attacks/shields.rs"]

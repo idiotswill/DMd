@@ -137,6 +137,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
 
 // The desktop adapter supplies trusted channels independently of natural-language text.
 export const tableApi = {
+  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null }>('desktop_roll_options', { request }),
   defaults: () => invoke<TableContract>('desktop_default_contract'),
   list: () => invoke<{ id: Id; name: string }[]>('desktop_list_campaigns'),
   create: (request: { id: Id; name: string; contract: TableContract }) => invoke<TableView>('desktop_create_campaign', { request }),

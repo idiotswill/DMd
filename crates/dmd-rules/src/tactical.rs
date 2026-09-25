@@ -16,6 +16,7 @@ mod turn_validation;
 mod turns;
 mod validation;
 use crate::{ResolveRoll, RulesError, RulesPack};
+pub use attacks::savage_attacker_dice;
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use initiative::preview_initiative_circumstances;
@@ -31,6 +32,9 @@ pub enum TacticalAction {
     FirstAid {
         target: EntityId,
         purpose: MedicinePurpose,
+    },
+    SubmitSavageAttacker {
+        roll: SavageAttackerRoll,
     },
     SecondWind,
     DonShield {
@@ -231,6 +235,7 @@ pub fn resolve_tactical(
         && !matches!(
             action,
             TacticalAction::SubmitRoll { .. }
+                | TacticalAction::SubmitSavageAttacker { .. }
                 | TacticalAction::SubmitRollWithInspiration { .. }
                 | TacticalAction::VoluntarilyFailSave
         )
@@ -239,6 +244,9 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::SubmitSavageAttacker { roll } => {
+            attacks::submit_savage(&mut next, meta, roll, pack)?;
+        }
         TacticalAction::DonShield { shield, hand } => {
             shields::change(&mut next, meta, Some((*shield, *hand)), pack)?
         }
