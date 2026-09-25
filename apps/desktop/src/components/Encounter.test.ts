@@ -44,6 +44,29 @@ it('keeps legacy continuations available and requires an explicit settled host u
   expect(screen.getByRole('button',{name:'Dodge'})).toBeTruthy();
 });
 
+it('offers an owned unarmed attack from this actors current contacts and available attacks',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+    observers:[{observer:'actor',position:null,contacts:[contact('target','Seen'),contact('remembered','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('private-to-other','Seen')],cells:[]}],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
+  const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
+  const select=screen.getByLabelText('Unarmed strike target');
+  expect(select.querySelector('option[value="remembered"]')).toBeNull();
+  expect(select.querySelector('option[value="private-to-other"]')).toBeNull();
+  await user.selectOptions(select,'target');
+  await user.click(screen.getByRole('button',{name:'Make unarmed strike'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({UnarmedStrike:{target:'target'}});
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true,attacks_remaining:0}}});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,action_spent:true,attacks_remaining:1}}});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(false);
+  await component.rerender({pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Make unarmed strike'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:'Make unarmed strike'})).toBeNull();
+});
+
 it('offers first aid from the acting characters current contacts and preserves the selected purpose', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
   const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});

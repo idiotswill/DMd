@@ -109,6 +109,10 @@ pub enum TacticalAttackSource {
 #[serde(deny_unknown_fields)]
 pub enum TacticalAttackAdmission {
     OwnTurn,
+    /// An ordinary Attack action attack made with the body, without a weapon receipt.
+    UnarmedAction {
+        window: WeaponActionWindow,
+    },
     /// One source stat-block Action, with optional actual immediately preceding
     /// movement retained before the action clears continuous travel.
     CreatureAction {

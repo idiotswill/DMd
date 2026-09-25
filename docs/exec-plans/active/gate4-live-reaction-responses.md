@@ -52,3 +52,8 @@ Foundation tests are prerequisites only. After PR38, read current source and ADR
 write the execution-boundary decision, then implement Shield as the first complete
 vertical path while keeping Counterspell and all Ready mechanisms mandatory here.
 The full twelve-family Gate4 ledger and eighteen spell mechanisms remain binding.
+
+The own-turn unarmed slice preserves original Opportunity attack reconstruction.
+At the new live-response execution boundary, apply current armor-training penalties
+to fresh unarmed opportunity attacks while retaining old accepted interpretation.
+Add actual source/ownership/replay cases; this remains Gate4 source fidelity work.

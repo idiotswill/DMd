@@ -7,6 +7,7 @@ mod opportunity;
 mod planning;
 mod savage;
 mod spell;
+mod unarmed;
 mod validation;
 use super::turns::*;
 use super::*;
@@ -18,6 +19,7 @@ pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_c
 pub use savage::savage_attacker_dice;
 pub(super) use savage::submit as submit_savage;
 pub(super) use spell::begin_spell_attack;
+pub(super) use unarmed::begin as begin_unarmed;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
     match attack.source {
         TacticalAttackSource::Spell { cast, at, .. } => Some((cast, at)),

@@ -65,3 +65,11 @@ Finish PR39's protected merge; prove source/main full-tree equality and ancestry
 reconciling its squash. No combined verification result is inherited. Complete
 combined verification and review. Merge PR38 only against its exact verified head,
 then create a fresh live-response branch from fetched main and execute the follow-up.
+
+Unarmed/Medicine combined sourcef9602a8 is imported as another reviewed dependency
+before its canonical result is known. Its separate six reducer cases, actual SQLite
+three-round/knockout/retry case and60 desktop tests pass. Four adjacent conflicts
+retain both actions/forms/tests; the body attack initializes work_trace and its UI
+fixture selects ReactionsV1. No runtime responses are introduced. Reconcile each
+protected main squash only after proving the imported source tree and ancestry.
+Final foundation verification must use this full composition, not earlier heads.

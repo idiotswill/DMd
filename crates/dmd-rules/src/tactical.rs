@@ -44,6 +44,9 @@ pub enum TacticalAction {
     AbandonReady {
         actor: EntityId,
     },
+    UnarmedStrike {
+        target: EntityId,
+    },
     FirstAid {
         target: EntityId,
         purpose: MedicinePurpose,
@@ -299,6 +302,9 @@ fn resolve_with_policy(
         }
         TacticalAction::AbandonReady { actor } => {
             ready::abandon(&mut next, meta, *actor)?;
+        }
+        TacticalAction::UnarmedStrike { target } => {
+            attacks::begin_unarmed(&mut next, meta, *target)?;
         }
         TacticalAction::SubmitSavageAttacker { roll } => {
             attacks::submit_savage(&mut next, meta, roll, pack)?;

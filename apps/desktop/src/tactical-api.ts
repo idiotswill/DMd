@@ -64,6 +64,7 @@ export interface SavageAttackerRoll {
 export type TacticalAction =
   | 'UpgradeExecution'
   | { AbandonReady: { actor: Id } }
+  | { UnarmedStrike: { target: Id } }
   | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
   | { SubmitSavageAttacker: { roll: SavageAttackerRoll } }
   | 'SecondWind'
