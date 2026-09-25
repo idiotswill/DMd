@@ -70,6 +70,8 @@ aggregate writes. The global compiler was explicitly released to root for PR33's
 combined canonical verification. This focused result does not claim full-workspace
 verification or independent review; root must include this test in that exact-head
 run. Read-only source/authority review is requested from the separate Ready writer;
-its result and final combined evidence remain pending.
+Independent exact source/authority review subsequently cleared `f13224e` without
+changes. Root integrated the reviewed scenario as `5e3f89a` into PR33; final combined
+canonical evidence remains pending.
 General privacy protocol, native combat acceptance, Ready/reactions and all other
 open Gate4 requirements remain unchanged.

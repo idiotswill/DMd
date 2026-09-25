@@ -80,6 +80,27 @@ heads never substitute for this combined verification.
 
 ## Current evidence and next action
 
+PR33 is open at https://github.com/idiotswill/DMd/pull/33. Initial extraction
+`b7f5dfb` passed all six checks: Linux36129213345 (590 Rust tests) and
+Windows36129213349 (MSRV/stable including whole-workspace tests and installer).
+Three independent bounded reviews cover combined source/admission, movement/attack/
+fall recovery and application/projection/restore paths. The dead-target finding
+below is corrected; the final combined head still needs its own full verification.
+
+The admission correction is `a58d4dc`; all 71 affected attack tests pass locally
+after correcting the two new fixture assumptions documented below. The genuine OA
+test is integrated as `5e3f89a`, with its focused source result and independent
+review clear. The real lethal/dead-target SQLite test is integrated as `9910ce7`
+after independent review and is compiling. Full canonical verification, UI checks,
+fresh final CI, protected merge and post-merge checks remain required.
+
+PR32's post-merge checks are now all green on main `12ed29a`: Linux36129020814 and
+Windows36129020852. No base/source reconciliation is pending. The twelve Gate4
+ledger families now correctly say `implementing`; scopes and evidence arrays stay
+unchanged and no complete family or gate acceptance is claimed.
+
+### Extraction provenance (earlier evidence and pending state at extraction)
+
 Initial extraction is present; combined verification and acceptance remain pending. Reviewed source heads
 and individual verification are recorded in the central Gate4 and weapon/movement/
 falling/shield plans. PR32 source70b8333 has425 passing Linux Rust tests and424
@@ -132,7 +153,7 @@ source plans accompany the integrated code as provenance, with this plan and act
 combined verification authoritative for this PR. The new real damaging OA recovery
 scenario is still being authored separately and is required before acceptance.
 
-Fresh combined review found that ordinary, intrinsic and opportunity attacks could
+Fresh combined review found that ordinary and intrinsic attacks could
 admit an already-dead located target, spend resources and later fail damage
 resolution. The printed source-weapon path already rejects this case. Before final
 verification, share an admission-only target check across these four paths, with
@@ -140,3 +161,11 @@ actor knowledge checked before vitality. Keep retained source reconstruction leg
 after an attack itself kills its target, and keep living zero-HP targets legal.
 Do not filter player contacts using an undisclosed death flag. Add resource/no-write,
 knowledge-first and lethal-completion regressions before accepting this correction.
+
+The first new tests exposed two fixture assumptions. A lethal melee hit pauses for
+the owner's knockout choice; the corrected lethal OA test explicitly chooses normal
+damage. Mutating an accepted mover into a dead body cannot represent a valid pending
+crossing: existing movement validation rejects its changed capability before attack
+admission. That artificial test is removed, and the actual lethal OA completion test
+retains full replay and movement-stop assertions. The new shared OA admission check
+is defensive consistency, not a demonstrated bypass of the existing movement guard.
