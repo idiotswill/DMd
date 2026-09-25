@@ -1,6 +1,7 @@
 # Gate 4 — Supported Fighter combat features
 
-Writer: bootstrap_audit. Branch: `codex/gate4-fighter-combat-features`.
+Writer: root, taking over after bootstrap_audit reached its usage limit.
+Branch: `codex/gate4-fighter-combat-features`.
 Base: reviewed physical checkpoint `629177634572740ed637da5b5640fc49bbc08083`.
 Status: active; pre-code plan; no verification claimed.
 
@@ -66,3 +67,15 @@ prove all nonweapon indices identical, or retain a typed subset, never duplicate
 The first plan-write tool failed during host handshake and made no file changes;
 memory recovered and no compiler has been started. Next: agree pure APIs with Ready,
 author leaves/tests, checkpoint for review, then coordinate shared wiring and actual UI.
+
+Root reconciled current main21cf176 and area source f65f2a4 in3c0aaf5 before
+implementation. No code conflicts or changes beyond the imported area source.
+The Ready writer has stopped at its separately committed foundation, so root owns
+both later shared integrations. Keep the Second Wind raw identity tag16 reserved.
+Implement Second Wind first as a dedicated source-derived work item in the existing
+resolution. Its retained actor and pre-spend use count must reconstruct the owned
+source feature and one paid Bonus Action while awaiting raw dice; the journal
+authenticates admission. Reuse existing vitality healing and physical roll/Inspiration
+handling. Do not create a fake spell, reset rests, or route active combat through
+the legacy kernel. Savage Attacker follows as a separate coherent change.
+Area canonical verification currently owns the serialized compiler slot.
