@@ -501,6 +501,25 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
         }
         return Ok(());
     }
+    if matches!(event.action, TableAction::Adjudicate { .. })
+        && let Some(nested) = &event.tactical_event
+    {
+        // The original owned declaration is authenticated by semantic table replay.
+        // Even an opaque anchor may not inject unrelated tactical authority here.
+        if !matches!(
+            event.meta.issuer,
+            CommandIssuer::Admin | CommandIssuer::System
+        ) || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || nested.meta != event.meta
+            || nested.action != TacticalAction::SecondWind
+            || event.rules_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Second Wind adjudication disagrees with its nested authority".into());
+        }
+        return Ok(());
+    }
     if event.tactical_event.is_some() {
         return Err("non-tactical table action contains unsolicited encounter authority".into());
     }

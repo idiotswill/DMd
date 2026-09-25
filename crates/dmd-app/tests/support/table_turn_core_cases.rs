@@ -369,3 +369,205 @@ async fn complete_table_round_survives_every_disk_reopen_retry_and_semantic_rest
         .await
         .unwrap();
 }
+
+async fn pending_second_wind(f: &mut Fixture, url: &str, spoken: bool) {
+    let (meta, action) = if spoken {
+        f.runtime
+            .submit_table_text(f.player_meta(0).await, "I use Second Wind")
+            .await
+            .unwrap();
+        let pending = f
+            .runtime
+            .table_view(f.campaign, TableViewer::Player(f.players[0]))
+            .await
+            .unwrap()
+            .pending
+            .unwrap();
+        (
+            f.meta(CommandIssuer::Admin, None, Some(f.session)).await,
+            TableAction::Adjudicate {
+                pending_id: pending.id,
+                revision: pending.revision,
+                request_id: RollRequestId::new(),
+            },
+        )
+    } else {
+        (
+            f.player_meta(0).await,
+            TableAction::Tactical {
+                action: TacticalAction::SecondWind,
+            },
+        )
+    };
+    Box::pin(cold_step(f, url, meta, action)).await;
+    let view = f
+        .runtime
+        .table_view(f.campaign, TableViewer::Player(f.players[0]))
+        .await
+        .unwrap();
+    assert!(view.pending.is_none());
+    assert_eq!(view.roll_channel, Some(TableRollChannel::Tactical));
+    let request = view.roll.unwrap();
+    assert_eq!(
+        request.dice,
+        vec![DieSpec {
+            count: 1,
+            sides: 10
+        }]
+    );
+    assert_eq!(request.modifier, 1);
+    let before = current(f).await;
+    assert!(
+        before
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .bonus_action_spent
+    );
+    assert!(
+        !before
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .action_spent
+    );
+    let raw = TableAction::Tactical {
+        action: TacticalAction::SubmitRoll {
+            result: RollResult {
+                request_id: request.id,
+                source: RollSource::Physical,
+                dice: vec![DieResult {
+                    sides: 10,
+                    value: 7,
+                }],
+            },
+        },
+    };
+    assert!(
+        f.runtime
+            .execute_table(f.player_meta(1).await, raw.clone())
+            .await
+            .is_err()
+    );
+    assert!(
+        f.runtime
+            .execute_table(
+                f.player_meta(0).await,
+                TableAction::SubmitPhysical {
+                    request_id: request.id,
+                    faces: vec![7]
+                }
+            )
+            .await
+            .is_err()
+    );
+    assert_eq!(current(f).await, before);
+    if !spoken {
+        Box::pin(reject_forged_second_wind(f)).await;
+    }
+    let meta = f.player_meta(0).await;
+    Box::pin(cold_step(f, url, meta, raw)).await;
+    let state = current(f).await;
+    let rules = state.rules.as_ref().unwrap();
+    let actor = &rules.entities[&f.actors[0]];
+    assert_eq!(actor.hp, actor.max_hp); // Genuine full-health use still pays; no over-healing.
+    assert_eq!(
+        actor
+            .character_features
+            .as_ref()
+            .unwrap()
+            .second_wind_remaining,
+        if spoken { 0 } else { 1 }
+    );
+    assert_eq!(
+        rules.rolls.last().unwrap().result.dice,
+        vec![DieResult {
+            sides: 10,
+            value: 7
+        }]
+    );
+    assert!(
+        state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .is_none()
+    );
+}
+
+async fn reject_forged_second_wind(f: &Fixture) {
+    let mut export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mut forged = current(f).await;
+    forged
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .get_mut(&f.actors[0])
+        .unwrap()
+        .character_features
+        .as_mut()
+        .unwrap()
+        .second_wind_remaining = 0;
+    let work = &mut forged
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .pending
+        .as_mut()
+        .unwrap()
+        .work;
+    let TacticalWorkKind::SecondWind { uses_before, .. } = &mut work.kind else {
+        panic!()
+    };
+    *uses_before = 1;
+    // This invented extra expenditure is structurally coherent; only the real
+    // accepted history proves that exactly one of the two uses was spent.
+    dmd_rules::tactical::validate_tactical_state(&forged).unwrap();
+    export.current_state.state_json = forged.encode_json().unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let restored = runtime(pool.clone());
+    assert!(restored.restore_campaign(&export).await.is_err());
+    let rows: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current")
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+    assert_eq!(rows, 0);
+    pool.close().await;
+}
+
+#[tokio::test]
+async fn second_wind_direct_and_declared_actions_survive_cold_dice_retry_and_restore() {
+    let directory = std::env::temp_dir().join(format!("dmd-second-wind-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let path = directory.join("campaign.sqlite");
+    let url = format!("sqlite://{}", path.to_string_lossy().replace('\\', "/"));
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    Box::pin(prepare_round(&mut f)).await;
+    Box::pin(initiative(&mut f, &url)).await;
+    Box::pin(pending_second_wind(&mut f, &url, false)).await;
+    Box::pin(complete_round(&mut f, &url)).await;
+    Box::pin(pending_second_wind(&mut f, &url, true)).await;
+    f.pool.close().await;
+    drop(f);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
+}

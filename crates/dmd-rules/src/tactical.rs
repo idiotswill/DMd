@@ -9,6 +9,7 @@ mod failed_save;
 mod falling;
 mod initiative;
 mod movement;
+mod second_wind;
 mod shields;
 mod turn_validation;
 mod turns;
@@ -26,6 +27,7 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    SecondWind,
     DonShield {
         shield: ItemId,
         hand: Hand,
@@ -389,6 +391,7 @@ pub fn resolve_tactical(
         TacticalAction::UseLegendaryResistance => failed_save::choose(&mut next, meta, true)?,
         TacticalAction::DeclineLegendaryResistance => failed_save::choose(&mut next, meta, false)?,
         TacticalAction::DeclineLegendaryAction => creature_bridge::decline(&mut next, meta)?,
+        TacticalAction::SecondWind => second_wind::begin(&mut next, meta, pack)?,
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }
         | TacticalAction::Disengage

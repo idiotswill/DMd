@@ -4,6 +4,26 @@ import userEvent from '@testing-library/user-event';
 import TacticalMap from './TacticalMap.svelte';
 import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
+import type { CharacterView } from '../table-api';
+
+it('uses an owned Second Wind bonus action and blocks another or pending turn', async () => {
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},
+    continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+  const character:CharacterView={character_id:'pc',player_id:'player',entity_id:'actor',name:'Fighter',profile:null,sheet:null,details:null,second_wind_remaining:2};
+  const component=render(EncounterPanel,{tactical,characters:[character],host:false,actor:'actor',player:'player',onAction});
+  await user.click(screen.getByRole('button',{name:'Second Wind · 2 uses'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith('SecondWind');
+  await component.rerender({tactical:{...tactical,budget:{...tactical.budget!,bonus_action_spent:true}},characters:[{...character,second_wind_remaining:1}]});
+  expect((screen.getByRole('button',{name:'Second Wind · 1 uses'}) as HTMLButtonElement).disabled).toBe(true);
+  await component.rerender({tactical,pendingRoll:true});
+  expect(screen.getByRole('button',{name:'Second Wind · 1 uses'}).closest('fieldset')?.disabled).toBe(true);
+  await component.rerender({actor:'other',player:'other-player',pendingRoll:false});
+  expect(screen.queryByRole('button',{name:/Second Wind/})).toBeNull();
+  await component.rerender({actor:'actor',player:'player',characters:[{...character,second_wind_remaining:0}]});
+  expect((screen.getByRole('button',{name:'Second Wind · 0 uses'}) as HTMLButtonElement).disabled).toBe(true);
+});
 
 it('replaces host map truth when the selected viewer changes', async () => {
   const host:TacticalView={encounter_id:'encounter',round:null,active_actor:null,phase:'setup',

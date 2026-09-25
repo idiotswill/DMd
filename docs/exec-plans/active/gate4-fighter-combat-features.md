@@ -3,7 +3,7 @@
 Writer: root, taking over after bootstrap_audit reached its usage limit.
 Branch: `codex/gate4-fighter-combat-features`.
 Base: reviewed physical checkpoint `629177634572740ed637da5b5640fc49bbc08083`.
-Status: active; pre-code plan; no verification claimed.
+Status: active; Second Wind draft authored; formatting checked, executable verification pending.
 
 ## Objective and source authority
 
@@ -79,3 +79,26 @@ authenticates admission. Reuse existing vitality healing and physical roll/Inspi
 handling. Do not create a fake spell, reset rests, or route active combat through
 the legacy kernel. Savage Attacker follows as a separate coherent change.
 Area canonical verification currently owns the serialized compiler slot.
+
+Second Wind draft now has a public tactical action, retained source/payment work
+and tag16 request. It derives the immutable created Fighter profile, spends the
+Bonus Action and one use atomically, requests1d10 plus actual Fighter level, and
+uses existing vitality healing and owned Inspiration/raw history. Its decoder and
+pending validator reject changed source/payment/request images. No rest resource
+reset, additional Action, fake spell or legacy tactical bypass was added.
+
+The current-turn panel offers the owned sheet's remaining uses. Ordinary "I use
+Second Wind" declarations also route host adjudication through the same tactical
+path while initiative is active, preserving the original host envelope and owned
+declaration. Restore admits only that specific nested action and verifies the real
+declaration by semantic replay; noncombat legacy behavior remains unchanged.
+
+Three authored reducer cases cover payment/turn/maximum HP/Inspiration/raw/replay,
+source and authority refusals, and forged pending state. One authored real file-SQLite
+case covers direct and declared uses, cold reopen at payment and dice, exact retry,
+foreign actor/wrong dice channel refusal, and an arithmetic-consistent invented
+extra expenditure rejected by semantic restore. One UI case checks ownership,
+Bonus Action, depleted uses and pending-work controls. These tests have not run.
+Rustfmt and whitespace checks pass. Next: compile/fix this checkpoint after the
+already queued area UI, Ready correction and protocol canonical batches; then
+complete source Savage Attacker, current protocol/Ready integration and review.
