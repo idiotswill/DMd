@@ -445,27 +445,49 @@ async fn prepare_owned_turn(f: &mut Fixture, mage: EntityId) -> TableTransportRe
         },
     )
     .await;
+    let begin = TableAction::Tactical {
+        action: TacticalAction::Begin {
+            execution: TacticalExecutionVersion::ReactionsV1,
+            combatants: vec![TacticalCombatant {
+                actor: mage,
+                source: TacticalSource::Creature {
+                    definition_id: "mage".into(),
+                },
+                surprised: false,
+            }],
+            groups: vec![InitiativeGroup {
+                actors: vec![mage],
+                request_id: RollRequestId::new(),
+            }],
+        },
+    };
+    // Assignment during preparation is allowed; an absent owner must not strand
+    // the first public initiative request, which neither Host nor another player
+    // may answer. A failed Begin leaves every durable row unchanged.
     accept(
         f,
         TableTransportChannel::Host,
-        TableAction::Tactical {
-            action: TacticalAction::Begin {
-                execution: TacticalExecutionVersion::ReactionsV1,
-                combatants: vec![TacticalCombatant {
-                    actor: mage,
-                    source: TacticalSource::Creature {
-                        definition_id: "mage".into(),
-                    },
-                    surprised: false,
-                }],
-                groups: vec![InitiativeGroup {
-                    actors: vec![mage],
-                    request_id: RollRequestId::new(),
-                }],
-            },
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(f.players[1]),
         },
     )
     .await;
+    let absent_begin = request(f, TableTransportChannel::Host, begin.clone()).await;
+    assert_eq!(
+        unchanged_rejection_message(f, absent_begin).await,
+        "Every source controller must be present before initiative begins."
+    );
+    accept(
+        f,
+        TableTransportChannel::Host,
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(f.players[0]),
+        },
+    )
+    .await;
+    accept(f, TableTransportChannel::Host, begin).await;
     let owner = TableTransportChannel::SourceCreature {
         player_id: f.players[0],
         actor: mage,
@@ -641,6 +663,21 @@ async fn cast_mage_armor(f: &Fixture, mage: EntityId) -> TableTransportRequest {
 }
 
 async fn reject_transfer_of_held_work(f: &Fixture, mage: EntityId) {
+    // The encounter is settled after Mage Armor, so this refusal specifically
+    // protects attendance rather than relying on the pending/held-work guard.
+    let absent_transfer = request(
+        f,
+        TableTransportChannel::Host,
+        TableAction::SetSourceCreatureController {
+            actor: mage,
+            controller: CreatureController::Player(f.players[1]),
+        },
+    )
+    .await;
+    assert_eq!(
+        unchanged_rejection_message(f, absent_transfer).await,
+        "The new source controller must be present in this encounter's session."
+    );
     let channel = TableTransportChannel::SourceCreature {
         player_id: f.players[0],
         actor: mage,

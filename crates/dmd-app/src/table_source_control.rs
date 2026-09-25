@@ -102,6 +102,15 @@ pub(crate) fn activate(
     if adopted != adoptions(state)? {
         return Err("Review the complete current source-owner set before enabling control.".into());
     }
+    if state.encounter.as_ref().is_some_and(|encounter| {
+        encounter.flow.is_some()
+            && adopted.iter().any(|adoption| {
+                encounter.participant(adoption.actor).is_some()
+                    && !present_player(state, meta, adoption.player_id)
+            })
+    }) {
+        return Err("Every adopted source controller in this encounter must be present.".into());
+    }
     let mut next = state.clone();
     next.table
         .as_mut()
@@ -134,6 +143,16 @@ pub(crate) fn assign(
         .profile(actor)
         .ok_or("Select an authenticated source creature.")?;
     source_for_profile(profile).map_err(|error| error.to_string())?;
+    if let CreatureController::Player(player) = controller
+        && state.encounter.as_ref().is_some_and(|encounter| {
+            encounter.flow.is_some() && encounter.participant(actor).is_some()
+        })
+        && !present_player(state, meta, player)
+    {
+        return Err(
+            "The new source controller must be present in this encounter's session.".into(),
+        );
+    }
     let transition = apply_creature_schedule(
         state,
         current,
@@ -174,7 +193,14 @@ pub(crate) fn attending_source(
     else {
         return Err("Select the attending controller and their source creature.".into());
     };
-    let present = state
+    if !present_player(state, meta, player) || !owns_source(state, player, actor) {
+        return Err("Select the attending controller and their source creature.".into());
+    }
+    Ok(actor)
+}
+
+fn present_player(state: &CampaignState, meta: &CommandMeta, player: PlayerId) -> bool {
+    state
         .table
         .as_ref()
         .and_then(|table| table.active_session.as_ref())
@@ -184,11 +210,7 @@ pub(crate) fn attending_source(
                     participant.player_id == player
                         && participant.attendance == AttendanceStatus::Present
                 })
-        });
-    if !present || !owns_source(state, player, actor) {
-        return Err("Select the attending controller and their source creature.".into());
-    }
-    Ok(actor)
+        })
 }
 
 pub(crate) fn has_owned_source(state: &CampaignState, player: PlayerId) -> bool {
@@ -212,10 +234,28 @@ pub(crate) fn authorize_tactical(
     action: &dmd_rules::tactical::TacticalAction,
 ) -> Result<(), String> {
     use dmd_rules::tactical::TacticalAction as A;
-    if !enabled(state) || !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
+    if !enabled(state) {
         return Ok(());
     }
     let rules = state.rules.as_ref().ok_or("Mechanical state is absent.")?;
+    if let A::Begin { combatants, .. } = action {
+        for combatant in combatants {
+            if let Some(CreatureController::Player(player)) = rules
+                .tactical_creatures
+                .as_ref()
+                .and_then(|creatures| creatures.runtime(combatant.actor))
+                .map(|runtime| runtime.controller)
+                && !present_player(state, meta, player)
+            {
+                return Err(
+                    "Every source controller must be present before initiative begins.".into(),
+                );
+            }
+        }
+    }
+    if !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
+        return Ok(());
+    }
     let resolution = state
         .encounter
         .as_ref()
@@ -355,6 +395,87 @@ pub(crate) fn visible_actors(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn typed_existing_owner_requires_attendance_when_activating_a_running_encounter() {
+        // The source-owner changes here are explicitly synthetic typed-state
+        // setup, not a claim that an old table binary accepted this ownership.
+        let export = dmd_persistence::CampaignExport::from_json(include_str!(
+            "../tests/fixtures/reactions-v1-upgrade-100c7da.json"
+        ))
+        .unwrap();
+        let baseline = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        settled(&baseline).unwrap();
+        let session = baseline
+            .table
+            .as_ref()
+            .unwrap()
+            .active_session
+            .as_ref()
+            .unwrap();
+        let creatures = baseline
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap();
+        let actor = creatures.profiles[0].actor;
+        assert!(
+            baseline
+                .encounter
+                .as_ref()
+                .unwrap()
+                .participant(actor)
+                .is_some()
+        );
+        for attendance in [AttendanceStatus::Absent, AttendanceStatus::Present] {
+            let player = session
+                .participants
+                .iter()
+                .find(|p| p.attendance == attendance)
+                .unwrap()
+                .player_id;
+            let origin = CommandMeta {
+                id: CommandId::new(),
+                campaign_id: baseline.campaign_id(),
+                session_id: Some(session.session_id),
+                issuer: CommandIssuer::Admin,
+                actor: None,
+                expected_event_sequence: baseline.applied_event_sequence,
+            };
+            let transition = apply_creature_schedule(
+                &baseline,
+                creatures,
+                &origin,
+                &CreatureScheduleOperation::SetContext {
+                    actor,
+                    controller: CreatureController::Player(player),
+                    in_lair: false,
+                },
+            )
+            .unwrap();
+            let mut state = baseline.clone();
+            state.rules.as_mut().unwrap().tactical_creatures = Some(transition.next);
+            state.applied_event_sequence += 1;
+            let activation = CommandMeta {
+                id: CommandId::new(),
+                expected_event_sequence: state.applied_event_sequence,
+                ..origin
+            };
+            let before = state.clone();
+            let result = activate(&state, &activation, &adoptions(&state).unwrap());
+            if attendance == AttendanceStatus::Absent {
+                assert_eq!(
+                    result.unwrap_err(),
+                    "Every adopted source controller in this encounter must be present."
+                );
+            } else {
+                assert!(enabled(&result.unwrap()));
+            }
+            assert_eq!(state, before);
+        }
+    }
 
     #[test]
     fn typed_preexisting_source_owner_does_not_silently_enable_v2_projection() {

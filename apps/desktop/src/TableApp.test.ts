@@ -8,6 +8,46 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('keeps a pending PC declaration on its character channel after source selection and restart',async()=>{
+    const user=userEvent.setup();const view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'session',display_name:'Table session',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
+    view.pending={id:'declaration',revision:3,player_id:'player',character_id:'pc',actor:'actor',session_id:'session',text:'I look for another path',intent:{Unresolved:{question:'Which path?'}}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Declaration withdrawn.'}}));
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Controlled actor').hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByLabelText('Controlled actor'),'mage');
+    await screen.findByText('Switch to your player character to correct or withdraw this declaration.');
+    expect(screen.queryByRole('button',{name:'Correct this declaration'})).toBeNull();
+    expect(screen.queryByRole('button',{name:'Withdraw declaration'})).toBeNull();
+    expect(screen.queryByLabelText('Your declaration, question or correction')).toBeNull();
+    expect(tableApi.action).not.toHaveBeenCalled();expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
+    await waitFor(()=>expect(screen.getByLabelText('Controlled actor').hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByLabelText('Controlled actor'),'');
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Correct this declaration'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Correct this declaration'}));
+    expect((screen.getByLabelText('Your declaration, question or correction') as HTMLTextAreaElement).value).toBe('Actually ');
+    expect(document.activeElement).toBe(screen.getByLabelText('Your declaration, question or correction'));
+    await user.click(screen.getByRole('button',{name:'Withdraw declaration'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({version:2,channel:{Player:{player_id:'player',character_id:'pc'}},revision:view.revision,session_id:'session',action:{CancelDecision:{pending_id:'declaration',revision:3}}});
+    mounted.unmount();
+    // The saved request wins over a later local actor preference after restart.
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player',sourceActorId:'mage'}));
+    render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    expect((screen.getByLabelText('Controlled actor') as HTMLSelectElement).value).toBe('');
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
   it('keeps an assigned source roll on its player channel while preserving legacy host rolling',async()=>{
     const view=emptyView();view.roll={id:'source-roll',roller:'mage',dice:[{count:1,sides:20}],modifier:2,mode:'Normal',visibility:'Public',reason:'Initiative'};view.roll_channel='Tactical';
     view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};

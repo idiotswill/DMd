@@ -317,3 +317,33 @@ green heads are retained evidence, not a substitute for this candidate's checks.
 Integration format and diff checks pass. The four JSON files have no diff against
 verified main, and all four Rust production source trees have no diff against
 `26241a9`; inherited Night Hag content and test changes remain part of the candidate.
+
+## Attendance review correction
+
+Review of integrated candidate `6b06597` found a reachable source-owner deadlock:
+an absent player's source creature could enter initiative, or be assigned during
+a settled encounter, while its subsequent actions require actual attendance and
+Host substitution is correctly denied. Pending initiative also blocks transfer.
+Add activated-table admission requiring every selected source controller to be
+Present before Begin, and requiring a new controller to be Present when assigning
+an actor already in an encounter flow. Outside-flow assignments remain valid for
+preparing future sessions. Extend the actual source-only Mage scenario with
+zero-write absent-owner Begin/transfer rejections and the subsequent valid owner
+continuation. Existing unactivated v1 replay retains its admission semantics.
+
+Activation of an already running, settled encounter receives the same attendance
+protection for every adopted actor in that encounter. A labelled pure typed-state
+test uses the genuine settled upgrade capture as a baseline, synthesizes source
+ownership only through SetContext, then proves absent-owner refusal and present-
+owner activation. It does not claim a genuine historic Player-source capture.
+
+Independent review also found that choosing a source actor left a PC declaration's
+Correct/Withdraw buttons active. Their actions now require the current PC channel;
+the source selection instead explains how to switch back. The UI regression selects
+the actual Mage, checks that neither control can create an outbox request, switches
+back to the PC, and exercises correction focus plus a lost-ack withdrawal/restart
+whose exact original PC channel overrides a later local actor preference.
+
+These review corrections are authored and formatted, with git diff --check clear.
+They have not yet compiled or run. The next authorized heavy slot runs their focused
+Rust/UI regressions, then the complete canonical verification on the committed head.
