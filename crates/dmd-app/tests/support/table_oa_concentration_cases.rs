@@ -818,5 +818,10 @@ async fn run_case() {
     Box::pin(cold_retry(&mut f, &path, &movement, &move_action)).await;
     mirror_pool.close().await;
     f.pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(mirror);
+    drop(mirror_pool);
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }

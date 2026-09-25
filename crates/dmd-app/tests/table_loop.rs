@@ -4,6 +4,8 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]

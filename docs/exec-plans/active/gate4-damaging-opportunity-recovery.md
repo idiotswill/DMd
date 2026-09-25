@@ -75,3 +75,10 @@ changes. Root integrated the reviewed scenario as `5e3f89a` into PR33; final com
 canonical evidence remains pending.
 General privacy protocol, native combat acceptance, Ready/reactions and all other
 open Gate4 requirements remain unchanged.
+
+PR33 source49fac8c passed this scenario in the full596-test Linux run. Native Windows
+finished all scenario assertions but failed at final temp-file removal (OS32 sharing
+violation). Root's independently reviewed correction closes pools and drops runtime/
+fixture handles before bounded Windows-only sharing-error retries. Cleanup remains
+asserted and every scenario assertion is unchanged. The corrected combined head must
+pass canonical and native CI before this integration is accepted.

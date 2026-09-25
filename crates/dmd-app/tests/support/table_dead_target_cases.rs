@@ -253,5 +253,8 @@ async fn run_case() {
     Box::pin(next_player_turn(&mut f, target)).await;
     Box::pin(reject_new_attack(&mut f, &path, target, weapon)).await;
     f.pool.close().await;
-    std::fs::remove_file(path).unwrap();
+    drop(f);
+    sqlite_test_cleanup::remove_closed_file(&path)
+        .await
+        .unwrap();
 }
