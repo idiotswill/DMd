@@ -24,7 +24,15 @@ pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<()
         || pending.request
             != super::continuations::request(state, &p.work, key)?
                 .ok_or_else(|| invalid("automatic failure has no request"))?
-        || pending.ruling != super::continuations::ruling(key.role)
+        || pending.ruling
+            != super::continuations::ruling(
+                key.role,
+                &state
+                    .rules
+                    .as_ref()
+                    .ok_or(RulesError::Uninitialized)?
+                    .house_rules,
+            )
         || pending.issued_by.expected_event_sequence < r.origin.expected_event_sequence
     {
         return Err(invalid(
@@ -70,6 +78,9 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::SpellProgram { .. } | TacticalWorkKind::FinishSpell { .. } => {
+            super::casting::validate_work(state, work)?
+        }
         TacticalWorkKind::MoveSegment => {
             r.movement
                 .as_ref()
@@ -297,6 +308,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     super::creature_bridge::validate(state)?;
     super::attacks::validate(state)?;
     super::movement::validate(state)?;
+    super::casting::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20
         || f.budget.weapon_history.len() > 512
@@ -346,6 +358,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 TacticalRollRole::DeathSave
                     | TacticalRollRole::EffectSave
                     | TacticalRollRole::Concentration
+                    | TacticalRollRole::SpellSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence

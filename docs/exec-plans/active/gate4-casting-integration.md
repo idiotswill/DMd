@@ -131,3 +131,37 @@ is changed before the coordinated movement/attack handoff.
 Next action: commit this verified duration leaf and release the compiler to root's
 source-catalog verification. Then integrate the coherent movement/opportunity-
 attack checkpoint and wire actual casting stages into the one tactical resolution.
+
+## Shared casting checkpoint in progress
+
+The verified duration leaf is `07c624765e6dfa9ae9bb7824d09742cc179b70c3`; exact
+independent delta review found no blocker. Movement/opportunity attacks
+`f69dee626dcb9fd1407fab99c4212fd21c04cb51` are merged at `03f93cf`; only domain exports
+conflicted, and both casting and attack exports were retained. This writer now owns
+shared dispatch/continuation files. environment_audit owns the attack source enum
+and the separate sealed spell-attack adapter. No parallel scheduler is created.
+
+Current unverified implementation adds `CastSpell { choice, targets }`, bounded
+`resolution.casts`, `SpellProgram`/`FinishSpell`, and stable roll tags SpellSave11 and
+SpellAmount12 (falling retains9/10). Source feature receipts and the ordinary budget
+own NPC activation/uses; prepared slots remain in MechanicalEntity. Exact source
+validation, physical components and closed-program checks precede costs. Individual
+target work marks completion before nested vitality/effect consequences, and a
+partition validator rejects omitted/duplicated targets or missing completion work.
+The shared Check/Save outcome policy honors the explicit natural-extremes option
+and labels that ruling as a house rule; default RAW and death-save rules remain distinct.
+
+This is an implementation checkpoint for coordinated development, not verified or
+accepted behavior. The first driver enables canonical healing, individual damage,
+and saving-throw conditions. Attack programs remain rejected before costs until the
+owned source adapter is connected. Ready triggers, Counterspell interruption, areas,
+objects, additional effect families, and meaningful late-target decisions remain
+active Gate4 work. Existing pure Ready/interruption contracts retain their source
+semantics. No source grant is invented to make a sample reachable: Cure Wounds uses
+the existing prepared catalog, Hold Person can use the real Cultist feature, and the
+current NPC sample does not grant Magic Missile. App role/projection handling and
+all accepted-event restore auditing remain root integration work.
+
+Next: finish the public resolver regressions and strict retained-work checks, connect
+the sealed attack adapter, and acquire the global compiler slot for focused tests.
+No test or build evidence from the earlier leaves covers this new shared code.

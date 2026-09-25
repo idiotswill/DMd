@@ -193,6 +193,7 @@ fn begin_boundary_from(
         legendary_window: None,
         attack: None,
         movement: None,
+        casts: vec![],
         next_occurrence: first_occurrence,
     }));
     state

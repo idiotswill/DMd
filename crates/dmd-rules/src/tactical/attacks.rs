@@ -201,6 +201,7 @@ pub(super) fn begin(
         legendary_window: None,
         attack: Some(attack),
         movement: None,
+        casts: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
