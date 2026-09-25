@@ -89,7 +89,7 @@ fn first_aid_pays_action_and_resolves_owned_physical_check_then_target_recovery(
 
 #[test]
 fn first_aid_checks_knowledge_contact_vitality_and_paid_request_without_mutation() {
-    for case in 0..6 {
+    for case in 0..7 {
         let mut f = fixture();
         match case {
             0 => {
@@ -108,6 +108,28 @@ fn first_aid_checks_knowledge_contact_vitality_and_paid_request_without_mutation
             2 => f.zero_hp_target(true),
             3 => f.entity_mut(1).hp = 1,
             4 => f.entity_mut(0).hp = 0,
+            5 => f
+                .state
+                .encounter
+                .as_mut()
+                .unwrap()
+                .battlefield
+                .obstacles
+                .push(SpatialObstacle {
+                    id: "clear-barrier".into(),
+                    volume: SpatialBox {
+                        min: SpatialPoint { x: 19, y: 10, z: 0 },
+                        max: SpatialPoint {
+                            x: 21,
+                            y: 20,
+                            z: 20,
+                        },
+                    },
+                    blocks_movement: true,
+                    blocks_sight: false,
+                    observable: true,
+                    cover: CoverDegree::None,
+                }),
             _ => {
                 f.run(Some(0), TacticalAction::Dodge);
             }
@@ -131,6 +153,29 @@ fn first_aid_checks_knowledge_contact_vitality_and_paid_request_without_mutation
 
 #[test]
 fn medicine_uses_actual_proficiency_exhaustion_inspiration_and_opt_in_natural_extremes() {
+    let mut poisoned = fixture();
+    poisoned
+        .state
+        .rules
+        .as_mut()
+        .unwrap()
+        .effects
+        .push(ActiveEffect {
+            id: EffectId::new(),
+            source: poisoned.actors[1],
+            target: poisoned.actors[0],
+            condition: Some(Condition::Poisoned),
+            label: "Poisoned helper".into(),
+            expires: Expiry::Never,
+            concentration_owner: None,
+        });
+    poisoned.run(Some(0), aid(&poisoned, MedicinePurpose::Stabilize));
+    assert_eq!(
+        poisoned.rules().pending.as_ref().unwrap().request.mode,
+        RollMode::Disadvantage
+    );
+    poisoned.roll(0, &[20, 9]);
+    assert!(!poisoned.rules().entities[&poisoned.actors[1]].death.stable);
     let mut f = fixture();
     f.entity_mut(0)
         .skill_proficiencies
@@ -193,11 +238,25 @@ fn genuine_melee_knockout_ends_only_after_successful_first_aid_without_healing()
     for face in [9, 10] {
         f.run(Some(0), TacticalAction::EndTurn);
         f.run(Some(1), TacticalAction::EndTurn);
+        if face == 10 {
+            f.state.rules.as_mut().unwrap().effects.push(ActiveEffect {
+                id: EffectId::new(),
+                source: f.actors[0],
+                target: f.actors[1],
+                condition: Some(Condition::Unconscious),
+                label: "Independent unconsciousness".into(),
+                expires: Expiry::Never,
+                concentration_owner: None,
+            });
+        }
         f.run(Some(0), aid(&f, MedicinePurpose::EndKnockout));
         f.roll(0, &[face]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 1);
+        assert!(active_conditions(f.rules(), f.actors[1]).contains(&Condition::Unconscious));
         assert_eq!(
-            active_conditions(f.rules(), f.actors[1]).contains(&Condition::Unconscious),
+            f.rules().tactical_recovery.as_ref().unwrap()[&f.actors[1]]
+                .knockout
+                .is_some(),
             face == 9
         );
     }

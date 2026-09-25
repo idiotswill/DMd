@@ -75,8 +75,10 @@ pub(super) fn begin(
     let actor = active(state)?;
     authorize(state, meta, actor)?;
     eligible(state, actor, target, purpose)?;
+    super::falling::require_settled_before_action(state)?;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     crate::tactical_budget::spend_cost(rules, actor, crate::tactical_budget::TacticalCost::Action)?;
+    crate::kernel::interrupt_rest(rules, actor, state.clock.now);
     let turn_number = rules.timing.as_ref().unwrap().turn_number;
     let flow = flow_mut(state)?;
     flow.budget.movement_progress = None;

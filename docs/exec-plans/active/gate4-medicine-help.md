@@ -84,3 +84,8 @@ accepted retries and independent restored continuation. A structurally valid inv
 Bonus Action expenditure must fail semantic restore without writing rows. These
 tests have not run; formatting and whitespace checks pass. Next: draft PR CI, fix
 actual failures, separate review and serial canonical/desktop verification.
+
+The fresh review added settled-ground admission and interruption of the helper's
+ongoing rest when its Action is paid. Additional authored assertions cover a visible
+but physically blocking barrier, Poisoned disadvantage and independent unconsciousness
+remaining after the source knockout ends. These follow-up changes are unverified.
