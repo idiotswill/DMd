@@ -291,7 +291,7 @@ pub(super) fn start(
     }
     match &work.kind {
         TacticalWorkKind::SpellProgram { cast, at } => {
-            if super::casting::start(state, *cast, *at)? {
+            if super::casting::start(state, meta, *cast, *at)? {
                 return Ok(());
             }
         }

@@ -165,3 +165,10 @@ all accepted-event restore auditing remain root integration work.
 Next: finish the public resolver regressions and strict retained-work checks, connect
 the sealed attack adapter, and acquire the global compiler slot for focused tests.
 No test or build evidence from the earlier leaves covers this new shared code.
+
+The source attack handoff adds a sealed `begin_spell_attack` hook and counts its live
+source occurrence in the same complete-work partition. Attack admission is enabled
+only with that owned adapter dependency; this development checkpoint requires the
+matching attack source files before compilation. Its keys preserve original casting
+identity while the attack records the actual accepted continuation cause. Pending
+late concealment/target choices remain part of full interruption support.

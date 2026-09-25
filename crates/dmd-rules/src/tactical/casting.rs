@@ -137,11 +137,6 @@ pub(super) fn begin(
             "consumed spell materials require their physical expenditure path",
         ));
     }
-    if bound.kind() == ExecutableSpellKind::AttackDamage {
-        return Err(prerequisite(
-            "spell attacks require their source attack continuation",
-        ));
-    }
     validate_spell_slot_reservation(state, &plan, &[])?;
     let begun = begin_cast(&plan, &context(state, choice.actor)?)?;
     let record = retain_spell_cast(begun.cast, &bound, targets.clone(), feature)?;
@@ -365,6 +360,7 @@ pub(super) fn request(
 /// types/dead creatures are a paid no effect, never a free type-identification error.
 pub(super) fn start(
     state: &mut CampaignState,
+    meta: &CommandMeta,
     cast: u16,
     at: SpellProgramOccurrence,
 ) -> Result<bool, RulesError> {
@@ -386,6 +382,12 @@ pub(super) fn start(
             .is_none_or(|caster| caster.concentration != record.cast.plan.concentration_group);
     if !target.source_type_matches || entity.death.dead || group_lost {
         complete_occurrence(state, cast, at)?;
+        return Ok(true);
+    }
+    if executable_spell_kind(&record.cast.plan)? == ExecutableSpellKind::AttackDamage {
+        let bound = retained_spell_binding(record)?;
+        let proof = spell_attack_occurrence(&record.cast, &bound, at.node, at.target)?;
+        super::attacks::begin_spell_attack(state, meta, &proof)?;
         return Ok(true);
     }
     Ok(false)
@@ -590,6 +592,16 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 }
                 _ => (),
             }
+        }
+        if let Some((cast, at)) = r.attack.as_ref().and_then(super::attacks::spell_occurrence)
+            && cast == plan.occurrence
+            && (at.node != 0
+                || usize::from(at.target) >= record.targets.len()
+                || !partition.insert(at))
+        {
+            return Err(invalid(
+                "live spell attack duplicates or invents a target occurrence",
+            ));
         }
         if finish_count != 1 || partition.len() != record.targets.len() {
             return Err(invalid(
