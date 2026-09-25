@@ -1,13 +1,16 @@
 # Gate 4 durable encounter conclusion and recovery
 
-Implementation lead and sole branch writer: bootstrap_audit, delegated by root.
+Implementation lead and sole branch writer: aftermath_recovery, delegated by root
+after bootstrap_audit's preserved implementation checkpoint.
 Branch `codex/gate4-encounter-finish`. Gate4 remains active; no gate acceptance is
 claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 
 Current baseline is merged main `d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278`.
-Status: the first aftermath source/app/UI implementation and its regressions are
-authored but **uncompiled and unexecuted**. Only formatting and diff checks have run.
-No production acceptance, PR, push or upstream merge is claimed. Night Hag main
+Status: the first aftermath implementation now compiles and all four focused rules
+tests pass after environment recovery. File-SQLite and frontend verification are in
+progress; canonical and exact-head CI remain outstanding. The first focused attempt
+hit OS112 before any tests (details below). No production acceptance or upstream
+merge is claimed. Night Hag main
 merged normally at `4244f64` after source checkpoint `eac4dd4`; reviewed PR42/43
 compatibility and source-control dependencies remain subsequent integrations.
 Initial normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to
@@ -60,9 +63,11 @@ identical accepted inputs on an independently restored mirror and retry each ori
 request after cold reopen. Reject pending/foreign/repeated/missing-policy/forged-origin
 inputs without durable writes. Test old captures and unknown future-state guards.
 
-No heavy compiler, Rust tests or frontend checks are authorized until root explicitly
-hands over the single build slot. Static edits/formatting and coherent local commits
-are authorized; do not push, open a PR or merge before reporting the source checkpoint.
+Root granted the exclusive heavy build slot after disk and committed-memory recovery.
+Focused rules/SQLite/UI checks use one job, default thread stacks and disabled
+incremental compilation. Root also authorized draft publication with honest evidence;
+full canonical/exact-head verification and independent review remain required before
+root performs a protected merge.
 
 ## Objective and authority
 
@@ -308,11 +313,40 @@ production writes. Authored first-slice changes now include:
   while requiring byte/exact full-response equality on retries within each database.
   No production protocol or assertion of durable retry identity was weakened.
 
-`cargo fmt --all` and `git diff --check` pass. **No Rust compiler, tests, frontend
-check or build has run on this source.** Default Windows stack and historical corpus
-verification remain required. Root retains the heavy slot; rules_architecture is
-performing a fresh read-only full source review. Next: checkpoint source, merge verified
-current main normally, resolve review findings and reviewed prerequisite integrations,
-then run focused rules/SQLite/UI and canonical checks only after the explicit slot grant.
+`cargo fmt --all` and `git diff --check` passed on the implementation checkpoint.
+After environment recovery, all four focused rules cases pass on the default Windows
+stack. File-SQLite/frontend checks are running; historical corpus and canonical
+verification remain required. Fresh independent review is clear on exact `5e6536f`.
+Next: finish focused SQLite/UI under the explicit shared slot;
+integrate reviewed prerequisites and run final canonical verification afterward.
 Full release/new encounter remains mandatory Gate4 work and cannot be moved to Gate5/6
 or silently represented by the marker.
+
+### First focused verification attempt (2026-09-25)
+
+Exact source head `5e6536f` has fresh independent review through its final attendance,
+mirror, anchor and actual TableApp test delta. After root's explicit slot grant, the
+focused `cargo test -p dmd-rules --test tactical_turns aftermath -- --nocapture` used
+jobs1, no `RUST_MIN_STACK`, and refreshed crate timestamps for the shared target.
+It exited101 **before any test** because writing the rules archive failed with OS112
+(insufficient disk space). Log: `DMD/tooling/aftermath-rules.log`, process91812.
+No Rust source diagnostic was reported.
+
+Only about75MB remained on C:. The generated `tooling/target/debug/incremental` cache
+measured19.6GB. Its exact absolute path, containment and absence of reparse points were
+verified; no Cargo/rustc process remained. Root authorized deleting only that replaceable
+cache and rerunning with `CARGO_INCREMENTAL=0`. Automatic approval review blocked the
+native PowerShell deletion before process creation with reason `blocked by policy`.
+No deletion occurred or alternate deletion route was attempted. Root subsequently
+confirmed environment recovery (28.3 GB disk space available) and reassigned the
+preserved work to aftermath_recovery. The same focused sequence is running with
+`CARGO_INCREMENTAL=0`; this status is not a passing-test or acceptance claim.
+
+### Focused verification recovery (2026-09-25)
+
+On production checkpoint `5e6536f` plus plan-only edits, the identical focused rules
+command completed successfully: 4 tests passed, 32 unrelated cases filtered, default
+Windows stack, jobs1 and `CARGO_INCREMENTAL=0` (session68456). Log:
+`DMD/tooling/aftermath-rules-recovery.log`. The two genuine file-SQLite aftermath
+cases are now compiling/running separately. Draft publication is authorized to obtain
+remote CI while remaining focused/canonical/integration evidence is collected.
