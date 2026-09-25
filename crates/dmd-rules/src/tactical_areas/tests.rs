@@ -175,6 +175,7 @@ impl Fixture {
             participants,
             knowledge: vec![],
             origin: meta,
+            area_grid_policy: Some(TacticalAreaGridPolicy::OccupiedCellCentersV1),
             geometry_ruling: ruling,
             flow: None,
         };
@@ -205,7 +206,6 @@ impl Fixture {
             &self.state,
             &source_area_program(&self.state, self.actor, "fire-breath").unwrap(),
             self.aim(),
-            Some(TacticalAreaGridPolicy::OccupiedCellCentersV1),
         )
         .unwrap()
     }
@@ -259,7 +259,9 @@ fn absent_host_policy_and_forged_origins_reject_without_source_or_state_changes(
     let f = Fixture::new("young-red-dragon");
     let program = source_area_program(&f.state, f.actor, "fire-breath").unwrap();
     let before = f.state.clone();
-    assert!(bind_area_geometry(&f.encounter, &f.state, &program, f.aim(), None).is_err());
+    let mut absent = f.encounter.clone();
+    absent.area_grid_policy = None;
+    assert!(bind_area_geometry(&absent, &f.state, &program, f.aim()).is_err());
     for aim in [
         TacticalAreaAim {
             origin: point(180, 50, 5),
@@ -274,16 +276,7 @@ fn absent_host_policy_and_forged_origins_reject_without_source_or_state_changes(
             ..f.aim()
         },
     ] {
-        assert!(
-            bind_area_geometry(
-                &f.encounter,
-                &f.state,
-                &program,
-                aim,
-                Some(TacticalAreaGridPolicy::OccupiedCellCentersV1)
-            )
-            .is_err()
-        );
+        assert!(bind_area_geometry(&f.encounter, &f.state, &program, aim,).is_err());
     }
     assert_eq!(f.state, before);
 }
@@ -492,14 +485,7 @@ fn source_creator_explicitly_controls_only_the_cone_origin_point_inclusion() {
             toward: point(180, 55, 5),
             include_origin,
         };
-        let bound = bind_area_geometry(
-            &f.encounter,
-            &f.state,
-            &program,
-            aim,
-            Some(TacticalAreaGridPolicy::OccupiedCellCentersV1),
-        )
-        .unwrap();
+        let bound = bind_area_geometry(&f.encounter, &f.state, &program, aim).unwrap();
         assert_eq!(
             bound.targets().iter().any(|target| target.actor == f.actor),
             include_origin

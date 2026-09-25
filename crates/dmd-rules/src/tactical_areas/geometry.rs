@@ -89,18 +89,18 @@ fn shape(
     Ok(area)
 }
 
-/// The host's stored policy must be supplied by the authoritative encounter
-/// attachment. Ordinary declarations cannot choose or override this argument.
+/// The host policy is read from the authenticated encounter attachment.
+/// Ordinary declarations cannot choose or override it.
 /// No sight/known-victim test is appropriate for an unguided source cone.
 pub fn bind_area_geometry(
     encounter: &TacticalEncounter,
     state: &CampaignState,
     program: &AreaProgram,
     aim: TacticalAreaAim,
-    policy: Option<TacticalAreaGridPolicy>,
 ) -> Result<BoundAreaGeometry, RulesError> {
-    let policy =
-        policy.ok_or_else(|| unavailable("the host must choose how areas use this map"))?;
+    let policy = encounter
+        .area_grid_policy
+        .ok_or_else(|| unavailable("the host must choose how areas use this map"))?;
     crate::spatial::validate_encounter(encounter, state).map_err(spatial)?;
     let area = shape(encounter, program, aim)?;
     let grid = encounter.battlefield.bounds.min;

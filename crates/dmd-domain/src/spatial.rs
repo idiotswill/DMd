@@ -299,6 +299,10 @@ pub struct TacticalEncounter {
     pub knowledge: Vec<ActorKnowledge>,
     pub origin: CommandMeta,
     pub geometry_ruling: Ruling,
+    /// Optional host map adjudication, authenticated by this setup's origin.
+    /// Historical maps without it must choose a policy before area activation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub area_grid_policy: Option<crate::TacticalAreaGridPolicy>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub flow: Option<crate::TacticalFlow>,
 }

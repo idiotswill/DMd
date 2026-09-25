@@ -20,6 +20,8 @@ pub enum TacticalRollRole {
     LiquidLandingCheck,
     SpellSave,
     SpellAmount,
+    AreaSave,
+    AreaDamage,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -49,6 +51,8 @@ impl TacticalRollKey {
             TacticalRollRole::LiquidLandingCheck => 10,
             TacticalRollRole::SpellSave => 11,
             TacticalRollRole::SpellAmount => 12,
+            TacticalRollRole::AreaSave => 13,
+            TacticalRollRole::AreaDamage => 14,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -61,6 +65,23 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    AreaDamageRoll {
+        area: u16,
+    },
+    AreaSave {
+        area: u16,
+        target: u16,
+    },
+    BeginAreaDamage {
+        area: u16,
+    },
+    ApplyAreaDamage {
+        area: u16,
+        target: u16,
+    },
+    FinishArea {
+        area: u16,
+    },
     BeginFall {
         fall: u16,
     },
@@ -174,6 +195,8 @@ pub struct TacticalResolution {
     /// Source occurrences share the existing frames; this is not a second queue.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub falls: Vec<crate::TacticalFall>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub areas: Vec<crate::TacticalArea>,
     pub next_occurrence: u16,
 }
 

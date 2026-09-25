@@ -1,5 +1,6 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod areas;
 mod attacks;
 mod casting;
 mod continuations;
@@ -27,6 +28,10 @@ pub enum TacticalAction {
     CreatureWeaponAttack {
         feature_id: String,
         choice: CreatureWeaponUseChoice,
+    },
+    CreatureArea {
+        feature_id: String,
+        aim: TacticalAreaAim,
     },
     CreatureAttack {
         target: EntityId,
@@ -222,6 +227,9 @@ pub fn resolve_tactical(
     match action {
         TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
             attacks::begin_creature_weapon(&mut next, meta, feature_id, choice, pack)?
+        }
+        TacticalAction::CreatureArea { feature_id, aim } => {
+            areas::begin(&mut next, meta, feature_id, *aim)?;
         }
         TacticalAction::CreatureAttack {
             target,

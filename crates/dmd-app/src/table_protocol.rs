@@ -117,6 +117,8 @@ pub struct TableBattlefieldSetup {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub creatures: Vec<TableCreaturePlacement>,
     pub geometry_ruling: Ruling,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub area_grid_policy: Option<TacticalAreaGridPolicy>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

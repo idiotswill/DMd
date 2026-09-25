@@ -93,15 +93,43 @@ percentage and does not grant around-corner effects. GM setup must explain the
 consequence in ordinary language and retain its accepted origin.
 
 New domain/source/geometry/raw-amount contracts and ten source/geometry tests are
-drafted, not compiled or linked to a public action yet. The tests use actual source
+drafted. The tests use actual source
 builds for all three admitted breaths and cover policy absence, malformed aim,
 large/Tiny/tall bodies, cover thresholds and full exclusion, private identity/sight
 independence, canonical raw amounts and explicit origin inclusion. Format and diff
-checks pass; no compiler slot has been taken and no test pass is claimed.
-Target saving throws precede the simultaneous damage frame so
+checks pass; no compiler slot has been taken and no test pass is claimed. The
+source/geometry leaf at652c857 received independent read-only review with no
+concrete finding. Verified falling checkpoint ebbff59 was integrated as b89f4fd;
+the movement author handed over shared queue ownership. The optional policy now
+belongs to TacticalEncounter and TableBattlefieldSetup, with setup-origin equality
+and old absent fields omitted from serialization.
+
+The public CreatureArea source action, roles13/14 and areas[] record now stage one
+amount, all target saves, a simultaneous damage frame and completion in the same
+TacticalResolution. Twelve public reducer tests are drafted alongside the ten leaf
+tests. They cover three source breath grants/costs/recharge, mixed defenses and
+independent concentration, explicit house policy, automatic/voluntary/Legendary
+Resistance saves, zero-HP source damage, raw/partition/source corruption, hidden
+victims, stored cover, old policy bytes and pending physical consequences. They
+have not been compiled. Target saving throws precede the simultaneous damage frame so
 one target's death/concentration loss cannot retroactively change another save.
-Next: source/geometry tests while shared falling work is active; then integrate
-its tested checkpoint before shared edits. No test pass or native claim yet.
+
+Parent approved two explicit admission boundaries after review. Any active sourced
+Charmed restriction uniformly closes this bounded area path before geometry; no
+cone-dependent hidden-charmer error or invented victim exemption is allowed.
+This also rejects otherwise legal cones away from the charmer, and is an
+unsupported Charmed-area adjudication path that must be resolved within Gate4,
+not a claimed source rule. An idle encounter with any due fall similarly rejects
+before aim/cost. Supported preceding transitions pump falling before returning
+idle; area binding cannot accidentally precede an old falling consequence.
+Thus pre-damage validation rebinds exact source geometry/cover and verifies the
+initial source invocation. After damage starts it retains historical membership;
+event replay from the accepted setup/pre-tactical anchor remains required proof.
+
+Next: acquire the serialized compiler slot and run the ten area leaf and twelve
+public tests, then repair actual findings, broaden the affected suites and obtain
+fresh independent exact source review. App/UI area action/privacy/label/origin and
+meaningful GM policy explanation remain integration work, not completed acceptance.
 
 Remaining tactical work is not reassigned to Gate6. Fireball must also implement
 its mandatory flammable unworn/uncarried-object ignition and Burning hazard

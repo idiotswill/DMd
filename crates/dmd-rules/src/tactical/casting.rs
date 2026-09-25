@@ -200,6 +200,7 @@ pub(super) fn begin(
         movement: None,
         casts: vec![record],
         falls: vec![],
+        areas: vec![],
         next_occurrence: 1,
     }));
     commit(state, meta, occurrence)?;

@@ -124,6 +124,22 @@ fn loss(
 
 /// Ordinary movement's temporary airborne jump steps remain under their accepted
 /// origin while usable. Source interruptions insert falling above that same path.
+pub(super) fn require_settled_before_action(state: &CampaignState) -> Result<(), RulesError> {
+    // Supported transitions pump these occurrences before returning to idle. A
+    // malformed/imported idle map must not interleave an old fall after a newly
+    // bound instantaneous effect. The error does not identify any hidden actor.
+    for participant in &encounter(state)?.participants {
+        if loss(state, participant.entity_id)?.is_some() {
+            return Err(prerequisite(
+                "the encounter must finish its pending physical consequences",
+            ));
+        }
+    }
+    Ok(())
+}
+
+/// Ordinary movement's temporary airborne jump steps remain under their accepted
+/// origin while usable. Source interruptions insert falling above that same path.
 pub(super) fn queue_losses(
     state: &mut CampaignState,
     meta: &CommandMeta,
