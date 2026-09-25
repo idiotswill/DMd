@@ -1,8 +1,9 @@
 # Gate4 — Live reaction responses and Ready release
 
 Status: required active Gate4 work; runtime windows not implemented.
-Writer: root. Next branch: codex/gate4-live-reaction-responses, to be created from
-fresh main after PR38 foundation merge. Umbrella: gate4-reaction-ready-runtime.md.
+Writer: root. Branch: codex/gate4-live-reaction-responses, created from freshly
+fetched main d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38 after the protected PR38
+foundation merge. Umbrella: gate4-reaction-ready-runtime.md.
 Authority: product definition, Gate04, ADR026/028, pinned SRD5.2.1 source and the
 complete audit gate4-reactions-and-ready.md. No requirement is transferred to Gate5/6/9.
 
@@ -48,10 +49,19 @@ creature identity must not leak through ordering options, revision changes or er
 ## Validation status and next action
 
 No live window/release implementation or passing runtime evidence exists yet.
-Foundation tests are prerequisites only. After PR38, read current source and ADR028,
-write the execution-boundary decision, then implement Shield as the first complete
-vertical path while keeping Counterspell and all Ready mechanisms mandatory here.
+Foundation tests are prerequisites only. Current source, product requirements and
+ADR028 are read. First retain the genuine prior saves and their portable regression
+coverage, then implement the explicitly versioned Shield vertical path while keeping
+Counterspell and all Ready mechanisms mandatory here.
 The full twelve-family Gate4 ledger and eighteen spell mechanisms remain binding.
+
+Compatibility PR42 head7616cf7a4ccef34505bfdb117a4077bf858d783c has now passed all
+four Linux checks in36177043229, including691 Rust tests. The three newly committed
+genuine ReactionsV1 continuation tests pass together in58.11s on the default stack:
+actual old AttackRoll completion, KnockoutChoice, and privately owned paid Ready
+abandonment, with cold retry and independent semantic restore. This supersedes the
+earlier uncompiled-baseline note below. Native36177043351 and local canonical
+verification remain pending. The original fixture bytes and hashes are unchanged.
 
 The own-turn unarmed slice preserves original Opportunity attack reconstruction.
 At the new live-response execution boundary, apply current armor-training penalties
@@ -118,3 +128,141 @@ control assignment, session/encounter admission, another actor's hit, player-onl
 Shield offer and player acceptance, followed by cold exact retry. Wrong player,
 host substitution, forged actor, absent attendance and reassignment during the pause
 must fail. This remains Gate4 ownership work; injected profiles cannot prove it.
+
+## Foundation merge and present verification boundary
+
+PR38 exact100c7dabe07b07b7430bcb721b1dd7f48e4792cf passed all six checks:
+Linux36172523960 (688 Rust tests), Windows36172524043 (690 Rust tests,67 UI,
+zero static errors/warnings and native installer10881663666). Local canonical
+source fb83db7 passed687 GNU Rust tests, full lint/check/guards and all43 table-loop
+cases. Independent exact-head source/privacy/replay review is clear. The protected
+squash main d5d1db7 and reviewed100 both have tree801db9204a1418303ffada37d46cabf073fef159.
+Post-main Linux36176391117 and Windows36176391189 passed all six checks with688/690
+Rust tests,67 UI tests and native installer10883109174. The bounded foundation plan
+is archived. PR39 and PR40 post-main checks are all green. Gate4 remains unaccepted.
+
+The genuine flow2 attack/event13, knockout/event22 and paid-Ready/event13 exports
+have independently passed unchanged-source file restore, cold reopen, all ten exact
+original transport retries, complete export equality and all29 unchanged SQLite
+table counts. Root prepared a reviewed, uncompiled permanent regression module
+outside the repository before this branch existed. Copy those exact exports and
+their provenance now, preserve original bytes, and commit their baseline tests before any
+new executor behavior. Do not claim the new test module has run until it does.
+
+A separate disposable harness has now captured the original accepted
+UpgradeExecution1-to2 through unchanged100 code after genuine legacy Savage completion.
+Its first default-stack locked/offline run passed without source or harness fixes:
+event16,16 audits,11 presentation records,2 bindings,1 unchanged original snapshot.
+Both cold retries recovered exact responses without changing full normalized exports
+or any of29 SQLite table counts; independent file restore/export equality passed.
+The104740-byte export's SHA256 is
+0aac1462c6e0d244127a5332e08e5ecb24a88e04c1425bc38a1d09c75a12b69d. It is copied as
+reactions-v1-upgrade-100c7da.json with original bytes preserved and documented
+provenance. Its permanent regression now passes with the other three genuine cases on source
+facd988. The four-case default-stack suite completed in91.74s; all twelve original
+transport bindings recover exact responses. Earlier three-case evidence is superseded.
+
+## Execution-boundary decision before implementation
+
+Reserve an explicit next semantic version for live responses; never change flow1
+or flow2 replay. The original unit UpgradeExecution permanently means1-to2.
+A distinct UpgradeExecutionTo with an explicit retained target authorizes a supported
+forward transition only for a host/system at Active with no pending raw request,
+resolution, or paid Ready declaration. Old accepted retries precede live admission.
+The new upgrade changes only the executor plus normal accepted event bookkeeping;
+it cannot refund budgets, erase effects, advance timing or reinterpret old commands.
+Test its valid-target rejection while Ready exists and success after the owner's
+legitimate abandonment; the old1-to2 command's rejection of every flow2 state is
+not evidence for this safeguard. Keep both old continuation sets, including Savage
+raw sets and owned physical Ready abandonment. Work ancestry remains mandatory for
+flow2 and all supported newer versions. Further mandatory pause families require
+their own deliberate retained version boundary when they would alter older history.
+
+Shield's hit stage must retain source-derived rolled facts and authenticated original
+roll/work identity before admitting a response. Keep the original AC/modifier/mode
+and source damage; derive the later defense from real installed effects plus retained
+cover, never from response numbers. Natural20 remains a hit. Phase-specific validators
+must cover physical, intrinsic and spell attacks without broadly weakening source
+reconstruction. Semantic replay must reject changed fact images, effect identity,
+parent keys and causes. Damage dice use the original attack roll's accepted_by even
+when a defender/host command advances the queue. A bounded typed suspended parent
+record and resume work in the existing frame stack must preserve physical attack,
+movement/casting attachment and prior payments through nested responses.
+
+## Selected-response command ownership
+
+The first implementation will separate a private nonpaying response intent from
+the selected respondent's actual execution command. The current-turn controller
+records the explicit total order. Once collection and ordering select a respondent,
+that actor receives the current source action/target controls and may execute or
+decline. Shield labels must distinguish offering a response from casting it. Ready
+already requires this selected stage to choose its actual attack target or path.
+
+This is an engineering decision within ADR028's consent/timing policy. The existing
+source feature hook and spell planner require a command at the current event head
+from the actual controller. An earlier private intent can precede another player's
+ordering or nested response. Reusing it as the execution command would be stale;
+changing its sequence, fabricating System authority, or attributing its cost to the
+other player's advancement command would destroy provenance. A fresh owned command
+avoids that mismatch without weakening source authorization. Preserve both accepted
+commands and the exact trigger/selection relationship in replay.
+
+Selection never prepays permission. Revalidate current grant, components, range,
+perception and all budgets before accepting the execution command. A stale final
+attempt changes nothing. A response invalidated by a completed child is skipped
+without spending, retaining the actual causal command and keeping private reasons
+out of unrelated projections. Every child trigger still needs its own ordering.
+
+Before live execution lands, PR42 remains a bounded compatibility-corpus change.
+Implement the actual response vertical on a fresh branch after its verified merge;
+do not silently expand this compatibility PR into the whole reaction runtime.
+
+## Parallel prerequisites and exact next action
+
+PR41 merged the source Night Hag grant and honest menu wording as
+d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Exact51210d1 passed canonical690 GNU
+Rust tests,691 Linux/693 native Rust and67 UI tests, all six checks, strict lint,
+guards and native packaging. Fetched main/source tree equality is verified at
+48aae57d58e13f3f1fdf1fd5904015999184c185. Post-main36179980349/36179980413 passed all six checks with691 Linux/693 native
+Rust,67 UI tests,0 static errors/warnings and136-module build. The fresh main installer
+artifact10885036510 is231472853bytes, SHA256
+fa039286525e126bebab9ba7d240766ae59fbd617013a06f474e639facea79f8.
+The bounded Night Hag source plan is archived.
+The reviewed source also has20 focused source/profile tests, the real six-dart file
+case and genuine old-history replay passing. PR42 integrated this main without
+production changes of its own.
+The source-control branch has its own writer/plan for real Mage ownership, actor
+selection, self-casting and raw dice with explicit table/transport/presentation
+activation. It does not change tactical execution versions. Integrate these only
+after coherent reviewed checkpoints and preserve both histories deliberately.
+
+Source review found the inherited Magic Missile driver serializes darts and their
+nested consequences, while SRD146 says they strike simultaneously. The current
+Night Hag test uses a surviving target without concentration; it does not prove
+simultaneous consequence behavior. Before claiming full Magic Missile/Shield
+acceptance, establish the simultaneous strike/target milestone, correct current-turn
+ordering and source amount/consequence grouping, with death, concentration, defense,
+repeated/multiple targets and off-turn Ready interactions. This stays in Gate4.
+
+## Compatibility candidate verification
+
+Exact source facd988b7b64ae50a6b4fed2da36721a5f14c4fe passed canonical
+`./scripts/verify`:694 GNU Rust tests across54 suites, all44 table scenarios,
+formatting, workspace/all-target check, strict all-target Clippy and both guards.
+The four genuine cases pass without enlarged stack or fixture edits. Linux
+36181013426 passed all four jobs and695 Rust tests. Windows36181013338 passed
+MSRV, frontend, strict lint and native regressions; packaging is still pending at
+this evidence checkpoint. Do not infer final Windows success from completed steps.
+Independent review of the complete compatibility module, original exports/hashes,
+all twelve bindings and integration delta is clear. The final documentation-only
+commit records this evidence and archives the verified source prerequisite; it
+changes no executable code or fixture bytes. Require all six checks on that final
+head and inspect its complete documentation delta before protected merge.
+
+Exact next action: finish final-head CI and merge compatibility PR42 with expected
+head protection, fetch/verify main tree parity and post-main checks, then integrate
+into the separate Shield implementation branch. That branch already exists for
+independent source work; it must not claim verified runtime or bypass prerequisites.
+The source-control and aftermath writers retain their separate branches. Heavy
+local verification is serialized: source-control focused fixes follow this completed
+canonical run, then aftermath verification. No gate pause or scope waiver.
