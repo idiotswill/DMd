@@ -77,6 +77,13 @@ pub enum TacticalAttackSource {
         feature_id: String,
         weapon: Option<ItemId>,
     },
+    /// Identifies one occurrence of the source-checked cast retained in the same
+    /// resolution. Neither the client nor this record supplies spell mechanics.
+    Spell {
+        source: crate::SpellSourcePin,
+        cast: u16,
+        at: crate::SpellProgramOccurrence,
+    },
 }
 
 /// The original crossing is retained while its selected reaction's rolls run.
@@ -86,6 +93,11 @@ pub enum TacticalAttackSource {
 pub enum TacticalAttackAdmission {
     OwnTurn,
     Opportunity(Box<crate::TacticalOpportunityWindow>),
+    /// Casting identity is distinct from TacticalAttack.origin: a prior ray's
+    /// consequence can be completed by another actor's actual accepted command.
+    Spell {
+        casting_origin: CommandMeta,
+    },
 }
 
 /// Reconstructed against canonical source and original choices before damage changes

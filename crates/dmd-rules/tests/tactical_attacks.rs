@@ -5,6 +5,8 @@ use std::collections::HashMap;
 mod casting;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
+#[path = "tactical_attacks/spell.rs"]
+mod spell;
 
 struct Fixture {
     state: CampaignState,
