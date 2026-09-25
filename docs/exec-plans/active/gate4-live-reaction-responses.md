@@ -55,6 +55,14 @@ coverage, then implement the explicitly versioned Shield vertical path while kee
 Counterspell and all Ready mechanisms mandatory here.
 The full twelve-family Gate4 ledger and eighteen spell mechanisms remain binding.
 
+Compatibility PR42 head7616cf7a4ccef34505bfdb117a4077bf858d783c has now passed all
+four Linux checks in36177043229, including691 Rust tests. The three newly committed
+genuine ReactionsV1 continuation tests pass together in58.11s on the default stack:
+actual old AttackRoll completion, KnockoutChoice, and privately owned paid Ready
+abandonment, with cold retry and independent semantic restore. This supersedes the
+earlier uncompiled-baseline note below. Native36177043351 and local canonical
+verification remain pending. The original fixture bytes and hashes are unchanged.
+
 The own-turn unarmed slice preserves original Opportunity attack reconstruction.
 At the new live-response execution boundary, apply current armor-training penalties
 to fresh unarmed opportunity attacks while retaining old accepted interpretation.
@@ -140,11 +148,17 @@ outside the repository before this branch existed. Copy those exact exports and
 their provenance now, preserve original bytes, and commit their baseline tests before any
 new executor behavior. Do not claim the new test module has run until it does.
 
-A separate disposable harness is prepared to capture the original accepted
+A separate disposable harness has now captured the original accepted
 UpgradeExecution1-to2 through unchanged100 code after genuine legacy Savage completion.
-It has been reviewed but has not run; rules_architecture waits for the compiler slot.
-This additional fixture must preserve its original accepted upgrade envelope and
-exact response, rather than manufacturing an older result with the new executor.
+Its first default-stack locked/offline run passed without source or harness fixes:
+event16,16 audits,11 presentation records,2 bindings,1 unchanged original snapshot.
+Both cold retries recovered exact responses without changing full normalized exports
+or any of29 SQLite table counts; independent file restore/export equality passed.
+The104740-byte export's SHA256 is
+0aac1462c6e0d244127a5332e08e5ecb24a88e04c1425bc38a1d09c75a12b69d. It is copied as
+reactions-v1-upgrade-100c7da.json with original bytes preserved and documented
+provenance. Its new permanent regression is drafted but has not run yet; earlier
+three-case Linux evidence does not validate this additional test.
 
 ## Execution-boundary decision before implementation
 
@@ -172,6 +186,34 @@ parent keys and causes. Damage dice use the original attack roll's accepted_by e
 when a defender/host command advances the queue. A bounded typed suspended parent
 record and resume work in the existing frame stack must preserve physical attack,
 movement/casting attachment and prior payments through nested responses.
+
+## Selected-response command ownership
+
+The first implementation will separate a private nonpaying response intent from
+the selected respondent's actual execution command. The current-turn controller
+records the explicit total order. Once collection and ordering select a respondent,
+that actor receives the current source action/target controls and may execute or
+decline. Shield labels must distinguish offering a response from casting it. Ready
+already requires this selected stage to choose its actual attack target or path.
+
+This is an engineering decision within ADR028's consent/timing policy. The existing
+source feature hook and spell planner require a command at the current event head
+from the actual controller. An earlier private intent can precede another player's
+ordering or nested response. Reusing it as the execution command would be stale;
+changing its sequence, fabricating System authority, or attributing its cost to the
+other player's advancement command would destroy provenance. A fresh owned command
+avoids that mismatch without weakening source authorization. Preserve both accepted
+commands and the exact trigger/selection relationship in replay.
+
+Selection never prepays permission. Revalidate current grant, components, range,
+perception and all budgets before accepting the execution command. A stale final
+attempt changes nothing. A response invalidated by a completed child is skipped
+without spending, retaining the actual causal command and keeping private reasons
+out of unrelated projections. Every child trigger still needs its own ordering.
+
+Before live execution lands, PR42 remains a bounded compatibility-corpus change.
+Implement the actual response vertical on a fresh branch after its verified merge;
+do not silently expand this compatibility PR into the whole reaction runtime.
 
 ## Parallel prerequisites and exact next action
 

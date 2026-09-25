@@ -440,3 +440,73 @@ async fn genuine_v2_paid_ready_is_owned_even_without_a_pending_resolution() {
     f.assert_export(&retained).await;
     f.close().await;
 }
+
+#[tokio::test]
+async fn genuine_original_upgrade_keeps_its_one_to_two_result_and_accepted_responses() {
+    let f = Box::pin(Fixture::restore(
+        include_str!("fixtures/reactions-v1-upgrade-100c7da.json"),
+        16,
+        11,
+        2,
+    ))
+    .await;
+    let original =
+        CampaignExport::from_json(include_str!("fixtures/legacy-savage-f960.json")).unwrap();
+    assert!(
+        f.original
+            .event_journal
+            .starts_with(&original.event_journal)
+    );
+    assert!(
+        f.original
+            .table_projection_history
+            .starts_with(&original.table_projection_history)
+    );
+    assert_eq!(f.original.snapshots, original.snapshots);
+    for audit in &original.command_audit {
+        assert!(f.original.command_audit.contains(audit));
+    }
+    let event: TableEvent =
+        serde_json::from_str(&f.original.event_journal.last().unwrap().payload_json).unwrap();
+    assert_eq!(
+        event.action,
+        TableAction::Tactical {
+            action: TacticalAction::UpgradeExecution,
+        }
+    );
+    assert_eq!(
+        event.tactical_event.unwrap().action,
+        TacticalAction::UpgradeExecution
+    );
+    let state = f.state().await;
+    assert_eq!(state.applied_event_sequence, 16);
+    assert_eq!(flow(&state).version, 2);
+    assert!(flow(&state).resolution.is_none());
+    assert!(flow(&state).ready.is_empty());
+    let rules = state.rules.as_ref().unwrap();
+    assert!(rules.pending.is_none());
+    assert!(rules.timing.as_ref().unwrap().action_spent);
+    let record = rules.rolls.last().unwrap();
+    let savage = record.savage_attacker.as_ref().unwrap();
+    let faces = |values: &[u16]| {
+        values
+            .iter()
+            .map(|&value| DieResult { sides: 4, value })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(savage.first.dice, faces(&[1, 2]));
+    assert_eq!(savage.second.dice, faces(&[4, 4]));
+    assert_eq!(savage.chosen, DamageRollChoice::First);
+    assert_eq!(record.result.dice, savage.first.dice);
+
+    // The original journaled unit action permanently means Legacy1-to2. Once
+    // already at2 it must not become an implicit upgrade to any newer executor.
+    let fresh = f
+        .request(
+            TableTransportChannel::Host,
+            TacticalAction::UpgradeExecution,
+        )
+        .await;
+    Box::pin(f.reject(fresh)).await;
+    f.close().await;
+}
