@@ -79,6 +79,14 @@ pub(crate) fn validate_rules_export(
         .first_key_value()
         .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
 
+    // Every physical grant must be replayed from its original table command.
+    if anchor
+        .rules
+        .as_ref()
+        .is_some_and(|rules| rules.tactical_inventory.is_some())
+    {
+        return Err("equipment recovery requires its original pre-equipment anchor".into());
+    }
     let mut audits = HashMap::new();
     for row in &export.command_audit {
         let meta = audit_meta(row)?;
@@ -632,6 +640,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             .map(|record| &record.command)
             .collect::<Vec<_>>(),
     );
+    if let Some(inventory) = &rules.tactical_inventory {
+        origins.extend(inventory.receipts.iter().map(|receipt| &receipt.command));
+        origins.extend(inventory.loadouts.iter().map(|loadout| &loadout.command));
+    }
     if let Some(permission) = &rules.permission {
         origins.push(&permission.issued_by);
     }
@@ -678,6 +690,10 @@ fn validate_origins(
                 || !matches!(audit.command_kind.as_str(), "rules.action" | "table.action")
                 || !commands.contains_key(&origin.id)
                 || (pending.map(|pending| &pending.origin) != Some(origin)
+                    && !commands.get(&origin.id).is_some_and(|event| {
+                        matches!(event, RecoveryEvent::Table(event)
+                            if matches!(event.action, TableAction::PrepareEquipment { .. }))
+                    })
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())

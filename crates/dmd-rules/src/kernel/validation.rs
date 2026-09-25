@@ -382,6 +382,10 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
     if rules.entities.is_empty() {
         return Err(invalid("empty mechanical state"));
     }
+    if let Some(inventory) = &rules.tactical_inventory {
+        crate::tactical_inventory::validate_tactical_inventory(state, inventory, pack)
+            .map_err(|error| invalid(error.to_string()))?;
+    }
     for (id, e) in &rules.entities {
         if *id != e.entity_id {
             return Err(invalid("mechanical entity key mismatch"));
