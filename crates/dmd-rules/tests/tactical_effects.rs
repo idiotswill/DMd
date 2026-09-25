@@ -1168,6 +1168,11 @@ fn attached_unconsciousness_respects_prone_immunity_and_keeps_legacy_semantics()
     assert_eq!(historical, dmd_rules::active_conditions(rules, f.target));
     rules.tactical_recovery = Some(Default::default());
     assert_eq!(historical, dmd_rules::active_conditions(rules, f.target));
+    // Query-only legacy interpretation is independent of the persisted posture.
+    // This malformed snapshot is not accepted as valid state; it distinguishes
+    // the historical derivation from merely re-reading the prone boolean above.
+    rules.entities.get_mut(&f.target).unwrap().prone = false;
+    assert!(dmd_rules::active_conditions(rules, f.target).contains(&Condition::Prone));
 }
 
 #[test]
