@@ -6,7 +6,7 @@ import { contract, emptyView, options } from './components/table-fixtures.test-s
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
 vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn()} }));
 
-beforeEach(() => { localStorage.clear(); vi.clearAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
+beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); });
 describe('durable UI retry',()=>{
   it('retries equipment preparation after restart with the original command and every item identity',async()=>{
     const user=userEvent.setup();
@@ -22,6 +22,7 @@ describe('durable UI retry',()=>{
         equipment:[{item_id:'dagger',display_name:'Dagger',quantity:2,unit_cost_cp:200,source_page:90},{item_id:'arrows',display_name:'Arrows',quantity:20,unit_cost_cp:5,source_page:96}],worn_armor:null,shield:false,money_cp:20000},
     }];
     vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce('Connection interrupted').mockImplementationOnce(async received => ({command_id:received.command_id,event_sequence:20,already_accepted:true,outcome:{message:'Equipment ready.',mechanics:null}}));
     const first=render(TableApp);
     await user.click(await screen.findByText('Equipment and features'));
@@ -91,7 +92,8 @@ describe('durable UI retry',()=>{
     view.players=[{id:'one',campaign_id:'campaign',display_name:'One'},{id:'two',campaign_id:'campaign',display_name:'Two'}];
     view.characters=[{character_id:'pc',player_id:'one',entity_id:'actor',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.active_session={session_id:'session',display_name:'Evening',started_at_world:0,participants:[{player_id:'one',character_id:'pc',attendance:'Present'}]};
-    vi.mocked(tableApi.view).mockResolvedValue(view);localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'one'}));
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'one'}));
     vi.mocked(tableApi.text).mockResolvedValue({Observed:{meta:{id:'question',campaign_id:'campaign',session_id:'session',issuer:{Player:'one'},actor:{Entity:'actor'},expected_event_sequence:19},text:'What is my health?',answer:'Private answer for One'}});
     render(TableApp);await waitFor(()=>expect(screen.getByRole('button',{name:'Send to the table'}).closest('fieldset')?.hasAttribute('disabled')).toBe(false));
     await user.type(screen.getByLabelText('Your declaration, question or correction'),'What is my health?');await user.click(screen.getByRole('button',{name:'Send to the table'}));

@@ -66,4 +66,7 @@ A real unrelated AddPlayer command is now also tested as a forged grant origin.
 The UI retry regression begins with the real preparation button and preserves its
 generated identities across uncertain delivery/restart, instead of seeding a request.
 The original extracted UI passed13 tests, zero diagnostics and production build;
-the strengthened test rerun and corrected Rust/canonical evidence are pending.
+the strengthened13-test rerun now passes. Its first run exposed missing saved-campaign
+selection in the new fixture and retained mock responses leaking after that failure;
+the fixture now selects its campaign and resets mocks between tests. Production UI
+bytes remain those of the passing build. Corrected Rust/canonical evidence is pending.
