@@ -1,6 +1,10 @@
 //! Actor-owned movement methods; geometry/costs are validated on accepted commands.
 use dmd_domain::*;
 
+#[cfg(test)]
+#[path = "table_opportunity_tests.rs"]
+mod tests;
+
 pub(super) fn options(
     state: &CampaignState,
     actor: EntityId,

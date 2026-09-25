@@ -95,3 +95,11 @@ legal two-handed reaction in the resolver but was hidden by the UI filter. The f
 now permits that grip while rejecting another held item; focused projection regressions
 and strict workspace Clippy remain next. No damaging-reaction/concentration or
 falling/privacy completion is inferred from the passing miss/decline scenario.
+
+The independent reviewer supplied a projection regression in `table_opportunity_tests`.
+It starts from runtime-created characters/starting gear, then uses explicitly isolated
+read-only acquired-equipment snapshots. Greatsword and Quarterstaff cover required and
+Versatile two-handed grips across six held/free/blocked arrangements. Every option is
+cross-checked against the actual reaction weapon planner with no equipment change,
+including source damage and unchanged state. This is projection evidence, not journaled
+acquisition or a new starting shop. The regression is attached and awaiting compilation.
