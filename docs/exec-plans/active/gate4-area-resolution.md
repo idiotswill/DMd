@@ -1,0 +1,93 @@
+# Gate 4 source area saving throws
+
+Writer: bootstrap_audit. Branch: `codex/gate4-area-resolution`, based on verified
+integration `220ee804d7344564a265f02c4d42cb57a7e560c2`. Movement owns the shared
+falling/turn cursor until its coherent handoff; environment_audit owns attack
+modules and source physical weapon actions. This writer starts with new domain
+and rules area modules, then coordinates the single shared resolution integration.
+
+## Objective and source
+
+Resolve real canonical creature SaveArea actions through authoritative spatial
+binding, one shared raw damage roll, separate target saves and defenses, and
+individual vitality/concentration consequences. Preserve finite source activation,
+raw controller authority, exact suspension/replay and private target information.
+
+The initial complete source programs are Young Red Dragon Fire Breath (SRD5.2.1
+p318:30ft Cone, Dexterity DC17,16d6 Fire, half on success), Adult Red Dragon Fire
+Breath (p319:60ft Cone, Dexterity DC21,17d6 Fire, half), and Chimera Fire Breath
+(p273:15ft Cone, Dexterity DC15,7d8 Fire, half). All recharge on5–6. Canonical
+definitions already contain these programs; no source catalog or invented grant
+is needed. Own-turn direct Action activation is the first admission; source
+Multiattack replacement will reuse the same proof after its enclosing continuation
+is implemented, and remains active Gate4 work.
+
+SRD16 requires one damage roll when the same effect forces simultaneous saves,
+with half damage rounded down; p17 orders damage adjustments before resistance
+and vulnerability. Areas and origin-to-area blocking are p177, Cone p179, source
+recharge p257, and simultaneous effect ordering p187. Existing opt-in natural1/20
+save policy must agree with other tactical saves; default RAW uses the total.
+
+Relevant contract: root AGENTS, product-definition tactical timing/privacy/normal
+intent and production integration requirements, Gate4 checkpoint, ledger rows
+`targeting-areas`, `combat-conditions`, `monster-running` and `spell-effects`, and
+the eighteen-family checklist in `gate-4-effect-lifecycle.md`. SaveArea is one
+mechanism slice, not completion of those rows or Gate4.
+
+## Planned slices and ownership
+
+1. Define source-bound area choice and durable area occurrence contracts in new
+   domain/rules modules. Client choices contain area aim only, never victim IDs,
+   save DC, damage, source counters or a prepaid flag. Bind the real profile and
+   canonical feature to a genuine scheduler activation receipt before costs.
+2. Use existing area/cover geometry and record any required boundary ruling rather
+   than converting a preview into authority. Source area membership includes all
+   actually affected creatures, including allies and unseen targets. Public
+   declaration/preview must not leak unseen actors through target lists, errors,
+   outcome summaries, raw requests or simultaneous-work choices.
+3. After shared-file handoff, compose new work into TacticalResolution frames.
+   Source Action and recharge expenditure occur once; one immutable damage result
+   feeds each distinct target. Each target save, Legendary Resistance decision,
+   ordinary defenses, temporary HP/death and concentration child completes under
+   existing raw/controller/provenance rules before parent work resumes. No second
+   queue, arbitrary effect patch, automatic PC choice or generated die face.
+4. Add exact partition/provenance validation and replay tests at every pending
+   stage, then expose through the existing table envelope in a coordinated app
+   follow-up. Root owns integrated canonical/CI/desktop acceptance.
+
+## Acceptance and verification
+
+- Public source-created/materialized creature actions derive printed dimensions,
+  DC, dice and recharge. Wrong source, depleted recharge, malformed area, foreign
+  authority and unsupported programs reject without action/resource mutation.
+- Geometry covers boundaries, positive occupied volume, different creature sizes,
+  origin exclusion/inclusion and Total Cover; the declaration cannot identify or
+  probe a hidden target. Spatial policy and any ambiguity are explicit.
+- One raw amount is reused across mixed save outcomes, resistance/vulnerability,
+  zero HP and multiple independent concentration saves; no attack critical or
+  knockout path is invented for a saving-throw effect.
+- RAW and explicit house natural extremes, automatic/voluntary save failure and
+  source Legendary Resistance retain actual accepted dice or explicit no-roll
+  decisions, with correct controller and causal metadata.
+- Save/reconstruct/replay every pending stage. Reject duplicate/missing victims,
+  reused amount rolls, forged source/geometry/origins and competing work without
+  mutating the input. Coordinate app origin/label additions before integration.
+- Run focused domain/rules tests and strict all-target Clippy only after obtaining
+  the serialized Rust slot. Run format/diff checks, independent full review and
+  exact final delta review. Root performs full canonical and real SQLite/native
+  checks; no helper-only or unrun native acceptance claim.
+
+## Current state and remaining scope
+
+Planning checkpoint only. Source definitions and reusable geometry/save/vitality
+helpers inspected; no new implementation or test pass yet. Next: settle domain
+contract and spatial membership policy with movement/root, author new source
+binding/leaf tests while shared falling work is active, then integrate its tested
+checkpoint before shared edits.
+
+Remaining tactical work is not reassigned to Gate6. Fireball must also implement
+its mandatory flammable unworn/uncarried-object ignition and Burning hazard
+(pp131,178), not discard the second program node. Persistent zones, Ready,
+Counterspell, richer spell programs and all other checklist mechanisms remain
+active Gate4. Broad catalog completion belongs Gate6 and noncombat magic/rituals
+remain Gate5. Native/table acceptance remains pending.
