@@ -48,3 +48,19 @@ assignment. Regressions cover impossible three-ray/max-one routines and a feasib
 case that requires reassigning an earlier choice. Independent review of this correction
 found no remaining blocker. Formatting/diff checks pass; Rust compilation, canonical
 verification and exact-head CI remain required and are not yet claimed.
+
+## Verified source head
+
+Exact `7210e30175e3cf371809e5cb143ccb92abcfb9b2` passed canonical `./scripts/verify`:
+311 Rust tests, formatting, workspace/all-target check, strict workspace/all-target
+Clippy, genericity guard and architecture guard (eight tests, one platform-specific
+skip). Durable local log: `tooling/gate4-definitions-7210e30-verify.log` outside the repo.
+All six exact-head jobs passed in [Linux CI](https://github.com/idiotswill/DMd/actions/runs/36067643556)
+and [Windows desktop](https://github.com/idiotswill/DMd/actions/runs/36067643558), including
+Rust1.88 compatibility and stable Windows packaging. Two separate reviewers confirmed
+the final source/validation diff without remaining blockers.
+
+This final evidence update changes documentation only. Inspect its exact delta, verify
+code/content equality with `7210e30` and require its own final-head CI before protected
+merge. Then fetch main, compare the merged tree and check post-merge CI. Source execution
+and complete Gate4 acceptance remain open as described above.
