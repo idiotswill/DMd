@@ -1,6 +1,7 @@
 # Gate 4 Night Hag source casting prerequisite
 
-Writer: bootstrap_audit. Branch: `codex/gate4-night-hag-source`.
+Status: completed bounded prerequisite; Gate4 remains active.
+Writer: bootstrap_audit; integration and verification: root. Branch: `codex/gate4-night-hag-source`.
 Base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`, the frozen PR38 foundation
 candidate; its verification/merge remains root-owned. This independent source slice
 does not begin the reserved main-based live-response branch.
@@ -133,6 +134,21 @@ Casting test retains exact source/target selection while checking the truthful h
 Log: `../tooling/night-hag-ui.log`. The installed dependency records match the locked
 workspace package records; no package/lock change is part of this slice.
 
-Exact next action: run canonical `./scripts/verify` on the committed source/UI tree,
-record exact evidence and obtain final delta review, then release the heavy slot and
-report this bounded prerequisite to root. No PR or merge is authorized for this subtask.
+## Verified completion
+
+Root integrated and merged PR41 after full source/UI review and exact-head checks.
+Reviewed source575a038 and final51210d16fd2ad1860cc3f4246df213c1fec7c806 share
+complete tree48aae57d58e13f3f1fdf1fd5904015999184c185. Exact512 canonical passed
+690 GNU Rust tests/all44 table scenarios, formatting, strict check/Clippy and both
+guards. Linux36176532566 and Windows36176532570 passed all six jobs:691 Linux/693
+native Rust,67 UI tests,0 static errors/warnings,136-module build and fresh installer.
+Source artifact10883593552:231475343bytes, SHA256
+852c442c683f130a4ebf16fd51c16962d78148c777186489cf1359f09071862b.
+
+Protected squash d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278 has the same complete
+tree. Post-main Linux36179980349 and Windows36179980413 pass all six checks with
+691/693 Rust and67 UI tests,0 static errors/warnings,136-module build and fresh
+native application/offline NSIS installer. Main artifact10885036510:231472853bytes,
+SHA256fa039286525e126bebab9ba7d240766ae59fbd617013a06f474e639facea79f8.
+This bounded source prerequisite is complete and archived. Its documented omitted
+features and simultaneous-dart/reaction work remain required active Gate4 scope.
