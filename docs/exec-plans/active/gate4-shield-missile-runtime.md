@@ -1,7 +1,9 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active approved design; genuine flow3 capture/verification is running in an
-isolated generator. No flow4 runtime changes, tests or acceptance are claimed.
+Status: active approved design; compatibility-only tests are authored but unrun.
+The isolated genuine flow3 Night Hag capture scenario passed; its two exact exports
+are imported. Owned Shield capture and the four-file baseline gate remain pending.
+No flow4 runtime changes or acceptance are claimed.
 Branch: `codex/gate4-shield-missile-runtime`.
 Writer: `shield_rules_recovery`, exclusively; root coordinates integration and builds.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
@@ -18,6 +20,12 @@ remaining verification runs. No flow4 acceptance or merge is allowed until verif
 PR45 main and any subsequent prerequisite correction are fetched, reconciled and
 verified on this branch. Parent/test evidence never substitutes for exact final-head
 evidence. Heavy commands remain serialized under root's explicit slot coordination.
+
+Incoming integration dependency: PR44 aftermath may merge before final PR45. Root
+will reconcile its currently flow2-specific retained-cadence validation with flow3
+on the Shield branch. Flow4 must preserve that resulting supported aftermath/session
+path after fetching verified PR45 main; it must not strand a new Begin4 behind a
+marker that validates only2/3. Do not preemptively edit PR44 source on this branch.
 
 ## Objective, product traceability and boundaries
 
@@ -350,10 +358,32 @@ actual timing; do not claim a speedup, weaken integrity or parallelize heavy bui
 
 The branch is created from the stated development base. This plan and ADR028 record
 the approved per-dart/all-faces/normal-child-drain interpretation. The initial commit
-changes documentation only. Root's isolated generator at06045b2 has begun the real
-capture and focused verification run (local execution session63686); neither capture
-success nor a test result is inferred from the process starting. No build has run
-from this branch, and nothing is pushed at this checkpoint.
+79b17bf changes documentation only. Root's isolated generator at06045b2 ran the actual
+Night Hag scenario successfully:1/1 in500.88s, default Windows stack, log
+`tooling/shield-diagnostic-06045b2-capture-missile.log`. Its two genuine missile
+exports are imported unchanged, with lengths/hashes and original authority recorded
+in `crates/dmd-app/tests/fixtures/shield-hit-v1-06045b2.md`. The owned Shield scenario
+and remaining two exports are still pending. No build has run from this branch,
+and nothing is pushed at this checkpoint.
+
+The authorized compatibility-only module is now authored and rustfmt-formatted:
+`crates/dmd-app/tests/legacy_shield_hit_v1_replay.rs`. It is not compiled or run.
+Missing named captures fail
+explicitly; no fabricated file or conditional skip is permitted. One separately
+selectable baseline test covers all four captures' byte/typed roundtrip, actual
+file restore/resume and every original request/response binding's exact retry,
+with normalized full-export equality. Four separate continuation cases preserve
+independent cold paths: first/after-two missiles toHP7, selected owned Shield to a
+miss, and natural20 post-cast damage toHP75 with original issuance cause. Every new
+accepted continuation also proves its own lost-ack retry and changed-body no-write
+refusal. Preserve original transport1/2 and source/PC/Host channels.
+
+The capture gate requires both unchanged generator scenarios to pass, frozen genuine
+bytes/provenance and the separately selected baseline import/roundtrip/receipt test.
+The four full continuation cases remain mandatory focused/canonical acceptance;
+they may run after versioned development begins so the one heavy slot is used
+efficiently. Their authoring does not imply execution, and failing continuation
+semantics cannot be waived. Production runtime remains unchanged in this test stage.
 
 1. Finish both original flow3 capture scenarios in the isolated generator. Root must
    record their actual passing results, baseline restore of all four exports, exact
@@ -421,6 +451,7 @@ aggregation or deferred vitality would be a separate design change, not a small
 optimization. A source/model incompatibility must be resolved in the plan and tests,
 never hidden by a broad validator exception or synthetic historical fixture.
 
-This file contains no execution evidence. Existing Shield review/test evidence
-remains attributable only to its exact recorded head. Counterspell, Ready release,
+The imported generator evidence above belongs only to06045b2. The new branch's
+compatibility tests remain unrun, and existing Shield review/test evidence remains
+attributable only to its exact recorded head. Counterspell, Ready release,
 off-turn missile integration and the full Gate4 production encounter remain open.
