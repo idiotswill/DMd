@@ -324,7 +324,9 @@ pub async fn export_campaign(
     Ok(export)
 }
 
-async fn export_campaign_in_transaction(
+/// Consistent portable history on the caller's existing transaction. Application
+/// transport composition uses this after reserving the writer, without another pool read.
+pub async fn export_campaign_in_transaction(
     tx: &mut Transaction<'_, Sqlite>,
     campaign_id: CampaignId,
 ) -> Result<CampaignExport, LifecycleError> {

@@ -98,7 +98,17 @@ requests recover; unaccepted legacy requests explicitly require refresh.
 
 Current table/runtime/persistence/IPC paths and bootstrap's privacy design are read.
 The transaction boundary issue above is concrete and reported to root. No production
-code or schema has changed yet. Next settle the exact storage/transport types, then
-implement the first coherent persistence slice. No Rust compiler is authorized until
+code or schema had changed at the plan checkpoint. The first source slice now factors
+journal acceptance, observation append and export onto the caller's transaction while
+retaining legacy pool wrappers. A one-connection rollback/commit regression is drafted;
+it has not run. Typed immutable presentation/retry storage is the next slice. No Rust
+compiler is authorized until
 the area app and root turn-core checks release the shared slot. This plan and later
 unit proofs do not establish full Gate 4 or timing-channel acceptance.
+
+The surface audit also found nested pending-declaration CommandMeta and numeric work
+occurrences. Player presentation must omit pending provenance and use retained opaque
+work/roll capability handles; canonical raw roll IDs can otherwise be enumerated from
+their deterministic occurrence namespace. Handle translation changes no ordering
+authority or source roll facts. The root's newer `roll_channel` projection correction
+must be integrated before updating desktop request routing.

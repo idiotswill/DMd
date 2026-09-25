@@ -31,17 +31,30 @@ pub async fn append_session_observations(
     campaign_id: CampaignId,
     observations: &[NewSessionObservation],
 ) -> Result<Vec<SessionObservation>, ObservationStoreError> {
+    // Reserve the writer before reading attendance/head and allocating ordinals.
+    let mut transaction = pool.begin_with("BEGIN IMMEDIATE").await?;
+    let result =
+        append_session_observations_in_transaction(&mut transaction, campaign_id, observations)
+            .await?;
+    transaction.commit().await?;
+    Ok(result)
+}
+
+/// The caller reserves the SQLite writer and rolls back on any error. Conversation
+/// and its exact transport response can then commit without a second connection.
+pub async fn append_session_observations_in_transaction(
+    transaction: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
+    campaign_id: CampaignId,
+    observations: &[NewSessionObservation],
+) -> Result<Vec<SessionObservation>, ObservationStoreError> {
     if observations.is_empty() || observations.len() > 128 {
         return Err(ObservationStoreError::InvalidObservation);
     }
-    // Reserve the writer before reading attendance/head and allocating ordinals. Concurrent
-    // identical requests serialize and observe their previously inserted IDs on retry.
-    let mut transaction = pool.begin_with("BEGIN IMMEDIATE").await?;
     let state_row = sqlx::query(
         "SELECT state_json, schema_version, applied_event_sequence FROM campaign_state_current WHERE campaign_id = ?",
     )
     .bind(campaign_id.0.to_string())
-    .fetch_optional(&mut *transaction)
+    .fetch_optional(&mut **transaction)
     .await?
     .ok_or(ObservationStoreError::InvalidObservation)?;
     let state = CampaignState::decode_json(&state_row.try_get::<String, _>("state_json")?)
@@ -55,12 +68,12 @@ pub async fn append_session_observations(
     {
         return Err(ObservationStoreError::InvalidObservation);
     }
-    crate::session_store::validate_table_session_projection(&mut transaction, &state).await?;
+    crate::session_store::validate_table_session_projection(transaction, &state).await?;
     let mut ordinal: i64 = sqlx::query_scalar(
         "SELECT COALESCE(MAX(ordinal), 0) FROM session_observations WHERE campaign_id = ?",
     )
     .bind(campaign_id.0.to_string())
-    .fetch_one(&mut *transaction)
+    .fetch_one(&mut **transaction)
     .await?;
     let mut result = Vec::with_capacity(observations.len());
     for record in observations {
@@ -69,7 +82,7 @@ pub async fn append_session_observations(
         }
         if let Some(row) = sqlx::query("SELECT * FROM session_observations WHERE id = ?")
             .bind(record.id.0.to_string())
-            .fetch_optional(&mut *transaction)
+            .fetch_optional(&mut **transaction)
             .await?
         {
             let existing = decode_observation(row)?;
@@ -79,7 +92,7 @@ pub async fn append_session_observations(
             result.push(existing);
             continue;
         }
-        validate_new_observation(&mut transaction, &state, record).await?;
+        validate_new_observation(transaction, &state, record).await?;
         ordinal = ordinal
             .checked_add(1)
             .ok_or(ObservationStoreError::OrdinalOverflow)?;
@@ -87,10 +100,9 @@ pub async fn append_session_observations(
             ordinal: u64::try_from(ordinal).map_err(|_| ObservationStoreError::OrdinalOverflow)?,
             record: record.clone(),
         };
-        insert_observation(&mut transaction, &observation).await?;
+        insert_observation(transaction, &observation).await?;
         result.push(observation);
     }
-    transaction.commit().await?;
     Ok(result)
 }
 
