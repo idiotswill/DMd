@@ -1,6 +1,6 @@
 # Gate4 — Owned work and reaction prerequisites
 
-Status: combined implementation reviewed; canonical/UI pass; final-head CI and protected merge pending.
+Status: exact-head reviewed/verified and merged; post-main checks running.
 Writer: root. Branch: codex/gate4-reaction-ready-runtime. PR38 targets main.
 Authority: AGENTS, product definition, Gate04, ADR026/028 and the unchanged umbrella
 plan gate4-reaction-ready-runtime.md. This plan bounds one reviewable PR, not the gate.
@@ -92,6 +92,18 @@ playable Shield/Counterspell/Ready release. The umbrella and live-response plan 
 active after this prerequisite PR merges; all Gate4 obligations remain binding.
 
 ## Exact next action
+
+Current checkpoint: protected PR38 merge completed at
+d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38 after all six exact100c7da checks passed.
+Actual completed logs report688 Linux Rust tests (36172523960),690 native Rust
+and67 UI tests (36172524043), with installer10881663666. Fetched main and source
+trees are identical:801db9204a1418303ffada37d46cabf073fef159. Post-main runs
+36176391117/36176391189 are in progress. The fresh main-based live-response branch
+now owns genuine old-save regressions and the follow-up implementation. Preserve
+this plan until post-main evidence is recorded, then archive this bounded foundation;
+the umbrella and full Gate4 acceptance remain active.
+
+The following paragraph records the pre-merge handoff:
 
 Final changes after verified source fb83db7 are the proven main reconciliation and
 evidence/planning documents only. Verify that parity, run all six checks on the final
