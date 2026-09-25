@@ -1,4 +1,4 @@
-# Gate 4 physical attacks, movement and interrupted consequences
+# Gate 4 physical encounters and source casting consequences
 
 Writer: root. Planning reference `ba028fe` on the preserved encounter integration
 branch. Create a fresh `codex/` PR branch from fetched main after the turn-core PR32
@@ -19,11 +19,17 @@ These consequences must travel through the same source-authenticated queue. Trea
 them as one coherent physical encounter objective rather than splitting their state
 transitions into temporary implementations.
 
-Source casting/program execution and area breath activation remain separately
-reviewed followups. Preserve their final wire contracts but reject unsupported
-nonempty cursors, work, raw roles and action variants before mutation. Retain source
-spells and area branches on the full integration worktree. Do not accept a spell
-attack admission merely because the surrounding physical attack is implemented.
+Include the already reviewed Immediate-only source casting/program execution.
+The intended real damaging-opportunity-attack/concentration case needs a genuinely
+installed ongoing spell; main plus PR32 has no legitimate casting entry and must
+not gain an arbitrary effect-install escape hatch. Source Hold Person provides the
+real prerequisite, while spell/physical attacks already share retained proof,
+queue and vitality validation. Independent architecture review supports this
+coherent expansion over stripping those interdependent paths into temporary stubs.
+
+Area breath activation, new Ready/reaction casting and the separate privacy
+protocol remain followups. Keep the exact supported source/program subset explicit
+and reject unopened actions before costs. Do not claim general spell completeness.
 
 ## Planned extraction
 
@@ -36,16 +42,15 @@ attack admission merely because the surrounding physical attack is implemented.
    supported movement modes and default-stack real landing scenarios. Re-enable
    airborne/liquid admission only with its actual automatic consequence resolver.
    Hidden truth is never a client-side target or route authority.
-3. Activate shared queue dispatch/validation/raw history only for these mechanisms.
-   Source spell-only branches must be closed consistently across action admission,
-   persisted cursor/work validation, attack admission and replay. Keep fixed raw-role
-   numbers and original provenance. Use function-bounded edits and inspect the full
-   diff; previous extraction showed that repeated branch text is unsafe to replace
-   without enclosing-function context.
+3. Activate shared queue dispatch/validation/raw history for these mechanisms and
+   the reviewed source casting subset. Keep fixed raw-role numbers and original
+   provenance; preserve actual cast grants, components, resources, target binding,
+   player saves and separate concentration children. Ready and reaction casts stay
+   explicitly unavailable before costs until their full source path is integrated.
 4. Port production table projections/forms and actual SQLite tests. Preserve PR32's
    visible-purpose roll routing and cold-round tests, adapting only assertions that
    intentionally change when physical capabilities become available. Retain actual
-   unsupported spell authority and forged original-anchor rejection regressions.
+   unsupported casting-mode and forged original-anchor rejection regressions.
 
 ## Acceptance and verification
 
@@ -66,6 +71,12 @@ attack admission merely because the surrounding physical attack is implemented.
   full-tree parity and post-merge checks. Prior integration source results do not
   count as verification of this new extraction.
 
+The expanded diff is roughly25k lines, substantially test fixtures, from individually
+reviewed source slices. Fresh review of the actual combined tree must separately
+cover source/casting admission, shared attack/movement/fall order, application/
+restore/origin/privacy boundaries and real SQLite/UI recovery. Earlier leaf green
+heads never substitute for this combined verification.
+
 ## Current evidence and next action
 
 No extraction or acceptance exists for this proposed PR yet. Reviewed source heads
@@ -73,7 +84,7 @@ and individual verification are recorded in the central Gate4 and weapon/movemen
 falling/shield plans. PR32 source70b8333 has425 passing Linux Rust tests, strict lint,
 MSRV and guards; its Windows packaging/local canonical verification remain pending.
 First finish PR32 exact-head verification and merge, then fetch main and create the
-fresh bounded branch. If separation requires a source program dependency, record
-the concrete dependency and retain complete validation rather than introducing an
-unchecked placeholder. Full Ready/reactions, remaining spells, NPC morale/knowledge,
+fresh bounded branch. The concrete source-program dependency is now recorded above;
+port the reviewed Immediate-only implementation and preserve the one scheduler.
+Full Ready/reactions, remaining spells, NPC morale/knowledge,
 improvisation, encounter finish and packaged integrated acceptance remain Gate4 work.
