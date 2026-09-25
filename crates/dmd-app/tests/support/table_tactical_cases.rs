@@ -431,7 +431,7 @@ pub(super) async fn prepare_source_scene_at(
     .await;
 }
 
-async fn prepare(f: &Fixture) {
+pub(super) async fn prepare(f: &Fixture) {
     for character in f.characters {
         let view = f
             .runtime
@@ -506,7 +506,7 @@ async fn prepare(f: &Fixture) {
         .unwrap();
 }
 
-fn begin(f: &Fixture) -> TableAction {
+pub(super) fn begin(f: &Fixture) -> TableAction {
     TableAction::Tactical {
         action: TacticalAction::Begin {
             combatants: f
@@ -530,7 +530,7 @@ fn begin(f: &Fixture) -> TableAction {
     }
 }
 
-async fn roll(f: &Fixture, index: usize, face: u16) -> TableAction {
+pub(super) async fn roll(f: &Fixture, index: usize, face: u16) -> TableAction {
     let view = f
         .runtime
         .table_view(f.campaign, TableViewer::Player(f.players[index]))

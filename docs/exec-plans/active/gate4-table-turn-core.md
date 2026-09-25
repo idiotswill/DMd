@@ -114,3 +114,31 @@ with zero errors/warnings; the focused frontend test run is in progress. Next ad
 real cold SQLite round/retry/restore case, obtain independent full extraction review,
 then verify source on the queued compiler and CI. No intermediate test fixture or
 interface result is claimed as complete encounter play.
+
+## Review correction and durable round regression
+
+PR32 initial source `d475b5e` received independent full extraction review. It found
+one UI blocker: map existence incorrectly selected the tactical raw-dice handler
+for ordinary checks and Second Wind before initiative. The correction derives a
+`TableRollChannel` from the actual visible pending purpose. A private/absent roll
+has no channel; projection does not expose an otherwise hidden pending purpose.
+Three UI regressions cover the two ordinary dice types and tactical initiative.
+The new disk-SQLite round exercises ordinary check/Second Wind after map setup,
+initiative, Dodge/Dash and round advance. Each accepted phase is also executed on
+an export-restored mirror; original disk reopen and exact command retry must retain
+state, journal and audit, while new-nonce stale and foreign input fail. Forged
+future budget authority is rejected before writes in both current and backfilled
+snapshot forms. This new Rust regression is not yet compiled or accepted.
+
+Initial CI Linux `36123469257` failed on actual E0599 output: the extraction omitted
+the existing UUID v5 workspace feature and its locked sha1_smol dependency while
+retaining deterministic tactical identity methods. Copying the exact integration
+manifest/lock restores that required dependency without a version update. Final
+verification must run again on the corrected head; no old green check applies.
+
+PR31 post-merge verification now passes all six jobs on `f8e02c9`: Linux
+`36122812303`, Windows `36122812557`, including the offline installer. Svelte
+check on the PR32 routing correction passes with zero errors/warnings; frontend
+tests/build are running. The serialized Rust compiler remains with the area slice
+after completed shield verification, with turn-core next. Next compile this source,
+fix any actual failures, obtain correction review and canonical/exact-head CI.

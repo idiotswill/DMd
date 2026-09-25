@@ -57,6 +57,7 @@ export interface TableView {
   campaign_id: Id; name: string; event_sequence: number; contract: TableContract; players: Player[]; characters: CharacterView[];
   active_session: { session_id: Id; display_name: string; started_at_world: number; participants: Participant[] } | null;
   pending: PendingDecision | null; roll: RollRequest | null; situation_title: string; situation_description: string;
+  roll_channel: 'Table' | 'Tactical' | null;
   tactical?: TacticalView | null;
   creature_setup?: CreatureSetupView | null;
   transcript: { id: string; event_sequence: number; kind: string; speaker: string; text: string }[]; recap: string[];

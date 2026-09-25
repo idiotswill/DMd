@@ -8,6 +8,8 @@ use std::path::Path;
 mod table_creature_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
+#[path = "support/table_turn_core_cases.rs"]
+mod table_turn_core_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
