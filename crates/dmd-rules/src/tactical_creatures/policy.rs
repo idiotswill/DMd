@@ -48,12 +48,15 @@ pub fn npc_capabilities(
     for feature in &source.features {
         let timing = state.rules.as_ref().and_then(|r| r.timing.as_ref());
         let permitted = match runtime.observed_turn {
-            None => !matches!(feature.activation, FeatureActivation::Legendary { .. }),
+            None => matches!(
+                feature.activation,
+                FeatureActivation::Action | FeatureActivation::BonusAction
+            ),
             Some(turn) if turn.actor == actor && turn.boundary == TurnBoundary::Start => {
                 match feature.activation {
                     FeatureActivation::Action => timing.is_some_and(|t| !t.action_spent),
                     FeatureActivation::BonusAction => timing.is_some_and(|t| !t.bonus_action_spent),
-                    FeatureActivation::Legendary { .. } => false,
+                    FeatureActivation::Legendary { .. } | FeatureActivation::Reaction => false,
                 }
             }
             Some(turn) if turn.actor != actor && turn.boundary == TurnBoundary::End => {

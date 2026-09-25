@@ -237,14 +237,14 @@ pub fn materialize_creature_equipment(
     Ok(next)
 }
 
-/// Separates source natural defenses from physical armor/shield. The source's initial
-/// equipment formula must equal its printed AC before this armor interpretation applies.
+/// Separates source intrinsic defenses from physical armor/shield and printed
+/// preparation. A prepared spell is never installed or refreshed by this query.
 pub fn creature_current_armor(
     state: &CampaignState,
     profile: &CreatureProfile,
 ) -> Result<ArmorClass, RulesError> {
     let source = source_for_profile(profile).map_err(|e| invalid(e.to_string()))?;
-    let initial = u16::from(source.statistics.armor_class);
+    let initial = creature_unprepared_armor_class(source);
     let Some(loadout) = state
         .rules
         .as_ref()

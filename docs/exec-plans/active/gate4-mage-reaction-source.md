@@ -53,10 +53,14 @@ an independent three-use pool. No caller boolean or arbitrary prepayment bypass.
 
 Mage representation is explicitly `SelectedFeatures`: include the faithful printed
 statistics and Protective Magic source, real Wand custody, and only source clauses
-actually modeled. Omitted actions/spells remain named. Mage Armor preparation needs
-a coordinated honest source-baseline/lifecycle decision before its code is written;
-the current generic no-gear armor adapter otherwise treats printed AC as perpetual.
-The root and Ready writer have been notified of this specific decision dependency.
+actually modeled. Omitted actions/spells remain named. Mage Armor preparation uses
+optional `CreatureStatistics.prepared_defense` metadata with the canonical spell ID.
+The source's printed15 is validated against its13+Dexterity formula and real source
+grant. Creation/current equipment derives unbuffed12; it never installs a fabricated
+pre-cast. The Ready writer owns the existing generic timed-effect payload/query,
+genuine casting application,8-hour expiry and armor-don ending behavior. A Shield
+effect is separate from wearing armor. No special Mage timer or permanent AC15 is
+introduced.
 
 ## Verification and next action
 
@@ -69,3 +73,11 @@ independent source review, then focused tests and strict lint in the shared comp
 slot. Root canonical/UI precedes the protocol writer; no compiler is running here.
 The reaction driver remains a separate verified integration dependency. No source
 or production acceptance has been claimed for this new slice.
+
+Descriptor checkpoint: canonical Mage/Counterspell/Mage Armor, unprepared-defense
+adapter, real Wand/material registry and focused source/profile tests are authored.
+Existing creature definitions omit the new optional field, preserving old canonical
+fingerprints. Actual LF byte manifest regenerated; format and diff checks passed.
+This checkpoint is deliberately uncompiled: the Ready writer must map the two new
+effect descriptors and Reaction activation in its owned program/retained modules.
+Source reaction scheduling hook and counter/authority tests follow on this branch.

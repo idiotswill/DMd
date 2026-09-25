@@ -125,6 +125,15 @@ fn build_registry() -> Result<Vec<EquipmentDefinition>, InventoryError> {
         stacking: ItemStacking::Individual,
         source_page: 98,
     });
+    // SRD96. A physical wand does not invent a class's focus permission; the
+    // source spell still needs its actual component unless a real grant says so.
+    registry.push(EquipmentDefinition {
+        id: "wand".into(),
+        display_name: "Wand".into(),
+        kind: EquipmentKind::Gear,
+        stacking: ItemStacking::Individual,
+        source_page: 96,
+    });
     // Exact per-spell material identity. The source descriptor supplies its nature,
     // minimum value and consumption rule; display names never establish those facts.
     for spell in definitions.spells {
