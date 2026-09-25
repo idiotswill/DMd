@@ -113,7 +113,7 @@ remains pending; no native acceptance is claimed.
 Environment_audit independently reviewed the consent/ordering boundary and found
 no blocker. Full application exact-head review and tests remain pending.
 Rules_architecture's complete app source review found no production blocker and
-requested the deeper SQLite continuation evidence now added but not yet run.
+requested the deeper SQLite continuation evidence included in the focused pass.
 The same reviewer inspected the bounded legal-grid/phase-pinning correction and
 confirmed that it preserves the source commands, assertions and default stack.
 
