@@ -229,6 +229,23 @@ fn spell_attack_conditions_exhaustion_and_natural_one_are_source_derived() {
 }
 
 #[test]
+fn source_permitted_self_target_keeps_the_actual_caster_and_completes_damage() {
+    let mut f = prepared();
+    f.entity_mut(0).max_hp = 100;
+    f.entity_mut(0).hp = 100;
+    f.begin();
+    f.run(Some(0), cast(&f, false, vec![f.actors[0]]));
+    assert_eq!(pending_attack(&f).actor, pending_attack(&f).target);
+    assert_eq!(f.request().roller, Some(f.actors[0]));
+    assert_eq!(f.request().mode, RollMode::Normal);
+    f.roll(0, &[15]);
+    f.roll(0, &[3, 4]);
+    assert_eq!(f.rules().entities[&f.actors[0]].hp, 93);
+    assert_eq!(f.rules().entities[&f.actors[1]].hp, 100);
+    assert!(f.flow().resolution.is_none());
+}
+
+#[test]
 fn source_rays_keep_distinct_rolls_and_resume_after_another_players_concentration_save() {
     let mut f = dragon();
     let group = focus(&mut f);
