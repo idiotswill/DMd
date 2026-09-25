@@ -54,7 +54,10 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo clippy --locked -p dmd-desktop --all-targets --target x86_64-pc-windows-msvc -- -D warnings
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          cargo test --locked -p dmd-desktop --target x86_64-pc-windows-msvc
+      - name: Run workspace regressions on native Windows
+        if: matrix.rust == 'stable'
+        shell: pwsh
+        run: cargo test --locked --workspace --target x86_64-pc-windows-msvc
       - name: Build and package fresh release application and offline installer
         if: matrix.rust == 'stable'
         shell: pwsh

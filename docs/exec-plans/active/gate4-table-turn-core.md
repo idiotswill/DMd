@@ -154,3 +154,21 @@ The next initial compile on Linux `36124444841` exposed two older spatial/source
 test constructors missing the newly explicit `flow: None`. Both fixtures retain
 their previous behavior with that field added. Actual compiler output was read;
 all tests/lints still require a successful run after this correction.
+
+Source `70b8333` now passes all425 Linux Rust tests, MSRV, strict Clippy and guards
+in run36124985437, and both native Windows jobs including the installer in
+36124985423. The only final source correction from286f410 is the unavailable-work
+request match returning its existing error directly to satisfy needless_return.
+Independent delta review is clear. The local canonical run has passed compilation
+and strict Clippy and is compiling tests; its final result remains pending.
+
+The Windows workflow previously ran only dmd-desktop's Rust tests. Actual default-
+stack failures in later tactical SQLite scenarios demonstrate that this omits a
+relevant platform regression boundary. The stable Windows job now runs the whole
+workspace, including dmd-app/persistence recovery, with the default stack. It retains
+MSRV checks and packaging. This verification change must pass on the final PR head;
+the earlier Windows source green does not prove that newly broadened test step.
+
+ADR026 is included with its previously reviewed decision text and an explicit
+architecture-versus-implementation status; references in this plan now resolve on
+main after merge. The central Gate4 plan retains the active followup obligations.
