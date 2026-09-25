@@ -66,7 +66,13 @@ or native acceptance is claimed for this draft. The new SQLite scenario uses rea
 Cultist Fanatic Hold Person and Adult Red Dragon Scorching Ray grants, preserves
 player save ownership and source-material identities, and checks disk close/reopen,
 accepted retry, hostile missing-origin restore and individual ray/concentration causes.
-It is authored but not yet compiled. The pinned-kernel Magic Missile rejection is
-also authored. Next: merge the parent's verified movement dependency, then use the
-released compiler slot for the new app tests, source rejection and strict Clippy;
-fix actual failures before final source/frontend review and native integration.
+The first actual SQLite test passed on the default Windows test stack, including
+the hidden creature behind an opaque wall and unchanged state after preview. Its
+log is outside the repository at `research/gate4-casting/table-first-tests.txt`.
+The complete frontend suite passed 34 tests and the mounted production build; the
+subsequent actual-form casting/restart regression passed with all 14 focused retry
+and casting tests and Svelte zero errors/warnings. No native acceptance is implied.
+The pinned-kernel Magic Missile rejection remains unrun. Next: merge the parent's
+verified Charge dependency, attach its approach origin, then run the app regression
+suite, source rejection and strict Clippy; obtain final independent application
+review before handing the slice to packaged integration.

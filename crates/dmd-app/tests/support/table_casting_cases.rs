@@ -4,23 +4,26 @@ use dmd_rules::tactical::TacticalAction;
 #[tokio::test]
 async fn source_casting_keeps_player_saves_ray_causes_and_cold_retry_authority() {
     let mut f = Fixture::new().await;
-    let (cultist, dragon) = create_casters(&mut f).await;
-    prepare(&mut f, cultist, dragon).await;
-    let hold = cast_hold(&f, cultist).await;
+    let (cultist, dragon, hidden) = create_casters(&mut f).await;
+    prepare(&mut f, cultist, dragon, hidden).await;
+    let hold = cast_hold(&f, cultist, hidden).await;
     finish_hold(&f, cultist, hold).await;
     finish_rays(&f, cultist, dragon).await;
     f.pool.close().await;
 }
 
-async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId) {
+async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId, EntityId) {
     let cultist = EntityId::new();
     let dragon = EntityId::new();
-    for (actor, definition, size) in [
-        (cultist, "cultist-fanatic", CreatureSize::Medium),
-        (dragon, "adult-red-dragon", CreatureSize::Huge),
+    let hidden = EntityId::new();
+    for (actor, definition, size, ammunition) in [
+        (cultist, "cultist-fanatic", CreatureSize::Medium, 0),
+        (dragon, "adult-red-dragon", CreatureSize::Huge, 0),
+        (hidden, "goblin-warrior", CreatureSize::Small, 20),
     ] {
         let allocation =
-            dmd_rules::tactical_creature_equipment::creature_equipment_plan(definition, 0).unwrap();
+            dmd_rules::tactical_creature_equipment::creature_equipment_plan(definition, ammunition)
+                .unwrap();
         f.host(
             TableAction::CreateCreature {
                 creation: Box::new(TableCreatureCreation {
@@ -29,7 +32,7 @@ async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId) {
                     definition_id: definition.into(),
                     size,
                     additional_languages: vec![],
-                    ammunition_units: 0,
+                    ammunition_units: ammunition,
                     item_ids: allocation.iter().map(|_| ItemId::new()).collect(),
                 }),
             },
@@ -37,10 +40,10 @@ async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId) {
         )
         .await;
     }
-    (cultist, dragon)
+    (cultist, dragon, hidden)
 }
 
-async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId) {
+async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: EntityId) {
     let view = f
         .runtime
         .table_view(f.campaign, TableViewer::Host)
@@ -80,7 +83,17 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId) {
                     floor_surface: "stone".into(),
                     ambient_light: LightLevel::Bright,
                     terrain: vec![],
-                    obstacles: vec![],
+                    obstacles: vec![SpatialObstacle {
+                        id: "courtyard-wall".into(),
+                        volume: SpatialBox {
+                            min: point(0, 80, 0),
+                            max: point(200, 82, 80),
+                        },
+                        blocks_movement: true,
+                        blocks_sight: true,
+                        observable: true,
+                        cover: CoverDegree::Total,
+                    }],
                     lights: vec![],
                 },
                 characters: vec![TableCharacterPlacement {
@@ -106,6 +119,14 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId) {
                         height: 40,
                         allies: vec![],
                         enemies: vec![f.actors[0], cultist],
+                    },
+                    TableCreaturePlacement {
+                        actor: hidden,
+                        public_label: "Hidden guard".into(),
+                        position: point(70, 90, 0),
+                        height: 8,
+                        allies: vec![],
+                        enemies: vec![],
                     },
                 ],
                 geometry_ruling: Ruling {
@@ -137,6 +158,13 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId) {
             source: TacticalSource::Character,
             surprised: false,
         },
+        TacticalCombatant {
+            actor: hidden,
+            source: TacticalSource::Creature {
+                definition_id: "goblin-warrior".into(),
+            },
+            surprised: false,
+        },
     ];
     let groups = combatants
         .iter()
@@ -154,7 +182,8 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId) {
     .await;
     submit(f, true, &[20]).await;
     submit(f, true, &[1]).await;
-    submit(f, false, &[1]).await;
+    submit(f, false, &[2]).await;
+    submit(f, true, &[1]).await;
     assert_eq!(
         f.runtime
             .table_view(f.campaign, TableViewer::Host)
@@ -176,7 +205,14 @@ async fn host_action(f: &Fixture, action: TacticalAction) -> CommandMeta {
     meta
 }
 
-async fn cast_hold(f: &Fixture, cultist: EntityId) -> (CommandMeta, TableAction) {
+async fn cast_hold(f: &Fixture, cultist: EntityId, hidden: EntityId) -> (CommandMeta, TableAction) {
+    let source_before = f
+        .runtime
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
     let view = f
         .runtime
         .table_view(f.campaign, TableViewer::Host)
@@ -184,6 +220,11 @@ async fn cast_hold(f: &Fixture, cultist: EntityId) -> (CommandMeta, TableAction)
         .unwrap();
     let options = view.tactical.unwrap().casting_options.unwrap();
     assert_eq!(options.actor, cultist);
+    assert_eq!(
+        f.runtime.open_campaign(f.campaign).await.unwrap().state(),
+        &source_before,
+        "preview must not consume source counters or change history"
+    );
     let variant = options
         .variants
         .iter()
@@ -198,6 +239,10 @@ async fn cast_hold(f: &Fixture, cultist: EntityId) -> (CommandMeta, TableAction)
             .targets
             .iter()
             .any(|target| target.actor == f.actors[0])
+    );
+    assert!(
+        !variant.targets.iter().any(|target| target.actor == hidden),
+        "even the host's caster choices use the actor's perception"
     );
     // Private source type eligibility never filters a legally chosen non-Humanoid.
     assert!(
