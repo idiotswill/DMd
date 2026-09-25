@@ -15,7 +15,7 @@ use crate::{
     observation_store::{decode_observation, insert_observation},
 };
 
-pub const CAMPAIGN_EXPORT_FORMAT_VERSION: u32 = 2;
+pub const CAMPAIGN_EXPORT_FORMAT_VERSION: u32 = 3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -90,6 +90,10 @@ pub struct CampaignExport {
     pub snapshots: Vec<SnapshotRow>,
     #[serde(default)]
     pub observations: Vec<SessionObservation>,
+    #[serde(default)]
+    pub table_projection_history: Vec<crate::TableProjectionRecord>,
+    #[serde(default)]
+    pub table_transport_bindings: Vec<crate::TableTransportBinding>,
 }
 
 impl CampaignExport {
@@ -109,11 +113,19 @@ impl CampaignExport {
     /// content. Legacy current images gain null optional state via explicit migrations. Original
     /// snapshot bytes, journal records, audit records and their metadata remain unchanged.
     pub fn upgraded(&self) -> Result<Self, LifecycleError> {
-        if !matches!(self.format_version, 1 | CAMPAIGN_EXPORT_FORMAT_VERSION) {
+        if !(1..=CAMPAIGN_EXPORT_FORMAT_VERSION).contains(&self.format_version) {
             return Err(LifecycleError::IncompatibleExportFormat {
                 actual: self.format_version,
                 supported: CAMPAIGN_EXPORT_FORMAT_VERSION,
             });
+        }
+        if self.format_version < 3
+            && (!self.table_projection_history.is_empty()
+                || !self.table_transport_bindings.is_empty())
+        {
+            return Err(LifecycleError::CorruptExport(
+                "legacy export cannot contain table projection or transport authority".into(),
+            ));
         }
         if self.format_version == 1
             && (!self.observations.is_empty() || self.state_schema_version > 2)
@@ -239,6 +251,8 @@ pub enum LifecycleError {
     Journal(#[from] JournalStoreError),
     #[error(transparent)]
     Observation(#[from] crate::ObservationStoreError),
+    #[error(transparent)]
+    TableProjection(#[from] crate::TableProjectionStoreError),
     #[error("campaign does not exist")]
     CampaignNotFound,
     #[error("campaign already exists")]
@@ -438,6 +452,8 @@ pub async fn export_campaign_in_transaction(
             .into_iter()
             .map(decode_observation)
             .collect::<Result<Vec<_>, _>>()?;
+    let table_projection_history = crate::load_table_projection_history(tx, campaign_id).await?;
+    let table_transport_bindings = crate::load_table_transport_bindings(tx, campaign_id).await?;
     let export = CampaignExport {
         format_version: CAMPAIGN_EXPORT_FORMAT_VERSION,
         state_schema_version: u32::try_from(current_state.schema_version)
@@ -453,6 +469,8 @@ pub async fn export_campaign_in_transaction(
         event_causes,
         snapshots,
         observations,
+        table_projection_history,
+        table_transport_bindings,
     };
     validate_export(&export)?;
     Ok(export)
@@ -521,6 +539,8 @@ fn same_export_payload(left: &CampaignExport, right: &CampaignExport) -> bool {
         && left.event_causes == right.event_causes
         && left.snapshots == right.snapshots
         && left.observations == right.observations
+        && left.table_projection_history == right.table_projection_history
+        && left.table_transport_bindings == right.table_transport_bindings
 }
 
 pub async fn restore_campaign(
@@ -589,6 +609,12 @@ pub async fn restore_campaign(
     }
     for row in &export.snapshots {
         insert_snapshot(&mut tx, row).await?;
+    }
+    for record in &export.table_projection_history {
+        crate::insert_table_projection_record(&mut tx, record).await?;
+    }
+    for record in &export.table_transport_bindings {
+        crate::insert_table_transport_binding(&mut tx, record).await?;
     }
     sqlx::query("DELETE FROM campaign_restore_authorizations WHERE campaign_id = ?")
         .bind(&export.campaign_id)
@@ -851,6 +877,7 @@ fn validate_export(export: &CampaignExport) -> Result<(), LifecycleError> {
     validate_observations(export, &state, &session_ids)?;
     let event_sequences = validate_journal(export, head, &state, &session_ids)?;
     validate_snapshots(export, &event_sequences)?;
+    crate::table_projection_store::validate_portable_protocol(export, &state)?;
     validate_state_provenance(
         &state,
         &event_sequences,

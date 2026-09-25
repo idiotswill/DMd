@@ -111,4 +111,18 @@ occurrences. Player presentation must omit pending provenance and use retained o
 work/roll capability handles; canonical raw roll IDs can otherwise be enumerated from
 their deterministic occurrence namespace. Handle translation changes no ordering
 authority or source roll facts. The root's newer `roll_channel` projection correction
-must be integrated before updating desktop request routing.
+was integrated from `ba028fe` before updating desktop request routing.
+
+The transaction checkpoint is `4a4f84d` (uncompiled; one-connection atomicity regression
+drafted). The next storage draft adds immutable protocol tables in SQL0011 and portable
+format 3 with explicit format-1/2 import; state schema remains 4. Generic validation
+checks ledger continuity, original canonical acceptance, audience and revision/handle
+shape. Application validation must still verify historical visible digests, capability
+membership and exact typed response; structural roundtrip alone is not semantic proof.
+
+New protocol requests will also be retained in versioned canonical audit/observation
+envelopes. This lets replay distinguish a stripped protocol ledger from genuine old
+history without changing the underlying game event or its resolver. Malformed new
+envelopes never fall back to legacy interpretation. Initial presentation bootstrap is
+a constrained, atomic record of replay-derived historical visibility and current
+audience hashes; it changes neither canonical state nor old journal bytes.

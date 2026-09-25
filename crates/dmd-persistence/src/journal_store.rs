@@ -990,7 +990,7 @@ fn parse_optional_play_session(
         .transpose()
 }
 
-fn encode_issuer(issuer: CommandIssuer) -> (&'static str, Option<String>) {
+pub(crate) fn encode_issuer(issuer: CommandIssuer) -> (&'static str, Option<String>) {
     match issuer {
         CommandIssuer::Player(player_id) => ("player", Some(player_id.0.to_string())),
         CommandIssuer::System => ("system", None),
@@ -1012,7 +1012,7 @@ fn decode_issuer(kind: &str, player_id: Option<&str>) -> Result<CommandIssuer, J
     }
 }
 
-fn encode_agent(agent: Option<AgentRef>) -> (Option<&'static str>, Option<String>) {
+pub(crate) fn encode_agent(agent: Option<AgentRef>) -> (Option<&'static str>, Option<String>) {
     match agent {
         Some(AgentRef::Entity(entity_id)) => (Some("entity"), Some(entity_id.0.to_string())),
         Some(AgentRef::Faction(faction_id)) => (Some("faction"), Some(faction_id.0.to_string())),

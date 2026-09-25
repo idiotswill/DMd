@@ -1127,6 +1127,8 @@ mod tests {
             play_sessions: vec![],
             play_session_participants: vec![],
             observations: vec![],
+            table_projection_history: vec![],
+            table_transport_bindings: vec![],
             command_audit: vec![CommandAuditRow {
                 id: meta.id.0.to_string(),
                 campaign_id: campaign_id.0.to_string(),
