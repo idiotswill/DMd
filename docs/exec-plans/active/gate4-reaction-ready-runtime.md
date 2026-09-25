@@ -35,6 +35,16 @@ exceptions; a string trigger or client-provided permission is never state author
   remain uncompiled. This writer owns effect/program/retained/shared composition.
 - Rust compiler is globally serialized: root PR33 canonical, then protocol, then this
   bounded domain/rules checkpoint. No compiler permission until explicit handoff.
+- Root owns encounter finish separately. It must reject nonempty Ready records and
+  unresolved reaction/roll/work until this slice provides explicit abandonment.
+  Abandonment retains the actual controller's command, refunds nothing, and ends only
+  the held spell's matching concentration group; it never fabricates a next-own-Start
+  or releases a spell without its real trigger. Other timed effects/concentration and
+  source counters survive finish through root's explicit lifecycle handoff.
+- Bootstrap owns new Fighter source leaves without shared queue edits. Counterspell
+  reserves raw-role tag15; tactical Second Wind reserves tag16. Savage Attacker stays
+  attached to the exact AttackDamage work/request and must reroll only source weapon
+  dice (including their critical dice), preserving added-damage dice and raw evidence.
 
 ## Implementation slices
 
@@ -76,6 +86,11 @@ require current-turn ordering (or explicit occurrence-scoped host delegation). N
 arrival is never fictional priority. Child-created triggers have separate nested
 windows, and remaining accepted intents are revalidated after each selected response.
 ADR028 records this application interpretation of SRD pp.10/120/186–187.
+The chosen privacy policy presents a uniform decision stage at every public trigger
+for zero, one or many private competitors; optional exact-trigger delegation is
+independent of eligibility. DTO/revision tests must distinguish private collection
+from visible results without revealing hidden response counts. Actual Ready response
+targets/path are chosen after ordering selects that response, using current geometry.
 
 Current PC catalog expansion stays Gate6. Player-controlled source-creature assignment
 is a separate still-required Gate4 interface; host-created source NPCs are the genuine

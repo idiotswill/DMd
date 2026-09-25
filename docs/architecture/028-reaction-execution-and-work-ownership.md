@@ -64,12 +64,19 @@ and ordering stages are the application's interpretation of those timing rules.
 
 Every eligible controller receives only its own source-safe offer and retains an
 explicit accept/decline decision against the same canonical trigger occurrence.
-Command arrival does not select which accepted reaction happens first. Once the
-same-occurrence decisions are collected, competing accepted responses are ordered by
-the current-turn controller. If information needed for that choice is private, the
-controller must explicitly delegate this occurrence's ordering to the host; the
-application neither reveals hidden offers nor silently substitutes host or transport
-priority. Such consent covers only the identified competitors at that boundary.
+Command arrival does not select which accepted reaction happens first. Every public
+trigger presents a uniform current-turn decision stage for zero, one or many private
+competitors. Optional delegation to the host is offered independently of private
+eligibility, and retains authenticated consent for that exact trigger and turn. A
+prompt introduced only after discovering private competitors would itself leak their
+presence through the audience's DTO or revision and is forbidden.
+
+Once the same-occurrence decisions are collected, competing accepted responses are
+ordered by the current-turn controller, or the host under that explicit delegation.
+The application neither reveals hidden offers nor silently substitutes host or
+transport priority. Consent covers only the identified trigger's simultaneous set;
+it does not transfer to a child-created trigger. Hidden-only intents must leave
+unrelated audience DTOs, revisions and transcripts unchanged.
 
 After each chosen response and its nested consequences finish, remaining responses
 are rechecked for current source timing, resources, perception and other prerequisites.
@@ -97,3 +104,5 @@ contracts and source helpers are implementation milestones, not Gate4 completion
 Timing regressions must accept the same private decisions in opposite arrival orders,
 preserve the current-turn controller's material order choice, and distinguish a
 Counterspell of a selected child spell from another response to the original spell.
+Player DTO/revision tests must compare zero, one and two private competitors and prove
+that a child window cannot reuse its parent's delegation.
