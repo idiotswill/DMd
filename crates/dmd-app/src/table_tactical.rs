@@ -105,6 +105,11 @@ pub(crate) fn view(
     };
     Ok(Some(crate::TableTacticalView {
         encounter_id: encounter.id,
+        execution: encounter
+            .flow
+            .as_ref()
+            .filter(|flow| flow.version == TacticalExecutionVersion::ReactionsV1.flow_version())
+            .map(|_| TacticalExecutionVersion::ReactionsV1),
         round: timing.map(|timing| timing.round),
         active_actor: active.filter(|actor| host || known.contains(actor)),
         phase,

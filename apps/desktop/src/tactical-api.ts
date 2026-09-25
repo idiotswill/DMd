@@ -55,6 +55,7 @@ export interface BattlefieldSetup {
   geometry_ruling: { basis: 'GmAdjudication'; reason: string };
 }
 export type TacticalAction =
+  | 'UpgradeExecution'
   | 'SecondWind'
   | { DonShield: { shield: Id; hand: Hand } } | 'DoffShield'
   | { CreatureWeaponAttack: { feature_id: string; choice: Omit<WeaponUseChoice,'delivery'|'ability'|'purpose'> } }
@@ -74,6 +75,7 @@ export type TacticalAction =
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
+  execution?: 'ReactionsV1' | null;
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;
   participants: { entity_id: Id; public_label: string; position: Point; size: string }[];

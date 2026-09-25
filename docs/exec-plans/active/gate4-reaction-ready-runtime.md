@@ -188,3 +188,20 @@ requests still use current live admission. The desktop Begin form explicitly emi
 ReactionsV1 and its real component regression checks that field. No old accepted
 transport envelope is rewritten. These integration changes still need application
 regressions, including a genuine legacy declared-Second-Wind export, before acceptance.
+
+Draft PR38 now runs full CI against the integrated foundation. The genuine f669389
+event22 pause is retained as an89KB portable fixture: original direct/declared uses,
+one round and a pending raw d10. Its authored regression requires byte-preserving
+restore, original retry, completion under legacy semantics, refusal of a fresh legacy
+action, explicit settled upgrade and independent restored continuation.
+
+The desktop now offers the host an explicit "Continue saved encounter" action once
+old rolls/decisions are settled. Ordinary new actions wait; old continuation controls
+remain available. The optional execution projection field is omitted for legacy
+states, preserving their prior serialized DTO/digest, and populated only by an
+explicit ReactionsV1 flow. The fixture and component cases cover omission, upgrade,
+host ownership and pending choices. Modern UI fixtures explicitly carry the new
+execution version. The Second Wind forgery case changes both pending work and its
+new redundant causal trace so it continues to test semantic journal rejection after
+structural validation, rather than merely detecting mismatched copies. These latest
+changes are authored/format-checked and await fresh executable evidence.

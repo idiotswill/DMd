@@ -6,9 +6,30 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
 import type { CharacterView } from '../table-api';
 
+it('keeps legacy continuations available and requires an explicit settled host upgrade',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const tactical:TacticalView={encounter_id:'old',phase:'active',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:{movement_spent:10,attacks_remaining:0,action_spent:false,bonus_action_spent:true,reaction_available:false},
+    continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+  const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,pendingRoll:true,onAction});
+  expect((screen.getByRole('button',{name:'Continue saved encounter'}) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.queryByRole('button',{name:'Dodge'})).toBeNull();
+  await component.rerender({pendingRoll:false,tactical:{...tactical,legendary_action:'actor'}});
+  expect((screen.getByRole('button',{name:'Continue saved encounter'}) as HTMLButtonElement).disabled).toBe(true);
+  expect(screen.getByRole('button',{name:'Pass this opportunity'})).toBeTruthy();
+  await component.rerender({tactical});
+  await user.click(screen.getByRole('button',{name:'Continue saved encounter'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith('UpgradeExecution');
+  await component.rerender({host:false,actor:'actor',player:'player'});
+  expect(screen.queryByRole('button',{name:'Continue saved encounter'})).toBeNull();
+  await component.rerender({tactical:{...tactical,execution:'ReactionsV1'}});
+  expect(screen.queryByText(/Finish any pending rolls/)).toBeNull();
+  expect(screen.getByRole('button',{name:'Dodge'})).toBeTruthy();
+});
+
 it('uses an owned Second Wind bonus action and blocks another or pending turn', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},
     continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const character:CharacterView={character_id:'pc',player_id:'player',entity_id:'actor',name:'Fighter',profile:null,sheet:null,details:null,second_wind_remaining:2};
@@ -40,7 +61,7 @@ it('replaces host map truth when the selected viewer changes', async () => {
 
 it('keeps ordinary turns blocked and sends the retained consequence identity', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},
     continuation:{actor:'actor',host_adjudication:false,choices:[{handle:'opaque-death',label:'Death saving throw'},{handle:'opaque-consequence',label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});

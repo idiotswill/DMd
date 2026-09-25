@@ -67,7 +67,7 @@ it('clears no-longer-perceived targets and locks uncertain requests',async()=>{
 
 it('resets drafts on controller change and hides another actor casting choices',async()=>{
   const user=userEvent.setup();const source=options();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'caster',phase:'active',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,casting_options:source};
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'caster',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,casting_options:source};
   const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction:vi.fn()});
   await user.selectOptions(screen.getByLabelText('Spell and resource'),JSON.stringify(source.variants[1].choice));
   await user.selectOptions(screen.getByLabelText('Spell target 1'),'guard');

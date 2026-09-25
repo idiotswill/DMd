@@ -272,6 +272,10 @@ pub struct TableCreatureView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     pub encounter_id: EncounterId,
+    /// Omitted for legacy flows so their historical presentation bytes remain
+    /// unchanged. Only explicitly versioned new/upgraded state adds this field.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub execution: Option<TacticalExecutionVersion>,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
     pub phase: String,

@@ -14,7 +14,7 @@ function opportunity():OpportunityView {
 
 it('uses the witnessed reaction choice and never borrows ordinary Attack equipment permission',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'runner',phase:'active',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,opportunity:opportunity()};
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'runner',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,opportunity:opportunity()};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'guard',player:'player',onAction});
   expect(screen.queryByLabelText('Ready or put away weapon')).toBeNull();
   await user.selectOptions(screen.getByLabelText('Target'),'runner');

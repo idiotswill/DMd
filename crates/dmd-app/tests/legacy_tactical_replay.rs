@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use dmd_app::{CampaignRuntime, TableAction, TableEvent};
+use dmd_app::{CampaignRuntime, TableAction, TableEvent, TableViewer};
 use dmd_domain::*;
 use dmd_persistence::{CampaignExport, export_campaign, open_sqlite};
 use dmd_rules::tactical::TacticalAction;
@@ -32,6 +32,12 @@ async fn genuine_legacy_declared_second_wind_replays_retries_and_finishes_before
     let app = runtime(pool.clone());
     Box::pin(app.restore_campaign(&export)).await.unwrap();
     let before = app.open_campaign(campaign).await.unwrap().state().clone();
+    let old_view = app.table_view(campaign, TableViewer::Host).await.unwrap();
+    let wire = serde_json::to_value(old_view.tactical.unwrap()).unwrap();
+    assert!(
+        wire.get("execution").is_none(),
+        "legacy projection bytes must not gain fields"
+    );
     assert_eq!(
         before
             .encounter
@@ -132,6 +138,11 @@ async fn genuine_legacy_declared_second_wind_replays_retries_and_finishes_before
     .await
     .unwrap();
     let upgraded = app.open_campaign(campaign).await.unwrap().state().clone();
+    let new_view = app.table_view(campaign, TableViewer::Host).await.unwrap();
+    assert_eq!(
+        new_view.tactical.unwrap().execution,
+        Some(TacticalExecutionVersion::ReactionsV1)
+    );
     assert_eq!(upgraded.rules, settled.rules);
     let mut expected_encounter = settled.encounter.clone().unwrap();
     expected_encounter.flow.as_mut().unwrap().version = 2;
