@@ -1,7 +1,7 @@
 # Gate 4 — Actual reaction and Ready execution
 
 Status: **Active; a61e95d foundation passes canonical verification and all six CI checks; actual reaction responses remain incomplete.**
-Branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
+Foundation PR38 branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
 Writer: root, taking over after rules_architecture reached its account usage limit.
 The authored/reviewed checkpoint is dd5123d; root owns its first executable batch,
 integration, main-based PRs and gate acceptance. No root source edits preceded that handoff.
@@ -47,6 +47,22 @@ exceptions; a string trigger or client-provided permission is never state author
   reserves raw-role tag15; tactical Second Wind reserves tag16. Savage Attacker stays
   attached to the exact AttackDamage work/request and must reroll only source weapon
   dice (including their critical dice), preserving added-damage dice and raw evidence.
+
+## Reviewable PR boundaries (2026-09-25)
+
+This remains the active umbrella plan for all live reactions and Ready execution.
+PR38 already spans88 files and over5,000 added lines before actual response windows.
+Keep it as the bounded source/owned-work/legacy-recovery foundation described in
+`gate4-reaction-foundation.md`. Its acceptance does not complete this plan or any
+Gate4 reaction family. The actual Shield/Counterspell/Ready releases continue in
+`gate4-live-reaction-responses.md` on a fresh branch after verified integration.
+This is an implementation split inside the approved gate, not a deferred requirement.
+
+Every new pause changes historical interpretation. If the foundation merges first,
+actual live windows need a new explicit execution version and a quiescent journaled
+upgrade. ReactionsV1 events already accepted under the foundation must continue to
+replay without newly invented pauses. Record the precise next version and migration
+in ADR028 before implementing the new runtime. Do not silently change old semantics.
 
 ## Implementation slices
 
