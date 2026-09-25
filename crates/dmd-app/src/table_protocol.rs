@@ -26,6 +26,9 @@ pub enum TableAction {
         character_id: CharacterId,
         item_ids: Vec<ItemId>,
     },
+    CreateCreature {
+        creation: Box<TableCreatureCreation>,
+    },
     StartSession {
         id: PlaySessionId,
         name: String,
@@ -80,6 +83,18 @@ pub struct TableEvent {
 pub enum TableViewer {
     Host,
     Player(PlayerId),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableCreatureCreation {
+    pub entity_id: EntityId,
+    pub name: String,
+    pub definition_id: String,
+    pub size: CreatureSize,
+    pub additional_languages: Vec<String>,
+    pub ammunition_units: u16,
+    pub item_ids: Vec<ItemId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -164,6 +179,7 @@ pub struct TableView {
     pub active_session: Option<ActiveTableSession>,
     pub pending: Option<PendingTableDecision>,
     pub roll: Option<RollRequest>,
+    pub creature_setup: Option<TableCreatureSetupView>,
     pub situation_title: String,
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
@@ -199,4 +215,32 @@ pub struct TableReceipt {
     pub event_sequence: u64,
     pub outcome: TableOutcome,
     pub already_accepted: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureSetupView {
+    pub catalog: Vec<TableCreatureOption>,
+    pub creatures: Vec<TableCreatureView>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureOption {
+    pub definition_id: String,
+    pub name: String,
+    pub sizes: Vec<CreatureSize>,
+    pub additional_languages: u8,
+    pub ammunition_required: bool,
+    pub item_count: usize,
+    pub abilities: Vec<String>,
+    pub omitted_features: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableCreatureView {
+    pub actor: EntityId,
+    pub name: String,
+    pub definition_id: String,
+    pub size: CreatureSize,
+    pub hp: u32,
+    pub max_hp: u32,
 }

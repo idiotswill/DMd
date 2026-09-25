@@ -4,6 +4,9 @@ use dmd_persistence::{export_campaign, open_sqlite};
 use dmd_rules::CharacterCreationInput;
 use std::path::Path;
 
+#[path = "support/table_creature_cases.rs"]
+mod table_creature_cases;
+
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
         name: name.into(),
@@ -1066,7 +1069,7 @@ async fn equipment_preparation_is_exactly_once_private_and_replayable() {
         created_at_utc: "2026-09-25 00:00:00".into(),
     }];
     let error = bad.restore_campaign(&missing_anchor).await.unwrap_err();
-    assert!(error.to_string().contains("original pre-equipment anchor"));
+    assert!(error.to_string().contains("original pre-tactical anchor"));
     assert!(
         dmd_persistence::open_campaign(&bad_pool, f.campaign)
             .await

@@ -79,13 +79,11 @@ pub(crate) fn validate_rules_export(
         .first_key_value()
         .ok_or_else(|| "rules export has no recovery anchor".to_owned())?;
 
-    // Every physical grant must be replayed from its original table command.
-    if anchor
-        .rules
-        .as_ref()
-        .is_some_and(|rules| rules.tactical_inventory.is_some())
-    {
-        return Err("equipment recovery requires its original pre-equipment anchor".into());
+    // Source creature and physical grants must replay from their original table commands.
+    if anchor.rules.as_ref().is_some_and(|rules| {
+        rules.tactical_inventory.is_some() || rules.tactical_creatures.is_some()
+    }) {
+        return Err("tactical recovery requires its original pre-tactical anchor".into());
     }
     let mut audits = HashMap::new();
     for row in &export.command_audit {
@@ -640,6 +638,31 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             .map(|record| &record.command)
             .collect::<Vec<_>>(),
     );
+    if let Some(creatures) = &rules.tactical_creatures {
+        origins.extend(creatures.profiles.iter().map(|profile| &profile.origin));
+        for runtime in &creatures.runtime {
+            origins.extend([
+                &runtime.control_origin,
+                &runtime.lair_origin,
+                &runtime.last_operation,
+            ]);
+            if let Some(routine) = &runtime.routine {
+                origins.push(&routine.origin);
+            }
+            if let Some(rest) = &runtime.last_rest {
+                origins.push(&rest.origin);
+            }
+            for recharge in &runtime.recharge {
+                if let Some(ticket) = &recharge.pending {
+                    origins.push(&ticket.origin);
+                }
+                if let Some(record) = &recharge.last_roll {
+                    origins.push(&record.ticket.origin);
+                    origins.push(&record.accepted_by);
+                }
+            }
+        }
+    }
     if let Some(inventory) = &rules.tactical_inventory {
         origins.extend(inventory.receipts.iter().map(|receipt| &receipt.command));
         origins.extend(inventory.loadouts.iter().map(|loadout| &loadout.command));
@@ -692,7 +715,7 @@ fn validate_origins(
                 || (pending.map(|pending| &pending.origin) != Some(origin)
                     && !commands.get(&origin.id).is_some_and(|event| {
                         matches!(event, RecoveryEvent::Table(event)
-                            if matches!(event.action, TableAction::PrepareEquipment { .. }))
+                            if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. }))
                     })
                     && commands
                         .get(&origin.id)

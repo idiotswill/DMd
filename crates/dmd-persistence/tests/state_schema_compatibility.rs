@@ -147,6 +147,7 @@ fn encounter_state() -> CampaignState {
         house_rules: HouseRules::default(),
         effects: vec![],
         tactical_inventory: None,
+        tactical_creatures: None,
         pending: None,
         rolls: vec![],
         cancelled_roll_ids: vec![],
@@ -505,6 +506,9 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
         "tactical_inventory",
         "duplicate_inventory",
         "shadowed_inventory",
+        "tactical_creatures",
+        "duplicate_creatures",
+        "shadowed_creatures",
         "lifecycle",
     ] {
         let pool = gate_three_pool().await;
@@ -526,6 +530,11 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
                 value["rules"]["tactical_inventory"] =
                     json!(dmd_domain::TacticalInventory::default());
             }
+            "tactical_creatures" | "duplicate_creatures" | "shadowed_creatures" => {
+                value["rules"] = serde_json::to_value(encounter_state().rules.unwrap()).unwrap();
+                value["rules"]["tactical_creatures"] =
+                    json!(dmd_domain::TacticalCreatures::default());
+            }
             _ => (),
         }
         let corrupted = match corruption {
@@ -537,6 +546,16 @@ async fn corrupt_schema_three_upgrade_rolls_back_all_current_images() {
             "shadowed_inventory" => value.to_string().replacen(
                 "\"tactical_inventory\":",
                 "\"tactical_inventory\":{},\"tactical_inventory\":null,\"ignored\":",
+                1,
+            ),
+            "duplicate_creatures" => value.to_string().replacen(
+                "\"tactical_creatures\":",
+                "\"tactical_creatures\":null,\"tactical_creatures\":",
+                1,
+            ),
+            "shadowed_creatures" => value.to_string().replacen(
+                "\"tactical_creatures\":",
+                "\"tactical_creatures\":{},\"tactical_creatures\":null,\"ignored\":",
                 1,
             ),
             "malformed" => "{".to_owned(),
@@ -755,6 +774,42 @@ fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
                     .decode_state(
                         version,
                         &json.replacen("\"tactical_inventory\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
+}
+
+#[test]
+fn legacy_saves_reject_creatures_authority_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut current = encounter_state();
+    current.encounter = None;
+    current.rules.as_mut().unwrap().timing = None;
+    current.rules.as_mut().unwrap().tactical_creatures =
+        Some(dmd_domain::TacticalCreatures::default());
+    assert!(
+        codec
+            .decode_state(4, &current.encode_json().unwrap())
+            .is_ok()
+    );
+    for version in 1..=3 {
+        current.schema_version = version;
+        let json = current.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_creatures\":null,\"tactical_creatures\":",
+            "\"tactical_creatures\":{},\"tactical_creatures\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_creatures\":", replacement, 1)
                     )
                     .is_err()
             );

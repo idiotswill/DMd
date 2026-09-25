@@ -89,6 +89,7 @@ pub fn resolve(
                     }),
                 effects: vec![],
                 tactical_inventory: None,
+                tactical_creatures: None,
                 pending: None,
                 rolls: vec![],
                 cancelled_roll_ids: vec![],
@@ -125,6 +126,7 @@ pub fn resolve(
             house_rules: house_rules.clone(),
             effects: vec![],
             tactical_inventory: None,
+            tactical_creatures: None,
             pending: None,
             rolls: vec![],
             cancelled_roll_ids: vec![],
@@ -295,6 +297,15 @@ fn apply(
             adjudicate(rules, meta, ruling)?;
             entity(rules, *actor)?;
             authorize(state, meta, *actor)?;
+            if rules
+                .tactical_creatures
+                .as_ref()
+                .is_some_and(|creatures| creatures.profile(*actor).is_some())
+            {
+                return Err(prerequisite(
+                    "source creature tests require their source action path",
+                ));
+            }
             if !(0..=100).contains(dc) {
                 return Err(invalid("test DC outside supported range"));
             }

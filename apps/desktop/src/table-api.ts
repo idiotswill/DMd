@@ -42,6 +42,11 @@ export interface CreationOptions {
   catalog: { schema_version: number; ruleset_id: string; version: string; profile_id: string; starting_money_cp: number; source_pages: number[]; scope: string; items: { id: string; name: string; unit_cost_cp: number; purchase_multiple: number; source_page: number; weapon: boolean }[] };
   fighter_skills: Skill[]; fighter_masteries: string[]; standard_languages: string[]; alignments: string[];
 }
+export type CreatureSize = 'Tiny' | 'Small' | 'Medium' | 'Large' | 'Huge' | 'Gargantuan';
+export interface CreatureCreation { entity_id: Id; name: string; definition_id: string; size: CreatureSize; additional_languages: string[]; ammunition_units: number; item_ids: Id[] }
+export interface CreatureOption { definition_id: string; name: string; sizes: CreatureSize[]; additional_languages: number; ammunition_required: boolean; item_count: number; abilities: string[]; omitted_features: string[] }
+export interface CreatureView { actor: Id; name: string; definition_id: string; size: CreatureSize; hp: number; max_hp: number }
+export interface CreatureSetupView { catalog: CreatureOption[]; creatures: CreatureView[] }
 export interface Challenge { id: string; title: string; description: string; phrases: string[]; kind: { Check: { ability: Ability; skill: Skill | null } }; dc: number; success: string; failure: string; resolution: { actor: Id; request_id: Id; success: boolean; total: number } | null }
 export interface Situation { title: string; description: string; challenges: Challenge[] }
 export interface CommandMeta { id: Id; campaign_id: Id; session_id: Id | null; issuer: 'Admin' | { Player: Id }; actor: { Entity: Id } | null; expected_event_sequence: number }
@@ -50,6 +55,7 @@ export interface RollRequest { id: Id; roller: Id | null; dice: { sides: number;
 export interface TableView {
   campaign_id: Id; name: string; event_sequence: number; contract: TableContract; players: Player[]; characters: CharacterView[];
   active_session: { session_id: Id; display_name: string; started_at_world: number; participants: Participant[] } | null;
+  creature_setup?: CreatureSetupView | null;
   pending: PendingDecision | null; roll: RollRequest | null; situation_title: string; situation_description: string;
   transcript: { id: string; event_sequence: number; kind: string; speaker: string; text: string }[]; recap: string[];
 }
@@ -57,6 +63,7 @@ export type TableAction =
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
   | { CreateCharacter: { character_id: Id; entity_id: Id; player_id: Id; input: CharacterInput } }
   | { PrepareEquipment: { character_id: Id; item_ids: Id[] } }
+  | { CreateCreature: { creation: CreatureCreation } }
   | { StartSession: { id: Id; name: string; participants: Participant[] } } | 'EndSession'
   | { SetSituation: { situation: Situation } }
   | { CancelDecision: { pending_id: Id; revision: number } }
@@ -95,7 +102,7 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (request.action === 'EndSession') return true;
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
-  return ['UpdateContract','AddPlayer','CreateCharacter','PrepareEquipment','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
+  return ['UpdateContract','AddPlayer','CreateCharacter','CreateCreature','PrepareEquipment','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
 }
 export function loadRequest(): UnconfirmedRequest | null {
   const value = localStorage.getItem(REQUEST_KEY);
@@ -117,7 +124,7 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
-  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',PrepareEquipment:'Prepare starting equipment',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
+  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',CreateCreature:'Prepare a source creature',PrepareEquipment:'Prepare starting equipment',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
   return labels[typeof request.request.action === 'string' ? request.request.action : Object.keys(request.request.action)[0]];
 }
 

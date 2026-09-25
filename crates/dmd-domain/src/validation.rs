@@ -7,8 +7,10 @@ use crate::{
 };
 
 impl CampaignState {
+    /// Campaign identities and world references, independent of a composite command's
+    /// pending-work phase. Final application state must still pass `validate` in full.
     #[must_use]
-    pub fn validate(&self) -> Vec<StateInvariantViolation> {
+    pub fn validate_references(&self) -> Vec<StateInvariantViolation> {
         let mut violations = Vec::new();
         let expected = self.campaign.id;
 
@@ -21,6 +23,20 @@ impl CampaignState {
         self.validate_items(expected, &mut violations);
         self.validate_information(expected, &mut violations);
         self.validate_directives(expected, &mut violations);
+        violations
+    }
+
+    #[must_use]
+    pub fn validate(&self) -> Vec<StateInvariantViolation> {
+        let mut violations = self.validate_references();
+        if let Some(creatures) = self
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_creatures.as_ref())
+            && let Err(message) = creatures.validate(self)
+        {
+            violations.push(StateInvariantViolation::InvalidEncounterState(message));
+        }
         if let Some(inventory) = self
             .rules
             .as_ref()

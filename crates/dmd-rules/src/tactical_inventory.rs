@@ -259,7 +259,10 @@ pub fn validate_tactical_inventory(
     pack: &RulesPack,
 ) -> Result<(), InventoryError> {
     validate_pack(state, pack)?;
-    if !state.validate().is_empty() {
+    // This lower-level check also runs between a completed rules roll and its
+    // parent table command clearing roll_context. Validate physical references here;
+    // the complete table/encounter aggregate is validated before the app commits.
+    if !state.validate_references().is_empty() {
         return Err(invalid("campaign has invalid identity/reference state"));
     }
     current.validate(state).map_err(invalid)?;

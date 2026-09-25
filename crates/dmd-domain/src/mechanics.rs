@@ -349,6 +349,8 @@ pub struct RulesState {
     pub effects: Vec<ActiveEffect>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tactical_inventory: Option<crate::TacticalInventory>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_creatures: Option<crate::TacticalCreatures>,
     pub pending: Option<PendingRoll>,
     pub rolls: Vec<RecordedRoll>,
     pub cancelled_roll_ids: Vec<crate::RollRequestId>,
