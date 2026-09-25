@@ -9,16 +9,19 @@ mod failed_save;
 mod falling;
 mod initiative;
 mod movement;
+mod ready;
 mod shields;
 mod turn_validation;
 mod turns;
 mod validation;
+mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use initiative::preview_initiative_circumstances;
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
+pub use work_trace::tactical_frame_host_ordering;
 
 pub const TACTICAL_EVENT_KIND: &str = "tactical.action_resolved";
 pub const TACTICAL_EVENT_VERSION: u32 = 1;
@@ -26,6 +29,13 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    /// A deliberate, journaled transition for an already active legacy encounter.
+    /// It is admitted only at an idle boundary and never alters accepted history.
+    UpgradeExecution,
+    Ready {
+        trigger: ReadyTrigger,
+        action: ReadyAction,
+    },
     DonShield {
         shield: ItemId,
         hand: Hand,
@@ -74,6 +84,8 @@ pub enum TacticalAction {
     Begin {
         combatants: Vec<TacticalCombatant>,
         groups: Vec<InitiativeGroup>,
+        #[serde(default, skip_serializing_if = "TacticalExecutionVersion::is_legacy")]
+        execution: TacticalExecutionVersion,
     },
     SubmitRoll {
         result: RollResult,
@@ -211,6 +223,22 @@ pub fn resolve_tactical(
     action: &TacticalAction,
     pack: &RulesPack,
 ) -> Result<TacticalTransition, RulesError> {
+    resolve_with_policy(state, meta, action, pack, ExecutionPolicy::Live)
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum ExecutionPolicy {
+    Live,
+    Historical,
+}
+
+fn resolve_with_policy(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &TacticalAction,
+    pack: &RulesPack,
+    policy: ExecutionPolicy,
+) -> Result<TacticalTransition, RulesError> {
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
@@ -219,6 +247,9 @@ pub fn resolve_tactical(
     }
     crate::validate_state(state, pack)?;
     validate_tactical_state(state)?;
+    if policy == ExecutionPolicy::Live {
+        validate_live_execution(state, action)?;
+    }
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     if rules.pending.is_some()
         && !matches!(
@@ -232,6 +263,23 @@ pub fn resolve_tactical(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::UpgradeExecution => {
+            privileged(meta)?;
+            let current = flow(&next)?;
+            if current.version != TacticalExecutionVersion::Legacy.flow_version()
+                || current.phase != TacticalPhase::Active
+                || current.resolution.is_some()
+                || rules.pending.is_some()
+            {
+                return Err(prerequisite(
+                    "execution upgrade requires a settled legacy encounter",
+                ));
+            }
+            flow_mut(&mut next)?.version = TacticalExecutionVersion::ReactionsV1.flow_version();
+        }
+        TacticalAction::Ready { trigger, action } => {
+            ready::declare(&mut next, meta, trigger, action)?;
+        }
         TacticalAction::DonShield { shield, hand } => {
             shields::change(&mut next, meta, Some((*shield, *hand)), pack)?
         }
@@ -295,7 +343,11 @@ pub fn resolve_tactical(
                 .map_err(|e| RulesError::Invalid(e.to_string()))?;
             next.encounter = Some(authored);
         }
-        TacticalAction::Begin { combatants, groups } => {
+        TacticalAction::Begin {
+            combatants,
+            groups,
+            execution,
+        } => {
             privileged(meta)?;
             if rules.entities.values().any(|e| {
                 e.character_features
@@ -310,7 +362,7 @@ pub fn resolve_tactical(
                 return Err(prerequisite("initiative is already established"));
             }
             let initial = TacticalFlow {
-                version: 1,
+                version: execution.flow_version(),
                 origin: meta.clone(),
                 combatants: combatants.clone(),
                 initiative_groups: groups.clone(),
@@ -322,6 +374,7 @@ pub fn resolve_tactical(
                 dodges: vec![],
                 save_decisions: vec![],
                 ground_items: vec![],
+                ready: vec![],
             };
             next.encounter
                 .as_mut()
@@ -433,9 +486,68 @@ pub fn replay_tactical(
     event: &TacticalEvent,
     pack: &RulesPack,
 ) -> Result<TacticalTransition, RulesError> {
-    let transition = resolve_tactical(state, &event.meta, &event.action, pack)?;
+    let transition = resolve_with_policy(
+        state,
+        &event.meta,
+        &event.action,
+        pack,
+        ExecutionPolicy::Historical,
+    )?;
     if transition.event != *event {
         return Err(RulesError::ReplayMismatch);
     }
     Ok(transition)
+}
+
+fn validate_live_execution(
+    state: &CampaignState,
+    action: &TacticalAction,
+) -> Result<(), RulesError> {
+    if matches!(
+        action,
+        TacticalAction::Begin {
+            execution: TacticalExecutionVersion::Legacy,
+            ..
+        }
+    ) {
+        return Err(prerequisite(
+            "new initiative requires the current tactical executor",
+        ));
+    }
+    let Some(current) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+    else {
+        return Ok(());
+    };
+    if current.version != TacticalExecutionVersion::Legacy.flow_version() {
+        return Ok(());
+    }
+    // A saved old pause remains completable under its original semantics. Fresh
+    // actions wait for the explicit idle upgrade; no source window is skipped by
+    // selecting the old Begin wire shape through a new transport request.
+    if matches!(
+        action,
+        TacticalAction::UpgradeExecution
+            | TacticalAction::SubmitRoll { .. }
+            | TacticalAction::SubmitRollWithInspiration { .. }
+            | TacticalAction::ProposeInitiativeTie { .. }
+            | TacticalAction::AcceptInitiativeTie { .. }
+            | TacticalAction::ChooseTurnWork { .. }
+            | TacticalAction::VoluntarilyFailSave
+            | TacticalAction::UseLegendaryResistance
+            | TacticalAction::DeclineLegendaryResistance
+            | TacticalAction::DeclineLegendaryAction
+            | TacticalAction::DeclineOpportunity
+            | TacticalAction::OpportunityAttack { .. }
+            | TacticalAction::ChooseAttackKnockout { .. }
+            | TacticalAction::ChooseAttackMastery { .. }
+            | TacticalAction::ChooseLiquidLanding { .. }
+    ) {
+        return Ok(());
+    }
+    Err(prerequisite(
+        "this legacy encounter must finish pending work and upgrade before a new action",
+    ))
 }

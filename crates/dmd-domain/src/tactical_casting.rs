@@ -18,6 +18,7 @@ pub struct SpellBoundTarget {
 pub enum SpellEnclosingActivation {
     Action,
     BonusAction,
+    Reaction,
     Legendary,
 }
 

@@ -18,7 +18,7 @@ pub use binding::*;
 pub use creature::plan_spell_from_feature;
 pub use execution::{
     spell_amount_operation, spell_amount_request, spell_casting_duration_operation,
-    spell_condition_effect, spell_effect_expiry,
+    spell_condition_effect, spell_defense_effect, spell_effect_expiry,
 };
 pub use program::compile_spell_program;
 pub use reservations::validate_spell_slot_reservation;

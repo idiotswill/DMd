@@ -197,6 +197,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     // Historical reached-place receipts survive combat completion, but never
     // become exempt from validation when the active cursor is absent.
     crate::tactical_movement::validate_result(state)?;
+    super::ready::validate(state)?;
+    super::work_trace::validate(state)?;
     if f.phase != TacticalPhase::Active {
         if f.resolution.is_some()
             || !f.dodges.is_empty()

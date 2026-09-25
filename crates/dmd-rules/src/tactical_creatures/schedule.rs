@@ -217,6 +217,10 @@ enum ScheduleAuthority {
 /// The controller's accepted choice remains the invocation; this does not invent
 /// a System issuer or prove a trigger by accepting a serialized flag. The caller
 /// atomically pays central Reaction cost and opens the source spell continuation.
+#[allow(
+    dead_code,
+    reason = "live reaction window integration is the next owned scheduler slice"
+)]
 pub(crate) fn begin_creature_reaction_feature(
     state: &CampaignState,
     current: &TacticalCreatures,

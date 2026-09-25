@@ -186,6 +186,10 @@ pub enum SpellCommandWord {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum SpellProgramNode {
+    InterruptSpellCasting {
+        ability: Ability,
+        preserve_spell_slot: bool,
+    },
     SaveCommand {
         ability: Ability,
         choices: Vec<SpellCommandWord>,
@@ -230,6 +234,11 @@ pub enum SpellProgramNode {
     ArmorClassBonus {
         bonus: u8,
         includes_triggering_attack: bool,
+    },
+    BaseArmorClass {
+        base: u8,
+        ability: Ability,
+        ends_when_wearing_armor: bool,
     },
     PreventSpellDamage {
         spell_id: String,

@@ -299,7 +299,15 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
             request_id: RollRequestId::new(),
         })
         .collect();
-    host(f, TacticalAction::Begin { combatants, groups }).await;
+    host(
+        f,
+        TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            combatants,
+            groups,
+        },
+    )
+    .await;
     submit(f, false, &[20]).await;
     submit(f, false, &[18]).await;
     submit(f, true, &[2]).await;

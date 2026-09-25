@@ -131,6 +131,11 @@ pub(super) fn begin(
             "source casting choice differs from its authenticated feature",
         ));
     }
+    if plan.cost == SpellCastingCost::Reaction {
+        return Err(prerequisite(
+            "a reaction spell requires its actual retained trigger window",
+        ));
+    }
     let bound = bind_spell(state, &plan, targets)?;
     if bound.consumed_material().is_some() {
         return Err(prerequisite(
@@ -187,6 +192,7 @@ pub(super) fn begin(
     let budget = &mut flow_mut(state)?.budget;
     budget.movement_progress = None;
     budget.movement_origin = None;
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: choice.actor,
@@ -201,6 +207,7 @@ pub(super) fn begin(
         casts: vec![record],
         falls: vec![],
         areas: vec![],
+        work_trace,
         next_occurrence: 1,
     }));
     commit(state, meta, occurrence)?;
@@ -309,7 +316,7 @@ pub(super) fn key(
         ExecutableSpellKind::Healing | ExecutableSpellKind::AutomaticDamage => {
             TacticalRollRole::SpellAmount
         }
-        ExecutableSpellKind::AttackDamage => {
+        ExecutableSpellKind::AttackDamage | ExecutableSpellKind::Defense => {
             return Err(invalid("spell attack uses its attack request"));
         }
     };
@@ -381,6 +388,33 @@ pub(super) fn start(
             .is_none_or(|caster| caster.concentration != record.cast.plan.concentration_group);
     if !target.source_type_matches || unavailable_target || group_lost {
         complete_occurrence(state, cast, at)?;
+        return Ok(true);
+    }
+    if matches!(
+        record.cast.plan.program.nodes.as_slice(),
+        [SpellProgramNode::AutomaticDamage { .. }]
+    ) && crate::tactical_defenses::prevents_spell_damage(
+        state,
+        target.actor,
+        &record.cast.plan.program.source.spell_id,
+    ) {
+        complete_occurrence(state, cast, at)?;
+        return Ok(true);
+    }
+    if executable_spell_kind(&record.cast.plan)? == ExecutableSpellKind::Defense {
+        let effect = spell_defense_effect(state, record, at)?;
+        complete_occurrence(state, cast, at)?;
+        if let Some(effect) = effect {
+            effect_operation(
+                state,
+                meta,
+                EffectLifecycleOperation::Install {
+                    effects: vec![effect],
+                },
+            )?;
+            let work = new_effect_work(state)?;
+            push_frame(state, work)?;
+        }
         return Ok(true);
     }
     if executable_spell_kind(&record.cast.plan)? == ExecutableSpellKind::AttackDamage {

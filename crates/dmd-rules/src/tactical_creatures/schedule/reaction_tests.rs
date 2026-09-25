@@ -373,6 +373,7 @@ impl Fixture {
             enemies: vec![],
         };
         state.encounter = Some(TacticalEncounter {
+            area_grid_policy: None,
             id: EncounterId::new(),
             scene_id: SceneId::new(),
             battlefield: Battlefield {

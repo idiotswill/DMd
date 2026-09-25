@@ -1,6 +1,6 @@
 # Gate 4 — Actual reaction and Ready execution
 
-Status: **Active; implementation beginning, no reaction completion claim.**
+Status: **Active; first source/runtime checkpoint authored, not yet compiled; no reaction completion claim.**
 Branch: `codex/gate4-reaction-ready-runtime`; base `1b39980ec77f909b81004ab7327060156c297945`.
 Writer: rules_architecture. Root owns integration, main-based PRs and gate acceptance.
 
@@ -22,16 +22,19 @@ exceptions; a string trigger or client-provided permission is never state author
 - Bootstrap released exclusive shared tactical scheduler/domain ownership after its
   reviewed area source. Preserve `areas`, consent/host-order scope and every existing
   source/attack/movement/falling continuation. Merge its coherent verified application
-  checkpoint before compiling this composition; current area full app/lint is pending.
+  checkpoint before compiling this composition. Verified area `a45fe57` is merged as
+  `f3daf22`; its prior 65-app-test/strict-lint evidence remains inherited only.
 - Root's physical/casting extraction does not change the integrated production tree
   except separately reviewed corrections. Coordinate any such changes explicitly.
 - Environment_audit owns the durable audience/retry protocol. Do not edit its storage
   or app-protocol files concurrently. Reaction views/actions must adopt its actual
   actor/audience decision contracts before integrated acceptance.
-- Bootstrap next owns a real damaging-OA/concentration SQLite test. A separate bounded
-  source-descriptor contribution can follow that work if available; no shared writers.
-- Rust compiler is globally serialized: area full verification, then protocol. This
-  branch has no compiler permission until an explicit handoff.
+- Bootstrap's genuine OA/concentration test is reviewed separately. It now owns source
+  Mage/Counterspell/Mage Armor definitions/profile/equipment plus a private reaction
+  feature hook; dependencies `5f15783` and `01e857c` are integrated here. Those changes
+  remain uncompiled. This writer owns effect/program/retained/shared composition.
+- Rust compiler is globally serialized: root PR33 canonical, then protocol, then this
+  bounded domain/rules checkpoint. No compiler permission until explicit handoff.
 
 ## Implementation slices
 
@@ -79,8 +82,40 @@ retained host adjudications exist. Unsupported requests fail before costs.
 
 Inherited training correction:43 focused spell tests and strict domain/rules all-target
 Clippy passed at `1b39980`, with independent source/fixture signoff. Those checks do
-not verify this new execution work. No code/tests run yet on this branch.
+not verify this new execution work. Rustfmt and whitespace checks pass on the working
+tree; no compiler/test/lint execution has occurred on this branch.
 
-Next: check in this plan; author bounded new reaction/Ready contracts and sealed source
-admission helpers, settle durable parent/held-cast references, merge the final reviewed
-area checkpoint, then compose complete source windows under the single scheduler.
+Authored checkpoint:
+
+- Explicit `ReactionsV1` live Begin and quiescent privileged upgrade, while omitted
+  historical execution remains Legacy and internal table/tactical replay preserves
+  original semantics. New requests cannot choose Legacy. Protocol emission must be
+  explicit; historical accepted envelope interpretation must never use today's default.
+- Durable paid physical Ready declarations and own-Start expiry. Actual witnessed
+  response/ignore/attack/move/held-spell release are not implemented at this checkpoint.
+- Current-execution causal work ancestry confines area ordering delegation to its own
+  authenticated descendants; independent actions cannot inherit permission merely
+  because an area record exists elsewhere. Legacy work images remain omitted/unchanged.
+- Source-derived defense clauses live in the existing tactical effect lifecycle.
+  Effective AC queries/attacks include them without mutating equipment. Same-spell
+  precedence remains the existing overlap rule. Mage Armor uses actual self casting,
+  real source material, 13+Dex and eight-hour expiry; honest source Mage starts at 12.
+  Other willing targets/competing armor formulas still require explicit admission
+  choices, and the new armor-don observation is an internal lifecycle hook, not a claim
+  that a public don-armor action already exists. Shield's defense leaves exist, but
+  public ordinary CastSpell still rejects reaction activation without a live window.
+- Added declaration/controller/forgery/legacy upgrade, work-ancestry corruption,
+  defense timing/overlap/armor-ending/wire and genuine source Mage casting regressions.
+  All remain unrun. A temporary, local dead-code annotation on the private source
+  reaction hook documents the next real caller; remove it when window admission lands.
+- Independent defense review found and corrected a held-spell edge: nonconcentration
+  Mage Armor must not retain Ready's already-ended hold-only group. The retained
+  self-only formula boundary is also rechecked against foreign-target rewrites.
+  A genuine source plan Held→Released leaf regression now covers both; it is not
+  presented as public Ready response or table acceptance.
+
+Next: independent bounded source review, then the granted one-job domain/rules check,
+focused turn/effect/casting/area/source-hook tests and strict lint. Record actual failures
+and fixes before committing verified evidence. Only after that checkpoint add the
+complete nested reaction windows and actual Ready response integration; domain types,
+declaration-only behavior and internal leaves do not satisfy the slice or Gate4.

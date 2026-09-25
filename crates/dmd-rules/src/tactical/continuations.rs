@@ -333,6 +333,23 @@ pub(super) fn start(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    let previous = super::work_trace::enter(state, &work)?;
+    let result = start_inner(state, meta, work).and_then(|()| {
+        if resolution(state)?.work_trace.is_some() {
+            super::falling::queue_losses(state, meta)?;
+        }
+        Ok(())
+    });
+    let reset = super::work_trace::leave(state, previous);
+    result?;
+    reset
+}
+
+fn start_inner(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: TacticalWorkItem,
+) -> Result<(), RulesError> {
     if super::areas::start(state, meta, &work)? {
         return Ok(());
     }
@@ -588,6 +605,25 @@ pub(super) fn voluntarily_fail(
 }
 
 pub(super) fn finish(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    pending: TacticalPendingWork,
+    result: Option<&RollResult>,
+    forced_success: bool,
+) -> Result<(), RulesError> {
+    let previous = super::work_trace::enter(state, &pending.work)?;
+    let result = finish_inner(state, meta, pending, result, forced_success).and_then(|()| {
+        if resolution(state)?.work_trace.is_some() {
+            super::falling::queue_losses(state, meta)?;
+        }
+        Ok(())
+    });
+    let reset = super::work_trace::leave(state, previous);
+    result?;
+    reset
+}
+
+fn finish_inner(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pending: TacticalPendingWork,

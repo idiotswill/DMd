@@ -227,6 +227,7 @@ fn begin_with_source(
         .ok_or_else(|| invalid("timing absent"))?;
     let number = timing.turn_number;
     flow_mut(state)?.budget = budget;
+    let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         turn_actor: actor,
@@ -241,6 +242,7 @@ fn begin_with_source(
         casts: vec![],
         falls: vec![],
         areas: vec![],
+        work_trace,
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

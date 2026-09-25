@@ -69,6 +69,24 @@ pub struct EffectCondition {
     pub condition: Condition,
 }
 
+/// Source-derived defense clauses. Installation is internal to the authenticated
+/// spell resolver; these are not an equipment edit or a player modifier.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum EffectDefense {
+    BaseArmorClass {
+        base: u8,
+        ability: Ability,
+        ends_when_wearing_armor: bool,
+    },
+    ArmorClassBonus {
+        bonus: u8,
+    },
+    PreventSpellDamage {
+        spell_id: String,
+    },
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct EffectOverlap {
@@ -102,6 +120,10 @@ pub enum EffectTriggerEvent {
         subject: EffectSubject,
     },
     ZoneContact(ZoneContact),
+    /// The actual donning operation, not simply having armor in one's custody.
+    ArmorWorn {
+        subject: EffectSubject,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -164,6 +186,8 @@ pub struct TacticalEffect {
     pub expires: TacticalEffectExpiry,
     pub overlap: Option<EffectOverlap>,
     pub conditions: Vec<EffectCondition>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub defenses: Vec<EffectDefense>,
     /// Stable source clause indexes. Simultaneous consequence order is chosen explicitly.
     pub triggers: Vec<EffectTriggerRule>,
 }
@@ -191,6 +215,9 @@ pub enum EffectObservation {
     /// Observe End before advancing initiative, Start after advancing initiative.
     Turn(EffectTurn),
     Time,
+    ArmorWorn {
+        target: EntityId,
+    },
     /// Actual damage after immunity/resistance, including damage absorbed by temp HP.
     Damage {
         source: Option<EntityId>,
@@ -377,6 +404,7 @@ impl TacticalEffects {
                     let mut seen = HashSet::new();
                     if occupants.len() > 128
                         || !effect.conditions.is_empty()
+                        || !effect.defenses.is_empty()
                         || occupants.iter().any(|id| !entity(*id) || !seen.insert(*id))
                     {
                         return Err("invalid zone occupants or direct zone condition".into());
@@ -396,6 +424,20 @@ impl TacticalEffects {
             }
             if effect.conditions.len() > 16 || effect.triggers.len() > 16 {
                 return Err("effect contains too many clauses".into());
+            }
+            if effect.defenses.len() > 8 {
+                return Err("effect contains too many defense clauses".into());
+            }
+            for (index, defense) in effect.defenses.iter().enumerate() {
+                if effect.defenses[..index].contains(defense)
+                    || match defense {
+                        EffectDefense::BaseArmorClass { base, .. } => *base == 0 || *base > 30,
+                        EffectDefense::ArmorClassBonus { bonus } => *bonus == 0 || *bonus > 20,
+                        EffectDefense::PreventSpellDamage { spell_id } => !text_valid(spell_id),
+                    }
+                {
+                    return Err("invalid or duplicate source defense clause".into());
+                }
             }
             for trigger in &effect.triggers {
                 if matches!(trigger.event, EffectTriggerEvent::ZoneContact(_))
@@ -569,6 +611,9 @@ impl TacticalEffects {
                 {
                     return Err("invalid pending zone-trigger cause".into());
                 }
+                EffectObservation::ArmorWorn { target } if !entity(*target) => {
+                    return Err("invalid pending armor-trigger target".into());
+                }
                 _ => {}
             }
             match ticket.payload {
@@ -678,6 +723,11 @@ pub fn effect_trigger_targets(
             EffectTriggerEvent::Damage { subject },
             EffectObservation::Damage { target, amount, .. },
         ) if *amount > 0 && matches_subject(*subject, *target) => (*target, *subject),
+        (EffectTriggerEvent::ArmorWorn { subject }, EffectObservation::ArmorWorn { target })
+            if matches_subject(*subject, *target) =>
+        {
+            (*target, *subject)
+        }
         (
             EffectTriggerEvent::ZoneContact(kind),
             EffectObservation::Zone {

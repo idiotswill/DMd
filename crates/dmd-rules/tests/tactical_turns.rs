@@ -2,6 +2,9 @@ use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, *};
 use std::collections::HashMap;
 
+#[path = "tactical_turns/ready.rs"]
+mod ready;
+
 fn resistance_save(ability: Ability) -> EffectTriggerPayload {
     EffectTriggerPayload::SavingThrow {
         ability,
@@ -688,6 +691,7 @@ fn multiple_after_turn_opportunities_require_host_order_and_each_creatures_expli
     f.run(
         None,
         TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
             combatants: actors
                 .into_iter()
                 .enumerate()
@@ -1111,6 +1115,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
+                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
                 combatants: self
                     .actors
                     .into_iter()
@@ -1192,6 +1197,7 @@ impl Fixture {
                     condition,
                 })
                 .collect(),
+            defenses: vec![],
             triggers: vec![EffectTriggerRule {
                 event: EffectTriggerEvent::Turn {
                     subject: EffectSubject::Source,
@@ -1571,6 +1577,7 @@ fn effect_damage_preserves_inspiration_raw_faces_and_queues_target_concentration
                     expires: TacticalEffectExpiry::Never,
                     overlap: None,
                     conditions: vec![],
+                    defenses: vec![],
                     triggers: vec![],
                 }],
             },
@@ -1924,6 +1931,7 @@ fn begin_reconciles_legacy_unconscious_held_items_without_invented_injury_origin
     let event = f.run(
         None,
         TacticalAction::Begin {
+            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
             combatants: f
                 .actors
                 .into_iter()

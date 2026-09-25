@@ -246,12 +246,7 @@ pub(super) fn hit_facts_for(
     .map_err(spatial)?
     .armor_and_dexterity_bonus()
     .map_err(spatial)?;
-    let ac = crate::armor_class(
-        rules
-            .entities
-            .get(&target_id)
-            .ok_or_else(|| invalid("target mechanics absent"))?,
-    ) + cover;
+    let ac = crate::tactical_defenses::effective_armor_class(state, target_id)? + cover;
     Ok((condition.mode, ac, condition.critical_on_hit))
 }
 
