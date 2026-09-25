@@ -14,6 +14,21 @@ pub(super) fn options(
     state: &CampaignState,
     actor: EntityId,
 ) -> Result<Option<TableCastingOptions>, String> {
+    options_with_self_target(state, actor, false)
+}
+
+pub(super) fn options_v2(
+    state: &CampaignState,
+    actor: EntityId,
+) -> Result<Option<TableCastingOptions>, String> {
+    options_with_self_target(state, actor, true)
+}
+
+fn options_with_self_target(
+    state: &CampaignState,
+    actor: EntityId,
+    self_target: bool,
+) -> Result<Option<TableCastingOptions>, String> {
     let Some(rules) = &state.rules else {
         return Ok(None);
     };
@@ -156,6 +171,7 @@ pub(super) fn options(
                 }
                 let (minimum_targets, maximum_targets, repeated_targets) =
                     match plan.program.targets {
+                        SpellTargetRule::Caster if self_target => (1, 1, false),
                         SpellTargetRule::CreatureOrObject => (1, 1, false),
                         SpellTargetRule::Creatures { maximum, .. } => (1, maximum, false),
                         SpellTargetRule::Rays { count } | SpellTargetRule::Darts { count, .. } => {

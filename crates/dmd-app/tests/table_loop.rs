@@ -31,6 +31,8 @@ mod table_ready_cases;
 mod table_savage_cases;
 #[path = "support/table_shield_cases.rs"]
 mod table_shield_cases;
+#[path = "support/table_source_control_cases.rs"]
+mod table_source_control_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
 #[path = "support/table_turn_core_cases.rs"]

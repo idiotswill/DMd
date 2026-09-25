@@ -7,6 +7,7 @@ use dmd_persistence::{
 use serde::{Deserialize, Serialize};
 
 pub const TABLE_TRANSPORT_VERSION: u32 = 1;
+pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -16,12 +17,19 @@ pub enum TableTransportChannel {
         player_id: PlayerId,
         character_id: CharacterId,
     },
+    /// Only legal under transport v2 after explicit table source-access activation.
+    SourceCreature {
+        player_id: PlayerId,
+        actor: EntityId,
+    },
 }
 impl TableTransportChannel {
     pub(crate) fn audience(&self) -> ProjectionAudience {
         match self {
             Self::Host => ProjectionAudience::Host,
-            Self::Player { player_id, .. } => ProjectionAudience::Player(*player_id),
+            Self::Player { player_id, .. } | Self::SourceCreature { player_id, .. } => {
+                ProjectionAudience::Player(*player_id)
+            }
         }
     }
 }
@@ -177,6 +185,8 @@ pub struct TableHostDiagnostics {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_control: Option<TableSourceControlView>,
     pub revision: ProjectionRevision,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub diagnostics: Option<TableHostDiagnostics>,
@@ -306,6 +316,7 @@ pub(crate) fn presented_view(
         .transpose()
         .map_err(str::to_owned)?;
     Ok(TablePresentedView {
+        source_control: raw.source_control,
         revision,
         diagnostics: matches!(audience, ProjectionAudience::Host).then_some(TableHostDiagnostics {
             canonical_event_sequence: raw.event_sequence,

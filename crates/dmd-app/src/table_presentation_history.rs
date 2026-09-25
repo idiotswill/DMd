@@ -255,7 +255,10 @@ fn validate_record(
     record: &TableProjectionRecord,
     transcript: &[TranscriptVisibility],
 ) -> Result<(), String> {
-    if record.ordinal != history.ordinal + 1 || record.transcript != transcript {
+    if record.version != crate::table_source_control::presentation_version(state)
+        || record.ordinal != history.ordinal + 1
+        || record.transcript != transcript
+    {
         return Err("presentation history/cause visibility mismatch".into());
     }
     let expected = expected_changes(state, pack, events, observations, history)?;
@@ -327,7 +330,7 @@ pub(crate) fn build_record(
         });
     }
     let record = TableProjectionRecord {
-        version: 1,
+        version: crate::table_source_control::presentation_version(state),
         campaign_id: state.campaign_id(),
         ordinal: history.ordinal + 1,
         cause,
@@ -384,11 +387,12 @@ pub(crate) fn validate_history(
     let marked = export
         .command_audit
         .iter()
-        .any(|a| a.command_kind == "table.action" && a.command_schema_version == 2)
-        || export
-            .observations
-            .iter()
-            .any(|o| o.record.kind == "table.conversation" && o.record.payload_schema_version == 2);
+        .any(|a| a.command_kind == "table.action" && matches!(a.command_schema_version, 2 | 3))
+        || export.observations.iter().any(|o| {
+            o.record.kind == "table.conversation"
+                && matches!(o.record.payload_schema_version, 2 | 3)
+        })
+        || crate::table_source_control::enabled(&current);
     if current.table.is_none() {
         if !export.table_projection_history.is_empty()
             || !export.table_transport_bindings.is_empty()
@@ -468,13 +472,13 @@ pub(crate) fn validate_history(
             }
             // A new acceptance can never precede initialization of its protocol.
             if export.command_audit.iter().any(|a| {
-                a.command_schema_version == 2
+                matches!(a.command_schema_version, 2 | 3)
                     && a.command_kind == "table.action"
                     && a.resulting_event_sequence <= bootstrap_head as i64
             }) || export.observations.iter().any(|o| {
                 o.ordinal <= bootstrap_observation
                     && o.record.kind == "table.conversation"
-                    && o.record.payload_schema_version == 2
+                    && matches!(o.record.payload_schema_version, 2 | 3)
             }) {
                 return Err("protocol marker precedes its bootstrap".into());
             }

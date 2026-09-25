@@ -66,6 +66,11 @@ pub enum CreatureScheduleOperation {
         controller: CreatureController,
         in_lair: bool,
     },
+    /// Changes only ownership; source lair context and its original proof are retained.
+    SetController {
+        actor: EntityId,
+        controller: CreatureController,
+    },
 }
 impl CreatureScheduleOperation {
     fn actor(&self) -> EntityId {
@@ -78,6 +83,7 @@ impl CreatureScheduleOperation {
             | Self::DeclineLegendaryAction { actor }
             | Self::FinishRest { actor, .. }
             | Self::LeaveCombat { actor }
+            | Self::SetController { actor, .. }
             | Self::SetContext { actor, .. } => *actor,
         }
     }
@@ -605,6 +611,19 @@ fn apply_schedule(
             rt.routine = None;
             rt.observed_turn = None;
             rt.legendary_window_spent = false;
+        }
+        CreatureScheduleOperation::SetController { controller, .. } => {
+            privileged(meta)?;
+            if let CreatureController::Player(id) = controller
+                && !state.players.contains_key(id)
+            {
+                return Err(invalid("unknown creature controller"));
+            }
+            if rt.routine.is_some() || rt.recharge.iter().any(|r| r.pending.is_some()) {
+                return Err(invalid("cannot change source control during pending work"));
+            }
+            rt.controller = *controller;
+            rt.control_origin = meta.clone();
         }
         CreatureScheduleOperation::SetContext {
             controller,
