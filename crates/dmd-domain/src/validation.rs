@@ -21,6 +21,14 @@ impl CampaignState {
         self.validate_items(expected, &mut violations);
         self.validate_information(expected, &mut violations);
         self.validate_directives(expected, &mut violations);
+        if let Some(creatures) = self
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_creatures.as_ref())
+            && let Err(message) = creatures.validate(self)
+        {
+            violations.push(StateInvariantViolation::InvalidEncounterState(message));
+        }
         if let Some(inventory) = self
             .rules
             .as_ref()

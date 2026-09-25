@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import ContractForm from './components/ContractForm.svelte';
+  import CreatureForm from './components/CreatureForm.svelte';
   import CharacterForm from './components/CharacterForm.svelte';
   import CharacterSheet from './components/CharacterSheet.svelte';
   import SessionForm from './components/SessionForm.svelte';
@@ -143,6 +144,7 @@
         {#if options && view.players.length}{#key view.event_sequence}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={(player_id,input) => act({ CreateCharacter: { player_id, input, character_id: newId(), entity_id: newId() } })} /></details>{/key}{/if}</section>
         {#if view.players.length}<section class="panel">{#key view.event_sequence}<SessionForm players={view.players} characters={view.characters} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Finish or withdraw pending work before ending the session. Closing the app preserves pending work for later.</p></section>{/if}
+      {#if view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}<CreatureForm setup={view.creature_setup} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>

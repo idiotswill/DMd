@@ -44,15 +44,32 @@ playable execution. NPC policy helpers alone do not satisfy autonomous encounter
 
 ## Status and next action
 
-The fresh branch is created from the fetched PR29 merge. Its final-head checks and
-exact merged tree parity passed; post-merge Linux and Windows MSRV are green and
-Windows stable installer packaging is still running. The source profile, equipment,
-limited-use validation and policy modules have no shared tactical-flow dependency.
-Extract their coherent existing module closure; this does not claim that their actions
-are exposed through the table. Source NPC prep remains host-only before battlefield
-setup, and the existing PC action path stays available afterward.
+The source boundary, private form and real SQLite reopen/restore regressions are
+implemented as a Rust-unverified candidate. Svelte check reports zero errors/warnings;
+all 16 frontend tests and the production build pass. Logs: sibling tooling
+`gate4-creature-ui-{check,tests,build}.log`. No Rust build has run on this branch yet because
+falling and source attacks hold the serialized compiler queue. Exact-head canonical
+verification and independent review are still required.
 
-Next: extract source attachment, setup command and private form, then port and extend
-real persisted regressions. Validate this exact branch independently of the encounter
-integration. Remaining Gate4 NPC decisions, attack features, shared effects and packaged
-encounter acceptance stay active; no Gate5 work or reduced gate acceptance is authorized.
+Next: commit/open a draft PR for exact-head CI, then run
+focused Rust and canonical verification when the compiler is released. Remaining
+Gate4 NPC decisions, attack features, shared effects and packaged encounter acceptance
+stay active; no Gate5 work or reduced gate acceptance is authorized.
+
+## Extraction decisions
+
+- Creature profile/schedule/policy and physical gear module closure is copied from
+  encounter integration `220ee80` without shared queue/effect/recovery coupling.
+  Pure capability operations remain internal building blocks, not table-playability evidence.
+- Retain source-aware level 0/Hit Dice validation, and preserve existing PC tests and
+  Second Wind. Legacy RequestTest explicitly rejects source NPC actors because their
+  printed modifiers require the forthcoming source tactical path.
+- Actual host form requires an existing player character, matching the mechanical-state
+  prerequisite; preparation remains private, and copy clearly states encounter play is
+  not yet shipped in this bounded build. Full Gate4 acceptance remains unchanged.
+- PR29 post-merge main `ac35c1d` checks are all green: Linux `36107189850` and
+  Windows `36107189841`, including stable offline installer packaging.
+
+Independent environment reviewer inspected the full extraction and source closure with
+no actionable finding before this candidate commit. Exact committed-head review and
+Rust/canonical checks remain pending; no gate or slice completion is claimed.

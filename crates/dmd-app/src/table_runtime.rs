@@ -752,6 +752,11 @@ impl CampaignRuntime {
             active_session: table.active_session.clone(),
             pending,
             roll,
+            creature_setup: crate::table_creatures::view(
+                state,
+                matches!(viewer, TableViewer::Host),
+            )
+            .map_err(invalid)?,
             situation_title: table.situation.title.clone(),
             situation_description: table.situation.description.clone(),
             transcript,

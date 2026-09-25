@@ -151,6 +151,21 @@ pub(crate) fn resolve_table(
             next = crate::table_equipment::prepare(state, meta, *character_id, item_ids, pack)?;
             "Starting equipment is ready for play.".into()
         }
+        TableAction::CreateCreature { creation } => {
+            host(meta)?;
+            if table(state)?.active_session.is_some() {
+                active(state, meta)?;
+            } else if meta.session_id.is_some() {
+                return Err("Creature setup does not belong to an active session.".into());
+            }
+            idle(state)?;
+            if state.encounter.is_some() {
+                return Err("Prepare source creatures before setting up the battlefield.".into());
+            }
+            next = crate::table_creatures::create(state, meta, creation, pack)?;
+            // Private preparation must not teach players an actor's name or existence.
+            "Host preparation recorded.".into()
+        }
         TableAction::StartSession {
             id,
             name,

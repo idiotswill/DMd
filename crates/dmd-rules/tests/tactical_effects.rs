@@ -53,6 +53,7 @@ impl Fixture {
             house_rules: HouseRules::default(),
             effects: Vec::new(),
             tactical_inventory: None,
+            tactical_creatures: None,
             pending: None,
             rolls: Vec::new(),
             cancelled_roll_ids: Vec::new(),
