@@ -195,6 +195,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
                 scene_id: SceneId::new(),
                 location_id: LocationId::new(),
                 name: "Crossing the courtyard".into(),
+                area_grid_policy: None,
                 battlefield: Battlefield {
                     bounds: SpatialBox {
                         min: point(0, 0),

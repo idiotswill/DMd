@@ -4,6 +4,7 @@
   import TacticalMap from './TacticalMap.svelte';
   import AttackForm from './AttackForm.svelte';
   import CastingForm from './CastingForm.svelte';
+  import AreaForm from './AreaForm.svelte';
   import MovementForm from './MovementForm.svelte';
   import OpportunityForm from './OpportunityForm.svelte';
   import LiquidLandingForm from './LiquidLandingForm.svelte';
@@ -39,6 +40,9 @@
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
     <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button><button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
   {/if}
+  {#if tactical.area_options && (host || actor===tactical.area_options.actor)}
+    {#key `${host}:${player}:${actor}:${tactical.area_options.actor}`}<AreaForm options={tactical.area_options} {host} {player} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+  {/if}
   {#if tactical.casting_options && (host || actor===tactical.casting_options.actor)}
     {#key `${host}:${player}:${actor}:${tactical.casting_options.actor}`}<CastingForm options={tactical.casting_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
   {/if}
@@ -71,7 +75,7 @@
   {#if tactical.continuation && (host || actor===tactical.continuation.actor)}
     {#if tactical.continuation.choices.length}
       <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
-        <p>{tactical.continuation.host_adjudication?'The turn has ended. The host determines which after-turn opportunity resolves first.':'These consequences occur at the same time. Choose their order for this turn.'}</p>
+        <p>{tactical.continuation.host_adjudication?'The host has authority to order these consequences. Individual saves and optional responses stay with their controllers.':'These consequences occur at the same time. Choose their order for this turn.'}</p>
         {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{occurrence:choice.occurrence}})}>{choice.label} · {index+1}</button>{/each}
       </fieldset>
     {:else}<p>Resolve the pending consequence before continuing the turn.</p>{/if}
