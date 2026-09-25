@@ -108,3 +108,15 @@ Hold Person, then moves away and provokes PC0. Raw hit/damage must lead to the N
 concentration save before the original movement can resume. Test every accepted pause
 on reopened disk and independently restored runtime, exact retry and forged restore.
 It must preserve the reactor's own Reaction payment and the active mover's budget.
+
+Before extraction, the reference integration preserves PR32's reviewed actual disk
+round/retry/restore regression (including its export request timestamp correction).
+Only intentional capability assertions change: the active owner's attack/movement
+options now exist; another player's remain absent. Forged-budget restore rejection
+expands from other_slot_casters to all seven former unopened budget examples, each
+with current-image and backfilled-anchor corruption and zero-write checks. The two
+former closed-action/work tests now retain rejection of source-less actions and
+work missing its retained continuation. A blanket ban on every elevated position
+is replaced by the separately implemented and verified real falling/landing tests.
+These reference-test adaptations are formatted only; their runtime verification is
+pending the combined main-based PR and serialized compiler. Production is unchanged.

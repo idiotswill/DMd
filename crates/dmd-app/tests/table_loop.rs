@@ -16,6 +16,8 @@ mod table_falling_cases;
 mod table_shield_cases;
 #[path = "support/table_tactical_cases.rs"]
 mod table_tactical_cases;
+#[path = "support/table_turn_core_cases.rs"]
+mod table_turn_core_cases;
 
 fn input(name: &str) -> CharacterCreationInput {
     CharacterCreationInput {
