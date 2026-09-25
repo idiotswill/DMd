@@ -158,7 +158,7 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
     authorize(state, meta, actor)?;
-    planning::require_located_target(state, actor, target)?;
+    planning::admit_target(state, actor, target)?;
     let window = super::super::movement::validate_opportunity(state, actor, target)?.clone();
     let selected = match choice {
         TacticalMeleeChoice::Weapon(c) => {

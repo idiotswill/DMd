@@ -131,3 +131,12 @@ The existing turn-core source and cold-round regression remain present. Historic
 source plans accompany the integrated code as provenance, with this plan and actual
 combined verification authoritative for this PR. The new real damaging OA recovery
 scenario is still being authored separately and is required before acceptance.
+
+Fresh combined review found that ordinary, intrinsic and opportunity attacks could
+admit an already-dead located target, spend resources and later fail damage
+resolution. The printed source-weapon path already rejects this case. Before final
+verification, share an admission-only target check across these four paths, with
+actor knowledge checked before vitality. Keep retained source reconstruction legal
+after an attack itself kills its target, and keep living zero-HP targets legal.
+Do not filter player contacts using an undisclosed death flag. Add resource/no-write,
+knowledge-first and lethal-completion regressions before accepting this correction.

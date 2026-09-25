@@ -23,6 +23,27 @@ pub(super) fn require_located_target(
     Ok(())
 }
 
+/// Only for admitting a new vitality attack. Retained source reconstruction must
+/// remain valid when that same attack has killed its target.
+pub(super) fn admit_target(
+    state: &CampaignState,
+    actor: EntityId,
+    target: EntityId,
+) -> Result<(), RulesError> {
+    require_located_target(state, actor, target)?;
+    if state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.entities.get(&target))
+        .is_some_and(|target| target.death.dead)
+    {
+        return Err(prerequisite(
+            "a dead body requires its body/object adjudication path",
+        ));
+    }
+    Ok(())
+}
+
 pub(super) fn weapon_plan(
     state: &CampaignState,
     meta: &CommandMeta,

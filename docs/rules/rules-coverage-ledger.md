@@ -1,6 +1,6 @@
 # Rules Coverage Ledger
 
-Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mechanical and production integration evidence; 40 later-gate families remain intentionally deferred. No player acceptance is claimed.**
+Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mechanical and production integration evidence. The twelve Gate 4 families are actively implementing; 28 later-gate families remain intentionally deferred. No player acceptance is claimed.**
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
@@ -62,7 +62,15 @@ All `player_acceptance` arrays remain empty; this technical scenario is not a hu
 
 ## Updating and validating
 
-Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. The 13 Gate 2 and two Gate 3 rows record scoped production integration; the other 40 retain `intentionally_deferred`, their receiving gate and their existing obligations. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
+Use `planned`, `intentionally_deferred`, `implementing`, `implemented`, `mechanically_tested`, `production_integrated`, or `player_accepted`. The 13 Gate 2 and two Gate 3 rows record scoped production integration. The twelve Gate 4 rows use `implementing` to record the active gate, without claiming complete family coverage. The other 28 retain `intentionally_deferred`, their receiving gate and their existing obligations. Every deferred row names its receiving gate through `primary_gate` and explains scope. Optional toolbox rules are inventoried even when disabled by default; opting in must be explicit campaign configuration. Non-SRD content is outside this selected-source inventory and cannot enter by familiarity or through a claim of generic compatibility.
+
+Gate 4's [active plan](../exec-plans/active/gate-4-tactical-encounters.md) records exact
+source and bounded production evidence, including the verified initiative/turn path
+merged in PR32 at 12ed29a. Current physical-encounter, reaction, area and privacy work
+does not close any complete family. Full actions/masteries, grapple/mount/underwater
+consequences, spell mechanisms, enemy behavior, improvisation, encounter finish and
+packaged integrated acceptance remain required. Existing family scopes, ownership
+and evidence arrays are unchanged; no unfinished mechanic moves to a later gate.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

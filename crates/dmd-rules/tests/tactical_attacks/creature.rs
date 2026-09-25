@@ -83,6 +83,19 @@ fn dice_count(f: &Fixture) -> u16 {
 }
 
 #[test]
+fn intrinsic_attack_rejects_dead_body_before_paying_its_source_action() {
+    let mut f = horse(30);
+    f.begin();
+    f.zero_hp_target(true);
+    let before = f.state.clone();
+    let error = resolve_tactical(&f.state, &f.meta(Some(0)), &hooves(&f), &f.pack).unwrap_err();
+    assert!(matches!(error, RulesError::Prerequisite(message) if message.contains("body/object")));
+    assert_eq!(f.state, before);
+    assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+    assert!(f.rules().pending.is_none());
+}
+
+#[test]
 fn source_charge_retains_real_twenty_foot_approach_and_replays_raw_hit_damage_and_prone() {
     let mut f = horse(70);
     f.begin();

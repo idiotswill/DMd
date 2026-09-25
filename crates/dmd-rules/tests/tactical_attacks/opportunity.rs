@@ -67,6 +67,83 @@ fn creature(f: &mut Fixture, id: &str, size: CreatureSize) {
 }
 
 #[test]
+fn dead_mover_cannot_consume_reaction_or_replace_the_retained_crossing() {
+    let mut f = Fixture::new();
+    f.arm("longsword", false, false);
+    start_crossing(&mut f);
+    f.zero_hp_target(true);
+    let before = f.state.clone();
+    let error = resolve_tactical(
+        &f.state,
+        &f.meta(Some(0)),
+        &TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::UnarmedDamage {
+                ability: Ability::Strength,
+            },
+        },
+        &f.pack,
+    )
+    .unwrap_err();
+    assert!(matches!(error, RulesError::Prerequisite(message) if message.contains("body/object")));
+    assert_eq!(f.state, before);
+    assert!(
+        !f.rules()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .contains(&f.actors[0])
+    );
+    assert!(
+        f.flow()
+            .resolution
+            .as_ref()
+            .unwrap()
+            .movement
+            .as_ref()
+            .unwrap()
+            .opportunity
+            .is_some()
+    );
+}
+
+#[test]
+fn lethal_opportunity_damage_finishes_attack_and_stops_the_original_move() {
+    let mut f = Fixture::new();
+    f.arm("longsword", false, false);
+    f.entity_mut(1).hp = 1;
+    f.entity_mut(1).max_hp = 1;
+    start_crossing(&mut f);
+    f.run(
+        Some(0),
+        TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::UnarmedDamage {
+                ability: Ability::Strength,
+            },
+        },
+    );
+    f.roll(0, &[15]);
+    assert!(f.rules().entities[&f.actors[1]].death.dead);
+    assert!(f.flow().resolution.is_none());
+    assert!(f.rules().pending.is_none());
+    assert_eq!(
+        f.state.encounter.as_ref().unwrap().participants[1]
+            .position
+            .x,
+        20
+    );
+    assert_eq!(f.flow().budget.movement_spent, 0);
+    assert!(
+        f.rules()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .contains(&f.actors[0])
+    );
+}
+
+#[test]
 fn unarmed_reaction_has_real_fixed_damage_without_invented_inventory_or_action_cost() {
     let mut f = Fixture::new();
     f.arm("longsword", false, false);

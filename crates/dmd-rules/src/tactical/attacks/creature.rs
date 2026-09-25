@@ -17,7 +17,7 @@ pub(in crate::tactical) fn begin_creature_attack(
     }
     let actor = active(state)?;
     authorize(state, meta, actor)?;
-    planning::require_located_target(state, actor, target)?;
+    planning::admit_target(state, actor, target)?;
     if actor == target {
         return Err(prerequisite("this source attack requires another target"));
     }
