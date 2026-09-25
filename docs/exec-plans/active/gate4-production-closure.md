@@ -10,32 +10,41 @@ the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 PR33 is now merged as fetched main21cf176, with exact full-tree parity to reviewed
 head8cb3084 and all six final-head CI checks. It adds physical/source attacks,
 paid shields, movement/OA, falling and Immediate source casting to PR32's actual
-turn execution. Post-merge CI remains pending. Area integration43b9a3a carries
-the reviewed area source and newer physical fixtures; its combined tests are still
-pending. These states must not be described as already shipped together.
+turn execution. All six post-merge checks36136799545/36136799353 passed. Area PR34
+source f65f2a4 now passes combined canonical verification (624 GNU tests),51 desktop
+tests/check/build,625 Linux and627 native Windows Rust tests, MSRV and packaging.
+Its final evidence-head verification/merge remains pending. These states must not
+be described as already shipped together.
 
-Protocol sourcea84f8d4 has reviewed opaque requests/audiences, historical presentation
-and transaction boundaries. After host memory recovered,55 UI tests/check/build and
-four persistence tests passed; the app compile found one missing non-area fixture
-field, corrected in16b9bf4. The app batch then passed22 rules-runtime and9 runnable
-cases but hit default-stack overflow in an existing ordinary table scenario;
-root is diagnosing it before further acceptance. Strict lint remains pending.
-Ready4f2532b/dd5123d has reviewed authored execution-version/ancestry/defense/physical
-declaration foundations and ADR028, but no compiler evidence or actual response
-windows. Mage source hooks are integrated there and are likewise uncompiled.
+Protocol PR35 sourcec399a78 has reviewed opaque requests/audiences, historical
+presentation and transaction boundaries, and deliberate current-main/area integration.
+After memory recovery,55 UI tests/check/build and four persistence tests passed.
+The default-stack fixture failure was fixed without changing assertions or stack
+limits. Its full app run passed77 tests and found one receipt-error classification
+regression; the correction passed both original legacy and strengthened modern outage
+tests plus strict domain/rules/persistence/app all-target lint. Current Linux CI
+36140154092 passes all four jobs and640 Rust tests. Native CI and complete current
+local canonical verification remain pending; this draft is stacked on area PR34.
+Ready4f2532b/dd5123d has reviewed execution-version/ancestry/defense/declaration
+foundations and ADR028. The first domain/rules all-target check passed, and the test
+batch passed206 tests before a stale Shield-unsupported expectation failed.25f99ab
+corrects that expectation and strengthens the unspent-actor reaction admission
+regression; rerun/lint remains pending. Actual response windows remain unimplemented.
 
 The supporting agents subsequently reached their account usage limit. Root retains
 the serial compiler slot and owns further verification/integration; no unfinished
 agent checkpoint is promoted to verified behavior. Root's finish plan is c6b1299 on
-`codex/gate4-encounter-finish`; Fighter planbd51423 is on
-`codex/gate4-fighter-combat-features`. Neither plan constitutes implementation.
+`codex/gate4-encounter-finish` and is still plan-only. Fighter PR36 now has a source-
+paid Second Wind draft with real tactical/table/UI and cold-recovery cases. Initial
+CI found a missing exhaustive historical dice-role arm, corrected to require1d10;
+fresh verification is pending. Savage Attacker remains separate active work.
 
 ## Concrete remaining production paths
 
 | Family or seam | Missing application execution and next dependency |
 | --- | --- |
 | Combat sequence | No public encounter finish/second encounter path; EndSession currently rejects every live flow. Compose settled source/lifecycle departure, durable outcome and recovery without resource resets. Root owns finish. |
-| Combat actions | Ready/reaction responses remain with the reaction runtime. Starter Second Wind still reaches the legacy kernel, which rejects active tactical authority; add actual Bonus Action/raw1d10/resource continuation. Help, Hide, Search, Influence, Study, Utilize and typed improvisation still need source-authorized actions. |
+| Combat actions | Ready/reaction responses remain with the reaction runtime. Verify/integrate PR36's actual Second Wind Bonus Action/raw1d10/resource continuation. Help, Hide, Search, Influence, Study, Utilize and typed improvisation still need source-authorized actions. |
 | Movement/geometry | Add forced/compelled displacement and teleport distinction, mount control and source zone interactions. Voluntary movement cannot stand in for forced motion. |
 | Targeting/areas | The reviewed breath path is bounded to its source cone/explicit occupied-cell policy. General source area selection/shapes and compound source clauses still need complete execution. Fireball's damage plus ignition is not playable merely because SaveDamage exists. |
 | Visibility/stealth | Integrate opaque audience protocol and private-ordering policy. Persist witnessed/last-known updates; implement Hide/Search/guessed-location attacks and source sensory/illusion changes. A sealed pure actor view is not an NPC knowledge executor. |

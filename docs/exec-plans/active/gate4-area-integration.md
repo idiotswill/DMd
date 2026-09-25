@@ -1,5 +1,8 @@
 # Gate 4 source areas in the durable table
 
+Status: source f65f2a4 verified locally and on all six CI checks; final evidence
+head, expected-head merge and post-merge verification remain pending. PR34 is draft.
+
 Writer: root. Branch `codex/gate4-area-integration`, initially based on reviewed
 PR33 source `49fac8c95b0e1178dece7c2332d8c23f24e298dd` during combined verification.
 PR33 is now merged as `21cf176fd7f328a90c84dc0ee644d5eac3110639`; fetched main has
@@ -87,10 +90,9 @@ from the protocol batch does not replace those checks.
 
 PR33's final evidence head8cb3084 passed all six required checks: Linux36135055490
 and Windows36135055461, followed by expected-head-protected squash merge and fetched
-full-tree parity. Post-merge runs36136799545/36136799353 are in progress. Main
-reconciliation is now complete as recorded above; next open this bounded area PR
-as a draft and perform its combined canonical/UI verification and independent
-final review. The production closure audit records the remaining gate obligations.
+full-tree parity. All six post-merge checks36136799545/36136799353 also passed. Main
+reconciliation is complete as recorded above. The production closure audit records
+the remaining gate obligations.
 
 PR34 is open at https://github.com/idiotswill/DMd/pull/34. Initial513c239 passed all
 four Linux jobs36137072485 and Windows MSRV. Native stable36137072496 failed at
@@ -100,3 +102,30 @@ fixture problem on default-stack GNU: direct real create/open/action calls passe
 but fixture wrappers overflowed. Heap-pinning four shared setup futures fixed the
 unchanged scenario and is now applied here too. No production change, assertion
 removal or stack-size override. Fresh local canonical and exact-head CI are required.
+
+## Verified combined source and final review
+
+At f65f2a4298421ffa1af247f0586868efa589d69f:
+
+- Local `./scripts/verify` passed:624 GNU Rust tests, strict workspace all-target
+  Clippy, formatting/check and both repository guards. Log:
+  `tooling/pr34-canonical-f65.log` outside the worktree.
+- Desktop static check passed with zero errors/warnings; all51 frontend tests
+  passed using one worker; production build passed with134 modules. Logs:
+  `tooling/pr34-ui-{check,test,build}-f65.log`.
+- All four Linux jobs36138045683 passed; the actual test log reports625 Rust
+  tests. Both Windows jobs36138045769 passed, including627 native Rust tests,
+  declared MSRV, frontend checks and fresh offline installer packaging.
+- Earlier independent complete source/application integration review was clear.
+  Root reviewed the final code delta against513c239: only four shared fixture
+  construction futures are heap-pinned. All assertions and production code are
+  unchanged. The corrected default-stack native scenario and complete suites pass.
+  Supporting agents are unavailable due account quota; this last delta review was
+  performed by root, not represented as another independent review.
+
+This evidence update changes documentation only. Next: inspect the complete final
+documentation delta, push it, verify all six required CI checks on that exact head,
+then merge with expected-head protection. Fetch main and prove full-tree parity;
+require all six post-merge checks. Do not claim Gate4 acceptance or the final
+interactive packaged scenario from these bounded automated results. Continue with
+the audience protocol/reaction and remaining production closure work after merge.
