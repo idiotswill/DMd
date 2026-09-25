@@ -154,7 +154,13 @@ rather than after an Action was already spent. The subsequent actual Mage Armor
 scenario and every other unsupported-program case remain. Only comments/tests
 changed; the correction has not yet been rerun. Format and diff checks pass.
 
-Next: finish the serialized area canonical/UI batch, then rerun this domain/rules
-test suite and strict all-target lint. Only after that verified checkpoint add the
-complete nested reaction windows and actual Ready response integration; domain
-types, declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
+The corrected25f99ab checkpoint passed all483 domain/rules tests and strict
+domain/rules all-target Clippy with warnings denied (1m34s), serialized at one job.
+Logs: tooling/logs/gate4-ready-foundation-tests-r2.log and
+tooling/logs/gate4-ready-foundation-clippy-r2.log. The earlier all-target check passed
+on dd5123d; the intervening correction changed only tests/comments. These are
+foundation checks, not full application, CI or completed reaction/Ready evidence.
+
+Next: add complete nested reaction windows and actual Ready response integration,
+then reconcile current main/protocol and explicit live Begin emission. Domain types,
+declaration-only behavior and internal leaves do not satisfy the slice or Gate4.
