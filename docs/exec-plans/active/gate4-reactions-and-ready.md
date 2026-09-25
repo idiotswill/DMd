@@ -86,6 +86,15 @@ No currently supported creature feature grants these two spells. Do not invent a
 grant or call a prepared-caster fixture a supported character-creation path; the real
 source grant/production entry path must be explicit in the subsequent slice.
 
+Root requires closing that gap through the actual admitted table path: a pinned SRD
+NPC with genuine Shield/Counterspell features, available host creation and cast controls,
+is a valid bounded production entry. Imported prepared-slot fixtures alone are not.
+Do not invent class/level/slot grants or expand PC catalog enumeration from Gate 6.
+Normal UI/controller assignment for player-controlled source creatures is still absent;
+that summons/control interface remains required Gate 4 work, not a fixture-based claim.
+Coordinate respondent actor/audience contracts with the player-protocol author before
+app integration; the reacting actor need not be the current turn's actor or trigger source.
+
 Three representation constraints must be resolved before composing all Ready actions:
 
 - `resolution.attack` and `.movement` each hold one current cursor. A readied attack
