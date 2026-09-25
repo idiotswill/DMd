@@ -1,9 +1,9 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: active implementation; no runtime or verification completion claimed.
+Status: active draft implementation; no runtime or verification completion claimed.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
-d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. PR42 compatibility is frozen under
-verification in a separate worktree; integrate only its verified merge. PR43 owns
+d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
+2798b6b1d6263b5e321a1903d9fb4f2331b73895 is integrated. PR43 owns
 source-creature player control and must be integrated before player-path acceptance.
 
 ## Objective and authority
@@ -98,8 +98,10 @@ arrival orders and complete unrelated DTO/revision/transcript invariance through
 private selection. A later general multi-respondent family retains its own semantic
 boundary and must not infer priority from arrival or default choices.
 
-The compatibility canonical run passed on facd988; final cbe9575 Linux CI passes,
-and Windows has passed regressions while native packaging remains pending. The
+The compatibility canonical run passed on facd988; final cbe9575 passed all six CI
+jobs with 695 Linux/697 native Rust and 67 UI tests, plus the fresh native installer.
+Protected PR42 main has the identical full tree ddfe5b58c0c55ad2aab6e367de295bf7c1760e5e;
+post-main runs 36188457488/36188457455 remain pending. The
 local disk/commit-memory failure is recovered with 28 GB free. All further local
 compilation is serialized with one job and CARGO_INCREMENTAL=0; aftermath focused
 verification currently owns the heavy slot. No build has run from this branch yet.
@@ -118,5 +120,10 @@ found a nested-attack ancestry mistake: ResumeHit now retains the exact accepted
 roll ID, validated against its parent AttackRoll occurrence, tactical purpose and
 actual issuance origin. It cannot guess that origin from the outer movement or
 casting resolution. Targeted opportunity-attack and later-ray tests must prove it.
-Integrate verified PR42 and corrected PR43 before final acceptance. No gate pause and
+Fourteen source Shield rules scenarios and explicit fresh-flow application drivers
+are integrated from isolated test writers. Only formatting and static diff checks
+have run; compiler, rules, desktop and SQLite evidence are still outstanding. An
+early draft PR may run remote diagnostics while the serialized local slot is busy.
+Its merge requires all acceptance above, including the player-owned source case.
+Integrate corrected, verified PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.
