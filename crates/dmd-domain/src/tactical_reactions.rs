@@ -36,6 +36,9 @@ pub enum TacticalExecutionVersion {
     #[default]
     Legacy,
     ReactionsV1,
+    /// Accepted attack hits pause for source Shield decisions before damage.
+    /// Earlier versions retain their original continuation semantics.
+    ShieldHitV1,
 }
 
 impl TacticalExecutionVersion {
@@ -47,7 +50,21 @@ impl TacticalExecutionVersion {
         match self {
             Self::Legacy => 1,
             Self::ReactionsV1 => 2,
+            Self::ShieldHitV1 => 3,
         }
+    }
+
+    pub fn from_flow_version(version: u32) -> Option<Self> {
+        match version {
+            1 => Some(Self::Legacy),
+            2 => Some(Self::ReactionsV1),
+            3 => Some(Self::ShieldHitV1),
+            _ => None,
+        }
+    }
+
+    pub fn retains_work_ancestry(self) -> bool {
+        matches!(self, Self::ReactionsV1 | Self::ShieldHitV1)
     }
 }
 
@@ -181,4 +198,60 @@ pub struct TacticalReactionWindow {
     pub respondent: EntityId,
     pub trigger: TacticalReactionTrigger,
     pub offers: Vec<TacticalReactionOffer>,
+}
+
+/// An accepted ordering instruction is distinct from a respondent's private
+/// intent and from the later, currently authorized spell-casting command.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalReactionOrderDecision {
+    pub origin: CommandMeta,
+    pub instruction: TacticalReactionOrdering,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalReactionIntent {
+    pub origin: CommandMeta,
+    pub accepted: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum TacticalHitReviewStage {
+    Collecting,
+    Selected,
+    Casting,
+    Resolved,
+}
+
+/// This first response family only offers Shield to the actual hit target.
+/// The public ordering stage exists even when this private record is absent.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalShieldRespondent {
+    pub actor: EntityId,
+    pub intent: Option<TacticalReactionIntent>,
+    /// A selected respondent may decline after offering without any payment.
+    pub declined_after_selection: Option<CommandMeta>,
+}
+
+/// Bounded attachment to the existing physical cursor, not a second work queue.
+/// The live attack retains its immutable rolled source facts. Only this review's
+/// authenticated completed Shield effect may differ during their reconstruction.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalHitReview {
+    pub work: TacticalWorkItem,
+    pub cause: CommandMeta,
+    pub attack_origin: CommandId,
+    pub attack_roll: crate::RollRequestId,
+    pub cover_bonus: i32,
+    pub stage: TacticalHitReviewStage,
+    pub delegated_by: Option<CommandMeta>,
+    pub order: Option<TacticalReactionOrderDecision>,
+    pub respondent: Option<TacticalShieldRespondent>,
+    pub selected_cast: Option<u16>,
+    /// Retained after child completion until the parent attack finishes. The
+    /// canonical cast derives effect identity; clients cannot supply exclusions.
+    pub completed_shield: Option<Box<TacticalCasting>>,
 }

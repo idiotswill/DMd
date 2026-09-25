@@ -118,6 +118,14 @@ pub enum TacticalWorkKind {
     AttackRoll,
     AttackDamage,
     FinishAttack,
+    /// Independent response authority starts here even when its causal parent
+    /// belongs to an area or an opportunity attack.
+    CommitShield {
+        cast: u16,
+    },
+    ResumeHit {
+        attack_origin: CommandId,
+    },
     /// SRD14: resolve sharing another creature's space with other End effects.
     EndOccupiedSpace {
         actor: EntityId,
@@ -201,6 +209,8 @@ pub struct TacticalResolution {
     pub legendary_window: Option<TacticalLegendaryWindow>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attack: Option<crate::TacticalAttack>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hit_review: Option<Box<crate::TacticalHitReview>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub movement: Option<Box<crate::TacticalMovement>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]

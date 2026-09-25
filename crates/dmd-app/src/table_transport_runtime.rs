@@ -79,6 +79,55 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::HitResponse { handle, decision } => {
+            let (origin, occurrence, role) = current
+                .handles
+                .iter()
+                .find_map(|entry| match entry.capability {
+                    ProjectionCapability::HitResponse {
+                        origin,
+                        occurrence,
+                        role,
+                    } if entry.opaque == handle.0 => Some((origin, occurrence, role)),
+                    _ => None,
+                })
+                .ok_or("That response is not available in this view.")?;
+            if presentation::work_origin(state) != Some(origin) {
+                return Err("That response is no longer available.".into());
+            }
+            let window = TacticalWorkKey {
+                resolution: origin,
+                occurrence,
+            };
+            let action = match (role, decision.as_ref()) {
+                (ProjectionHitRole::Order, TableHitInput::Order { instruction }) => {
+                    TacticalAction::OrderHitResponses {
+                        window,
+                        instruction: instruction.clone(),
+                    }
+                }
+                (ProjectionHitRole::Delegate, TableHitInput::Delegate) => {
+                    TacticalAction::DelegateHitResponses { window }
+                }
+                (ProjectionHitRole::Intent, TableHitInput::Respond { accept }) => {
+                    TacticalAction::RespondToHit {
+                        window,
+                        accept: *accept,
+                    }
+                }
+                (ProjectionHitRole::Selected, TableHitInput::Cast { choice }) => {
+                    TacticalAction::CastHitShield {
+                        window,
+                        choice: choice.clone(),
+                    }
+                }
+                (ProjectionHitRole::Selected, TableHitInput::Decline) => {
+                    TacticalAction::DeclineSelectedHitShield { window }
+                }
+                _ => return Err("That decision does not match the visible response.".into()),
+            };
+            Intent::Action(Box::new(TableAction::Tactical { action }))
+        }
         TableTransportInput::SelectWork { handle } => {
             let (origin, occurrence) = current
                 .handles
@@ -102,7 +151,12 @@ fn derive_intent(
             match &mut action {
                 TableAction::SubmitPhysical { request_id, .. } => *request_id = roll(*request_id)?,
                 TableAction::Tactical { action } => match action {
-                    TacticalAction::ChooseTurnWork { .. } => {
+                    TacticalAction::ChooseTurnWork { .. }
+                    | TacticalAction::RespondToHit { .. }
+                    | TacticalAction::OrderHitResponses { .. }
+                    | TacticalAction::DelegateHitResponses { .. }
+                    | TacticalAction::CastHitShield { .. }
+                    | TacticalAction::DeclineSelectedHitShield { .. } => {
                         return Err("Select the visible decision handle.".into());
                     }
                     TacticalAction::SubmitRoll { result }

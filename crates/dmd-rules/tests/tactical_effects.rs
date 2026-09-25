@@ -596,6 +596,7 @@ fn positive_damage_ends_only_affected_target_and_zero_damage_does_not_wake_it() 
     );
     assert!(
         f.observe(EffectObservation::Damage {
+            caused_by: None,
             source: Some(f.caster),
             target: f.target,
             amount: 0
@@ -604,6 +605,7 @@ fn positive_damage_ends_only_affected_target_and_zero_damage_does_not_wake_it() 
         .is_empty()
     );
     let damage = f.observe(EffectObservation::Damage {
+        caused_by: None,
         source: Some(f.caster),
         target: f.target,
         amount: 1,
@@ -852,6 +854,7 @@ fn identical_damage_occurrences_each_queue_their_own_source_relative_trigger() {
         },
     );
     let event = EffectObservation::Damage {
+        caused_by: None,
         source: Some(f.other),
         target: f.caster,
         amount: 3,
@@ -915,6 +918,7 @@ fn expiry_ticket_target_is_validated_and_repeated_observations_do_not_duplicate_
     corrupt.pending[0].target = f.other;
     assert!(corrupt.validate(&f.campaign).is_err());
     let second = f.observe(EffectObservation::Damage {
+        caused_by: None,
         source: None,
         target: f.target,
         amount: 0,
@@ -982,6 +986,7 @@ fn trigger_fanout_stops_at_capacity_without_changing_authoritative_input() {
         &EffectLifecycleAction {
             step: 0,
             operation: EffectLifecycleOperation::Observe(EffectObservation::Damage {
+                caused_by: None,
                 source: Some(f.other),
                 target: f.caster,
                 amount: 1,
@@ -1014,6 +1019,7 @@ fn a_per_turn_trigger_without_initiative_rejects_before_queuing_an_unresolvable_
     );
     let before = f.effects.clone();
     let operation = EffectLifecycleOperation::Observe(EffectObservation::Damage {
+        caused_by: None,
         source: None,
         target: f.target,
         amount: 1,

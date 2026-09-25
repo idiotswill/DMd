@@ -2,7 +2,8 @@
 use crate::*;
 use dmd_domain::*;
 use dmd_persistence::{
-    ProjectionAudience, ProjectionCapability, ProjectionHandle, ProjectionRevision,
+    ProjectionAudience, ProjectionCapability, ProjectionHandle, ProjectionHitRole,
+    ProjectionRevision,
 };
 use serde::{Deserialize, Serialize};
 
@@ -30,8 +31,32 @@ impl TableTransportChannel {
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
     Action(Box<TableAction>),
-    Text { text: String },
-    SelectWork { handle: CommandId },
+    Text {
+        text: String,
+    },
+    SelectWork {
+        handle: CommandId,
+    },
+    HitResponse {
+        handle: CommandId,
+        decision: Box<TableHitInput>,
+    },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TableHitInput {
+    Order {
+        instruction: TacticalReactionOrdering,
+    },
+    Delegate,
+    Respond {
+        accept: bool,
+    },
+    Cast {
+        choice: SpellCastChoice,
+    },
+    Decline,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -189,7 +214,7 @@ pub struct TablePresentedView {
     pub pending: Option<TablePresentedPending>,
     pub roll: Option<RollRequest>,
     pub roll_channel: Option<TableRollChannel>,
-    pub tactical: Option<TableTacticalView<TablePresentedWorkChoice>>,
+    pub tactical: Option<TableTacticalView<TablePresentedWorkChoice, CommandId>>,
     pub creature_setup: Option<TableCreatureSetupView>,
     pub situation_title: String,
     pub situation_description: String,
@@ -228,6 +253,7 @@ pub(crate) fn presented_view(
                 encounter_id,
                 execution,
                 ready,
+                hit,
                 round,
                 active_actor,
                 phase,
@@ -251,6 +277,52 @@ pub(crate) fn presented_view(
                 shield_options,
                 area_options,
             } = tactical;
+            let hit = hit
+                .map(|hit| {
+                    let key = |key: TacticalWorkKey, role| {
+                        handle(&ProjectionCapability::HitResponse {
+                            origin: key.resolution,
+                            occurrence: key.occurrence,
+                            role,
+                        })
+                        .map(CommandId)
+                    };
+                    Ok::<_, &str>(Box::new(TableHitView {
+                        order: hit
+                            .order
+                            .map(|order| {
+                                Ok::<_, &str>(TableHitOrder {
+                                    key: key(order.key, ProjectionHitRole::Order)?,
+                                    actor: order.actor,
+                                    participants: order.participants,
+                                })
+                            })
+                            .transpose()?,
+                        delegate: hit
+                            .delegate
+                            .map(|window| key(window, ProjectionHitRole::Delegate))
+                            .transpose()?,
+                        response: hit
+                            .response
+                            .map(|response| {
+                                Ok::<_, &str>(TableHitResponse {
+                                    key: key(
+                                        response.key,
+                                        if response.selected {
+                                            ProjectionHitRole::Selected
+                                        } else {
+                                            ProjectionHitRole::Intent
+                                        },
+                                    )?,
+                                    actor: response.actor,
+                                    selected: response.selected,
+                                    shield: response.shield,
+                                })
+                            })
+                            .transpose()?,
+                    }))
+                })
+                .transpose()?;
             let continuation = continuation
                 .map(|value| {
                     let choices = value
@@ -279,6 +351,7 @@ pub(crate) fn presented_view(
                 encounter_id,
                 execution,
                 ready,
+                hit,
                 round,
                 active_actor,
                 phase,

@@ -108,6 +108,9 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+            return Err(invalid("hit response work has no raw key"));
+        }
         TacticalWorkKind::Medicine { target, .. } => (TacticalRollRole::Medicine, *target),
         TacticalWorkKind::SecondWind { actor, .. } => (TacticalRollRole::SecondWind, *actor),
         TacticalWorkKind::AreaDamageRoll { .. }
@@ -243,6 +246,9 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+            Err(invalid("hit response work has no raw request"))
+        }
         TacticalWorkKind::Medicine { .. } => super::medicine::request(state, work, key),
         TacticalWorkKind::SecondWind { .. } => super::second_wind::request(state, work, key),
         TacticalWorkKind::AreaDamageRoll { .. }
@@ -372,6 +378,12 @@ fn start_inner(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::CommitShield { cast } => {
+            return super::casting::commit(state, meta, *cast);
+        }
+        TacticalWorkKind::ResumeHit { attack_origin } => {
+            return super::hit_reactions::resume(state, *attack_origin);
+        }
         TacticalWorkKind::AreaDamageRoll { .. } | TacticalWorkKind::AreaSave { .. } => (),
         TacticalWorkKind::BeginAreaDamage { .. }
         | TacticalWorkKind::ApplyAreaDamage { .. }
@@ -485,6 +497,13 @@ fn start_inner(
         return Ok(());
     };
     let encounter = encounter(state)?.id;
+    let issued_by = if pending.work.kind == TacticalWorkKind::AttackDamage
+        && resolution(state)?.hit_review.is_some()
+    {
+        super::hit_reactions::damage_cause(state)?.clone()
+    } else {
+        meta.clone()
+    };
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     if rules.rolls.iter().any(|r| r.request.id == request.id)
         || rules.cancelled_roll_ids.contains(&request.id)
@@ -493,7 +512,7 @@ fn start_inner(
         return Err(invalid("tactical request identity already used"));
     }
     rules.pending = Some(PendingRoll {
-        issued_by: meta.clone(),
+        issued_by,
         request,
         purpose: PendingPurpose::TacticalResolution { encounter, key },
         ruling: ruling(key.role, &rules.house_rules),
@@ -661,6 +680,9 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+            return Err(invalid("hit response work cannot await raw dice"));
+        }
         TacticalWorkKind::Medicine {
             target, purpose, ..
         } => {
@@ -914,15 +936,32 @@ pub(super) fn apply_vitality_with_outcome(
     operation: VitalityOperation,
     damage_source: Option<EntityId>,
 ) -> Result<crate::tactical_damage::VitalityOutcome, RulesError> {
-    let transition = crate::tactical_vitality_adapter::apply(
+    apply_vitality_from_cause(
         state,
+        meta,
         actor,
         VitalityOrigin {
             command: meta.clone(),
             occurrence,
         },
-        &operation,
-    )?;
+        operation,
+        damage_source,
+    )
+}
+
+/// Source attribution can precede the command that resumes the same queue.
+/// Lifecycle stamps and physical consequences still use the execution command
+/// so current-head and monotonic-operation invariants remain intact.
+pub(super) fn apply_vitality_from_cause(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    origin: VitalityOrigin,
+    operation: VitalityOperation,
+    damage_source: Option<EntityId>,
+) -> Result<crate::tactical_damage::VitalityOutcome, RulesError> {
+    let delayed_cause = (origin.command != *meta).then(|| origin.clone());
+    let transition = crate::tactical_vitality_adapter::apply(state, actor, origin, &operation)?;
     let knockout_rest = transition.recovery.knockout_rest.clone();
     let mut work = Vec::new();
     for followup in transition.followups {
@@ -987,6 +1026,7 @@ pub(super) fn apply_vitality_with_outcome(
                 source: damage_source,
                 target: actor,
                 amount: transition.outcome.damage_taken,
+                caused_by: delayed_cause,
             }),
         )?;
     }

@@ -845,6 +845,24 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                             .map(|activation| &activation.origin),
                     );
                 }
+                if let Some(hit) = &resolution.hit_review {
+                    origins.push(&hit.cause);
+                    origins.extend(hit.delegated_by.as_ref());
+                    origins.extend(hit.order.as_ref().map(|order| &order.origin));
+                    if let Some(respondent) = &hit.respondent {
+                        origins.extend(respondent.intent.as_ref().map(|intent| &intent.origin));
+                        origins.extend(respondent.declined_after_selection.as_ref());
+                    }
+                    if let Some(record) = &hit.completed_shield {
+                        origins.extend([&record.cast.plan.origin, &record.cast.last_operation]);
+                        origins.extend(
+                            record
+                                .creature_activation
+                                .as_ref()
+                                .map(|activation| &activation.origin),
+                        );
+                    }
+                }
                 for area in &resolution.areas {
                     origins.extend([
                         &area.source.invocation,
@@ -974,6 +992,13 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         for trigger in &effects.pending {
             origins.push(&trigger.source.command);
             origins.push(&trigger.origin.command);
+            if let dmd_domain::EffectObservation::Damage {
+                caused_by: Some(cause),
+                ..
+            } = &trigger.cause
+            {
+                origins.push(&cause.command);
+            }
         }
         origins.extend(
             effects

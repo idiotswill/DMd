@@ -12,7 +12,7 @@ Implement the first real source reaction through the existing table, one tactica
 queue, physical dice and durable recovery: an accepted hit offers its target Shield,
 the actual controller chooses it, and the defense applies before damage. Follow
 AGENTS, product-definition's production/agency/recovery invariants, Gate04,
-ADR026/027/028 and pinned SRD5.2.1 p161 (Shield) and p187 (simultaneous ordering).
+ADR026/027/028 and pinned SRD5.2.1 pp161–162 (Shield) and p187 (simultaneous ordering).
 The full reaction umbrella and twelve-family Gate4 ledger remain active.
 
 ## Scope and non-goals
@@ -69,9 +69,12 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
    shared-use exhaustion, spent Reaction and blocked V/S refusal without partial cost.
 2. Genuine player-controlled Mage after PR43: owner cast/decline, wrong player and
    host substitution refused, actual attendance and opaque capabilities enforced.
-3. Uniform zero/one/two private offer ordering surface, unrelated complete DTO,
+3. Uniform zero/one private Shield offer ordering surface, unrelated complete DTO,
    revision and transcript invariance; selected intent and exact-trigger delegation
-   cannot transfer to a child occurrence or another attack.
+   cannot transfer to a child occurrence or another attack. Two eligible controllers
+   cannot both cast self-only Shield against a single hit target; retain the general
+   two-respondent ordering tests, and require actual multiple-respondent privacy
+   acceptance with the later Counterspell/Magic Missile trigger family.
 4. Retained attack roll/cost/ammunition and OA movement cursor, original damage
    issuance cause, source spell/physical parent preservation, no second queue.
 5. Cold file reopen at each decision; exact accepted retries; independently continued
@@ -82,8 +85,26 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
 
 ## Validation and next action
 
-Pre-code source review only. Root's compatibility canonical run owns the local heavy
-slot; no build runs from this branch yet. Add typed window/version state and narrow
-rules integration, then table projection/transport/UI and genuine source regressions.
+Typed version/window, source Shield admission, child commit/resume, original-damage
+cause, source reconstruction and strict retained invariants are authored but have
+not compiled or run. Independent review caught completed-occurrence reconstruction
+and an eligibility timing leak; both corrections are being implemented. Every hit
+target must acknowledge collection even when no Shield is available. Continue is
+cost-free coordination, legal for an incapacitated/ineligible target and owned by
+its actual controller; it is not an SRD Reaction or an invented fictional action.
+Affirmative intent and final casting require the genuine current source. This makes
+the public ordering/wait stage independent of private source eligibility. Test both
+arrival orders and complete unrelated DTO/revision/transcript invariance through
+private selection. A later general multi-respondent family retains its own semantic
+boundary and must not infer priority from arrival or default choices.
+
+Root's compatibility canonical run owns the local heavy slot; no build runs from
+this branch yet. Initial owner-safe hit DTOs, role-specific opaque capabilities and transport admission
+are authored. Damage effect observations retain an optional earlier cause while
+lifecycle stamps remain the actual execution command; original None images stay
+unchanged. Finish exhaustive integration and desktop controls, then genuine source
+regressions. Rules fixture/test authoring may use an isolated child branch with a
+separate writer; no concurrent writes to this branch. This is incomplete WIP, not a
+verified production milestone.
 Integrate verified PR42 and corrected PR43 before final acceptance. No gate pause and
 no movement into Gate5 at this PR boundary.

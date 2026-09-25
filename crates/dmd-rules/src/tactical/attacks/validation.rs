@@ -46,7 +46,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         {
             return Err(invalid("unrolled attack retains a completed outcome"));
         }
-        TacticalAttackStage::DamageRoll
+        TacticalAttackStage::DamageRoll | TacticalAttackStage::HitReview
             if attack.damage_roll.is_some()
                 || !matches!(
                     attack.outcome,
@@ -123,7 +123,16 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             return Err(invalid("accepted attack request differs"));
         }
         let face = record.resolved.kept_dice[0].value;
-        let hit = face != 1 && (face == 20 || record.resolved.total >= attack.armor_class);
+        let armor = if let Some(review) = resolution.hit_review.as_ref()
+            && review.stage == TacticalHitReviewStage::Resolved
+            && attack.stage != TacticalAttackStage::HitReview
+        {
+            crate::tactical_defenses::effective_armor_class(state, attack.target)?
+                + review.cover_bonus
+        } else {
+            attack.armor_class
+        };
+        let hit = face != 1 && (face == 20 || record.resolved.total >= armor);
         if match attack.outcome {
             Some(WeaponAttackOutcome::Hit { critical, .. }) => {
                 !hit || critical != (face == 20 || attack.critical_on_hit)
@@ -240,7 +249,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         TacticalAttackStage::AttackRoll => Some(TacticalWorkKind::AttackRoll),
         TacticalAttackStage::DamageRoll => Some(TacticalWorkKind::AttackDamage),
         TacticalAttackStage::Finishing => Some(TacticalWorkKind::FinishAttack),
-        TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice => None,
+        TacticalAttackStage::HitReview
+        | TacticalAttackStage::KnockoutChoice
+        | TacticalAttackStage::MasteryChoice => None,
     };
     if expected
         .as_ref()

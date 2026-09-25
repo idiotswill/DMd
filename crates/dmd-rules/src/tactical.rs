@@ -7,6 +7,7 @@ mod continuations;
 mod creature_bridge;
 mod failed_save;
 mod falling;
+mod hit_reactions;
 mod initiative;
 mod medicine;
 mod movement;
@@ -22,6 +23,7 @@ use crate::{ResolveRoll, RulesError, RulesPack};
 pub use attacks::savage_attacker_dice;
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
+pub use hit_reactions::shield_choices;
 pub use initiative::preview_initiative_circumstances;
 pub use reaction_order::order_reaction_respondents;
 use serde::{Deserialize, Serialize};
@@ -37,6 +39,28 @@ pub enum TacticalAction {
     /// A deliberate, journaled transition for an already active legacy encounter.
     /// It is admitted only at an idle boundary and never alters accepted history.
     UpgradeExecution,
+    /// Unlike the historical unit command, this retains the exact new executor.
+    UpgradeExecutionTo {
+        execution: TacticalExecutionVersion,
+    },
+    RespondToHit {
+        window: TacticalWorkKey,
+        accept: bool,
+    },
+    OrderHitResponses {
+        window: TacticalWorkKey,
+        instruction: TacticalReactionOrdering,
+    },
+    DelegateHitResponses {
+        window: TacticalWorkKey,
+    },
+    CastHitShield {
+        window: TacticalWorkKey,
+        choice: SpellCastChoice,
+    },
+    DeclineSelectedHitShield {
+        window: TacticalWorkKey,
+    },
     Ready {
         trigger: ReadyTrigger,
         action: ReadyAction,
@@ -283,6 +307,24 @@ fn resolve_with_policy(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::RespondToHit { window, accept } => {
+            hit_reactions::respond(&mut next, meta, *window, *accept)?;
+        }
+        TacticalAction::OrderHitResponses {
+            window,
+            instruction,
+        } => {
+            hit_reactions::order(&mut next, meta, *window, instruction)?;
+        }
+        TacticalAction::DelegateHitResponses { window } => {
+            hit_reactions::delegate(&mut next, meta, *window)?;
+        }
+        TacticalAction::CastHitShield { window, choice } => {
+            hit_reactions::cast(&mut next, meta, *window, choice)?;
+        }
+        TacticalAction::DeclineSelectedHitShield { window } => {
+            hit_reactions::decline(&mut next, meta, *window)?;
+        }
         TacticalAction::UpgradeExecution => {
             privileged(meta)?;
             let current = flow(&next)?;
@@ -296,6 +338,22 @@ fn resolve_with_policy(
                 ));
             }
             flow_mut(&mut next)?.version = TacticalExecutionVersion::ReactionsV1.flow_version();
+        }
+        TacticalAction::UpgradeExecutionTo { execution } => {
+            privileged(meta)?;
+            let current = flow(&next)?;
+            if *execution != TacticalExecutionVersion::ShieldHitV1
+                || current.version >= execution.flow_version()
+                || current.phase != TacticalPhase::Active
+                || current.resolution.is_some()
+                || !current.ready.is_empty()
+                || rules.pending.is_some()
+            {
+                return Err(prerequisite(
+                    "execution upgrade requires a settled encounter without held actions",
+                ));
+            }
+            flow_mut(&mut next)?.version = execution.flow_version();
         }
         TacticalAction::Ready { trigger, action } => {
             ready::declare(&mut next, meta, trigger, action)?;
@@ -536,13 +594,9 @@ fn validate_live_execution(
     state: &CampaignState,
     action: &TacticalAction,
 ) -> Result<(), RulesError> {
-    if matches!(
-        action,
-        TacticalAction::Begin {
-            execution: TacticalExecutionVersion::Legacy,
-            ..
-        }
-    ) {
+    if matches!(action, TacticalAction::Begin { execution, .. }
+        if *execution != TacticalExecutionVersion::ShieldHitV1)
+    {
         return Err(prerequisite(
             "new initiative requires the current tactical executor",
         ));
@@ -554,7 +608,7 @@ fn validate_live_execution(
     else {
         return Ok(());
     };
-    if current.version != TacticalExecutionVersion::Legacy.flow_version() {
+    if current.version == TacticalExecutionVersion::ShieldHitV1.flow_version() {
         return Ok(());
     }
     // A saved old pause remains completable under its original semantics. Fresh
@@ -563,6 +617,8 @@ fn validate_live_execution(
     if matches!(
         action,
         TacticalAction::UpgradeExecution
+            | TacticalAction::UpgradeExecutionTo { .. }
+            | TacticalAction::AbandonReady { .. }
             | TacticalAction::SubmitRoll { .. }
             | TacticalAction::SubmitSavageAttacker { .. }
             | TacticalAction::SubmitRollWithInspiration { .. }

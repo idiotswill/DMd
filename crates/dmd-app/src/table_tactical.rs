@@ -12,6 +12,8 @@ mod attacks;
 mod casting;
 #[path = "table_tactical_choices.rs"]
 mod choices;
+#[path = "table_hit_reactions.rs"]
+mod hit_reactions;
 #[path = "table_movement.rs"]
 mod movement;
 #[path = "table_shields.rs"]
@@ -108,8 +110,9 @@ pub(crate) fn view(
         execution: encounter
             .flow
             .as_ref()
-            .filter(|flow| flow.version == TacticalExecutionVersion::ReactionsV1.flow_version())
-            .map(|_| TacticalExecutionVersion::ReactionsV1),
+            .and_then(|flow| TacticalExecutionVersion::from_flow_version(flow.version))
+            .filter(|execution| !execution.is_legacy()),
+        hit: hit_reactions::view(state, &own, host)?,
         ready: flow
             .into_iter()
             .flat_map(|flow| &flow.ready)

@@ -223,6 +223,10 @@ pub enum EffectObservation {
         source: Option<EntityId>,
         target: EntityId,
         amount: u32,
+        /// A delayed consequence may be caused by an earlier accepted action.
+        /// Ticket IDs and operation stamps still belong to actual execution.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        caused_by: Option<crate::VitalityOrigin>,
     },
     Zone {
         effect: EffectId,
@@ -575,6 +579,20 @@ impl TacticalEffects {
         for ticket in &self.pending {
             origin(&ticket.origin.command)?;
             source(&ticket.source)?;
+            if let EffectObservation::Damage {
+                caused_by: Some(cause),
+                ..
+            } = &ticket.cause
+            {
+                origin(&cause.command)?;
+                if cause.command.expected_event_sequence
+                    >= ticket.origin.command.expected_event_sequence
+                    || cause.command.session_id != ticket.origin.command.session_id
+                    || cause.occurrence >= 32_768
+                {
+                    return Err("invalid delayed damage provenance".into());
+                }
+            }
             if !entity(ticket.target)
                 || !tickets.insert(ticket.id)
                 || ticket.id.command != ticket.origin.command.id
@@ -598,6 +616,7 @@ impl TacticalEffects {
                     source,
                     target,
                     amount,
+                    ..
                 } if (*amount == 0 && ticket.rule_index.is_some())
                     || !entity(*target)
                     || source.is_some_and(|id| !entity(id)) =>

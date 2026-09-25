@@ -88,6 +88,23 @@ pub fn ordinary_unarmored_formula(
 }
 
 pub fn effective_armor_class(state: &CampaignState, actor: EntityId) -> Result<i32, RulesError> {
+    effective_armor_class_with_effects(
+        state,
+        actor,
+        state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_effects.as_ref()),
+    )
+}
+
+/// Internal read-only reconstruction may supply an authenticated prior defense
+/// set. Applicability is recomputed on that set, including same-spell overlap.
+pub(crate) fn effective_armor_class_with_effects(
+    state: &CampaignState,
+    actor: EntityId,
+    effects: Option<&TacticalEffects>,
+) -> Result<i32, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let entity = rules
         .entities
@@ -96,7 +113,7 @@ pub fn effective_armor_class(state: &CampaignState, actor: EntityId) -> Result<i
     let mut base = armor_class(entity);
     let mut formula = None;
     let mut bonus = 0i32;
-    if let Some(effects) = &rules.tactical_effects {
+    if let Some(effects) = effects {
         for effect in effects
             .effects
             .iter()
