@@ -1,0 +1,68 @@
+# Gate 4 — Supported Fighter combat features
+
+Writer: bootstrap_audit. Branch: `codex/gate4-fighter-combat-features`.
+Base: reviewed physical checkpoint `629177634572740ed637da5b5640fc49bbc08083`.
+Status: active; pre-code plan; no verification claimed.
+
+## Objective and source authority
+
+Make the existing supported Human Fighter/Soldier's Second Wind and Savage Attacker
+usable in real tactical play. Advance source-faithful combat, physical dice, player
+agency and exact save/resume (product definition lines24–30,249–251,489), Gate04 and
+ADRs009–012/024/026. Use one tactical continuation and existing table/SQLite authority.
+
+Pinned SRD5.2.1 p48: Second Wind spends a Bonus Action and heals raw1d10 plus Fighter
+level; supported level1 has two uses, Short Rest restores one, Long Rest all. Page87:
+Savage Attacker once per turn on a weapon hit rolls the weapon's damage dice twice and
+uses either set. It does not reroll added damage, the hit, or grant extra actions.
+Existing source provenance/attribution and character creation grants remain authoritative.
+
+## Ownership and scope
+
+Ready author owns shared scheduler/domain execution. First write separate source-bound
+leaves/tests; agree actions, work, pending role, history and validation before shared
+edits. Reserved SecondWind raw role16 follows Counterspell15. Second Wind uses the
+existing resolution; Savage Attacker stays the real AttackDamage role. Protocol author
+owns opaque transport. Root owns integrations, GitHub and gate acceptance. No Rust or
+frontend execution without the root's explicitly assigned serialized compiler slot.
+
+## Acceptance
+
+- Real immutable character profile plus current feature/resource state derives grant,
+  Fighter level and availability; no caller permission, level or total.
+- Second Wind atomically spends one use and the active actor's Bonus Action, requests
+  raw1d10, then uses vitality healing/max-HP bounds and owned condition/rest semantics.
+  Reject absent grant, incapacity, spent/exhausted resources, stale/foreign actor unchanged.
+- Optional Savage Attacker retains both raw weapon-dice sets, explicit selection and
+  source attack/global turn use. Include critical weapon dice and off-turn reactions;
+  never repeat added feature/spell dice, unarmed/spell/Graze or fixed damage. Existing
+  Heroic Inspiration may replace only one valid die with one actual expenditure.
+- Actual table choices remain controller-owned, retain original retry envelopes and
+  expose only eligible feature/raw requests; no legacy bypass.
+- Actual file-SQLite scenarios use created PCs/real equipment/combat, cold reopen at
+  raw/choice phases, exact retry and independently restored mirror continuation.
+  Invalid input/forged history writes nothing; box phases on the default Windows stack.
+- Independent exact-head review and focused source/app/UI checks plus strict lint
+  precede root canonical/CI/native integration. Record actual failures and exact evidence.
+
+## Slices and non-goals
+
+1. Pure source plans and two-set validation with source/critical/negative/turn tests.
+2. Coordinated action/work/history integration and source-origin restore validation.
+3. Real table form/choices and SQLite recovery/controller/audience evidence.
+4. Review, serialized verification and root integration.
+
+No extra classes/levels/catalog grants, extra attacks, general reroll permission, new
+rest subsystem, other masteries/grapples/mounts or completed Gate4 claim. Preserve
+existing rest restoration; broad rest/progression remains its existing owned scope.
+
+## Evidence, risks and exact next action
+
+Root AGENTS, physical plan, product clauses and exact SRD passages read. Worktree is
+isolated. Existing legacy feature code is only a source reference: it rejects active
+encounters. Existing SavageAttackerRoll repeats full request sets; tactical reuse must
+prove all nonweapon indices identical, or retain a typed subset, never duplicate riders.
+
+The first plan-write tool failed during host handshake and made no file changes;
+memory recovered and no compiler has been started. Next: agree pure APIs with Ready,
+author leaves/tests, checkpoint for review, then coordinate shared wiring and actual UI.
