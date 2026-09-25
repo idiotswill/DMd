@@ -83,6 +83,7 @@ fn fixture() -> (Fixture, TacticalEncounter) {
             actor: None,
             expected_event_sequence: 0,
         },
+        area_grid_policy: None,
         geometry_ruling: ruling(),
         flow: None,
     };

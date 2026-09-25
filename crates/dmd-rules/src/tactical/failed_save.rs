@@ -18,12 +18,16 @@ pub(super) fn is_failure(
             | TacticalRollRole::EffectSave
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
+            | TacticalRollRole::AreaSave
     ) {
         return Ok(false);
     }
     let Some(result) = result else {
         return Ok(true);
     };
+    if pending.key.role == TacticalRollRole::AreaSave {
+        return super::areas::save_failed(state, pending, Some(result));
+    }
     if pending.key.role == TacticalRollRole::SpellSave {
         return super::casting::save_failed(state, pending, Some(result));
     }

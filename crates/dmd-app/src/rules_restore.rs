@@ -502,6 +502,7 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
                 TacticalAction::Establish { encounter } if encounter.id == setup.encounter_id
                     && encounter.scene_id == setup.scene_id && encounter.battlefield == setup.battlefield
                     && encounter.geometry_ruling == setup.geometry_ruling && encounter.origin == event.meta
+                    && encounter.area_grid_policy == setup.area_grid_policy
                     && encounter.flow.is_none() && encounter.knowledge.is_empty())
         });
         if !matches!(
@@ -816,6 +817,17 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                             .map(|activation| &activation.origin),
                     );
                 }
+                for area in &resolution.areas {
+                    origins.extend([
+                        &area.source.invocation,
+                        &area.source.enclosing_origin,
+                        &area.geometry_origin,
+                    ]);
+                    for target in &area.targets {
+                        origins.extend(target.save.as_ref().map(|save| &save.resolved_by));
+                        origins.extend(target.applied_by.as_ref());
+                    }
+                }
                 if let Some(attack) = &resolution.attack {
                     origins.push(&attack.origin);
                     if let Some(weapon) = attack.weapon() {
@@ -1019,6 +1031,35 @@ fn validate_origins(
             return Err(
                 "rules request/result/permission origin lacks an authoritative audit".into(),
             );
+        }
+    }
+    if let Some(resolution) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .and_then(|flow| flow.resolution.as_deref())
+    {
+        for area in &resolution.areas {
+            let action = commands
+                .get(&area.source.invocation.id)
+                .and_then(|event| match event {
+                    RecoveryEvent::Tactical(event) => {
+                        Some((&event.action, &event.meta, &event.outcome))
+                    }
+                    RecoveryEvent::Table(event) => event
+                        .tactical_event
+                        .as_ref()
+                        .map(|nested| (&nested.action, &nested.meta, &nested.outcome)),
+                    RecoveryEvent::Rules(_) => None,
+                });
+            if !matches!(action, Some((TacticalAction::CreatureArea { feature_id, aim, ordering }, meta, outcome))
+                if feature_id == &area.source.feature_id && *aim == area.aim && *ordering == area.ordering
+                && *meta == area.source.invocation && outcome.active_actor == Some(area.source.actor))
+            {
+                return Err(
+                    "area source or ordering consent differs from its accepted invocation".into(),
+                );
+            }
         }
     }
     if let Some(movement) = state

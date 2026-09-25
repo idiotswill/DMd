@@ -1,6 +1,8 @@
 use dmd_domain::*;
 use dmd_rules::{tactical::*, tactical_effects::*, tactical_inventory::*, *};
 use std::collections::HashMap;
+#[path = "tactical_attacks/areas.rs"]
+mod areas;
 #[path = "tactical_attacks/casting.rs"]
 mod casting;
 #[path = "tactical_attacks/creature.rs"]
@@ -174,6 +176,7 @@ impl Fixture {
                 .collect(),
             knowledge: vec![],
             origin: f.meta(None),
+            area_grid_policy: None,
             geometry_ruling: Ruling {
                 basis: RulingBasis::GmAdjudication,
                 reason: "Explicit flat field".into(),

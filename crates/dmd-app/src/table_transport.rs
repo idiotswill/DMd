@@ -216,6 +216,7 @@ pub(crate) fn presented_view(
                 opportunity,
                 liquid_landing,
                 shield_options,
+                area_options,
             } = tactical;
             let continuation = continuation
                 .map(|value| {
@@ -264,6 +265,7 @@ pub(crate) fn presented_view(
                 opportunity,
                 liquid_landing,
                 shield_options,
+                area_options,
             })
         })
         .transpose()

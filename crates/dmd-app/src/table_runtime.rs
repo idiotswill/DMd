@@ -53,7 +53,10 @@ pub(crate) fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> Str
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::TacticalResolution { key, .. } => match key.role {
             TacticalRollRole::DeathSave => "Death saving throw",
-            TacticalRollRole::EffectSave | TacticalRollRole::SpellSave => "Saving throw",
+            TacticalRollRole::EffectSave
+            | TacticalRollRole::SpellSave
+            | TacticalRollRole::AreaSave => "Saving throw",
+            TacticalRollRole::AreaDamage => "Shared area damage",
             TacticalRollRole::SpellAmount => "Spell effect roll",
             TacticalRollRole::EffectDamage => "Effect damage",
             TacticalRollRole::Concentration => {
