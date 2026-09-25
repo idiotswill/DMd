@@ -997,7 +997,10 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })))
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. })
+                            || (matches!(event.action, TableAction::Adjudicate { .. })
+                                && event.tactical_event.as_ref().is_some_and(|nested|
+                                    nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))
                     && commands
                         .get(&origin.id)
                         .and_then(|event| event.rules_event())

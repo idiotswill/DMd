@@ -109,3 +109,11 @@ at the exhaustive recorded-roll role validator: the new SecondWind role was miss
 Add its actual single d10 constraint, preserving every prior role and validation.
 This is the first executable failure, not a passing source result; rerun CI on the
 corrected head while local heavy verification remains serialized.
+
+Corrected6403b65 passed fast verification, strict Clippy, both guards and MSRV.
+Linux36141715529 then passed67 application tests and failed the new cold-declaration
+case: the restored request origin still allowed only direct tactical actions or
+legacy nested rules, despite the new strict nested-adjudication validator. Add only
+the matching, previously validated Adjudicate→SecondWind envelope to that origin
+join. Keep exact metadata, accepted audit, pre-tactical anchor and full semantic
+replay checks. The unchanged cold case must pass on the new head before acceptance.
