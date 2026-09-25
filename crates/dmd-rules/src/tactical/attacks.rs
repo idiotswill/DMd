@@ -240,6 +240,7 @@ fn begin_with_source(
         movement: None,
         casts: vec![],
         falls: vec![],
+        areas: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

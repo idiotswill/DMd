@@ -78,6 +78,11 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::AreaDamageRoll { .. }
+        | TacticalWorkKind::AreaSave { .. }
+        | TacticalWorkKind::BeginAreaDamage { .. }
+        | TacticalWorkKind::ApplyAreaDamage { .. }
+        | TacticalWorkKind::FinishArea { .. } => super::areas::validate_work(state, work)?,
         TacticalWorkKind::BeginFall { .. }
         | TacticalWorkKind::LiquidLandingCheck { .. }
         | TacticalWorkKind::FallDamage { .. } => super::falling::validate_work(state, work)?,
@@ -341,6 +346,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     super::attacks::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
+    super::areas::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20
         || f.budget.weapon_history.len() > 512
@@ -391,6 +397,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     | TacticalRollRole::EffectSave
                     | TacticalRollRole::Concentration
                     | TacticalRollRole::SpellSave
+                    | TacticalRollRole::AreaSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence

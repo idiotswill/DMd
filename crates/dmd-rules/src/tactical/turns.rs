@@ -223,6 +223,7 @@ fn begin_boundary_from(
         movement: None,
         casts: vec![],
         falls: vec![],
+        areas: vec![],
         next_occurrence: first_occurrence,
     }));
     state

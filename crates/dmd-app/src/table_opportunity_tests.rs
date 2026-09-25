@@ -220,6 +220,7 @@ fn place_snapshot(state: &mut CampaignState, actors: [EntityId; 2]) {
             .collect(),
         knowledge: vec![],
         origin,
+        area_grid_policy: None,
         geometry_ruling: Ruling {
             basis: RulingBasis::GmAdjudication,
             reason: "Isolated immutable projection snapshot; no gameplay event claimed".into(),

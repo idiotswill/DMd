@@ -438,6 +438,7 @@ pub(crate) fn prepare(
         participants,
         knowledge: vec![],
         origin: meta.clone(),
+        area_grid_policy: setup.area_grid_policy,
         geometry_ruling: setup.geometry_ruling.clone(),
         flow: None,
     };

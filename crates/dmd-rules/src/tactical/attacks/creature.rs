@@ -136,6 +136,7 @@ pub(in crate::tactical) fn begin_creature_attack(
         movement: None,
         casts: vec![],
         falls: vec![],
+        areas: vec![],
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;

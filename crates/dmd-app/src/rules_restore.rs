@@ -466,6 +466,7 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
                 TacticalAction::Establish { encounter } if encounter.id == setup.encounter_id
                     && encounter.scene_id == setup.scene_id && encounter.battlefield == setup.battlefield
                     && encounter.geometry_ruling == setup.geometry_ruling && encounter.origin == event.meta
+                    && encounter.area_grid_policy == setup.area_grid_policy
                     && encounter.flow.is_none() && encounter.knowledge.is_empty())
         });
         if !matches!(
