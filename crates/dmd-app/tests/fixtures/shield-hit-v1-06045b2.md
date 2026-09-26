@@ -107,5 +107,7 @@ to regenerate these histories or replace their original transport receipts.
 Import-time inspection found one unrun continuation assertion in85cff17 that
 mistook the fourth snapshot's pending raw request for an already accepted
 `attack.damage_roll`. It did not affect the separately selected baseline test.
-Correct that assertion against the genuine snapshot in a separate test commit;
-all four continuation tests and final integrated checks remain required.
+The following separate test correction asserts the absent accepted record, exact
+pending work/key/request ID and cause, then the accepted record after continuation.
+It changes no capture or runtime source. The four continuation tests and final
+integrated checks remain required; they have not yet run on this corrected module.

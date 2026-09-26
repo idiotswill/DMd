@@ -685,10 +685,25 @@ async fn genuine_flow3_post_shield_natural20_damage_keeps_original_cause_and_hp7
     let raw_id = pending.request.id;
     assert_eq!(cause, hit.cause);
     assert_ne!(cause.id, shield.cast.plan.origin.id);
-    assert_eq!(Some(raw_id), attack.damage_roll);
+    // The pending request exists before any accepted damage record. The attack
+    // stores damage_roll only when its original physical faces are accepted.
+    assert!(attack.damage_roll.is_none());
+    assert!(!rules.rolls.iter().any(|roll| roll.request.id == raw_id));
+    let damage_work = resolution.pending.as_ref().unwrap();
+    assert_eq!(damage_work.work.kind, TacticalWorkKind::AttackDamage);
+    assert_eq!(
+        damage_work.key,
+        TacticalRollKey {
+            origin: attack.origin.id,
+            role: TacticalRollRole::AttackDamage,
+            subject: attack.target,
+            occurrence: damage_work.work.occurrence,
+        }
+    );
+    assert_eq!(raw_id, damage_work.key.request_id());
     assert!(
         matches!(&pending.purpose, PendingPurpose::TacticalResolution { key, .. }
-        if key.role == TacticalRollRole::AttackDamage && key.subject == attack.target)
+        if *key == damage_work.key)
     );
     let attack_raw = rules
         .rolls

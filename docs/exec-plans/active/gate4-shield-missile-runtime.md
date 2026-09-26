@@ -386,12 +386,13 @@ miss, and natural20 post-cast damage toHP75 with original issuance cause. Every 
 accepted continuation also proves its own lost-ack retry and changed-body no-write
 refusal. Preserve original transport1/2 and source/PC/Host channels.
 
-The actual fourth image exposes one test-only expectation to correct in a separate
+The actual fourth image exposed one test-only expectation, corrected in a separate
 commit before runtime development: `attack.damage_roll` remains None while its raw
 request is pending and is assigned only upon acceptance (`attacks.rs::finish`).
-The unrun fourth continuation currently expects that field too early. Assert the
-real pending request/key and later accepted record instead. Do not alter the
-capture or production behavior. The exact85cff17 baseline test above is unaffected.
+The fourth continuation now asserts the absent accepted record, exact pending
+work/key/request ID and original cause, then the accepted record after continuation.
+The correction is formatted/static-inspected but uncompiled/unrun. No capture or
+production behavior changed. The exact85cff17 baseline test above is unaffected.
 
 The capture gate passed: both unchanged generator scenarios, frozen genuine bytes
 and the separately selected baseline import/roundtrip/receipt test. Root authorized
