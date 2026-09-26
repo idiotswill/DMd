@@ -308,6 +308,8 @@ pub struct TableCreatureView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     pub encounter_id: EncounterId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aftermath: Option<TableAftermathView>,
     /// Omitted for legacy flows so their historical presentation bytes remain
     /// unchanged. Only explicitly versioned new/upgraded state adds this field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -343,6 +345,14 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
     pub shield_options: Option<TableShieldOptions>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAftermathView {
+    pub cadence: AftermathCadence,
+    /// Private explanation and quiescence are not projected as hidden-work hints.
+    pub host_ruling: Option<String>,
+    pub may_pause_session: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

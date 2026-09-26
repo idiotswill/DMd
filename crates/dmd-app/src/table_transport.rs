@@ -236,6 +236,7 @@ pub(crate) fn presented_view(
         .map(|tactical| {
             let TableTacticalView {
                 encounter_id,
+                aftermath,
                 execution,
                 ready,
                 round,
@@ -287,6 +288,7 @@ pub(crate) fn presented_view(
                 .transpose()?;
             Ok::<_, &str>(TableTacticalView {
                 encounter_id,
+                aftermath,
                 execution,
                 ready,
                 round,
