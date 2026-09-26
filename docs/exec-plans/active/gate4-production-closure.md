@@ -5,7 +5,47 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR41
+## Current checkpoint after PR43
+
+Current verified main is e813e3a13911497902a3d4a55aec3c70653afb2a;
+all six post-main checks pass. The compatibility prerequisite
+was main2798b6b1d6263b5e321a1903d9fb4f2331b73895. Compatibility PR42
+merged after exact-head review and all six checks; its complete tree matches
+reviewed cbe9575 at ddfe5b58c0c55ad2aab6e367de295bf7c1760e5e. All six post-main
+checks pass: Linux36188457488 reports 695 Rust tests and 44 table cases; native
+Windows36188457455 reports 697 Rust tests, 67 UI tests, zero static diagnostics,
+136 modules and fresh EXE/NSIS. Artifact10888336544 has SHA256
+7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a.
+All four genuine pre-change exports retain their original bytes and bindings.
+
+Source-control PR43 merged as e813e3a13911497902a3d4a55aec3c70653afb2a after
+review, canonical698Rust/46table and all six final checks (699Linux/701native
+Rust,77UI,0/0,137modules,fresh EXE/NSIS). Fetched whole-tree95ccff0 equals final
+a119d7f. Post-main36194898895/36194898980 also passes699Linux/701native Rust,
+54suites/46table,77UI,0/0,137modules and fresh EXE/NSIS. Artifact10889754911 is
+231636930bytes, SHA256
+5b1f74d35e3204bd16d8364c32e47d9967109bcc5979e7c2c6a1b23e735c52e6.
+The bounded source-control plan is archived after this proof.
+Shield PR45 has normally reconciled verified main with identical complete tree
+to its prior reviewed integration. Executable candidate8b5cf52 passes all six
+checks: Linux36193351652 has715 Rust/54suites/47table, native Windows36193351721
+has717 Rust/54suites/47table,84UI/15files, zero static diagnostics,138modules and
+fresh EXE/NSIS. The actual player-owned Shield file-SQLite case passes on both
+platforms and in the default-stack local diagnostic run (1427.43 seconds).
+Fourteen focused Shield rules cases also pass locally. Final aftermath integration,
+canonical and final-head acceptance remain required. PR44's aftermath scope has
+four focused rules cases and two actual file-SQLite scenarios passing before its
+source-owner integration. Reviewed integratedf798432 now passes all six checks:
+706Linux/708native Rust,54suites/49table including all three aftermath cases,
+81UI/15files, zero static diagnostics/138modules and fresh EXE/NSIS. Final
+main-reconciled candidate/canonical acceptance remains pending. No draft evidence
+is promoted to merged capability.
+
+All twelve Gate4 families, the full spell matrix, safe encounter handoff and
+simultaneous Magic Missile consequences remain required. Continue the separate
+Shield and aftermath plans; no gate pause or Gate5 work.
+
+## Earlier checkpoint after PR41
 
 Fetched main is d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. PR38 foundation and
 PR41 selected Night Hag source are merged after all six exact-head checks, review

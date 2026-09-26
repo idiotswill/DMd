@@ -80,7 +80,7 @@ async fn lethal_attack(f: &Fixture, target: EntityId) -> (ItemId, CommandMeta, T
         .await
         .unwrap();
     // Actual critical hit and its two damage dice; no supplied HP or fabricated effect.
-    table_attack_cases::submit(f, false, &[20]).await;
+    Box::pin(table_hit_driver::roll_then_decline(f, false, &[20])).await;
     table_attack_cases::submit(f, false, &[4, 4]).await;
     let view = f
         .runtime

@@ -9,6 +9,14 @@ pub(super) fn continuation(
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    if resolution.hit_review.as_ref().is_some_and(|hit| {
+        matches!(
+            hit.stage,
+            TacticalHitReviewStage::Collecting | TacticalHitReviewStage::Selected
+        )
+    }) {
+        return None;
+    }
     let host_ordering = dmd_rules::tactical::tactical_frame_host_ordering(resolution).ok()?;
     if host_ordering && !resolution.areas.is_empty() && !host {
         // Always one generic owned invocation indicator and zero work cards,
@@ -47,6 +55,8 @@ pub(super) fn continuation(
                     .iter()
                     .map(|work| {
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::CommitShield { .. }
+                            | TacticalWorkKind::ResumeHit { .. } => (None, "Hit consequence"),
                             TacticalWorkKind::Medicine { actor, .. } => {
                                 (Some(*actor), "First aid check")
                             }
@@ -304,6 +314,7 @@ mod tests {
             pending: None,
             failed_save: None,
             legendary_window: None,
+            hit_review: None,
             attack: None,
             movement: None,
             casts: vec![],
@@ -366,6 +377,7 @@ mod tests {
             pending: None,
             failed_save: None,
             legendary_window: None,
+            hit_review: None,
             attack: None,
             movement: None,
             casts: vec![],

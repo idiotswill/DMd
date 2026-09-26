@@ -251,7 +251,7 @@ async fn shoot_and_stow(
             .is_err()
     );
     assert_eq!(state(f).await, pending);
-    table_attack_cases::submit(f, true, &[15]).await;
+    Box::pin(table_hit_driver::roll_then_decline(f, true, &[15])).await;
     table_attack_cases::assert_restore(f).await;
     table_attack_cases::submit(f, true, &[1]).await;
     let hit = state(f).await;

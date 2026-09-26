@@ -234,8 +234,45 @@ pub(crate) fn authorize_tactical(
     action: &dmd_rules::tactical::TacticalAction,
 ) -> Result<(), String> {
     use dmd_rules::tactical::TacticalAction as A;
-    if !enabled(state) || !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
+    if !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System) {
         return Ok(());
+    }
+    if !enabled(state) {
+        // A new executor cannot strand an existing Player-owned source behind
+        // a transport that has never been explicitly activated for its owner.
+        // Keep all historical Begin and unit 1-to-2 upgrade semantics intact.
+        let owned = |actor| {
+            state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.tactical_creatures.as_ref())
+                .and_then(|creatures| creatures.runtime(actor))
+                .is_some_and(|runtime| matches!(runtime.controller, CreatureController::Player(_)))
+        };
+        let needs_access = match action {
+            A::Begin {
+                execution: TacticalExecutionVersion::ShieldHitV1,
+                combatants,
+                ..
+            } => combatants.iter().any(|combatant| owned(combatant.actor)),
+            A::UpgradeExecutionTo {
+                execution: TacticalExecutionVersion::ShieldHitV1,
+            } => state.encounter.as_ref().is_some_and(|encounter| {
+                encounter
+                    .participants
+                    .iter()
+                    .any(|participant| owned(participant.entity_id))
+            }),
+            _ => false,
+        };
+        return if needs_access {
+            Err(
+                "Enable source creature control before starting or upgrading this encounter."
+                    .into(),
+            )
+        } else {
+            Ok(())
+        };
     }
     let rules = state.rules.as_ref().ok_or("Mechanical state is absent.")?;
     if let A::Begin { combatants, .. } = action {
@@ -267,9 +304,25 @@ pub(crate) fn authorize_tactical(
         // These retain source monster/mixed-tie and explicitly delegated ordering.
         A::Establish { .. }
         | A::Begin { .. }
+        | A::ConcludeHostilities { .. }
         | A::UpgradeExecution
+        | A::UpgradeExecutionTo { .. }
         | A::ProposeInitiativeTie { .. }
         | A::AcceptInitiativeTie { .. } => None,
+        A::RespondToHit { .. } | A::CastHitShield { .. } | A::DeclineSelectedHitShield { .. } => {
+            resolution
+                .and_then(|resolution| resolution.hit_review.as_ref())
+                .and_then(|hit| hit.respondent.as_ref())
+                .map(|respondent| respondent.actor)
+        }
+        A::DelegateHitResponses { .. } => resolution.map(|resolution| resolution.turn_actor),
+        A::OrderHitResponses { .. } => resolution.and_then(|resolution| {
+            (!resolution
+                .hit_review
+                .as_ref()
+                .is_some_and(|hit| hit.delegated_by.is_some()))
+            .then_some(resolution.turn_actor)
+        }),
         A::ChooseTurnWork { .. } => match resolution {
             Some(resolution)
                 if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
@@ -392,6 +445,120 @@ pub(crate) fn visible_actors(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn new_hit_executor_requires_source_access_without_reinterpreting_old_admission() {
+        use dmd_rules::tactical::TacticalAction as A;
+        // A qualified typed-state fixture, not a claim of historical table-owned
+        // source commands. The original export and its journals remain untouched.
+        let export = dmd_persistence::CampaignExport::from_json(include_str!(
+            "../tests/fixtures/reactions-v1-upgrade-100c7da.json"
+        ))
+        .unwrap();
+        let mut state = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        let session = state
+            .table
+            .as_ref()
+            .unwrap()
+            .active_session
+            .as_ref()
+            .unwrap();
+        let player = session
+            .participants
+            .iter()
+            .find(|participant| participant.attendance == AttendanceStatus::Present)
+            .unwrap()
+            .player_id;
+        let creatures = state
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap();
+        let profile = &creatures.profiles[0];
+        let actor = profile.actor;
+        let definition_id = profile.source.definition_id.clone();
+        let origin = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: state.campaign_id(),
+            session_id: Some(session.session_id),
+            issuer: CommandIssuer::Admin,
+            actor: None,
+            expected_event_sequence: state.applied_event_sequence,
+        };
+        let transition = apply_creature_schedule(
+            &state,
+            creatures,
+            &origin,
+            &CreatureScheduleOperation::SetContext {
+                actor,
+                controller: CreatureController::Player(player),
+                in_lair: false,
+            },
+        )
+        .unwrap();
+        state.rules.as_mut().unwrap().tactical_creatures = Some(transition.next);
+        state.applied_event_sequence += 1;
+        let meta = CommandMeta {
+            id: CommandId::new(),
+            expected_event_sequence: state.applied_event_sequence,
+            ..origin
+        };
+        let begin = |execution| A::Begin {
+            execution,
+            combatants: vec![TacticalCombatant {
+                actor,
+                source: TacticalSource::Creature {
+                    definition_id: definition_id.clone(),
+                },
+                surprised: false,
+            }],
+            groups: vec![InitiativeGroup {
+                actors: vec![actor],
+                request_id: RollRequestId::new(),
+            }],
+        };
+        let before = state.clone();
+        let upgrade = A::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldHitV1,
+        };
+        for action in [
+            begin(TacticalExecutionVersion::ShieldHitV1),
+            upgrade.clone(),
+        ] {
+            assert_eq!(
+                authorize_tactical(&state, &meta, &action).unwrap_err(),
+                "Enable source creature control before starting or upgrading this encounter."
+            );
+            let player_meta = CommandMeta {
+                issuer: CommandIssuer::Player(player),
+                ..meta.clone()
+            };
+            assert!(
+                authorize_tactical(&state, &player_meta, &action).is_ok(),
+                "the ordinary nonprivileged rules gate must refuse without a source-access oracle"
+            );
+        }
+        for action in [
+            begin(TacticalExecutionVersion::Legacy),
+            begin(TacticalExecutionVersion::ReactionsV1),
+            A::UpgradeExecution,
+        ] {
+            assert!(authorize_tactical(&state, &meta, &action).is_ok());
+        }
+        assert_eq!(state, before);
+        let activated = activate(&state, &meta, &adoptions(&state).unwrap()).unwrap();
+        assert!(authorize_tactical(&activated, &meta, &upgrade).is_ok());
+        assert!(
+            authorize_tactical(
+                &activated,
+                &meta,
+                &begin(TacticalExecutionVersion::ShieldHitV1)
+            )
+            .is_ok()
+        );
+    }
 
     #[test]
     fn typed_existing_owner_requires_attendance_when_activating_a_running_encounter() {

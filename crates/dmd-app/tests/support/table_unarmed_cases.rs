@@ -163,6 +163,9 @@ async fn exercise(f: &mut Fixture, url: &str) {
         );
         assert_eq!(state(f).await, before);
         Box::pin(cold_step(f, url, raw)).await;
+        // The raw acceptance and its cold retry remain one command; only this
+        // explicit controller step advances the new hit window to fixed damage.
+        Box::pin(table_hit_driver::decline_hit_responses(f)).await;
         let current = state(f).await;
         let rules = current.rules.as_ref().unwrap();
         assert!(rules.pending.is_none()); // A critical never fabricates a fixed-damage die.

@@ -1,4 +1,6 @@
-use super::creature_weapon::{action, choice, equipped_source, goblin, item, roll};
+use super::creature_weapon::{
+    action, choice, equipped_source, goblin, item, roll_then_decline_hit_responses,
+};
 use super::*;
 
 fn next_turn(f: &mut Fixture) {
@@ -37,8 +39,8 @@ fn source_goblin_pays_to_doff_then_shoots_and_stows_then_pays_to_don() {
     assert_eq!(f.state, before);
     next_turn(&mut f);
     f.run(Some(0), action("shortbow", selected));
-    roll(&mut f, 0, &[15]);
-    roll(&mut f, 0, &[2]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[2]);
     assert_eq!(f.state.items[&arrows].quantity, 2);
     next_turn(&mut f);
     let before = f.state.clone();
@@ -61,7 +63,7 @@ fn source_goblin_pays_to_doff_then_shoots_and_stows_then_pays_to_don() {
         operation: AttackEquipmentOperation::Unequip { item: stow.weapon },
     });
     f.run(Some(0), action("shortbow", stow));
-    roll(&mut f, 0, &[1]);
+    roll_then_decline_hit_responses(&mut f, 0, &[1]);
     assert_eq!(f.loadout().hands, WeaponLoadout::default());
     assert_eq!(f.state.items[&arrows].quantity, 1);
     next_turn(&mut f);
@@ -112,7 +114,7 @@ fn shield_authority_pending_and_spent_action_rejections_preserve_physical_state(
         Err(RulesError::Pending)
     ));
     assert_eq!(f.state, pending);
-    roll(&mut f, 0, &[1]);
+    roll_then_decline_hit_responses(&mut f, 0, &[1]);
     let finished = f.state.clone();
     assert!(
         resolve_tactical(

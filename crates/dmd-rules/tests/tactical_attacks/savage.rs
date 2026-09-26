@@ -39,7 +39,7 @@ fn source_critical_sets_keep_the_chosen_raw_and_spend_once_per_global_turn() {
         },
     );
     assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     let raw = sets(&f, &[1, 2], &[4, 4], DamageRollChoice::First);
     assert_eq!(raw.weapon_dice, Some(2));
     f.rejected(
@@ -66,7 +66,7 @@ fn source_critical_sets_keep_the_chosen_raw_and_spend_once_per_global_turn() {
         trigger: attack.meta.id,
     };
     f.run(Some(0), TacticalAction::Attack { choice: bonus });
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
     let raw = SavageAttackerRoll {
         weapon_dice: Some(1),
@@ -76,7 +76,7 @@ fn source_critical_sets_keep_the_chosen_raw_and_spend_once_per_global_turn() {
         inspiration: None,
     };
     f.rejected(Some(0), TacticalAction::SubmitSavageAttacker { roll: raw });
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
 
     // Once per turn includes another creature's turn, without refreshing the
     // player's Action, Bonus Action or Reaction more than their source permits.
@@ -96,7 +96,7 @@ fn source_critical_sets_keep_the_chosen_raw_and_spend_once_per_global_turn() {
             choice: TacticalMeleeChoice::Weapon(choice),
         },
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let raw = sets(&f, &[1], &[4], DamageRollChoice::Second);
     f.run(Some(0), TacticalAction::SubmitSavageAttacker { roll: raw });
     let rules = f.rules();
@@ -128,7 +128,7 @@ fn savage_inspiration_retains_both_sets_and_one_expenditure_or_can_be_declined()
             choice: choice.clone(),
         },
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let mut raw = sets(&f, &[1], &[2], DamageRollChoice::Second);
     raw.inspiration = Some(SavageInspiration {
         roll: DamageRollChoice::Second,
@@ -151,9 +151,9 @@ fn savage_inspiration_retains_both_sets_and_one_expenditure_or_can_be_declined()
     f.run(Some(0), TacticalAction::EndTurn);
     f.run(Some(1), TacticalAction::EndTurn);
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(savage_attacker_dice(&f.state, &f.pack).unwrap(), 1);
-    f.roll(0, &[2]);
+    f.roll_then_decline_hit_responses(0, &[2]);
     assert!(f.rules().rolls.last().unwrap().savage_attacker.is_none());
     assert_eq!(
         f.rules().entities[&f.actors[0]]
@@ -171,7 +171,7 @@ fn missing_source_grant_and_invalid_raw_sets_are_rejected_unchanged() {
     let choice = f.arm("club", false, false);
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let raw = sets(&f, &[1], &[4], DamageRollChoice::Second);
     for variation in 0..5 {
         let mut bad = raw.clone();

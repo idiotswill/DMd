@@ -9,8 +9,10 @@
   import OpportunityForm from './OpportunityForm.svelte';
   import LiquidLandingForm from './LiquidLandingForm.svelte';
   import ShieldForm from './ShieldForm.svelte';
+  import HitResponsePanel from './HitResponsePanel.svelte';
   import UnarmedForm from './UnarmedForm.svelte';
   import FirstAidForm from './FirstAidForm.svelte';
+  import AftermathForm from './AftermathForm.svelte';
   let { tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;playerControlledSources?:Id[];disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -18,8 +20,8 @@
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
-  const legacy=$derived(tactical.phase==='active'&&!tactical.execution);
-  const pendingDecision=$derived(!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
+  const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='ShieldHitV1');
+  const pendingDecision=$derived(!!tactical.hit||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
   const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   const firstAidTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Unseen creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
@@ -36,14 +38,26 @@
       const key=combatant.source==='Character'?combatant.actor:`${combatant.source.Creature.definition_id}:${combatant.surprised}:${preview.initiative_modifier}:${combatant.surprised?preview.surprised_mode:preview.normal_mode}`;
       grouped.set(key,[...(grouped.get(key)??[]),combatant.actor]);
     }
-    onAction({Begin:{execution:'ReactionsV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
+    onAction({Begin:{execution:'ShieldHitV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
   }
 </script>
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
+  {#if tactical.aftermath}
+    <p>Hostilities concluded. Ongoing saves, durations and readied actions continue in the existing turn order. Renewed activity uses this same cadence.</p>
+    {#if host}<p>To resume another session on this cadence, include every retained player controller and their existing character or source creature, including dead characters.</p>{/if}
+    {#if host && tactical.aftermath.host_ruling}<details><summary>Private host timing ruling</summary><p>{tactical.aftermath.host_ruling}</p></details>{/if}
+  {:else if host && !legacy && tactical.phase==='active'}
+    <AftermathForm disabled={disabled||pendingRoll||pendingDecision} {onAction}/>
+  {/if}
   {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
-    {#if host}<button disabled={disabled||pendingRoll||pendingDecision} onclick={()=>onAction('UpgradeExecution')}>Continue saved encounter</button>{/if}
+    {#if host}<button disabled={disabled||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'ShieldHitV1'}})}>Continue saved encounter</button>{/if}
   {/if}
   <TacticalMap {tactical} {characters}/>
+  {#if tactical.hit}
+    {#key `${host}:${player}:${actor}:${tactical.hit.order?.key}:${tactical.hit.delegate}:${tactical.hit.response?.key}`}
+      <HitResponsePanel hit={tactical.hit} {actor} {host} {playerControlledSources} disabled={disabled||pendingRoll} {onAction}/>
+    {/key}
+  {/if}
   {#each tactical.ready ?? [] as ready}
     <fieldset disabled={disabled||pendingRoll||pendingDecision}><legend>{name(ready.actor)} · Ready</legend>
       <p>{ready.action} is readied. Abandoning it returns no spent Action and uses no Reaction.</p>
@@ -55,26 +69,26 @@
   {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
   {#if !legacy && tactical.phase==='active' && tactical.budget && controls(tactical.active_actor)}
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
-    <fieldset disabled={disabled||pendingRoll||!!tactical.continuation}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button>
+    <fieldset disabled={disabled||pendingRoll||pendingDecision}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button>
       {#if activeCharacter?.second_wind_remaining != null}<button disabled={tactical.budget.bonus_action_spent||activeCharacter.second_wind_remaining===0} onclick={()=>onAction('SecondWind')}>Second Wind · {activeCharacter.second_wind_remaining} uses</button>{/if}
       <button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
-    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<UnarmedForm targets={unarmedTargets} disabled={disabled||pendingRoll||!!tactical.continuation||(tactical.budget.action_spent&&tactical.budget.attacks_remaining===0)} {onAction}/>{/key}
-    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<FirstAidForm targets={firstAidTargets} disabled={disabled||pendingRoll||!!tactical.continuation||tactical.budget.action_spent} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<UnarmedForm targets={unarmedTargets} disabled={disabled||pendingRoll||pendingDecision||(tactical.budget.action_spent&&tactical.budget.attacks_remaining===0)} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<FirstAidForm targets={firstAidTargets} disabled={disabled||pendingRoll||pendingDecision||tactical.budget.action_spent} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.area_options && controls(tactical.area_options.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.area_options.actor}`}<AreaForm options={tactical.area_options} {host} {player} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.area_options.actor}`}<AreaForm options={tactical.area_options} {host} {player} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.casting_options && controls(tactical.casting_options.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.casting_options.actor}`}<CastingForm options={tactical.casting_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.casting_options.actor}`}<CastingForm options={tactical.casting_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.shield_options && controls(tactical.shield_options.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.shield_options.actor}`}<ShieldForm options={tactical.shield_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.shield_options.actor}`}<ShieldForm options={tactical.shield_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.attack_options && controls(tactical.attack_options.actor) && tactical.attack_options.weapons.some(weapon=>weapon.purposes.length>0)}
-    {#key `${host}:${player}:${actor}:${tactical.attack_options.actor}`}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.attack_options.actor}`}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.movement_options && controls(tactical.movement_options.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.movement_options.actor}:${JSON.stringify(tactical.movement_options.position)}`}<MovementForm options={tactical.movement_options} disabled={disabled||pendingRoll||!!tactical.continuation} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.movement_options.actor}:${JSON.stringify(tactical.movement_options.position)}`}<MovementForm options={tactical.movement_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if tactical.opportunity && controls(tactical.opportunity.actor)}
     {#key `${host}:${player}:${actor}:${tactical.opportunity.actor}:${tactical.opportunity.target.actor}`}<OpportunityForm opportunity={tactical.opportunity} disabled={disabled||pendingRoll} {onAction}/>{/key}

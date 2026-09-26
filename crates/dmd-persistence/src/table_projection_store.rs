@@ -54,6 +54,19 @@ pub enum ProjectionCapability {
         origin: CommandId,
         occurrence: u16,
     },
+    HitResponse {
+        origin: CommandId,
+        occurrence: u16,
+        role: ProjectionHitRole,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ProjectionHitRole {
+    Order,
+    Delegate,
+    Intent,
+    Selected,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

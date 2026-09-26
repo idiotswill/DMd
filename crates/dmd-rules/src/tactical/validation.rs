@@ -4,7 +4,7 @@ use std::collections::{HashMap, HashSet};
 pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
     let encounter = encounter(state)?;
     let f = flow(state)?;
-    if !matches!(f.version, 1 | 2)
+    if TacticalExecutionVersion::from_flow_version(f.version).is_none()
         || f.origin.campaign_id != state.campaign_id()
         || f.origin.expected_event_sequence > state.applied_event_sequence
         || f.combatants.is_empty()
@@ -359,5 +359,6 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
             }
         }
     }
+    super::aftermath::validate(state)?;
     super::turn_validation::validate(state)
 }

@@ -19,7 +19,7 @@ it('turns explicit route legs into adjacent proposals without inventing source p
 
 it('keeps movement available after the action and clears a stale route when position or viewer changes',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:true,reaction_available:true},movement_options:options};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
   await user.type(screen.getByLabelText('Movement route'),'walk 10 feet north');
@@ -34,7 +34,7 @@ it('keeps movement available after the action and clears a stale route when posi
 
 it('discards the host drafted route when the same actor is viewed through a player channel',async()=>{
   const user=userEvent.setup();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,movement_options:options};
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null,movement_options:options};
   const component=render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction:vi.fn()});
   await user.type(screen.getByLabelText('Movement route'),'walk 10 feet north');
   await component.rerender({host:false,actor:'actor',player:'player'});

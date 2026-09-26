@@ -12,6 +12,8 @@ mod attacks;
 mod casting;
 #[path = "table_tactical_choices.rs"]
 mod choices;
+#[path = "table_hit_reactions.rs"]
+mod hit_reactions;
 #[path = "table_movement.rs"]
 mod movement;
 #[path = "table_shields.rs"]
@@ -129,11 +131,19 @@ fn view_with_source_access(
     };
     Ok(Some(crate::TableTacticalView {
         encounter_id: encounter.id,
+        aftermath: flow
+            .and_then(|flow| flow.aftermath.as_ref())
+            .map(|aftermath| crate::TableAftermathView {
+                cadence: aftermath.cadence,
+                host_ruling: host.then(|| aftermath.ruling.clone()),
+                may_pause_session: host && require_aftermath_session_boundary(state).is_ok(),
+            }),
         execution: encounter
             .flow
             .as_ref()
-            .filter(|flow| flow.version == TacticalExecutionVersion::ReactionsV1.flow_version())
-            .map(|_| TacticalExecutionVersion::ReactionsV1),
+            .and_then(|flow| TacticalExecutionVersion::from_flow_version(flow.version))
+            .filter(|execution| !execution.is_legacy()),
+        hit: hit_reactions::view(state, &own, host)?,
         ready: flow
             .into_iter()
             .flat_map(|flow| &flow.ready)

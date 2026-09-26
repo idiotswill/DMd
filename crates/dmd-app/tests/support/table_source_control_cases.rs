@@ -94,7 +94,9 @@ async fn reopen(f: &mut Fixture, path: &Path) {
         &expected
     );
 }
-async fn create_mage(f: &Fixture) -> (EntityId, TableTransportRequest, TableTransportResult) {
+pub(super) async fn create_mage(
+    f: &Fixture,
+) -> (EntityId, TableTransportRequest, TableTransportResult) {
     let host = presented(f, &TableTransportChannel::Host).await;
     let catalog = f
         .runtime
@@ -396,7 +398,7 @@ async fn reject_nonprivileged_source_attendance_probe(f: &Fixture, mage: EntityI
         },
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: TacticalExecutionVersion::ReactionsV1,
+                execution: TacticalExecutionVersion::ShieldHitV1,
                 combatants: vec![TacticalCombatant {
                     actor: mage,
                     source: TacticalSource::Creature {
@@ -499,7 +501,7 @@ async fn prepare_owned_turn(f: &mut Fixture, mage: EntityId) -> TableTransportRe
     .await;
     let begin = TableAction::Tactical {
         action: TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ReactionsV1,
+            execution: TacticalExecutionVersion::ShieldHitV1,
             combatants: vec![TacticalCombatant {
                 actor: mage,
                 source: TacticalSource::Creature {

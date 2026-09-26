@@ -23,7 +23,7 @@ it('sends the real shield and legal hand without changing equipment optimistical
 
 it('blocks shield action submission while delivery is pending and removes another actor controls',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ReactionsV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'actor',phase:'active',execution:'ShieldHitV1',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},shield_options:{actor:'actor',donned:'actual-shield',shields:[]}};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'owner',disabled:true,onAction});
   await user.click(screen.getByRole('button',{name:'Doff shield'}));

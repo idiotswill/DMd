@@ -267,7 +267,7 @@ pub(super) fn hit_facts_for(
     .map_err(spatial)?
     .armor_and_dexterity_bonus()
     .map_err(spatial)?;
-    let ac = crate::tactical_defenses::effective_armor_class(state, target_id)? + cover;
+    let ac = super::super::hit_reactions::original_defense(state, actor, target_id)? + cover;
     Ok((condition.mode, ac, condition.critical_on_hit))
 }
 

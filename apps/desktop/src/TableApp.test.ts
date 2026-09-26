@@ -8,6 +8,86 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('selects a player-owned Mage for Shield and retries its exact source request after restart',async()=>{
+    const user=userEvent.setup(), view=emptyView();
+    const choice={actor:'mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'} as const;
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
+    view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'source-selected-hit',actor:'mage',selected:true,shield:[choice]}}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Encounter action recorded.'}}));
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Controlled actor').hasAttribute('disabled')).toBe(false));
+    expect(screen.queryByLabelText('Shield resource')).toBeNull();
+    await user.selectOptions(screen.getByLabelText('Controlled actor'),'mage');
+    await waitFor(()=>expect(screen.getByLabelText('Shield resource').closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByLabelText('Shield resource'),JSON.stringify(choice));
+    await user.click(screen.getByRole('button',{name:'Cast Shield · spend Reaction'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({version:2,channel:{SourceCreature:{player_id:'player',actor:'mage'}},revision:view.revision,session_id:'session',action:{Tactical:{action:{HitResponse:{handle:'source-selected-hit',decision:{Cast:{choice}}}}}}});
+    mounted.unmount();
+    // Current ownership and local preferences cannot rewrite an uncertain request.
+    vi.mocked(tableApi.view).mockResolvedValue({...view,revision:'later',source_control:{version:2,actors:[]}});
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
+  it('retries explicit aftermath unchanged after restart, then closes and resumes with the retained controller',async()=>{
+    const user=userEvent.setup();let view=emptyView();
+    view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
+    view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+    view.active_session={session_id:'first-session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementation(async received=>{
+      if(received.action==='EndSession') view={...view,revision:'closed',active_session:null};
+      else if(typeof received.action==='object' && 'StartSession' in received.action) {
+        const start=received.action.StartSession;
+        view={...view,revision:'resumed',active_session:{session_id:start.id,display_name:start.name,started_at_world:0,participants:start.participants}};
+      } else view={...view,revision:'concluded',tactical:{...view.tactical!,aftermath:{cadence:'ContinueExistingOrder',host_ruling:'Keep the current cadence.',may_pause_session:true}}};
+      return {command_id:received.command_id,revision:view.revision,outcome:{message:'Accepted.'}};
+    });
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Private host timing ruling').closest('fieldset')?.disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    expect((screen.getByRole('button',{name:'End and save session'}) as HTMLButtonElement).disabled).toBe(true);
+    await user.click(screen.getByRole('button',{name:'Table and sheets'}));
+    await user.click(screen.getByRole('checkbox',{name:/As host, keep/}));
+    await user.type(screen.getByLabelText('Private host timing ruling'),'Keep the current cadence.');
+    await user.click(screen.getByRole('button',{name:'Conclude hostilities and retain timing'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({channel:'Host',session_id:'first-session',revision:'visible-revision',action:{Tactical:{action:{ConcludeHostilities:{cadence:'ContinueExistingOrder',ruling:'Keep the current cadence.'}}}}});
+    mounted.unmount();render(TableApp);
+    await waitFor(()=>expect((screen.getByRole('button',{name:'Retry original request'}) as HTMLButtonElement).disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+    await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
+    await waitFor(()=>expect((screen.getByRole('button',{name:'End and save session'}) as HTMLButtonElement).disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'End and save session'}));
+    await screen.findByLabelText('Session name');
+    expect(vi.mocked(tableApi.action).mock.calls[2][0]).toMatchObject({session_id:'first-session',revision:'concluded',action:'EndSession'});
+    await waitFor(()=>expect(screen.getByLabelText('Session name').closest('fieldset')?.disabled).toBe(false));
+    await user.type(screen.getByLabelText('Session name'),'Aftermath continued');
+    await user.click(screen.getByLabelText('Sam is present'));
+    await user.selectOptions(screen.getByLabelText("Sam's character"),'pc');
+    await user.click(screen.getByRole('button',{name:'Start session'}));
+    await waitFor(()=>expect(tableApi.action).toHaveBeenCalledTimes(4));
+    const resumed=vi.mocked(tableApi.action).mock.calls[3][0];
+    expect(resumed).toMatchObject({revision:'closed',channel:'Host',action:{StartSession:{name:'Aftermath continued',participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]}}});
+    expect(resumed.session_id).not.toBe('first-session');
+    expect(typeof resumed.action==='object' && 'StartSession' in resumed.action && resumed.action.StartSession.id).toBe(resumed.session_id);
+  });
   it('keeps a pending PC declaration on its character channel after source selection and restart',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
@@ -117,7 +197,7 @@ describe('durable UI retry',()=>{
     view.active_session={session_id:'session',display_name:'Source session',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
     view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
     const choice={actor:'mage',spell_id:'mage-armor',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature' as const,material:{Material:{item:'leather'}},mode:'Immediate' as const};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:1,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'mage',variants:[{choice,label:'Mage Armor',concentration:false,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'mage',label:'Self'}]}],unavailable:[]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'mage',variants:[{choice,label:'Mage Armor',concentration:false,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'mage',label:'Self'}]}],unavailable:[]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));const hostMount=render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
@@ -148,6 +228,32 @@ describe('durable UI retry',()=>{
     await user.type(await screen.findByLabelText('Die 1 · d20'),'12');await user.click(screen.getByRole('button',{name:'Report these faces'}));await screen.findByText('Delivery uncertain.');
     expect(tableApi.rollOptions).toHaveBeenCalledWith({campaign_id:'campaign',revision:view.revision,roll_id:'opaque-initiative',channel:{SourceCreature:{player_id:'player',actor:'mage'}}});
     expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({version:2,channel:{SourceCreature:{player_id:'player',actor:'mage'}},action:{Tactical:{action:{SubmitRoll:{result:{request_id:'opaque-initiative',source:'Physical',dice:[{sides:20,value:12}]}}}}}});
+  });
+  it('preserves a selected Shield form request and its opaque response handle across restart',async()=>{
+    const user=userEvent.setup(), view=emptyView();
+    const choice={actor:'source-mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'} as const;
+    view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'owned-selected-hit',actor:'source-mage',selected:true,shield:[choice]}}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Encounter action recorded.'}}));
+    const mounted=render(TableApp);
+    await waitFor(()=>expect(screen.getByLabelText('Shield resource').closest('fieldset')?.hasAttribute('disabled')).toBe(false));
+    await user.selectOptions(screen.getByLabelText('Shield resource'),JSON.stringify(choice));
+    await user.click(screen.getByRole('button',{name:'Cast Shield · spend Reaction'}));
+    await screen.findByRole('alert');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request.action).toEqual({Tactical:{action:{HitResponse:{handle:'owned-selected-hit',decision:{Cast:{choice}}}}}});
+    expect(saved.request.channel).toBe('Host');
+    expect(saved.request.revision).toBe(view.revision);
+    expect(saved.request.session_id).toBe('session');
+    mounted.unmount();render(TableApp);
+    await waitFor(()=>expect(screen.getByRole('button',{name:'Retry original request'}).hasAttribute('disabled')).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenCalledTimes(2);
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
   });
   it('prepares a newly queried source without using the historical catalog',async()=>{
     const user=userEvent.setup(); const view=emptyView();
@@ -240,7 +346,7 @@ describe('durable UI retry',()=>{
   it('retries an actual source area declaration with its original aim and host ordering',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Crossing',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:1,active_actor:'chimera',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],area_options:{actor:'chimera',controller:null,source_space:{min:{x:10,y:40,z:0},max:{x:30,y:60,z:12}},variants:[{feature_id:'fire-breath',label:'Fire Breath',length_feet:15}],unavailable:[]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'chimera',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],area_options:{actor:'chimera',controller:null,source_space:{min:{x:10,y:40,z:0},max:{x:30,y:60,z:12}},variants:[{feature_id:'fire-breath',label:'Fire Breath',length_feet:15}],unavailable:[]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
@@ -263,7 +369,7 @@ describe('durable UI retry',()=>{
   it('retains the actual shield form item, hand and original action head through uncertain restart',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
@@ -339,7 +445,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup();const view=emptyView();
     const choice={actor:'source-caster',spell_id:'hold-person',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature',material:{Material:{item:'actual-component'}},mode:'Immediate'} as const;
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));

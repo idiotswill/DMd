@@ -81,7 +81,7 @@ fn lethal_opportunity_damage_finishes_attack_and_stops_the_original_move() {
             },
         },
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     f.run(
         Some(0),
         TacticalAction::ChooseAttackKnockout {
@@ -131,7 +131,7 @@ fn unarmed_reaction_has_real_fixed_damage_without_invented_inventory_or_action_c
     ));
     assert_eq!(f.request().modifier, 5);
     assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 46); // Fixed 1+3 does not double.
     assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
     assert_eq!(f.state.items, inventory);
@@ -290,7 +290,7 @@ fn restored_reaction_requires_exact_crossing_response_cost_and_source() {
             "accepted forged reaction {variation}"
         );
     }
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
 }
 
 #[test]
@@ -309,9 +309,9 @@ fn source_wolf_bite_uses_printed_bonus_and_prone_rider_without_a_fake_weapon() {
         },
     );
     assert_eq!(f.request().modifier, 4);
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.request().dice, [DieSpec { count: 1, sides: 6 }]);
-    f.roll(0, &[4]);
+    f.roll_then_decline_hit_responses(0, &[4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 94);
     assert!(f.rules().entities[&f.actors[1]].prone);
     assert_eq!(f.state.items, items);
@@ -358,7 +358,7 @@ fn chimera_bite_uses_extra_dice_only_when_advantage_survives_cancellation() {
                 RollMode::Advantage
             }
         );
-        f.roll(
+        f.roll_then_decline_hit_responses(
             0,
             if critical {
                 &[20, 20]
@@ -384,7 +384,7 @@ fn chimera_bite_uses_extra_dice_only_when_advantage_survives_cancellation() {
                 ]
             }
         );
-        f.roll(
+        f.roll_then_decline_hit_responses(
             0,
             if critical {
                 &[1, 2, 3, 4, 5, 6, 1, 2]
@@ -422,9 +422,9 @@ fn source_reaction_cannot_claim_the_other_actors_charge_movement() {
         },
     );
     assert_eq!(f.request().modifier, 6);
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.request().dice, [DieSpec { count: 2, sides: 4 }]);
-    f.roll(0, &[1, 2]);
+    f.roll_then_decline_hit_responses(0, &[1, 2]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 93);
     assert!(!f.rules().entities[&f.actors[1]].prone);
 }

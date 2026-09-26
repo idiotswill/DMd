@@ -306,8 +306,11 @@ pub struct TableCreatureView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
+#[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
+pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
     pub encounter_id: EncounterId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aftermath: Option<TableAftermathView>,
     /// Omitted for legacy flows so their historical presentation bytes remain
     /// unchanged. Only explicitly versioned new/upgraded state adds this field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -315,6 +318,8 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     /// Private held choices; omission preserves prior empty/legacy projections.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ready: Vec<TableReadyView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hit: Option<Box<TableHitView<HitKey>>>,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
     pub phase: String,
@@ -343,6 +348,38 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice> {
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
     pub shield_options: Option<TableShieldOptions>,
+}
+
+/// The opaque transport replaces each canonical key separately by its role.
+/// Absence of private response controls never exposes another actor's offer.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableHitView<Key = TacticalWorkKey> {
+    pub order: Option<TableHitOrder<Key>>,
+    pub delegate: Option<Key>,
+    pub response: Option<TableHitResponse<Key>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableHitOrder<Key> {
+    pub key: Key,
+    pub actor: EntityId,
+    pub participants: Vec<TableAttackTarget>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableHitResponse<Key> {
+    pub key: Key,
+    pub actor: EntityId,
+    pub selected: bool,
+    pub shield: Vec<SpellCastChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAftermathView {
+    pub cadence: AftermathCadence,
+    /// Private explanation and quiescence are not projected as hidden-work hints.
+    pub host_ruling: Option<String>,
+    pub may_pause_session: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

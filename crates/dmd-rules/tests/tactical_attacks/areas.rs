@@ -131,7 +131,7 @@ fn begin(f: &mut Fixture) {
     f.run(
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: actors
                 .iter()
                 .map(|actor| TacticalCombatant {
@@ -328,7 +328,7 @@ fn all_area_saves_precede_damage_then_each_target_has_its_own_concentration_chil
     raw(&mut f, &[8, 7, 6, 5, 3, 1, 1]); // One 31-point amount for both victims.
     let amount = record(&f).damage.unwrap();
     choose(&mut f, first, true);
-    f.roll(1, &[15]);
+    f.roll_then_decline_hit_responses(1, &[15]);
     assert_eq!(f.rules().entities[&first].hp, 100);
     assert_eq!(f.rules().entities[&third].hp, 100);
     assert_eq!(f.request().roller, Some(third));
@@ -646,7 +646,7 @@ fn area_source_legendary_resistance_changes_only_the_save_outcome() {
         let hp = f.rules().entities[&target].hp;
         f.run(Some(0), action(&f));
         raw(&mut f, &[1; 7]);
-        f.roll(1, &[1]);
+        f.roll_then_decline_hit_responses(1, &[1]);
         let failed = f
             .flow()
             .resolution
@@ -714,7 +714,7 @@ fn area_save_cover_is_derived_once_from_the_host_policy_and_changes_the_result()
     f.run(Some(0), action(&f));
     raw(&mut f, &[1; 7]);
     assert_eq!(f.request().modifier, 2);
-    f.roll(1, &[13]);
+    f.roll_then_decline_hit_responses(1, &[13]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 97);
 }
 
@@ -819,7 +819,7 @@ fn actual_area_damage_pumps_new_falling_before_idle_without_rebinding_its_old_vi
     );
     raw(&mut f, &[1; 7]);
     choose(&mut f, first, true);
-    f.roll(1, &[1]);
+    f.roll_then_decline_hit_responses(1, &[1]);
     raw(&mut f, &[1]);
     choose(&mut f, first, false);
     assert_eq!(f.rules().entities[&first].hp, 0);
@@ -901,7 +901,7 @@ fn completed_area_save_must_reconstruct_its_source_request_before_other_saves_fi
     raw(&mut f, &[1; 7]);
     let first = f.actors[1];
     choose(&mut f, first, true);
-    f.roll(1, &[10]);
+    f.roll_then_decline_hit_responses(1, &[10]);
     let save = record(&f)
         .targets
         .iter()
@@ -996,7 +996,7 @@ fn delegated_area_ordering_keeps_each_save_with_its_actual_controller() {
     let (mut f, _) = fixture("chimera", true);
     begin(&mut f);
     f.run(Some(0), action(&f));
-    f.roll(0, &[1; 7]);
+    f.roll_then_decline_hit_responses(0, &[1; 7]);
     let resolution = f.flow().resolution.as_ref().unwrap();
     let occurrence = resolution
         .frames
@@ -1014,7 +1014,7 @@ fn delegated_area_ordering_keeps_each_save_with_its_actual_controller() {
     f.run(None, TacticalAction::ChooseTurnWork { occurrence });
     let raw = f.raw(&[10]);
     f.rejected(Some(0), TacticalAction::SubmitRoll { result: raw });
-    f.roll(1, &[10]);
+    f.roll_then_decline_hit_responses(1, &[10]);
     assert_eq!(
         record(&f)
             .targets
@@ -1053,6 +1053,6 @@ fn host_source_area_uses_host_ordering_without_player_consent_fabrication() {
     );
     assert_eq!(record(&f).ordering, TacticalAreaOrdering::Host);
     raw(&mut f, &[1; 7]);
-    f.roll(1, &[10]);
+    f.roll_then_decline_hit_responses(1, &[10]);
     assert!(f.flow().resolution.is_none());
 }

@@ -29,6 +29,15 @@ export interface CastingVariant {
 }
 export interface CastingOptions { actor: Id; variants: CastingVariant[]; unavailable: string[] }
 export interface ShieldOptions { actor: Id; donned: Id|null; shields: { item: Id; hands: Hand[] }[] }
+export type ReactionUnlistedOrder = 'BeforeForward'|'BeforeReverse'|'AfterForward'|'AfterReverse';
+export interface ReactionOrdering { ranked: Id[]; unlisted: ReactionUnlistedOrder }
+export type HitDecision = { Order: { instruction: ReactionOrdering } } | 'Delegate'
+  | { Respond: { accept: boolean } } | { Cast: { choice: SpellCastChoice } } | 'Decline';
+export interface HitView {
+  order: { key: Id; actor: Id; participants: { actor: Id; label: string }[] } | null;
+  delegate: Id | null;
+  response: { key: Id; actor: Id; selected: boolean; shield: SpellCastChoice[] } | null;
+}
 
 export interface AreaOptions {
   actor: Id; controller: Id | null; source_space: Volume;
@@ -62,7 +71,10 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
+  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' } }
+  | { HitResponse: { handle: Id; decision: HitDecision } }
   | { AbandonReady: { actor: Id } }
   | { UnarmedStrike: { target: Id } }
   | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
@@ -81,12 +93,14 @@ export type TacticalAction =
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
-  | { Begin: { execution: 'ReactionsV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
+  | { Begin: { execution: 'ShieldHitV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
-  execution?: 'ReactionsV1' | null;
+  execution?: 'ReactionsV1' | 'ShieldHitV1' | null;
+  hit?: HitView | null;
+  aftermath?: { cadence: 'ContinueExistingOrder'; host_ruling: string | null; may_pause_session: boolean };
   ready?: { actor: Id; action: string; may_abandon: boolean }[];
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;

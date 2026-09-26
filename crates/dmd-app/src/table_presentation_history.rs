@@ -60,6 +60,31 @@ fn capabilities(
             });
         }
     }
+    if let Some(hit) = raw.tactical.as_ref().and_then(|t| t.hit.as_deref()) {
+        let mut add = |key: TacticalWorkKey, role| {
+            result.push(ProjectionCapability::HitResponse {
+                origin: key.resolution,
+                occurrence: key.occurrence,
+                role,
+            })
+        };
+        if let Some(order) = &hit.order {
+            add(order.key, ProjectionHitRole::Order);
+        }
+        if let Some(key) = hit.delegate {
+            add(key, ProjectionHitRole::Delegate);
+        }
+        if let Some(response) = &hit.response {
+            add(
+                response.key,
+                if response.selected {
+                    ProjectionHitRole::Selected
+                } else {
+                    ProjectionHitRole::Intent
+                },
+            );
+        }
+    }
     Ok(result)
 }
 fn digest(raw: TableView, state: &CampaignState) -> Result<String, String> {
