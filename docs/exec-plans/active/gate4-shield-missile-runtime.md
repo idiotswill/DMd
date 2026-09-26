@@ -1,8 +1,8 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active approved design; compatibility-only tests are authored but unrun.
-The isolated genuine flow3 Night Hag capture scenario passed; its two exact exports
-are imported. Owned Shield capture and the four-file baseline gate remain pending.
+Status: active approved design; both original flow3 capture scenarios and the
+source-equivalent four-file baseline test passed. All four exact exports are
+imported. Four independent continuation cases remain unrun.
 No flow4 runtime changes or acceptance are claimed.
 Branch: `codex/gate4-shield-missile-runtime`.
 Writer: `shield_rules_recovery`, exclusively; root coordinates integration and builds.
@@ -207,7 +207,7 @@ as historical while continuing to run a fresh flow4 Begin.
    plan and read/export hooks in the existing Night Hag and owned Shield tests;
    production source is unchanged. The generator has one writer and must never
    merge. Do not amend its runtime or reinterpret Begin3. Its capture/verification
-   run is pending at the checkpoint below. The complete 7bc01af..06045b2 hook delta was
+   run passed as recorded at the checkpoint below. The complete 7bc01af..06045b2 hook delta was
    independently inspected read-only; this is not compilation or runtime evidence.
 2. The prepared hook observes `finish_darts` at zero-based `dart == 0` and `2`,
    before each iteration's raw submission: before the first face, then after two
@@ -359,15 +359,23 @@ actual timing; do not claim a speedup, weaken integrity or parallelize heavy bui
 The branch is created from the stated development base. This plan and ADR028 record
 the approved per-dart/all-faces/normal-child-drain interpretation. The initial commit
 79b17bf changes documentation only. Root's isolated generator at06045b2 ran the actual
-Night Hag scenario successfully:1/1 in500.88s, default Windows stack, log
-`tooling/shield-diagnostic-06045b2-capture-missile.log`. Its two genuine missile
-exports are imported unchanged, with lengths/hashes and original authority recorded
-in `crates/dmd-app/tests/fixtures/shield-hit-v1-06045b2.md`. The owned Shield scenario
-and remaining two exports are still pending. No build has run from this branch,
-and nothing is pushed at this checkpoint.
+Night Hag scenario successfully:1/1 in500.88s, and the owned Shield scenario1/1
+in1427.43s, default Windows stack. Their logs are
+`tooling/shield-diagnostic-06045b2-capture-missile.log` and
+`tooling/shield-diagnostic-06045b2-owned-shield.log`. All four genuine exports are
+imported unchanged, with lengths/hashes and original authority recorded in
+`crates/dmd-app/tests/fixtures/shield-hit-v1-06045b2.md`. No build has run from this
+branch, and nothing is pushed at this checkpoint.
 
 The authorized compatibility-only module is now authored and rustfmt-formatted:
-`crates/dmd-app/tests/legacy_shield_hit_v1_replay.rs`. It is not compiled or run.
+`crates/dmd-app/tests/legacy_shield_hit_v1_replay.rs`. The exact85cff17 module and
+all four captures were copied into isolated diagnostic successor
+`f9698e1761ee0485c4cf0ff593f89a03f016302b`. A complete diff confirms identical
+production source/dependencies/content; only read/export hooks in the two original
+scenario drivers, docs and historical fixtures differ. Its separately selected
+baseline test compiled in25.99s and passed1/1 in299.50s, exit0, default Windows GNU
+stack, jobs1/incremental0, recorded in `tooling/shield-baseline-f9698e1.log`.
+This source-equivalent capture check does not replace final-head verification.
 Missing named captures fail
 explicitly; no fabricated file or conditional skip is permitted. One separately
 selectable baseline test covers all four captures' byte/typed roundtrip, actual
@@ -378,8 +386,17 @@ miss, and natural20 post-cast damage toHP75 with original issuance cause. Every 
 accepted continuation also proves its own lost-ack retry and changed-body no-write
 refusal. Preserve original transport1/2 and source/PC/Host channels.
 
-The capture gate requires both unchanged generator scenarios to pass, frozen genuine
-bytes/provenance and the separately selected baseline import/roundtrip/receipt test.
+The actual fourth image exposes one test-only expectation to correct in a separate
+commit before runtime development: `attack.damage_roll` remains None while its raw
+request is pending and is assigned only upon acceptance (`attacks.rs::finish`).
+The unrun fourth continuation currently expects that field too early. Assert the
+real pending request/key and later accepted record instead. Do not alter the
+capture or production behavior. The exact85cff17 baseline test above is unaffected.
+
+The capture gate passed: both unchanged generator scenarios, frozen genuine bytes
+and the separately selected baseline import/roundtrip/receipt test. Root authorized
+the approved flow4 domain/rules work after committing the artifacts and the stated
+test correction. Heavy commands still require root's shared-slot authorization.
 The four full continuation cases remain mandatory focused/canonical acceptance;
 they may run after versioned development begins so the one heavy slot is used
 efficiently. Their authoring does not imply execution, and failing continuation
@@ -451,7 +468,8 @@ aggregation or deferred vitality would be a separate design change, not a small
 optimization. A source/model incompatibility must be resolved in the plan and tests,
 never hidden by a broad validator exception or synthetic historical fixture.
 
-The imported generator evidence above belongs only to06045b2. The new branch's
-compatibility tests remain unrun, and existing Shield review/test evidence remains
+The imported generator evidence above belongs only to06045b2; the separate baseline
+pass belongs to source-equivalent f9698e1 and exact85cff17 test module. The four
+continuation tests remain unrun. Existing Shield review/test evidence remains
 attributable only to its exact recorded head. Counterspell, Ready release,
 off-turn missile integration and the full Gate4 production encounter remain open.
