@@ -45,7 +45,7 @@ describe('durable UI retry',()=>{
     view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.active_session={session_id:'first-session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReactionsV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
     vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementation(async received=>{
       if(received.action==='EndSession') view={...view,revision:'closed',active_session:null};

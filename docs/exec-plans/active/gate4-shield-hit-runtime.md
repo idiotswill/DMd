@@ -219,6 +219,17 @@ if the approved read-only backup succeeds. Final Shield canonical/merge still
 requires normal reconciliation of verified PR44 main, full integration review,
 all required checks and no discarded source or pending-work behavior.
 
+Development merge8a1f2f5 retained both complete source/UI test sets. Three textual
+conflicts joined the two independent TableApp tests, retained hit plus aftermath
+DTO fields and retained all hit action arms plus conclusion. Auto-merged medicine
+and source helper changes only expose the existing tested helpers to aftermath.
+The follow-up admits validation only for explicit ReactionsV1/ShieldHitV1, changes
+the two new actual aftermath Begins and fresh UI fixtures to ShieldHitV1, and adds
+a qualified typed historical2 replay/upgrade invariant. Actual selected Shield and
+post-Shield physical damage now both reject Host conclusion with the whole export
+unchanged; the UI keeps conclusion disabled for either pending boundary. These
+integration additions are formatted/static-reviewed only until their tests run.
+
 Read any current CI failure before changing source. The registered player Shield
 SQLite case and modified source-control unit/application cases now pass on the
 default stack. Complete aftermath integration, canonical verification and final all-six-head CI with fresh

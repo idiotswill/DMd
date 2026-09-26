@@ -153,3 +153,64 @@ fn absent_conclusion_keeps_historical_flow_bytes_unchanged() {
     assert!(restored.aftermath.is_none());
     assert_eq!(serde_json::to_value(restored).unwrap(), value);
 }
+
+#[test]
+fn historical_reactions_aftermath_replays_and_upgrades_without_changing_its_cadence() {
+    let mut f = Fixture::new();
+    f.begin();
+    // Isolated typed rules fixture for the historical admission boundary. This
+    // is not a genuine persisted capture or a replacement for application replay.
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = TacticalExecutionVersion::ReactionsV1.flow_version();
+    f.rejected(None, conclude());
+    let event = TacticalEvent {
+        meta: f.meta(None),
+        action: conclude(),
+        outcome: TacticalOutcome {
+            next_roll: None,
+            awaiting_initiative_ties: false,
+            active_actor: Some(f.actors[0]),
+            awaiting_turn_work: false,
+        },
+    };
+    let historical = replay_tactical(&f.state, &event, &f.pack).unwrap();
+    assert_eq!(historical.event, event);
+    f.state = historical.next_state;
+    f.state.applied_event_sequence += 1;
+    require_aftermath_session_boundary(&f.state).unwrap();
+    let before = f.state.clone();
+    f.run(
+        None,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldHitV1,
+        },
+    );
+    require_aftermath_session_boundary(&f.state).unwrap();
+    let mut compared = f.state.clone();
+    let version = &mut compared
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version;
+    assert_eq!(
+        *version,
+        TacticalExecutionVersion::ShieldHitV1.flow_version()
+    );
+    *version = TacticalExecutionVersion::ReactionsV1.flow_version();
+    compared.applied_event_sequence = before.applied_event_sequence;
+    assert_eq!(
+        compared, before,
+        "upgrade preserves the complete aftermath state"
+    );
+    f.run(Some(0), TacticalAction::EndTurn);
+    require_aftermath_session_boundary(&f.state).unwrap();
+}
