@@ -1,7 +1,8 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: active integration draft; 14 focused Shield rules cases pass. Final
-application, canonical and exact-head acceptance remain pending.
+Status: active integration draft; all six checks pass for executable candidate
+8b5cf52, including the actual Shield recovery case. Final aftermath integration,
+canonical and exact-head acceptance remain pending.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
@@ -86,11 +87,11 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
 
 ## Current verification checkpoint
 
-The compiler/UI-verified executable candidate is
+The executable candidate with all six CI checks passing is
 8b5cf52a250c5f381d22977391906cfedc53a630. Documentation successor7bc01af and
 verified-main reconciliation98399da change no executable source. The latter's
 whole tree equals7bc01af at926629f4aec461374b38e5ff57a93260e190d408.
-No Gate4 criterion is waived; final Shield runtime/canonical acceptance is pending.
+No Gate4 criterion is waived; final integrated/canonical acceptance is pending.
 
 - The fourteen Shield rules cases pass on the local default Windows GNU stack
   (57.29 seconds, jobs1/incremental0). The prior full tactical-attacks run passed
@@ -99,15 +100,23 @@ No Gate4 criterion is waived; final Shield runtime/canonical acceptance is pendi
   the fixture; production rules and assertions were unchanged. Logs are outside
   the repository: tooling/shield-hit-tactical-attacks.log and
   tooling/shield-hit-focused-r2.log.
-- Current Linux run36193351652 passes fast verification, strict Clippy, Rust1.88
-  and both guards; its full runtime step is still active. Native Windows
-  run36193351721 passes workspace/desktop lint and is testing; packaging is pending.
-  Windows MSRV job108263468702 passes at literal8b5cf52. Its actual log verifies
-  84 UI tests in15files, zero Svelte errors/warnings and138 built modules.
-- The genuine player-owned Mage SQLite case is registered and compiles, but has
-  not yet completed execution. Updated source-control cases now use fresh flow3;
-  four genuine old exports retain their original bytes. All runtime, canonical,
-  installer and final-head acceptance remain required.
+- Linux run36193351652 passes all four jobs, including fast verification, strict
+  Clippy, Rust1.88 and both guards. Actual runtime job108263431336 records715 Rust
+  tests across54 result suites, zero failed/ignored, all121 attack cases and47
+  table cases in1885.29 seconds. The owned Shield SQLite case passes. Checkout is
+  synthetic mergee07b7db932aa1ab57280566e6c90a43406c2231a of8b5cf52 and
+  main2798b6b. Fetched complete trees both equal
+  cc35d233924c88344598dd8206688e34455fd6bb; their full diff is empty.
+- Windows run36193351721 passes stable108263469783 and MSRV108263468702 at literal
+  8b5cf52. Actual stable logs record717 Rust/54suites/47table in1950.51 seconds,
+  zero failed/ignored,84 UI tests in15files, zero Svelte errors/warnings and138
+  built modules. Fresh EXE/NSIS artifact10890038954 is231884106bytes; upload log
+  and run-artifacts API agree on SHA256
+  d2b4193963af65a9e814c55e2e73879be1c6ffcbb3c4e2497144fbeec393fc77.
+- The genuine player-owned Mage SQLite case passes on Linux and native Windows.
+  Updated source-control cases use fresh flow3; four genuine old exports retain
+  their original bytes. Final integrated canonical and exact-head acceptance
+  remain required after aftermath integration.
 - Independent full production review and the actual source-control merge delta
   32d937b plus equivalent fixture correction8b5cf52 are clear. Review covered both
   parents, v1/v2 replay/projections, source authority, activation/attendance,
@@ -115,13 +124,21 @@ No Gate4 criterion is waived; final Shield runtime/canonical acceptance is pendi
   registration. Static review is not a runtime result.
 
 Source-control's canonical verifier completed and released the heavy slot. Root
-now runs the otherwise identical source in an isolated diagnostic worktree,
+ran the otherwise identical source in an isolated diagnostic worktree,
 06045b2 over7bc01af, with independently reviewed read-only capture hooks in the
 Night Hag and owned Shield tests only. The hooks preserve genuine pre-change
 flow3 exports for the next semantic boundary; they never merge into production.
-The focused batch includes actual source-control units/cases and owned Shield.
-No result is claimed before completion. The earlier disk/committed-memory shortage
-is resolved; use one job, CARGO_INCREMENTAL=0 and the default test stack.
+The default-stack focused batch passes: Night Hag1/1 in500.88 seconds, source
+units3/3 in0.13 seconds, actual source cases2/2 in177.07 seconds and the full owned
+Shield case1/1 in1427.43 seconds. All four real flow3 captures are preserved.
+Diagnostic successorf9698e1761ee0485c4cf0ff593f89a03f016302b adds only the exact
+reviewed compatibility module and capture bytes for separate baseline restoration
+and original-receipt retries. Its exact selected test passes1/1 in299.50 seconds
+(compile25.99 seconds, exit0), covering all four byte/typed roundtrips, complete
+restores, cold resumes, every original envelope retry and changed-body zero-write
+refusal. Log: tooling/shield-baseline-f9698e1.log. This source-equivalent proof
+does not replace final integrated canonical verification. The earlier disk and
+committed-memory shortage is resolved; use jobs1, incremental0 and default stack.
 
 ### Integration and recovery decisions
 
@@ -175,7 +192,11 @@ reviewed finala119d7f. Its exact canonical verification passes698Rust/54suites/
 46table; all six final-head checks pass699Linux/701native Rust,77UI,0/0,137modules
 and fresh EXE/NSIS. Artifact10890060494 is231627996bytes, SHA256
 ed11f6b7fba78c8733a59cf524514c32e7de118d882011c51f0bd8dea9ffbc12.
-Post-main runs36194898895/36194898980 remain separately pending.
+Post-main runs36194898895/36194898980 separately pass all six checks on literal
+e813e3a:699Linux/701native Rust,54suites/46table,77UI,0/0,137modules,7manifest
+tests and fresh EXE/NSIS. Artifact10889754911 is231636930bytes, SHA256
+5b1f74d35e3204bd16d8364c32e47d9967109bcc5979e7c2c6a1b23e735c52e6.
+The bounded source-control plan is archived after that proof.
 
 The planned remaining merge order is aftermath PR44, then this hit slice. PR44's
 bounded conclusion currently validates ReactionsV1/flow2 only. Before final Shield
@@ -186,9 +207,9 @@ timing; do not leave the new current executor unable to conclude hostilities.
 If verification changes the merge order, perform that integration explicitly in
 the later branch instead. Full encounter release remains separate Gate4 work.
 
-Read any current CI failure before changing source. Complete the registered player
-Shield SQLite case and modified source-control unit/application cases on the
-default stack. Complete canonical verification, final all-six-head CI with fresh
+Read any current CI failure before changing source. The registered player Shield
+SQLite case and modified source-control unit/application cases now pass on the
+default stack. Complete aftermath integration, canonical verification and final all-six-head CI with fresh
 packaging, full delta review, expected-head merge and fetched tree parity. Record
 post-main evidence in the PR. Continue the live-reaction umbrella inside Gate4;
 Magic Missile, Counterspell, Ready release/held spells and all other open tactical
