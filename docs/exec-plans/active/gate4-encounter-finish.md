@@ -8,13 +8,14 @@ claimed. Root authorized the bounded first aftermath slice on 2026-09-25.
 Current baseline is merged main `e813e3a13911497902a3d4a55aec3c70653afb2a`,
 normally reconciled at `a3dac85` with exact tree parity to reviewed PR43 `a119d7f`.
 Draft PR: https://github.com/idiotswill/DMd/pull/44.
-Status: all original focused tests pass after environment recovery: four rules,
-two genuine file-SQLite scenarios and all 71 UI tests; Svelte reports no errors or
-warnings and the frontend build passes. A subsequent comparison-only fixture
-refinement still needs execution. Canonical, integrated source-controller evidence
-and final exact-head CI remain outstanding. The first focused attempt hit OS112
-before any tests (details below). No production acceptance or upstream merge is
-claimed. Night Hag main merged normally at `4244f64`; the verified PR42 historical
+Status: the complete integrated source checkpoint `f798432` passed all six CI checks:
+Linux 706 Rust tests, native Windows 708 Rust tests, all 49 table cases, 81 UI tests,
+Svelte 0 errors/0 warnings, 138 frontend modules and fresh executable/NSIS packaging.
+All three genuine aftermath cases and the comparison-only fixture refinement passed.
+The final documented/main-reconciled candidate still requires canonical verification,
+independent final review and all six final-head checks. The first focused attempt hit
+OS112 before any tests (details below). PR44 has not merged. Night Hag main merged
+normally at `4244f64`; the verified PR42 historical
 corpus and reviewed PR43 source control are now integrated.
 Initial normal merge `a76c68c` reconciled inherited pre-squash PR33 conflicts to
 authoritative `d5d1db7` main. At that initial merge, the branch's two genuine commits
@@ -33,9 +34,8 @@ actual player-owned source-only aftermath attendance and continuation using the 
 Mage, controller assignment, physical initiative/cast and transport2 channel. The
 existing two source-backed scenarios and historical captures remain unchanged.
 
-The source-control writer retains the shared heavy build slot for canonical
-verification. No local compilation or frontend runs are authorized concurrently;
-integration, fixture implementation, static review and remote CI monitoring proceed.
+During development integration the source-control writer retained the shared heavy
+build slot; no concurrent local compiler or frontend process was started here.
 The authority/design record was committed as `cea0b14`, followed by normal merge
 `7c7ea5c` of that exact reviewed checkpoint. Manual resolutions retain both source
 selection/ownership controls and aftermath/session controls and both test sets. The
@@ -54,28 +54,31 @@ boundaries. Host/foreign actor decisions and player-issued conclusion are refuse
 The original two scenarios retain transport1; the shared request helper selects
 transport2 only after genuine activation or for its explicit activation action.
 
-These integrated tests are authored, not executed. `cargo fmt --all --check` and
-`git diff --check` pass. Independent integration review is requested; local focused
-and canonical runs await the shared slot. Remote verification of prior head `9405036`
-has no reported failure: both MSRV jobs and both architecture/genericity guards pass,
-Linux Rust tests and native Windows regressions remain running after successful
-compilation/lint/frontend. Superseded results will not count as final-head acceptance.
-Next: publish the coherent draft integration for remote diagnostics, address review
-findings, reconcile verified PR43 main, then run focused and canonical verification
-when the slot is available. Review exact final head and all six CI checks before
-root's protected merge.
-
 Integration checkpoint `f7984322584d3e2260ce8893d5a2299b2a8ab27e` was published
 to draft PR44. Independent reviewer shield_rules_recovery inspected that exact head,
 including the actual remerge diff, all manual resolutions, the full source-only
 fixture and production authority/privacy/session paths; no actionable defect was
-found. This is static review, not runtime evidence. Exact-head remote Linux run
-36193552678 passed both guards, MSRV, fast verification and strict Clippy and is
-running the full tests. Windows run36193552717 MSRV job108264109998 passed; its
-downloaded log verifies Svelte 0 errors/0 warnings, 81 UI tests across 15 files and
-the 138-module production build. The stable job continues workspace/native checks.
-These preliminary results do not replace full exact-head acceptance. No local
-compiler or frontend process was started during PR43's canonical slot.
+found. The subsequent downloaded CI logs provide runtime evidence:
+
+- Linux run36193552678 passed all four jobs, including fast verification and strict
+  Clippy. Rust job108264155955 reports 706 passing tests across 54 result suites,
+  zero failed/ignored and all 49 table cases (1961.51 seconds). All three aftermath
+  cases explicitly pass. Linux checked out synthetic merge
+  `9042e0d4691158c2dc455550f565d7ac8de00e90`; it was fetched and its complete tree
+  compared with `f798432`. Both trees are
+  `26fe09f146147a1e33da4b3609f3be55ae7efc76`, with an empty full diff.
+- Windows run36193552717 passed both jobs. Stable job108264109797 checked out literal
+  `f798432` and reports 708 passing Rust tests across 54 result suites, zero
+  failed/ignored and all 49 table cases (2262.59 seconds), including all three
+  aftermath cases. Both frontend passes report 81 tests across 15 files, Svelte
+  0 errors/0 warnings and 138 modules. A fresh release executable and NSIS installer
+  were built. Artifact10890990946 is 231659069 bytes, SHA256
+  `27b45de80f84a65cb34a390ce063163901e5da4a0c6f700fb154e96dafec0c8b`.
+
+These establish the reviewed source checkpoint, not final-head acceptance for later
+documentation/main reconciliation. No local compiler or frontend process was started
+during the source-control or Shield writers' slots. No performance improvement is
+claimed from comparing these different test sets and platforms.
 
 Root subsequently completed PR43's protected merge as main
 `e813e3a13911497902a3d4a55aec3c70653afb2a`, whose entire tree equals reviewed `a119d7f`.
@@ -91,9 +94,21 @@ integration, both main-to-`a119d7f` full-tree equality and that reviewed commit'
 ancestry in PR44 were verified. The reconciled tree exactly equals its prior local
 `fb2bef3` tree: `531f9ab982ce994adcd3d99cd246837d460d4561`. Thus no production,
 fixture, UI or other file changed during reconciliation. The main merge and evidence
-docs are initially held locally so the source-equivalent `f798432` remote full test
-runs can finish. Root's focused Shield verification takes the next shared slot;
-PR44's canonical run follows coordination, with default stacks/jobs1/incremental0.
+docs were held locally until the source-equivalent `f798432` remote runs completed.
+Root subsequently released the shared slot after its own compatibility baseline.
+Next: publish the final documented/main-reconciled candidate, run canonical
+`./scripts/verify` on it with default stacks/jobs1/incremental0, and obtain independent
+final review and all six final-head checks before root's protected merge. All source,
+fixture and UI files remain identical to the reviewed and CI-tested `f798432`.
+
+Successful aftermath tests remove their temporary databases and no retained export
+or database was found. For the later flow3 compatibility work, root authorized a
+read-only SQLite online backup of the genuine source-only flow2 case during this
+already-required canonical run, after an actual conclusion. Record source SHA,
+capture time and original database identity; use bounded busy handling, retain only
+a complete consistent backup, and later call the official exporter under this exact
+source. Do not alter test inputs, commands, rows or history, and do not claim the
+capture verified until the original full scenario/canonical and baseline replay pass.
 
 ## Authorized first production slice
 
@@ -454,7 +469,8 @@ both accepted command paths, both original retries, changed-body rejection and f
 normalized export equality all remain. No recovery checkpoint or assertion was
 removed. These removed opens validate current images/content rather than replaying
 the complete journal; no speed improvement is claimed before measurement. This
-refinement is formatted and statically reviewed but its execution remains pending.
+refinement subsequently passed all three actual aftermath scenarios on Linux and
+native Windows at `f798432`, with every recovery checkpoint retained.
 
 Verified main `2798b6b` was merged normally as `318b62e`. The integration brings the
 four genuine legacy reaction captures and their executable corpus without changing
@@ -464,9 +480,10 @@ checks on literal main `2798b6b`: Linux run36188457488 passed 695 Rust tests acr
 Svelte 0/0, the 136-module frontend build, fresh executable and NSIS packaging.
 Artifact10888336544 is 231464157 bytes, SHA256
 `7cb2a446ffb122ca6aa1d78430c3c50b79eb8da78af0f77b1e0016747b79c19a`.
-These establish the merged prerequisite, not PR44 acceptance. Final PR44 still requires PR43's
-genuine player-owned source channel, its source-only aftermath session regression,
-canonical verification, independent final review and all six checks at the final
+These establish the merged prerequisite, not PR44 acceptance. PR43's genuine player-owned
+source channel and its source-only aftermath session regression are now integrated
+and pass at `f798432`. Final PR44 still requires canonical verification,
+independent final review and all six checks at the final
 exact PR head. Terminal release and new-encounter admission remain mandatory Gate4
 follow-up, not completion claims for this PR.
 
@@ -522,6 +539,17 @@ elapsed travel, rest, healing, pickup, dismissal or resource restoration. It per
 no `Observe(Turn)` and advances no world time. Its accepted receipt retains original
 command metadata, encounter/scene IDs, conclusion command, clock, final actor/turn
 and execution version. Replaying the accepted action must reconstruct every field.
+
+Admit this future host-only timing release both during an active session and after
+an already quiescent aftermath session has closed. For the latter, require no active
+session and an explicit privileged envelope with no invented session binding; apply
+the identical derived owed-work/dependency scan before any mutation. This must be a
+deliberate admission branch because current Tactical table actions require an active
+session. Do not require every retained controller to return solely to release a
+fully settled cadence, such as a dead PC owner with no remaining dependency or owed
+choice. This performs no actor decision or turn and does not weaken PR44's current
+resume-attendance rule. Unresolved Ready, physical dice, paid attacks, source work or
+other owed choices continue to block release regardless of attendance.
 
 Retain an authenticated completed-encounter epoch outside the replaceable flow.
 The preferred minimal epoch rule is a campaign-wide monotonic tactical turn number:
@@ -642,6 +670,11 @@ to establish a new first Start without altering that historical evidence.
   cold resume, exact retries and zero-write changed-body/foreign/stale refusals. Cover
   old genuine captures unchanged, default Windows stacks, desktop controls and a
   packaged session/restart path. Review exact head and all six CI checks before merge.
+- Close an actual settled aftermath session, then perform an explicitly privileged
+  timing release with no active session and no fabricated attendance. Include an
+  absent retained dead-PC owner with no surviving dependency; separately prove every
+  actual owed choice/dependency still blocks the same closed-session path without
+  writes. Ordinary resume continues to require all retained controller bindings.
 
 Offstage/no-turn absolute work, free elapsed time, safe relative-effect rebasing for
 changed participants, live old-scene pickup/revisit and broader carried Reaction
