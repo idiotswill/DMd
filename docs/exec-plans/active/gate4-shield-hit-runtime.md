@@ -207,6 +207,18 @@ timing; do not leave the new current executor unable to conclude hostilities.
 If verification changes the merge order, perform that integration explicitly in
 the later branch instead. Full encounter release remains separate Gate4 work.
 
+For parallel development during PR44's final canonical run, integrate reviewed
+candidatebe5442af8b24f8ee24d2c0549ea8dac452d44489 locally first. Its complete diff
+from all-six-greenf798432 is only its execution plan; root's final delta review
+and the independent full review are clear. This is development integration, not
+PR44 acceptance. Preserve both parents' real application tests and controls,
+admit retained aftermath validation under explicit versions2 and3, and change
+fresh aftermath setup to Begin3. Exercise historical flow2 conclusion/upgrade
+separately and preserve a genuine flow2 capture from PR44's unchanged real case
+if the approved read-only backup succeeds. Final Shield canonical/merge still
+requires normal reconciliation of verified PR44 main, full integration review,
+all required checks and no discarded source or pending-work behavior.
+
 Read any current CI failure before changing source. The registered player Shield
 SQLite case and modified source-control unit/application cases now pass on the
 default stack. Complete aftermath integration, canonical verification and final all-six-head CI with fresh
