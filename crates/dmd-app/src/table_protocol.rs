@@ -309,6 +309,8 @@ pub struct TableCreatureView {
 #[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
     pub encounter_id: EncounterId,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aftermath: Option<TableAftermathView>,
     /// Omitted for legacy flows so their historical presentation bytes remain
     /// unchanged. Only explicitly versioned new/upgraded state adds this field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -370,6 +372,14 @@ pub struct TableHitResponse<Key> {
     pub actor: EntityId,
     pub selected: bool,
     pub shield: Vec<SpellCastChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAftermathView {
+    pub cadence: AftermathCadence,
+    /// Private explanation and quiescence are not projected as hidden-work hints.
+    pub host_ruling: Option<String>,
+    pub may_pause_session: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

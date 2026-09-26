@@ -304,6 +304,7 @@ pub(crate) fn authorize_tactical(
         // These retain source monster/mixed-tie and explicitly delegated ordering.
         A::Establish { .. }
         | A::Begin { .. }
+        | A::ConcludeHostilities { .. }
         | A::UpgradeExecution
         | A::UpgradeExecutionTo { .. }
         | A::ProposeInitiativeTie { .. }

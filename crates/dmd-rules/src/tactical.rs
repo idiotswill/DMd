@@ -1,5 +1,6 @@
 //! Versioned tactical transitions. The application supplies trusted command metadata;
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
+mod aftermath;
 mod areas;
 mod attacks;
 mod casting;
@@ -20,6 +21,7 @@ mod turns;
 mod validation;
 mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
+pub use aftermath::require_aftermath_session_boundary;
 pub use attacks::savage_attacker_dice;
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
@@ -36,6 +38,10 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    ConcludeHostilities {
+        cadence: AftermathCadence,
+        ruling: String,
+    },
     /// A deliberate, journaled transition for an already active legacy encounter.
     /// It is admitted only at an idle boundary and never alters accepted history.
     UpgradeExecution,
@@ -325,6 +331,9 @@ fn resolve_with_policy(
         TacticalAction::DeclineSelectedHitShield { window } => {
             hit_reactions::decline(&mut next, meta, *window)?;
         }
+        TacticalAction::ConcludeHostilities { cadence, ruling } => {
+            aftermath::conclude(&mut next, meta, *cadence, ruling)?;
+        }
         TacticalAction::UpgradeExecution => {
             privileged(meta)?;
             let current = flow(&next)?;
@@ -462,6 +471,7 @@ fn resolve_with_policy(
                 save_decisions: vec![],
                 ground_items: vec![],
                 ready: vec![],
+                aftermath: None,
             };
             next.encounter
                 .as_mut()

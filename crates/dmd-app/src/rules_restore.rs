@@ -823,6 +823,9 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(aftermath) = &flow.aftermath {
+                origins.push(&aftermath.origin);
+            }
             for ready in &flow.ready {
                 origins.push(&ready.origin);
                 if let Some(held) = &ready.held_spell {
@@ -1075,6 +1078,32 @@ fn validate_origins(
     audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
     commands: &HashMap<CommandId, &RecoveryEvent>,
 ) -> Result<(), String> {
+    if let Some(aftermath) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .and_then(|flow| flow.aftermath.as_ref())
+    {
+        let accepted = commands
+            .get(&aftermath.origin.id)
+            .and_then(|event| match event {
+                RecoveryEvent::Tactical(event) => {
+                    Some((&event.meta, &event.action, &event.outcome))
+                }
+                RecoveryEvent::Table(event) => event
+                    .tactical_event
+                    .as_ref()
+                    .map(|event| (&event.meta, &event.action, &event.outcome)),
+                RecoveryEvent::Rules(_) => None,
+            });
+        if !matches!(accepted, Some((meta,TacticalAction::ConcludeHostilities {cadence,ruling},outcome))
+            if meta == &aftermath.origin && cadence == &aftermath.cadence
+                && ruling == &aftermath.ruling && outcome.active_actor == Some(aftermath.concluded_on_turn.actor)
+                && outcome.next_roll.is_none() && !outcome.awaiting_turn_work)
+        {
+            return Err("aftermath conclusion lacks its exact accepted host decision".into());
+        }
+    }
     let pending = state
         .table
         .as_ref()

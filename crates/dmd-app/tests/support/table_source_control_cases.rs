@@ -94,7 +94,9 @@ async fn reopen(f: &mut Fixture, path: &Path) {
         &expected
     );
 }
-async fn create_mage(f: &Fixture) -> (EntityId, TableTransportRequest, TableTransportResult) {
+pub(super) async fn create_mage(
+    f: &Fixture,
+) -> (EntityId, TableTransportRequest, TableTransportResult) {
     let host = presented(f, &TableTransportChannel::Host).await;
     let catalog = f
         .runtime

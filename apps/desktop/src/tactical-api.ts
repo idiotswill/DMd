@@ -71,6 +71,7 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
   | { UpgradeExecutionTo: { execution: 'ShieldHitV1' } }
   | { HitResponse: { handle: Id; decision: HitDecision } }
@@ -99,6 +100,7 @@ export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id
 export interface TacticalView {
   execution?: 'ReactionsV1' | 'ShieldHitV1' | null;
   hit?: HitView | null;
+  aftermath?: { cadence: 'ContinueExistingOrder'; host_ruling: string | null; may_pause_session: boolean };
   ready?: { actor: Id; action: string; may_abandon: boolean }[];
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;
