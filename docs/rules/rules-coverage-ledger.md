@@ -74,8 +74,16 @@ are unchanged; no unfinished mechanic moves to a later gate. Bounded evidence in
 the combat-actions and spell-effects rows now records the actual Shield-hit source
 cases at74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb: canonical723 GNU Rust tests,
 including the owned Mage's file-SQLite/cold-retry scenario. Both families remain
-`implementing`; Magic Missile responses, Counterspell, Ready release and the other
-required mechanisms are still open. This is technical evidence, not human acceptance.
+`implementing`. PR45 is merged as a0b12d2 with all six source and separate main
+checks passing. The same two rows now include source-qualified ffc3 evidence for
+Magic Missile: real owned responses, uniform private acknowledgments, concentration
+children, first aid/death, exact receipts and independent cold recovery pass on
+Linux and native Windows. The ffc3 packaged desktop also survives full restart at
+the selected owned Shield decision and completes all six physical faces and ordered
+impacts. Its bounded plan records the artifact and read-only outcome audit. Final
+integrated canonical/CI/review and missile merge/main proof remain pending;
+Counterspell, Ready release and the other required mechanisms remain open.
+This is technical evidence, not human acceptance.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

@@ -3,8 +3,9 @@
 Status: active final integration. Exact `ffc3c342dd542c48f05edf39a7123d0f6325f750`
 passes all six source CI checks, all four actual SQLite missile families, both
 five-case historical suites and 99 desktop tests. Canonical verification of the
-final integrated head, actual packaged restart, final review/checks and protected
-merge/post-main proof remain required. The earlier uncached `0f43823` run was
+final integrated head, final review/checks and protected merge/post-main proof
+remain required. Actual packaged restart and continuation pass on the source-qualified
+ffc3 artifact below. The earlier uncached `0f43823` run was
 intentionally stopped with all four cases unfinished; it is not passing evidence.
 PR45 and PR47 pass all six separate literal post-main checks and fresh packaging,
 with complete fetched tree parity. Both mains are normally
@@ -50,8 +51,8 @@ historical implementation record below; their original attempts remain recorded.
 - Fresh EXE/NSIS artifact 10930791509 is 232166713 bytes, SHA256
   `eb820d8bdee358d15f84522c8e4565ce1d42384db7bb2bdbcb5b4bb95daa8c91`.
   Upload log, artifact API and downloaded archive agree; all 1070 packaged file
-  hashes pass. Its build metadata names ffc3. Root is exercising its normal UI
-  in a separate QA campaign; a restart result is not yet claimed.
+  hashes pass. Its build metadata names ffc3. Actual normal-UI restart and
+  continuation pass in the separate QA campaign described below.
 - PR45 merged as `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`, full-tree equal to
   reviewed bfe. Literal post-main runs 36311244326/36311244361 pass all six jobs:
   724 Linux and 726 native Rust tests, 89 UI tests and fresh EXE/NSIS artifact
@@ -87,8 +88,7 @@ The bounded [Shield plan](../completed/gate4-shield-hit-runtime.md), its
 separate final-source and literal-main proof. Their historical checkpoints remain
 source-qualified. This plan and its integrated app subplan remain active.
 
-Next: complete packaged missile/Shield continuation and record its restart evidence.
-Independently review the complete
+Next: independently review the complete
 final diff, run canonical verification when the shared slot is released, and require
 all six final-head jobs before protected merge and literal main proof. Counterspell,
 Ready, off-turn producers and encounter release remain active Gate4 obligations.
@@ -101,6 +101,59 @@ The source-channel map also lists observer-known Mage/Rook/Hag alongside control
 You/Rook/Hag entries, producing duplicate visible labels. These are recorded UI
 cleanup obligations, not demonstrated mechanics failures, and are not fixed or
 silently waived by this Magic Missile slice.
+Each committed dart choice also returns the page to its top, requiring repeated
+scrolling to reach the next choice. Preserve useful scroll/focus during these
+sequential decisions as part of Gate 4 UI cleanup.
+
+### Actual packaged restart and continuation
+
+On 2026-09-27 root used the verified ffc3 portable `DMd.exe`, through its native
+window and normal forms, to create the separate campaign `Missile Shield QA ffc3`.
+The older campaign was left untouched. This was actual persisted application play,
+without a development server, mock, preloaded test fixture, SQL edit or injected
+application command. The built package's MSVC metadata and all 1070 file hashes
+were checked before play. This proof belongs to ffc3, whose production source,
+dependencies, content and desktop match the integrated candidate; the four added
+cache-warmup test lines and documentation still require final-head verification.
+
+The normal creation path made player Arin QA and Human Fighter Rook QA, bought and
+prepared Leather Armor, started a session, enabled source control, created a real
+Mage and Night Hag, assigned Mage to Arin and Hag to Host, and staged a bright
+50-foot court. Physical initiative faces 1/10/20 produced Rook3/Mage12/Hag25.
+Host selected the Hag's actual Magic Missile grant, bound all six target fields
+to Mage, then submitted the separate potential-response order. Arin's Rook channel
+only showed waiting; explicitly selecting the controlled Mage exposed its own
+private Shield offer and selected decision.
+
+At the selected Shield decision, root closed the actual app window, verified that
+the process window was absent, and relaunched the same portable executable. The
+new window retained the campaign/session, Arin/Mage channel, round1 and the same
+selected Shield decision; no new offer or order was necessary. The resource chooser
+remained uncommitted. Selecting the source use and `Cast Shield · spend Reaction`
+then succeeded. Host reported all six physical d4 faces, in order 1,2,3,4,1,2.
+Only after the sixth report did all six dart consequence choices appear. Root
+chose darts 6,1,4,2,5; the sole remaining dart3 completed automatically. Each
+chosen dart left the queue, ordinary controls stayed blocked until the final
+resolution, and End Turn then became available with the Hag's Action still spent.
+
+A separate read-only SQLite audit after UI completion, using URI `mode=ro` and
+`query_only`, corroborates sequence29: Mage81/81 HP, exactly one protective-magic
+use and Mage Reaction spent, one Shield effect expiring at its next own Start,
+six distinct Physical roll requests/accepted commands with the entered faces,
+no pending rules/effect work and Active flow4. HP/cost are saved-state evidence,
+not a claim that the source HP sheet was visible in the final UI. The first audit
+assertion incorrectly expected an empty list for the optional rules pending field;
+inspection showed its actual absent value is null. Correcting that audit type
+expectation produced a complete pass without any application mutation.
+
+Local evidence is `tooling/missile-ffc3-packaged-ui-observations.txt` (actual
+before-restart, after-restart and completed accessibility text),
+`tooling/audit-missile-ffc3-packaged.py` and
+`tooling/missile-ffc3-packaged-state-audit.json`. This bounded smoke proves restart
+and continuation for one owned target; the four real SQLite acceptance families
+cover the broader multi-owner, concentration, first-aid/death and receipt matrix.
+It does not complete Counterspell, Ready, off-turn casting, encounter release or
+Gate 4. Final canonical, exact-head CI/review, merge and separate main proof remain.
 
 ## Objective, product traceability and boundaries
 

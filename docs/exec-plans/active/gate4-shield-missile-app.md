@@ -3,8 +3,11 @@
 Status: source integration complete in PR46; final combined acceptance remains
 under `gate4-shield-missile-runtime.md`. Exact ffc3 passes all four real missile
 application families on Linux/native Windows and 99 UI tests. Final integrated
-canonical verification, packaged restart, final-head review/CI and merge/main proof
-are still required. The earlier unrun notes below describe historical checkpoints.
+canonical verification, final-head review/CI and merge/main proof are still required.
+Actual ffc3 packaged UI restart at the selected owned Shield decision, followed by
+all six physical faces and explicit dart ordering, passes; the parent plan records
+the exact artifact, normal creation path, read-only outcome audit and limits.
+The earlier unrun notes below describe historical checkpoints.
 
 Current writer: root on `codex/gate4-shield-missile-runtime`. Original writer:
 shield_integration_review. Original branch: `codex/gate4-shield-missile-app`.
