@@ -205,6 +205,59 @@ separate required Gate4 work with their own source and ownership acceptance.
 
 ## Compatibility and verification obligations
 
+### Authenticated encounter release (approved design; integration pending)
+
+`EncounterReleaseV1` owns flow 5. Counterspell requires a later boundary. The
+initial domain/rule checkpoint defines this executor and its inherited hit/missile
+predicates without changing existing live admission; the complete app integration
+must enable it only with the authenticated release and replacement path. Flows
+1–4 keep their accepted meanings and the historical unit upgrade remains 1→2.
+
+Explicit conclusion is narrative evidence that fighting stopped. A separate host
+release may retire initiative only after a pure whole-campaign scan proves no owed
+work or stranded timing dependency. It may also admit a narrowly explicit host
+forward upgrade of an already concluded, closed legacy aftermath using the same
+complete preflight. Neither command is a rest, clock advance, resource refund,
+pickup, effect dismissal, synthetic Start/End or proxy decision by another owner.
+
+Persist an omitted-when-absent encounter history containing ordered immutable
+completion receipts and separate old scene spaces. A receipt retains encounter,
+scene and location IDs, original setup/initiative/conclusion metadata, actual
+release metadata, predecessor release ID, unchanged instant and final global
+turn/actor. No HP, resources, concentration or equipment are duplicated. Every
+encounter/scene identity remains unique across all receipts. Strict journal replay
+must reconstruct every field; structural checks alone cannot authenticate a receipt.
+
+Each scene space preserves its battlefield, participant identities for attached
+light validation, exact loose-item positions and original drop commands. Custody
+and ownership stay authoritative in the existing item store. Release marks the old
+scene Closed while retaining its presence history, and keeps the Finished encounter
+attached until atomic replacement. A new scene may share the location but must use
+a fresh scene ID. A physical item cannot occupy both old and new spaces.
+
+The next initiative starts at checked last-final-turn plus one, with round one.
+Savage Attacker's existing scalar remains unchanged and is validated against the
+authenticated completion highwater while timing is absent, including Finished,
+replacement setup and pending initiative. Historical states without receipts keep
+their previous rejection. Retained source recharge requests/results must remain
+linked to their original authoritative recorded rolls outside Active combat too.
+
+The scan includes all table/raw/central/source work, global Inspiration transfer,
+paid attack grants, Ready, Reaction expenditure, active and suppressed relative
+effects, Turn/per-turn/zone clauses, orphaned Casting groups, dying actors, recovery
+dice and due absolute deadlines. Surviving effect/group/legacy sources, targets,
+concentration owners and recovery/rest actors must collectively fit the actual next
+setup route and its current source/equipment eligibility. A dead Mage's surviving
+nonconcentration Mage Armor deadline blocks this bounded release; a missing corpse
+timing route cannot be discovered only after initiative has already been removed.
+An offstage dependency in another Active scene also blocks this bounded route.
+
+Full acceptance requires genuine unchanged-source flow 4 exports and baselines,
+two real encounters through app/UI, retained original byte retries, independent
+SQLite/portable continuation and negative current/retired snapshot proofs. The
+details and deferred Gate 4 timing work are in the encounter-release execution
+plan. Pure fixtures or newly declared records do not meet that acceptance.
+
 Old Begin JSON must round-trip without an added default field, replay to the old
 flow image and reject as a fresh weak live request. A saved legacy pause must still
 finish; non-idle and foreign upgrades must fail without writes. New typed fields

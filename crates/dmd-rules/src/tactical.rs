@@ -15,6 +15,7 @@ mod missiles;
 mod movement;
 mod reaction_order;
 mod ready;
+mod release;
 mod second_wind;
 mod shields;
 mod turn_validation;
@@ -29,6 +30,10 @@ pub use failed_save::validate_failed_save;
 pub use hit_reactions::shield_choices;
 pub use initiative::preview_initiative_circumstances;
 pub use reaction_order::order_reaction_respondents;
+pub use release::{
+    EncounterReleaseReadiness, MAX_RELEASE_DEPENDENCIES, encounter_release_preflight,
+    retained_encounter_dependencies,
+};
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
 pub use work_trace::tactical_frame_host_ordering;

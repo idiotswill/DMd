@@ -79,6 +79,16 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     };
     privileged(&record.origin)?;
     ruling_shape(&record.ruling)?;
+    if f.phase == TacticalPhase::Finished
+        && f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+    {
+        if state.encounter_history.is_none() {
+            return Err(invalid(
+                "Finished aftermath lacks authenticated completion history",
+            ));
+        }
+        return super::release::validate_history(state);
+    }
     let timing = state
         .rules
         .as_ref()
@@ -92,6 +102,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             TacticalExecutionVersion::ReactionsV1
                 | TacticalExecutionVersion::ShieldHitV1
                 | TacticalExecutionVersion::ShieldMissileV1
+                | TacticalExecutionVersion::EncounterReleaseV1
         )
     ) || f.phase != TacticalPhase::Active
         || record.origin.expected_event_sequence <= f.origin.expected_event_sequence

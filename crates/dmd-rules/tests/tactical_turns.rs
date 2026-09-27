@@ -6,6 +6,8 @@ use std::collections::HashMap;
 mod aftermath;
 #[path = "tactical_turns/ready.rs"]
 mod ready;
+#[path = "tactical_turns/release.rs"]
+mod release;
 
 fn resistance_save(ability: Ability) -> EffectTriggerPayload {
     EffectTriggerPayload::SavingThrow {

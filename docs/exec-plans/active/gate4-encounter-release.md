@@ -1,6 +1,7 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
-Status: planning only; no release implementation or verification is claimed.
+Status: plan approved; the first domain and pure-rule slice is in progress.
+No release application route or verification is claimed.
 Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
@@ -11,7 +12,10 @@ This allocation is a design instruction, not a statement that flow 5 exists yet.
 
 Root authorized this plan on a fresh branch in the free former aftermath worktree;
 the old `codex/gate4-encounter-finish` branch remains preserved at its verified head.
-Root must review this checked-in plan before runtime implementation starts.
+Root reviewed and approved plan commit `fa99f371725df5e5c8e54ca8282015c707a03c41`.
+The first checkpoint is the domain records and pure rules, reviewed before app/UI
+expansion. Static implementation may run alongside the unchanged parent's capture
+work; the complete frozen-corpus proof remains a hard final acceptance blocker.
 The Magic Missile writer owns the heavy verification slot. No builds run here.
 
 ## Objective and product traceability
@@ -109,15 +113,15 @@ and effects. Pending old hit/missile/raw/Ready work must finish under its origin
 executor before upgrading. No release or setup can smuggle an upgrade through
 an otherwise incompatible pending state.
 
-Closed-session legacy aftermath needs a deliberate admission decision before code:
-the proposed minimal route is a narrowly admitted host `UpgradeExecutionTo` 5
+Root approved a narrowly admitted host `UpgradeExecutionTo` 5
 with no active session, permitted only when the same complete release preflight
 already proves no owed work or stranded dependency. It changes only execution
 authority and journals the accepted upgrade, followed by a separate release command.
 This prevents an already closed flow 4 save from requiring a fabricated attendance
 session merely to reach a safe administrative boundary. Preserve existing admission
-for all other upgrades and commands. Root's plan review must confirm this narrow
-route or specify another explicit, journaled route before it is implemented.
+for all other upgrades and commands. This route requires already concluded legacy
+aftermath, identical complete release preflight, and exact source/issuer/replay
+guards. It cannot change costs, elapsed time or resource state.
 
 ### Authenticated completion and highwater
 
@@ -135,7 +139,14 @@ a forged/reused predecessor. Do not rewrite existing scalar Savage Attacker turn
 raw roll identities, recharge records or historical event payloads. Retained receipt
 and scene identity validation plus journal replay must authenticate identity reuse
 across more than the immediately preceding encounter, without adding a second
-gameplay-state ledger. Record the chosen compact representation in the ADR update.
+gameplay-state ledger. The chosen representation is an ordered immutable list of
+compact completion receipts: encounter/scene/location IDs, setup/initiative/
+conclusion/release command metadata, predecessor release ID, release instant and
+final global turn/actor. Every retained encounter ID is unique across that list;
+each predecessor and strictly increasing highwater follows the previous receipt.
+Scene spaces are separate spatial attachments keyed to those receipts. Neither
+store duplicates mutable HP, resources, concentration, equipment or item custody.
+Record this representation in the ADR update.
 
 ### Old scene custody
 
@@ -146,6 +157,15 @@ position and original drop command. The later release authenticates the transfer
 it does not replace the earlier drop cause. Item ownership, custody, quantities,
 physical state, starting-grant receipts and equipped identities remain authoritative
 in their existing stores.
+
+Release marks the old scene Closed while retaining its complete presence evidence.
+Otherwise a later active scene duplicates participant presence or moves an actor
+away from a still-active old location, violating existing world invariants. The
+Finished encounter remains attached to that closed scene until atomic replacement.
+Every retained scene remains Closed and a replacement must use a fresh scene ID;
+reusing a location is permitted but overwriting retired scene history is not. A
+surviving offstage dependency already participating in a different Active scene
+blocks release, because this bounded route cannot close that other scene by proxy.
 
 An item has exactly one live placement across current and retired scene spaces.
 Validate origin, scene/location, bounds and uniqueness even when the live flow is
@@ -303,10 +323,10 @@ that compatibility claim, not permission to fabricate them.
 
 ## Planned slices and verification
 
-1. Root reviews this plan and its narrow closed-upgrade proposal. Recheck source
+1. Root reviews this plan and its narrow closed-upgrade proposal (approved). Recheck source
    pins and parent movement, finalize the additive records/version contract, and
    update the relevant ADR/coverage ledger with explicit compatibility rationale.
-2. Complete the genuine flow 4 export and baseline gate under the parent source;
+2. In parallel with static implementation, complete the genuine flow 4 export and baseline gate under the parent source;
    import frozen artifacts byte-exact with provenance and meaningful continuation
    cases. Missing ordinary hit/spell states require genuine original-source runs.
 3. Implement pure release/dependency validation plus authenticated flow 5 records
@@ -329,7 +349,31 @@ that compatibility claim, not permission to fabricate them.
 
 ## Current evidence, risks and next action
 
-Only planning and read-only audits are complete here. The old PR44 source is
+Planning and read-only audits are complete; the first static implementation is
+prepared for review. It adds omitted completion/scene records, whole-campaign
+release/dependency preflight, highwater-aware initiative/Savage validation and
+retained recharge-roll proof outside Active. Focused isolated rule tests cover
+conclusion/paid Ready/Reaction boundaries, global hidden work, raw defense effects,
+suppressed timing clauses, orphaned Casting, recovery dice/deadlines, old-wire
+omission, Finished/replacement source proof, scene custody and setup feasibility.
+These 14 tests are authored, not executed. They are explicitly isolated fixtures,
+not genuine app captures or proof of an authenticated release transition.
+
+There is intentionally no new app action, release reducer, source-cursor mutation,
+closed-session bypass, desktop control or changed live executor selection in this
+first checkpoint. Root review precedes that expansion. Flows 1–4 keep their current
+admission. Rust formatting and whitespace checks run without taking the heavy slot;
+compilation, tests and canonical verification remain pending.
+
+The original uncached `0f43823` capture producer was stopped by root's instruction
+for controlled cache measurements before any of its four scenarios completed.
+Nine read-only raw SQLite candidates were preserved; the fifth pending concentration
+child was never reached. The watcher was stopped by exact PID/path. Those immutable
+files retain their true source identity and candidate-only status. Final official
+corpus proof must use a fully verified current/merged flow 4 producer; no interrupted
+run or relabelled file substitutes for an original-source baseline.
+
+The old PR44 source is
 verified; its main checks and artifact are separately documented in that PR.
 PR45/46 acceptance, final parent/cache reconciliation, flow 4 official exports and
 original-source baselines, all new runtime tests, UI evidence and packaged play for
@@ -343,7 +387,26 @@ and a partial setup transaction that abandons the prior encounter. The design an
 acceptance matrix above explicitly constrain each one. Any necessary receiving work
 stays inside Gate 4; no product requirement is reduced.
 
-Next action: send this exact plan commit to root for independent review, including
-the proposed explicit closed-session forward upgrade. Continue preserving genuine
-raw flow 4 candidate states without changing the source scenarios. Do not begin
-runtime changes, builds, official capture acceptance or a new gate at this checkpoint.
+First-slice review must explicitly cover orphaned Casting concentration groups,
+legacy effect source/target/owner dependencies, due absolute work and the retained
+source recharge `last_roll` ↔ `RecordedRoll` proof even outside Active phase.
+The first independent review found and fixed a missing unconditional Finished-to-
+latest-receipt check: removing both optional history and conclusion, or attaching a
+Finished flow to a fresh encounter/newer origin, must still reject without relying
+on a Savage marker. Focused negative fixtures cover both paths, including a fresh
+scene and later setup origin that pass the older predecessor guards. Replacement
+setup/no-flow/initiative structural validation now requires every retained actor in
+the actual new placements; only its own validated initiative raw request is exempt
+from the pre-release no-raw condition. Aggregate feasibility reserves the route's
+required character/owned-source seat when all required dependencies are host
+creatures; 100 required host creatures cannot consume all 100 placements. The
+authenticated app setup/upgrade/release routes must use these same checks during
+the next slice, with real controller/session and semantic recovery evidence.
+User-facing controls will say “Finish encounter” and “Prepare battlefield”; they
+must not expose executor or schema internals.
+
+Next action: complete independent review of this first exact domain/rule checkpoint,
+fix concrete findings, then obtain root's scope instruction for the authenticated
+transition/app integration. Keep current flows 1–4 admission unchanged until that
+coherent expansion. Reconcile the reviewed verified parent/cache checkpoint when
+root sends it. No builds or pushes until root assigns them.
