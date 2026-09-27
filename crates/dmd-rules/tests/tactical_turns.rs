@@ -756,7 +756,7 @@ fn multiple_after_turn_opportunities_require_host_order_and_each_creatures_expli
     f.run(
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: actors
                 .into_iter()
                 .enumerate()
@@ -1180,7 +1180,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants: self
                     .actors
                     .into_iter()
@@ -1996,7 +1996,7 @@ fn begin_reconciles_legacy_unconscious_held_items_without_invented_injury_origin
     let event = f.run(
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: f
                 .actors
                 .into_iter()

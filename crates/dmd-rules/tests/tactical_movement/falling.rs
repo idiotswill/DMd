@@ -197,7 +197,7 @@ fn water_reaction_is_owned_and_halves_before_vulnerability_and_temporary_hp() {
     assert!(f.request().reason.contains("Acrobatics"));
     f.rejected(Some(0), TacticalAction::VoluntarilyFailSave);
     f.rejected(Some(0), TacticalAction::UseLegendaryResistance);
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let TacticalFallStage::Damage {
         landing: Some(landing),
     } = &fall(&f).stage
@@ -207,7 +207,7 @@ fn water_reaction_is_owned_and_halves_before_vulnerability_and_temporary_hp() {
     assert_eq!(landing.accepted_by, choice.meta);
     assert_eq!(landing.result.dice[0].value, 15);
     assert_eq!(f.request().dice, [DieSpec { count: 1, sides: 6 }]);
-    f.roll(0, &[5]); // floor(5/2)=2, then Vulnerability=4, then temporary HP absorbs3.
+    f.roll_then_decline_hit_responses(0, &[5]); // floor(5/2)=2, then Vulnerability=4, then temporary HP absorbs3.
     assert_eq!(f.position(0), point(20, 10, 10));
     assert_eq!(f.rules().entities[&f.actors[0]].hp, 49);
     assert_eq!(f.rules().entities[&f.actors[0]].temporary_hp, 0);
@@ -231,7 +231,7 @@ fn liquid_decline_does_not_spend_reaction_and_inspiration_keeps_original_check_f
             .reactions_spent
             .contains(&declined.actors[0])
     );
-    declined.roll(0, &[5]);
+    declined.roll_then_decline_hit_responses(0, &[5]);
     assert_eq!(declined.rules().entities[&declined.actors[0]].hp, 45);
 
     let mut inspired = ledge(30, true);
@@ -258,7 +258,7 @@ fn liquid_decline_does_not_spend_reaction_and_inspiration_keeps_original_check_f
     let recorded = inspired.rules().rolls.last().unwrap();
     assert_eq!(recorded.original_result.as_ref().unwrap().dice[0].value, 1);
     assert_eq!(recorded.result.dice[0].value, 20);
-    inspired.roll(0, &[5]);
+    inspired.roll_then_decline_hit_responses(0, &[5]);
     assert_eq!(inspired.rules().entities[&inspired.actors[0]].hp, 48);
     assert!(!inspired.rules().entities[&inspired.actors[0]].heroic_inspiration);
 }
@@ -290,7 +290,7 @@ fn airborne_reaction_knockout_lands_before_path_resumes_and_dropped_gear_reaches
             },
         },
     );
-    f.roll(1, &[15]);
+    f.roll_then_decline_hit_responses(1, &[15]);
     assert_eq!(
         f.flow()
             .resolution
@@ -329,7 +329,7 @@ fn airborne_reaction_knockout_lands_before_path_resumes_and_dropped_gear_reaches
     ));
     assert_eq!(f.request().roller, Some(f.actors[0]));
     assert_eq!(f.request().dice, [DieSpec { count: 2, sides: 6 }]);
-    f.roll(0, &[1, 1]);
+    f.roll_then_decline_hit_responses(0, &[1, 1]);
     assert_eq!(f.position(0), point(10, 10, 0));
     assert_eq!(f.rules().entities[&f.actors[0]].hp, 0);
     assert!(
@@ -376,7 +376,7 @@ fn a_fatal_reaction_lands_the_now_dead_hover_body_without_living_damage_dice() {
             },
         },
     );
-    f.roll(1, &[15]);
+    f.roll_then_decline_hit_responses(1, &[15]);
     let fatal = f.run(
         Some(1),
         TacticalAction::ChooseAttackKnockout {
@@ -494,7 +494,7 @@ fn declared_jump_traverses_its_airborne_segments_then_falls_at_the_declared_end(
     assert!(
         matches!(&fall(&f).cause, TacticalFallCause::MovementEnd { movement, step_index: 1 } if movement == &original.meta)
     );
-    f.roll(0, &[1, 1]);
+    f.roll_then_decline_hit_responses(0, &[1, 1]);
     assert_eq!(f.position(0), point(30, 10, 0));
     let receipt = f.flow().last_movement.as_ref().unwrap();
     assert_eq!(receipt.reason, TacticalMovementEnd::Fell);
@@ -528,7 +528,7 @@ fn an_unconscious_hovering_holder_drops_real_gear_without_falling_itself() {
             },
         },
     );
-    f.roll(1, &[15]);
+    f.roll_then_decline_hit_responses(1, &[15]);
     let knockout = f.run(
         Some(1),
         TacticalAction::ChooseAttackKnockout {
@@ -787,7 +787,7 @@ fn knockout_during_an_airborne_jump_without_fly_speed_falls_before_the_next_step
             },
         },
     );
-    f.roll(1, &[15]);
+    f.roll_then_decline_hit_responses(1, &[15]);
     let knockout = f.run(
         Some(1),
         TacticalAction::ChooseAttackKnockout {
@@ -798,7 +798,7 @@ fn knockout_during_an_airborne_jump_without_fly_speed_falls_before_the_next_step
     assert_eq!(fall(&f).origin, knockout.meta);
     assert_eq!(fall(&f).path.from, point(20, 10, 40));
     assert_eq!(f.request().dice, [DieSpec { count: 2, sides: 6 }]);
-    f.roll(0, &[1, 1]);
+    f.roll_then_decline_hit_responses(0, &[1, 1]);
     assert_eq!(f.position(0), point(20, 10, 0));
     let receipt = f.flow().last_movement.as_ref().unwrap();
     assert_eq!(receipt.original, original.meta);

@@ -196,7 +196,7 @@ fn ready_trigger_text_is_bounded_and_named_hidden_subject_does_not_probe_positio
 fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_when_idle() {
     let mut f = Fixture::new();
     let action = TacticalAction::Begin {
-        execution: TacticalExecutionVersion::ReactionsV1,
+        execution: TacticalExecutionVersion::ShieldHitV1,
         combatants: f
             .actors
             .into_iter()
@@ -260,5 +260,23 @@ fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_wh
         .version = 1;
     assert_eq!(upgraded, before);
     f.rejected(None, TacticalAction::UpgradeExecution);
+    assert_eq!(
+        f.state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .version,
+        2
+    );
+    f.rejected(Some(0), ready_move());
+    f.run(
+        None,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldHitV1,
+        },
+    );
     f.run(Some(0), ready_move());
 }

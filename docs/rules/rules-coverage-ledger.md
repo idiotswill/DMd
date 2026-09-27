@@ -70,7 +70,12 @@ merged in PR32 at 12ed29a. Current physical-encounter, reaction, area and privac
 does not close any complete family. Full actions/masteries, grapple/mount/underwater
 consequences, spell mechanisms, enemy behavior, improvisation, encounter finish and
 packaged integrated acceptance remain required. Existing family scopes, ownership
-and evidence arrays are unchanged; no unfinished mechanic moves to a later gate.
+are unchanged; no unfinished mechanic moves to a later gate. Bounded evidence in
+the combat-actions and spell-effects rows now records the actual Shield-hit source
+cases at74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb: canonical723 GNU Rust tests,
+including the owned Mage's file-SQLite/cold-retry scenario. Both families remain
+`implementing`; Magic Missile responses, Counterspell, Ready release and the other
+required mechanisms are still open. This is technical evidence, not human acceptance.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

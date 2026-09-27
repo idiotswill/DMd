@@ -71,7 +71,7 @@ fn first_aid_pays_action_and_resolves_owned_physical_check_then_target_recovery(
                     result: f.raw(&[2]),
                 },
             );
-            f.roll(1, &[2]);
+            f.roll_then_decline_hit_responses(1, &[2]);
             let stable = f.rules().tactical_recovery.as_ref().unwrap()[&f.actors[1]]
                 .stable
                 .as_ref()
@@ -183,7 +183,7 @@ fn medicine_uses_actual_proficiency_exhaustion_inspiration_and_opt_in_natural_ex
         poisoned.rules().pending.as_ref().unwrap().request.mode,
         RollMode::Disadvantage
     );
-    poisoned.roll(0, &[20, 9]);
+    poisoned.roll_then_decline_hit_responses(0, &[20, 9]);
     assert!(!poisoned.rules().entities[&poisoned.actors[1]].death.stable);
     let mut f = fixture();
     f.entity_mut(0)
@@ -221,7 +221,7 @@ fn medicine_uses_actual_proficiency_exhaustion_inspiration_and_opt_in_natural_ex
             .house_rules
             .ability_test_natural_extremes = house;
         f.run(Some(0), aid(&f, MedicinePurpose::Stabilize));
-        f.roll(0, &[1]); // Total11 succeeds in SRD; explicit house rule makes natural1 fail.
+        f.roll_then_decline_hit_responses(0, &[1]); // Total11 succeeds in SRD; explicit house rule makes natural1 fail.
         assert_eq!(f.rules().entities[&f.actors[1]].death.stable, !house);
         let record = f.rules().rolls.last().unwrap();
         assert_eq!(record.resolved.total, 11);
@@ -236,8 +236,8 @@ fn genuine_melee_knockout_ends_only_after_successful_first_aid_without_healing()
     f.entity_mut(1).hp = 3;
     f.begin();
     f.run(Some(0), TacticalAction::Attack { choice });
-    f.roll(0, &[15]);
-    f.roll(0, &[8]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[8]);
     f.run(
         Some(0),
         TacticalAction::ChooseAttackKnockout {
@@ -259,7 +259,7 @@ fn genuine_melee_knockout_ends_only_after_successful_first_aid_without_healing()
             });
         }
         f.run(Some(0), aid(&f, MedicinePurpose::EndKnockout));
-        f.roll(0, &[face]);
+        f.roll_then_decline_hit_responses(0, &[face]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 1);
         assert!(active_conditions(f.rules(), f.actors[1]).contains(&Condition::Unconscious));
         assert_eq!(

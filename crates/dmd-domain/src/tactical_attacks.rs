@@ -42,6 +42,7 @@ pub struct AttackDamageComponent {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TacticalAttackStage {
     AttackRoll,
+    HitReview,
     DamageRoll,
     KnockoutChoice,
     Finishing,

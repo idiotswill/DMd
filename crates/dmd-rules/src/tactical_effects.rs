@@ -348,9 +348,24 @@ fn observe(
             }
             result.next_effects.turn = Some(*turn);
         }
-        EffectObservation::Damage { source, target, .. } => {
+        EffectObservation::Damage {
+            source,
+            target,
+            caused_by,
+            ..
+        } => {
             if !entity_exists(*target) || source.is_some_and(|id| !entity_exists(id)) {
                 return Err(invalid("damage observation references an unknown entity"));
+            }
+            if let Some(cause) = caused_by
+                && (cause.command.id.0.is_nil()
+                    || cause.command.campaign_id != campaign.campaign_id()
+                    || cause.command.session_id != stamp.command.session_id
+                    || cause.command.expected_event_sequence
+                        >= stamp.command.expected_event_sequence
+                    || cause.occurrence >= 32_768)
+            {
+                return Err(invalid("damage observation has invalid delayed provenance"));
             }
         }
         EffectObservation::ArmorWorn { target } => {

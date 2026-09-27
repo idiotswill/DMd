@@ -41,6 +41,7 @@ pub(super) fn begin(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        hit_review: None,
         attack: None,
         movement: Some(Box::new(movement)),
         casts: vec![],

@@ -142,6 +142,7 @@ pub(in crate::tactical) fn begin(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        hit_review: None,
         attack: Some(attack),
         movement: None,
         casts: vec![],

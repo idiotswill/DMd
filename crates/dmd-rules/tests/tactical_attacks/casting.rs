@@ -522,7 +522,7 @@ fn source_fanatic_hold_uses_real_material_and_counter_then_repeats_target_end_sa
     f.run(Some(1), TacticalAction::EndTurn);
     f.run(Some(0), TacticalAction::EndTurn);
     assert_eq!(f.request().roller, Some(f.actors[0]));
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert!(!active_conditions(f.rules(), f.actors[0]).contains(&Condition::Paralyzed));
     assert_eq!(f.rules().entities[&f.actors[1]].concentration, None);
     f.rejected(Some(1), action); // Its one source use remains spent after condition ends.
@@ -561,7 +561,7 @@ fn spell_save_extremes_follow_only_the_explicit_table_policy_and_preserve_raw_tw
             ),
             house
         );
-        f.roll(0, &[20]); // Total10 fails the source DC12 under ordinary rules.
+        f.roll_then_decline_hit_responses(0, &[20]); // Total10 fails the source DC12 under ordinary rules.
         assert_eq!(
             active_conditions(f.rules(), f.actors[0]).contains(&Condition::Paralyzed),
             !house
@@ -703,7 +703,7 @@ fn accepted_leveled_cast_interrupts_source_rest_but_cantrip_and_rejection_preser
                 .is_some(),
             cantrip
         );
-        f.roll(0, if cantrip { &[1, 1] } else { &[2, 3] });
+        f.roll_then_decline_hit_responses(0, if cantrip { &[1, 1] } else { &[2, 3] });
         assert!(f.flow().resolution.is_none());
     }
 }

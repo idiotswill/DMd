@@ -1,7 +1,9 @@
 # Gate4 — Live reaction responses and Ready release
 
-Status: required active Gate4 work; runtime windows not implemented.
-Writer: root. Branch: codex/gate4-live-reaction-responses, created from freshly
+Status: required active Gate4 work; hit Shield implementation is in draft PR45,
+with broader source reactions and Ready release still outstanding.
+Writer: root; current implementation branch codex/gate4-shield-hit-runtime.
+The original compatibility branch codex/gate4-live-reaction-responses was created from
 fetched main d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38 after the protected PR38
 foundation merge. Umbrella: gate4-reaction-ready-runtime.md.
 Authority: product definition, Gate04, ADR026/028, pinned SRD5.2.1 source and the
@@ -259,10 +261,24 @@ commit records this evidence and archives the verified source prerequisite; it
 changes no executable code or fixture bytes. Require all six checks on that final
 head and inspect its complete documentation delta before protected merge.
 
-Exact next action: finish final-head CI and merge compatibility PR42 with expected
-head protection, fetch/verify main tree parity and post-main checks, then integrate
-into the separate Shield implementation branch. That branch already exists for
-independent source work; it must not claim verified runtime or bypass prerequisites.
-The source-control and aftermath writers retain their separate branches. Heavy
-local verification is serialized: source-control focused fixes follow this completed
-canonical run, then aftermath verification. No gate pause or scope waiver.
+That compatibility checkpoint is complete: PR42 merged as2798b6b with fetched
+complete-tree parity, and all six post-main checks36188457488/36188457455 pass
+(695 Linux Rust,697 native Rust,67 UI and fresh offline packaging). The four
+captured JSON exports remain unchanged. This umbrella remains active because
+compatibility acceptance does not close live source reactions.
+
+Current next action: source-control PR43 and retained-aftermath PR44 are merged
+as e813e3a and f441aded with full-tree parity and all six literal post-main checks.
+Shield PR45 normally reconciles both. Its exact74c2cab canonical verification now
+passes723 GNU Rust tests/54suites/50table, including the actual owned Shield and
+all aftermath cases, all121 attack cases and five genuine ReactionsV1 corpora.
+Independent full production/integration review is clear. Finish final-head CI,
+fresh packaging, protected merge/tree parity and post-main proof for the bounded
+hit slice; the detailed Shield plan records exact evidence and pending checks.
+The separate Magic Missile development branch integrates the reviewed candidate
+and real flow3 capture baseline. Its all-faces/per-dart executor, multiple source
+respondents and app/UI recovery scenarios remain unverified development, and
+must reconcile the eventual verified PR45 main before acceptance. Local heavy
+verification remains serialized. No current hit evidence proves the missile slice.
+Magic Missile targeting/simultaneity, Counterspell and all held/Ready release
+acceptance above remain mandatory Gate4 work. No gate pause or scope waiver.

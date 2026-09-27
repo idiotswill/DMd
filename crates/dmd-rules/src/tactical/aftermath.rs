@@ -86,8 +86,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         .ok_or_else(|| invalid("aftermath lost its retained cadence"))?;
     validate_equipment_change_origin(state, &record.origin, record.concluded_on_turn.actor)
         .map_err(|error| invalid(&error))?;
-    if f.version != TacticalExecutionVersion::ReactionsV1.flow_version()
-        || f.phase != TacticalPhase::Active
+    if !matches!(
+        TacticalExecutionVersion::from_flow_version(f.version),
+        Some(TacticalExecutionVersion::ReactionsV1 | TacticalExecutionVersion::ShieldHitV1)
+    ) || f.phase != TacticalPhase::Active
         || record.origin.expected_event_sequence <= f.origin.expected_event_sequence
         || record.concluded_at > state.clock.now
         || record.concluded_on_turn.number == 0

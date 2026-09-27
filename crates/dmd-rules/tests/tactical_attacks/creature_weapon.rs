@@ -127,13 +127,14 @@ fn raw(f: &Fixture, values: &[u16]) -> RollResult {
     }
 }
 
-pub(super) fn roll(f: &mut Fixture, actor: usize, values: &[u16]) {
+pub(super) fn roll_then_decline_hit_responses(f: &mut Fixture, actor: usize, values: &[u16]) {
     f.run(
         Some(actor),
         TacticalAction::SubmitRoll {
             result: raw(f, values),
         },
     );
+    f.decline_hit_responses();
 }
 
 /// Legal prepared starting state for this reducer slice, not a playable Doff
@@ -210,9 +211,9 @@ fn source_scimitar_equips_stowed_real_weapon_beside_shield_and_pays_one_action()
             result: raw(&f, &[15]),
         },
     );
-    roll(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
     assert_eq!(f.request().dice, vec![DieSpec { count: 1, sides: 6 }]);
-    roll(&mut f, 0, &[4]);
+    roll_then_decline_hit_responses(&mut f, 0, &[4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 94);
     assert_eq!(f.flow().budget.weapon_history.len(), 1);
     assert!(f.flow().resolution.is_none());
@@ -288,14 +289,14 @@ fn source_shortbow_reserves_last_real_arrow_once_and_replays_each_pending_stage(
             .items,
         f.state.items
     );
-    roll(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
     f.rejected(
         Some(0),
         TacticalAction::SubmitRoll {
             result: raw(&f, &[7]),
         },
     );
-    roll(&mut f, 0, &[3]);
+    roll_then_decline_hit_responses(&mut f, 0, &[3]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 95);
     assert_eq!(f.state.items[&arrow].quantity, 0);
     f.run(Some(0), TacticalAction::EndTurn);
@@ -341,7 +342,7 @@ fn source_advantage_extra_die_is_mandatory_cancels_normally_and_doubles_on_criti
             }
         );
         let face = if critical { 20 } else { 15 };
-        roll(
+        roll_then_decline_hit_responses(
             &mut f,
             0,
             &if cancel { vec![face] } else { vec![face, face] },
@@ -359,7 +360,7 @@ fn source_advantage_extra_die_is_mandatory_cancels_normally_and_doubles_on_criti
         } else {
             vec![3, 2]
         };
-        roll(&mut f, 0, &values);
+        roll_then_decline_hit_responses(&mut f, 0, &values);
         assert_eq!(
             f.rules().entities[&f.actors[1]].hp,
             if critical {
@@ -389,7 +390,7 @@ fn source_shortbow_uses_printed_ranges_and_cannot_probe_a_hidden_retained_id() {
         let selected = choice(&f, "shortbow");
         f.run(Some(0), action("shortbow", selected));
         assert_eq!(f.request().mode, mode);
-        roll(
+        roll_then_decline_hit_responses(
             &mut f,
             0,
             &if mode == RollMode::Normal {
@@ -460,8 +461,8 @@ fn source_physical_attack_uses_custody_not_ownership_and_rejects_false_implement
     }
     assert_eq!(f.state, before);
     f.run(Some(0), action("scimitar", selected));
-    roll(&mut f, 0, &[15]);
-    roll(&mut f, 0, &[2]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[2]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 96);
 }
 
@@ -499,9 +500,9 @@ fn source_physical_damage_finishes_equipment_before_target_concentration_and_kno
     });
     f.begin();
     f.run(Some(0), action("scimitar", selected));
-    roll(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
     assert_eq!(f.loadout().hands.hands[1], HandAssignment::Item(weapon));
-    roll(&mut f, 0, &[3]);
+    roll_then_decline_hit_responses(&mut f, 0, &[3]);
     assert_eq!(f.loadout().hands.hands[1], HandAssignment::Free);
     assert!(f.flow().resolution.as_ref().unwrap().attack.is_none());
     assert!(
@@ -516,8 +517,8 @@ fn source_physical_damage_finishes_equipment_before_target_concentration_and_kno
     f.begin();
     let selected = choice(&f, "scimitar");
     f.run(Some(0), action("scimitar", selected));
-    roll(&mut f, 0, &[15]);
-    roll(&mut f, 0, &[3]);
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[3]);
     assert_eq!(pending(&f).stage, TacticalAttackStage::KnockoutChoice);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 3);
     f.rejected(
@@ -638,8 +639,8 @@ fn dead_body_rejects_before_source_cost_but_zero_hp_living_target_remains_legal(
             f.run(Some(0), action("shortbow", selected));
             // Prone at range cancels the Unconscious target's Advantage.
             assert_eq!(f.request().mode, RollMode::Normal);
-            roll(&mut f, 0, &[15]);
-            roll(&mut f, 0, &[1]);
+            roll_then_decline_hit_responses(&mut f, 0, &[15]);
+            roll_then_decline_hit_responses(&mut f, 0, &[1]);
             assert_eq!(f.rules().entities[&f.actors[1]].hp, 0);
             assert!(!f.rules().entities[&f.actors[1]].death.dead);
             assert_eq!(f.rules().entities[&f.actors[1]].death.failures, 1);
@@ -657,8 +658,8 @@ fn lethal_source_weapon_completes_and_retained_dead_target_state_replays() {
     f.begin();
     let selected = choice(&f, "shortbow");
     f.run(Some(0), action("shortbow", selected));
-    roll(&mut f, 0, &[15]);
-    roll(&mut f, 0, &[6]); // Eight damage leaves enough excess for instant death.
+    roll_then_decline_hit_responses(&mut f, 0, &[15]);
+    roll_then_decline_hit_responses(&mut f, 0, &[6]); // Eight damage leaves enough excess for instant death.
     assert!(f.rules().entities[&f.actors[1]].death.dead);
     assert_eq!(
         f.state.entities[&f.actors[1]].existence,

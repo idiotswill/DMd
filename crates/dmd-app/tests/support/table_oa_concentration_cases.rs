@@ -276,7 +276,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ReactionsV1,
+            execution: TacticalExecutionVersion::ShieldHitV1,
             combatants,
             groups,
         },
@@ -574,6 +574,59 @@ async fn react(
     Box::pin(rejected(f, f.player_meta(1).await, hit.1.clone())).await;
     both(f, mirror, &hit.0, &hit.1).await;
     Box::pin(cold_retry(f, path, &hit.0, &hit.1)).await;
+    // Both independent histories accept these exact new commands separately;
+    // do not copy a randomly issued opaque handle between their databases.
+    let window = {
+        let current = state(f).await;
+        let resolution = current
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .as_ref()
+            .unwrap();
+        assert_eq!(resolution.turn_actor, cultist);
+        let review = resolution.hit_review.as_ref().unwrap();
+        assert_eq!(review.stage, TacticalHitReviewStage::Collecting);
+        assert_eq!(review.respondent.as_ref().unwrap().actor, cultist);
+        assert_eq!(review.cause, hit.0);
+        let controller = current
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(cultist)
+            .unwrap()
+            .controller;
+        assert!(!matches!(controller, CreatureController::Player(_)));
+        TacticalWorkKey {
+            resolution: resolution.origin.id,
+            occurrence: review.work.occurrence,
+        }
+    };
+    for decision in [
+        TacticalAction::OrderHitResponses {
+            window,
+            instruction: TacticalReactionOrdering {
+                ranked: vec![],
+                unlisted: ReactionUnlistedOrder::AfterForward,
+            },
+        },
+        TacticalAction::RespondToHit {
+            window,
+            accept: false,
+        },
+    ] {
+        let meta = f.meta(CommandIssuer::Admin, None, Some(f.session)).await;
+        let decision = action(decision);
+        both(f, mirror, &meta, &decision).await;
+        Box::pin(cold_retry(f, path, &meta, &decision)).await;
+    }
     let mut changed = hit.1.clone();
     let TableAction::Tactical {
         action: TacticalAction::SubmitRoll { result },

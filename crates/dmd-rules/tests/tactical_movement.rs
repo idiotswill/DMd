@@ -5,6 +5,9 @@ use std::collections::HashMap;
 #[path = "tactical_movement/falling.rs"]
 mod falling;
 
+#[path = "support/hit_responses.rs"]
+mod hit_responses;
+
 struct Fixture {
     state: CampaignState,
     pack: RulesPack,
@@ -252,11 +255,49 @@ impl Fixture {
         let result = self.raw(values);
         self.run(Some(actor), TacticalAction::SubmitRoll { result });
     }
+    /// This test deliberately declines only the exact hit just produced. It
+    /// never submits any following damage, save, knockout or opportunity choice.
+    fn roll_then_decline_hit_responses(&mut self, actor: usize, values: &[u16]) {
+        self.roll(actor, values);
+        self.decline_hit_responses();
+    }
+    fn decline_hit_responses(&mut self) {
+        let Some(hit) = hit_responses::pending(&self.state) else {
+            return;
+        };
+        if hit.needs_order {
+            let owner = hit_responses::owner_index(
+                &self.state,
+                &self.actors,
+                &self.players,
+                hit.turn_actor,
+            );
+            self.run(
+                owner,
+                TacticalAction::OrderHitResponses {
+                    window: hit.window,
+                    instruction: hit_responses::forward_order(),
+                },
+            );
+        }
+        if hit.needs_response {
+            let owner =
+                hit_responses::owner_index(&self.state, &self.actors, &self.players, hit.target);
+            self.run(
+                owner,
+                TacticalAction::RespondToHit {
+                    window: hit.window,
+                    accept: false,
+                },
+            );
+        }
+        hit_responses::assert_settled(&self.state, hit.window);
+    }
     fn begin(&mut self) {
         self.run(
             None,
             TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
                 combatants: self
                     .actors
                     .into_iter()
@@ -971,7 +1012,7 @@ fn initiative_cannot_smuggle_a_structurally_coherent_movement_receipt() {
     f.run(
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: f
                 .actors
                 .into_iter()
@@ -1084,10 +1125,10 @@ fn opportunity_raw_attack_and_damage_finish_above_the_original_movement_cursor()
             result: f.raw(&[15]),
         },
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.position(1), point(20, 10, 0));
     assert_eq!(f.request().dice, [DieSpec { count: 1, sides: 8 }]);
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 46);
     assert_eq!(f.position(1), point(30, 10, 0));
     assert_eq!(f.flow().budget.movement_spent, 10);
@@ -1109,8 +1150,8 @@ fn knocking_out_the_mover_stops_the_uncommitted_path_without_refunding_the_react
             choice: TacticalMeleeChoice::Weapon(choice),
         },
     );
-    f.roll(0, &[15]);
-    f.roll(0, &[8]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[8]);
     assert_eq!(f.position(1), point(20, 10, 0));
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 3);
     f.rejected(
@@ -1301,8 +1342,8 @@ fn concentration_failure_finishes_before_the_mover_commits_its_crossing() {
             choice: TacticalMeleeChoice::Weapon(choice),
         },
     );
-    f.roll(0, &[15]);
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[1]);
     assert_eq!(f.position(1), point(20, 10, 0));
     assert_eq!(f.flow().budget.movement_spent, 0);
     assert!(f.flow().resolution.as_ref().unwrap().attack.is_none());

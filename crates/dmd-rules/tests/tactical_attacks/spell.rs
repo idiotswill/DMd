@@ -184,7 +184,7 @@ fn spell_attack_critical_uses_source_scaling_raw_faces_and_no_physical_reservati
     let mut forged_event = event.clone();
     forged_event.meta.actor = Some(AgentRef::Entity(f.actors[1]));
     assert!(replay_tactical(&before, &forged_event, &f.pack).is_err());
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(
         f.request().dice,
         vec![DieSpec {
@@ -198,7 +198,7 @@ fn spell_attack_critical_uses_source_scaling_raw_faces_and_no_physical_reservati
             result: f.raw(&[10, 10]),
         },
     );
-    f.roll(0, &[10, 10, 10, 10]);
+    f.roll_then_decline_hit_responses(0, &[10, 10, 10, 10]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 60);
     assert!(f.flow().resolution.is_none());
     assert_eq!(f.state.items, before.items);
@@ -222,7 +222,7 @@ fn spell_attack_conditions_exhaustion_and_natural_one_are_source_derived() {
     f.run(Some(0), cast(&f, false, vec![f.actors[1]]));
     assert_eq!(f.request().modifier, 4);
     assert_eq!(f.request().mode, RollMode::Disadvantage);
-    f.roll(0, &[20, 1]);
+    f.roll_then_decline_hit_responses(0, &[20, 1]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 100);
     assert!(f.rules().pending.is_none());
     assert!(f.flow().resolution.is_none());
@@ -238,8 +238,8 @@ fn source_permitted_self_target_keeps_the_actual_caster_and_completes_damage() {
     assert_eq!(pending_attack(&f).actor, pending_attack(&f).target);
     assert_eq!(f.request().roller, Some(f.actors[0]));
     assert_eq!(f.request().mode, RollMode::Normal);
-    f.roll(0, &[15]);
-    f.roll(0, &[3, 4]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[3, 4]);
     assert_eq!(f.rules().entities[&f.actors[0]].hp, 93);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 100);
     assert!(f.flow().resolution.is_none());
@@ -254,7 +254,7 @@ fn source_rays_keep_distinct_rolls_and_resume_after_another_players_concentratio
     let event = f.run(Some(0), cast(&f, true, vec![f.actors[1]; 3]));
     let first = f.request().id;
     assert_eq!(f.request().modifier, 12); // Printed dragon spell attack, never level0 PB.
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(f.request().dice, vec![DieSpec { count: 2, sides: 6 }]);
     assert!(savage_attacker_dice(&f.state, &f.pack).is_err());
     f.rejected(
@@ -269,7 +269,7 @@ fn source_rays_keep_distinct_rolls_and_resume_after_another_players_concentratio
             },
         },
     );
-    f.roll(0, &[3, 4]);
+    f.roll_then_decline_hit_responses(0, &[3, 4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 93);
     assert!(f.flow().resolution.as_ref().unwrap().attack.is_none());
     assert_eq!(
@@ -298,13 +298,13 @@ fn source_rays_keep_distinct_rolls_and_resume_after_another_players_concentratio
         }
     );
     assert_eq!(f.request().roller, Some(f.actors[0]));
-    f.roll(0, &[1]); // Missed second ray still completes exactly this occurrence.
+    f.roll_then_decline_hit_responses(0, &[1]); // Missed second ray still completes exactly this occurrence.
     let third = f.request().id;
     assert_ne!(third, second);
     assert_ne!(third, first);
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(f.request().dice, vec![DieSpec { count: 4, sides: 6 }]);
-    f.roll(0, &[1, 2, 3, 4]);
+    f.roll_then_decline_hit_responses(0, &[1, 2, 3, 4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 83);
     assert!(f.flow().resolution.is_none());
     assert!(f.rules().timing.as_ref().unwrap().action_spent);
@@ -336,8 +336,8 @@ fn later_rays_to_a_target_killed_by_the_first_complete_without_unfinishable_dama
     f.entity_mut(1).hp = 3;
     f.begin();
     f.run(Some(0), cast(&f, true, vec![f.actors[1]; 3]));
-    f.roll(0, &[20]);
-    f.roll(0, &[6, 6, 6, 6]);
+    f.roll_then_decline_hit_responses(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[6, 6, 6, 6]);
     assert!(f.rules().entities[&f.actors[1]].death.dead);
     assert!(f.rules().pending.is_none());
     assert!(f.flow().resolution.is_none());
@@ -407,7 +407,7 @@ fn restored_spell_attack_rejects_source_ordinals_facts_and_cause_forgeries() {
             "spell forgery {mutation}"
         );
     }
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     let mut corrupt = f.state.clone();
     corrupt
         .rules

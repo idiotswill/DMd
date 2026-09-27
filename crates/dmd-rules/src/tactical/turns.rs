@@ -222,6 +222,7 @@ fn begin_boundary_from(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        hit_review: None,
         attack: None,
         movement: None,
         casts: vec![],
@@ -306,7 +307,8 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             }
         }
         super::movement::prune(state, meta)?;
-        if resolution(state)?.pending.is_some()
+        if super::hit_reactions::waiting(state)
+            || resolution(state)?.pending.is_some()
             || super::falling::selected(state)?.is_some()
             || resolution(state)?.failed_save.is_some()
             || resolution(state)?.legendary_window.is_some()
@@ -382,6 +384,9 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
+    if super::hit_reactions::waiting(state) {
+        return Err(RulesError::Pending);
+    }
     if super::work_trace::tactical_frame_host_ordering(resolution(state)?)? {
         // This dedicated source invocation retained explicit controller consent
         // before targeting. Ordering permission ends when its cursor completes;

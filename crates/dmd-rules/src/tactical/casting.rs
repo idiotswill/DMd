@@ -202,6 +202,7 @@ pub(super) fn begin(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        hit_review: None,
         attack: None,
         movement: None,
         casts: vec![record],
@@ -214,7 +215,115 @@ pub(super) fn begin(
     pump(state, meta)
 }
 
-fn commit(state: &mut CampaignState, meta: &CommandMeta, cast: u16) -> Result<(), RulesError> {
+/// Read-only source admission shared by the private offer and selected execution.
+/// A successful preview is not a paid permission; the selected command calls this
+/// again at its actual head and retains only that command's source receipt.
+pub(super) fn shield_admission(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    choice: &SpellCastChoice,
+    occurrence: u16,
+) -> Result<(TacticalCasting, Option<TacticalCreatures>), RulesError> {
+    if choice.spell_id != "shield"
+        || choice.mode != SpellCastMode::Immediate
+        || choice.material != SpellMaterialChoice::None
+    {
+        return Err(prerequisite(
+            "select the source Shield spell for this response",
+        ));
+    }
+    authorize(state, meta, choice.actor)?;
+    let source = match &choice.grant {
+        SpellGrantChoice::Prepared => None,
+        SpellGrantChoice::CreatureFeature { feature_id } => {
+            if choice.resource != SpellResourceChoice::SourceFeature {
+                return Err(invalid("source response cannot select a spell slot"));
+            }
+            let current = state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.tactical_creatures.as_ref())
+                .ok_or_else(|| prerequisite("source response profile is absent"))?;
+            Some(
+                crate::tactical_creatures::begin_creature_reaction_feature(
+                    state,
+                    current,
+                    meta,
+                    choice.actor,
+                    CreatureFeatureSelection {
+                        feature_id: feature_id.clone(),
+                        spell_id: Some(choice.spell_id.clone()),
+                        simple_action: None,
+                    },
+                )
+                .map_err(|error| invalid(&error.to_string()))?,
+            )
+        }
+    };
+    let feature = source
+        .as_ref()
+        .map(|step| {
+            if step.cost != CreatureActionCost::Reaction {
+                return Err(invalid("source Shield did not reserve a Reaction"));
+            }
+            step.feature
+                .as_ref()
+                .ok_or_else(|| invalid("source response has no spell receipt"))
+        })
+        .transpose()?;
+    let plan = if let Some(feature) = feature {
+        plan_spell_from_feature(
+            state,
+            feature,
+            choice.material,
+            choice.mode.clone(),
+            occurrence,
+        )?
+    } else {
+        plan_spell_cast_at(state, meta, choice, occurrence)?
+    };
+    if plan.choice != *choice
+        || plan.cost != SpellCastingCost::Reaction
+        || plan.program.concentration
+        || executable_spell_kind(&plan)? != ExecutableSpellKind::Defense
+    {
+        return Err(invalid("response differs from its source Shield program"));
+    }
+    let selection = SpellTargetChoice::Entities(vec![choice.actor]);
+    let bound = bind_spell(state, &plan, &selection)?;
+    if bound.consumed_material().is_some() {
+        return Err(invalid("Shield cannot consume material"));
+    }
+    let retained = resolution(state)?
+        .casts
+        .iter()
+        .map(|record| record.cast.as_ref())
+        .collect::<Vec<_>>();
+    validate_spell_slot_reservation(state, &plan, &retained)?;
+    // This discarded pure transition checks the central Reaction budget too.
+    // Its real expenditure is applied only by the selected response command.
+    let _ = apply_spell_casting_cost(state, choice.actor, SpellCastingCost::Reaction)?;
+    let begun = begin_cast(&plan, &context(state, choice.actor)?)?;
+    let record = retain_spell_cast(begun.cast, &bound, selection, feature)?;
+    for obligation in begun.obligations {
+        match obligation {
+            SpellCastObligation::SpendCastingCost { actor, cost }
+                if source.is_none()
+                    && actor == choice.actor
+                    && cost == SpellCastingCost::Reaction => {}
+            SpellCastObligation::RequireCreatureFeatureReceipt { .. }
+                if source.is_some() && record.creature_activation.is_some() => {}
+            _ => return Err(invalid("unexpected Shield admission obligation")),
+        }
+    }
+    Ok((record, source.map(|step| step.next)))
+}
+
+pub(super) fn commit(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    cast: u16,
+) -> Result<(), RulesError> {
     let record = current_cast(state, cast)?.clone();
     let context = context(state, record.cast.plan.choice.actor)?;
     let operation = if !context.can_act {
@@ -533,6 +642,7 @@ pub(super) fn finish_cast(
     {
         end_owned_group(state, meta, record.cast.plan.choice.actor, group)?;
     }
+    super::hit_reactions::finish_shield(state, &record)?;
     resolution_mut(state)?
         .casts
         .retain(|r| r.cast.plan.occurrence != cast);
@@ -564,6 +674,39 @@ pub(super) fn validate_work(
     Ok(record.cast.plan.choice.actor)
 }
 
+pub(super) fn validate_actor_source(
+    state: &CampaignState,
+    record: &TacticalCasting,
+) -> Result<(), RulesError> {
+    let plan = &record.cast.plan;
+    let actor = plan.choice.actor;
+    if let SpellGrantChoice::CreatureFeature { feature_id } = &plan.choice.grant {
+        // The canonical program proves what a source can cast; this binding
+        // also proves that the retained actor actually has that source.
+        // Keep the immutable profile here, not mutable transformed statistics.
+        let profile = state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_creatures.as_ref())
+            .and_then(|creatures| creatures.profile(actor))
+            .ok_or_else(|| invalid("retained source caster profile is absent"))?;
+        let source = crate::tactical_creatures::source_for_profile(profile)
+            .map_err(|error| invalid(&error.to_string()))?;
+        if plan.program.source.creature_definition_id.as_deref() != Some(source.id.as_str())
+            || plan.program.source.feature_id.as_ref() != Some(feature_id)
+            || !source
+                .features
+                .iter()
+                .any(|feature| feature.id == *feature_id)
+        {
+            return Err(invalid(
+                "retained spell grant differs from its actor's source profile",
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// The complete work partition is necessary in addition to source reconstruction:
 /// a forged queued ordinal cannot silently omit or duplicate an admitted target.
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
@@ -578,30 +721,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_retained_spell(record)?;
         let plan = &record.cast.plan;
         let actor = plan.choice.actor;
-        if let SpellGrantChoice::CreatureFeature { feature_id } = &plan.choice.grant {
-            // The canonical program proves what a source can cast; this binding
-            // also proves that the retained actor actually has that source.
-            // Keep the immutable profile here, not mutable transformed statistics.
-            let profile = state
-                .rules
-                .as_ref()
-                .and_then(|rules| rules.tactical_creatures.as_ref())
-                .and_then(|creatures| creatures.profile(actor))
-                .ok_or_else(|| invalid("retained source caster profile is absent"))?;
-            let source = crate::tactical_creatures::source_for_profile(profile)
-                .map_err(|error| invalid(&error.to_string()))?;
-            if plan.program.source.creature_definition_id.as_deref() != Some(source.id.as_str())
-                || plan.program.source.feature_id.as_ref() != Some(feature_id)
-                || !source
-                    .features
-                    .iter()
-                    .any(|feature| feature.id == *feature_id)
-            {
-                return Err(invalid(
-                    "retained spell grant differs from its actor's source profile",
-                ));
-            }
-        }
+        validate_actor_source(state, record)?;
         if !ids.insert(plan.occurrence)
             || plan.occurrence >= r.next_occurrence
             || !matches!(

@@ -39,7 +39,9 @@ pub(super) fn declare(
     }
     let actor = active(state)?;
     authorize(state, meta, actor)?;
-    if flow(state)?.version != TacticalExecutionVersion::ReactionsV1.flow_version() {
+    if !TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+        .is_some_and(TacticalExecutionVersion::retains_work_ancestry)
+    {
         return Err(prerequisite("Ready requires the current tactical executor"));
     }
     trigger_shape(trigger)?;
@@ -133,7 +135,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     let f = flow(state)?;
     if f.ready.len() > MAX_TACTICAL_READY
         || (!f.ready.is_empty()
-            && f.version != TacticalExecutionVersion::ReactionsV1.flow_version())
+            && !TacticalExecutionVersion::from_flow_version(f.version)
+                .is_some_and(TacticalExecutionVersion::retains_work_ancestry))
         || (f.phase != TacticalPhase::Active && !f.ready.is_empty())
     {
         return Err(invalid("inactive or excessive Ready declarations"));

@@ -19,6 +19,10 @@ mod table_creature_cases;
 mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_hit_cases.rs"]
+mod table_hit_cases;
+#[path = "support/table_hit_driver.rs"]
+mod table_hit_driver;
 #[path = "support/table_medicine_cases.rs"]
 mod table_medicine_cases;
 #[path = "support/table_night_hag_cases.rs"]

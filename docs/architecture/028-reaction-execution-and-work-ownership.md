@@ -16,7 +16,9 @@ unrelated action which later interrupts that resolution.
 `TacticalAction::Begin.execution` is a typed semantic execution version. The old
 wire omits it and decodes to `Legacy`; its retained `TacticalFlow.version` is 1.
 `ReactionsV1` retains flow version 2. New live admission requires the current
-version. New application requests explicitly encode `ReactionsV1`. Accepted retry
+version. The first reaction foundation explicitly encoded `ReactionsV1`; the
+accepted-hit Shield slice advances fresh requests to `ShieldHitV1` (flow version 3).
+Accepted retry
 lookup precedes new admission, so accepted old requests recover their original
 response first. An existing canonical `table.action@2` envelope is interpreted
 under its original request semantics; replay never fills an omitted execution
@@ -31,6 +33,16 @@ work and raw request are settled. It preserves budgets, inventory, HP, initiativ
 concentration and past events. Until then, saved continuation choices and rolls can
 complete under the original semantics, but a new ordinary action cannot proceed.
 There is no silent upgrade and no public switch back to a weaker executor.
+
+`UpgradeExecution` remains the original 1-to-2 transition forever. The separate
+typed `UpgradeExecutionTo` action advances a settled active older flow to the
+current version only when no resolution, raw request or paid Ready declaration
+would be reinterpreted. Flow 3 adds accepted-hit Shield windows for physical,
+intrinsic and spell attacks, including opportunity attacks; it does not change
+Magic Missile, add Counterspell or execute Ready releases. Those required Gate 4
+families need their own verified implementation and a further version when their
+execution changes. A player-owned source must have explicitly activated source
+access before a fresh flow 3 encounter or upgrade can require that owner's response.
 
 Ready declarations live on the flow across other actors' turns. Their paid Action
 and original command are distinct from the later trigger and Reaction payment.

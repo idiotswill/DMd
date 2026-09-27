@@ -122,7 +122,7 @@ async fn establish(f: &Fixture, runtime: &CampaignRuntime, encounter: TacticalEn
 }
 fn begin_action(f: &Fixture, surprised: bool) -> TacticalAction {
     TacticalAction::Begin {
-        execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+        execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
         combatants: vec![
             TacticalCombatant {
                 actor: f.actor,
@@ -665,7 +665,7 @@ async fn identical_creatures_share_source_initiative_and_host_resolves_mixed_tie
         CommandIssuer::Admin,
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants: combatants.clone(),
             groups: [f.actor, f.other_actor, third]
                 .into_iter()
@@ -683,7 +683,7 @@ async fn identical_creatures_share_source_initiative_and_host_resolves_mixed_tie
         CommandIssuer::Admin,
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ReactionsV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
             combatants,
             groups: vec![
                 InitiativeGroup {

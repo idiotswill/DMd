@@ -6,7 +6,8 @@ use std::collections::HashMap;
 
 pub(super) fn initial(state: &CampaignState) -> Result<Option<TacticalWorkTrace>, RulesError> {
     Ok(
-        (flow(state)?.version == TacticalExecutionVersion::ReactionsV1.flow_version())
+        TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+            .is_some_and(TacticalExecutionVersion::retains_work_ancestry)
             .then(TacticalWorkTrace::default),
     )
 }
@@ -130,7 +131,13 @@ fn scopes(resolution: &TacticalResolution) -> Result<WorkScopes<'_>, RulesError>
         } else {
             None
         };
-        let area = area_kind(&node.work.kind).or(inherited);
+        let area = if matches!(node.work.kind, TacticalWorkKind::CommitShield { .. }) {
+            // Preserve the causal parent, but a respondent's independent cast
+            // cannot inherit an area's invocation-specific ordering delegation.
+            None
+        } else {
+            area_kind(&node.work.kind).or(inherited)
+        };
         if let Some(area) = area {
             if !resolution
                 .areas
@@ -254,7 +261,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     let Some(resolution) = flow(state)?.resolution.as_deref() else {
         return Ok(());
     };
-    let expected = flow(state)?.version == TacticalExecutionVersion::ReactionsV1.flow_version();
+    let expected = TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+        .is_some_and(TacticalExecutionVersion::retains_work_ancestry);
     if resolution.work_trace.is_some() != expected {
         return Err(invalid("work ancestry differs from its execution version"));
     }
@@ -265,6 +273,76 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         return Err(invalid("unfinished or excessive in-process work ancestry"));
     }
     let scopes = scopes(resolution)?;
+    let mut response_casts = std::collections::HashSet::new();
+    for node in &trace.nodes {
+        if !matches!(
+            node.work.kind,
+            TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. }
+        ) {
+            continue;
+        }
+        let parent = node
+            .parent
+            .and_then(|occurrence| scopes.get(&occurrence))
+            .map(|(work, _)| *work)
+            .ok_or_else(|| invalid("hit response lacks its original parent"))?;
+        if flow(state)?.version != TacticalExecutionVersion::ShieldHitV1.flow_version()
+            || parent.kind != TacticalWorkKind::AttackRoll
+        {
+            return Err(invalid(
+                "hit response ancestry uses another executor or trigger",
+            ));
+        }
+        match node.work.kind {
+            TacticalWorkKind::CommitShield { cast } => {
+                if cast <= parent.occurrence
+                    || cast >= node.work.occurrence
+                    || !response_casts.insert(cast)
+                {
+                    return Err(invalid(
+                        "independent Shield child reuses or invents a cast occurrence",
+                    ));
+                }
+            }
+            TacticalWorkKind::ResumeHit {
+                attack_origin,
+                attack_roll,
+            } => {
+                // Nested opportunity attacks and later spell rays have their own
+                // issuance origins. Bind the exact accepted request rather than
+                // guessing its key from the root movement/casting command.
+                let roll = state
+                    .rules
+                    .as_ref()
+                    .ok_or(RulesError::Uninitialized)?
+                    .rolls
+                    .iter()
+                    .find(|roll| roll.request.id == attack_roll)
+                    .ok_or_else(|| invalid("retired hit lacks its accepted attack"))?;
+                let PendingPurpose::TacticalResolution {
+                    encounter: encounter_id,
+                    key,
+                } = roll.purpose
+                else {
+                    return Err(invalid("retired hit is not an accepted tactical attack"));
+                };
+                if encounter_id != encounter(state)?.id
+                    || key.role != TacticalRollRole::Attack
+                    || key.occurrence != parent.occurrence
+                    || key.request_id() != attack_roll
+                    || roll.issued_by.id != attack_origin
+                    || roll.issued_by.session_id != resolution.origin.session_id
+                    || roll.issued_by.expected_event_sequence
+                        < resolution.origin.expected_event_sequence
+                {
+                    return Err(invalid(
+                        "retired hit resume differs from its original attack",
+                    ));
+                }
+            }
+            _ => unreachable!(),
+        }
+    }
     for work in resolution
         .frames
         .iter()

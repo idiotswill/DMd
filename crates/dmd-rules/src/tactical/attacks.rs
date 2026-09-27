@@ -242,6 +242,7 @@ fn begin_with_source(
         pending: None,
         failed_save: None,
         legendary_window: None,
+        hit_review: None,
         attack: Some(attack),
         movement: None,
         casts: vec![],
@@ -385,6 +386,9 @@ pub(super) fn resolved(
             } else {
                 TacticalAttackStage::Finishing
             };
+            if hit && flow(state)?.version == TacticalExecutionVersion::ShieldHitV1.flow_version() {
+                return super::hit_reactions::open(state, meta, &pending.work);
+            }
             push_frame(
                 state,
                 vec![if hit {
@@ -469,6 +473,16 @@ fn apply_damage(
 ) -> Result<(), RulesError> {
     let attack = current(state)?.clone();
     let packet = packet(state)?;
+    // A resumed fixed hit has an earlier mechanical cause and a fresh command
+    // advancing the queue. Lifecycle operations still use the current command.
+    let vitality_cause = if resolution(state)?.hit_review.is_some()
+        && attack.damage_roll.is_none()
+        && choice.is_none()
+    {
+        super::hit_reactions::damage_cause(state)?.clone()
+    } else {
+        meta.clone()
+    };
     let operation = VitalityOperation::Damage {
         packet,
         knockout: choice,
@@ -477,7 +491,7 @@ fn apply_damage(
         state,
         attack.target,
         VitalityOrigin {
-            command: meta.clone(),
+            command: vitality_cause.clone(),
             occurrence,
         },
     )?;
@@ -514,14 +528,18 @@ fn apply_damage(
     // before pumping resulting concentration/effect work. Those consequences may
     // incapacitate the attacker and drop equipment; never re-equip it afterward.
     complete(state, meta, &attack, plan.as_ref(), outcome)?;
-    super::continuations::apply_vitality(
+    super::continuations::apply_vitality_from_cause(
         state,
         meta,
         attack.target,
-        occurrence,
+        VitalityOrigin {
+            command: vitality_cause,
+            occurrence,
+        },
         operation,
         Some(attack.actor),
     )
+    .map(|_| ())
 }
 pub(super) fn choose_knockout(
     state: &mut CampaignState,
@@ -614,6 +632,7 @@ fn complete(
         intrinsic::complete(state, attack, outcome)?;
     }
     resolution_mut(state)?.attack = None;
+    resolution_mut(state)?.hit_review = None;
     Ok(())
 }
 pub(super) fn choose_mastery(

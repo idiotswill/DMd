@@ -78,6 +78,9 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+            super::hit_reactions::validate_work(state, work)?
+        }
         TacticalWorkKind::Medicine { .. } => super::medicine::validate_work(state, work)?,
         TacticalWorkKind::SecondWind { .. } => super::second_wind::validate_work(state, work)?,
         TacticalWorkKind::AreaDamageRoll { .. }
@@ -235,6 +238,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut ticket_ids = HashSet::new();
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
+            + usize::from(super::hit_reactions::waiting(state))
             + usize::from(super::falling::selected(state)?.is_some())
             + usize::from(r.attack.as_ref().is_some_and(|a| {
                 matches!(
@@ -308,6 +312,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
             super::failed_save::validate_failed_save(state, failed)?;
+        } else if super::hit_reactions::waiting(state) {
+            if rules.pending.is_some() {
+                return Err(invalid("hit response has competing raw dice"));
+            }
         } else if r.pending.is_some() {
             pending(
                 state,
@@ -348,6 +356,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     }
     super::creature_bridge::validate(state)?;
     super::attacks::validate(state)?;
+    super::hit_reactions::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
     super::areas::validate(state)?;

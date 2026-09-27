@@ -135,7 +135,7 @@ fn source_charge_retains_real_twenty_foot_approach_and_replays_raw_hit_damage_an
             result: f.raw(&[21]),
         },
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(dice_count(&f), 4);
     assert!(!f.rules().entities[&f.actors[1]].prone);
     f.rejected(
@@ -144,7 +144,7 @@ fn source_charge_retains_real_twenty_foot_approach_and_replays_raw_hit_damage_an
             result: f.raw(&[1, 2]),
         },
     );
-    f.roll(0, &[1, 2, 3, 4]);
+    f.roll_then_decline_hit_responses(0, &[1, 2, 3, 4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 86);
     assert!(f.rules().entities[&f.actors[1]].prone);
     assert!(f.rules().pending.is_none()); // The source has no Charge saving throw.
@@ -161,10 +161,10 @@ fn source_charge_critical_doubles_both_dice_pools_and_rounds_resistance_once() {
     f.begin();
     walk(&mut f, &[(20, 10), (30, 10), (40, 10), (50, 10)]);
     f.run(Some(0), hooves(&f));
-    f.roll(0, &[20]);
+    f.roll_then_decline_hit_responses(0, &[20]);
     assert_eq!(dice_count(&f), 8);
     // Base 5+4, Charge 5: floor((9+5)/2)=7, not floor(9/2)+floor(5/2)=6.
-    f.roll(0, &[1, 1, 1, 2, 1, 1, 1, 2]);
+    f.roll_then_decline_hit_responses(0, &[1, 1, 1, 2, 1, 1, 1, 2]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 93);
     assert!(f.rules().entities[&f.actors[1]].prone);
 }
@@ -179,9 +179,9 @@ fn below_twenty_feet_or_direction_change_does_not_use_total_movement_as_charge()
         f.begin();
         walk(&mut f, &path);
         f.run(Some(0), hooves(&f));
-        f.roll(0, &[15]);
+        f.roll_then_decline_hit_responses(0, &[15]);
         assert_eq!(dice_count(&f), 2);
-        f.roll(0, &[2, 3]);
+        f.roll_then_decline_hit_responses(0, &[2, 3]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, 91);
         assert!(!f.rules().entities[&f.actors[1]].prone);
     }
@@ -206,9 +206,9 @@ fn source_charge_uses_target_size_and_prone_immunity_independently() {
         f.begin();
         walk(&mut f, &[(20, 10), (30, 10), (40, 10), (50, 10)]);
         f.run(Some(0), hooves(&f));
-        f.roll(0, &[15]);
+        f.roll_then_decline_hit_responses(0, &[15]);
         assert_eq!(dice_count(&f), expected_dice);
-        f.roll(0, &vec![1; usize::from(expected_dice)]);
+        f.roll_then_decline_hit_responses(0, &vec![1; usize::from(expected_dice)]);
         assert_eq!(f.rules().entities[&f.actors[1]].hp, expected_hp);
         assert!(!f.rules().entities[&f.actors[1]].prone);
     }
@@ -229,7 +229,7 @@ fn continuous_split_commands_charge_but_a_new_turn_cannot_reuse_the_old_approach
     };
     assert_eq!(proof.origin, last.meta);
     assert_eq!(proof.movement.start.x, 10);
-    f.roll(0, &[1]);
+    f.roll_then_decline_hit_responses(0, &[1]);
     assert!(f.rules().pending.is_none());
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 100);
     assert!(!f.rules().entities[&f.actors[1]].prone);
@@ -240,9 +240,9 @@ fn continuous_split_commands_charge_but_a_new_turn_cannot_reuse_the_old_approach
         attack(&f).admission,
         TacticalAttackAdmission::CreatureAction { approach: None }
     );
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(dice_count(&f), 2);
-    f.roll(0, &[2, 3]);
+    f.roll_then_decline_hit_responses(0, &[2, 3]);
     assert!(!f.rules().entities[&f.actors[1]].prone);
 }
 
@@ -285,8 +285,8 @@ fn source_charge_knockout_choice_and_concentration_resume_keep_one_damage_applic
     f.begin();
     walk(&mut f, &[(20, 10), (30, 10), (40, 10), (50, 10)]);
     f.run(Some(0), hooves(&f));
-    f.roll(0, &[15]);
-    f.roll(0, &[1, 2, 3, 4]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[1, 2, 3, 4]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 86);
     assert!(f.rules().entities[&f.actors[1]].prone);
     assert!(f.flow().resolution.as_ref().unwrap().attack.is_none());
@@ -305,8 +305,8 @@ fn source_charge_knockout_choice_and_concentration_resume_keep_one_damage_applic
     f.begin();
     walk(&mut f, &[(20, 10), (30, 10), (40, 10), (50, 10)]);
     f.run(Some(0), hooves(&f));
-    f.roll(0, &[15]);
-    f.roll(0, &[1, 2, 3, 4]);
+    f.roll_then_decline_hit_responses(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[1, 2, 3, 4]);
     assert_eq!(attack(&f).stage, TacticalAttackStage::KnockoutChoice);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 5);
     assert!(!f.rules().entities[&f.actors[1]].prone);
@@ -376,7 +376,7 @@ fn restored_source_charge_rejects_changed_origin_geometry_dice_and_action_cost()
             "source charge forgery {mutation}"
         );
     }
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     let mut corrupt = f.state.clone();
     corrupt
         .rules
@@ -422,9 +422,9 @@ fn source_opportunity_hooves_cannot_inherit_an_earlier_own_turn_charge() {
         attack(&f).admission,
         TacticalAttackAdmission::Opportunity(_)
     ));
-    f.roll(0, &[15]);
+    f.roll_then_decline_hit_responses(0, &[15]);
     assert_eq!(dice_count(&f), 2);
-    f.roll(0, &[2, 3]);
+    f.roll_then_decline_hit_responses(0, &[2, 3]);
     assert_eq!(f.rules().entities[&f.actors[1]].hp, 91);
     assert!(!f.rules().entities[&f.actors[1]].prone);
     assert!(!f.rules().timing.as_ref().unwrap().action_spent);

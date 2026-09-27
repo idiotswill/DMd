@@ -65,7 +65,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
         .execute_table(f.player_meta(0).await, TableAction::Tactical { action })
         .await
         .unwrap();
-    Box::pin(table_attack_cases::submit(f, false, &[20])).await;
+    Box::pin(table_hit_driver::roll_then_decline(f, false, &[20])).await;
     target
 }
 
