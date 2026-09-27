@@ -583,8 +583,15 @@
       ],
       "legal_to_ship": true,
       "status": "implementing",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::genuine_mage_shield_changes_hit_to_miss_in_either_arrival_order_without_rewriting_raw_facts @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; bounded hit Shield only)",
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::shield_opportunity_child_preserves_original_move_and_reaction_damage_cause @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45)",
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::shield_spell_child_preserves_each_ray_and_original_cast_after_completed_review_is_retired @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/support/table_hit_cases.rs::owned_source_shield_reopens_each_decision_preserves_attack_cause_and_rejects_changed_hits @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; actual owned Mage, file SQLite, physical dice, opaque controls, cold independent continuation/retry and hostile restore; canonical passed, final merge checks pending)",
+        "crates/dmd-app/tests/legacy_reactions_v1_replay.rs::genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; genuine flow2 capture, owner-only session and exact state/armor preservation through explicit flow3 upgrade)"
+      ],
       "player_acceptance": [],
       "scope": "Action legality, triggers and full timing beyond Gate 2 primitives.",
       "final_acceptance_gate": 14
@@ -803,8 +810,15 @@
       ],
       "legal_to_ship": true,
       "status": "implementing",
-      "mechanical_tests": [],
-      "production_integration": [],
+      "mechanical_tests": [
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::genuine_mage_shield_changes_hit_to_miss_in_either_arrival_order_without_rewriting_raw_facts @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; bounded hit Shield only)",
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::shield_opportunity_child_preserves_original_move_and_reaction_damage_cause @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45)",
+        "crates/dmd-rules/tests/tactical_attacks/hit_shield.rs::shield_spell_child_preserves_each_ray_and_original_cast_after_completed_review_is_retired @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45)"
+      ],
+      "production_integration": [
+        "crates/dmd-app/tests/support/table_hit_cases.rs::owned_source_shield_reopens_each_decision_preserves_attack_cause_and_rejects_changed_hits @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; actual owned Mage, file SQLite, physical dice, opaque controls, cold independent continuation/retry and hostile restore; canonical passed, final merge checks pending)",
+        "crates/dmd-app/tests/legacy_reactions_v1_replay.rs::genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor @ 74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb (PR #45; genuine flow2 capture, owner-only session and exact state/armor preservation through explicit flow3 upgrade)"
+      ],
       "player_acceptance": [],
       "scope": "Reusable tactical spell effect execution; source spell catalog ownership remains Gate 6 and noncombat effects Gate 5.",
       "final_acceptance_gate": 14

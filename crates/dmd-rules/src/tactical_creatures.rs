@@ -7,10 +7,9 @@ pub use profile::*;
 pub use schedule::*;
 
 use crate::tactical_definitions::{
-    CreatureDefinition, TACTICAL_DEFINITIONS_JSON, TacticalDefinitions,
+    CreatureDefinition, TacticalDefinitions, bundled_tactical_definitions,
 };
 use dmd_domain::*;
-use std::sync::OnceLock;
 use thiserror::Error;
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
@@ -29,14 +28,7 @@ fn invalid(message: impl Into<String>) -> CreatureError {
 }
 
 pub fn creature_definitions() -> Result<&'static TacticalDefinitions, CreatureError> {
-    static DEFINITIONS: OnceLock<Result<TacticalDefinitions, CreatureError>> = OnceLock::new();
-    DEFINITIONS
-        .get_or_init(|| {
-            TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON)
-                .map_err(|error| invalid(error.to_string()))
-        })
-        .as_ref()
-        .map_err(Clone::clone)
+    bundled_tactical_definitions().map_err(|error| invalid(error.to_string()))
 }
 pub fn creature_definition(id: &str) -> Result<&'static CreatureDefinition, CreatureError> {
     creature_definitions()?

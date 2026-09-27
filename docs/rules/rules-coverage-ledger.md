@@ -70,7 +70,12 @@ merged in PR32 at 12ed29a. Current physical-encounter, reaction, area and privac
 does not close any complete family. Full actions/masteries, grapple/mount/underwater
 consequences, spell mechanisms, enemy behavior, improvisation, encounter finish and
 packaged integrated acceptance remain required. Existing family scopes, ownership
-and evidence arrays are unchanged; no unfinished mechanic moves to a later gate.
+are unchanged; no unfinished mechanic moves to a later gate. Bounded evidence in
+the combat-actions and spell-effects rows now records the actual Shield-hit source
+cases at74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb: canonical723 GNU Rust tests,
+including the owned Mage's file-SQLite/cold-retry scenario. Both families remain
+`implementing`; Magic Missile responses, Counterspell, Ready release and the other
+required mechanisms are still open. This is technical evidence, not human acceptance.
 
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Its first

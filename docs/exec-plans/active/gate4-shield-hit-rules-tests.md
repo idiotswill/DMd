@@ -1,6 +1,10 @@
 # Gate 4 — Explicit Shield hit rules regression support
 
-Status: active; authoring only, no compiler or test execution claimed.
+Status: support work integrated and verified at parent74c2cab on2026-09-27.
+All fourteen Shield cases pass within121 tactical attacks and canonical723 GNU
+Rust tests/54suites. Default Windows stack, one build job and incremental0.
+The parent [Shield plan](gate4-shield-hit-runtime.md) owns final PR45 CI/merge
+acceptance. Authoring-only notes below retain the original support checkpoint.
 Writer: shield_rules_recovery (taking over preserved rules_architecture work),
 branch codex/gate4-shield-hit-rules-tests.
 Base: e5f8fce0962c64f6c8fd38dc1ecdbfb4bc90e25c.

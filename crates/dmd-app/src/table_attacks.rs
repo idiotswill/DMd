@@ -1,8 +1,8 @@
 //! Read-only physical choices. The accepted action revalidates every source and fact.
 use dmd_domain::*;
 use dmd_rules::tactical_definitions::{
-    TACTICAL_DEFINITIONS_JSON, TacticalDefinitions, WeaponDefinition, WeaponHands, WeaponKind,
-    WeaponMastery, WeaponProperty,
+    TacticalDefinitions, WeaponDefinition, WeaponHands, WeaponKind, WeaponMastery, WeaponProperty,
+    bundled_tactical_definitions,
 };
 
 pub(super) fn options(
@@ -20,8 +20,7 @@ pub(super) fn options(
     else {
         return Ok(None);
     };
-    let definitions = TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON)
-        .map_err(|error| error.to_string())?;
+    let definitions = bundled_tactical_definitions().map_err(|error| error.to_string())?;
     let usable = |item: &&ItemInstance| {
         item.custody == Custody::Entity(actor)
             && item.state == ItemState::Intact
@@ -83,7 +82,7 @@ pub(super) fn options(
             deliveries,
             abilities,
             grips,
-            purposes: purposes(state, actor, item.id, weapon, &definitions),
+            purposes: purposes(state, actor, item.id, weapon, definitions),
             ammunition_required: ammunition_id.is_some(),
             ammunition,
             source_features: source_features(state, actor, item)?,

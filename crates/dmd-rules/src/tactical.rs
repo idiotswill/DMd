@@ -286,11 +286,9 @@ fn flow_mut(state: &mut CampaignState) -> Result<&mut TacticalFlow, RulesError> 
         .and_then(|e| e.flow.as_mut())
         .ok_or_else(|| prerequisite("initiative has not begun"))
 }
-fn definitions() -> Result<crate::tactical_definitions::TacticalDefinitions, RulesError> {
-    crate::tactical_definitions::TacticalDefinitions::from_json(
-        crate::tactical_definitions::TACTICAL_DEFINITIONS_JSON,
-    )
-    .map_err(|e| RulesError::Incompatible(e.to_string()))
+fn definitions() -> Result<&'static crate::tactical_definitions::TacticalDefinitions, RulesError> {
+    crate::tactical_definitions::bundled_tactical_definitions()
+        .map_err(|e| RulesError::Incompatible(e.to_string()))
 }
 
 pub fn resolve_tactical(
