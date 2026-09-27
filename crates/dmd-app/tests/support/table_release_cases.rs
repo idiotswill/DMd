@@ -2,6 +2,9 @@
 //! positive state or event is used to reach either encounter or its completion.
 use super::*;
 
+#[path = "table_release_savage_cases.rs"]
+mod savage;
+
 async fn closed_request(f: &Fixture, action: TableAction) -> TableTransportRequest {
     let mut request = request(f, None, action).await;
     request.session_id = None;

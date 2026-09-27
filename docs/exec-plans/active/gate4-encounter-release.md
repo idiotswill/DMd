@@ -342,7 +342,8 @@ The existing release case already authors Mage Armor, Second Wind, thrown-dagger
 custody, reduced attendance, physical second initiative and source movement. Its
 dagger is purchased in real character creation by the focused follow-up
 `02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
-the following additional witnesses, all still unimplemented and unrun:
+the following additional witnesses. The first is now authored but unrun; the other
+three remain planned:
 
 1. **Savage across the encounter boundary.** Reuse
    `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
@@ -487,6 +488,30 @@ accessor with the existing release changes. The explicit warm-cache tamper tests
 are retained unchanged. Catalog/content, frozen history JSON and Cargo.lock are
 unchanged by integration. Formatting and staged/working diff checks pass. Parent
 CI or measurements do not prove this newly integrated release head.
+
+Early draft PR48 was published at `49895680630470e217b304707ea2e5fcf54d12ac`.
+Its actual Linux stable/MSRV and Windows logs found a boxed/unboxed reference
+mismatch in the new completion-origin closure; Rust runtime tests never started.
+Windows job 108603592771 nevertheless passed 103 UI tests in 17 files, with zero
+static errors/warnings and a 140-module build before that compiler failure. This
+frontend result belongs to 4989568 only. The isolated root-reviewed correction
+`4f38c1d079c43fa12a9a58021e22dc4d0869b3e1` explicitly borrows the boxed
+Tactical event with `as_ref()` and is published for fresh CI. No local build ran.
+
+The next local test checkpoint authors the first additional real scenario above.
+It reuses source creation and the initial genuine critical-hit helper, purchases
+one dagger, reports two physical ones for the first Savage damage, and retains
+the actual Goblin's 10→5 HP change. The first receipt ends at global turn 2; the
+same Goblin starts the next encounter at turn 3. A real movement crossing offers
+the PC's opportunity attack before its own Start, with physical Savage damage
+leaving the Goblin at 1 HP. The exact Reaction blocker is asserted after explicit
+conclusion and with no central work remaining. Only the real next Start at turn 4
+clears that Reaction, retaining the prior Savage marker until the next actual
+Savage roll. Its lethal melee result is resolved by the normal knockout choice.
+Independent file restore/resume surrounds material boundaries; full-store refusals,
+old receipt retry bytes and retained raw roll history are checked. This is authored
+test source, not a passing runtime result. Published CI and this local checkpoint
+remain separate until root authorizes the next source publication.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
