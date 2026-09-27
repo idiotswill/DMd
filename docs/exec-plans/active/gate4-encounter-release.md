@@ -342,8 +342,8 @@ The existing release case already authors Mage Armor, Second Wind, thrown-dagger
 custody, reduced attendance, physical second initiative and source movement. Its
 dagger is purchased in real character creation by the focused follow-up
 `02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
-the following additional witnesses. The first two are now authored but unrun; the
-other two remain planned:
+the following additional witnesses. The first three are now authored but unrun;
+the fourth remains planned:
 
 1. **Savage across the encounter boundary.** Reuse
    `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
@@ -537,6 +537,29 @@ same bow remains at its old scene position, absent from the new map and loadout.
 Independent file restore/cold resume, original bow-response retry bytes and a
 changed-body whole-store refusal are included. This test/helper-only checkpoint
 has not compiled or run; no production change or runtime acceptance is claimed.
+
+The third local family reuses the real source attack from
+`table_medicine_cases::prepare(false)`: a Goblin critical with physical 5 and 5
+reduces the real 12-HP PC to zero after the normal-damage choice. Both live and
+already-closed aftermath release refuse with the precise dying-actor preflight
+reason and complete store equality. The closed state still resumes normally with
+both owners; actual turns and owner-submitted death saves of 1 then 2 produce
+three failures and a real dead character. Release also refuses during the actual
+pending raw save. The dead participant's bound owner ends its retained turn at
+the proper cadence, leaving the old encounter settled at global turn 9.
+
+After closing that session, survivor-only attendance still refuses until the
+host performs the explicit no-session finish. That command leaves both session
+tables unchanged. A new real session then binds only the survivor; replacement
+with the dead PC explicitly refuses at the dead-character guard, while the actual
+survivor/Goblin setup proceeds. Physical initiative starts at global turn 10 and
+the surviving PC takes a real movement action. The corpse's world/mechanical and
+character records, owned/carried items, old scene presences and complete raw-roll
+history remain unchanged. Both original death-save response bytes are retried
+after the owner is absent and the session/encounter has changed; changed physical
+bodies refuse without any durable mutation. Material boundaries use independent
+file restore and cold public resume. This is test/helper source only, uncompiled
+and unrun, with the published CI head kept separate.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.

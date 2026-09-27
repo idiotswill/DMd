@@ -8,6 +8,9 @@ mod savage;
 #[path = "table_release_custody_cases.rs"]
 mod custody;
 
+#[path = "table_release_death_cases.rs"]
+mod death;
+
 async fn closed_request(f: &Fixture, action: TableAction) -> TableTransportRequest {
     let mut request = request(f, None, action).await;
     request.session_id = None;
