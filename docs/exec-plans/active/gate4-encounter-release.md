@@ -1,11 +1,13 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
 Status: domain, authenticated application and desktop checkpoints independently
-reviewed; reviewed cache development dependency integrated. Native draft CI at
-4f38c1d passes the original real release application cases and frontend, but finds
-an obsolete synthetic Finished fixture in a movement test. Local focused correction
-and the four additional application families are under verification; final exact-head
-acceptance remains pending. Published PR48 stays at 4f38c1d while its CI completes.
+reviewed; reviewed cache development dependency integrated. Both draft runtime
+jobs at 4f38c1d pass all 55 application cases, then find an obsolete synthetic
+Finished fixture in a movement test. Its reviewed correction passes all 31 movement
+and 52 turn tests at 96b4faf. All four additional application families now have
+passing focused results across 96b4faf and its reviewed test correction 703e1ff;
+final integrated exact-head acceptance remains pending. Published PR48 stays
+at 4f38c1d pending the next reviewed publication checkpoint.
 Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
@@ -21,7 +23,11 @@ Root reviewed and approved plan commit `fa99f371725df5e5c8e54ca8282015c707a03c41
 The first checkpoint is the domain records and pure rules, reviewed before app/UI
 expansion. Static implementation may run alongside the unchanged parent's capture
 work; the complete frozen-corpus proof remains a hard final acceptance blocker.
-Root owns the heavy verification slot. No builds run here.
+Root initially reserved the heavy verification slot for prerequisites. After cache
+619 completed canonical verification, root assigned it to this branch for focused
+release checks with one build job, incremental compilation off and the default stack.
+Those focused checks are complete and the heavy slot has returned to root for
+the prerequisite and UI work; no further local build is running here.
 
 ## Objective and product traceability
 
@@ -75,8 +81,10 @@ root authorized a normal development merge of published cache checkpoint
 histories. The cache parent includes Shield main
 `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79` through reviewed identical-tree
 reconciliation `8da8e3c6f250a6f166b652530b36af2f47a164ff`; 619ada0 adds only
-reviewed evidence documentation to that reconciliation. Cache and Magic Missile
-remain development dependencies here, not final accepted prerequisites.
+reviewed evidence documentation to that reconciliation. Cache PR47 is now merged
+as `046109cdc849c16100c42588e771f8abe710c787`, whose full tree equals 619ada0.
+This branch still needs normal reconciliation of that literal main and the final
+verified Magic Missile prerequisite; parent evidence does not verify release.
 
 Final acceptance and merge of this branch require:
 
@@ -345,7 +353,8 @@ The existing release case already authors Mage Armor, Second Wind, thrown-dagger
 custody, reduced attendance, physical second initiative and source movement. Its
 dagger is purchased in real character creation by the focused follow-up
 `02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
-the following additional witnesses. All four are now authored but unrun:
+the following additional witnesses. All four are authored; their source-qualified
+runtime results and outstanding reruns are recorded below:
 
 1. **Savage across the encounter boundary.** Reuse
    `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
@@ -501,26 +510,63 @@ frontend result belongs to 4989568 only. The isolated root-reviewed correction
 Tactical event with `as_ref()` and was published for fresh CI. No local build had run.
 
 Actual native Windows stable job 108604354546 at literal 4f38c1d compiled and passed
-MSRV/lint, 103 UI tests in 17 files, zero static diagnostics and a 140-module build.
+lint, 103 UI tests in 17 files, zero static diagnostics and a 140-module build.
+The separate MSRV/frontend job 108604354339 passed its declared compiler check.
 It passed all 55 table scenarios in 3012.53 seconds, including the original actual
 two-encounter release path, and the genuine closed flow 2 upgrade/finish case.
 It then failed `completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims`
 at `tactical_movement.rs:994`: that old isolated fixture manually fabricated current
 Finished with no authenticated completion history. The production refusal is the
-intended new invariant. Packaging did not run after the failure. Linux's runtime
-job was still executing when inspected; neither result is a final whole-head pass.
+intended new invariant. Packaging did not run after the failure. Linux runtime job
+108604355059 in run 36313714772 subsequently completed with the identical fixture
+failure (30 movement tests passed, one failed). Before that failure, all 55 table
+cases passed in 4207.79 seconds, six Reactions histories including the closed
+flow 2 upgrade passed in 37.25 seconds, and five Shield histories passed in
+82.26 seconds. Its architecture, genericity and MSRV jobs passed separately;
+neither full runtime result is a whole-head pass.
 
 The focused test correction concludes and finishes through actual rules commands,
 preserving all nine movement-proof corruption checks and the inactive movement
 proof assertion. It also explicitly verifies that the old unauthenticated current
 Finished fabrication rejects for its missing completion before taking the genuine
 route. The initial genuine-route correction passed 1/1 on the default GNU test
-stack (0.05 seconds after 2m06s compilation); the added explicit refusal assertion
-and broader movement/turn checks remain to run. No production guard was weakened.
+stack (0.05 seconds after 2m06s compilation). At reviewed exact checkpoint
+`96b4faf3423da32edb3fe6cb4c9d498db82290be`, all 31 movement tests passed in
+2.07 seconds and all 52 turn tests, including 15 release cases, passed in
+6.54 seconds. The explicit refusal assertion therefore also ran. Logs and exact
+source metadata are retained outside the repository as
+`tooling/release-96b4faf-movement-turns.{log,json}`. No production guard was weakened.
 Root released the heavy slot after cache 619 canonical completion for focused local
 release verification with jobs 1, incremental 0 and RUST_MIN_STACK unset. The four
-new application families remain unrun at this checkpoint and are not in published
-4f38c1d.
+new application families compiled in 3m00s and ran in a separate focused serial
+table-loop invocation from exact 96b4faf. Custody, recharge/dead-Mage Armor and
+Savage/Reaction cases pass. The death case reached the real second raw save, then exposed
+a test-only assertion expecting three retained failures after death; existing
+`tactical_damage::kill` correctly clears both counters, and authoritative validation
+requires that settled representation. Reviewed correction
+`703e1ff1dcbedd96176ec46e5df15d4fdd24a331` asserts HP zero, both counters zero,
+dead mechanics and Dead world/character state while retaining the actual natural
+1→2 roll history, two-failure intermediate state, provenance and all later guards.
+The complete original run remains recorded as three passes and one failure in
+2233.27 seconds, with zero ignored and 55 filtered tests. Its original binary SHA
+was recorded before rebuilding. No passing result is substituted for that failure.
+
+The corrected death family then passed 1/1 in 495.09 seconds on clean exact
+703e1ff, after 40.51 seconds of compilation, with zero failures/ignores and 58
+filtered tests. This executed the complete survivor-only session, dead placement
+refusal, new global turn 10 and surviving actor movement, corpse/item preservation,
+both original death-save response retries and changed-body whole-store refusals.
+The only source change from 96 to 703 is the reviewed test expectation above.
+All four additional families therefore have actual focused passes, but no complete
+current-head canonical or CI pass is claimed. They remain absent from published
+4f38c1d. No production rule or refusal assertion was weakened.
+
+External source-qualified logs/metadata are
+`tooling/release-96b4faf-four-app-families.{log,json}` and
+`tooling/release-703e1ff-death-r2.{log,json}`. Both runs used one build job,
+incremental compilation off, serial test execution and RUST_MIN_STACK unset.
+The earlier Linux/native draft CI results are separately summarized in
+`tooling/release-4f38c1d-ci-runtime-results.json`.
 
 The next local test checkpoint authors the first additional real scenario above.
 It reuses source creation and the initial genuine critical-hit helper, purchases
@@ -568,7 +614,8 @@ reduces the real 12-HP PC to zero after the normal-damage choice. Both live and
 already-closed aftermath release refuse with the precise dying-actor preflight
 reason and complete store equality. The closed state still resumes normally with
 both owners; actual turns and owner-submitted death saves of 1 then 2 produce
-three failures and a real dead character. Release also refuses during the actual
+a third failure and a real dead character, with settled death counters cleared.
+Release also refuses during the actual
 pending raw save. The dead participant's bound owner ends its retained turn at
 the proper cadence, leaving the old encounter settled at global turn 9.
 
@@ -582,8 +629,9 @@ character records, owned/carried items, old scene presences and complete raw-rol
 history remain unchanged. Both original death-save response bytes are retried
 after the owner is absent and the session/encounter has changed; changed physical
 bodies refuse without any durable mutation. Material boundaries use independent
-file restore and cold public resume. This is test/helper source only, uncompiled
-and unrun, with the published CI head kept separate.
+file restore and cold public resume. This was test/helper source only at its
+authoring checkpoint; its first runtime failure and correction are recorded above.
+The published CI head remains separate.
 
 The fourth local family creates a real Mage and Adult Red Dragon, casts actual
 Mage Armor, and exports the settled dragon turn before its first breath. Two
@@ -607,8 +655,8 @@ RecordedRoll. Only the dragon's real Start at turn 7 requests a new die; physica
 actual source legendary windows are individually declined through their normal
 commands. Material transitions use independent file restore/cold public resume,
 original response retries and changed-body full-store refusals. This additional
-test/helper source has only formatting and whitespace checks; it has not compiled
-or run and has not been pushed.
+test/helper source initially had only formatting and whitespace checks. Its full
+scenario now passes in the original 96b4faf focused run; it has not been pushed.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
@@ -621,8 +669,10 @@ run or relabelled file substitutes for an original-source baseline.
 The old PR44 source is
 verified; its main checks and artifact are separately documented in that PR.
 PR45 main `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79` is now integrated through
-the reviewed cache development parent. PR46 acceptance, final parent/cache reconciliation, flow 4 official exports and
-original-source baselines, all new runtime tests, UI evidence and packaged play for
+the reviewed cache development parent. Cache main 046109c now has all six separate
+post-main checks and fresh packaging passing; its normal reconciliation here remains
+required. PR46 acceptance, final parent reconciliation, flow 4 official exports and
+original-source baselines, final integrated canonical/CI tests, UI evidence and packaged play for
 this slice are still outstanding. No evidence on a parent or older head substitutes
 for this branch's exact final verification.
 
@@ -648,13 +698,16 @@ required character/owned-source seat when all required dependencies are host
 creatures; 100 required host creatures cannot consume all 100 placements. The
 authenticated app setup/upgrade/release routes must use these same checks during
 the next slice, with real controller/session and semantic recovery evidence.
-User-facing controls will say “Finish encounter” and “Prepare battlefield”; they
-must not expose executor or schema internals.
+User-facing controls use “Finish encounter” and “Prepare battlefield”; they
+do not expose executor or schema internals.
 
-Next action: obtain root review of the fourth local scenario checkpoint and keep
-published PR48 at its separately reviewed compiler-fix head while that CI finishes.
-All four additional source families remain local and unrun until root authorizes
-the next publication and assigns verification. No local build is authorized here.
+Next action: review this evidence checkpoint and obtain root's next publication or
+normal dependency-integration assignment. All four source families, the movement
+correction and the terminal-death expectation correction have clear source review
+and the focused results above. Preserve their physical chronology and exact refusal
+assertions through the eventual verified parent reconciliation.
+Published PR48 remains at its separately reviewed compiler-fix head until root
+authorizes the next publication; both original runtime jobs have completed.
 Final verified cache/MM main, genuine flow 4
 baselines and the complete runtime/UI/package matrix remain hard acceptance
 blockers. Draft publication is not slice or Gate 4 acceptance.
