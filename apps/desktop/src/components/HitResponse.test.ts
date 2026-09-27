@@ -57,7 +57,7 @@ it('keeps acknowledgment owned when no Shield exists and separates an offer from
 
 it('resets form choices on actor or window replacement and blocks ordinary actions during a hit pause',async()=>{
   const user=userEvent.setup(), onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',phase:'active',round:1,execution:'ShieldMissileV1',active_actor:'mage',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
+  const tactical:TacticalView={encounter_id:'encounter',phase:'active',round:1,execution:'EncounterReleaseV1',active_actor:'mage',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,
     budget:{action_spent:false,bonus_action_spent:false,reaction_available:true,movement_spent:0,attacks_remaining:0},
     hit:{order:null,delegate:null,response:{key:'first-hit',actor:'mage',selected:true,shield:[choice]}}};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'mage',player:'owner',onAction});

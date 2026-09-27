@@ -1,7 +1,7 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
-Status: plan approved; the first domain and pure-rule slice is in progress.
-No release application route or verification is claimed.
+Status: domain/pure-rule checkpoint reviewed; authenticated application and desktop
+checkpoint authored for independent review. Compilation and runtime are unverified.
 Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
@@ -16,7 +16,7 @@ Root reviewed and approved plan commit `fa99f371725df5e5c8e54ca8282015c707a03c41
 The first checkpoint is the domain records and pure rules, reviewed before app/UI
 expansion. Static implementation may run alongside the unchanged parent's capture
 work; the complete frozen-corpus proof remains a hard final acceptance blocker.
-The Magic Missile writer owns the heavy verification slot. No builds run here.
+Root owns the heavy verification slot. No builds run here.
 
 ## Objective and product traceability
 
@@ -252,8 +252,9 @@ real own-Start/rest rule says so.
 
 ## Genuine flow 4 compatibility gate
 
-The original MM run at `0f43823a848a2aeb055bc9c59677843b6e60a012` is producing
-real file-SQLite states from source creation, owned casting and physical inputs.
+The original MM run at `0f43823a848a2aeb055bc9c59677843b6e60a012` produced
+real file-SQLite candidates from source creation, owned casting and physical inputs
+before its authorized interruption. None of its four scenarios completed.
 Root authorized consistent read-only online backups outside the repository before
 test cleanup. They are **raw candidates**, not official exports, accepted captures,
 passing runtime evidence, or fabricated checkpoint history. Their per-file manifests
@@ -349,21 +350,44 @@ that compatibility claim, not permission to fabricate them.
 
 ## Current evidence, risks and next action
 
-Planning and read-only audits are complete; the first static implementation is
-prepared for review. It adds omitted completion/scene records, whole-campaign
+Planning and read-only audits are complete. Root reviewed the first implementation
+at `a5928c2052ec4ba7726d7f93a306cc616afd13a2`. It adds omitted completion/scene records, whole-campaign
 release/dependency preflight, highwater-aware initiative/Savage validation and
 retained recharge-roll proof outside Active. Focused isolated rule tests cover
 conclusion/paid Ready/Reaction boundaries, global hidden work, raw defense effects,
 suppressed timing clauses, orphaned Casting, recovery dice/deadlines, old-wire
 omission, Finished/replacement source proof, scene custody and setup feasibility.
-These 14 tests are authored, not executed. They are explicitly isolated fixtures,
+Those 14 tests were authored, not executed. They are explicitly isolated fixtures,
 not genuine app captures or proof of an authenticated release transition.
 
-There is intentionally no new app action, release reducer, source-cursor mutation,
-closed-session bypass, desktop control or changed live executor selection in this
-first checkpoint. Root review precedes that expansion. Flows 1–4 keep their current
-admission. Rust formatting and whitespace checks run without taking the heavy slot;
-compilation, tests and canonical verification remain pending.
+Root then authorized the authenticated vertical expansion. The new checkpoint
+adds `FinishEncounter`, complete preflight before existing LeaveCombat helpers,
+immutable completion and item transfer, closed-scene retirement, a narrow host-only
+closed-session finish/upgrade route, strict nested-event/origin replay, Finished
+session/preparation admission and atomic replacement. Replacement stages its new
+scene closed, then moves the selected actors and activates that scene only inside
+the accepted rules transition. This preserves the old Finished placement during
+prevalidation even when the new location differs. No intermediate state is persisted.
+
+The desktop now offers derived host-only finish capability, closed-session host
+administration, Finished setup/session controls and retained-actor placement checks.
+That new capability is omitted entirely from flows 1–4 and player DTOs. Fresh Begin
+and targeted upgrades now require flow 5; old execution meanings and typed upgrades
+to 3/4 replay unchanged, including every old missile continuation. Authored live
+test commands use the current executor; frozen JSON histories and original request
+bodies were not edited. The mutation-7 regression now directly asserts the exact
+latest-completion domain error, independent of old initiative-roll rejection.
+
+Additional authored tests cover the actual rule release/replacement, a genuine
+table two-encounter path with Mage Armor, Second Wind, thrown-item custody, reduced
+attendance, physical initiative, source movement, independent file restore/cold
+resume, exact retries and current/retired semantic forgeries. A separate test uses
+the unchanged genuine flow 2 closed aftermath corpus for the narrowly approved
+closed upgrade and release, preserving its original response bytes and sessions.
+UI tests cover capability/privacy, required placements and uncertain finish retries
+after another encounter appears. None of these new tests has run. Formatting and
+whitespace checks pass; compilation, static frontend checking, tests and canonical
+verification remain pending. This source checkpoint is not final slice acceptance.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
@@ -375,7 +399,8 @@ run or relabelled file substitutes for an original-source baseline.
 
 The old PR44 source is
 verified; its main checks and artifact are separately documented in that PR.
-PR45/46 acceptance, final parent/cache reconciliation, flow 4 official exports and
+Root reports PR45 merged as `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`;
+that parent is not yet integrated here. PR46 acceptance, final parent/cache reconciliation, flow 4 official exports and
 original-source baselines, all new runtime tests, UI evidence and packaged play for
 this slice are still outstanding. No evidence on a parent or older head substitutes
 for this branch's exact final verification.
@@ -405,8 +430,11 @@ the next slice, with real controller/session and semantic recovery evidence.
 User-facing controls will say “Finish encounter” and “Prepare battlefield”; they
 must not expose executor or schema internals.
 
-Next action: complete independent review of this first exact domain/rule checkpoint,
-fix concrete findings, then obtain root's scope instruction for the authenticated
-transition/app integration. Keep current flows 1–4 admission unchanged until that
-coherent expansion. Reconcile the reviewed verified parent/cache checkpoint when
-root sends it. No builds or pushes until root assigns them.
+Next action: independently review the coherent authenticated application checkpoint
+and fix concrete findings. Root proposed development integration of cache checkpoint
+`8da8e3c6f250a6f166b652530b36af2f47a164ff` only after this checkpoint is committed
+and reviewed; do not merge it until authorized. Final verified cache/MM main and
+genuine flow 4 baselines remain hard blockers. Complete the remaining acceptance
+matrix, especially genuine Savage/off-turn, recharge, ammunition, unconscious-drop
+and dead/offstage refusal paths, then run assigned verification. No builds or pushes
+until root assigns them.

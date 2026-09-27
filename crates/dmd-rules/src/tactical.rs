@@ -32,7 +32,7 @@ pub use initiative::preview_initiative_circumstances;
 pub use reaction_order::order_reaction_respondents;
 pub use release::{
     EncounterReleaseReadiness, MAX_RELEASE_DEPENDENCIES, encounter_release_preflight,
-    retained_encounter_dependencies,
+    require_finished_encounter, retained_encounter_dependencies,
 };
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
@@ -44,6 +44,8 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    /// Retire only fully settled, explicitly concluded flow 5 timing.
+    FinishEncounter,
     ConcludeHostilities {
         cadence: AftermathCadence,
         ruling: String,
@@ -381,6 +383,7 @@ fn resolve_with_policy(
         TacticalAction::ConcludeHostilities { cadence, ruling } => {
             aftermath::conclude(&mut next, meta, *cadence, ruling)?;
         }
+        TacticalAction::FinishEncounter => release::finish(&mut next, meta)?,
         TacticalAction::UpgradeExecution => {
             privileged(meta)?;
             let current = flow(&next)?;
@@ -400,7 +403,9 @@ fn resolve_with_policy(
             let current = flow(&next)?;
             if !matches!(
                 execution,
-                TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1
+                TacticalExecutionVersion::ShieldHitV1
+                    | TacticalExecutionVersion::ShieldMissileV1
+                    | TacticalExecutionVersion::EncounterReleaseV1
             ) || current.version >= execution.flow_version()
                 || current.phase != TacticalPhase::Active
                 || current.resolution.is_some()
@@ -476,17 +481,63 @@ fn resolve_with_policy(
             encounter: authored,
         } => {
             privileged(meta)?;
-            if state.encounter.is_some() || rules.timing.is_some() || authored.flow.is_some() {
+            if rules.timing.is_some() || authored.flow.is_some() {
                 return Err(prerequisite(
                     "an encounter already exists or carries unsolicited execution state",
                 ));
             }
+            let replacement = state.encounter.is_some();
+            if replacement {
+                require_finished_encounter(state)?;
+                let required = retained_encounter_dependencies(state)?;
+                if authored.participants.len() > MAX_RELEASE_DEPENDENCIES
+                    || required
+                        .iter()
+                        .any(|actor| authored.participant(*actor).is_none())
+                    || state.encounter_history.as_ref().is_none_or(|history| {
+                        history.contains_encounter(authored.id)
+                            || history
+                                .spaces
+                                .iter()
+                                .any(|space| space.scene_id == authored.scene_id)
+                    })
+                {
+                    return Err(prerequisite(
+                        "replacement must preserve timing dependencies with new encounter and scene identities",
+                    ));
+                }
+            }
             let mut authored = authored.as_ref().clone();
             authored.origin = meta.clone();
+            if replacement {
+                let scene = next
+                    .scenes
+                    .get(&authored.scene_id)
+                    .ok_or_else(|| invalid("replacement scene is absent"))?;
+                if scene.status != SceneStatus::Closed {
+                    return Err(prerequisite(
+                        "stage the replacement scene before activating it",
+                    ));
+                }
+                let location = scene.location_id;
+                for participant in &authored.participants {
+                    next.entities
+                        .get_mut(&participant.entity_id)
+                        .ok_or_else(|| invalid("replacement actor is absent"))?
+                        .location_id = Some(location);
+                }
+            }
             authored
-                .validate(state)
+                .validate(&next)
                 .map_err(|e| RulesError::Invalid(e.to_string()))?;
             next.encounter = Some(authored);
+            if replacement {
+                let scene_id = encounter(&next)?.scene_id;
+                next.scenes
+                    .get_mut(&scene_id)
+                    .ok_or_else(|| invalid("replacement scene is absent"))?
+                    .status = SceneStatus::Active;
+            }
         }
         TacticalAction::Begin {
             combatants,
@@ -654,14 +705,14 @@ fn validate_live_execution(
     action: &TacticalAction,
 ) -> Result<(), RulesError> {
     if matches!(action, TacticalAction::UpgradeExecutionTo { execution }
-        if *execution != TacticalExecutionVersion::ShieldMissileV1)
+        if *execution != TacticalExecutionVersion::EncounterReleaseV1)
     {
         return Err(prerequisite(
             "a new targeted upgrade requires the current tactical executor",
         ));
     }
     if matches!(action, TacticalAction::Begin { execution, .. }
-        if *execution != TacticalExecutionVersion::ShieldMissileV1)
+        if *execution != TacticalExecutionVersion::EncounterReleaseV1)
     {
         return Err(prerequisite(
             "new initiative requires the current tactical executor",
@@ -674,7 +725,7 @@ fn validate_live_execution(
     else {
         return Ok(());
     };
-    if current.version == TacticalExecutionVersion::ShieldMissileV1.flow_version() {
+    if current.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
         return Ok(());
     }
     // A saved old pause remains completable under its original semantics. Fresh
@@ -705,6 +756,11 @@ fn validate_live_execution(
             | TacticalAction::DelegateHitResponses { .. }
             | TacticalAction::CastHitShield { .. }
             | TacticalAction::DeclineSelectedHitShield { .. }
+            | TacticalAction::RespondToMissile { .. }
+            | TacticalAction::OrderMissileResponses { .. }
+            | TacticalAction::DelegateMissileResponses { .. }
+            | TacticalAction::CastMissileShield { .. }
+            | TacticalAction::DeclineSelectedMissileShield { .. }
     ) {
         return Ok(());
     }

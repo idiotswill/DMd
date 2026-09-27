@@ -103,7 +103,8 @@ pub(crate) fn visit_rules_history(
     // New tactical authority has always been event-sourced. Unlike pre-journal legacy
     // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
     // Keep the original pre-tactical anchor so every source-derived payload is replayed.
-    if crate::table_source_control::enabled(anchor)
+    if anchor.encounter_history.is_some()
+        || crate::table_source_control::enabled(anchor)
         || anchor
             .encounter
             .as_ref()
@@ -541,7 +542,13 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
             CommandIssuer::Import => false,
         };
         if !valid_authority
-            || event.meta.session_id.is_none()
+            || (event.meta.session_id.is_none()
+                && (!crate::table_engine::closed_session_release_action(action)
+                    || !matches!(
+                        event.meta.issuer,
+                        CommandIssuer::Admin | CommandIssuer::System
+                    )
+                    || event.meta.actor.is_some()))
             || event.rules_event.is_some()
             || event.outcome.mechanics.is_some()
             || event
@@ -809,6 +816,22 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    if let Some(history) = &state.encounter_history {
+        for receipt in &history.completions {
+            origins.extend([
+                &receipt.encounter_origin,
+                &receipt.initiative_origin,
+                &receipt.conclusion_origin,
+                &receipt.released_by,
+            ]);
+        }
+        origins.extend(
+            history
+                .spaces
+                .iter()
+                .flat_map(|space| space.ground_items.iter().map(|ground| &ground.origin)),
+        );
+    }
     if let Some(access) = state
         .table
         .as_ref()
@@ -1106,6 +1129,37 @@ fn validate_origins(
     audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
     commands: &HashMap<CommandId, &RecoveryEvent>,
 ) -> Result<(), String> {
+    if let Some(history) = &state.encounter_history {
+        for receipt in &history.completions {
+            let accepted = |origin: &CommandMeta| {
+                commands.get(&origin.id).and_then(|event| match event {
+                    RecoveryEvent::Tactical(event) => Some(event),
+                    RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
+                    RecoveryEvent::Rules(_) => None,
+                })
+            };
+            if !accepted(&receipt.released_by).is_some_and(|event| {
+                event.meta == receipt.released_by
+                    && event.action == TacticalAction::FinishEncounter
+                    && event.outcome.next_roll.is_none()
+                    && event.outcome.active_actor.is_none()
+                    && !event.outcome.awaiting_turn_work
+                    && !event.outcome.awaiting_initiative_ties
+            }) || !accepted(&receipt.encounter_origin).is_some_and(|event| {
+                event.meta == receipt.encounter_origin
+                    && matches!(&event.action, TacticalAction::Establish { encounter }
+                        if encounter.id == receipt.encounter_id && encounter.scene_id == receipt.scene_id)
+            }) || !accepted(&receipt.initiative_origin).is_some_and(|event| {
+                event.meta == receipt.initiative_origin
+                    && matches!(event.action, TacticalAction::Begin { .. })
+            }) || !accepted(&receipt.conclusion_origin).is_some_and(|event| {
+                event.meta == receipt.conclusion_origin
+                    && matches!(event.action, TacticalAction::ConcludeHostilities { .. })
+            }) {
+                return Err("encounter completion lacks its exact accepted setup, initiative, conclusion or release".into());
+            }
+        }
+    }
     if let Some(aftermath) = state
         .encounter
         .as_ref()

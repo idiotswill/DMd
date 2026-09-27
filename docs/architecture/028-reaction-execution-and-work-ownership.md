@@ -205,12 +205,13 @@ separate required Gate4 work with their own source and ownership acceptance.
 
 ## Compatibility and verification obligations
 
-### Authenticated encounter release (approved design; integration pending)
+### Authenticated encounter release (implementation authored; verification pending)
 
 `EncounterReleaseV1` owns flow 5. Counterspell requires a later boundary. The
-initial domain/rule checkpoint defines this executor and its inherited hit/missile
-predicates without changing existing live admission; the complete app integration
-must enable it only with the authenticated release and replacement path. Flows
+initial domain/rule checkpoint defined this executor and inherited hit/missile
+predicates. The subsequent application checkpoint enables current admission only
+alongside authenticated finish, closed-session upgrade, replay, replacement and
+desktop controls; runtime proof remains pending. Flows
 1–4 keep their accepted meanings and the historical unit upgrade remains 1→2.
 
 Explicit conclusion is narrative evidence that fighting stopped. A separate host
@@ -234,6 +235,12 @@ and ownership stay authoritative in the existing item store. Release marks the o
 scene Closed while retaining its presence history, and keeps the Finished encounter
 attached until atomic replacement. A new scene may share the location but must use
 a fresh scene ID. A physical item cannot occupy both old and new spaces.
+Replacement stages its new scene Closed without moving old participants, validates
+the retained Finished state, then changes selected actor locations and activates
+the new scene atomically with the new encounter. Failed placement preserves the
+entire old state. Source/equipment preparation and reduced session attendance are
+available only after validated Finished state. The new host-only finish capability
+is omitted from old execution projections and every player projection.
 
 The next initiative starts at checked last-final-turn plus one, with round one.
 Savage Attacker's existing scalar remains unchanged and is validated against the

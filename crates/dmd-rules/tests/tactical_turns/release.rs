@@ -1,6 +1,103 @@
 //! Isolated domain/rule fixtures. These are not genuine app captures or release
-//! acceptance; the authenticated transition and two-encounter app proof follow.
+//! acceptance; the application scenarios exercise the complete durable route.
 use super::*;
+
+#[test]
+fn accepted_release_preserves_source_resources_and_replacement_advances_global_turn() {
+    let mut f = prepared_creature();
+    f.rejected(Some(0), TacticalAction::FinishEncounter);
+    let before = f.state.clone();
+    let event = f.run(None, TacticalAction::FinishEncounter);
+    let history = f.state.encounter_history.as_ref().unwrap();
+    assert_eq!(history.completions.len(), 1);
+    let receipt = history.last().unwrap().clone();
+    assert_eq!(receipt.released_by, event.meta);
+    assert_eq!(
+        receipt.final_turn.number,
+        before
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number
+    );
+    assert_eq!(f.state.clock, before.clock);
+    assert_eq!(f.state.items, before.items);
+    assert_eq!(
+        f.state.rules.as_ref().unwrap().entities,
+        before.rules.as_ref().unwrap().entities
+    );
+    assert_eq!(
+        f.state.rules.as_ref().unwrap().tactical_inventory,
+        before.rules.as_ref().unwrap().tactical_inventory
+    );
+    let mut source = f.rules().tactical_creatures.clone().unwrap();
+    let previous = before
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_creatures
+        .as_ref()
+        .unwrap();
+    for (runtime, old) in source.runtime.iter_mut().zip(&previous.runtime) {
+        assert!(runtime.observed_turn.is_none());
+        assert!(!runtime.legendary_window_spent);
+        assert_eq!(runtime.last_operation, event.meta);
+        runtime.observed_turn = old.observed_turn;
+        runtime.legendary_window_spent = old.legendary_window_spent;
+        runtime.last_operation = old.last_operation.clone();
+    }
+    assert_eq!(
+        &source, previous,
+        "only retired cursors and their provenance change"
+    );
+    f.rejected(None, TacticalAction::FinishEncounter);
+    let old_encounter = f.state.encounter.as_ref().unwrap().clone();
+    let mut scene = f.state.scenes[&old_encounter.scene_id].clone();
+    scene.id = SceneId::new();
+    let mut location = f.state.locations[&scene.location_id].clone();
+    location.id = LocationId::new();
+    scene.location_id = location.id;
+    f.state.locations.insert(location.id, location);
+    // Application setup stages a fresh Closed scene in the same atomic command.
+    let scene_id = scene.id;
+    f.state.scenes.insert(scene_id, scene);
+    let mut authored = old_encounter.clone();
+    authored.id = EncounterId::new();
+    authored.scene_id = scene_id;
+    authored.flow = None;
+    f.run(
+        None,
+        TacticalAction::Establish {
+            encounter: Box::new(authored),
+        },
+    );
+    assert_eq!(
+        f.state.scenes[&old_encounter.scene_id].status,
+        SceneStatus::Closed
+    );
+    assert_eq!(f.state.scenes[&scene_id].status, SceneStatus::Active);
+    assert!(
+        f.actors
+            .iter()
+            .all(|actor| f.state.entities[actor].location_id
+                == Some(f.state.scenes[&scene_id].location_id))
+    );
+    assert_eq!(
+        f.state.encounter_history.as_ref().unwrap().last(),
+        Some(&receipt)
+    );
+    f.begin();
+    assert_eq!(
+        f.rules().timing.as_ref().unwrap().turn_number,
+        receipt.final_turn.number + 1
+    );
+    assert_eq!(f.rules().timing.as_ref().unwrap().round, 1);
+    f.run(Some(0), TacticalAction::StartAttackAction);
+    f.rejected(None, TacticalAction::FinishEncounter);
+}
 
 fn conclude(f: &mut Fixture) {
     f.run(
@@ -390,7 +487,7 @@ fn raw_recovery_die_and_due_wake_are_checked_across_the_campaign() {
     );
 }
 
-/// A structural fixture for the not-yet-wired transition. Never a portable
+/// A structural negative-test fixture. Never a portable
 /// capture or a claim that an app command has authenticated these added records.
 fn isolated_finished(f: &mut Fixture) {
     encounter_release_preflight(&f.state).unwrap();
@@ -509,9 +606,8 @@ fn savage_marker_requires_completion_highwater_in_each_no_timing_phase() {
     let origin = f.meta(None);
     isolated_replacement(&mut f.state, origin);
     validate_state(&f.state, &f.pack).unwrap();
-    // Derive the expected ordinary initiative request through the existing rule
-    // command, then exercise the versioned rule path with that same real output.
-    // This is an isolated semantic test, not an authenticated app event/capture.
+    // This is an isolated structural input, not an authenticated app capture.
+    // Continue it through the actual current initiative command.
     let action = TacticalAction::Begin {
         combatants: f
             .actors
@@ -530,20 +626,9 @@ fn savage_marker_requires_completion_highwater_in_each_no_timing_phase() {
                 request_id: RollRequestId::new(),
             })
             .collect(),
-        execution: TacticalExecutionVersion::ShieldMissileV1,
+        execution: TacticalExecutionVersion::EncounterReleaseV1,
     };
-    let mut event = resolve_tactical(&f.state, &f.meta(None), &action, &f.pack)
-        .unwrap()
-        .event;
-    let TacticalAction::Begin { execution, .. } = &mut event.action else {
-        unreachable!()
-    };
-    *execution = TacticalExecutionVersion::EncounterReleaseV1;
-    assert!(resolve_tactical(&f.state, &event.meta, &event.action, &f.pack).is_err());
-    f.state = replay_tactical(&f.state, &event, &f.pack)
-        .unwrap()
-        .next_state;
-    f.state.applied_event_sequence += 1;
+    f.run(None, action);
     validate_state(&f.state, &f.pack).unwrap();
     assert!(f.rules().timing.is_none());
     assert!(f.rules().pending.is_some());
@@ -642,10 +727,17 @@ fn history_is_absent_on_old_wire_and_rejects_reused_origins_and_highwater() {
             }
             _ => unreachable!(),
         }
-        assert!(
-            validate_tactical_state(&forged).is_err(),
-            "mutation {mutation}"
-        );
+        if mutation == 7 {
+            assert_eq!(
+                forged.encounter_history.as_ref().unwrap().validate(&forged),
+                Err("Finished encounter is not the latest authenticated completion".into())
+            );
+        } else {
+            assert!(
+                validate_tactical_state(&forged).is_err(),
+                "mutation {mutation}"
+            );
+        }
     }
 }
 
@@ -865,19 +957,9 @@ fn replacement_setup_and_pending_initiative_cannot_omit_retained_dependencies() 
                 request_id: RollRequestId::new(),
             })
             .collect(),
-        execution: TacticalExecutionVersion::ShieldMissileV1,
+        execution: TacticalExecutionVersion::EncounterReleaseV1,
     };
-    let mut event = resolve_tactical(&f.state, &f.meta(None), &action, &f.pack)
-        .unwrap()
-        .event;
-    let TacticalAction::Begin { execution, .. } = &mut event.action else {
-        unreachable!()
-    };
-    *execution = TacticalExecutionVersion::EncounterReleaseV1;
-    f.state = replay_tactical(&f.state, &event, &f.pack)
-        .unwrap()
-        .next_state;
-    f.state.applied_event_sequence += 1;
+    f.run(None, action);
     validate_state(&f.state, &f.pack).unwrap();
     assert!(f.rules().pending.is_some());
     assert_eq!(

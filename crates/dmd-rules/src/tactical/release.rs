@@ -330,6 +330,152 @@ pub fn encounter_release_preflight(
     })
 }
 
+/// The application may use a Finished encounter only after all retained proof
+/// and dependencies have been checked. An arbitrary historical Finished flag
+/// never opens a session, preparation or replacement exception.
+pub fn require_finished_encounter(state: &CampaignState) -> Result<(), RulesError> {
+    let current = flow(state)?;
+    if current.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        || current.phase != TacticalPhase::Finished
+    {
+        return Err(prerequisite(
+            "finish the existing encounter before preparing another",
+        ));
+    }
+    validate_history(state)
+}
+
+pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+    privileged(meta)?;
+    if flow(state)?.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
+        return Err(prerequisite(
+            "continue this saved encounter before finishing it",
+        ));
+    }
+    encounter_release_preflight(state)?;
+    let current = encounter(state)?;
+    let f = flow(state)?;
+    let timing = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.timing.as_ref())
+        .ok_or_else(|| invalid("release lacks timing"))?;
+    let scene = state
+        .scenes
+        .get(&current.scene_id)
+        .ok_or_else(|| invalid("release scene is absent"))?;
+    let receipt = TacticalCompletion {
+        encounter_id: current.id,
+        scene_id: current.scene_id,
+        location_id: scene.location_id,
+        encounter_origin: current.origin.clone(),
+        initiative_origin: f.origin.clone(),
+        conclusion_origin: f
+            .aftermath
+            .as_ref()
+            .ok_or_else(|| invalid("release conclusion is absent"))?
+            .origin
+            .clone(),
+        released_by: meta.clone(),
+        predecessor: state
+            .encounter_history
+            .as_ref()
+            .and_then(|history| history.last())
+            .map(|receipt| receipt.released_by.id),
+        released_at: state.clock.now,
+        final_turn: EffectTurn {
+            actor: turns::active(state)?,
+            number: timing.turn_number,
+            boundary: TurnBoundary::Start,
+        },
+        execution: TacticalExecutionVersion::EncounterReleaseV1,
+    };
+    let space = TacticalSceneSpace {
+        encounter_id: current.id,
+        scene_id: current.scene_id,
+        location_id: scene.location_id,
+        release: meta.id,
+        battlefield: current.battlefield.clone(),
+        participants: current
+            .participants
+            .iter()
+            .map(|actor| actor.entity_id)
+            .collect(),
+        ground_items: f.ground_items.clone(),
+    };
+    // Only now may the existing lifecycle helpers retire cursors. The full
+    // preflight above proved they cannot erase a pending routine or consequence.
+    state
+        .rules
+        .as_mut()
+        .ok_or(RulesError::Uninitialized)?
+        .timing = None;
+    if state
+        .rules
+        .as_ref()
+        .is_some_and(|rules| rules.tactical_effects.is_some())
+    {
+        let (next, ended) = crate::tactical_effect_adapter::apply_effect_operation(
+            state,
+            meta,
+            &crate::tactical_effects::EffectLifecycleAction {
+                step: 0,
+                operation: crate::tactical_effects::EffectLifecycleOperation::LeaveCombat,
+            },
+        )?;
+        if !ended.is_empty() {
+            return Err(invalid("release unexpectedly ended a retained effect"));
+        }
+        *state = next;
+    }
+    let actors = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_creatures.as_ref())
+        .map(|creatures| {
+            creatures
+                .runtime
+                .iter()
+                .map(|runtime| runtime.actor)
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    for actor in actors {
+        let current = state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_creatures.as_ref())
+            .ok_or_else(|| invalid("release lost source creature attachment"))?;
+        let transition = crate::tactical_creatures::apply_creature_schedule(
+            state,
+            current,
+            meta,
+            &crate::tactical_creatures::CreatureScheduleOperation::LeaveCombat { actor },
+        )
+        .map_err(|error| invalid(&error.to_string()))?;
+        state
+            .rules
+            .as_mut()
+            .ok_or(RulesError::Uninitialized)?
+            .tactical_creatures = Some(transition.next);
+    }
+    state
+        .scenes
+        .get_mut(&receipt.scene_id)
+        .ok_or_else(|| invalid("release scene disappeared"))?
+        .status = SceneStatus::Closed;
+    let f = flow_mut(state)?;
+    f.phase = TacticalPhase::Finished;
+    f.budget = TacticalTurnBudget::default();
+    f.ground_items.clear();
+    let history = state
+        .encounter_history
+        .get_or_insert_with(|| Box::new(TacticalEncounterHistory::default()));
+    history.completions.push(receipt);
+    history.spaces.push(space);
+    Ok(())
+}
+
 /// New completion attachments remain checked before the inactive/no-flow early
 /// returns. No historical flow without such an attachment gains an exception.
 pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
