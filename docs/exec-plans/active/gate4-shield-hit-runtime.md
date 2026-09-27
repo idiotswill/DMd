@@ -1,9 +1,9 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: active integration draft; all six checks pass for combined candidate
-3090f06, including the actual Shield and aftermath recovery cases. Final genuine
-aftermath continuation and canonical acceptance remain pending. Verified aftermath
-mainf441adedcf490504b6f1e3db1a964c023c511e47 is normally reconciled.
+Status: implementation and full local verification pass at
+74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb. Exact final-head CI, protected merge
+and post-main evidence remain required. Verified aftermath main
+f441adedcf490504b6f1e3db1a964c023c511e47 is normally reconciled.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
@@ -88,6 +88,39 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
 
 ## Current verification checkpoint
 
+On 2026-09-27, literal74c2cab passed canonical `./scripts/verify`:723 GNU Rust
+tests across54 result suites, zero failed/ignored, all50 table scenarios in1724.91s,
+formatting, workspace/all-target check, strict all-target Clippy and both guards.
+The run used one build job, incremental0 and the default Windows stack. Its complete
+log is `tooling/shield-74c2cab-canonical.log`, outside the repository. All121
+tactical attack cases pass. The genuine source-only aftermath continuation first
+passed separately1/1 in132.70s, then the complete five-case ReactionsV1 corpus passed
+5/5 in123.05s within canonical verification. Original captured bytes remain frozen.
+Independent full review and the actual main-reconciliation/whole-state-test delta
+are clear. The support test plans are integrated; their old unrun notes below are
+historical authoring checkpoints, not the current result.
+
+At this documentation checkpoint, literal74 Windows run36303904222 has passed
+MSRV job108576655855, with89 UI tests/16files, zero Svelte errors/warnings and a
+139-module build. Its stable runtime/packaging job and Linux36303904234 runtime
+job remain in progress; Linux MSRV and both guards pass. These are not final success
+claims. Linux's fetched synthetic merge2c208f659d935854f524134a4c6ab186de4b7fdf
+has parentsf441aded/74c2cab; both complete trees equal
+c19661883f2ffa0be207c893e778715c5eb96150. Inspect completed logs and final artifacts,
+and obtain all six checks on the final documentation head before expected-head merge.
+Record that head, protected merge/tree parity and literal post-main results in PR45;
+do not attribute earlier source checks to a later SHA.
+
+PR44 post-main verification is separately complete on literal
+f441adedcf490504b6f1e3db1a964c023c511e47. Linux36303644071 passes706 Rust tests
+across54 suites/49table in2106.86s; Windows36303644066 passes708/54/49table
+in2249.28s. All six checks pass, including81 UI tests/15files, zero static
+errors/warnings,138modules and fresh EXE/NSIS. Main artifact10926879955 is
+231661638bytes, SHA256
+78a32c342205e1ad8426323053f0849b9098f263f0f7527afe4990340714c58a.
+The actual upload log and artifact API agree. This evidence does not claim full
+encounter release; preserved aftermath cadence and full release remain distinct.
+
 Latest integration: PR44 protected-squash merged asf441aded after exactbe5442a
 review,705 GNU Rust/54suites/49table canonical and all six checks706Linux/708native
 Rust,81UI/15files,0/0,138modules and fresh EXE/NSIS. Artifact10900519221 is
@@ -108,8 +141,8 @@ genuine ReactionsV1 corpus exercises its actual session resume, explicit upgrade
 and owner continuation under ShieldHitV1. Independent fixture/provenance review
 is clear; review strengthens the test to compare the whole CampaignState while
 normalizing only the intended session binding or execution version plus sequence,
-and drops the recovered handle before later awaits. This new continuation remains
-unrun until the focused/default-stack and final canonical verification below.
+and drops the recovered handle before later awaits. The focused/default-stack and
+canonical results above now verify this continuation at74c2cab.
 
 The full3090 integration is independently reviewed clear and has all six CI checks;
 its Linux syntheticfa0a06a35210170805e9251fa74946027a91bb51 and literal3090 complete
@@ -275,9 +308,12 @@ export/restore baseline must pass before import; final canonical includes this
 additional continuation under the integrated current executor.
 
 Read any current CI failure before changing source. The registered player Shield
-SQLite case and modified source-control unit/application cases now pass on the
-default stack. Complete aftermath integration, canonical verification and final all-six-head CI with fresh
-packaging, full delta review, expected-head merge and fetched tree parity. Record
-post-main evidence in the PR. Continue the live-reaction umbrella inside Gate4;
+SQLite case, integrated aftermath and genuine historical continuation now pass the
+complete canonical run on the default stack at74c2cab. Complete final all-six-head
+CI with fresh packaging, full documentation-delta review, expected-head merge and
+fetched tree parity. Record post-main evidence in the PR. The evidence/ledger
+documentation changes do not modify runtime source, test logic or fixture bytes;
+final-head CI must still verify the updated ledger and complete repository.
+Continue the live-reaction umbrella inside Gate4;
 Magic Missile, Counterspell, Ready release/held spells and all other open tactical
 families remain required. Do not pause at this slice boundary or begin Gate5.

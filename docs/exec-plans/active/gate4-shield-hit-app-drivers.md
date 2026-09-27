@@ -1,6 +1,10 @@
 # Gate 4 — Explicit application hit-response test drivers
 
-Status: authored integration support; compilation and execution pending.
+Status: support work integrated and verified at parent74c2cab on2026-09-27.
+Canonical verification passes723 GNU Rust tests/54suites, including all50 table
+scenarios and the actual owned-source Shield case, using the default Windows stack.
+The parent [Shield plan](gate4-shield-hit-runtime.md) owns final PR45 CI/merge
+acceptance. The unrun notes below describe the original support checkpoint.
 Writer: source_control_recovery, taking over the preserved environment_audit draft.
 Branch: codex/gate4-shield-hit-app-drivers, based on e5f8fce.
 
