@@ -342,8 +342,7 @@ The existing release case already authors Mage Armor, Second Wind, thrown-dagger
 custody, reduced attendance, physical second initiative and source movement. Its
 dagger is purchased in real character creation by the focused follow-up
 `02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
-the following additional witnesses. The first three are now authored but unrun;
-the fourth remains planned:
+the following additional witnesses. All four are now authored but unrun:
 
 1. **Savage across the encounter boundary.** Reuse
    `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
@@ -561,6 +560,31 @@ bodies refuse without any durable mutation. Material boundaries use independent
 file restore and cold public resume. This is test/helper source only, uncompiled
 and unrun, with the published CI head kept separate.
 
+The fourth local family creates a real Mage and Adult Red Dragon, casts actual
+Mage Armor, and exports the settled dragon turn before its first breath. Two
+independently restored file databases continue those same original commands.
+The dragon's source initiative modifier is +12; physical faces explicitly avoid
+ties while putting the Mage first in encounter one and the PC first in encounter
+two. The accepted cone geometry reaches only the Mage. Its source 17d6 damage and
+actual failed Dexterity save produce either 64 HP from seventeen ones or death
+from seventeen sixes; neither branch edits HP, dice, effects or source counters.
+
+The dead-Mage branch retains the exact nonconcentration, defense-only armor effect
+and original eight-hour deadline. Both live and closed-session finish refuse with
+the actual unplaceable timing-dependency error and complete export equality. A
+real session resumes the same old encounter and advances to the surviving PC's
+next turn, preserving the corpse and its raw effect. The surviving branch reaches
+the dragon's real turn 5 Start, reports an actual failed recharge die of 1, and
+releases with breath availability false. Finish, replacement, requested initiative
+and the PC's first global turn 6 preserve that source state and the complete old
+RecordedRoll. Only the dragon's real Start at turn 7 requests a new die; physical
+6 then refreshes the breath while retaining the old failure's full proof. Any
+actual source legendary windows are individually declined through their normal
+commands. Material transitions use independent file restore/cold public resume,
+original response retries and changed-body full-store refusals. This additional
+test/helper source has only formatting and whitespace checks; it has not compiled
+or run and has not been pushed.
+
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
 Nine read-only raw SQLite candidates were preserved; the fifth pending concentration
@@ -602,10 +626,10 @@ the next slice, with real controller/session and semantic recovery evidence.
 User-facing controls will say “Finish encounter” and “Prepare battlefield”; they
 must not expose executor or schema internals.
 
-Next action: publish this reviewed branch as an early draft PR for actual compiler,
-UI and CI feedback, as root authorized after integration review. Keep that head
-stable until diagnostics or an agreed next source checkpoint. Root will assign
-the remaining scenario implementation and the local heavy verification slot; no
-local build is authorized here. Final verified cache/MM main, genuine flow 4
+Next action: obtain root review of the fourth local scenario checkpoint and keep
+published PR48 at its separately reviewed compiler-fix head while that CI finishes.
+All four additional source families remain local and unrun until root authorizes
+the next publication and assigns verification. No local build is authorized here.
+Final verified cache/MM main, genuine flow 4
 baselines and the complete runtime/UI/package matrix remain hard acceptance
 blockers. Draft publication is not slice or Gate 4 acceptance.
