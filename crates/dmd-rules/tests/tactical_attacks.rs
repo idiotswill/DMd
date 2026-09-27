@@ -13,6 +13,8 @@ mod creature_weapon;
 mod hit_shield;
 #[path = "tactical_attacks/medicine.rs"]
 mod medicine;
+#[path = "tactical_attacks/missiles.rs"]
+mod missiles;
 #[path = "tactical_attacks/opportunity.rs"]
 mod opportunity;
 #[path = "tactical_attacks/savage.rs"]
@@ -339,7 +341,7 @@ impl Fixture {
         self.run(
             None,
             TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
+                execution: dmd_domain::TacticalExecutionVersion::ShieldMissileV1,
                 combatants: self
                     .actors
                     .into_iter()

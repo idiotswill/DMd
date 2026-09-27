@@ -18,7 +18,8 @@ fn review_mut(state: &mut CampaignState) -> Result<&mut TacticalHitReview, Rules
 fn require_window(state: &CampaignState, window: TacticalWorkKey) -> Result<(), RulesError> {
     if window.resolution != resolution(state)?.origin.id
         || window.occurrence != review(state)?.work.occurrence
-        || flow(state)?.version != TacticalExecutionVersion::ShieldHitV1.flow_version()
+        || !TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+            .is_some_and(TacticalExecutionVersion::supports_hit_shield)
     {
         return Err(prerequisite("that hit response is no longer available"));
     }
@@ -534,7 +535,7 @@ pub(super) fn resume(
     )
 }
 
-fn validate_order(
+pub(super) fn validate_order(
     state: &CampaignState,
     meta: &CommandMeta,
     instruction: &TacticalReactionOrdering,
@@ -629,7 +630,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 return true;
             }
             if flow(state).is_ok_and(|flow| {
-                flow.version == TacticalExecutionVersion::ShieldHitV1.flow_version()
+                TacticalExecutionVersion::from_flow_version(flow.version)
+                    .is_some_and(TacticalExecutionVersion::supports_hit_shield)
             }) {
                 return attack
                     .attack_roll
@@ -669,7 +671,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         .work_trace
         .as_ref()
         .ok_or_else(|| invalid("hit response lacks causal ancestry"))?;
-    if flow(state)?.version != TacticalExecutionVersion::ShieldHitV1.flow_version()
+    if !TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+        .is_some_and(TacticalExecutionVersion::supports_hit_shield)
         || hit.attack_origin != attack.origin.id
         || attack.attack_roll != Some(hit.attack_roll)
         || hit.cause != roll.accepted_by

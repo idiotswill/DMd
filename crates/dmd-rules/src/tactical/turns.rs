@@ -226,6 +226,7 @@ fn begin_boundary_from(
         attack: None,
         movement: None,
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,
@@ -308,6 +309,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         }
         super::movement::prune(state, meta)?;
         if super::hit_reactions::waiting(state)
+            || super::missiles::waiting(state)
             || resolution(state)?.pending.is_some()
             || super::falling::selected(state)?.is_some()
             || resolution(state)?.failed_save.is_some()
@@ -384,7 +386,7 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    if super::hit_reactions::waiting(state) {
+    if super::hit_reactions::waiting(state) || super::missiles::waiting(state) {
         return Err(RulesError::Pending);
     }
     if super::work_trace::tactical_frame_host_ordering(resolution(state)?)? {
@@ -393,6 +395,12 @@ pub(super) fn choose(
         // raw save/reaction/resistance authority is deliberately unaffected.
         privileged(meta)?;
     } else {
+        if !resolution(state)?.missiles.is_empty()
+            && controller(state, resolution(state)?.turn_actor)
+                .is_some_and(|player| meta.issuer != CommandIssuer::Player(player))
+        {
+            return Err(RulesError::Unauthorized);
+        }
         authorize(state, meta, resolution(state)?.turn_actor)?;
     }
     if resolution(state)?.pending.is_some()

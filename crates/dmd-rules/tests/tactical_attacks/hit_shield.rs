@@ -6,7 +6,7 @@ use dmd_rules::tactical_defenses::effective_armor_class;
 
 /// An isolated source-built initial image, not a claimed application creation path.
 /// All response, cost, roll, turn and movement changes below are real commands.
-fn source_actor(f: &mut Fixture, index: usize, definition: &str, size: CreatureSize) {
+pub(super) fn source_actor(f: &mut Fixture, index: usize, definition: &str, size: CreatureSize) {
     let actor = f.actors[index];
     // The generic weapon fixture labels its attacker's loot as borrowed from
     // actor 1. This source-built initial image gives that loot to its current

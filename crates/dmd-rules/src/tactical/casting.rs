@@ -206,6 +206,7 @@ pub(super) fn begin(
         attack: None,
         movement: None,
         casts: vec![record],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,
@@ -366,7 +367,14 @@ pub(super) fn commit(
                     ));
                 }
                 let count = record.targets.len();
+                let missile = TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+                    .is_some_and(TacticalExecutionVersion::supports_missile_shield)
+                    && super::missiles::is_program(record);
                 push_frame(state, vec![TacticalWorkKind::FinishSpell { cast }])?;
+                if missile {
+                    push_frame(state, vec![TacticalWorkKind::BeginMissile { cast }])?;
+                    continue;
+                }
                 for target in (0..count).rev() {
                     push_frame(
                         state,
@@ -479,6 +487,11 @@ pub(super) fn start(
     cast: u16,
     at: SpellProgramOccurrence,
 ) -> Result<bool, RulesError> {
+    // Committed missile faces are retained even for a subsequently dead or
+    // Shield-protected target. Impact work evaluates prevention separately.
+    if super::missiles::owns_cast(state, cast).is_some() {
+        return Ok(false);
+    }
     let record = current_cast(state, cast)?;
     let target = record
         .targets
@@ -569,6 +582,9 @@ pub(super) fn finish(
             }
         }
         [SpellProgramNode::Heal { .. } | SpellProgramNode::AutomaticDamage { .. }] => {
+            if super::missiles::owns_cast(state, cast).is_some() {
+                return super::missiles::retain_amount(state, pending);
+            }
             let operation = spell_amount_operation(
                 state,
                 &record,
@@ -643,6 +659,8 @@ pub(super) fn finish_cast(
         end_owned_group(state, meta, record.cast.plan.choice.actor, group)?;
     }
     super::hit_reactions::finish_shield(state, &record)?;
+    super::missiles::finish_shield(state, &record)?;
+    super::missiles::finish_cast(state, &record)?;
     resolution_mut(state)?
         .casts
         .retain(|r| r.cast.plan.occurrence != cast);
@@ -747,6 +765,12 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_equipment_change_origin(state, &record.cast.last_operation, actor)
             .map_err(|e| invalid(&e))?;
         authorize(state, &plan.origin, actor)?;
+        if super::missiles::owns_cast(state, plan.occurrence).is_some() {
+            // The missile validator proves the complete response/amount/impact
+            // partition. Raw collection alone does not complete a source dart.
+            super::missiles::validate_cast_partition(state, record)?;
+            continue;
+        }
         let mut partition: std::collections::HashSet<_> =
             record.completed.iter().copied().collect();
         let mut finish_count = 0;

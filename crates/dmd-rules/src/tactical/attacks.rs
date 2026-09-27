@@ -246,6 +246,7 @@ fn begin_with_source(
         attack: Some(attack),
         movement: None,
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,
@@ -386,7 +387,10 @@ pub(super) fn resolved(
             } else {
                 TacticalAttackStage::Finishing
             };
-            if hit && flow(state)?.version == TacticalExecutionVersion::ShieldHitV1.flow_version() {
+            if hit
+                && TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+                    .is_some_and(TacticalExecutionVersion::supports_hit_shield)
+            {
                 return super::hit_reactions::open(state, meta, &pending.work);
             }
             push_frame(

@@ -45,6 +45,7 @@ pub(super) fn begin(
         attack: None,
         movement: Some(Box::new(movement)),
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,

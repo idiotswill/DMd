@@ -1,11 +1,13 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active approved design; both original flow3 capture scenarios and the
-source-equivalent four-file baseline test passed. All four exact exports are
-imported. Four independent continuation cases remain unrun.
-No flow4 runtime changes or acceptance are claimed.
+Status: active implementation; both original flow3 capture scenarios and the
+source-equivalent four-file baseline test passed. All four exact exports remain
+unchanged. Flow4 domain/rules implementation and focused cases are authored but
+uncompiled and unrun. Four independent flow3 continuation cases remain unrun.
+No runtime correctness, app integration, or acceptance is claimed.
 Branch: `codex/gate4-shield-missile-runtime`.
-Writer: `shield_rules_recovery`, exclusively; root coordinates integration and builds.
+Writer: `missile_implementation`, exclusively for this branch; root coordinates
+separate app integration and serializes all heavy builds.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
@@ -353,6 +355,51 @@ transition. Avoid redundant inspection-only opens: compare already exported curr
 images after real command/restore validation. Keep genuine cold resume, independent
 semantic restore/continuation, exact retry and full no-write comparisons. Record
 actual timing; do not claim a speedup, weaken integrity or parallelize heavy builds.
+
+## Domain/rules implementation checkpoint - 2026-09-27
+
+The resumed writer fetched live main, read AGENTS/this plan/ADR028 and rechecked
+SRD SHA256 `8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87`.
+The previous writer's uncommitted type scaffolding was preserved and completed
+into a first engine checkpoint. It is not yet compiled, tested, pushed, or accepted.
+Root currently owns the sole heavy slot for PR45 verification.
+
+- Add `ShieldMissileV1`/flow4 and explicit hit support for3/4. New live Begin and
+  targeted upgrades require4; historical typed upgrade-to3 remains replayable,
+  unit upgrade remains1-to-2, and old flow3 hit decisions remain completable.
+- Add omitted-when-empty `resolution.missiles`, typed response/amount/impact
+  evidence and existing-frame work kinds. No source program/fingerprint, old
+  export, old raw-role tag or legacy scheduler is rewritten.
+- The real commit binds one respondent per distinct original target. Private
+  intents and explicit response order/delegation precede freshly owned selected
+  Shield cast/decline. Each child retains its source completion evidence.
+- The amount phase retains all original per-dart physical requests without HP
+  mutation, including Shield-protected darts. One complete occurrence frame then
+  applies separately chosen impacts with ordinary nested consequences. The actual
+  current-turn owner controls impacts; response delegation cannot transfer that
+  authority. Original amount acceptance remains the vitality cause.
+- Source/decision/retired-node and live partition validators check exact cast,
+  target, raw key/request/face, response owner/order, Shield source effect, and
+  amount/impact completion identities. Historical semantic replay remains required
+  to authenticate prior geometry/knowledge and transitions.
+- Six source-built reducer/replay cases are authored for all-faces/reverse-order,
+  actual Mage Shield with both intent arrivals, selected decline/delegation,
+  concentration child drain, caster death with committed no-effects, and hostile
+  target/raw/barrier/retired-node mutations. These are initial-image rules cases,
+  not actual application creation or SQLite evidence. They have not run.
+- Shared `tactical_attacks` fresh fixture now begins4. Minimal app work-choice
+  edges suppress generic private-stage work and label impact occurrences by their
+  committed known dart/target. Full DTO/opaque transport/source control/UI/history/
+  restore integration and remaining fresh-current fixtures are still pending.
+
+Next: a separate writer branches app/UI integration from this coherent checkpoint;
+this writer retains domain/rules and rules tests only. Complete static independent
+review, adapt remaining fresh rules fixtures to4 without touching genuine old
+captures, then compile/fix and run focused rules/old-flow continuations when root
+releases the slot or after coherent app integration permits draft CI. The entire
+acceptance matrix above remains mandatory. Integrate verified PR45 main (including
+PR44 aftermath) normally before acceptance, explicitly admitting aftermath4 while
+preserving2/3. No flow4 merge or Gate4 completion is claimed.
 
 ## Development checkpoint and exact next steps
 
