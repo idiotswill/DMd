@@ -543,7 +543,17 @@ async fn real_release_reuses_source_actors_and_preserves_old_scene_custody_acros
             .replace('\\', "/")
     );
     let pool = open_sqlite(&url).await.unwrap();
-    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    let mut creation = input("Character 0");
+    creation.purchases.push(EquipmentChoice {
+        item_id: "dagger".into(),
+        quantity: 1,
+    });
+    let mut f = Box::pin(Fixture::with_creation_pool(
+        TableContract::default(),
+        Some(creation),
+        pool,
+    ))
+    .await;
     Box::pin(scenario(&mut f, &url, &directory)).await;
     f.pool.close().await;
     drop(f);
