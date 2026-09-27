@@ -441,8 +441,8 @@ namespace-specific refusal. It is authored and formatted only, not run.
 
 An eleventh authored rules case extends the explicitly isolated initial image with
 a third genuine source profile: one Player-owned Night Hag and two independently
-owned Mages. It accepts both private intents in both arrival orders, requests the
-reverse respondent order explicitly, casts both real Shields, verifies distinct
+owned Mages. It crosses both explicit respondent rank orders with both private intent arrival
+orders (four executions), casts both real Shields, verifies distinct
 reserved source ordinals and chronological response execution, retains all six
 faces and completes both impact orders without damaging either protected Mage.
 The existing source-builder helper now accepts an explicit actor/controller/index
