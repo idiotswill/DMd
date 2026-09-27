@@ -1,7 +1,7 @@
 # Gate 4 — Shared immutable tactical catalog
 
-Status: authorized bounded implementation; no compilation, tests, benchmark or
-performance result yet. Writer: source_registry_review. Branch:
+Status: implementation formatted and statically reviewed; no compilation, tests,
+benchmark or performance result yet. Writer: source_registry_review. Branch:
 `codex/gate4-immutable-catalog-cache`, based on reviewed Shield candidate
 `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5`. Fetched main before branching was
 `f441adedcf490504b6f1e3db1a964c023c511e47`. The preserved prior branch
@@ -24,7 +24,9 @@ state, event, source definition, serialization or executor semantics change.
 
 The sole local heavy slot belongs to the Magic Missile verification agent. This
 writer may edit, format and commit; no build, tests or benchmarks may start until
-the coordinator releases that slot. Do not push this candidate before review.
+the coordinator releases that slot. After exact-head review the coordinator may
+authorize early push/draft CI while local verification waits; local measurements
+are not a prerequisite to opening that draft. Do not push before that review.
 Reconcile the eventual verified PR45 main normally before final acceptance.
 
 ## Design before implementation
@@ -106,6 +108,22 @@ Risks are changed error prefixes, accidental ownership/order changes when replac
 installed-content checks. Static audit must identify every runtime embedded parse;
 test parsers and arbitrary-input loaders remain direct.
 
-No build/test/benchmark has run. No acceptance or speedup is claimed. Next action:
-implement the reviewed seam, format only changed Rust files, inspect and commit a
-coherent candidate for independent review. Keep the heavy slot free and do not push.
+The implementation routes all seven production embedded parse entry points through
+the neutral cache. The creature wrapper keeps its public return/error contract;
+fighter and equipment results clone only the strings their previous owned parser
+moved. The two new definition tests compare complete values/serialized identities,
+shared creature access, distinct valid arbitrary input and its unchanged schema
+error after cache initialization. Bundled catalog files, manifests and genuine
+historical fixtures are unchanged.
+
+Independent static caller audit confirmed exact wrapper error mappings, all seven
+entry points and no initializer cycle. Root reviewed the complete code/test patch
+and found no defect. Changed Rust files passed standalone rustfmt with child-module
+traversal disabled; `git diff --check` passes. No compiler, test or benchmark has
+run, and these static checks are not acceptance or evidence of a speedup.
+
+Next action: commit the coherent candidate, report its exact head for final delta
+review, and await coordinator authorization for early draft CI. Keep the local
+heavy slot free. After verified Shield main and slot availability, execute the
+baseline/candidate measurement and correctness plan above without weakening any
+existing integrity checks.

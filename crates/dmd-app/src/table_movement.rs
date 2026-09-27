@@ -140,10 +140,8 @@ pub(super) fn opportunity(
         }
         options.weapons.retain(|weapon| !weapon.grips.is_empty());
     }
-    let definitions = dmd_rules::tactical_definitions::TacticalDefinitions::from_json(
-        dmd_rules::tactical_definitions::TACTICAL_DEFINITIONS_JSON,
-    )
-    .map_err(|error| error.to_string())?;
+    let definitions = dmd_rules::tactical_definitions::bundled_tactical_definitions()
+        .map_err(|error| error.to_string())?;
     let creature = encounter
         .flow
         .as_ref()

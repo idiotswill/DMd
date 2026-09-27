@@ -118,7 +118,7 @@ pub(super) fn weapon_plan(
         state,
         source,
         pack,
-        definitions: &defs,
+        definitions: defs,
         choice,
         context: WeaponAttackContext {
             origin: meta,
