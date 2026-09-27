@@ -14,7 +14,8 @@ Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
 Writer: root, exclusively after the explicit 2026-09-27 transfer from inactive
 `shield_integration_review`. Root coordinates independent review and serializes
-all heavy builds; the release branch currently holds the local heavy slot.
+all heavy builds. Root owns the local slot; local runtime verification currently
+waits for sufficient Windows committed-memory headroom after the recorded failure.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
@@ -88,10 +89,28 @@ The bounded [Shield plan](../completed/gate4-shield-hit-runtime.md), its
 separate final-source and literal-main proof. Their historical checkpoints remain
 source-qualified. This plan and its integrated app subplan remain active.
 
-Next: independently review the complete
-final diff, run canonical verification when the shared slot is released, and require
-all six final-head jobs before protected merge and literal main proof. Counterspell,
-Ready, off-turn producers and encounter release remain active Gate4 obligations.
+Exact `940c92b64530dbd9507998f5a60d5a47bf7b7e29` attempted canonical
+`./scripts/verify` on 2026-09-27, 13:01:22–13:10:08 UTC, with Rust1.98.1 GNU,
+one build job, incremental off and `RUST_MIN_STACK` unset. Formatting, workspace
+check and strict all-target Clippy passed. The test compilation failed with
+`rustc-LLVM ERROR: out of memory` in the dmd-app library test binary; exit101.
+No runtime or complete canonical pass is claimed. The complete original log and
+source/environment metadata remain in `tooling/missile-940c92b-canonical.{log,json}`.
+Closing the completed QA app still left less than 1GB of Windows commit headroom;
+the owner was asked to free unused applications while remote CI/source work continues.
+
+The complete implementation and subsequent evidence-only changes have independent
+review. Four f489 CI jobs passed, but its Linux/native runtime jobs were still
+unfinished when this final documentation checkpoint was prepared. Publishing the
+final head may supersede those in-flight runs; unfinished/cancelled jobs never count
+as passes. All six checks must run on the final published head. The actual ffc3
+source/runtime/package proof above remains separately qualified.
+
+Next: publish the reviewed final head, rerun canonical verification once memory is
+available, and require all six final-head jobs before protected merge and literal
+main proof. The retry must retain the failed attempt and record its own exact source
+and environment. Counterspell, Ready, off-turn producers and encounter release
+remain active Gate4 obligations.
 
 Remaining UI polish observed during real packaged Gate 4 play: Character Sheet
 Equipment/features still contains Gate 3 wording that says weapon attack/damage
@@ -104,6 +123,11 @@ silently waived by this Magic Missile slice.
 Each committed dart choice also returns the page to its top, requiring repeated
 scrolling to reach the next choice. Preserve useful scroll/focus during these
 sequential decisions as part of Gate 4 UI cleanup.
+These three issues are now implemented separately in draft PR49,
+`codex/gate4-table-ui-polish`, with independent review and 106 native UI tests,
+zero static diagnostics and a 140-module build at exact56a2225. That branch still
+requires final dependency reconciliation, canonical/full CI and actual native
+scroll/map/sheet exercises; its draft evidence does not close this UI debt here.
 
 ### Actual packaged restart and continuation
 
