@@ -394,3 +394,97 @@ fn missiles_reject_forged_targets_raw_keys_barriers_and_retired_occurrences() {
         );
     }
 }
+
+#[test]
+fn missiles_round_resistance_and_consume_temporary_hp_for_each_damage_instance() {
+    let mut f = hag(false);
+    f.entity_mut(1).hp = 100;
+    f.entity_mut(1).max_hp = 100;
+    f.entity_mut(1).temporary_hp = 3;
+    f.entity_mut(1).resistances.insert(DamageType::Force);
+    let target = f.actors[1];
+    cast(&mut f, vec![target; 6]);
+    order(&mut f);
+    respond(&mut f, 1, false);
+    amounts(&mut f, &[2; 6]);
+    // Six independent 3-damage darts become six 1-damage instances. Summing
+    // before resistance would incorrectly turn18 into9, rather than6.
+    choose(&mut f, 5);
+    assert_eq!(f.rules().entities[&target].temporary_hp, 2);
+    assert_eq!(f.rules().entities[&target].hp, 100);
+    drain(&mut f, true);
+    assert_eq!(f.rules().entities[&target].temporary_hp, 0);
+    assert_eq!(f.rules().entities[&target].hp, 97);
+}
+
+#[test]
+fn missiles_at_zero_hp_cause_one_failure_per_dart_then_preserve_dead_target_no_effects() {
+    let mut f = hag(false);
+    f.entity_mut(1).hp = 1;
+    f.entity_mut(1).max_hp = 100;
+    let target = f.actors[1];
+    cast(&mut f, vec![target; 6]);
+    respond(&mut f, 1, false);
+    order(&mut f);
+    amounts(&mut f, &[1; 6]);
+    choose(&mut f, 0);
+    assert_eq!(f.rules().entities[&target].hp, 0);
+    assert_eq!(f.rules().entities[&target].death.failures, 0);
+    choose(&mut f, 1);
+    assert_eq!(f.rules().entities[&target].death.failures, 1);
+    choose(&mut f, 2);
+    assert_eq!(f.rules().entities[&target].death.failures, 2);
+    choose(&mut f, 3);
+    assert!(f.rules().entities[&target].death.dead);
+    assert!(
+        missile(&f).darts[4..]
+            .iter()
+            .all(|dart| dart.amount.is_some() && dart.completed_by.is_none())
+    );
+    drain(&mut f, false);
+    assert_eq!(f.rules().entities[&target].hp, 0);
+    assert!(f.rules().entities[&target].death.dead);
+}
+
+#[test]
+fn missiles_final_singleton_keeps_the_foreign_child_save_executor_without_transferring_order_authority()
+ {
+    let mut f = hag(false);
+    f.entity_mut(1).hp = 100;
+    f.entity_mut(1).max_hp = 100;
+    let target = f.actors[1];
+    let group = spell::focus(&mut f);
+    cast(&mut f, vec![target; 6]);
+    order(&mut f);
+    respond(&mut f, 1, false);
+    amounts(&mut f, &[1; 6]);
+    for index in 0..4 {
+        choose(&mut f, index);
+        f.roll(1, &[20]);
+        assert_eq!(f.rules().entities[&target].concentration, Some(group));
+    }
+    choose(&mut f, 4);
+    let result = f.raw(&[20]);
+    let resumed = f.run(Some(1), TacticalAction::SubmitRoll { result });
+    // The target's fifth save drains its child and resumes the sole final dart.
+    // No player0 command is fabricated, and no new material ordering was due.
+    assert_eq!(f.rules().entities[&target].hp, 88);
+    assert!(
+        missile(&f).darts[..5]
+            .iter()
+            .all(|dart| dart.selected_by.is_some())
+    );
+    assert!(missile(&f).darts[5].selected_by.is_none());
+    assert_eq!(
+        missile(&f).darts[5].completed_by,
+        Some(resumed.meta.clone())
+    );
+    assert_eq!(f.request().roller, Some(target));
+    assert!(
+        matches!(f.flow().resolution.as_ref().unwrap().pending.as_ref().unwrap().work.kind,
+        TacticalWorkKind::ConcentrationSave { actor, damage_taken: 2, .. } if actor == target)
+    );
+    f.roll(1, &[20]);
+    assert!(f.flow().resolution.is_none());
+    assert_eq!(f.rules().entities[&target].concentration, Some(group));
+}

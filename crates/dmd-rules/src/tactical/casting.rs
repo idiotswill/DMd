@@ -765,6 +765,15 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_equipment_change_origin(state, &record.cast.last_operation, actor)
             .map_err(|e| invalid(&e))?;
         authorize(state, &plan.origin, actor)?;
+        if TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+            .is_some_and(TacticalExecutionVersion::supports_missile_shield)
+            && super::missiles::is_program(record)
+            && super::missiles::owns_cast(state, plan.occurrence).is_none()
+        {
+            return Err(invalid(
+                "current missile cast lost its committed target barrier",
+            ));
+        }
         if super::missiles::owns_cast(state, plan.occurrence).is_some() {
             // The missile validator proves the complete response/amount/impact
             // partition. Raw collection alone does not complete a source dart.

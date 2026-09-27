@@ -142,6 +142,7 @@ pub(super) fn open(
                 known_target_label,
                 amount: None,
                 impact_occurrence: None,
+                selected_by: None,
                 completed_by: None,
             })
         })
@@ -492,6 +493,34 @@ pub(super) fn begin_impacts(state: &mut CampaignState, missile: u16) -> Result<(
     Ok(())
 }
 
+pub(super) fn select_impact(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: &TacticalWorkItem,
+) -> Result<(), RulesError> {
+    let TacticalWorkKind::ApplyMissileImpact { missile, at } = work.kind else {
+        return Ok(());
+    };
+    owner(state, meta, resolution(state)?.turn_actor)?;
+    let record = current_mut(state, missile)?;
+    let dart = record
+        .darts
+        .get_mut(usize::from(at.target))
+        .filter(|dart| dart.at == at)
+        .ok_or_else(|| invalid("selected missile impact has no committed dart"))?;
+    if record.stage != TacticalMissileStage::Impacts
+        || dart.selected_by.is_some()
+        || dart.completed_by.is_some()
+        || dart.impact_occurrence != Some(work.occurrence)
+    {
+        return Err(invalid(
+            "selected missile impact differs from its pending occurrence",
+        ));
+    }
+    dart.selected_by = Some(meta.clone());
+    Ok(())
+}
+
 pub(super) fn impact(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -511,6 +540,10 @@ pub(super) fn impact(
     {
         return Err(invalid("missile impact is not pending"));
     }
+    if dart.selected_by.as_ref().is_some_and(|selected| selected != meta)
+        || dart.selected_by.is_none() && resolution(state)?.frames.iter().flatten()
+            .any(|work| matches!(work.kind, TacticalWorkKind::ApplyMissileImpact { missile: id, .. } if id == missile))
+    { return Err(invalid("unselected missile impact is not the final singleton")); }
     let key = dart
         .amount
         .ok_or_else(|| invalid("missile impact lacks accepted faces"))?;

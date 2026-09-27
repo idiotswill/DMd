@@ -233,6 +233,31 @@ fn source_target_upcast_is_not_caller_supplied_count_or_radius() {
 }
 
 #[test]
+fn missile_program_preserves_individual_d4_plus_one_at_every_source_slot_level() {
+    // Pure source compiler coverage, not a grant admitted by the current
+    // character-creation kernel or an assertion of application caster support.
+    for level in 1..=9 {
+        let (state, meta, choice) = fixture("magic-missile", SpellResourceChoice::Slot { level });
+        let plan = plan_spell_cast(&state, &meta, &choice).unwrap();
+        assert_eq!(
+            plan.program.targets,
+            SpellTargetRule::Darts {
+                count: level + 2,
+                requires_sight: true
+            }
+        );
+        let [SpellProgramNode::AutomaticDamage { damage, share }] = plan.program.nodes.as_slice()
+        else {
+            panic!("source Magic Missile must keep its automatic per-dart program");
+        };
+        assert_eq!(*share, SpellDamageShare::PerDart);
+        assert_eq!(damage.dice, vec![DieSpec { count: 1, sides: 4 }]);
+        assert_eq!(damage.modifier, 1);
+        assert_eq!(damage.damage_type, DamageType::Force);
+    }
+}
+
+#[test]
 fn cannot_invent_grant_payment_or_control() {
     let (mut state, meta, mut choice) =
         fixture("cure-wounds", SpellResourceChoice::Slot { level: 1 });

@@ -559,6 +559,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                         TacticalMissileStage::Impacts | TacticalMissileStage::Completed
                     )
                 || dart.completed_by.is_some() && dart.impact_occurrence.is_none()
+                || dart.selected_by.is_some() && dart.selected_by != dart.completed_by
                 || missile.stage == TacticalMissileStage::Completed && dart.completed_by.is_none()
             {
                 return Err(invalid(
@@ -631,7 +632,18 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                 }
                 if let Some(completed) = &dart.completed_by {
                     decision(state, completed, r.turn_actor, &roll.accepted_by)?;
-                    owner(state, completed, r.turn_actor)?;
+                    if let Some(selected) = &dart.selected_by {
+                        owner(state, selected, r.turn_actor)?;
+                    } else if missile
+                        .darts
+                        .iter()
+                        .any(|other| other.completed_by.is_none())
+                        || cast.completed.last() != Some(&dart.at)
+                    {
+                        return Err(invalid(
+                            "automatic missile completion preceded another impact",
+                        ));
+                    }
                 }
             }
             if let Some(occurrence) = dart.impact_occurrence {
@@ -673,6 +685,17 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
         if missile.completed_cast.is_none() {
             validate_cast_partition(state, cast)?;
         }
+        if missile
+            .darts
+            .iter()
+            .filter(|dart| dart.completed_by.is_some() && dart.selected_by.is_none())
+            .count()
+            > 1
+        {
+            return Err(invalid(
+                "more than one missile impact bypassed explicit ordering",
+            ));
+        }
     }
     // Even retired new nodes must name an authenticated retained source record.
     if let Some(trace) = &r.work_trace {
@@ -687,6 +710,18 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             };
             if missile.is_some_and(|missile| !windows.contains(&missile)) {
                 return Err(invalid("retired missile work lacks its committed source"));
+            }
+            if let TacticalWorkKind::ApplyMissileImpact { missile, at } = node.work.kind {
+                if current(state, missile)?
+                    .darts
+                    .get(usize::from(at.target))
+                    .filter(|dart| dart.at == at)
+                    .is_none_or(|dart| dart.impact_occurrence != Some(node.work.occurrence))
+                {
+                    return Err(invalid(
+                        "retired impact is not an exact committed dart occurrence",
+                    ));
+                }
             }
             if let TacticalWorkKind::CommitMissileShield {
                 missile,
@@ -708,6 +743,36 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             }
         }
         for missile in &r.missiles {
+            let amounts = trace
+                .nodes
+                .iter()
+                .filter_map(|node| match node.work.kind {
+                    TacticalWorkKind::SpellProgram { cast, at } if cast == missile.cast => Some(at),
+                    _ => None,
+                })
+                .collect::<Vec<_>>();
+            let collecting_or_later = matches!(
+                missile.stage,
+                TacticalMissileStage::Amounts
+                    | TacticalMissileStage::Impacts
+                    | TacticalMissileStage::Completed
+            );
+            if amounts.len()
+                != if collecting_or_later {
+                    missile.darts.len()
+                } else {
+                    0
+                }
+                || collecting_or_later
+                    && missile
+                        .darts
+                        .iter()
+                        .any(|dart| amounts.iter().filter(|at| **at == dart.at).count() != 1)
+            {
+                return Err(invalid(
+                    "retired amount work omits or duplicates a committed dart",
+                ));
+            }
             let resumes = trace
                 .nodes
                 .iter()

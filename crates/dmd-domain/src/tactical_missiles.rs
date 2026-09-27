@@ -42,6 +42,9 @@ pub struct TacticalMissileDart {
     /// Allocated only when every target response and amount is complete. The
     /// whole impact set is then installed as one ordinary sibling frame.
     pub impact_occurrence: Option<u16>,
+    /// The turn controller's explicit material choice. The final singleton is
+    /// automatic and has none, even if a different owner's child save resumes it.
+    pub selected_by: Option<CommandMeta>,
     /// Also retained for prevented/dead-target no-effects. A nested child may
     /// alter the target, but cannot remove or retarget a committed occurrence.
     pub completed_by: Option<CommandMeta>,

@@ -432,6 +432,7 @@ pub(super) fn choose(
         .position(|work| work.occurrence == occurrence)
         .ok_or_else(|| invalid("unknown simultaneous work"))?;
     let work = frame.remove(index);
+    super::missiles::select_impact(state, meta, &work)?;
     super::continuations::start(state, meta, work)?;
     pump(state, meta)
 }

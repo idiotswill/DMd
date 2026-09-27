@@ -401,6 +401,30 @@ acceptance matrix above remains mandatory. Integrate verified PR45 main (includi
 PR44 aftermath) normally before acceptance, explicitly admitting aftermath4 while
 preserving2/3. No flow4 merge or Gate4 completion is claimed.
 
+## Static follow-up after the engine checkpoint
+
+Root's independent static review found a genuine ownership distinction: after the
+penultimate dart's concentration child, the target's save command can automatically
+resume the final singleton dart. That lifecycle command must not impersonate the
+turn owner's material selection. Each dart now records optional `selected_by`
+separately from actual `completed_by`; only explicit sibling choices carry a turn-
+owner selection. An automatic impact must be the sole remaining occurrence, and
+its retained completion must be the final source occurrence. A sustained-
+concentration regression is authored through the fifth foreign-owned save and the
+sixth automatic impact, then the sixth save. This correction is unrun.
+
+The focused source reducer matrix now has nine authored cases, adding per-instance
+Force resistance/temp-HP and one failure per zero-HP dart through death/no-effect
+completion. A separate pure source compiler test checks all supported slot levels
+keep individual d4+1 Force and source dart counts. This is not a claim that prepared
+Magic Missile is available through current character creation. Remaining fresh rules
+Begin helpers now request4; the old unit-upgrade test additionally replays typed3
+unchanged and proves fresh typed3 is rejected before an explicit settled upgrade4.
+Strict validation also rejects a current flow4 cast with a removed target barrier,
+and extra/mismatched retired amount or impact nodes. None of these changes has been
+compiled or run while root owns the shared build slot. App integration receives the
+new `selected_by` origin through an explicit normal merge.
+
 ## Development checkpoint and exact next steps
 
 The branch is created from the stated development base. This plan and ADR028 record

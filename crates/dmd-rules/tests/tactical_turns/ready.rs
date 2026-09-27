@@ -196,7 +196,7 @@ fn ready_trigger_text_is_bounded_and_named_hidden_subject_does_not_probe_positio
 fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_when_idle() {
     let mut f = Fixture::new();
     let action = TacticalAction::Begin {
-        execution: TacticalExecutionVersion::ShieldHitV1,
+        execution: TacticalExecutionVersion::ShieldMissileV1,
         combatants: f
             .actors
             .into_iter()
@@ -272,10 +272,47 @@ fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_wh
         2
     );
     f.rejected(Some(0), ready_move());
-    f.run(
+    // The originally accepted typed upgrade-to3 must keep its exact semantics
+    // under replay, even though new targeted upgrades now require4.
+    let before = f.state.clone();
+    let current_upgrade = resolve_tactical(
+        &before,
+        &f.meta(None),
+        &TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldMissileV1,
+        },
+        &f.pack,
+    )
+    .unwrap();
+    let mut old_upgrade = current_upgrade.event.clone();
+    old_upgrade.action = TacticalAction::UpgradeExecutionTo {
+        execution: TacticalExecutionVersion::ShieldHitV1,
+    };
+    f.rejected(None, old_upgrade.action.clone());
+    let historical = replay_tactical(&before, &old_upgrade, &f.pack).unwrap();
+    let mut expected = current_upgrade.next_state;
+    expected
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 3;
+    assert_eq!(historical.next_state, expected);
+    f.state = historical.next_state;
+    f.state.applied_event_sequence += 1;
+    f.rejected(Some(0), ready_move());
+    f.rejected(
         None,
         TacticalAction::UpgradeExecutionTo {
             execution: TacticalExecutionVersion::ShieldHitV1,
+        },
+    );
+    f.run(
+        None,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldMissileV1,
         },
     );
     f.run(Some(0), ready_move());

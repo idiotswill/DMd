@@ -131,7 +131,7 @@ fn begin(f: &mut Fixture) {
     f.run(
         None,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::ShieldHitV1,
+            execution: dmd_domain::TacticalExecutionVersion::ShieldMissileV1,
             combatants: actors
                 .iter()
                 .map(|actor| TacticalCombatant {
