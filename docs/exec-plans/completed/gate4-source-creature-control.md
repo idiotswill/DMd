@@ -1,12 +1,11 @@
 # Gate 4 — Source creature control at the table
 
-Status: final verification candidate in draft PR43. Verified main `2798b6b` and
-its genuine PR42 corpus are integrated. Production/test source `90c9230` passes
-eight focused Rust tests, including actual source control and genuine replay,
-and exact-head native CI passes all 77 UI tests, static checks and frontend build.
-Full canonical verification, final-head Linux/native checks and packaging remain
-merge conditions. Earlier source evidence below is historical, not acceptance
-of this candidate or completion of Gate 4.
+Status: complete, merged PR43 with all six post-main checks passing. Final source
+`a119d7f02ad1741d13c3b8431ec13ac7bb356d07` was reviewed and verified before
+protected squash to `e813e3a13911497902a3d4a55aec3c70653afb2a`. Their fetched
+complete trees equal `95ccff0f48d47f8a92e2a2eafab6f8385e9f7ce3`. Earlier candidate
+evidence below is historical; the final record at the end supersedes pending
+statements. This bounded source-control completion does not complete Gate4.
 Sole writer: source_control_recovery, taking over environment_audit's preserved
 branch. Branch: `codex/gate4-source-creature-control`.
 Authorized base: `100c7dabe07b07b7430bcb721b1dd7f48e4792cf`.
@@ -409,3 +408,31 @@ as passed or reuse earlier-head CI as final-head evidence. Root then verifies
 post-merge main and reconciles the Gate 4 umbrella; this plan remains active until
 that evidence is recorded. Later Shield and aftermath integration and their
 production-path acceptance remain separate required Gate 4 work.
+
+## Final merged evidence — 2026-09-26
+
+The root completed the prescribed exact-head review and canonical verification
+on finala119d7f:698 Rust tests across54 suites, all46 table cases, no failed or
+ignored tests, formatting/check/strict Clippy and both guards passing. The default
+Windows GNU stack, jobs1 and incremental0 were retained. Log outside the source
+repository: tooling/source-control-a119-canonical.log.
+
+All six final-source CI checks pass: Linux36192431933 reports699 Rust/54suites/
+46table; Windows36192431849 reports701 Rust/54suites/46table,77UI, zero Svelte
+errors/warnings,137modules,7 manifest tests and fresh EXE/NSIS. Linux's actual
+synthetic checkout51e6b5b has complete-tree parity to the reviewed source; native
+Windows checks literala119d7f. Artifact10890060494 is231627996bytes, SHA256
+ed11f6b7fba78c8733a59cf524514c32e7de118d882011c51f0bd8dea9ffbc12.
+
+Protected squash and fetched tree equality are recorded above. All six checks
+also pass separately on literal maine813e3a: Linux36194898895 has699 Rust/54suites/
+46table in1192.13 seconds; Windows36194898980 has701 Rust/54suites/46table
+in1287.95 seconds,77UI,0/0 static diagnostics,137modules,7 manifest tests and
+fresh EXE/NSIS. Post-main artifact10889754911 is231636930bytes with upload-log
+and API SHA2565b1f74d35e3204bd16d8364c32e47d9967109bcc5979e7c2c6a1b23e735c52e6.
+PR43's final description distinguishes final-source and literal-main evidence.
+
+This plan is archived after post-main verification. Shield hit responses,
+encounter aftermath, full encounter release and remaining tactical families
+continue in their active Gate4 plans. No product requirement or gate acceptance
+has been waived, and Gate5 has not begun.

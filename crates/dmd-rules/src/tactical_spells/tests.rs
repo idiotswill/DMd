@@ -777,6 +777,7 @@ fn add_flow(
             save_decisions: vec![],
             ground_items: vec![],
             ready: vec![],
+            aftermath: None,
         }),
     });
     state.rules.as_mut().unwrap().timing = Some(CombatTiming {

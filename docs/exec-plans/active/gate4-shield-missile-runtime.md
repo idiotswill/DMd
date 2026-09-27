@@ -2,9 +2,11 @@
 
 Status: active implementation; both original flow3 capture scenarios and the
 source-equivalent four-file baseline test passed. All four exact exports remain
-unchanged. Flow4 domain/rules implementation and focused cases are authored but
-uncompiled and unrun. Four independent flow3 continuation cases remain unrun.
-No runtime correctness, app integration, or acceptance is claimed.
+unchanged. Flow4 domain/rules, application/desktop integration and focused cases
+are authored but uncompiled and unrun. The reviewed Shield/aftermath candidate is
+development-integrated; verified PR45 main reconciliation still blocks acceptance.
+Four independent flow3 continuation cases remain unrun. No runtime correctness or
+acceptance is claimed.
 Branch: `codex/gate4-shield-missile-runtime`.
 Writer: `missile_implementation`, exclusively for this branch; root coordinates
 separate app integration and serializes all heavy builds.
@@ -23,11 +25,10 @@ PR45 main and any subsequent prerequisite correction are fetched, reconciled and
 verified on this branch. Parent/test evidence never substitutes for exact final-head
 evidence. Heavy commands remain serialized under root's explicit slot coordination.
 
-Incoming integration dependency: PR44 aftermath may merge before final PR45. Root
-will reconcile its currently flow2-specific retained-cadence validation with flow3
-on the Shield branch. Flow4 must preserve that resulting supported aftermath/session
-path after fetching verified PR45 main; it must not strand a new Begin4 behind a
-marker that validates only2/3. Do not preemptively edit PR44 source on this branch.
+PR44 aftermath is now merged into its verified main and included in the reviewed
+Shield development candidate integrated below. Root authorized this pre-acceptance
+integration; final verified PR45 main must still be fetched and reconciled normally.
+Flow4 explicitly retains the resulting aftermath/session path alongside2/3.
 
 ## Objective, product traceability and boundaries
 
@@ -464,6 +465,40 @@ profile upgrades and private source-derived magical-save classification. Actual
 implementation waits for the current missile slice's verified merge; positive
 Counterspell and genuine repeated-save Magic Resistance evidence remain Gate4 work.
 This checkpoint makes no Counterspell or new execution-version changes.
+
+## Combined development integration - 2026-09-27
+
+The branch normally merged app checkpoint
+`8537775239618da467897bd39ef8f26a7f1922c9`, which descends core `dc5d13b`, then
+the independently reviewed Shield candidate
+`74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb`. The latter includes verified aftermath
+main `f441adedcf490504b6f1e3db1a964c023c511e47` and its genuine retained-cadence
+fixture. Root authorized these normal
+merges while the Shield candidate's own canonical verification continued. This is
+development integration, not evidence that PR45 or this combined head is accepted.
+Do not push/open this combined candidate until root confirms it is coherent and
+authorizes the next verification path. No cargo or Node process ran here.
+
+The only textual conflict was the additive `TacticalView` TypeScript fields; both
+`missile` and `aftermath` are retained. Combined encounter controls retain both
+response and aftermath panels and disable ordinary/conclusion actions during
+pending missile decisions. Both retained-origin audit sets and all hit, missile,
+aftermath and historical test modules remain registered.
+
+The retained aftermath validator now explicitly accepts executions2/3/4. Only fresh
+aftermath Begin fixtures and fresh upgrades from genuine historical flow2 request4;
+accepted historical typed upgrade-to3 interpretation is unchanged. Current desktop
+aftermath fixtures use4, while deliberate saved3 hit UI coverage remains. Existing
+four genuine flow3 captures and the imported genuine flow2 aftermath capture are
+unchanged. No source pin, spell program, fixture JSON or old accepted envelope is
+rewritten by this integration.
+
+Next: independently review this combined checkpoint, then compile/fix the focused
+rules/app/legacy corpus and desktop checks under root's serialized heavy slot.
+After PR45's verified merge, fetch and normally integrate its actual main, reconcile
+any additional fixes, and obtain focused/canonical/CI/review/packaged evidence for
+that exact combined head. Earlier candidate checks never substitute for this final
+verification. The full acceptance matrix remains open.
 
 ## Development checkpoint and exact next steps
 

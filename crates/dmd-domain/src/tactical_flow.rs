@@ -91,6 +91,24 @@ pub enum TacticalPhase {
     Finished,
 }
 
+/// An explicit GM timing interpretation after fighting stops. This is not a
+/// source rule which dismisses effects or manufactures turns for their owners.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AftermathCadence {
+    ContinueExistingOrder,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalAftermath {
+    pub origin: CommandMeta,
+    pub cadence: AftermathCadence,
+    /// Private host explanation; not an asserted victory, surrender or reward.
+    pub ruling: String,
+    pub concluded_at: crate::WorldInstant,
+    pub concluded_on_turn: crate::EffectTurn,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalFlow {
@@ -119,4 +137,9 @@ pub struct TacticalFlow {
     /// turn. The declaration owns its paid Action; release owns a later Reaction.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub ready: Vec<crate::TacticalReady>,
+    /// Hostilities can end while source timing continues on the original order.
+    /// Box avoids increasing every historical CampaignState stack frame; absent
+    /// preserves the exact old durable JSON and presentation contract.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub aftermath: Option<Box<TacticalAftermath>>,
 }

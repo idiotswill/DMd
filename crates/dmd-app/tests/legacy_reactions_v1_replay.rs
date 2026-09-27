@@ -513,3 +513,255 @@ async fn genuine_original_upgrade_keeps_its_one_to_two_result_and_accepted_respo
     Box::pin(f.reject(fresh)).await;
     f.close().await;
 }
+
+async fn aftermath_request(
+    f: &Fixture,
+    session: PlaySessionId,
+    channel: TableTransportChannel,
+    action: TableAction,
+) -> TableTransportRequest {
+    let viewer = match channel {
+        TableTransportChannel::Host => TableViewer::Host,
+        TableTransportChannel::Player { player_id, .. }
+        | TableTransportChannel::SourceCreature { player_id, .. } => TableViewer::Player(player_id),
+    };
+    let view = f
+        .app
+        .presented_table_view(f.campaign, viewer)
+        .await
+        .unwrap();
+    assert!(view.source_control.is_some());
+    TableTransportRequest {
+        version: TABLE_SOURCE_TRANSPORT_VERSION,
+        command_id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(session),
+        revision: view.revision,
+        channel,
+        input: TableTransportInput::Action(Box::new(action)),
+    }
+}
+
+#[tokio::test]
+async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor() {
+    let json = include_str!("fixtures/reactions-v1-aftermath-be544.json");
+    let mut f = Box::pin(Fixture::restore(json, 15, 10, 9)).await;
+    assert_eq!(f.original.to_json().unwrap(), json);
+    let original = Box::new(f.state().await);
+    let resumed = Box::pin(f.app.resume_campaign(f.campaign)).await.unwrap();
+    assert_eq!(resumed.state(), original.as_ref());
+    drop(resumed);
+    assert!(original.table.as_ref().unwrap().active_session.is_none());
+    assert_eq!(flow(&original).combatants.len(), 1);
+    let mage = flow(&original).combatants[0].actor;
+    let source = original
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_creatures
+        .as_ref()
+        .unwrap()
+        .runtime(mage)
+        .unwrap();
+    let CreatureController::Player(player) = source.controller else {
+        panic!("the original source-only capture must retain its real player owner");
+    };
+    let limited_uses = source.limited_uses.clone();
+    let armor = original
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_effects
+        .as_ref()
+        .unwrap()
+        .effects
+        .iter()
+        .find(|effect| !effect.defenses.is_empty())
+        .unwrap()
+        .clone();
+    let other_pc = original
+        .characters
+        .values()
+        .find(|pc| pc.controlling_player_id.is_some_and(|id| id != player))
+        .unwrap();
+    let other_player = other_pc.controlling_player_id.unwrap();
+    let session = PlaySessionId::new();
+    let absent = Box::pin(aftermath_request(
+        &f,
+        session,
+        TableTransportChannel::Host,
+        TableAction::StartSession {
+            id: session,
+            name: "Absent retained source owner".into(),
+            participants: vec![
+                SessionParticipant {
+                    player_id: player,
+                    character_id: None,
+                    attendance: AttendanceStatus::Absent,
+                },
+                SessionParticipant {
+                    player_id: other_player,
+                    character_id: Some(other_pc.id),
+                    attendance: AttendanceStatus::Present,
+                },
+            ],
+        },
+    ))
+    .await;
+    Box::pin(f.reject(absent)).await;
+    let start = Box::pin(aftermath_request(
+        &f,
+        session,
+        TableTransportChannel::Host,
+        TableAction::StartSession {
+            id: session,
+            name: "Historical Mage aftermath".into(),
+            participants: vec![SessionParticipant {
+                player_id: player,
+                character_id: None,
+                attendance: AttendanceStatus::Present,
+            }],
+        },
+    ))
+    .await;
+    Box::pin(f.accept_cold(start)).await;
+    let started = Box::new(f.state().await);
+    let mut compared = started.clone();
+    compared.table.as_mut().unwrap().active_session = None;
+    compared.applied_event_sequence = original.applied_event_sequence;
+    assert_eq!(
+        compared, original,
+        "session resume changes only its binding and sequence"
+    );
+    drop(compared);
+    let source_channel = TableTransportChannel::SourceCreature {
+        player_id: player,
+        actor: mage,
+    };
+    let premature = Box::pin(aftermath_request(
+        &f,
+        session,
+        source_channel.clone(),
+        TableAction::Tactical {
+            action: TacticalAction::EndTurn,
+        },
+    ))
+    .await;
+    Box::pin(f.reject(premature)).await;
+    let upgrade = Box::pin(aftermath_request(
+        &f,
+        session,
+        TableTransportChannel::Host,
+        TableAction::Tactical {
+            action: TacticalAction::UpgradeExecutionTo {
+                execution: TacticalExecutionVersion::ShieldMissileV1,
+            },
+        },
+    ))
+    .await;
+    Box::pin(f.accept_cold(upgrade)).await;
+    let upgraded = Box::new(f.state().await);
+    assert_eq!(flow(&upgraded).version, 4);
+    let mut compared = upgraded.clone();
+    compared
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 2;
+    compared.applied_event_sequence = started.applied_event_sequence;
+    assert_eq!(
+        compared, started,
+        "upgrade changes only the executor and sequence"
+    );
+    drop(compared);
+    for channel in [
+        TableTransportChannel::Host,
+        TableTransportChannel::SourceCreature {
+            player_id: other_player,
+            actor: mage,
+        },
+    ] {
+        let forbidden = Box::pin(aftermath_request(
+            &f,
+            session,
+            channel,
+            TableAction::Tactical {
+                action: TacticalAction::EndTurn,
+            },
+        ))
+        .await;
+        Box::pin(f.reject(forbidden)).await;
+    }
+    let end = Box::pin(aftermath_request(
+        &f,
+        session,
+        source_channel,
+        TableAction::Tactical {
+            action: TacticalAction::EndTurn,
+        },
+    ))
+    .await;
+    Box::pin(f.accept_cold(end)).await;
+    let continued = Box::new(f.state().await);
+    let rules = continued.rules.as_ref().unwrap();
+    assert_eq!(
+        rules.timing.as_ref().unwrap().turn_number,
+        upgraded
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number
+            + 1
+    );
+    assert_eq!(continued.clock.now, WorldInstant(upgraded.clock.now.0 + 6));
+    assert_eq!(flow(&continued).aftermath, flow(&original).aftermath);
+    assert!(
+        rules
+            .tactical_effects
+            .as_ref()
+            .unwrap()
+            .effects
+            .contains(&armor)
+    );
+    assert_eq!(
+        rules
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(mage)
+            .unwrap()
+            .limited_uses,
+        limited_uses
+    );
+    assert_eq!(
+        rules.entities[&mage].hp,
+        original.rules.as_ref().unwrap().entities[&mage].hp
+    );
+    assert_eq!(continued.items, original.items);
+    let final_export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    for binding in &f.original.table_transport_bindings {
+        let request: TableTransportRequest = serde_json::from_str(&binding.request_json).unwrap();
+        let response = Box::pin(f.app.submit_presented_table(request))
+            .await
+            .unwrap();
+        assert_eq!(
+            serde_json::to_string(&response).unwrap(),
+            binding.response_json
+        );
+        assert!(final_export.table_transport_bindings.contains(binding));
+    }
+    f.assert_export(&final_export).await;
+    let mut changed: TableTransportRequest =
+        serde_json::from_str(&f.original.table_transport_bindings[0].request_json).unwrap();
+    changed.input = TableTransportInput::Action(Box::new(TableAction::Tactical {
+        action: TacticalAction::Dodge,
+    }));
+    Box::pin(f.reject(changed)).await;
+    f.close().await;
+}

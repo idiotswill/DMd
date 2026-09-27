@@ -79,6 +79,19 @@ async fn unchanged(f: &Fixture, request: TableTransportRequest) {
     assert_eq!(after, before);
 }
 
+async fn reject_pending_conclusion(f: &Fixture) {
+    let request = request(
+        f,
+        TableTransportChannel::Host,
+        action(TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "Keep the existing cadence after pending work settles.".into(),
+        }),
+    )
+    .await;
+    Box::pin(unchanged(f, request)).await;
+}
+
 // Exactly one accepted command. Original opaque capabilities come from the same
 // exported prefix. Fresh independent receipt revisions need not have equal UUIDs.
 async fn cold_step(
@@ -692,6 +705,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     let earlier_hit = Box::new(state(&f).await);
     Box::pin(offer(&mut f, &path, mage)).await;
     Box::pin(order(&mut f, &path)).await;
+    Box::pin(reject_pending_conclusion(&f)).await;
     Box::pin(cast(&mut f, &path, mage)).await;
     let after = state(&f).await;
     assert_eq!(after.rules.as_ref().unwrap().entities[&mage].hp, 81);
@@ -740,6 +754,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     Box::pin(order(&mut f, &path)).await;
     Box::pin(offer(&mut f, &path, mage)).await;
     let response_cause = Box::pin(cast(&mut f, &path, mage)).await;
+    Box::pin(reject_pending_conclusion(&f)).await;
     let pending = state(&f).await;
     assert_eq!(
         pending
