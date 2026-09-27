@@ -72,7 +72,7 @@ async fn raw(f: &Fixture, player: Option<usize>, faces: &[u16]) {
     ))
     .await;
 }
-async fn prepare(f: &mut Fixture, knockout: bool) {
+pub(super) async fn prepare(f: &mut Fixture, knockout: bool) {
     f.host(TableAction::EndSession, Some(f.session)).await;
     f.session = PlaySessionId::new();
     f.host(

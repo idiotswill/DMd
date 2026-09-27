@@ -11,6 +11,7 @@
   import ShieldForm from './ShieldForm.svelte';
   import UnarmedForm from './UnarmedForm.svelte';
   import FirstAidForm from './FirstAidForm.svelte';
+  import AftermathForm from './AftermathForm.svelte';
   let { tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, pendingRoll=false, onAction }: {
     tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;playerControlledSources?:Id[];disabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -40,6 +41,13 @@
   }
 </script>
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
+  {#if tactical.aftermath}
+    <p>Hostilities concluded. Ongoing saves, durations and readied actions continue in the existing turn order. Renewed activity uses this same cadence.</p>
+    {#if host}<p>To resume another session on this cadence, include every retained player controller and their existing character or source creature, including dead characters.</p>{/if}
+    {#if host && tactical.aftermath.host_ruling}<details><summary>Private host timing ruling</summary><p>{tactical.aftermath.host_ruling}</p></details>{/if}
+  {:else if host && !legacy && tactical.phase==='active'}
+    <AftermathForm disabled={disabled||pendingRoll||pendingDecision} {onAction}/>
+  {/if}
   {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
     {#if host}<button disabled={disabled||pendingRoll||pendingDecision} onclick={()=>onAction('UpgradeExecution')}>Continue saved encounter</button>{/if}
   {/if}

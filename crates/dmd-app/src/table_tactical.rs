@@ -129,6 +129,13 @@ fn view_with_source_access(
     };
     Ok(Some(crate::TableTacticalView {
         encounter_id: encounter.id,
+        aftermath: flow
+            .and_then(|flow| flow.aftermath.as_ref())
+            .map(|aftermath| crate::TableAftermathView {
+                cadence: aftermath.cadence,
+                host_ruling: host.then(|| aftermath.ruling.clone()),
+                may_pause_session: host && require_aftermath_session_boundary(state).is_ok(),
+            }),
         execution: encounter
             .flow
             .as_ref()

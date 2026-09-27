@@ -359,5 +359,6 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
             }
         }
     }
+    super::aftermath::validate(state)?;
     super::turn_validation::validate(state)
 }
