@@ -2,6 +2,50 @@
 //! frame partition. Semantic history replay additionally proves each transition.
 use super::*;
 
+fn cast_occurrences(r: &TacticalResolution) -> Result<(), RulesError> {
+    // Casting reserves an ordinal without creating a work node. A completed
+    // child therefore continues to reserve that identity after leaving casts.
+    let mut reserved = HashSet::new();
+    for cast in r
+        .casts
+        .iter()
+        .chain(
+            r.missiles
+                .iter()
+                .filter_map(|missile| missile.completed_cast.as_deref()),
+        )
+        .chain(r.missiles.iter().flat_map(|missile| {
+            missile
+                .respondents
+                .iter()
+                .filter_map(|respondent| respondent.completed_shield.as_deref())
+        }))
+        .chain(
+            r.hit_review
+                .iter()
+                .filter_map(|hit| hit.completed_shield.as_deref()),
+        )
+    {
+        let occurrence = cast.cast.plan.occurrence;
+        if occurrence >= r.next_occurrence || !reserved.insert(occurrence) {
+            return Err(invalid(
+                "reused or future casting occurrence across live and retired sources",
+            ));
+        }
+    }
+    if r.work_trace.as_ref().is_some_and(|trace| {
+        trace
+            .nodes
+            .iter()
+            .any(|node| reserved.contains(&node.work.occurrence))
+    }) {
+        return Err(invalid(
+            "casting occurrence collides with retained work identity",
+        ));
+    }
+    Ok(())
+}
+
 fn decision(
     state: &CampaignState,
     meta: &CommandMeta,
@@ -350,6 +394,9 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
         .is_some_and(TacticalExecutionVersion::supports_missile_shield);
     if !enabled && !r.missiles.is_empty() {
         return Err(invalid("earlier executor retains missile authority"));
+    }
+    if enabled {
+        cast_occurrences(r)?;
     }
     if r.missiles.len() > MAX_TACTICAL_CASTS {
         return Err(invalid("too many retained missiles"));

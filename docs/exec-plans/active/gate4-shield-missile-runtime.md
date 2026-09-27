@@ -425,6 +425,18 @@ and extra/mismatched retired amount or impact nodes. None of these changes has b
 compiled or run while root owns the shared build slot. App integration receives the
 new `selected_by` origin through an explicit normal merge.
 
+## Retired casting identity review follow-up
+
+A second independent root review identified that casting ordinals are reserved
+outside the traced work allocator. Per-respondent validation alone could not prove
+that two separately retained completed Shield proofs had different ordinals.
+Flow4 now validates one shared namespace across live casts, completed missile
+source casts, every completed missile Shield, retained hit-Shield completion, and
+all traced work occurrences. Earlier execution semantics are unchanged. A tenth
+rules case constructs a real source Mage Shield completion first, then performs
+explicitly labeled structural proof/work collision corruptions and requires the
+namespace-specific refusal. It is authored and formatted only, not run.
+
 ## Development checkpoint and exact next steps
 
 The branch is created from the stated development base. This plan and ADR028 record

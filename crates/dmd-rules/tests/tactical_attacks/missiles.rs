@@ -488,3 +488,73 @@ fn missiles_final_singleton_keeps_the_foreign_child_save_executor_without_transf
     assert!(f.flow().resolution.is_none());
     assert_eq!(f.rules().entities[&target].concentration, Some(group));
 }
+
+#[test]
+fn missiles_retired_shield_cast_ordinal_remains_reserved_against_other_proofs_and_work() {
+    let mut f = hag(true);
+    let target = f.actors[1];
+    cast(&mut f, vec![target; 6]);
+    order(&mut f);
+    respond(&mut f, 1, true);
+    let choice = shield_choices(&f.state, target).unwrap().remove(0);
+    f.run(
+        Some(1),
+        TacticalAction::CastMissileShield {
+            window: window(&f),
+            choice,
+        },
+    );
+    let shield = missile(&f).respondents[0]
+        .completed_shield
+        .as_ref()
+        .unwrap()
+        .clone();
+    for corruption in 0..2 {
+        let mut bad = f.state.clone();
+        let r = bad
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap();
+        let expected = if corruption == 0 {
+            // A pure structural forgery deliberately duplicates retained proof
+            // authority. The global namespace must reject before a later local
+            // respondent/source validator, regardless of command identities.
+            r.missiles[0].respondents.push(TacticalMissileRespondent {
+                response: TacticalShieldRespondent {
+                    actor: f.actors[0],
+                    intent: None,
+                    declined_after_selection: None,
+                },
+                completed_shield: Some(shield.clone()),
+            });
+            "reused or future casting occurrence"
+        } else {
+            let occurrence = shield.cast.plan.occurrence;
+            let nodes = &mut r.work_trace.as_mut().unwrap().nodes;
+            let position = nodes
+                .binary_search_by_key(&occurrence, |node| node.work.occurrence)
+                .unwrap_err();
+            nodes.insert(
+                position,
+                TacticalWorkNode {
+                    work: TacticalWorkItem {
+                        occurrence,
+                        kind: TacticalWorkKind::FinishSpell {
+                            cast: r.casts[0].cast.plan.occurrence,
+                        },
+                    },
+                    parent: None,
+                },
+            );
+            "casting occurrence collides with retained work"
+        };
+        let error = validate_tactical_state(&bad).unwrap_err().to_string();
+        assert!(error.contains(expected), "{error}");
+    }
+}
