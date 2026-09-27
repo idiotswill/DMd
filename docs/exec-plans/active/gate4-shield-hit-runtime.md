@@ -1,8 +1,8 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: active integration draft; all six checks pass for executable candidate
-8b5cf52, including the actual Shield recovery case. Final aftermath integration,
-canonical and exact-head acceptance remain pending.
+Status: active integration draft; all six checks pass for combined candidate
+3090f06, including the actual Shield and aftermath recovery cases. Final genuine
+aftermath compatibility, main reconciliation and canonical acceptance remain pending.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
@@ -228,7 +228,22 @@ the two new actual aftermath Begins and fresh UI fixtures to ShieldHitV1, and ad
 a qualified typed historical2 replay/upgrade invariant. Actual selected Shield and
 post-Shield physical damage now both reject Host conclusion with the whole export
 unchanged; the UI keeps conclusion disabled for either pending boundary. These
-integration additions are formatted/static-reviewed only until their tests run.
+integration additions now pass exact3090 CI:723 Linux/725 native Rust across54
+suites,50table cases,89UI, zero Svelte errors/warnings and fresh EXE/NSIS. Linux
+run36225272787 and Windows36225272802 pass all six jobs. Artifact10901048468 is
+231940930bytes with SHA256
+f3b7102676bde66db075e55b04b6c56251ca398a2bb4ec46a96d665896494658.
+
+The genuine source-only closed aftermath backup from PR44's unchanged canonical
+case is available. Preserve its official flow2 export as a fifth genuine
+ReactionsV1 corpus, with byte-preserving attributes/provenance. Acceptance extends
+the existing file/mirror helper: original receipts and cold resume, absent source
+owner refusal, real owner-only session start, explicit upgrade to3 preserving the
+whole cadence/state, Host/foreign action refusal and the owner's actual next turn
+with unchanged source uses and original armor deadline. Do not manufacture rows
+or reinterpret the captured current-state/source/session history. The exact-source
+export/restore baseline must pass before import; final canonical includes this
+additional continuation under the integrated current executor.
 
 Read any current CI failure before changing source. The registered player Shield
 SQLite case and modified source-control unit/application cases now pass on the
