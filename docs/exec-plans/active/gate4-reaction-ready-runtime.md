@@ -1,7 +1,11 @@
 # Gate 4 — Actual reaction and Ready execution
 
-Status: active Gate4 umbrella; live Shield/Counterspell/Ready responses remain incomplete.
-Root owns compatibility PR42 on `codex/gate4-live-reaction-responses`.
+Status: active Gate4 umbrella. Bounded hit-Shield PR45 is merged and verified on
+literal main a0b12d2. Magic Missile PR46 passes its ffc3 source CI and genuine
+application/historical suites; final integrated acceptance remains pending.
+Counterspell, Ready release and off-turn producers remain required Gate4 work.
+Root owns PR46 on `codex/gate4-shield-missile-runtime`; release PR48 has its own
+writer and must preserve genuine flow4 history before acceptance.
 Completed PR38 evidence is in `../completed/gate4-reaction-foundation.md`;
 current bounded status and required successor acceptance are in
 `gate4-live-reaction-responses.md`.
@@ -13,8 +17,12 @@ d5d1db7 with all six source and post-main checks passing. PR41 Night Hag merged 
 d82d7b2 after all six source and post-main checks; its bounded source plan is archived. Genuine
 ReactionsV1 attack, knockout, paid-Ready and original1-to2 upgrade saves are retained
 in PR42 before any new response semantics.
-Source casting, player-owned creature control, privacy, Counterspell and all Ready
-mechanisms remain mandatory Gate4 work. No family or gate closure is claimed.
+Player-owned source control PR43, aftermath PR44 and bounded hit Shield PR45 are
+merged with their qualified evidence. Cache PR47 is merged as046109c with exact
+tree parity; separate post-main proof is pending. The current bounded missile plan
+records source-qualified counts and remaining canonical, packaged and final-head
+checks. Source casting completeness, privacy, Counterspell and all Ready mechanisms
+remain mandatory Gate4 work. No family or gate closure is claimed.
 
 ## Earlier planning and implementation record
 

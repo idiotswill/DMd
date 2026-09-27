@@ -1,40 +1,83 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active verification. All11 focused missile rules cases passed at `460c8f2`;
-the combined app binary compiles and all four actual SQLite cases are running at
-`0f43823` after a cold-copy test assertion correction. Literal `0f43823` Windows
-desktop checks passed99 UI tests in17 files, zero Svelte errors/warnings and a
-140-module build.
-Both original flow3 capture scenarios and the source-equivalent four-file baseline
-test passed; all four exact exports remain unchanged. The four independent flow3
-continuations and current combined-head ReactionsV1 corpus remain unrun. The reviewed
-Shield/aftermath and immutable-catalog cache candidates are development-integrated;
-verified PR45 and PR47 main reconciliation,
-complete runtime/canonical/CI evidence and final review still block acceptance.
+Status: active final integration. Exact `ffc3c342dd542c48f05edf39a7123d0f6325f750`
+passes all six source CI checks, all four actual SQLite missile families, both
+five-case historical suites and 99 desktop tests. Canonical verification of the
+final integrated head, actual packaged restart, final review/checks and protected
+merge/post-main proof remain required. The earlier uncached `0f43823` run was
+intentionally stopped with all four cases unfinished; it is not passing evidence.
+PR45's literal post-main checks pass. PR47 is merged with complete fetched tree
+parity; its separate literal post-main checks are running. Both mains are normally
+reconciled here without changing production source from ffc3.
 Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
-Writer: `shield_integration_review`, exclusively for this combined branch after
-root's explicit ownership transfer; `missile_implementation` is inactive. Root
-coordinates independent review and serializes all heavy builds.
+Writer: root, exclusively after the explicit 2026-09-27 transfer from inactive
+`shield_integration_review`. Root coordinates independent review and serializes
+all heavy builds; the release branch currently holds the local heavy slot.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
 production source is unchanged from Shield candidate
 `8b5cf52a250c5f381d22977391906cfedc53a630`.
 
-This is a separate development branch, not an expansion of PR45. PR45 still needs
-its own complete runtime/final verification and protected merge. After both genuine
-flow3 capture scenarios pass, all four exports are baseline-restored and their exact
-bytes/hashes/provenance are frozen, flow4 development may proceed here while PR45's
-remaining verification runs. No flow4 acceptance or merge is allowed until verified
-PR45 main and any subsequent prerequisite correction are fetched, reconciled and
-verified on this branch. Parent/test evidence never substitutes for exact final-head
-evidence. Heavy commands remain serialized under root's explicit slot coordination.
+This is a separate development branch, not an expansion of PR45. Both genuine
+flow3 capture scenarios and their four-export baseline prerequisite passed before
+flow4 implementation; their exact bytes/hashes/provenance remain frozen. PR45 is
+now merged, verified and normally reconciled as recorded below. Parent/test evidence
+never substitutes for exact final-head evidence. Heavy commands remain serialized
+under root's explicit slot coordination.
 
-PR44 aftermath is now merged into its verified main and included in the reviewed
-Shield development candidate integrated below. Root authorized this pre-acceptance
-integration; final verified PR45 main must still be fetched and reconciled normally.
-Flow4 explicitly retains the resulting aftermath/session path alongside2/3.
+PR44 aftermath and its verified PR45 integration are included through the normal
+main reconciliation below. Flow4 explicitly retains the resulting aftermath/session
+path alongside2/3.
+
+## Current exact evidence and next action — 2026-09-27
+
+This section supersedes old running-job and unrun-continuation notes in the
+historical implementation record below; their original attempts remain recorded.
+
+- Linux run 36309746680 passes all four jobs. Actual Rust job 108593307537 records
+  747 Rust tests across 55 suites, zero failures/ignores, all 54 table cases in
+  5157.45s, five ReactionsV1 histories in 38.24s and five ShieldHitV1 histories in
+  104.25s. Synthetic checkout `6dfe762930efba7bc98758e4fdcdf4df36473f53` and literal
+  ffc3 share full tree `1a01e4767edb4ed49e559f67682bc94e63c741ab`.
+- Windows run 36309746678 passes stable/MSRV on literal ffc3. Stable job
+  108593283813 records 749 Rust tests across 55 suites, zero failures/ignores,
+  54 table cases in 5974.23s, both five-case histories, 99 UI tests in 17 files,
+  zero static errors/warnings and 140 built modules. All four missile application
+  families explicitly pass on both operating systems, including concentration,
+  real first aid/death, private responses and cold actor-bound recovery.
+- Fresh EXE/NSIS artifact 10930791509 is 232166713 bytes, SHA256
+  `eb820d8bdee358d15f84522c8e4565ce1d42384db7bb2bdbcb5b4bb95daa8c91`.
+  Upload log, artifact API and downloaded archive agree; all 1070 packaged file
+  hashes pass. Its build metadata names ffc3. Root is exercising its normal UI
+  in a separate QA campaign; a restart result is not yet claimed.
+- PR45 merged as `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`, full-tree equal to
+  reviewed bfe. Literal post-main runs 36311244326/36311244361 pass all six jobs:
+  724 Linux and 726 native Rust tests, 89 UI tests and fresh EXE/NSIS artifact
+  10929844206, SHA256
+  `1d8c3934077f7ff3a8fa926093dfd14933997c786bd0fe52a388f4010f93c06a`.
+- PR47 exact619 passes all six source jobs, independent full review, both controlled
+  ABBA comparisons and canonical `./scripts/verify`: 725 GNU Rust tests/54 suites,
+  zero failures/ignores, all 50 table cases in 417.88s, warmed-content controls,
+  strict lint and guards. Protected squash main is
+  `046109cdc849c16100c42588e771f8abe710c787`, whose complete fetched tree equals619
+  (`cdeae1df5a0f82532cbf36ab5347cc4fd61150b4`). Literal post-main runs
+  36317294013/36317293934 remain pending, independent of source passes.
+- Normal merge `678842ade338815ed4998db60c6e47502b1b54a7` reconciles619 first:
+  exactly four cache-warmup test lines and cache-plan evidence change from ffc3.
+  Normal merge `dcd30ed7147d4f60338cb2fd8af8afe817b23f17` then reconciles literal046
+  with no additional file delta. Both share tree
+  `62c3a86605d21fb17910db7ee630b9a62203e75f`. Production, dependencies, content and
+  genuine captures remain byte-identical to ffc3; full final-head checks remain
+  mandatory despite that parity.
+
+Next: complete cache post-main proof and packaged missile/Shield restart; record
+and archive the completed Shield/cache prerequisite plans, retaining this plan and
+its integrated app subplan until final acceptance. Independently review the complete
+final diff, run canonical verification when the shared slot is released, and require
+all six final-head jobs before protected merge and literal main proof. Counterspell,
+Ready, off-turn producers and encounter release remain active Gate4 obligations.
 
 ## Objective, product traceability and boundaries
 
