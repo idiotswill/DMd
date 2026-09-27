@@ -1,6 +1,7 @@
 # Gate 4 — Keep tactical play readable across decisions
 
-Status: active, implementation not yet verified. Writer: root only. Branch:
+Status: active, implementation reviewed; final exact-head verification pending.
+Writer: root only. Branch:
 `codex/gate4-table-ui-polish`. Reuses the clean, inactive weapon worktree; its
 previous branch and commits remain preserved. Development base is missile
 candidate `f4890b73814d7c0f3551350352601eb5ed0d19ed`, whose full production tree
@@ -53,5 +54,40 @@ Keep campaign/player/source identity checks and durable uncertain-request handli
 Tests must distinguish retained UI position from retained authority. Source content
 and game rules require no changes for this slice.
 
-Next: inspect existing refresh/reset and observer tests; implement the bounded UI
-changes, then request independent review while the shared slot remains serialized.
+## Implementation and evidence — 2026-09-27
+
+The map selects the explicit actor's observer before deriving any terrain or
+contact tokens. Host truth remains separately supplied by the existing DTO.
+The component regression switches between observers with disjoint current and
+remembered contacts/terrain, then an unavailable observer; no fallback borrows
+another actor's knowledge. Sheet text now describes the supported Nick/Graze and
+Savage Attacker controls while retaining the unsupported-rest limitation.
+
+Accepted tactical requests still clear and remount the saved view so physical
+faces, payment and other form choices reset. The UI records scroll/focus together
+with campaign, viewer, source actor and page, restoring them only after success
+in that same context. Concrete physical-roll and consequence groups take
+precedence over the generic encounter container when a new decision appears.
+Errors retain their existing alert focus and exact uncertain-request envelope.
+The regression cases exercise consecutive opaque consequence handles, successive
+raw-roll identities with cleared faces, an uncertain response, page navigation
+during delivery, and new physical work after consequence/End-turn decisions.
+
+The first implementation passed `npm run check` (zero errors/warnings), all
+105 tests in 18 files, and `npm run build` (140 modules). A jsdom-only scrolling
+warning exposed that resetting a spy restored the unimplemented native shim;
+using a direct inert mock fixed it. The affected 39 tests in two files then
+passed without that warning. Those results precede the final generic-encounter
+focus correction and its added End-turn case; that final source must run anew.
+No result here substitutes for native scrolling geometry or package acceptance.
+
+Independent review by `aftermath_finish` cleared observer privacy, form resets,
+sheet scope and the consequence-to-child-roll correction. Root found the same
+priority issue when an ordinary encounter control creates a raw request, added
+the End-turn variant and requested the follow-up review. `git diff --check`
+passes. No rules, source content, dependencies or save formats changed.
+
+Next: complete review and publish the bounded draft for exact-head CI while root
+serializes the prerequisite's canonical run. Reconcile verified missile main,
+then require the canonical suite, native package exercises and complete final
+checks before protected merge and literal-main proof.

@@ -42,7 +42,7 @@
     onAction({Begin:{execution:'ShieldMissileV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
   }
 </script>
-<section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
+<section class="panel" data-tactical-focus="encounter" tabindex="-1"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
   {#if tactical.aftermath}
     <p>Hostilities concluded. Ongoing saves, durations and readied actions continue in the existing turn order. Renewed activity uses this same cadence.</p>
     {#if host}<p>To resume another session on this cadence, include every retained player controller and their existing character or source creature, including dead characters.</p>{/if}
@@ -53,7 +53,7 @@
   {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
     {#if host}<button disabled={disabled||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'ShieldMissileV1'}})}>Continue saved encounter</button>{/if}
   {/if}
-  <TacticalMap {tactical} {characters}/>
+  <TacticalMap {tactical} {characters} {actor}/>
   {#if tactical.missile}
     {#key `${host}:${player}:${actor}:${tactical.missile.order?.key}:${tactical.missile.delegate}`}
       <MissileResponsePanel missile={tactical.missile} participants={tactical.participants} {actor} {host} {playerControlledSources} disabled={disabled||pendingRoll} {onAction}/>
@@ -115,7 +115,7 @@
   {/if}
   {#if tactical.continuation && ((host && tactical.continuation.host_adjudication) || controls(tactical.continuation.actor))}
     {#if tactical.continuation.choices.length}
-      <fieldset disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
+      <fieldset data-tactical-focus="consequences" tabindex="-1" disabled={disabled||pendingRoll}><legend>Choose which consequence happens next</legend>
         <p>{tactical.continuation.host_adjudication?'The host has authority to order these consequences. Individual saves and optional responses stay with their controllers.':'These consequences occur at the same time. Choose their order for this turn.'}</p>
         {#each tactical.continuation.choices as choice,index}<button onclick={()=>onAction({ChooseTurnWork:{handle:choice.handle}})}>{choice.label} · {index+1}</button>{/each}
       </fieldset>
