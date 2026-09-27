@@ -66,14 +66,12 @@ pub fn starter_catalog() -> StarterCatalog {
 }
 /// Fighter level-one selections (SRD48), independent of owned/starting equipment.
 pub fn fighter_mastery_choices() -> Result<Vec<String>, RulesError> {
-    let catalog = crate::tactical_definitions::TacticalDefinitions::from_json(
-        crate::tactical_definitions::TACTICAL_DEFINITIONS_JSON,
-    )
-    .map_err(|error| RulesError::Invalid(error.to_string()))?;
+    let catalog = crate::tactical_definitions::bundled_tactical_definitions()
+        .map_err(|error| RulesError::Invalid(error.to_string()))?;
     let mut choices: Vec<_> = catalog
         .weapons
-        .into_iter()
-        .map(|weapon| weapon.id)
+        .iter()
+        .map(|weapon| weapon.id.clone())
         .collect();
     choices.sort_unstable();
     Ok(choices)

@@ -2,10 +2,7 @@
 use std::sync::OnceLock;
 
 use super::{InventoryError, invalid};
-use crate::{
-    starter_catalog,
-    tactical_definitions::{TACTICAL_DEFINITIONS_JSON, TacticalDefinitions},
-};
+use crate::{starter_catalog, tactical_definitions::bundled_tactical_definitions};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AmmunitionStackKind {
@@ -54,14 +51,13 @@ pub fn equipment_definition(id: &str) -> Result<&'static EquipmentDefinition, In
 }
 
 fn build_registry() -> Result<Vec<EquipmentDefinition>, InventoryError> {
-    let definitions = TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON)
-        .map_err(|error| invalid(error.to_string()))?;
+    let definitions = bundled_tactical_definitions().map_err(|error| invalid(error.to_string()))?;
     let mut registry = definitions
         .weapons
-        .into_iter()
+        .iter()
         .map(|weapon| EquipmentDefinition {
-            id: weapon.id,
-            display_name: weapon.name,
+            id: weapon.id.clone(),
+            display_name: weapon.name.clone(),
             kind: EquipmentKind::Weapon,
             stacking: ItemStacking::Individual,
             source_page: weapon.source_page,
@@ -136,11 +132,11 @@ fn build_registry() -> Result<Vec<EquipmentDefinition>, InventoryError> {
     });
     // Exact per-spell material identity. The source descriptor supplies its nature,
     // minimum value and consumption rule; display names never establish those facts.
-    for spell in definitions.spells {
-        if let Some(material) = spell.components.material {
+    for spell in &definitions.spells {
+        if let Some(material) = &spell.components.material {
             registry.push(EquipmentDefinition {
                 id: format!("spell-material:{}", spell.id),
-                display_name: material.description,
+                display_name: material.description.clone(),
                 kind: EquipmentKind::Gear,
                 stacking: ItemStacking::Stack,
                 source_page: *spell

@@ -3,6 +3,7 @@
 use dmd_domain::{Ability, Condition, DamageType, DieSpec, Skill};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
+use std::sync::OnceLock;
 use thiserror::Error;
 
 pub const TACTICAL_DEFINITIONS_JSON: &str =
@@ -11,6 +12,16 @@ pub const TACTICAL_DEFINITIONS_JSON: &str =
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 #[error("invalid tactical definitions: {0}")]
 pub struct DefinitionError(pub String);
+
+/// The exact immutable catalog compiled into this binary. Installed content and
+/// campaign source pins still require their own validation at each boundary.
+pub fn bundled_tactical_definitions() -> Result<&'static TacticalDefinitions, DefinitionError> {
+    static DEFINITIONS: OnceLock<Result<TacticalDefinitions, DefinitionError>> = OnceLock::new();
+    DEFINITIONS
+        .get_or_init(|| TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON))
+        .as_ref()
+        .map_err(Clone::clone)
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

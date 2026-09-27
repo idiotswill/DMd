@@ -13,6 +13,39 @@ fn rejects(edit: impl FnOnce(&mut Value)) {
 }
 
 #[test]
+fn bundled_catalog_shares_the_complete_source_without_changing_serialized_identity() {
+    let bundled = bundled_tactical_definitions().unwrap();
+    let fresh = pack();
+    assert_eq!(bundled, &fresh);
+    assert_eq!(
+        serde_json::to_vec(bundled).unwrap(),
+        serde_json::to_vec(&fresh).unwrap()
+    );
+    assert!(std::ptr::eq(
+        bundled,
+        dmd_rules::tactical_creatures::creature_definitions().unwrap()
+    ));
+}
+
+#[test]
+fn initialized_bundled_catalog_does_not_replace_or_accept_arbitrary_input() {
+    let bundled = bundled_tactical_definitions().unwrap();
+    let mut distinct = bundled.clone();
+    distinct.weapons[0].name.push_str(" alternative");
+    let parsed =
+        TacticalDefinitions::from_json(&serde_json::to_string(&distinct).unwrap()).unwrap();
+    assert_eq!(parsed, distinct);
+    assert_ne!(&parsed, bundled);
+
+    distinct.schema_version = 2;
+    assert_eq!(
+        TacticalDefinitions::from_json(&serde_json::to_string(&distinct).unwrap()).unwrap_err(),
+        DefinitionError("unsupported schema or source pin".into())
+    );
+    assert_eq!(bundled_tactical_definitions().unwrap(), &pack());
+}
+
+#[test]
 fn every_srd_weapon_and_property_is_present_with_exceptional_delivery_preserved() {
     let p = pack();
     let mut actual: Vec<_> = p.weapons.iter().map(|w| w.id.as_str()).collect();
