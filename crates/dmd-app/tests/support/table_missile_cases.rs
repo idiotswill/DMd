@@ -118,6 +118,23 @@ async fn unchanged(f: &Fixture, request: TableTransportRequest) {
         "denial must preserve the entire store, including receipts and projection history"
     );
 }
+async fn destination_rows(pool: &sqlx::SqlitePool) -> std::collections::BTreeMap<String, i64> {
+    let tables: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
+            .fetch_all(pool)
+            .await
+            .unwrap();
+    let mut rows = std::collections::BTreeMap::new();
+    for table in tables {
+        let quoted = table.replace('"', "\"\"");
+        let count = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM \"{quoted}\""))
+            .fetch_one(pool)
+            .await
+            .unwrap();
+        rows.insert(table, count);
+    }
+    rows
+}
 async fn reopen(f: &mut Fixture, path: &Path) {
     f.pool.close().await;
     f.pool = dmd_persistence::open_sqlite_path(path).await.unwrap();
@@ -916,27 +933,21 @@ async fn hostile_restore(f: &Fixture, accepted_impact: &CampaignState) {
         }
         assert_ne!(bad, anchored);
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
+        // This fresh destination contains only migration bookkeeping, so all
+        // campaign tables start empty. Compare every initialized table's count,
+        // including tables populated by SQL triggers and seeded schema metadata.
+        let before = destination_rows(&pool).await;
         assert!(
             Box::pin(runtime(pool.clone()).restore_campaign(&bad))
                 .await
                 .is_err(),
             "forged missile history {mutation}"
         );
-        for table in [
-            "campaign_state_current",
-            "campaign_lifecycle",
-            "event_journal",
-            "command_audit",
-            "campaign_snapshots",
-            "table_projection_history",
-            "table_transport_bindings",
-        ] {
-            let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM {table}"))
-                .fetch_one(&pool)
-                .await
-                .unwrap();
-            assert_eq!(count, 0, "rejected import is atomic: {table}");
-        }
+        assert_eq!(
+            destination_rows(&pool).await,
+            before,
+            "rejected forged history leaves every destination table unchanged"
+        );
         pool.close().await;
     }
 }
@@ -975,27 +986,18 @@ async fn reject_changed_current_missile(f: &Fixture) {
         let mut bad = original.clone();
         bad.current_state.state_json = changed.encode_json().unwrap();
         let pool = open_sqlite("sqlite::memory:").await.unwrap();
+        let before = destination_rows(&pool).await;
         assert!(
             Box::pin(runtime(pool.clone()).restore_campaign(&bad))
                 .await
                 .is_err(),
             "changed current missile {mutation}"
         );
-        for table in [
-            "campaign_state_current",
-            "campaign_lifecycle",
-            "event_journal",
-            "command_audit",
-            "campaign_snapshots",
-            "table_projection_history",
-            "table_transport_bindings",
-        ] {
-            let count: i64 = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM {table}"))
-                .fetch_one(&pool)
-                .await
-                .unwrap();
-            assert_eq!(count, 0);
-        }
+        assert_eq!(
+            destination_rows(&pool).await,
+            before,
+            "rejected current image leaves every destination table unchanged"
+        );
         pool.close().await;
     }
 }

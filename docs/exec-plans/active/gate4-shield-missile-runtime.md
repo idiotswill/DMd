@@ -1,13 +1,17 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active implementation; both original flow3 capture scenarios and the
-source-equivalent four-file baseline test passed. All four exact exports remain
-unchanged. Flow4 domain/rules, application/desktop integration and focused cases
-are authored but uncompiled and unrun. The reviewed Shield/aftermath candidate is
-development-integrated; verified PR45 main reconciliation still blocks acceptance.
-Four independent flow3 continuation cases remain unrun. No runtime correctness or
-acceptance is claimed.
+Status: active verification. All11 focused missile rules cases passed at `460c8f2`;
+the combined app binary compiles and all four actual SQLite cases are running at
+`0f43823` after a cold-copy test assertion correction. Literal `0f43823` Windows
+desktop checks passed99 UI tests in17 files, zero Svelte errors/warnings and a
+140-module build.
+Both original flow3 capture scenarios and the source-equivalent four-file baseline
+test passed; all four exact exports remain unchanged. The four independent flow3
+continuations and current combined-head ReactionsV1 corpus remain unrun. The reviewed
+Shield/aftermath candidate is development-integrated; verified PR45 main reconciliation,
+complete runtime/canonical/CI evidence and final review still block acceptance.
 Branch: `codex/gate4-shield-missile-runtime`.
+Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
 Writer: `shield_integration_review`, exclusively for this combined branch after
 root's explicit ownership transfer; `missile_implementation` is inactive. Root
 coordinates independent review and serializes all heavy builds.
@@ -516,10 +520,55 @@ impacts remain; both must reject with normalized whole-export equality. No old
 fixture, production behavior or historical request is changed by this correction.
 
 Root's exact Shield74 canonical run passed before releasing the sole heavy slot.
-Next on this combined branch: commit the test correction, then run focused missile
-rules and actual SQLite scenarios with jobs1, incremental0 and default Windows
-stack; fix actual diagnostics, then run all four genuine flow3 continuations and
-the five genuine ReactionsV1 cases. These combined-head checks are not yet run.
+The correction was committed at `460c8f278a19f818b0a5c0aec4ced54f20994dd8`.
+
+### Initial verification and assertion correction
+
+All commands use the workspace toolchain, jobs1, incremental0 and default Windows
+GNU test stacks with RUST_MIN_STACK unset. Four crate-root timestamps were refreshed
+before switching the shared target from the Shield checkout. Exact `460c8f2` passed
+`cargo test --locked -p dmd-rules --test tactical_attacks missiles`:11 passed,
+0 failed/ignored,83.53s after1m57s compilation, recorded in
+`tooling/missile-460c8f2-rules.log`. The four actual app cases compiled in2m30s.
+That first run reported three failures and was explicitly stopped with the fourth
+unfinished after the faulty common assertion was diagnosed; its panics remained
+buffered. Do not describe it as four failures or a completed test run. The original
+log `tooling/missile-460c8f2-app.log` and actual temporary SQLite files were preserved.
+
+Independent read-only comparison of both first-failure primary/mirror pairs proved
+equal row metadata and zero recursively decoded JSON differences. Raw state JSON
+only reordered HashMap object keys (`table.character_profiles` and `rules.entities`).
+Commit `0f43823a848a2aeb055bc9c59677843b6e60a012` now compares complete JSON Values,
+including every field and array order, then normalizes only equivalent JSON encoding
+to compare all CurrentStateRow metadata. No state value, identifier, sequence,
+effect or historical fixture is normalized. Exact `0f43823` compiled in1m34s and is
+running `cargo test --locked -p dmd-app --test table_loop missile -- --nocapture`,
+recorded in `tooling/missile-0f43823-app.log`; full-case results are not yet available.
+It has passed the previously failing private-intent/selected-Shield/selected-decline
+mirror comparison boundaries, which is progress rather than scenario acceptance.
+
+Draft CI at460 found three strict-Clippy idiom errors; commit
+`b06cbcd2384b484e9c432a32afaaf8a5a155b7c5` removes two unnecessary units and collapses
+one equivalent let-chain. Subsequent CI confirmed these checks pass. Root directly
+read literal `0f43823` Windows evidence:99 UI tests in17 files passed, zero Svelte diagnostics,
+140 built modules and MSRV success. These results do not substitute for the remaining
+runtime suite or final-head verification.
+
+A further independent review found that hostile-import tests counted only seven
+destination tables. The successor tests now compare the initialized baseline count
+of every SQLite table, including session/participant/observation/provenance/restore-
+authorization and trigger-generated projection tables. Identifiers are quoted.
+The destination is newly initialized: application tables start empty, with only
+migration bookkeeping seeded. This assertion is scoped to rejecting into that fresh
+destination, not comparing arbitrary existing row contents. Both hostile history
+and changed-current-image paths use it. The running0f binary lacks this successor
+assertion; its new coverage requires compilation and execution on the successor.
+
+Next: finish the current0f app run, diagnose any actual failure, then verify the
+successor test assertions and all five genuine flow3 cases (baseline plus four
+continuations) and all five ReactionsV1 cases. Root reviews each correction before
+push and coordinates verified PR45 main reconciliation. Canonical verification and
+protected merge remain pending; no Gate4 completion is claimed.
 
 The branch is created from the stated development base. This plan and ADR028 record
 the approved per-dart/all-faces/normal-child-drain interpretation. The initial commit
