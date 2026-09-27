@@ -411,7 +411,9 @@ async fn off_turn_savage(f: &mut Fixture, url: &str, directory: &Path, first: &F
         directory,
         "goblin-dash-settles-walk",
         None,
-        action(TacticalAction::Dash),
+        action(TacticalAction::Dash {
+            speed: DashSpeed::Speed,
+        }),
     ))
     .await;
     let dashed = Box::new(state(f).await);
