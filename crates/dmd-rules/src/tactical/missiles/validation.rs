@@ -563,17 +563,12 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
         match missile.stage {
             TacticalMissileStage::Collecting if !all_decided => (),
             TacticalMissileStage::Selected { respondent }
-                if all_decided && pending_respondents.first() == Some(&usize::from(respondent)) =>
-            {
-                ()
+                if all_decided && pending_respondents.first() == Some(&usize::from(respondent)) => {
             }
             TacticalMissileStage::Amounts
             | TacticalMissileStage::Impacts
             | TacticalMissileStage::Completed
-                if all_decided && pending_respondents.is_empty() =>
-            {
-                ()
-            }
+                if all_decided && pending_respondents.is_empty() => {}
             _ => {
                 return Err(invalid(
                     "missile stage differs from its collected decisions",
@@ -758,17 +753,16 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             if missile.is_some_and(|missile| !windows.contains(&missile)) {
                 return Err(invalid("retired missile work lacks its committed source"));
             }
-            if let TacticalWorkKind::ApplyMissileImpact { missile, at } = node.work.kind {
-                if current(state, missile)?
+            if let TacticalWorkKind::ApplyMissileImpact { missile, at } = node.work.kind
+                && current(state, missile)?
                     .darts
                     .get(usize::from(at.target))
                     .filter(|dart| dart.at == at)
                     .is_none_or(|dart| dart.impact_occurrence != Some(node.work.occurrence))
-                {
-                    return Err(invalid(
-                        "retired impact is not an exact committed dart occurrence",
-                    ));
-                }
+            {
+                return Err(invalid(
+                    "retired impact is not an exact committed dart occurrence",
+                ));
             }
             if let TacticalWorkKind::CommitMissileShield {
                 missile,
