@@ -1,11 +1,12 @@
 # Gate 4 Counterspell source preflight
 
-Status: read-only source/code audit recorded on 2026-09-27. This is a proposal for
-the next bounded prerequisite, not an accepted architecture or runtime change.
-The active implementation remains
-[Magic Missile target Shield](gate4-shield-missile-runtime.md). No Counterspell
-executor, new execution version, content mutation or Gate5 work is authorized by
-this document. Branch: `codex/gate4-shield-missile-runtime`.
+Status: source/code audit and independently reviewed preparatory design recorded on
+2026-09-27. The coordinating writer accepted the bounded source-registry/admission
+direction below after `source_registry_review`; implementation remains deferred
+until the current [Magic Missile target Shield](gate4-shield-missile-runtime.md)
+slice is verified and merged. This checkpoint changes documentation only. No new
+Counterspell executor, execution version or Gate5 work is implemented here.
+Branch: `codex/gate4-shield-missile-runtime`.
 
 ## Objective and boundaries
 
@@ -16,12 +17,14 @@ suspension and the real production path. ADR026/ADR028 and Gate04 continue to go
 authority, independent response ordering, immutable historical interpretation and
 gate acceptance. A pure spell helper or new schema alone is not feature completion.
 
-The immediate proposal is a separately reviewed immutable source-resolution and
-explicit profile-admission prerequisite, including source-derived Magic Resistance
-and authenticated magical-save classification. Do not silently change existing
-profiles, waive the trait, match human-readable creature names, or treat the new
-trait as unconditional advantage on every saving throw. The final architecture
-decision remains open for independent review.
+The accepted preparatory direction is immutable source resolution and explicit new
+profile admission, including source-derived Magic Resistance and authenticated
+magical-save classification. Existing profile upgrades are outside this bounded
+prerequisite. Do not silently change existing profiles, waive the trait, match
+human-readable creature names, or treat the new trait as unconditional advantage
+on every saving throw. The decision is within the approved Gate4 scope and requires
+no additional owner approval; it does require the implementation and verification
+described below after the current missile slice merges.
 
 ## Pinned source findings
 
@@ -72,14 +75,20 @@ creature trait consequently changes its spell program source fingerprint too.
 Retaining an old creature ID while silently rebuilding a program from its new
 definition does not preserve historical interpretation.
 
-Evaluate a versioned immutable source registry addressed by the full pinned source
+The reviewed design freezes the complete legacy creature catalog as V1, together
+with the definitions and spell/creature/feature tuples required to reproduce every
+historical fingerprint. Store the corrected Hag as a separate complete immutable
+revision and select it explicitly for new admission. Resolve by the full pinned
 identity, including ruleset ID/version, definition ID and definition fingerprint.
-Keep each historical definition available with its original canonical identity;
-let the fresh catalog select the corrected definition explicitly. Spell program
-resolution must likewise reconstruct the exact historical spell/creature/feature
-tuple and verify its existing fingerprint. An ID-only fallback to the newest
-definition, accepting an unknown fingerprint, or disabling pin validation is not a
-compatibility solution.
+Do not mutate the legacy catalog or reconstruct a historical definition by removing
+selected new fields from the current one.
+
+Spell program resolution must reconstruct the exact selected revision's tuple and
+verify its existing fingerprint. A valid actor profile pin and a separately valid
+spell pin are insufficient if they belong to different creature revisions: require
+actor-to-spell tuple equality at every resolver boundary. An ID-only fallback to
+the newest definition, accepting an unknown fingerprint, or disabling pin
+validation is not a compatibility solution.
 
 The minimum lookup audit includes these current-ID paths, not only profile lookup:
 
@@ -90,19 +99,25 @@ The minimum lookup audit includes these current-ID paths, not only profile looku
   `tactical/casting.rs::validate_actor_source`;
 - `tactical/continuations.rs::save_modifier` and
   `tactical/initiative.rs::preview_initiative_circumstances`;
+- policy, weapon/equipment, opportunity and profileless historical fallback paths;
 - every other creature-definition lookup used by derived statistics, traits,
   source feature usage, spatial admission, replay and source DTOs.
 
 This is an audit starting set, not a claim that all lookup paths were enumerated.
 
-Explicit admission of the corrected source for new profiles is required. Decide
-separately whether an existing profile can be upgraded by a journaled operation or
-must use an explicit replacement/admission path. Any proposed upgrade must preserve
-old creation/cast evidence, retain current HP, expended resources, control and other
-live state according to reviewed rules, and reject unsafe in-flight changes. It
-must never rewrite an old profile pin or earlier event as if the new trait had
-always existed. The representation, migration policy and safe admission boundary
-are open architecture questions; this audit does not select one.
+For `TableCreatureCreation`, add an optional full `CreatureSourcePin`, omitted on
+serialization when absent. Absence permanently means historical V1; it must never
+mean "whatever the current catalog chooses." New live creation requires the exact
+current pin. Historical replay preserves missing pins and their original legacy
+meaning, while new profiles explicitly admit the corrected source.
+
+`derive_intent` must preserve a missing source pin unchanged. History validation
+compares the original normalized command before replay; filling in a new default
+would change accepted command identity before it reaches the historical resolver.
+Preserve old request bytes, retries and export interpretation. Profileless old
+fallbacks must resolve the frozen V1 source consistently. Existing profile upgrades
+are excluded: no old pin, creation event or live profile is rewritten as if the
+corrected trait had always existed. Old and new admitted profiles must coexist.
 
 ## Magic Resistance and saving-throw provenance
 
@@ -121,6 +136,21 @@ magical creature effects, nonmagical effects and concentration saves separately.
 In particular, a concentration save after magical damage is not automatically a
 save against that spell. Preserve each older execution's accepted request/mode and
 source interpretation; do not inject advantage into historical pending rolls.
+
+The classification is private derived data, not a Serde field or client input.
+For a repeated save, derive it from the exact retained effect and its canonical
+frozen spell clause, authenticated through full semantic replay. Retain the
+original DC and cause; the original casting need not remain active when a later
+save occurs. Do not emit new effect fields merely to carry this classification.
+Old-pin requests must keep their existing modes, including newly issued saves for
+an unchanged legacy source profile.
+
+Independent review also identified a concrete positive-test limitation: the actual
+Cultist Hold Person source targets Humanoids, while the Hag is a Fiend. A paid
+no-effect cast against the Hag is a useful source-type negative control and must
+not become a saving throw to demonstrate Magic Resistance. It cannot prove a
+positive direct or repeated Magic Resistance save. Preserve this limitation in
+the preparatory PR's acceptance claims.
 
 ## Existing casting seams and required future contracts
 
@@ -172,6 +202,16 @@ profile pins, program fingerprints, accepted envelopes, presentation history and
 pre-tactical anchors. The source registry must restore and continue their original
 creation/casting journals without rewrites before acceptance of any new source.
 
+The preparatory source PR can establish actual old/new admission, coexistence and
+history/retry behavior, full resolver revision equality, valid negative controls
+and clearly qualified pure mechanism cases. It must include refusal of missing,
+old or forged pins on new live creation while replaying genuinely missing legacy
+pins unchanged. This evidence does not by itself complete positive Magic Resistance
+gameplay. Counterspell must supply an actual source Mage-to-Hag direct save using
+the new Hag revision; a genuine supported repeated-save Magic Resistance source
+mechanism remains mandatory later in Gate4. Do not relabel synthetic pure cases or
+the Cultist paid no-effect control as that production evidence.
+
 The later Counterspell runtime acceptance needs real source Mage/Hag commands,
 component/sight/range refusals before cost, both response arrival/order choices,
 shared Mage pool accounting, nested countering, Constitution/Magic Resistance
@@ -183,18 +223,22 @@ required future evidence, not authored tests or passing results in this audit.
 
 ## Exact next action and verification status
 
-1. Finish the current Magic Missile slice, integrate verified PR45/main normally,
-   and retain exact-head focused/canonical/CI evidence. This audit does not release
-   the shared heavy build slot or permit another runtime slice to bypass that work.
-2. Obtain an independent design review of the immutable registry, spell-source
-   reconstruction, explicit corrected-profile admission and magical-save category.
-   Resolve the open migration/version boundary in an ADR and a bounded execution
-   plan before implementing the prerequisite.
-3. Implement and verify that prerequisite with genuine historical exports unchanged
-   and explicit new source admission. Then capture the verified flow4 production
-   pauses and review the bounded Counterspell stack design before changing runtime
-   execution semantics. Stay within Gate4; no acceptance is waived or moved to Gate5.
+1. Finish and merge the current Magic Missile slice, integrating verified PR45/main
+   normally and retaining exact-head focused/canonical/CI evidence. No source
+   payload or runtime change for this prerequisite starts before that merge. The
+   shared heavy build slot remains under the coordinating writer's control.
+2. On the next bounded prerequisite branch, record this accepted design in an ADR
+   and execution plan, preserving the excluded existing-profile upgrade scope and
+   the explicit positive-gameplay evidence limits. Implementation review still
+   checks every resolver, normalized history command and old/new source boundary.
+3. Implement and verify the registry, explicit new admission and private magical-
+   save classification with genuine historical exports unchanged. Capture the
+   verified flow4 production pauses and review the bounded Counterspell stack
+   design before changing casting execution semantics. Counterspell's positive
+   direct save and later genuine repeated-save evidence remain open Gate4 work.
+   No acceptance is waived or moved to Gate5.
 
-Evidence for this document is source/code inspection and the rechecked PDF hash.
-No new source registry, trait, magical-save category or Counterspell runtime was
+Evidence for this document is source/code inspection, the rechecked PDF hash and
+the independently reviewed direction accepted by the coordinating writer. No new
+source registry, trait, magical-save category or Counterspell runtime was
 implemented. No compilation, tests or production acceptance ran for this preflight.

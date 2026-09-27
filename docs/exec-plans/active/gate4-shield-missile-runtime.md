@@ -457,9 +457,13 @@ is formatted and statically inspected, not compiled or run.
 
 The separate [Counterspell source preflight](gate4-counterspell-source-preflight.md)
 records the pinned Magic Resistance omission, immutable creature/spell fingerprint
-constraint, proposed source-registry/admission prerequisite and future capture seams.
-It leaves the architecture decision open for independent review and makes no
-Counterspell or new execution-version changes.
+constraint, independently reviewed source-registry/admission prerequisite and future
+capture seams. Root accepted the bounded preparatory design after independent
+review: complete frozen V1 catalog, explicit current pin on new creation, no existing
+profile upgrades and private source-derived magical-save classification. Actual
+implementation waits for the current missile slice's verified merge; positive
+Counterspell and genuine repeated-save Magic Resistance evidence remain Gate4 work.
+This checkpoint makes no Counterspell or new execution-version changes.
 
 ## Development checkpoint and exact next steps
 
