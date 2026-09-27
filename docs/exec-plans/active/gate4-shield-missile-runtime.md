@@ -8,8 +8,9 @@ development-integrated; verified PR45 main reconciliation still blocks acceptanc
 Four independent flow3 continuation cases remain unrun. No runtime correctness or
 acceptance is claimed.
 Branch: `codex/gate4-shield-missile-runtime`.
-Writer: `missile_implementation`, exclusively for this branch; root coordinates
-separate app integration and serializes all heavy builds.
+Writer: `shield_integration_review`, exclusively for this combined branch after
+root's explicit ownership transfer; `missile_implementation` is inactive. Root
+coordinates independent review and serializes all heavy builds.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
@@ -501,6 +502,24 @@ that exact combined head. Earlier candidate checks never substitute for this fin
 verification. The full acceptance matrix remains open.
 
 ## Development checkpoint and exact next steps
+
+### Combined review follow-up
+
+Integration/self-review and independent root review at `7ee631e` found the new
+owned-source scenario attempted EndSession after its missile completed without
+the actual Host conclusion now required by the integrated aftermath path. The
+scenario now issues ConcludeHostilities with ContinueExistingOrder and a recorded
+ruling before changing attendance. Original accepted Shield envelopes remain
+unchanged for later exact receipt recovery. Host conclusion is also attempted
+while an owned Shield selection is pending and after all faces are collected but
+impacts remain; both must reject with normalized whole-export equality. No old
+fixture, production behavior or historical request is changed by this correction.
+
+Root's exact Shield74 canonical run passed before releasing the sole heavy slot.
+Next on this combined branch: commit the test correction, then run focused missile
+rules and actual SQLite scenarios with jobs1, incremental0 and default Windows
+stack; fix actual diagnostics, then run all four genuine flow3 continuations and
+the five genuine ReactionsV1 cases. These combined-head checks are not yet run.
 
 The branch is created from the stated development base. This plan and ADR028 record
 the approved per-dart/all-faces/normal-child-drain interpretation. The initial commit

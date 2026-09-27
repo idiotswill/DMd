@@ -28,6 +28,13 @@ fn action(action: TableAction) -> TableTransportInput {
 fn tactical(action_: TacticalAction) -> TableTransportInput {
     action(TableAction::Tactical { action: action_ })
 }
+fn conclusion() -> TableTransportInput {
+    tactical(TacticalAction::ConcludeHostilities {
+        cadence: AftermathCadence::ContinueExistingOrder,
+        ruling: "The source-creature practice ends; retain current order and ongoing effects."
+            .into(),
+    })
+}
 fn missile(handle: CommandId, decision: TableMissileInput) -> TableTransportInput {
     TableTransportInput::MissileResponse {
         handle,
@@ -1114,6 +1121,8 @@ async fn owned_source_scenario(same_owner: bool) {
     for index in if same_owner { [2, 3] } else { [3, 2] } {
         let selected = response(&f, &sources, index).await;
         assert!(selected.selected);
+        let premature = request(&f, TableTransportChannel::Host, conclusion()).await;
+        Box::pin(unchanged(&f, premature)).await;
         let other = if index == 2 { 3 } else { 2 };
         let forged = request(
             &f,
@@ -1175,6 +1184,8 @@ async fn owned_source_scenario(same_owner: bool) {
         );
     }
     let impact = Box::pin(amounts(&mut f, &path, &sources, 0, true)).await;
+    let premature = request(&f, TableTransportChannel::Host, conclusion()).await;
+    Box::pin(unchanged(&f, premature)).await;
     Box::pin(reject_changed_current_missile(&f)).await;
     Box::pin(impacts(&mut f, &path, &sources, 0, !same_owner, true)).await;
     let finished = Box::pin(state(&f)).await;
@@ -1193,6 +1204,7 @@ async fn owned_source_scenario(same_owner: bool) {
     .await;
     Box::pin(unchanged(&f, stale)).await;
     Box::pin(hostile_restore(&f, &impact)).await;
+    Box::pin(accept(&f, TableTransportChannel::Host, conclusion())).await;
     Box::pin(accept(
         &f,
         TableTransportChannel::Host,
