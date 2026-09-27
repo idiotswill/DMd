@@ -153,10 +153,13 @@ async fn actual_knockout(
         f,
         Some(0),
         TacticalAction::Move {
-            path: vec![TacticalMoveStep {
-                destination: SpatialPoint { x: 30, y: 10, z: 0 },
-                mode: MovementMode::Walk,
-            }],
+            path: [20, 30]
+                .into_iter()
+                .map(|x| TacticalMoveStep {
+                    destination: SpatialPoint { x, y: 10, z: 0 },
+                    mode: MovementMode::Walk,
+                })
+                .collect(),
         },
     ))
     .await;
