@@ -1,14 +1,16 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
-Status: domain/pure-rule checkpoint reviewed; authenticated application and desktop
-checkpoint authored for independent review. Compilation and runtime are unverified.
+Status: domain, authenticated application and desktop checkpoints independently
+reviewed; reviewed cache development dependency integrated. Compilation and runtime
+of this branch are unverified. Early draft CI publication is authorized.
 Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
 `f441adedcf490504b6f1e3db1a964c023c511e47` (verified PR44).
 Root allocated the next semantic executor, **EncounterReleaseV1, flow 5**, to
 this work on 2026-09-27. Counterspell must use a later execution boundary.
-This allocation is a design instruction, not a statement that flow 5 exists yet.
+Flow 5 is now authored across rules, application and desktop. Its presence in source
+is not runtime acceptance; the original executions 1–4 remain separately preserved.
 
 Root authorized this plan on a fresh branch in the free former aftermath worktree;
 the old `codex/gate4-encounter-finish` branch remains preserved at its verified head.
@@ -62,6 +64,16 @@ amounts/impacts and nested children. Planning against it avoids implementing a s
 against an obsolete flow 3 shape and then omitting the new obligations during a
 merge. The current parent is an explicitly authorized **development dependency**.
 Its source review and focused evidence do not substitute for accepted merged code.
+
+After independent review of the release checkpoint and its equipment correction,
+root authorized a normal development merge of published cache checkpoint
+`619ada0219e4a53f30bea28b3b099314b0c01405`. Merge
+`c878f9cb51db8364aa1b5b633a0d2373dffd9411` is conflict-free and retains both
+histories. The cache parent includes Shield main
+`a0b12d2d0144a744e3419c1ba69e2d7aac64fd79` through reviewed identical-tree
+reconciliation `8da8e3c6f250a6f166b652530b36af2f47a164ff`; 619ada0 adds only
+reviewed evidence documentation to that reconciliation. Cache and Magic Missile
+remain development dependencies here, not final accepted prerequisites.
 
 Final acceptance and merge of this branch require:
 
@@ -324,6 +336,77 @@ that compatibility claim, not permission to fabricate them.
 
 ## Planned slices and verification
 
+### Remaining real application scenarios
+
+The existing release case already authors Mage Armor, Second Wind, thrown-dagger
+custody, reduced attendance, physical second initiative and source movement. Its
+dagger is purchased in real character creation by the focused follow-up
+`02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
+the following additional witnesses, all still unimplemented and unrun:
+
+1. **Savage across the encounter boundary.** Reuse
+   `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
+   based on `table_attack_cases::prepare_at`. Purchase the dagger normally. After
+   the first genuine Savage roll, conclude and release; give the same Goblin the
+   first turn in the next encounter. Reuse the ordinary opportunity-decision path
+   from `table_oa_concentration_cases` and `table_hit_driver` when that Goblin moves
+   out of the PC's reach. Prove Savage is available on this distinct global turn
+   before the PC's own Start, its marker advances, and the actual spent Reaction
+   blocks release with complete store equality. End the real Goblin turn, prove
+   the owner's Start resets only its Reaction, then use Savage on the owner's new
+   turn. Keep the source target alive until the needed witness, using actual low
+   physical results and the ordinary knockout decision if lethal damage is reached.
+2. **Spent ammunition and unconscious custody.** Reuse source creation from
+   `table_attack_cases::prepare_at` plus the real DoffShield and two-handed
+   `bow_action` pattern in `table_shield_cases`. Fire a genuine source shortbow
+   shot, proving the same ammunition stack falls from 20 to 19; leave the bow held.
+   Reuse the actual melee/knockout path from `table_attack_cases::check_knockout`,
+   including any real movement/turns needed to reach the target. At release preserve
+   the unconscious source's bow drop position and original damage cause, spent
+   ammunition, item identities and recovery/rest evidence. A second setup must
+   retain the required living source while leaving that bow on its retired scene;
+   initiative may interrupt the source's rest only through its existing real rule.
+3. **Dead owner omitted after release.** Reuse
+   `table_medicine_cases::prepare(false)` and the actual death-save sequence in
+   `table_aftermath_cases::dying_scenario`, with physical 1 then 2 and real intervening
+   turns. Factor only necessary setup/commands rather than repeating unrelated
+   session-rollover assertions. Before death, release refusal must leave the whole
+   store unchanged and the actual death-save route usable. After death and settled
+   timing, finish without reviving or clearing evidence, close the session, start
+   with the surviving owner only, and prepare/act with survivors. Reject adding the
+   dead PC to initiative; retain its death rolls and corpse/item consequences.
+4. **Recharge and the dead-Mage deadline trap.** Adapt the genuine source creation,
+   area targeting/raw save workflow and legendary declines already exercised by
+   `table_area_cases` and `table_casting_cases`. Use a PC, Mage and Adult Red Dragon;
+   the pinned catalog gives the dragon a 17d6 fire breath and the Mage 81 HP. Cast
+   real Mage Armor before the breath. From one genuine pre-breath export, use two
+   independently restored file branches: low physical damage keeps the Mage alive
+   for the successful release/recharge witness; 17 physical sixes and a failed
+   actual save kill it while its nonconcentration armor deadline remains. The latter
+   must refuse release before retiring timing, preserve the complete store, and
+   still permit its old cadence. On the successful branch, reach a real later
+   dragon Start, report a failed recharge die, and release while availability is
+   false. Release, replacement and another actor's first turn must retain that
+   false value and its complete prior RecordedRoll proof. Only the dragon's new
+   own Start may request the next physical recharge die and refresh on success.
+
+Use the existing `durable_step` pattern at material release/setup/initiative/source
+raw boundaries: independent file export/restore, cold public resume, original exact
+response retries, changed-body refusal and complete store equality. Share bounded
+helpers where this avoids duplicating setup; never edit state or event JSON to
+manufacture HP, Savage markers, pending work, recharge or custody.
+
+The current supported table route does not appear to remove a participating actor
+with a surviving effect into an offstage state. A genuine omission attempt at
+replacement is already authored for the living Mage and must write nothing.
+Keep raw offstage/suppressed scanning in explicitly isolated rule tests; do not
+relabel those as real app history. Investigate any supported offstage-producing
+route before adding that positive-history claim. This limitation leaves the named
+offstage timing workstream inside Gate 4; it does not waive the global scan or
+permit unsupported release.
+
+### Verification sequence
+
 1. Root reviews this plan and its narrow closed-upgrade proposal (approved). Recheck source
    pins and parent movement, finalize the additive records/version contract, and
    update the relevant ADR/coverage ledger with explicit compatibility rationale.
@@ -389,6 +472,22 @@ after another encounter appears. None of these new tests has run. Formatting and
 whitespace checks pass; compilation, static frontend checking, tests and canonical
 verification remain pending. This source checkpoint is not final slice acceptance.
 
+Root and an independent reviewer inspected the complete authenticated checkpoint
+`ffc36f89580ac2f2b3551887d7d32de5e0d8d787` and focused dagger correction
+`02715793fa365c3d9d56a9036072c31d241414c0`; both reviews are clear at source
+level. They cover closed host admission, historical replay, independent durable
+retries, atomic closed-scene staging, custody/origins, privacy and UI controls.
+Runtime and default-stack safety remain unverified.
+
+Root also reviewed the complete 0271579→c878f9c development integration. Its delta
+is the known 11-file cache source/test patch and seven evidence documents, with no
+conflicts. The ten cache source/test files not independently changed by release
+match 619ada0 byte-for-byte; `tactical.rs` combines only the reviewed immutable
+accessor with the existing release changes. The explicit warm-cache tamper tests
+are retained unchanged. Catalog/content, frozen history JSON and Cargo.lock are
+unchanged by integration. Formatting and staged/working diff checks pass. Parent
+CI or measurements do not prove this newly integrated release head.
+
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
 Nine read-only raw SQLite candidates were preserved; the fifth pending concentration
@@ -399,8 +498,8 @@ run or relabelled file substitutes for an original-source baseline.
 
 The old PR44 source is
 verified; its main checks and artifact are separately documented in that PR.
-Root reports PR45 merged as `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`;
-that parent is not yet integrated here. PR46 acceptance, final parent/cache reconciliation, flow 4 official exports and
+PR45 main `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79` is now integrated through
+the reviewed cache development parent. PR46 acceptance, final parent/cache reconciliation, flow 4 official exports and
 original-source baselines, all new runtime tests, UI evidence and packaged play for
 this slice are still outstanding. No evidence on a parent or older head substitutes
 for this branch's exact final verification.
@@ -430,11 +529,10 @@ the next slice, with real controller/session and semantic recovery evidence.
 User-facing controls will say “Finish encounter” and “Prepare battlefield”; they
 must not expose executor or schema internals.
 
-Next action: independently review the coherent authenticated application checkpoint
-and fix concrete findings. Root proposed development integration of cache checkpoint
-`8da8e3c6f250a6f166b652530b36af2f47a164ff` only after this checkpoint is committed
-and reviewed; do not merge it until authorized. Final verified cache/MM main and
-genuine flow 4 baselines remain hard blockers. Complete the remaining acceptance
-matrix, especially genuine Savage/off-turn, recharge, ammunition, unconscious-drop
-and dead/offstage refusal paths, then run assigned verification. No builds or pushes
-until root assigns them.
+Next action: publish this reviewed branch as an early draft PR for actual compiler,
+UI and CI feedback, as root authorized after integration review. Keep that head
+stable until diagnostics or an agreed next source checkpoint. Root will assign
+the remaining scenario implementation and the local heavy verification slot; no
+local build is authorized here. Final verified cache/MM main, genuine flow 4
+baselines and the complete runtime/UI/package matrix remain hard acceptance
+blockers. Draft publication is not slice or Gate 4 acceptance.
