@@ -92,7 +92,9 @@ fn derive_intent(
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<Intent, String> {
     let tactical_input = match &request.input {
-        TableTransportInput::SelectWork { .. } | TableTransportInput::HitResponse { .. } => true,
+        TableTransportInput::SelectWork { .. }
+        | TableTransportInput::HitResponse { .. }
+        | TableTransportInput::MissileResponse { .. } => true,
         TableTransportInput::Action(action) => {
             matches!(action.as_ref(), TableAction::Tactical { .. })
         }
@@ -168,6 +170,82 @@ fn derive_intent(
             };
             Intent::Action(Box::new(TableAction::Tactical { action }))
         }
+        TableTransportInput::MissileResponse { handle, decision } => {
+            let (origin, occurrence, role) = current
+                .handles
+                .iter()
+                .find_map(|entry| match entry.capability {
+                    ProjectionCapability::MissileResponse {
+                        origin,
+                        occurrence,
+                        role,
+                    } if entry.opaque == handle.0 => Some((origin, occurrence, role)),
+                    _ => None,
+                })
+                .ok_or("That missile response is not available in this view.")?;
+            if presentation::work_origin(state) != Some(origin) {
+                return Err("That missile response is no longer available.".into());
+            }
+            let window = TacticalWorkKey {
+                resolution: origin,
+                occurrence,
+            };
+            let retained = state
+                .encounter
+                .as_ref()
+                .and_then(|encounter| encounter.flow.as_ref())
+                .and_then(|flow| flow.resolution.as_ref())
+                .and_then(|resolution| {
+                    resolution
+                        .missiles
+                        .iter()
+                        .find(|missile| missile.work.occurrence == occurrence)
+                })
+                .ok_or("That missile response is no longer available.")?;
+            let selected = match retained.stage {
+                TacticalMissileStage::Selected { respondent } => retained
+                    .respondents
+                    .get(usize::from(respondent))
+                    .map(|target| target.response.actor),
+                _ => None,
+            };
+            let action = match (role, decision.as_ref()) {
+                (ProjectionMissileRole::Order, TableMissileInput::Order { instruction }) => {
+                    TacticalAction::OrderMissileResponses {
+                        window,
+                        instruction: instruction.clone(),
+                    }
+                }
+                (ProjectionMissileRole::Delegate, TableMissileInput::Delegate) => {
+                    TacticalAction::DelegateMissileResponses { window }
+                }
+                (
+                    ProjectionMissileRole::Intent { actor },
+                    TableMissileInput::Respond { accept },
+                ) => TacticalAction::RespondToMissile {
+                    window,
+                    actor,
+                    accept: *accept,
+                },
+                (ProjectionMissileRole::Selected { actor }, TableMissileInput::Cast { choice })
+                    if selected == Some(actor) && choice.actor == actor =>
+                {
+                    TacticalAction::CastMissileShield {
+                        window,
+                        choice: choice.clone(),
+                    }
+                }
+                (ProjectionMissileRole::Selected { actor }, TableMissileInput::Decline)
+                    if selected == Some(actor) =>
+                {
+                    TacticalAction::DeclineSelectedMissileShield { window }
+                }
+                _ => {
+                    return Err("That decision does not match the visible missile response.".into());
+                }
+            };
+            Intent::Action(Box::new(TableAction::Tactical { action }))
+        }
         TableTransportInput::SelectWork { handle } => {
             let (origin, occurrence) = current
                 .handles
@@ -198,6 +276,13 @@ fn derive_intent(
                     | TacticalAction::CastHitShield { .. }
                     | TacticalAction::DeclineSelectedHitShield { .. } => {
                         return Err("Select the visible decision handle.".into());
+                    }
+                    TacticalAction::RespondToMissile { .. }
+                    | TacticalAction::OrderMissileResponses { .. }
+                    | TacticalAction::DelegateMissileResponses { .. }
+                    | TacticalAction::CastMissileShield { .. }
+                    | TacticalAction::DeclineSelectedMissileShield { .. } => {
+                        return Err("Select the visible missile decision handle.".into());
                     }
                     TacticalAction::SubmitRoll { result }
                     | TacticalAction::SubmitRollWithInspiration { result, .. } => {

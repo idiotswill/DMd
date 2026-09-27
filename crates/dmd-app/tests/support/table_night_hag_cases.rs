@@ -237,7 +237,7 @@ async fn prepare(f: &mut Fixture, hag: EntityId, target: EntityId) {
     Box::pin(submit(
         f,
         tactical(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldHitV1,
+            execution: TacticalExecutionVersion::ShieldMissileV1,
             combatants,
             groups,
         }),
@@ -425,8 +425,43 @@ async fn finish_darts(
     target: EntityId,
     source: CommandId,
 ) {
+    let missile = view(f).await.tactical.unwrap().missile.unwrap();
+    assert_eq!(missile.responses.len(), 1);
+    assert_eq!(missile.responses[0].actor, target);
+    assert!(missile.responses[0].shield.is_empty());
+    let order = request(
+        f,
+        TableTransportInput::MissileResponse {
+            handle: missile.order.unwrap().key,
+            decision: Box::new(TableMissileInput::Order {
+                instruction: TacticalReactionOrdering {
+                    ranked: vec![],
+                    unlisted: ReactionUnlistedOrder::AfterReverse,
+                },
+            }),
+        },
+    )
+    .await;
+    Box::pin(cold_amount(f, url, order)).await;
+    let response = view(f)
+        .await
+        .tactical
+        .unwrap()
+        .missile
+        .unwrap()
+        .responses
+        .remove(0);
+    let ack = request(
+        f,
+        TableTransportInput::MissileResponse {
+            handle: response.key,
+            decision: Box::new(TableMissileInput::Respond { accept: false }),
+        },
+    )
+    .await;
+    Box::pin(cold_amount(f, url, ack)).await;
     let mut ids = std::collections::HashSet::new();
-    for dart in 0..6 {
+    for _dart in 0..6 {
         let projected = view(f).await;
         let roll = projected
             .roll
@@ -446,7 +481,8 @@ async fn finish_darts(
         );
         assert_eq!(
             pending.rules.as_ref().unwrap().entities[&target].hp,
-            19 - 2 * dart
+            19,
+            "all six real faces must be collected before any missile impact"
         );
         let request = request(
             f,
@@ -460,6 +496,57 @@ async fn finish_darts(
         )
         .await;
         Box::pin(cold_amount(f, url, request)).await;
+    }
+    assert_eq!(
+        state(f).await.rules.as_ref().unwrap().entities[&target].hp,
+        19
+    );
+    assert!(view(f).await.roll.is_none());
+    while state(f)
+        .await
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap()
+        .resolution
+        .is_some()
+    {
+        let choices = view(f)
+            .await
+            .tactical
+            .unwrap()
+            .continuation
+            .unwrap()
+            .choices;
+        assert!(choices.len() >= 2);
+        assert_eq!(
+            choices
+                .iter()
+                .map(|choice| &choice.label)
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            choices.len()
+        );
+        assert!(
+            choices
+                .iter()
+                .all(|choice| choice.label.starts_with("Dart ") && choice.label.contains("Horse"))
+        );
+        let before = state(f).await.rules.as_ref().unwrap().entities[&target].hp;
+        let work = request(
+            f,
+            TableTransportInput::SelectWork {
+                handle: choices.last().unwrap().handle,
+            },
+        )
+        .await;
+        Box::pin(cold_amount(f, url, work)).await;
+        assert_eq!(
+            state(f).await.rules.as_ref().unwrap().entities[&target].hp,
+            before - if choices.len() == 2 { 4 } else { 2 }
+        );
     }
     let finished = state(f).await;
     let rules = finished.rules.as_ref().unwrap();

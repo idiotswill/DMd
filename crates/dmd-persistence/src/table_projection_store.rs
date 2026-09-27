@@ -59,6 +59,19 @@ pub enum ProjectionCapability {
         occurrence: u16,
         role: ProjectionHitRole,
     },
+    MissileResponse {
+        origin: CommandId,
+        occurrence: u16,
+        role: ProjectionMissileRole,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ProjectionMissileRole {
+    Order,
+    Delegate,
+    Intent { actor: dmd_domain::EntityId },
+    Selected { actor: dmd_domain::EntityId },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

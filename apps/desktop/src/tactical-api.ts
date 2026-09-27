@@ -38,6 +38,12 @@ export interface HitView {
   delegate: Id | null;
   response: { key: Id; actor: Id; selected: boolean; shield: SpellCastChoice[] } | null;
 }
+export type MissileDecision = HitDecision;
+export interface MissileView {
+  order: HitView['order'];
+  delegate: Id | null;
+  responses: NonNullable<HitView['response']>[];
+}
 
 export interface AreaOptions {
   actor: Id; controller: Id | null; source_space: Volume;
@@ -72,8 +78,9 @@ export interface SavageAttackerRoll {
 }
 export type TacticalAction =
   | 'UpgradeExecution'
-  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' } }
+  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' | 'ShieldMissileV1' } }
   | { HitResponse: { handle: Id; decision: HitDecision } }
+  | { MissileResponse: { handle: Id; decision: MissileDecision } }
   | { AbandonReady: { actor: Id } }
   | { UnarmedStrike: { target: Id } }
   | { FirstAid: { target: Id; purpose: 'Stabilize' | 'EndKnockout' } }
@@ -92,13 +99,14 @@ export type TacticalAction =
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
-  | { Begin: { execution: 'ShieldHitV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
+  | { Begin: { execution: 'ShieldMissileV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
-  execution?: 'ReactionsV1' | 'ShieldHitV1' | null;
+  execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | null;
   hit?: HitView | null;
+  missile?: MissileView | null;
   ready?: { actor: Id; action: string; may_abandon: boolean }[];
   encounter_id: Id; round: number | null; active_actor: Id | null; phase: string;
   battlefield: Battlefield | null;

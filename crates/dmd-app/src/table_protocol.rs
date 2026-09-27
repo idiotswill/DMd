@@ -318,6 +318,8 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = Tact
     pub ready: Vec<TableReadyView>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hit: Option<Box<TableHitView<HitKey>>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub missile: Option<Box<TableMissileView<HitKey>>>,
     pub round: Option<u32>,
     pub active_actor: Option<EntityId>,
     pub phase: String,
@@ -370,6 +372,15 @@ pub struct TableHitResponse<Key> {
     pub actor: EntityId,
     pub selected: bool,
     pub shield: Vec<SpellCastChoice>,
+}
+
+/// Collection exposes only independently owned respondents. Neither this list nor
+/// ordering controls disclose any other target's eligibility, intent or selection.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableMissileView<Key = TacticalWorkKey> {
+    pub order: Option<TableHitOrder<Key>>,
+    pub delegate: Option<Key>,
+    pub responses: Vec<TableHitResponse<Key>>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

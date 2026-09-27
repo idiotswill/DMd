@@ -10,6 +10,7 @@
   import LiquidLandingForm from './LiquidLandingForm.svelte';
   import ShieldForm from './ShieldForm.svelte';
   import HitResponsePanel from './HitResponsePanel.svelte';
+  import MissileResponsePanel from './MissileResponsePanel.svelte';
   import UnarmedForm from './UnarmedForm.svelte';
   import FirstAidForm from './FirstAidForm.svelte';
   let { tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, pendingRoll=false, onAction }: {
@@ -19,8 +20,8 @@
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
-  const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='ShieldHitV1');
-  const pendingDecision=$derived(!!tactical.hit||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
+  const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='ShieldMissileV1');
+  const pendingDecision=$derived(!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
   const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   const firstAidTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Unseen creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
@@ -37,14 +38,19 @@
       const key=combatant.source==='Character'?combatant.actor:`${combatant.source.Creature.definition_id}:${combatant.surprised}:${preview.initiative_modifier}:${combatant.surprised?preview.surprised_mode:preview.normal_mode}`;
       grouped.set(key,[...(grouped.get(key)??[]),combatant.actor]);
     }
-    onAction({Begin:{execution:'ShieldHitV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
+    onAction({Begin:{execution:'ShieldMissileV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
   }
 </script>
 <section class="panel"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
   {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
-    {#if host}<button disabled={disabled||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'ShieldHitV1'}})}>Continue saved encounter</button>{/if}
+    {#if host}<button disabled={disabled||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'ShieldMissileV1'}})}>Continue saved encounter</button>{/if}
   {/if}
   <TacticalMap {tactical} {characters}/>
+  {#if tactical.missile}
+    {#key `${host}:${player}:${actor}:${tactical.missile.order?.key}:${tactical.missile.delegate}`}
+      <MissileResponsePanel missile={tactical.missile} participants={tactical.participants} {actor} {host} {playerControlledSources} disabled={disabled||pendingRoll} {onAction}/>
+    {/key}
+  {/if}
   {#if tactical.hit}
     {#key `${host}:${player}:${actor}:${tactical.hit.order?.key}:${tactical.hit.delegate}:${tactical.hit.response?.key}`}
       <HitResponsePanel hit={tactical.hit} {actor} {host} {playerControlledSources} disabled={disabled||pendingRoll} {onAction}/>
