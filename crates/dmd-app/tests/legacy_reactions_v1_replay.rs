@@ -550,6 +550,7 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
     let original = Box::new(f.state().await);
     let resumed = Box::pin(f.app.resume_campaign(f.campaign)).await.unwrap();
     assert_eq!(resumed.state(), original.as_ref());
+    drop(resumed);
     assert!(original.table.as_ref().unwrap().active_session.is_none());
     assert_eq!(flow(&original).combatants.len(), 1);
     let mage = flow(&original).combatants[0].actor;
@@ -625,11 +626,14 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
     .await;
     Box::pin(f.accept_cold(start)).await;
     let started = Box::new(f.state().await);
-    assert_eq!(started.rules, original.rules);
-    assert_eq!(started.encounter, original.encounter);
-    assert_eq!(started.clock, original.clock);
-    assert_eq!(started.items, original.items);
-    assert_eq!(started.characters, original.characters);
+    let mut compared = started.clone();
+    compared.table.as_mut().unwrap().active_session = None;
+    compared.applied_event_sequence = original.applied_event_sequence;
+    assert_eq!(
+        compared, original,
+        "session resume changes only its binding and sequence"
+    );
+    drop(compared);
     let source_channel = TableTransportChannel::SourceCreature {
         player_id: player,
         actor: mage,
@@ -658,13 +662,21 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
     Box::pin(f.accept_cold(upgrade)).await;
     let upgraded = Box::new(f.state().await);
     assert_eq!(flow(&upgraded).version, 3);
-    assert_eq!(upgraded.rules, started.rules);
-    assert_eq!(upgraded.clock, started.clock);
-    assert_eq!(upgraded.items, started.items);
-    assert_eq!(upgraded.characters, started.characters);
-    let mut compared = upgraded.encounter.clone().unwrap();
-    compared.flow.as_mut().unwrap().version = 2;
-    assert_eq!(Some(compared), started.encounter);
+    let mut compared = upgraded.clone();
+    compared
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 2;
+    compared.applied_event_sequence = started.applied_event_sequence;
+    assert_eq!(
+        compared, started,
+        "upgrade changes only the executor and sequence"
+    );
+    drop(compared);
     for channel in [
         TableTransportChannel::Host,
         TableTransportChannel::SourceCreature {

@@ -2,7 +2,8 @@
 
 Status: active integration draft; all six checks pass for combined candidate
 3090f06, including the actual Shield and aftermath recovery cases. Final genuine
-aftermath compatibility, main reconciliation and canonical acceptance remain pending.
+aftermath continuation and canonical acceptance remain pending. Verified aftermath
+mainf441adedcf490504b6f1e3db1a964c023c511e47 is normally reconciled.
 Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
@@ -87,7 +88,35 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
 
 ## Current verification checkpoint
 
-The executable candidate with all six CI checks passing is
+Latest integration: PR44 protected-squash merged asf441aded after exactbe5442a
+review,705 GNU Rust/54suites/49table canonical and all six checks706Linux/708native
+Rust,81UI/15files,0/0,138modules and fresh EXE/NSIS. Artifact10900519221 is
+231671321bytes, SHA256
+4bb368f92c657abf96491a6eb49421e6a09b19d6b622562dc86cc6c9457f5ee1.
+Fetched main's complete tree6b497034863a6bd79d250be98d2f3f6b2d02d7af equalsbe5442a.
+Normal reconciliationc9189a116d09ef45069f17add83cfac37b80845f equals the prior
+fixture commit3d4c83c whole tree8329d608a8b6e35ccd28e55ae667d77e0a4ea6ca. Seven
+duplicate-squash textual conflicts retained the previously integrated source;
+a duplicated auto-merged TableAftermathView was caught by whole-tree comparison
+and removed before committing. No production change occurred in reconciliation.
+
+The genuine source-only flow2 aftermath export is imported unchanged with pinned
+provenance:98963bytes/SHA2564d9075b1566a0279717d9eb617ff4651576187fbbbbc07bf8a053916413d96b5,
+15events/10projections/9bindings. Its exact-source official export/independent
+restore/cold-resume/all-receipt baseline passes1/1 in31.55 seconds. A new fifth
+genuine ReactionsV1 corpus exercises its actual session resume, explicit upgrade
+and owner continuation under ShieldHitV1. Independent fixture/provenance review
+is clear; review strengthens the test to compare the whole CampaignState while
+normalizing only the intended session binding or execution version plus sequence,
+and drops the recovered handle before later awaits. This new continuation remains
+unrun until the focused/default-stack and final canonical verification below.
+
+The full3090 integration is independently reviewed clear and has all six CI checks;
+its Linux syntheticfa0a06a35210170805e9251fa74946027a91bb51 and literal3090 complete
+trees match2366ca4e87c51207860c42e8279b1e4f4513a5cd. That evidence precedes the
+genuine aftermath corpus addition and does not substitute for its final checks.
+
+Earlier hit-only executable candidate with all six CI checks passing is
 8b5cf52a250c5f381d22977391906cfedc53a630. Documentation successor7bc01af and
 verified-main reconciliation98399da change no executable source. The latter's
 whole tree equals7bc01af at926629f4aec461374b38e5ff57a93260e190d408.
