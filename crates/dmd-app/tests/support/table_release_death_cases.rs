@@ -229,17 +229,15 @@ async fn actual_death(f: &mut Fixture, url: &str, directory: &Path) -> DeathHist
     ))
     .await;
     let dead = Box::new(state(f).await);
+    let patient = &dead.rules.as_ref().unwrap().entities[&f.actors[1]];
+    assert_eq!(patient.hp, 0);
     assert_eq!(
-        dead.rules.as_ref().unwrap().entities[&f.actors[1]]
-            .death
-            .failures,
-        3
+        (patient.death.successes, patient.death.failures),
+        (0, 0),
+        "the third failure kills the creature and clears its pending-save counters"
     );
-    assert!(
-        dead.rules.as_ref().unwrap().entities[&f.actors[1]]
-            .death
-            .dead
-    );
+    assert!(patient.death.dead);
+    assert_eq!(dead.entities[&f.actors[1]].existence, EntityExistence::Dead);
     assert_eq!(
         dead.characters[&f.characters[1]].status,
         CharacterStatus::Dead
