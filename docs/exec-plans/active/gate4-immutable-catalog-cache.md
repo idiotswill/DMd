@@ -1,11 +1,14 @@
 # Gate 4 — Shared immutable tactical catalog
 
-Status: implementation formatted and statically reviewed; no compilation, tests,
-benchmark or performance result yet. Writer: source_registry_review. Branch:
+Status: all six candidate CI checks pass at `392e036`; controlled local measurement,
+canonical verification and verified-parent reconciliation remain pending. Root is
+the current sole writer after the implementation handoff. Original writer:
+`source_registry_review`. Branch:
 `codex/gate4-immutable-catalog-cache`, based on reviewed Shield candidate
 `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5`. Fetched main before branching was
 `f441adedcf490504b6f1e3db1a964c023c511e47`. The preserved prior branch
-`codex/gate4-shield-missile-app` remains at8537775. No PR is open for this work.
+`codex/gate4-shield-missile-app` remains at8537775. Draft PR:
+<https://github.com/idiotswill/DMd/pull/47>.
 
 ## Objective and boundaries
 
@@ -119,11 +122,35 @@ historical fixtures are unchanged.
 Independent static caller audit confirmed exact wrapper error mappings, all seven
 entry points and no initializer cycle. Root reviewed the complete code/test patch
 and found no defect. Changed Rust files passed standalone rustfmt with child-module
-traversal disabled; `git diff --check` passes. No compiler, test or benchmark has
-run, and these static checks are not acceptance or evidence of a speedup.
+traversal disabled; `git diff --check` passes. At that initial checkpoint no compiler,
+test or benchmark had run; static checks are not acceptance or evidence of a speedup.
 
-Next action: commit the coherent candidate, report its exact head for final delta
-review, and await coordinator authorization for early draft CI. Keep the local
-heavy slot free. After verified Shield main and slot availability, execute the
-baseline/candidate measurement and correctness plan above without weakening any
-existing integrity checks.
+### Candidate CI and explicit warm-cache controls
+
+Exact `392e036f88f258aec391abe1beb1584373e0bc82` passes all six CI checks.
+Linux run 36308646440 records 726 Rust tests across 54 suites, zero failures or
+ignores, all 50 table scenarios in 518.21 seconds and five genuine ReactionsV1
+cases in 30.79 seconds. Actual checkout is synthetic merge
+`f358c6d66850a2e2f3e320f8236fe76e73035f0e`; its complete tree and the literal
+candidate equal `48c784c2320b85e66847f6fa65ff10356e19bc03`.
+
+Windows run 36308646447 passes 728 Rust tests across 54 suites, zero failures or
+ignores, all 50 table scenarios in 423.80 seconds, 89 UI tests in 16 files, zero
+static errors/warnings and a 139-module build. Both Windows jobs checked out the
+literal candidate. Fresh release EXE/NSIS artifact 10928309000 is 231895305 bytes,
+SHA256 `de151e5fd9c0753aadd4ffea58b6797c645ace4e7918c8ad57a472b0da4107a9`;
+the upload log and artifact API agree. These are CI observations, not a controlled
+local speed comparison, canonical local result or final successor-head acceptance.
+
+Root's test review found that the two named installed-content controls initialize
+plain kernel campaigns, so a focused run need not warm the tactical cache first.
+The successor explicitly initializes the bundled cache before either control.
+All original file tampering, restore, failure and no-write assertions remain.
+This makes the planned after-warmup regression proof independent of test order;
+the new statements still require execution on the successor head.
+
+Next action: inspect and publish the warm-cache control delta for fresh CI. Keep
+the local heavy slot free until root releases it. After verified Shield main and
+slot availability, execute the baseline/candidate measurement and correctness plan
+above, canonical verification and final exact-head checks. Draft PR47 records
+current evidence. No performance gain or complete acceptance is claimed.
