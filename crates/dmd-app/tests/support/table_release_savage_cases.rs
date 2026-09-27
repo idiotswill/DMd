@@ -403,6 +403,41 @@ async fn off_turn_savage(f: &mut Fixture, url: &str, directory: &Path, first: &F
     );
     assert_eq!(marker(&after, f.actors[0]), Some(3));
 
+    // The Goblin's completed Walk retains continuity. Its real Dash resets that
+    // bookkeeping without touching the PC's already-spent opportunity Reaction.
+    Box::pin(accept(
+        f,
+        url,
+        directory,
+        "goblin-dash-settles-walk",
+        None,
+        action(TacticalAction::Dash),
+    ))
+    .await;
+    let dashed = Box::new(state(f).await);
+    assert!(
+        dashed
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .budget
+            .movement_progress
+            .is_none()
+    );
+    assert_eq!(
+        dashed
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent,
+        vec![f.actors[0]]
+    );
     Box::pin(accept(
         f,
         url,
