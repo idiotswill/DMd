@@ -1133,7 +1133,7 @@ fn validate_origins(
         for receipt in &history.completions {
             let accepted = |origin: &CommandMeta| {
                 commands.get(&origin.id).and_then(|event| match event {
-                    RecoveryEvent::Tactical(event) => Some(event),
+                    RecoveryEvent::Tactical(event) => Some(event.as_ref()),
                     RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
                     RecoveryEvent::Rules(_) => None,
                 })
