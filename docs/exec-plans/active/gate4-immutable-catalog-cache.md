@@ -1,13 +1,14 @@
 # Gate 4 — Shared immutable tactical catalog
 
-Status: all six candidate CI checks pass at `392e036`; controlled local measurement,
-canonical verification and verified-parent reconciliation remain pending. Root is
+Status: all six candidate CI checks pass at `faca063`; the controlled five-history
+ABBA comparison passes. Owned-Shield measurement, canonical verification, final
+successor checks and post-main proof remain pending. Root is
 the current sole writer after the implementation handoff. Original writer:
 `source_registry_review`. Branch:
 `codex/gate4-immutable-catalog-cache`, based on reviewed Shield candidate
 `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5`. Fetched main before branching was
 `f441adedcf490504b6f1e3db1a964c023c511e47`. The preserved prior branch
-`codex/gate4-shield-missile-app` remains at8537775. Draft PR:
+`codex/gate4-shield-missile-app` remains at `8537775`. Draft PR:
 <https://github.com/idiotswill/DMd/pull/47>.
 
 ## Objective and boundaries
@@ -25,12 +26,13 @@ AGENTS, the gate execution protocol, the active Shield plan and reaction umbrell
 remain binding. ADR028's execution/history boundary is unchanged because no command,
 state, event, source definition, serialization or executor semantics change.
 
-The sole local heavy slot belongs to the Magic Missile verification agent. This
-writer may edit, format and commit; no build, tests or benchmarks may start until
-the coordinator releases that slot. After exact-head review the coordinator may
-authorize early push/draft CI while local verification waits; local measurements
-are not a prerequisite to opening that draft. Do not push before that review.
-Reconcile the eventual verified PR45 main normally before final acceptance.
+Root owns the sole local heavy slot. The superseded uncached Magic Missile run
+was intentionally stopped with all four cases unfinished; its logs and candidate
+backups remain preserved, and it supplies no complete-case result. All current
+Magic Missile acceptance remains required in its separate slice. This cache's
+measurements and canonical verifier run serially with no other heavy local job.
+Reviewed development/CI publication is permitted while local verification runs;
+it does not accept the slice or waive any remaining check.
 
 ## Design before implementation
 
@@ -146,11 +148,73 @@ Root's test review found that the two named installed-content controls initializ
 plain kernel campaigns, so a focused run need not warm the tactical cache first.
 The successor explicitly initializes the bundled cache before either control.
 All original file tampering, restore, failure and no-write assertions remain.
-This makes the planned after-warmup regression proof independent of test order;
-the new statements still require execution on the successor head.
+This makes the planned after-warmup regression proof independent of test order.
+At that checkpoint, the new statements still required execution on the successor head.
 
-Next action: inspect and publish the warm-cache control delta for fresh CI. Keep
-the local heavy slot free until root releases it. After verified Shield main and
-slot availability, execute the baseline/candidate measurement and correctness plan
-above, canonical verification and final exact-head checks. Draft PR47 records
-current evidence. No performance gain or complete acceptance is claimed.
+### Current candidate, parent and controlled measurement
+
+Exact `faca063e7d84b2852371c05f93f040d53985bfbc` passes all six CI jobs.
+Linux run 36310097267 records 726 Rust tests across 54 suites, zero failures or
+ignores, all 50 table cases in 348.86 seconds, and five genuine ReactionsV1 cases
+in 21.08 seconds. Actual synthetic checkout
+`5c157b87841fe759c68d527a2a5b6090acc60b81` and the literal candidate share tree
+`fe71f3ce1c17deab9897d4ba6d0b0707657d3397`.
+
+Windows run 36310097275 records 728 native Rust tests across 54 suites, zero
+failures or ignores, all 50 table cases in 769.49 seconds, and five genuine
+histories in 42.56 seconds. Both jobs use literal faca. The 89 UI tests in 16 files,
+zero static errors/warnings, 139-module build and fresh EXE/NSIS pass. Artifact
+10928792549 is 231896387 bytes, SHA256
+`e63607c5d86634d66d8b620fef88210c35603379853f315b67085da62de6bdf4`;
+actual upload logs and artifact API agree. Both explicit warmed-content controls
+pass on Linux and native Windows. Root and independent exact-delta review are clear.
+
+Shield PR45 protected-squash merged as
+`a0b12d2d0144a744e3419c1ba69e2d7aac64fd79` after all six bfe checks passed.
+Fetched main and bfe share full tree `1954f41fa0f2fd7c2e61540f328ef8546e0bce0b`.
+This branch normally reconciles it in `8da8e3c6f250a6f166b652530b36af2f47a164ff`;
+the merge's entire tree equals faca, with no file change. Independent reconciliation
+review is clear. Literal Shield post-main runs 36311244326/36311244361 are still
+active at this checkpoint; do not infer their final result from source checks.
+
+The controlled local comparison uses separately rebuilt and preserved test
+binaries from baseline `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5` and candidate
+`faca063e7d84b2852371c05f93f040d53985bfbc`. Both use GNU Rust 1.98.1, the same
+unoptimized test profile with debug assertions and overflow checks, one Cargo job,
+incremental compilation disabled, default Windows stack, and identical
+`--test-threads=1 --nocapture` arguments. Compilation is excluded. Content,
+dependencies, measured tests/support and genuine fixture bytes are unchanged.
+The compiler's source paths, fresh build records, copied binary hashes and runtime
+content paths were independently audited; no working-directory confound was found.
+
+Five-history `legacy_reactions_v1_replay` ABBA wall times, in execution order:
+
+| Run | Source | Seconds | Result |
+| --- | --- | ---: | --- |
+| 1 | Baseline bfe | 304.34 | All five passed |
+| 2 | Cached faca | 88.62 | All five passed |
+| 3 | Cached faca | 89.75 | All five passed |
+| 4 | Baseline bfe | 304.52 | All five passed |
+
+Each process starts its own immutable cache. Mean elapsed time falls from 304.43
+to 89.18 seconds, a 70.70% reduction (3.41 times the throughput for this fixed test
+selection). This measures these local debug/SQLite/recovery workloads, including
+their identical cleanup and logging overhead. It is not packaged-runtime speed,
+general gameplay latency, or Gate13 hardware-performance acceptance.
+
+External evidence is under `tooling/cache-measurement-binaries-bfe-faca/` and
+`tooling/cache-measurement-reactions-bfe-faca/`: exact source metadata, build logs,
+copied binary SHA256 hashes, raw test logs, arguments, UTC starts and wall times.
+The test runner and build harness are `tooling/measure-catalog-cache.ps1` and
+`tooling/build-cache-measurement-binaries.ps1`. The owned-source Shield ABBA run
+uses the same binaries/constraints with its exact test name and is in progress;
+no result is claimed for it here.
+
+Next action: finish the serial owned-Shield comparison, then run canonical
+`./scripts/verify` on the reconciled source. Its full suite must include the warmed
+installed-content controls, unchanged catalog/profile/inventory/spell/attack checks
+and genuine histories. Publish this reviewed evidence checkpoint for final-head CI
+while those local checks run. Complete all six exact-head checks, independent final
+delta review, protected merge, fetched full-tree parity and literal post-main proof.
+Record the final source-qualified results in PR47 and archive this bounded plan in
+the next receiving branch after proof is complete. No complete acceptance is claimed.
