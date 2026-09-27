@@ -980,10 +980,11 @@ fn completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims() 
             "result mutation {mutation}"
         );
     }
-    // Explicit completed-combat snapshot, not a public EndCombat operation claim.
-    // A later inactive state must still validate the retained historical receipt.
-    f.state.rules.as_mut().unwrap().timing = None;
-    f.state
+    // The current executor cannot manufacture an inactive snapshot without its
+    // accepted completion. Keep that refusal separate from movement corruption.
+    let mut unauthenticated = f.state.clone();
+    unauthenticated.rules.as_mut().unwrap().timing = None;
+    unauthenticated
         .encounter
         .as_mut()
         .unwrap()
@@ -991,6 +992,25 @@ fn completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims() 
         .as_mut()
         .unwrap()
         .phase = TacticalPhase::Finished;
+    assert!(
+        validate_tactical_state(&unauthenticated)
+            .unwrap_err()
+            .to_string()
+            .contains("Finished encounter lacks authenticated completion history")
+    );
+    // Finish through the current authenticated route; the inactive state must
+    // still validate the original movement receipt rather than erase its proof.
+    f.run(
+        None,
+        TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "The completed movement remains historical after initiative ends.".into(),
+        },
+    );
+    f.run(None, TacticalAction::FinishEncounter);
+    assert_eq!(f.flow().last_movement, result);
+    assert_eq!(f.flow().phase, TacticalPhase::Finished);
+    assert!(f.state.rules.as_ref().unwrap().timing.is_none());
     validate_tactical_state(&f.state).unwrap();
     f.state
         .encounter

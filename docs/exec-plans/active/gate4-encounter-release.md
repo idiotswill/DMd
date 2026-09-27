@@ -1,8 +1,11 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
 Status: domain, authenticated application and desktop checkpoints independently
-reviewed; reviewed cache development dependency integrated. Compilation and runtime
-of this branch are unverified. Early draft CI publication is authorized.
+reviewed; reviewed cache development dependency integrated. Native draft CI at
+4f38c1d passes the original real release application cases and frontend, but finds
+an obsolete synthetic Finished fixture in a movement test. Local focused correction
+and the four additional application families are under verification; final exact-head
+acceptance remains pending. Published PR48 stays at 4f38c1d while its CI completes.
 Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
@@ -468,16 +471,16 @@ resume, exact retries and current/retired semantic forgeries. A separate test us
 the unchanged genuine flow 2 closed aftermath corpus for the narrowly approved
 closed upgrade and release, preserving its original response bytes and sessions.
 UI tests cover capability/privacy, required placements and uncertain finish retries
-after another encounter appears. None of these new tests has run. Formatting and
-whitespace checks pass; compilation, static frontend checking, tests and canonical
-verification remain pending. This source checkpoint is not final slice acceptance.
+after another encounter appears. At this initial source checkpoint the tests had
+not run; later source-qualified evidence follows below. This was not final slice
+acceptance.
 
 Root and an independent reviewer inspected the complete authenticated checkpoint
 `ffc36f89580ac2f2b3551887d7d32de5e0d8d787` and focused dagger correction
 `02715793fa365c3d9d56a9036072c31d241414c0`; both reviews are clear at source
 level. They cover closed host admission, historical replay, independent durable
 retries, atomic closed-scene staging, custody/origins, privacy and UI controls.
-Runtime and default-stack safety remain unverified.
+Runtime and default-stack safety were unverified at that source-review checkpoint.
 
 Root also reviewed the complete 0271579→c878f9c development integration. Its delta
 is the known 11-file cache source/test patch and seven evidence documents, with no
@@ -495,7 +498,29 @@ Windows job 108603592771 nevertheless passed 103 UI tests in 17 files, with zero
 static errors/warnings and a 140-module build before that compiler failure. This
 frontend result belongs to 4989568 only. The isolated root-reviewed correction
 `4f38c1d079c43fa12a9a58021e22dc4d0869b3e1` explicitly borrows the boxed
-Tactical event with `as_ref()` and is published for fresh CI. No local build ran.
+Tactical event with `as_ref()` and was published for fresh CI. No local build had run.
+
+Actual native Windows stable job 108604354546 at literal 4f38c1d compiled and passed
+MSRV/lint, 103 UI tests in 17 files, zero static diagnostics and a 140-module build.
+It passed all 55 table scenarios in 3012.53 seconds, including the original actual
+two-encounter release path, and the genuine closed flow 2 upgrade/finish case.
+It then failed `completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims`
+at `tactical_movement.rs:994`: that old isolated fixture manually fabricated current
+Finished with no authenticated completion history. The production refusal is the
+intended new invariant. Packaging did not run after the failure. Linux's runtime
+job was still executing when inspected; neither result is a final whole-head pass.
+
+The focused test correction concludes and finishes through actual rules commands,
+preserving all nine movement-proof corruption checks and the inactive movement
+proof assertion. It also explicitly verifies that the old unauthenticated current
+Finished fabrication rejects for its missing completion before taking the genuine
+route. The initial genuine-route correction passed 1/1 on the default GNU test
+stack (0.05 seconds after 2m06s compilation); the added explicit refusal assertion
+and broader movement/turn checks remain to run. No production guard was weakened.
+Root released the heavy slot after cache 619 canonical completion for focused local
+release verification with jobs 1, incremental 0 and RUST_MIN_STACK unset. The four
+new application families remain unrun at this checkpoint and are not in published
+4f38c1d.
 
 The next local test checkpoint authors the first additional real scenario above.
 It reuses source creation and the initial genuine critical-hit helper, purchases
