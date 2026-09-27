@@ -558,3 +558,162 @@ fn missiles_retired_shield_cast_ordinal_remains_reserved_against_other_proofs_an
         assert!(error.contains(expected), "{error}");
     }
 }
+
+#[test]
+fn missiles_two_source_mages_resolve_in_controller_order_for_both_intent_arrivals() {
+    for reverse_arrival in [false, true] {
+        let mut f = Fixture::new();
+        hit_shield::source_actor(&mut f, 0, "night-hag", CreatureSize::Medium);
+        hit_shield::source_actor(&mut f, 1, "mage", CreatureSize::Medium);
+        // Extend the isolated initial rules image with a third genuine source
+        // profile. This is deliberately not claimed as table creation evidence.
+        let third = EntityId::new();
+        let player = PlayerId::new();
+        let mut human = f.state.players[&f.players[1]].clone();
+        human.id = player;
+        f.state.players.insert(player, human);
+        let mut world = f.state.entities[&f.actors[1]].clone();
+        world.id = third;
+        f.state.entities.insert(third, world);
+        let scene = f.state.encounter.as_ref().unwrap().scene_id;
+        f.state
+            .scenes
+            .get_mut(&scene)
+            .unwrap()
+            .presences
+            .push(ScenePresence {
+                entity_id: third,
+                role: PresenceRole::Participant,
+            });
+        let encounter = f.state.encounter.as_mut().unwrap();
+        let mut participant = encounter.participants[1].clone();
+        participant.entity_id = third;
+        participant.position.x = 70;
+        participant.public_label = "Second source mage".into();
+        encounter.participants.push(participant);
+        hit_shield::source_actor_at(&mut f, third, player, 2, "mage", CreatureSize::Medium);
+        let actors = [f.actors[0], f.actors[1], third];
+        let players = [f.players[0], f.players[1], player];
+        f.run(
+            None,
+            TacticalAction::Begin {
+                execution: TacticalExecutionVersion::ShieldMissileV1,
+                combatants: actors
+                    .iter()
+                    .map(|actor| TacticalCombatant {
+                        actor: *actor,
+                        source: TacticalSource::Creature {
+                            definition_id: f
+                                .rules()
+                                .tactical_creatures
+                                .as_ref()
+                                .unwrap()
+                                .profile(*actor)
+                                .unwrap()
+                                .source
+                                .definition_id
+                                .clone(),
+                        },
+                        surprised: false,
+                    })
+                    .collect(),
+                groups: actors
+                    .iter()
+                    .map(|actor| InitiativeGroup {
+                        actors: vec![*actor],
+                        request_id: RollRequestId::new(),
+                    })
+                    .collect(),
+            },
+        );
+        for (index, face) in [(0, 18), (1, 3), (2, 2)] {
+            let meta = CommandMeta {
+                issuer: CommandIssuer::Player(players[index]),
+                actor: Some(AgentRef::Entity(actors[index])),
+                ..f.meta(None)
+            };
+            let result = f.raw(&[face]);
+            f.run_meta(&meta, &TacticalAction::SubmitRoll { result });
+        }
+        cast(
+            &mut f,
+            vec![actors[1], third, actors[1], third, actors[1], third],
+        );
+        let window = window(&f);
+        f.run(
+            Some(0),
+            TacticalAction::OrderMissileResponses {
+                window,
+                instruction: TacticalReactionOrdering {
+                    ranked: vec![third, actors[1]],
+                    unlisted: ReactionUnlistedOrder::AfterForward,
+                },
+            },
+        );
+        for index in if reverse_arrival { [2, 1] } else { [1, 2] } {
+            let meta = CommandMeta {
+                issuer: CommandIssuer::Player(players[index]),
+                actor: Some(AgentRef::Entity(actors[index])),
+                ..f.meta(None)
+            };
+            f.run_meta(
+                &meta,
+                &TacticalAction::RespondToMissile {
+                    window,
+                    actor: actors[index],
+                    accept: true,
+                },
+            );
+        }
+        assert_eq!(
+            missile(&f).stage,
+            TacticalMissileStage::Selected { respondent: 1 }
+        );
+        for index in [2, 1] {
+            let choice = shield_choices(&f.state, actors[index]).unwrap().remove(0);
+            let meta = CommandMeta {
+                issuer: CommandIssuer::Player(players[index]),
+                actor: Some(AgentRef::Entity(actors[index])),
+                ..f.meta(None)
+            };
+            f.run_meta(&meta, &TacticalAction::CastMissileShield { window, choice });
+            if index == 2 {
+                assert_eq!(
+                    missile(&f).stage,
+                    TacticalMissileStage::Selected { respondent: 0 }
+                );
+            }
+        }
+        let proof0 = missile(&f).respondents[0]
+            .completed_shield
+            .as_ref()
+            .unwrap();
+        let proof1 = missile(&f).respondents[1]
+            .completed_shield
+            .as_ref()
+            .unwrap();
+        assert_ne!(proof0.cast.plan.occurrence, proof1.cast.plan.occurrence);
+        assert!(
+            proof1.cast.plan.origin.expected_event_sequence
+                < proof0.cast.plan.origin.expected_event_sequence
+        );
+        amounts(&mut f, &[4; 6]);
+        drain(&mut f, reverse_arrival);
+        for actor in [actors[1], third] {
+            assert_eq!(f.rules().entities[&actor].hp, 81);
+            let spent: u8 = f
+                .rules()
+                .tactical_creatures
+                .as_ref()
+                .unwrap()
+                .runtime(actor)
+                .unwrap()
+                .limited_uses
+                .iter()
+                .filter(|use_| use_.feature_id == "protective-magic")
+                .map(|use_| use_.spent)
+                .sum();
+            assert_eq!(spent, 1);
+        }
+    }
+}

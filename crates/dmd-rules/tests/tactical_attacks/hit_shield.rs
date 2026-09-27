@@ -8,6 +8,17 @@ use dmd_rules::tactical_defenses::effective_armor_class;
 /// All response, cost, roll, turn and movement changes below are real commands.
 pub(super) fn source_actor(f: &mut Fixture, index: usize, definition: &str, size: CreatureSize) {
     let actor = f.actors[index];
+    source_actor_at(f, actor, f.players[index], index, definition, size);
+}
+
+pub(super) fn source_actor_at(
+    f: &mut Fixture,
+    actor: EntityId,
+    player: PlayerId,
+    index: usize,
+    definition: &str,
+    size: CreatureSize,
+) {
     // The generic weapon fixture labels its attacker's loot as borrowed from
     // actor 1. This source-built initial image gives that loot to its current
     // carrier before replacing actor 1; source creation must have no old gear.
@@ -37,7 +48,7 @@ pub(super) fn source_actor(f: &mut Fixture, index: usize, definition: &str, size
                 vec![]
             },
             hit_points: CreatureHitPointChoice::Average,
-            controller: CreatureController::Player(f.players[index]),
+            controller: CreatureController::Player(player),
             in_lair: false,
         },
     )

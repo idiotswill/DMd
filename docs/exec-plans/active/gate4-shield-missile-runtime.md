@@ -437,6 +437,18 @@ rules case constructs a real source Mage Shield completion first, then performs
 explicitly labeled structural proof/work collision corruptions and requires the
 namespace-specific refusal. It is authored and formatted only, not run.
 
+## Multiple source respondents
+
+An eleventh authored rules case extends the explicitly isolated initial image with
+a third genuine source profile: one Player-owned Night Hag and two independently
+owned Mages. It accepts both private intents in both arrival orders, requests the
+reverse respondent order explicitly, casts both real Shields, verifies distinct
+reserved source ordinals and chronological response execution, retains all six
+faces and completes both impact orders without damaging either protected Mage.
+The existing source-builder helper now accepts an explicit actor/controller/index
+for this third initial profile. No actual app creation, privacy, recovery or runtime
+pass is claimed by this additional unrun reducer/replay case.
+
 ## Development checkpoint and exact next steps
 
 The branch is created from the stated development base. This plan and ADR028 record
