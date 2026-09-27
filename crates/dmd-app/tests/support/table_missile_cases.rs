@@ -166,13 +166,22 @@ async fn cold_step(
     };
     assert_eq!(a.outcome, b.outcome);
     let mirrored = Box::new(export_campaign(&pool, f.campaign).await.unwrap());
-    assert_eq!(
-        mirrored.current_state,
+    let mut primary_state = Box::new(
         export_campaign(&f.pool, f.campaign)
             .await
             .unwrap()
-            .current_state
+            .current_state,
     );
+    // Independent restores may serialize HashMap object keys in a different
+    // order. Compare every JSON value (including unknown fields and array order)
+    // before normalizing only that encoding difference for the row comparison.
+    assert_eq!(
+        serde_json::from_str::<serde_json::Value>(&mirrored.current_state.state_json).unwrap(),
+        serde_json::from_str::<serde_json::Value>(&primary_state.state_json).unwrap()
+    );
+    primary_state.state_json = mirrored.current_state.state_json.clone();
+    assert_eq!(*primary_state, mirrored.current_state);
+    drop(primary_state);
     assert_eq!(
         Box::pin(mirror.submit_presented_table(request.clone()))
             .await
