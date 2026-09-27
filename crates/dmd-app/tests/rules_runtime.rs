@@ -799,6 +799,8 @@ async fn supported_manifest_is_not_sufficient_for_an_unsupported_kernel_version(
 
 #[tokio::test]
 async fn rehashed_or_undeclared_tactical_catalog_cannot_authorize_campaign_mutation() {
+    // A previously initialized bundled cache must not replace installed-byte checks.
+    let _ = dmd_rules::tactical_definitions::bundled_tactical_definitions().unwrap();
     for undeclared in [false, true] {
         let f = Fixture::new();
         let (pool, runtime) = f.runtime().await;
@@ -1769,6 +1771,8 @@ async fn replay_adapter_rejects_tampered_envelopes_and_outcomes_without_changing
 
 #[tokio::test]
 async fn pending_rules_export_restores_and_content_changes_fail_before_mutation() {
+    // Exercise file changes after the immutable runtime catalog is already cached.
+    let _ = dmd_rules::tactical_definitions::bundled_tactical_definitions().unwrap();
     let f = Fixture::new();
     let (pool, runtime) = f.runtime().await;
     f.initialize(&runtime).await;
