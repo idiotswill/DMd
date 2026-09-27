@@ -342,8 +342,8 @@ The existing release case already authors Mage Armor, Second Wind, thrown-dagger
 custody, reduced attendance, physical second initiative and source movement. Its
 dagger is purchased in real character creation by the focused follow-up
 `02715793fa365c3d9d56a9036072c31d241414c0`. Do not substitute that case for
-the following additional witnesses. The first is now authored but unrun; the other
-three remain planned:
+the following additional witnesses. The first two are now authored but unrun; the
+other two remain planned:
 
 1. **Savage across the encounter boundary.** Reuse
    `table_savage_cases::prepare` and its actual `SubmitSavageAttacker` construction,
@@ -504,7 +504,10 @@ one dagger, reports two physical ones for the first Savage damage, and retains
 the actual Goblin's 10→5 HP change. The first receipt ends at global turn 2; the
 same Goblin starts the next encounter at turn 3. A real movement crossing offers
 the PC's opportunity attack before its own Start, with physical Savage damage
-leaving the Goblin at 1 HP. The exact Reaction blocker is asserted after explicit
+leaving the Goblin at 1 HP. Its actual host Dash using the ordinary speed grant
+settles retained walking continuity while leaving the PC Reaction spent. Independent
+review found the missing continuity step; the test now checks both facts rather
+than weakening the exact blocker assertion. The Reaction blocker is asserted after explicit
 conclusion and with no central work remaining. Only the real next Start at turn 4
 clears that Reaction, retaining the prior Savage marker until the next actual
 Savage roll. Its lethal melee result is resolved by the normal knockout choice.
@@ -512,6 +515,28 @@ Independent file restore/resume surrounds material boundaries; full-store refusa
 old receipt retry bytes and retained raw roll history are checked. This is authored
 test source, not a passing runtime result. Published CI and this local checkpoint
 remain separate until root authorizes the next source publication.
+
+The following local custody checkpoint also authors a genuine file-SQLite path.
+The source Goblin doffs its actual shield, waits for its next real turn, and fires
+its source shortbow with a physical natural 1, reducing the original arrow stack
+from 20 to 19 while leaving the bow held. A purchased PC dagger's real critical
+hit and two physical fours reach the ordinary knockout choice against the source
+10 HP. Choosing knockout leaves 1 HP and drops the bow at its actual old position,
+with the accepted knockout command as the original cause. Release preserves all
+items, mechanics, knockout/rest records and clock; omission of that living recovery
+dependency from replacement is refused with complete store equality.
+
+The second real Begin interrupts the source's rest through the existing rule,
+retains the original knockout cause, and requests its actual disadvantaged
+initiative dice. After physical initiative, a real PC Medicine action and physical
+20 end the unconscious condition at 1 HP. The source remains prone until its own
+accepted StandProne. An attempted attack with the retired bow refuses without
+writes; the awake source instead draws its still-owned scimitar and makes an actual
+attack. At every material boundary the original arrow stack remains 19 and the
+same bow remains at its old scene position, absent from the new map and loadout.
+Independent file restore/cold resume, original bow-response retry bytes and a
+changed-body whole-store refusal are included. This test/helper-only checkpoint
+has not compiled or run; no production change or runtime acceptance is claimed.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
