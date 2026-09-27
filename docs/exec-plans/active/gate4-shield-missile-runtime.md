@@ -8,7 +8,8 @@ desktop checks passed99 UI tests in17 files, zero Svelte errors/warnings and a
 Both original flow3 capture scenarios and the source-equivalent four-file baseline
 test passed; all four exact exports remain unchanged. The four independent flow3
 continuations and current combined-head ReactionsV1 corpus remain unrun. The reviewed
-Shield/aftermath candidate is development-integrated; verified PR45 main reconciliation,
+Shield/aftermath and immutable-catalog cache candidates are development-integrated;
+verified PR45 and PR47 main reconciliation,
 complete runtime/canonical/CI evidence and final review still block acceptance.
 Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
@@ -500,7 +501,8 @@ rewritten by this integration.
 
 Next: independently review this combined checkpoint, then compile/fix the focused
 rules/app/legacy corpus and desktop checks under root's serialized heavy slot.
-After PR45's verified merge, fetch and normally integrate its actual main, reconcile
+After PR45's verified merge and then PR47's verified cache merge, fetch and normally
+integrate actual main, reconcile
 any additional fixes, and obtain focused/canonical/CI/review/packaged evidence for
 that exact combined head. Earlier candidate checks never substitute for this final
 verification. The full acceptance matrix remains open.
@@ -569,6 +571,27 @@ successor test assertions and all five genuine flow3 cases (baseline plus four
 continuations) and all five ReactionsV1 cases. Root reviews each correction before
 push and coordinates verified PR45 main reconciliation. Canonical verification and
 protected merge remain pending; no Gate4 completion is claimed.
+
+### Reviewed immutable-catalog cache development integration
+
+Root authorized a normal development merge of reviewed cache candidate
+`392e036f88f258aec391abe1beb1584373e0bc82` while the original0f app binary continued.
+The merge had no textual conflicts; its only overlapping source auto-merge was
+`crates/dmd-rules/src/tactical.rs`. It shares the same embedded tactical definitions
+through a OnceLock-backed accessor and adjusts borrowing at existing consumers.
+Definitions, source bytes, installed-content validation, fingerprints, historical
+execution semantics and fixture JSON remain unchanged. The two cache-specific tests
+and cache plan/evidence are retained. No local second heavy command ran during the
+active0f app test, and that test cannot demonstrate this cache integration.
+
+The cache candidate's separate passing evidence belongs to that candidate only:
+root reports all four Linux jobs,726 Rust cases in54 suites with zero failures or
+ignores, all50 table cases in518.21s and five genuine ReactionsV1 cases in30.79s;
+native runtime passed while packaging was still underway at integration. This is
+not final combined-head verification. Merge order is PR45, then PR47, then PR46.
+Fetch and normally reconcile verified PR47 main before missile acceptance, including
+any intervening correction, and verify the resulting exact combined head. The
+current0f run remains explicitly attributed to its original uncached source.
 
 The branch is created from the stated development base. This plan and ADR028 record
 the approved per-dart/all-faces/normal-child-drain interpretation. The initial commit
@@ -655,7 +678,7 @@ semantics cannot be waived. Production runtime remains unchanged in this test st
    - `./scripts/verify-fast`, then `./scripts/verify` from repository root.
    - In `apps/desktop`: `npm run check`, `npm test`, `npm run build`;
      run the repository's native packaged path and actual restart acceptance.
-8. Before final acceptance, fetch verified PR45 main and any intervening PR44/main
+8. Before final acceptance, fetch verified PR45 and PR47 main and any intervening PR44/main
    changes, reconcile them and rerun the required checks on the resulting exact head.
    Independent reviewer inspects the complete exact head, old/new queue dispatch,
    authority/privacy and all recovery tests. Fix concrete failures on new heads;

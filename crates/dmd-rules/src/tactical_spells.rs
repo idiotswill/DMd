@@ -306,9 +306,8 @@ pub fn apply_spell_expenditure(
     Ok(next)
 }
 
-fn definitions() -> Result<TacticalDefinitions, RulesError> {
-    TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON)
-        .map_err(|e| RulesError::Incompatible(e.to_string()))
+fn definitions() -> Result<&'static TacticalDefinitions, RulesError> {
+    bundled_tactical_definitions().map_err(|e| RulesError::Incompatible(e.to_string()))
 }
 
 fn fingerprint(value: &impl Serialize) -> Result<String, RulesError> {
@@ -477,7 +476,7 @@ fn plan_spell_cast_authorized(
                 Some(attack),
                 Some((8 + attack) as u16),
                 expenditure,
-                source_pin(&defs, spell, None, None)?,
+                source_pin(defs, spell, None, None)?,
                 Some(entity.level),
             )
         }
@@ -534,7 +533,7 @@ fn plan_spell_cast_authorized(
                 *attack_bonus,
                 save_dc.map(u16::from),
                 expenditure,
-                source_pin(&defs, spell, Some(creature), Some(feature))?,
+                source_pin(defs, spell, Some(creature), Some(feature))?,
                 None,
             )
         }
@@ -564,7 +563,7 @@ fn plan_spell_cast_authorized(
             "Ready requires an action spell and a bounded perceivable trigger",
         ));
     }
-    let components = source_components(&defs, spell, &program.source);
+    let components = source_components(defs, spell, &program.source);
     if !components.material && choice.material != SpellMaterialChoice::None {
         return Err(invalid("unneeded material component selection"));
     }
@@ -646,7 +645,7 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
                 }
                 _ => return Err(invalid("retained prepared payment differs")),
             };
-            (source_pin(&defs, spell, None, None)?, payment)
+            (source_pin(defs, spell, None, None)?, payment)
         }
         SpellGrantChoice::CreatureFeature { feature_id } => {
             let creature = program
@@ -684,7 +683,7 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
                 return Err(invalid("retained source creature numbers differ"));
             }
             (
-                source_pin(&defs, spell, Some(creature), Some(feature))?,
+                source_pin(defs, spell, Some(creature), Some(feature))?,
                 grant
                     .uses_per_long_rest
                     .map_or(SpellExpenditure::None, |maximum| {
@@ -736,7 +735,7 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
         _ => return Err(invalid("retained Ready choice is invalid")),
     };
     if plan.cost != cost
-        || plan.components != source_components(&defs, spell, &program.source)
+        || plan.components != source_components(defs, spell, &program.source)
         || (!plan.components.material && plan.choice.material != SpellMaterialChoice::None)
         || plan.concentration_group
             != (program.concentration || ready)

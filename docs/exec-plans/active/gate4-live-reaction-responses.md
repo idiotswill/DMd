@@ -267,12 +267,18 @@ complete-tree parity, and all six post-main checks36188457488/36188457455 pass
 captured JSON exports remain unchanged. This umbrella remains active because
 compatibility acceptance does not close live source reactions.
 
-Current next action: source-control PR43 is merged as e813e3a with full-tree parity
-to a119d7f after canonical/all-six-check acceptance; its post-main checks are pending.
-Shield PR45 has reconciled that verified main without tree changes. Its14 focused
-rules cases and84UI tests pass; full production/integration review is clear.
-Finish its registered actual player-source SQLite and full canonical/final-head
-verification, then merge the bounded hit slice.
-The aftermath writer owns PR44. Local heavy verification remains serialized.
+Current next action: source-control PR43 and retained-aftermath PR44 are merged
+as e813e3a and f441aded with full-tree parity and all six literal post-main checks.
+Shield PR45 normally reconciles both. Its exact74c2cab canonical verification now
+passes723 GNU Rust tests/54suites/50table, including the actual owned Shield and
+all aftermath cases, all121 attack cases and five genuine ReactionsV1 corpora.
+Independent full production/integration review is clear. Finish final-head CI,
+fresh packaging, protected merge/tree parity and post-main proof for the bounded
+hit slice; the detailed Shield plan records exact evidence and pending checks.
+The separate Magic Missile development branch integrates the reviewed candidate
+and real flow3 capture baseline. Its all-faces/per-dart executor, multiple source
+respondents and app/UI recovery scenarios remain unverified development, and
+must reconcile the eventual verified PR45 main before acceptance. Local heavy
+verification remains serialized. No current hit evidence proves the missile slice.
 Magic Missile targeting/simultaneity, Counterspell and all held/Ready release
 acceptance above remain mandatory Gate4 work. No gate pause or scope waiver.
