@@ -185,7 +185,7 @@ async fn prepare(f: &mut Fixture, knockout: bool) {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldHitV1,
+            execution: TacticalExecutionVersion::ShieldMissileV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: f.actors[0],

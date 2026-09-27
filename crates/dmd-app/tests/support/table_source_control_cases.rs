@@ -396,7 +396,7 @@ async fn reject_nonprivileged_source_attendance_probe(f: &Fixture, mage: EntityI
         },
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: TacticalExecutionVersion::ShieldHitV1,
+                execution: TacticalExecutionVersion::ShieldMissileV1,
                 combatants: vec![TacticalCombatant {
                     actor: mage,
                     source: TacticalSource::Creature {
@@ -499,7 +499,7 @@ async fn prepare_owned_turn(f: &mut Fixture, mage: EntityId) -> TableTransportRe
     .await;
     let begin = TableAction::Tactical {
         action: TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldHitV1,
+            execution: TacticalExecutionVersion::ShieldMissileV1,
             combatants: vec![TacticalCombatant {
                 actor: mage,
                 source: TacticalSource::Creature {

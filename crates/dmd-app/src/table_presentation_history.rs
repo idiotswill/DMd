@@ -85,6 +85,35 @@ fn capabilities(
             );
         }
     }
+    if let Some(missile) = raw.tactical.as_ref().and_then(|t| t.missile.as_deref()) {
+        let mut add = |key: TacticalWorkKey, role| {
+            result.push(ProjectionCapability::MissileResponse {
+                origin: key.resolution,
+                occurrence: key.occurrence,
+                role,
+            })
+        };
+        if let Some(order) = &missile.order {
+            add(order.key, ProjectionMissileRole::Order);
+        }
+        if let Some(key) = missile.delegate {
+            add(key, ProjectionMissileRole::Delegate);
+        }
+        for response in &missile.responses {
+            add(
+                response.key,
+                if response.selected {
+                    ProjectionMissileRole::Selected {
+                        actor: response.actor,
+                    }
+                } else {
+                    ProjectionMissileRole::Intent {
+                        actor: response.actor,
+                    }
+                },
+            );
+        }
+    }
     Ok(result)
 }
 fn digest(raw: TableView, state: &CampaignState) -> Result<String, String> {

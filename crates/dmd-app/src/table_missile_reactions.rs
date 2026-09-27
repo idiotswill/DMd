@@ -1,29 +1,13 @@
-//! Private hit decisions never project the eligibility or intent of another owner.
+//! One private acknowledgment per committed target, with no competitor summary.
 use crate::*;
 use dmd_domain::*;
 use std::collections::HashSet;
-
-pub(super) fn player_controlled(state: &CampaignState, actor: EntityId) -> bool {
-    state.characters.values().any(|character| {
-        character.entity_id == actor
-            && character.controlling_player_id.is_some()
-            && matches!(
-                character.status,
-                CharacterStatus::Active | CharacterStatus::Dead
-            )
-    }) || state
-        .rules
-        .as_ref()
-        .and_then(|rules| rules.tactical_creatures.as_ref())
-        .and_then(|creatures| creatures.runtime(actor))
-        .is_some_and(|runtime| matches!(runtime.controller, CreatureController::Player(_)))
-}
 
 pub(super) fn view(
     state: &CampaignState,
     own: &HashSet<EntityId>,
     host: bool,
-) -> Result<Option<Box<TableHitView>>, String> {
+) -> Result<Option<Box<TableMissileView>>, String> {
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -31,43 +15,47 @@ pub(super) fn view(
         return Ok(None);
     };
     if !TacticalExecutionVersion::from_flow_version(flow.version)
-        .is_some_and(TacticalExecutionVersion::supports_hit_shield)
+        .is_some_and(TacticalExecutionVersion::supports_missile_shield)
     {
         return Ok(None);
     }
     let Some(resolution) = &flow.resolution else {
         return Ok(None);
     };
-    let Some(hit) = &resolution.hit_review else {
+    let mut waiting = resolution.missiles.iter().filter(|missile| {
+        matches!(
+            missile.stage,
+            TacticalMissileStage::Collecting | TacticalMissileStage::Selected { .. }
+        )
+    });
+    let Some(missile) = waiting.next() else {
         return Ok(None);
     };
-    if !matches!(
-        hit.stage,
-        TacticalHitReviewStage::Collecting | TacticalHitReviewStage::Selected
-    ) {
+    if waiting.next().is_some() {
+        return Err("Missile responses have more than one current window.".into());
+    }
+    if !host
+        && !own.contains(&resolution.turn_actor)
+        && !missile
+            .respondents
+            .iter()
+            .any(|target| own.contains(&target.response.actor))
+    {
         return Ok(None);
     }
-    let target = hit
-        .respondent
-        .as_ref()
-        .ok_or("Hit response lacks its target.")?
-        .actor;
-    let controlled = |actor| own.contains(&actor) || (host && !player_controlled(state, actor));
-    // Every target acknowledges collection. This waiting surface never reflects
-    // whether an eligible Shield exists or whether a private intent was accepted.
-    if !host && !own.contains(&resolution.turn_actor) && !own.contains(&target) {
-        return Ok(None);
-    }
+    let controlled = |actor| {
+        own.contains(&actor) || (host && !super::hit_reactions::player_controlled(state, actor))
+    };
     let key = TacticalWorkKey {
         resolution: resolution.origin.id,
-        occurrence: hit.work.occurrence,
+        occurrence: missile.work.occurrence,
     };
-    let may_order = if hit.delegated_by.is_some() {
+    let may_order = if missile.delegated_by.is_some() {
         host
     } else {
         controlled(resolution.turn_actor)
     };
-    let order = if hit.order.is_none() && may_order {
+    let order = if missile.order.is_none() && may_order {
         let observer = (!host)
             .then(|| {
                 dmd_rules::spatial::project_actor_view(encounter, state, resolution.turn_actor)
@@ -78,7 +66,7 @@ pub(super) fn view(
             .rules
             .as_ref()
             .and_then(|rules| rules.timing.as_ref())
-            .ok_or("Hit response has no initiative.")?
+            .ok_or("Missile response has no initiative.")?
             .order
             .iter()
             .filter_map(|entry| {
@@ -116,29 +104,37 @@ pub(super) fn view(
     } else {
         None
     };
-    let delegate =
-        (hit.order.is_none() && hit.delegated_by.is_none() && controlled(resolution.turn_actor))
-            .then_some(key);
-    let response = if controlled(target)
-        && (hit.stage == TacticalHitReviewStage::Selected
-            || hit
-                .respondent
-                .as_ref()
-                .is_some_and(|target| target.intent.is_none()))
-    {
-        Some(TableHitResponse {
-            key,
-            actor: target,
-            selected: hit.stage == TacticalHitReviewStage::Selected,
-            shield: dmd_rules::tactical::shield_choices(state, target)
-                .map_err(|error| error.to_string())?,
+    let delegate = (missile.order.is_none()
+        && missile.delegated_by.is_none()
+        && controlled(resolution.turn_actor))
+    .then_some(key);
+    let responses = missile
+        .respondents
+        .iter()
+        .enumerate()
+        .filter_map(|(index, target)| {
+            let selected = matches!(missile.stage, TacticalMissileStage::Selected { respondent }
+            if usize::from(respondent) == index);
+            let offered = missile.stage == TacticalMissileStage::Collecting
+                && target.response.intent.is_none();
+            (controlled(target.response.actor) && (selected || offered))
+                .then_some((target, selected))
         })
-    } else {
-        None
-    };
-    Ok(Some(Box::new(TableHitView {
+        .map(|(target, selected)| {
+            Ok(TableHitResponse {
+                key,
+                actor: target.response.actor,
+                selected,
+                shield: dmd_rules::tactical::shield_choices(state, target.response.actor)
+                    .map_err(|error| error.to_string())?,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    // Retain a uniform waiting surface for owners/turn controller while others
+    // decide. No stage, outstanding count, accepted set or foreign actor is sent.
+    Ok(Some(Box::new(TableMissileView {
         order,
         delegate,
-        response,
+        responses,
     })))
 }

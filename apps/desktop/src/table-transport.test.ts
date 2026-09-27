@@ -6,6 +6,22 @@ const context:RequestContext={version:1,command_id:'same-command',campaign_id:'c
 beforeEach(()=>{vi.mocked(invoke).mockReset();localStorage.clear();});
 
 describe('durable opaque desktop transport',()=>{
+  it.each(['Respond','Cast','Order','Delegate','Decline'] as const)('retries the exact source-owned missile %s envelope after an uncertain acknowledgement',async(kind)=>{
+    const choice={actor:'mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'} as const;
+    const decision=kind==='Respond'?{Respond:{accept:true}}:kind==='Cast'?{Cast:{choice}}:kind==='Order'?{Order:{instruction:{ranked:['mage'],unlisted:'AfterReverse' as const}}}:kind;
+    const action={Tactical:{action:{MissileResponse:{handle:'original-missile-role',decision}}}};
+    const source={...context,version:2 as const,channel:{SourceCreature:{player_id:'player',actor:'mage'}}};
+    const saved:UnconfirmedRequest={kind:'action',request:{...source,action}};
+    saveRequest(saved);
+    vi.mocked(invoke).mockRejectedValueOnce(new Error('lost acknowledgement')).mockResolvedValueOnce({Accepted:{command_id:source.command_id,revision:'accepted',outcome:{message:'Recorded.'}}});
+    await expect(tableApi.action(saved.request)).rejects.toThrow('lost acknowledgement');
+    const retry=loadRequest();if(retry?.kind!=='action')throw new Error('missing saved action');
+    expect(retry).toEqual(saved);
+    await tableApi.action(retry.request);
+    expect(vi.mocked(invoke).mock.calls[0]).toEqual(vi.mocked(invoke).mock.calls[1]);
+    expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...source,input:{MissileResponse:{handle:'original-missile-role',decision}}}});
+    expect(JSON.stringify(vi.mocked(invoke).mock.calls)).not.toContain('occurrence');
+  });
   it('retries a selected Shield with the original opaque capability and real source choice',async()=>{
     const choice={actor:'mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'} as const;
     const action={Tactical:{action:{HitResponse:{handle:'original-selected-handle',decision:{Cast:{choice}}}}}};

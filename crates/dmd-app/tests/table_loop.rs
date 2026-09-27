@@ -23,6 +23,8 @@ mod table_hit_cases;
 mod table_hit_driver;
 #[path = "support/table_medicine_cases.rs"]
 mod table_medicine_cases;
+#[path = "support/table_missile_cases.rs"]
+mod table_missile_cases;
 #[path = "support/table_night_hag_cases.rs"]
 mod table_night_hag_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
