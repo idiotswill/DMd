@@ -6,8 +6,8 @@ five-case historical suites and 99 desktop tests. Canonical verification of the
 final integrated head, actual packaged restart, final review/checks and protected
 merge/post-main proof remain required. The earlier uncached `0f43823` run was
 intentionally stopped with all four cases unfinished; it is not passing evidence.
-PR45's literal post-main checks pass. PR47 is merged with complete fetched tree
-parity; its separate literal post-main checks are running. Both mains are normally
+PR45 and PR47 pass all six separate literal post-main checks and fresh packaging,
+with complete fetched tree parity. Both mains are normally
 reconciled here without changing production source from ffc3.
 Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
@@ -63,7 +63,15 @@ historical implementation record below; their original attempts remain recorded.
   strict lint and guards. Protected squash main is
   `046109cdc849c16100c42588e771f8abe710c787`, whose complete fetched tree equals619
   (`cdeae1df5a0f82532cbf36ab5347cc4fd61150b4`). Literal post-main runs
-  36317294013/36317293934 remain pending, independent of source passes.
+  36317294013/36317293934 separately pass all six jobs. Actual Linux job
+  108614304572 records 726 Rust tests/54 suites, all 50 table cases in 355.31s and
+  five histories in 23.39s. Actual native job 108614304307 records 728/54, all 50
+  table cases in 757.24s and five histories in 48.45s. Both have zero failures or
+  ignores; both warmed-content controls pass. Native UI is 89 tests/16 files,
+  zero static errors/warnings and 139 modules. Fresh EXE/NSIS artifact 10931129810
+  is 231902908 bytes, SHA256
+  `997630a8def1e47d2413de8f29464628db3230007d54237d9d9ec79e18df79ae`;
+  actual upload and independently read artifact API agree on literal main.
 - Normal merge `678842ade338815ed4998db60c6e47502b1b54a7` reconciles619 first:
   exactly four cache-warmup test lines and cache-plan evidence change from ffc3.
   Normal merge `dcd30ed7147d4f60338cb2fd8af8afe817b23f17` then reconciles literal046
@@ -72,12 +80,27 @@ historical implementation record below; their original attempts remain recorded.
   genuine captures remain byte-identical to ffc3; full final-head checks remain
   mandatory despite that parity.
 
-Next: complete cache post-main proof and packaged missile/Shield restart; record
-and archive the completed Shield/cache prerequisite plans, retaining this plan and
-its integrated app subplan until final acceptance. Independently review the complete
+The bounded [Shield plan](../completed/gate4-shield-hit-runtime.md), its
+[rules support](../completed/gate4-shield-hit-rules-tests.md) and
+[application support](../completed/gate4-shield-hit-app-drivers.md), and the
+[cache plan](../completed/gate4-immutable-catalog-cache.md) are archived with their
+separate final-source and literal-main proof. Their historical checkpoints remain
+source-qualified. This plan and its integrated app subplan remain active.
+
+Next: complete packaged missile/Shield continuation and record its restart evidence.
+Independently review the complete
 final diff, run canonical verification when the shared slot is released, and require
 all six final-head jobs before protected merge and literal main proof. Counterspell,
 Ready, off-turn producers and encounter release remain active Gate4 obligations.
+
+Remaining UI polish observed during real packaged Gate 4 play: Character Sheet
+Equipment/features still contains Gate 3 wording that says weapon attack/damage
+controls and mastery/full weapon properties are unavailable, despite the implemented
+bounded Gate 4 paths. Update that wording to describe the actual supported subset.
+The source-channel map also lists observer-known Mage/Rook/Hag alongside controlled
+You/Rook/Hag entries, producing duplicate visible labels. These are recorded UI
+cleanup obligations, not demonstrated mechanics failures, and are not fixed or
+silently waived by this Magic Missile slice.
 
 ## Objective, product traceability and boundaries
 

@@ -1,11 +1,14 @@
 # Gate 4 — Explicit application hit-response test drivers
 
-Status: support work integrated and verified at parent74c2cab on2026-09-27.
+Status: complete; archived with the verified bounded hit-Shield parent on 2026-09-27.
+Final PR45 head bfe4aac and literal main a0b12d2 both pass all six checks.
+Support work was integrated and canonically verified at parent74c2cab.
 Canonical verification passes723 GNU Rust tests/54suites, including all50 table
 scenarios and the actual owned-source Shield case, using the default Windows stack.
-The parent [Shield plan](gate4-shield-hit-runtime.md) owns final PR45 CI/merge
-acceptance. The unrun notes below describe the original support checkpoint.
-Writer: source_control_recovery, taking over the preserved environment_audit draft.
+The completed [Shield plan](gate4-shield-hit-runtime.md) records exact CI, merge,
+tree parity and separate main proof. No work remains in this support slice;
+the unrun notes below describe the original support checkpoint.
+Original writer: source_control_recovery, taking over the preserved environment_audit draft.
 Branch: codex/gate4-shield-hit-app-drivers, based on e5f8fce.
 
 ## Objective and boundaries
@@ -37,7 +40,7 @@ command and cold-retry helpers retain their single-command behavior.
 - Parent integration must compile, run focused/default-stack application cases,
   then pass the canonical suite and exact-head CI. No tests have run on this draft.
 
-## Verification and next action
+## Historical verification and next action
 
 Recovered the preserved edits after resource exhaustion and statically inspected
 all changed fixtures. Targeted rustfmt and git diff --check passed; no compile or
