@@ -449,6 +449,18 @@ The existing source-builder helper now accepts an explicit actor/controller/inde
 for this third initial profile. No actual app creation, privacy, recovery or runtime
 pass is claimed by this additional unrun reducer/replay case.
 
+Static app-writer review found that identical Mage sources/circumstances must share
+an initiative group regardless of their separate controllers. The rules matrix now
+uses one actual shared Mage roll and the existing Host-owned creature tie decision,
+then preserves both independently owned Shield choices. This test-only correction
+is formatted and statically inspected, not compiled or run.
+
+The separate [Counterspell source preflight](gate4-counterspell-source-preflight.md)
+records the pinned Magic Resistance omission, immutable creature/spell fingerprint
+constraint, proposed source-registry/admission prerequisite and future capture seams.
+It leaves the architecture decision open for independent review and makes no
+Counterspell or new execution-version changes.
+
 ## Development checkpoint and exact next steps
 
 The branch is created from the stated development base. This plan and ADR028 record

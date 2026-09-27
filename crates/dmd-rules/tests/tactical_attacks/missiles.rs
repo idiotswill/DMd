@@ -618,16 +618,19 @@ fn missiles_two_source_mages_resolve_in_controller_order_for_both_intent_arrival
                             surprised: false,
                         })
                         .collect(),
-                    groups: actors
-                        .iter()
-                        .map(|actor| InitiativeGroup {
-                            actors: vec![*actor],
+                    groups: vec![
+                        InitiativeGroup {
+                            actors: vec![actors[0]],
                             request_id: RollRequestId::new(),
-                        })
-                        .collect(),
+                        },
+                        InitiativeGroup {
+                            actors: vec![actors[1], third],
+                            request_id: RollRequestId::new(),
+                        },
+                    ],
                 },
             );
-            for (index, face) in [(0, 18), (1, 3), (2, 2)] {
+            for (index, face) in [(0, 18), (1, 3)] {
                 let meta = CommandMeta {
                     issuer: CommandIssuer::Player(players[index]),
                     actor: Some(AgentRef::Entity(actors[index])),
@@ -636,6 +639,15 @@ fn missiles_two_source_mages_resolve_in_controller_order_for_both_intent_arrival
                 let result = f.raw(&[face]);
                 f.run_meta(&meta, &TacticalAction::SubmitRoll { result });
             }
+            // Identical source creatures share initiative even when they have
+            // different controllers. Their tie is the existing Host decision;
+            // each subsequent Shield choice still belongs to its actual owner.
+            f.run(
+                None,
+                TacticalAction::ProposeInitiativeTie {
+                    order: vec![actors[1], third],
+                },
+            );
             cast(
                 &mut f,
                 vec![actors[1], third, actors[1], third, actors[1], third],
