@@ -138,8 +138,10 @@
   async function send(request: UnconfirmedRequest, existing = false) {
     if (busy || (!existing && (retry || unreadableRetry))) return;
     const tactical = request.kind === 'action' && typeof request.request.action === 'object' && 'Tactical' in request.request.action;
+    const focused = tactical && document.activeElement instanceof HTMLElement
+      ? document.activeElement.closest<HTMLElement>('[data-tactical-focus]') : null;
     const position = tactical ? {x:window.scrollX,y:window.scrollY,campaignId,playerId,sourceActorId,page,
-      focus:(document.activeElement instanceof HTMLElement ? document.activeElement.closest<HTMLElement>('[data-tactical-focus]')?.dataset.tacticalFocus : undefined)} : null;
+      focus:focused?.dataset.tacticalFocus,focusId:focused?.dataset.tacticalFocusId} : null;
     let accepted = false;
     busy = true; error = ''; message = '';
     try {
@@ -167,13 +169,17 @@
       if (accepted && position && campaignId===position.campaignId && playerId===position.playerId && sourceActorId===position.sourceActorId && page===position.page) {
         await tick();
         const scopes=Array.from(document.querySelectorAll<HTMLElement>('[data-tactical-focus]'));
-        const next=scopes.find(element=>position.focus!=='encounter' && element.dataset.tacticalFocus===position.focus)
-          ?? scopes.find(element=>element.dataset.tacticalFocus==='physical-roll')
-          ?? scopes.find(element=>element.dataset.tacticalFocus==='consequences')
+        const actionable=scopes.filter(element=>!element.matches(':disabled')
+          && element.querySelector('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled)'));
+        const sameFocus=(element:HTMLElement)=>element.dataset.tacticalFocus===position.focus && element.dataset.tacticalFocusId===position.focusId;
+        const next=actionable.find(element=>position.focus!=='encounter' && sameFocus(element))
+          ?? actionable.find(element=>element.dataset.tacticalFocus==='physical-roll')
+          ?? actionable.find(element=>element.dataset.tacticalFocus==='prompt')
+          ?? actionable.find(element=>element.dataset.tacticalFocus==='consequences')
           ?? scopes.find(element=>element.dataset.tacticalFocus==='encounter');
         next?.focus({preventScroll:true});
         window.scrollTo({left:position.x,top:position.y,behavior:'instant'});
-        if (next && next.dataset.tacticalFocus!==position.focus) next.scrollIntoView({block:'nearest',behavior:'instant'});
+        if (next && !sameFocus(next)) next.scrollIntoView({block:'nearest',behavior:'instant'});
       }
     }
   }

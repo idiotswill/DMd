@@ -1,6 +1,7 @@
 <script lang="ts">
   import { newId, type CharacterView, type Id } from '../table-api';
   import type { TacticalAction, TacticalView } from '../tactical-api';
+  import { tacticalPromptIdentity } from '../tactical-focus';
   import TacticalMap from './TacticalMap.svelte';
   import AttackForm from './AttackForm.svelte';
   import CastingForm from './CastingForm.svelte';
@@ -72,7 +73,7 @@
   {/each}
   {#if tactical.initiative.length}<ol aria-label="Known initiative order">{#each tactical.initiative as entry}<li><strong>{entry.actor===tactical.active_actor?'Current turn: ':''}{entry.label}</strong>{entry.total===null?'':` · ${entry.total}`}</li>{/each}</ol>{/if}
   {#if host && tactical.phase==='setup'}<fieldset disabled={disabled||pendingRoll}><legend>Begin initiative</legend><p>Mark creatures surprised by combat starting. The rules apply their initiative disadvantage.</p>{#each tactical.participants as participant}<label><input type="checkbox" value={participant.entity_id} bind:group={surprised}/>{participant.public_label} is surprised</label>{/each}<button onclick={begin}>Roll initiative</button></fieldset>{/if}
-  {#each tactical.ties as tie}<fieldset {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
+  {#each tactical.ties as tie}<fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'initiative-tie',total:tie.total})} tabindex="-1" {disabled}><legend>Initiative tie at {tie.total}</legend><ol>{#each tieOrder[tie.total] ?? tie.proposed_order ?? tie.actors as tied,index}<li>{name(tied)} <button type="button" class="secondary" aria-label={`Move ${name(tied)} earlier`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,-1)}>Earlier</button><button type="button" class="secondary" aria-label={`Move ${name(tied)} later`} onclick={()=>reorder(tie.total,tie.proposed_order??tie.actors,index,1)}>Later</button></li>{/each}</ol><button onclick={()=>onAction({ProposeInitiativeTie:{order:tieOrder[tie.total]??tie.proposed_order??tie.actors}})}>Propose this order</button>{#if !host && tie.proposed_order}<button disabled={!!player&&tie.accepted_by.includes(player)} onclick={()=>onAction({AcceptInitiativeTie:{total:tie.total}})}>Agree to the proposed order</button>{/if}</fieldset>{/each}
   {#if !legacy && tactical.phase==='active' && tactical.budget && controls(tactical.active_actor)}
     <p>Movement used: {tactical.budget.movement_spent/2} feet. Action: {tactical.budget.action_spent?'spent':'available'}. Bonus action: {tactical.budget.bonus_action_spent?'spent':'available'}. Reaction: {tactical.budget.reaction_available?'available':'spent'}.</p>
     <fieldset disabled={disabled||pendingRoll||pendingDecision}><legend>Current turn</legend><div class="actions"><button disabled={tactical.budget.action_spent} onclick={()=>onAction({Dash:{speed:'Speed'}})}>Dash</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Disengage')}>Disengage</button><button disabled={tactical.budget.action_spent} onclick={()=>onAction('Dodge')}>Dodge</button><button onclick={()=>onAction('StandProne')}>Stand up</button>
@@ -100,10 +101,10 @@
     {#key `${host}:${player}:${actor}:${tactical.opportunity.actor}:${tactical.opportunity.target.actor}`}<OpportunityForm opportunity={tactical.opportunity} disabled={disabled||pendingRoll} {onAction}/>{/key}
   {/if}
   {#if tactical.liquid_landing && controls(tactical.liquid_landing.actor)}
-    <LiquidLandingForm disabled={disabled||pendingRoll} {onAction}/>
+    <LiquidLandingForm actor={tactical.liquid_landing.actor} disabled={disabled||pendingRoll} {onAction}/>
   {/if}
   {#if tactical.attack_decision && controls(tactical.attack_decision.actor)}
-    <fieldset disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'attack-decision',actor:tactical.attack_decision.actor,choice:tactical.attack_decision.kind})} tabindex="-1" disabled={disabled||pendingRoll}><legend>{tactical.attack_decision.kind==='Knockout'?'Melee damage choice':'Graze mastery'}</legend>
       {#if tactical.attack_decision.kind==='Knockout'}
         <p>This melee attack can knock the creature out. Choose how to resolve the damage.</p>
         <button onclick={()=>onAction({ChooseAttackKnockout:{choice:'KnockOut'}})}>Knock out</button><button class="secondary" onclick={()=>onAction({ChooseAttackKnockout:{choice:'NormalDamage'}})}>Apply normal damage</button>
@@ -122,17 +123,17 @@
     {:else}<p>Resolve the pending consequence before continuing the turn.</p>{/if}
   {/if}
   {#if tactical.may_fail_save && controls(tactical.may_fail_save)}
-    <fieldset {disabled}><legend>Saving throw choice</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'saving-throw-choice',actor:tactical.may_fail_save})} tabindex="-1" {disabled}><legend>Saving throw choice</legend>
       <p>You may choose to fail this saving throw before reporting dice. This resolves it as a failure.</p>
       <button class="secondary" onclick={()=>onAction('VoluntarilyFailSave')}>Choose to fail this save</button>
     </fieldset>
   {/if}
   {#if tactical.legendary_resistance && controls(tactical.legendary_resistance)}
-    <fieldset {disabled}><legend>Legendary Resistance</legend><p>This saving throw failed. Spend a remaining use to succeed instead, or keep the failure.</p>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'legendary-resistance',actor:tactical.legendary_resistance})} tabindex="-1" {disabled}><legend>Legendary Resistance</legend><p>This saving throw failed. Spend a remaining use to succeed instead, or keep the failure.</p>
       <button onclick={()=>onAction('UseLegendaryResistance')}>Use Legendary Resistance</button><button class="secondary" onclick={()=>onAction('DeclineLegendaryResistance')}>Keep the failed save</button>
     </fieldset>
   {/if}
   {#if tactical.legendary_action && controls(tactical.legendary_action)}
-    <fieldset {disabled}><legend>Legendary Action opportunity</legend><p>{name(tactical.legendary_action)} may act after this turn.</p><button class="secondary" onclick={()=>onAction('DeclineLegendaryAction')}>Pass this opportunity</button></fieldset>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'legendary-action',actor:tactical.legendary_action})} tabindex="-1" {disabled}><legend>Legendary Action opportunity</legend><p>{name(tactical.legendary_action)} may act after this turn.</p><button class="secondary" onclick={()=>onAction('DeclineLegendaryAction')}>Pass this opportunity</button></fieldset>
   {/if}
 </section>
