@@ -131,7 +131,12 @@ fn scopes(resolution: &TacticalResolution) -> Result<WorkScopes<'_>, RulesError>
         } else {
             None
         };
-        let area = if matches!(node.work.kind, TacticalWorkKind::CommitShield { .. }) {
+        let area = if matches!(
+            node.work.kind,
+            TacticalWorkKind::CommitShield { .. }
+                | TacticalWorkKind::CommitMissileShield { .. }
+                | TacticalWorkKind::BeginMissile { .. }
+        ) {
             // Preserve the causal parent, but a respondent's independent cast
             // cannot inherit an area's invocation-specific ordering delegation.
             None
@@ -286,7 +291,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             .and_then(|occurrence| scopes.get(&occurrence))
             .map(|(work, _)| *work)
             .ok_or_else(|| invalid("hit response lacks its original parent"))?;
-        if flow(state)?.version != TacticalExecutionVersion::ShieldHitV1.flow_version()
+        if !TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+            .is_some_and(TacticalExecutionVersion::supports_hit_shield)
             || parent.kind != TacticalWorkKind::AttackRoll
         {
             return Err(invalid(

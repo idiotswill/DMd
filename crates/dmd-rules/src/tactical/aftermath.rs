@@ -88,7 +88,11 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         .map_err(|error| invalid(&error))?;
     if !matches!(
         TacticalExecutionVersion::from_flow_version(f.version),
-        Some(TacticalExecutionVersion::ReactionsV1 | TacticalExecutionVersion::ShieldHitV1)
+        Some(
+            TacticalExecutionVersion::ReactionsV1
+                | TacticalExecutionVersion::ShieldHitV1
+                | TacticalExecutionVersion::ShieldMissileV1
+        )
     ) || f.phase != TacticalPhase::Active
         || record.origin.expected_event_sequence <= f.origin.expected_event_sequence
         || record.concluded_at > state.clock.now

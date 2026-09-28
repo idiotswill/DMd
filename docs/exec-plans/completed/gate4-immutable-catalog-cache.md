@@ -1,32 +1,34 @@
 # Gate 4 — Shared immutable tactical catalog
 
-Status: all six candidate CI checks pass at `faca063`; the controlled five-history
-ABBA comparison passes. Owned-Shield measurement, canonical verification, final
-successor checks and post-main proof remain pending. Root is
-the current sole writer after the implementation handoff. Original writer:
+Status: bounded slice complete on 2026-09-27. Final source 619ada0, both controlled
+ABBA comparisons, canonical verification, protected merge and all six literal
+main checks pass. Archived after separate post-main packaging proof; Gate 4 and
+the independent Magic Missile/release slices remain active. Final writer: root.
+Original writer:
 `source_registry_review`. Branch:
 `codex/gate4-immutable-catalog-cache`, based on reviewed Shield candidate
 `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5`. Fetched main before branching was
 `f441adedcf490504b6f1e3db1a964c023c511e47`. The preserved prior branch
-`codex/gate4-shield-missile-app` remains at `8537775`. Draft PR:
+`codex/gate4-shield-missile-app` remains at `8537775`. Merged PR:
 <https://github.com/idiotswill/DMd/pull/47>.
 
 ## Objective and boundaries
 
 Share one validated immutable instance of the tactical catalog compiled into this
-binary. Runtime callers currently parse the same embedded bytes repeatedly. This
-is a static observation, not evidence that parsing is the dominant application
-cost. The cache must preserve source definitions, ordering, fingerprints, exact
+binary. Before this change, runtime callers parsed the same embedded bytes
+repeatedly. That static observation alone did not establish dominant application
+cost. The cache preserves source definitions, ordering, fingerprints, exact
 wrapper errors and all historical execution behavior.
 
 This supports the product definition's local production gameplay and accurate
 restart/replay requirements within active Gate4. It does not accept a tactical
 family or complete Gate4, and does not replace Gate13 performance acceptance.
-AGENTS, the gate execution protocol, the active Shield plan and reaction umbrella
+AGENTS, the gate execution protocol, the bounded Shield plan and reaction umbrella
 remain binding. ADR028's execution/history boundary is unchanged because no command,
 state, event, source definition, serialization or executor semantics change.
 
-Root owns the sole local heavy slot. The superseded uncached Magic Missile run
+During this slice root owned the sole local heavy slot. The superseded uncached
+Magic Missile run
 was intentionally stopped with all four cases unfinished; its logs and candidate
 backups remain preserved, and it supplies no complete-case result. All current
 Magic Missile acceptance remains required in its separate slice. This cache's
@@ -57,7 +59,7 @@ it does not accept the slice or waive any remaining check.
   must retain their own exact material; this accessor supplies this binary's fixed
   catalog and is not a latest-definition resolver or unknown-pin fallback.
 
-## Static observations and planned slices
+## Original static observations and planned slices
 
 `tactical::definitions` reparses the entire catalog during group validation. An
 established tactical command validates input and output through both kernel and
@@ -151,7 +153,7 @@ All original file tampering, restore, failure and no-write assertions remain.
 This makes the planned after-warmup regression proof independent of test order.
 At that checkpoint, the new statements still required execution on the successor head.
 
-### Current candidate, parent and controlled measurement
+### Historical candidate, parent and first controlled measurement
 
 Exact `faca063e7d84b2852371c05f93f040d53985bfbc` passes all six CI jobs.
 Linux run 36310097267 records 726 Rust tests across 54 suites, zero failures or
@@ -206,15 +208,67 @@ External evidence is under `tooling/cache-measurement-binaries-bfe-faca/` and
 `tooling/cache-measurement-reactions-bfe-faca/`: exact source metadata, build logs,
 copied binary SHA256 hashes, raw test logs, arguments, UTC starts and wall times.
 The test runner and build harness are `tooling/measure-catalog-cache.ps1` and
-`tooling/build-cache-measurement-binaries.ps1`. The owned-source Shield ABBA run
-uses the same binaries/constraints with its exact test name and is in progress;
-no result is claimed for it here.
+`tooling/build-cache-measurement-binaries.ps1`.
 
-Next action: finish the serial owned-Shield comparison, then run canonical
-`./scripts/verify` on the reconciled source. Its full suite must include the warmed
-installed-content controls, unchanged catalog/profile/inventory/spell/attack checks
-and genuine histories. Publish this reviewed evidence checkpoint for final-head CI
-while those local checks run. Complete all six exact-head checks, independent final
-delta review, protected merge, fetched full-tree parity and literal post-main proof.
-Record the final source-qualified results in PR47 and archive this bounded plan in
-the next receiving branch after proof is complete. No complete acceptance is claimed.
+## Final measurement, verification and merge evidence
+
+The owned-source Shield ABBA comparison uses the same preserved binaries,
+toolchain/profile, unchanged scenario/support/content, fresh processes and serial
+constraints as the five-history comparison. All four complete runs pass every
+independent restore, cold reopen, exact receipt, hostile-history and no-write check:
+
+| Run | Source | Seconds | Result |
+| --- | --- | ---: | --- |
+| 1 | Baseline bfe | 1312.10 | Passed |
+| 2 | Cached faca | 273.89 | Passed |
+| 3 | Cached faca | 275.37 | Passed |
+| 4 | Baseline bfe | 1313.59 | Passed |
+
+Mean wall time falls from 1312.84 to 274.63 seconds: 79.08% lower, or 4.78 times
+the throughput for this fixed local debug/SQLite/recovery workload. Together the
+two ABBA comparisons contain eight passing process runs. Copied binary hashes and
+source/build provenance were independently rechecked. Raw records remain in
+`tooling/cache-measurement-owned-shield-bfe-faca/` alongside the earlier evidence.
+These measurements do not establish packaged gameplay latency or Gate 13 acceptance.
+
+Final source `619ada0219e4a53f30bea28b3b099314b0c01405` passes all six required
+checks. [Linux run 36312850006](https://github.com/idiotswill/DMd/actions/runs/36312850006)
+records 726 Rust tests across 54 suites, zero failures/ignores, 50 table cases in
+526.25 seconds and five genuine histories in 31.98 seconds. Actual synthetic
+checkout `a90fda43bd7218646b31361db035a99550ec68c1` and literal 619 share full tree
+`cdeae1df5a0f82532cbf36ab5347cc4fd61150b4`.
+[Windows run 36312849999](https://github.com/idiotswill/DMd/actions/runs/36312849999)
+records 728 native Rust tests across 54 suites, zero failures/ignores, 50 table
+cases in 765.81 seconds and five histories in 42.83 seconds. Both jobs use literal
+619. The 89 UI tests in 16 files, zero static errors/warnings, 139-module build
+and fresh EXE/NSIS pass. Artifact 10930345823 is 231896189 bytes, SHA256
+`fc22dfc9e74b97589a19595d16c213f043aeed5618777092f9c348425f562469`;
+actual upload and artifact API agree. Both warmed-content controls pass on both OSes.
+
+Canonical `./scripts/verify` on clean literal 619 completed at 11:52:27 UTC on
+2026-09-27: 725 GNU Rust tests across 54 suites, zero failures/ignores, all 50 table
+cases in 417.88 seconds and five genuine histories in 47.86 seconds. Formatting,
+all-target check, strict Clippy, warmed-content controls and both guards pass.
+The architecture guard runner retains its existing one platform skip; no Rust test
+is ignored. GNU Rust 1.98.1, one build job, incremental compilation off and default
+Windows stack. Exact metadata and complete log are
+`tooling/cache-619ada0-canonical.{json,log}`. Root and independent final source,
+measurement, evidence and reconciliation reviews are clear.
+
+Protected expected-head squash merge is
+`046109cdc849c16100c42588e771f8abe710c787`. Fresh fetched main and reviewed 619
+share complete tree `cdeae1df5a0f82532cbf36ab5347cc4fd61150b4`, with no file delta.
+Separate literal post-main [Linux run 36317294013](https://github.com/idiotswill/DMd/actions/runs/36317294013)
+and [Windows run 36317293934](https://github.com/idiotswill/DMd/actions/runs/36317293934)
+pass all six jobs. Actual Linux job 108614304572 records 726 Rust tests/54 suites,
+50 table cases in 355.31 seconds and five histories in 23.39 seconds. Actual native
+job 108614304307 records 728/54, 50 table cases in 757.24 seconds and five histories
+in 48.45 seconds. Both have zero failures/ignores and both warmed-content controls
+pass. Windows also has 89 UI tests/16 files, zero static diagnostics, 139 modules
+and fresh EXE/NSIS artifact 10931129810: 231902908 bytes, SHA256
+`997630a8def1e47d2413de8f29464628db3230007d54237d9d9ec79e18df79ae`.
+The actual upload and independently read artifact API agree on literal main.
+
+No work remains in this bounded cache slice. Continue the separate
+[Magic Missile plan](../active/gate4-shield-missile-runtime.md) and active Gate 4
+obligations; no tactical-family or gate completion is claimed.

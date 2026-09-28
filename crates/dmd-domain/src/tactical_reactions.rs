@@ -39,6 +39,9 @@ pub enum TacticalExecutionVersion {
     /// Accepted attack hits pause for source Shield decisions before damage.
     /// Earlier versions retain their original continuation semantics.
     ShieldHitV1,
+    /// Committed Magic Missile darts collect all responses and physical amounts
+    /// before their explicitly ordered impacts. Includes attack-hit Shield.
+    ShieldMissileV1,
 }
 
 impl TacticalExecutionVersion {
@@ -51,6 +54,7 @@ impl TacticalExecutionVersion {
             Self::Legacy => 1,
             Self::ReactionsV1 => 2,
             Self::ShieldHitV1 => 3,
+            Self::ShieldMissileV1 => 4,
         }
     }
 
@@ -59,12 +63,24 @@ impl TacticalExecutionVersion {
             1 => Some(Self::Legacy),
             2 => Some(Self::ReactionsV1),
             3 => Some(Self::ShieldHitV1),
+            4 => Some(Self::ShieldMissileV1),
             _ => None,
         }
     }
 
     pub fn retains_work_ancestry(self) -> bool {
-        matches!(self, Self::ReactionsV1 | Self::ShieldHitV1)
+        matches!(
+            self,
+            Self::ReactionsV1 | Self::ShieldHitV1 | Self::ShieldMissileV1
+        )
+    }
+
+    pub fn supports_hit_shield(self) -> bool {
+        matches!(self, Self::ShieldHitV1 | Self::ShieldMissileV1)
+    }
+
+    pub fn supports_missile_shield(self) -> bool {
+        self == Self::ShieldMissileV1
     }
 }
 

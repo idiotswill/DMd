@@ -14,6 +14,11 @@ pub(super) fn continuation(
             hit.stage,
             TacticalHitReviewStage::Collecting | TacticalHitReviewStage::Selected
         )
+    }) || resolution.missiles.iter().any(|missile| {
+        matches!(
+            missile.stage,
+            TacticalMissileStage::Collecting | TacticalMissileStage::Selected { .. }
+        )
     }) {
         return None;
     }
@@ -54,7 +59,31 @@ pub(super) fn continuation(
                 frame
                     .iter()
                     .map(|work| {
+                        if let TacticalWorkKind::ApplyMissileImpact { missile, at } = work.kind
+                            && let Some(dart) = resolution
+                                .missiles
+                                .iter()
+                                .find(|record| record.work.occurrence == missile)
+                                .and_then(|record| record.darts.get(usize::from(at.target)))
+                                .filter(|dart| dart.at == at)
+                        {
+                            return crate::TableTacticalWorkChoice {
+                                occurrence: work.occurrence,
+                                label: format!(
+                                    "Dart {}: {}",
+                                    at.target + 1,
+                                    dart.known_target_label
+                                ),
+                            };
+                        }
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::BeginMissile { .. }
+                            | TacticalWorkKind::ResumeMissile { .. }
+                            | TacticalWorkKind::CommitMissileShield { .. }
+                            | TacticalWorkKind::BeginMissileImpacts { .. }
+                            | TacticalWorkKind::ApplyMissileImpact { .. } => {
+                                (None, "Missile consequence")
+                            }
                             TacticalWorkKind::CommitShield { .. }
                             | TacticalWorkKind::ResumeHit { .. } => (None, "Hit consequence"),
                             TacticalWorkKind::Medicine { actor, .. } => {
@@ -318,6 +347,7 @@ mod tests {
             attack: None,
             movement: None,
             casts: vec![],
+            missiles: vec![],
             falls: vec![],
             areas: vec![],
             work_trace: None,
@@ -381,6 +411,7 @@ mod tests {
             attack: None,
             movement: None,
             casts: vec![],
+            missiles: vec![],
             falls: vec![],
             work_trace: None,
             next_occurrence: 100,

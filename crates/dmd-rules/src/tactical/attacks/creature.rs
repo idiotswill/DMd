@@ -137,6 +137,7 @@ pub(in crate::tactical) fn begin_creature_attack(
         attack: Some(attack),
         movement: None,
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,

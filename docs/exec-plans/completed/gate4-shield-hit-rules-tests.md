@@ -1,11 +1,14 @@
 # Gate 4 — Explicit Shield hit rules regression support
 
-Status: support work integrated and verified at parent74c2cab on2026-09-27.
+Status: complete; archived with the verified bounded hit-Shield parent on 2026-09-27.
+Final PR45 head bfe4aac and literal main a0b12d2 both pass all six checks.
+Support work was integrated and canonically verified at parent74c2cab.
 All fourteen Shield cases pass within121 tactical attacks and canonical723 GNU
 Rust tests/54suites. Default Windows stack, one build job and incremental0.
-The parent [Shield plan](gate4-shield-hit-runtime.md) owns final PR45 CI/merge
-acceptance. Authoring-only notes below retain the original support checkpoint.
-Writer: shield_rules_recovery (taking over preserved rules_architecture work),
+The completed [Shield plan](gate4-shield-hit-runtime.md) records exact CI, merge,
+tree parity and separate main proof. No work remains in this support slice;
+authoring-only notes below retain the original support checkpoint.
+Original writer: shield_rules_recovery (taking over preserved rules_architecture work),
 branch codex/gate4-shield-hit-rules-tests.
 Base: e5f8fce0962c64f6c8fd38dc1ecdbfb4bc90e25c.
 
@@ -63,7 +66,7 @@ with root. Root owns combined production/app verification and PR integration.
   git diff --check passed after memory/disk recovery. No compiler or test binary
   ran: the shared heavy slot remains reserved by root for aftermath verification.
 
-## Exact next action
+## Historical next action
 
 Root integrates these tests with the production Shield branch and the historical
 ResumeHit request-ID binding fix. Then run the focused hit_shield, tactical_attacks,

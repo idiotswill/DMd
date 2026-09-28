@@ -108,7 +108,13 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
-        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+        TacticalWorkKind::BeginMissile { .. }
+        | TacticalWorkKind::ResumeMissile { .. }
+        | TacticalWorkKind::CommitMissileShield { .. }
+        | TacticalWorkKind::BeginMissileImpacts { .. }
+        | TacticalWorkKind::ApplyMissileImpact { .. }
+        | TacticalWorkKind::CommitShield { .. }
+        | TacticalWorkKind::ResumeHit { .. } => {
             return Err(invalid("hit response work has no raw key"));
         }
         TacticalWorkKind::Medicine { target, .. } => (TacticalRollRole::Medicine, *target),
@@ -246,7 +252,13 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
-        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+        TacticalWorkKind::BeginMissile { .. }
+        | TacticalWorkKind::ResumeMissile { .. }
+        | TacticalWorkKind::CommitMissileShield { .. }
+        | TacticalWorkKind::BeginMissileImpacts { .. }
+        | TacticalWorkKind::ApplyMissileImpact { .. }
+        | TacticalWorkKind::CommitShield { .. }
+        | TacticalWorkKind::ResumeHit { .. } => {
             Err(invalid("hit response work has no raw request"))
         }
         TacticalWorkKind::Medicine { .. } => super::medicine::request(state, work, key),
@@ -378,6 +390,21 @@ fn start_inner(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::BeginMissile { cast } => {
+            return super::missiles::open(state, meta, &work, *cast);
+        }
+        TacticalWorkKind::ResumeMissile { missile } => {
+            return super::missiles::resume(state, *missile);
+        }
+        TacticalWorkKind::CommitMissileShield { cast, .. } => {
+            return super::casting::commit(state, meta, *cast);
+        }
+        TacticalWorkKind::BeginMissileImpacts { missile } => {
+            return super::missiles::begin_impacts(state, *missile);
+        }
+        TacticalWorkKind::ApplyMissileImpact { missile, at } => {
+            return super::missiles::impact(state, meta, &work, *missile, *at);
+        }
         TacticalWorkKind::CommitShield { cast } => {
             return super::casting::commit(state, meta, *cast);
         }
@@ -683,7 +710,13 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
-        TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
+        TacticalWorkKind::BeginMissile { .. }
+        | TacticalWorkKind::ResumeMissile { .. }
+        | TacticalWorkKind::CommitMissileShield { .. }
+        | TacticalWorkKind::BeginMissileImpacts { .. }
+        | TacticalWorkKind::ApplyMissileImpact { .. }
+        | TacticalWorkKind::CommitShield { .. }
+        | TacticalWorkKind::ResumeHit { .. } => {
             return Err(invalid("hit response work cannot await raw dice"));
         }
         TacticalWorkKind::Medicine {

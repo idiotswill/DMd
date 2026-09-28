@@ -6,7 +6,7 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
 
 function tactical():TacticalView {
-  return {encounter_id:'encounter',phase:'active',execution:'ShieldHitV1',round:1,active_actor:'pc',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null};
+  return {encounter_id:'encounter',phase:'active',execution:'ShieldMissileV1',round:1,active_actor:'pc',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null};
 }
 
 it('requires explicit cadence and ruling before submitting the typed conclusion', async()=>{

@@ -111,6 +111,24 @@ pub enum TacticalWorkKind {
     FinishSpell {
         cast: u16,
     },
+    BeginMissile {
+        cast: u16,
+    },
+    ResumeMissile {
+        missile: u16,
+    },
+    CommitMissileShield {
+        missile: u16,
+        respondent: u16,
+        cast: u16,
+    },
+    BeginMissileImpacts {
+        missile: u16,
+    },
+    ApplyMissileImpact {
+        missile: u16,
+        at: crate::SpellProgramOccurrence,
+    },
     MoveSegment,
     MovementOpportunity {
         reactor: EntityId,
@@ -216,6 +234,10 @@ pub struct TacticalResolution {
     pub movement: Option<Box<crate::TacticalMovement>>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub casts: Vec<crate::TacticalCasting>,
+    /// Flow4-only committed target/amount/impact evidence. Empty preserves every
+    /// earlier executor's JSON and does not create a second executable queue.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub missiles: Vec<crate::TacticalMissile>,
     /// Source occurrences share the existing frames; this is not a second queue.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub falls: Vec<crate::TacticalFall>,

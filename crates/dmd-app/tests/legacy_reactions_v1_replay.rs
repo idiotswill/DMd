@@ -654,14 +654,14 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
         TableTransportChannel::Host,
         TableAction::Tactical {
             action: TacticalAction::UpgradeExecutionTo {
-                execution: TacticalExecutionVersion::ShieldHitV1,
+                execution: TacticalExecutionVersion::ShieldMissileV1,
             },
         },
     ))
     .await;
     Box::pin(f.accept_cold(upgrade)).await;
     let upgraded = Box::new(f.state().await);
-    assert_eq!(flow(&upgraded).version, 3);
+    assert_eq!(flow(&upgraded).version, 4);
     let mut compared = upgraded.clone();
     compared
         .encounter

@@ -3,7 +3,7 @@ use crate::*;
 use dmd_domain::*;
 use std::collections::HashSet;
 
-fn player_controlled(state: &CampaignState, actor: EntityId) -> bool {
+pub(super) fn player_controlled(state: &CampaignState, actor: EntityId) -> bool {
     state.characters.values().any(|character| {
         character.entity_id == actor
             && character.controlling_player_id.is_some()
@@ -30,7 +30,9 @@ pub(super) fn view(
     let Some(flow) = &encounter.flow else {
         return Ok(None);
     };
-    if flow.version != TacticalExecutionVersion::ShieldHitV1.flow_version() {
+    if !TacticalExecutionVersion::from_flow_version(flow.version)
+        .is_some_and(TacticalExecutionVersion::supports_hit_shield)
+    {
         return Ok(None);
     }
     let Some(resolution) = &flow.resolution else {

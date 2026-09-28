@@ -1,13 +1,62 @@
 # Gate 4 — Source Shield at an accepted attack hit
 
-Status: implementation and full local verification pass at
-74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb. Exact final-head CI, protected merge
-and post-main evidence remain required. Verified aftermath main
-f441adedcf490504b6f1e3db1a964c023c511e47 is normally reconciled.
-Writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
+Status: bounded hit-Shield slice complete and archived on 2026-09-27 after
+canonical verification, all six final-head checks, protected merge and separate
+literal post-main proof. This does not complete Shield, reactions or Gate 4.
+Final writer: root. Branch: codex/gate4-shield-hit-runtime, based on verified main
 d82d7b2c28be3b74e6e2b0b8c85ffe8c042b1278. Verified PR42 main
 2798b6b1d6263b5e321a1903d9fb4f2331b73895 and verified source-control PR43 main
 e813e3a13911497902a3d4a55aec3c70653afb2a are integrated.
+
+## Final acceptance evidence
+
+Final reviewed head is `bfe4aac67ed80a5aec5165cfdd198acdbbfec9c5` in
+[PR45](https://github.com/idiotswill/DMd/pull/45). Independent full implementation,
+integration and final six-file documentation/ledger review are clear. Its final
+delta changes no runtime source, test logic or captured bytes; complete crates,
+apps and content trees match canonical source
+`74c2cabf8fd8af44cdc2a58fc4bb7a5c6e9acfcb`.
+
+That exact canonical source passes `./scripts/verify`: 723 GNU Rust tests across
+54 suites, zero failures/ignores, all 50 table cases in 1724.91 seconds, all 121
+tactical attack cases and five genuine ReactionsV1 histories. Formatting, all-target
+check, strict Clippy and both guards pass with one build job, incremental off and
+the default Windows stack. The genuine closed flow 2 export remains byte-exact;
+its owner restart, upgrade, complete-state preservation and original armor deadline
+pass focused and canonical continuation. Detailed historical evidence follows below.
+
+All six final-head jobs pass. [Linux run 36307320564](https://github.com/idiotswill/DMd/actions/runs/36307320564)
+records 724 Rust tests/54 suites, zero failures/ignores, 50 table cases in 3032.16
+seconds and five histories in 136.63 seconds. Synthetic checkout
+`840b151ccbce476777089dfa72158a0522c6b83f` and literal bfe share complete tree
+`1954f41fa0f2fd7c2e61540f328ef8546e0bce0b`.
+[Windows run 36307320510](https://github.com/idiotswill/DMd/actions/runs/36307320510)
+uses literal bfe and records 726 native Rust tests/54 suites, zero failures/ignores,
+50 table cases in 3181.12 seconds, five histories in 159.80 seconds, 89 UI tests in
+16 files, zero static diagnostics and 139 modules. Fresh EXE/NSIS artifact
+10928817066 is 231938230 bytes, SHA256
+`c6900221a938b33c65a99e18535c2bf23be91a4b810b2901effe81aa062cf136`.
+Actual upload logs and artifact API agree.
+
+Protected squash main is `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`, whose
+fresh fetched complete tree equals bfe with no file delta. Separate literal main
+[Linux run 36311244326](https://github.com/idiotswill/DMd/actions/runs/36311244326)
+and [Windows run 36311244361](https://github.com/idiotswill/DMd/actions/runs/36311244361)
+pass all six jobs: 724 Linux and 726 native Rust tests across 54 suites, zero
+failures/ignores. All 50 table cases pass in 2831.22/3175.88 seconds respectively;
+five histories pass in 131.83/154.99 seconds. Native checks also record 89 UI tests,
+16 files, zero static diagnostics, 139 modules and fresh EXE/NSIS artifact
+10929844206, 231948830 bytes, SHA256
+`1d8c3934077f7ff3a8fa926093dfd14933997c786bd0fe52a388f4010f93c06a`.
+Actual upload logs and artifact API agree. Source CI is not substituted for this
+separate main proof.
+
+No work remains in this bounded hit-only slice or its integrated support plans.
+The [Magic Missile plan](../active/gate4-shield-missile-runtime.md) and
+[reaction umbrella](../active/gate4-reaction-ready-runtime.md) remain active,
+including Counterspell, Ready and off-turn producers. Ledger families remain
+implementing. The remaining sections preserve earlier decisions and source-qualified
+checkpoints; their pending next actions are historical, superseded by this evidence.
 
 ## Objective and authority
 
@@ -86,7 +135,7 @@ the new pause. Untouched genuine old fixtures continue under their own versions.
    desktop checks/tests/build and all six final-head CI checks; full independent
    review; protected merge, fetched tree parity and final main evidence.
 
-## Current verification checkpoint
+## Historical verification checkpoint
 
 On 2026-09-27, literal74c2cab passed canonical `./scripts/verify`:723 GNU Rust
 tests across54 result suites, zero failed/ignored, all50 table scenarios in1724.91s,
@@ -239,7 +288,7 @@ and strict-lint idioms. Final integrated32d937b passed compilation/MSRV; Clippy
 identified a manual hand-membership scan, corrected equivalently in8b5cf52.
 No lint exemption, assertion weakening or invented default capability was used.
 
-### Verified prerequisite and next action
+### Historical prerequisite and next-action record
 
 PR42 merged as2798b6b1d6263b5e321a1903d9fb4f2331b73895 with full-tree parity to
 reviewed cbe9575 atddfe5b58c0c55ad2aab6e367de295bf7c1760e5e. All six post-main

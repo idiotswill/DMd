@@ -182,6 +182,7 @@ pub(super) fn begin(
         attack: None,
         movement: None,
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![record],
         work_trace,

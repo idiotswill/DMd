@@ -188,7 +188,7 @@ fn historical_reactions_aftermath_replays_and_upgrades_without_changing_its_cade
     f.run(
         None,
         TacticalAction::UpgradeExecutionTo {
-            execution: TacticalExecutionVersion::ShieldHitV1,
+            execution: TacticalExecutionVersion::ShieldMissileV1,
         },
     );
     require_aftermath_session_boundary(&f.state).unwrap();
@@ -203,7 +203,7 @@ fn historical_reactions_aftermath_replays_and_upgrades_without_changing_its_cade
         .version;
     assert_eq!(
         *version,
-        TacticalExecutionVersion::ShieldHitV1.flow_version()
+        TacticalExecutionVersion::ShieldMissileV1.flow_version()
     );
     *version = TacticalExecutionVersion::ReactionsV1.flow_version();
     compared.applied_event_sequence = before.applied_event_sequence;

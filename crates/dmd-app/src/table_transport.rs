@@ -3,7 +3,7 @@ use crate::*;
 use dmd_domain::*;
 use dmd_persistence::{
     ProjectionAudience, ProjectionCapability, ProjectionHandle, ProjectionHitRole,
-    ProjectionRevision,
+    ProjectionMissileRole, ProjectionRevision,
 };
 use serde::{Deserialize, Serialize};
 
@@ -49,6 +49,27 @@ pub enum TableTransportInput {
         handle: CommandId,
         decision: Box<TableHitInput>,
     },
+    MissileResponse {
+        handle: CommandId,
+        decision: Box<TableMissileInput>,
+    },
+}
+
+/// Separate wire input: old accepted HitResponse bodies keep their exact meaning.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TableMissileInput {
+    Order {
+        instruction: TacticalReactionOrdering,
+    },
+    Delegate,
+    Respond {
+        accept: bool,
+    },
+    Cast {
+        choice: SpellCastChoice,
+    },
+    Decline,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -265,6 +286,7 @@ pub(crate) fn presented_view(
                 execution,
                 ready,
                 hit,
+                missile,
                 round,
                 active_actor,
                 phase,
@@ -334,6 +356,57 @@ pub(crate) fn presented_view(
                     }))
                 })
                 .transpose()?;
+            let missile = missile
+                .map(|missile| {
+                    let key = |key: TacticalWorkKey, role| {
+                        handle(&ProjectionCapability::MissileResponse {
+                            origin: key.resolution,
+                            occurrence: key.occurrence,
+                            role,
+                        })
+                        .map(CommandId)
+                    };
+                    Ok::<_, &str>(Box::new(TableMissileView {
+                        order: missile
+                            .order
+                            .map(|order| {
+                                Ok::<_, &str>(TableHitOrder {
+                                    key: key(order.key, ProjectionMissileRole::Order)?,
+                                    actor: order.actor,
+                                    participants: order.participants,
+                                })
+                            })
+                            .transpose()?,
+                        delegate: missile
+                            .delegate
+                            .map(|window| key(window, ProjectionMissileRole::Delegate))
+                            .transpose()?,
+                        responses: missile
+                            .responses
+                            .into_iter()
+                            .map(|response| {
+                                Ok(TableHitResponse {
+                                    key: key(
+                                        response.key,
+                                        if response.selected {
+                                            ProjectionMissileRole::Selected {
+                                                actor: response.actor,
+                                            }
+                                        } else {
+                                            ProjectionMissileRole::Intent {
+                                                actor: response.actor,
+                                            }
+                                        },
+                                    )?,
+                                    actor: response.actor,
+                                    selected: response.selected,
+                                    shield: response.shield,
+                                })
+                            })
+                            .collect::<Result<Vec<_>, &str>>()?,
+                    }))
+                })
+                .transpose()?;
             let continuation = continuation
                 .map(|value| {
                     let choices = value
@@ -364,6 +437,7 @@ pub(crate) fn presented_view(
                 execution,
                 ready,
                 hit,
+                missile,
                 round,
                 active_actor,
                 phase,

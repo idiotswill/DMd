@@ -78,6 +78,13 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::BeginMissile { .. }
+        | TacticalWorkKind::ResumeMissile { .. }
+        | TacticalWorkKind::CommitMissileShield { .. }
+        | TacticalWorkKind::BeginMissileImpacts { .. }
+        | TacticalWorkKind::ApplyMissileImpact { .. } => {
+            super::missiles::validate_work(state, work)?
+        }
         TacticalWorkKind::CommitShield { .. } | TacticalWorkKind::ResumeHit { .. } => {
             super::hit_reactions::validate_work(state, work)?
         }
@@ -239,6 +246,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
             + usize::from(super::hit_reactions::waiting(state))
+            + usize::from(super::missiles::waiting(state))
             + usize::from(super::falling::selected(state)?.is_some())
             + usize::from(r.attack.as_ref().is_some_and(|a| {
                 matches!(
@@ -312,7 +320,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
             super::failed_save::validate_failed_save(state, failed)?;
-        } else if super::hit_reactions::waiting(state) {
+        } else if super::hit_reactions::waiting(state) || super::missiles::waiting(state) {
             if rules.pending.is_some() {
                 return Err(invalid("hit response has competing raw dice"));
             }
@@ -359,6 +367,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     super::hit_reactions::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
+    super::missiles::validate(state)?;
     super::areas::validate(state)?;
     if f.budget.dash_grants.len() > 20
         || f.budget.attacks_remaining > 20

@@ -94,6 +94,7 @@ pub(super) fn begin(
         attack: None,
         movement: None,
         casts: vec![],
+        missiles: vec![],
         falls: vec![],
         areas: vec![],
         work_trace,

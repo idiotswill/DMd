@@ -251,12 +251,14 @@ pub(crate) fn authorize_tactical(
         };
         let needs_access = match action {
             A::Begin {
-                execution: TacticalExecutionVersion::ShieldHitV1,
+                execution:
+                    TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1,
                 combatants,
                 ..
             } => combatants.iter().any(|combatant| owned(combatant.actor)),
             A::UpgradeExecutionTo {
-                execution: TacticalExecutionVersion::ShieldHitV1,
+                execution:
+                    TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1,
             } => state.encounter.as_ref().is_some_and(|encounter| {
                 encounter
                     .participants
@@ -316,6 +318,48 @@ pub(crate) fn authorize_tactical(
                 .map(|respondent| respondent.actor)
         }
         A::DelegateHitResponses { .. } => resolution.map(|resolution| resolution.turn_actor),
+        A::RespondToMissile { window, actor, .. } => resolution
+            .filter(|resolution| resolution.origin.id == window.resolution)
+            .and_then(|resolution| {
+                resolution
+                    .missiles
+                    .iter()
+                    .find(|missile| missile.work.occurrence == window.occurrence)
+            })
+            .and_then(|missile| {
+                missile
+                    .respondents
+                    .iter()
+                    .find(|target| target.response.actor == *actor)
+            })
+            .map(|target| target.response.actor),
+        A::CastMissileShield { window, .. } | A::DeclineSelectedMissileShield { window } => {
+            resolution
+                .filter(|resolution| resolution.origin.id == window.resolution)
+                .and_then(|resolution| {
+                    resolution
+                        .missiles
+                        .iter()
+                        .find(|missile| missile.work.occurrence == window.occurrence)
+                })
+                .and_then(|missile| match missile.stage {
+                    TacticalMissileStage::Selected { respondent } => {
+                        missile.respondents.get(usize::from(respondent))
+                    }
+                    _ => None,
+                })
+                .map(|target| target.response.actor)
+        }
+        A::DelegateMissileResponses { .. } => resolution.map(|resolution| resolution.turn_actor),
+        A::OrderMissileResponses { window, .. } => resolution.and_then(|resolution| {
+            let delegated = resolution.origin.id == window.resolution
+                && resolution
+                    .missiles
+                    .iter()
+                    .find(|missile| missile.work.occurrence == window.occurrence)
+                    .is_some_and(|missile| missile.delegated_by.is_some());
+            (!delegated).then_some(resolution.turn_actor)
+        }),
         A::OrderHitResponses { .. } => resolution.and_then(|resolution| {
             (!resolution
                 .hit_review
@@ -526,6 +570,10 @@ mod tests {
         for action in [
             begin(TacticalExecutionVersion::ShieldHitV1),
             upgrade.clone(),
+            begin(TacticalExecutionVersion::ShieldMissileV1),
+            A::UpgradeExecutionTo {
+                execution: TacticalExecutionVersion::ShieldMissileV1,
+            },
         ] {
             assert_eq!(
                 authorize_tactical(&state, &meta, &action).unwrap_err(),
@@ -550,6 +598,16 @@ mod tests {
         assert_eq!(state, before);
         let activated = activate(&state, &meta, &adoptions(&state).unwrap()).unwrap();
         assert!(authorize_tactical(&activated, &meta, &upgrade).is_ok());
+        assert!(
+            authorize_tactical(
+                &activated,
+                &meta,
+                &A::UpgradeExecutionTo {
+                    execution: TacticalExecutionVersion::ShieldMissileV1,
+                }
+            )
+            .is_ok()
+        );
         assert!(
             authorize_tactical(
                 &activated,

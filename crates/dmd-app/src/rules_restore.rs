@@ -892,6 +892,34 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                         );
                     }
                 }
+                for missile in &resolution.missiles {
+                    origins.push(&missile.cause);
+                    origins.extend(missile.delegated_by.as_ref());
+                    origins.extend(missile.order.as_ref().map(|order| &order.origin));
+                    for target in &missile.respondents {
+                        origins
+                            .extend(target.response.intent.as_ref().map(|intent| &intent.origin));
+                        origins.extend(target.response.declined_after_selection.as_ref());
+                    }
+                    for dart in &missile.darts {
+                        origins.extend(dart.selected_by.as_ref());
+                        origins.extend(dart.completed_by.as_ref());
+                    }
+                    for record in missile.completed_cast.iter().chain(
+                        missile
+                            .respondents
+                            .iter()
+                            .filter_map(|target| target.completed_shield.as_ref()),
+                    ) {
+                        origins.extend([&record.cast.plan.origin, &record.cast.last_operation]);
+                        origins.extend(
+                            record
+                                .creature_activation
+                                .as_ref()
+                                .map(|activation| &activation.origin),
+                        );
+                    }
+                }
                 for area in &resolution.areas {
                     origins.extend([
                         &area.source.invocation,

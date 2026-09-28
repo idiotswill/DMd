@@ -11,6 +11,7 @@ mod falling;
 mod hit_reactions;
 mod initiative;
 mod medicine;
+mod missiles;
 mod movement;
 mod reaction_order;
 mod ready;
@@ -65,6 +66,25 @@ pub enum TacticalAction {
         choice: SpellCastChoice,
     },
     DeclineSelectedHitShield {
+        window: TacticalWorkKey,
+    },
+    RespondToMissile {
+        window: TacticalWorkKey,
+        actor: EntityId,
+        accept: bool,
+    },
+    OrderMissileResponses {
+        window: TacticalWorkKey,
+        instruction: TacticalReactionOrdering,
+    },
+    DelegateMissileResponses {
+        window: TacticalWorkKey,
+    },
+    CastMissileShield {
+        window: TacticalWorkKey,
+        choice: SpellCastChoice,
+    },
+    DeclineSelectedMissileShield {
         window: TacticalWorkKey,
     },
     Ready {
@@ -311,6 +331,28 @@ fn resolve_with_policy(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::RespondToMissile {
+            window,
+            actor,
+            accept,
+        } => {
+            missiles::respond(&mut next, meta, *window, *actor, *accept)?;
+        }
+        TacticalAction::OrderMissileResponses {
+            window,
+            instruction,
+        } => {
+            missiles::order(&mut next, meta, *window, instruction)?;
+        }
+        TacticalAction::DelegateMissileResponses { window } => {
+            missiles::delegate(&mut next, meta, *window)?;
+        }
+        TacticalAction::CastMissileShield { window, choice } => {
+            missiles::cast(&mut next, meta, *window, choice)?;
+        }
+        TacticalAction::DeclineSelectedMissileShield { window } => {
+            missiles::decline(&mut next, meta, *window)?;
+        }
         TacticalAction::RespondToHit { window, accept } => {
             hit_reactions::respond(&mut next, meta, *window, *accept)?;
         }
@@ -349,8 +391,10 @@ fn resolve_with_policy(
         TacticalAction::UpgradeExecutionTo { execution } => {
             privileged(meta)?;
             let current = flow(&next)?;
-            if *execution != TacticalExecutionVersion::ShieldHitV1
-                || current.version >= execution.flow_version()
+            if !matches!(
+                execution,
+                TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1
+            ) || current.version >= execution.flow_version()
                 || current.phase != TacticalPhase::Active
                 || current.resolution.is_some()
                 || !current.ready.is_empty()
@@ -602,8 +646,15 @@ fn validate_live_execution(
     state: &CampaignState,
     action: &TacticalAction,
 ) -> Result<(), RulesError> {
+    if matches!(action, TacticalAction::UpgradeExecutionTo { execution }
+        if *execution != TacticalExecutionVersion::ShieldMissileV1)
+    {
+        return Err(prerequisite(
+            "a new targeted upgrade requires the current tactical executor",
+        ));
+    }
     if matches!(action, TacticalAction::Begin { execution, .. }
-        if *execution != TacticalExecutionVersion::ShieldHitV1)
+        if *execution != TacticalExecutionVersion::ShieldMissileV1)
     {
         return Err(prerequisite(
             "new initiative requires the current tactical executor",
@@ -616,7 +667,7 @@ fn validate_live_execution(
     else {
         return Ok(());
     };
-    if current.version == TacticalExecutionVersion::ShieldHitV1.flow_version() {
+    if current.version == TacticalExecutionVersion::ShieldMissileV1.flow_version() {
         return Ok(());
     }
     // A saved old pause remains completable under its original semantics. Fresh
@@ -642,6 +693,11 @@ fn validate_live_execution(
             | TacticalAction::ChooseAttackKnockout { .. }
             | TacticalAction::ChooseAttackMastery { .. }
             | TacticalAction::ChooseLiquidLanding { .. }
+            | TacticalAction::RespondToHit { .. }
+            | TacticalAction::OrderHitResponses { .. }
+            | TacticalAction::DelegateHitResponses { .. }
+            | TacticalAction::CastHitShield { .. }
+            | TacticalAction::DeclineSelectedHitShield { .. }
     ) {
         return Ok(());
     }
