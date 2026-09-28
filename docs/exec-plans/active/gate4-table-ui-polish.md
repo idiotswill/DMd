@@ -147,6 +147,20 @@ correction. Earlier source results do not verify the successor. The correction
 changes no backend, transport, dependency, source content or authority behavior,
 and is handed back as one local commit without pushing or dependency merges.
 
+During normal preparation of the next native QA encounter, root also observed
+obsolete character-creation copy claiming that weapon properties, ammunition and
+hands were not resolved by the table. The creation form now points players to
+the actual character-sheet equipment preparation step. This is a text-only
+correction; the fresh QA character's purchased armor was prepared through that
+normal control. No new mechanic or extra copy-only test is introduced.
+
+The separate campaign `Prompt focus QA Sep28` and session `Pending prompt
+transitions` are saved on the verified56 package before initiative. They contain
+the normally created Fighter, fresh Host-owned Hag and player-owned Mage, with
+unspent source resources. External `tooling/ui-prompt-focus-fresh-qa-preparation.txt`
+retains the actual setup observation. This prepares the failing-sequence rerun;
+it is not successor package acceptance. The earlier QA campaign is preserved.
+
 Next: root runs the frontend checks and required verification, publishes the
 reviewed successor for exact-head CI, and repeats packaged prompt reachability.
 Reconcile verified missile main,
