@@ -1,7 +1,8 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active final integration. Exact `ffc3c342dd542c48f05edf39a7123d0f6325f750`
-passes all six source CI checks, all four actual SQLite missile families, both
+Status: active final integration. Exact `f4890b73814d7c0f3551350352601eb5ed0d19ed`
+and earlier `ffc3c342dd542c48f05edf39a7123d0f6325f750` pass all six source CI
+checks, all four actual SQLite missile families, both
 five-case historical suites and 99 desktop tests. Canonical verification of the
 final integrated head, final review/checks and protected merge/post-main proof
 remain required. Actual packaged restart and continuation pass on the source-qualified
@@ -14,8 +15,8 @@ Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
 Writer: root, exclusively after the explicit 2026-09-27 transfer from inactive
 `shield_integration_review`. Root coordinates independent review and serializes
-all heavy builds. Root owns the local slot; local runtime verification currently
-waits for sufficient Windows committed-memory headroom after the recorded failure.
+all heavy builds. Root owns the local slot. Memory is available again on
+2026-09-28; the final-head canonical retry remains required after the failure below.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
@@ -100,11 +101,26 @@ Closing the completed QA app still left less than 1GB of Windows commit headroom
 the owner was asked to free unused applications while remote CI/source work continues.
 
 The complete implementation and subsequent evidence-only changes have independent
-review. Four f489 CI jobs passed, but its Linux/native runtime jobs were still
-unfinished when this final documentation checkpoint was prepared. Publishing the
-final head may supersede those in-flight runs; unfinished/cancelled jobs never count
-as passes. All six checks must run on the final published head. The actual ffc3
-source/runtime/package proof above remains separately qualified.
+review. The f489 jobs that were unfinished on 2026-09-27 subsequently completed;
+none were cancelled. On 2026-09-28 root read their actual runtime logs and artifact
+API. Linux36317934910/108616074714 passes 747 Rust tests across 55 suites, zero
+failures/ignores, all54 table cases in5285.37s, five Reactions histories in39.07s
+and five Shield histories in105.60s. Previously checked synthetic73c05c2 and literal
+f489 share complete tree `b9ce0f67cce724810ded062fd39827ebf660afc3`.
+Native36317934871/108616074179 checks out literal f489 and passes749 Rust/55suites,
+zero failures/ignores, all54 table cases in5976.26s, five Reactions histories
+in43.34s and five Shield histories in128.21s. All four missile families explicitly
+pass on both systems. Native UI passes99 tests/17files, zero static diagnostics
+and140 modules. The other four checks also pass; their actual logs were previously
+read. Fresh artifact10933486970 is232166519bytes, SHA256
+`e278b4055efe6ff5e473054b44a8dcde4dc9c8b6ce63e64ad1cfa66dffd016e8`;
+upload log and independent artifact API agree. This package was not used for
+additional play. The actual ffc3 UI proof above remains separately qualified.
+
+The only changes after f489 are documentation and ledger evidence. All six checks
+must still run on the final published head. At resumption Windows reports over
+30GB committed-memory headroom, permitting a canonical retry with unchanged
+compiler/test settings; availability itself is not verification evidence.
 
 Next: publish the reviewed final head, rerun canonical verification once memory is
 available, and require all six final-head jobs before protected merge and literal
