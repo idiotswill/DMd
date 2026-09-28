@@ -1,14 +1,15 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
 Status: domain, authenticated application and desktop checkpoints independently
-reviewed; reviewed cache development dependency integrated. Both draft runtime
-jobs at 4f38c1d pass all 55 application cases, then find an obsolete synthetic
-Finished fixture in a movement test. Its reviewed correction passes all 31 movement
-and 52 turn tests at 96b4faf. All four additional application families now have
-passing focused results across 96b4faf and its reviewed test correction 703e1ff;
-final integrated exact-head acceptance remains pending. Published PR48 stays
-at 4f38c1d pending the next reviewed publication checkpoint.
-Writer: `aftermath_finish`, sole writer of `codex/gate4-encounter-release`.
+reviewed; reviewed cache development dependency integrated. Published draft PR48
+at `75991dd6c1e782b8fe42257bcb65c26a8d0f3997` passes all six CI jobs,
+including all 59 table scenarios on Linux and native Windows, the four additional
+release histories, both reviewed fixture corrections and fresh Windows packaging.
+Final verified-parent reconciliation, genuine flow 4 compatibility evidence,
+canonical verification and packaged release play remain acceptance blockers.
+Writer: `gate4_release_verify`, assigned sole writer of
+`codex/gate4-encounter-release` for the 2026-09-28 evidence checkpoint.
+The prior implementation writer was `aftermath_finish`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
 `f441adedcf490504b6f1e3db1a964c023c511e47` (verified PR44).
@@ -557,9 +558,10 @@ filtered tests. This executed the complete survivor-only session, dead placement
 refusal, new global turn 10 and surviving actor movement, corpse/item preservation,
 both original death-save response retries and changed-body whole-store refusals.
 The only source change from 96 to 703 is the reviewed test expectation above.
-All four additional families therefore have actual focused passes, but no complete
-current-head canonical or CI pass is claimed. They remain absent from published
-4f38c1d. No production rule or refusal assertion was weakened.
+At that focused checkpoint all four additional families had actual passes, but no
+complete canonical or CI pass. They were absent from then-published 4f38c1d.
+The subsequent publication and complete CI results are recorded below. No
+production rule or refusal assertion was weakened.
 
 External source-qualified logs/metadata are
 `tooling/release-96b4faf-four-app-families.{log,json}` and
@@ -568,7 +570,7 @@ incremental compilation off, serial test execution and RUST_MIN_STACK unset.
 The earlier Linux/native draft CI results are separately summarized in
 `tooling/release-4f38c1d-ci-runtime-results.json`.
 
-The next local test checkpoint authors the first additional real scenario above.
+The additional Savage checkpoint authors the first real scenario above.
 It reuses source creation and the initial genuine critical-hit helper, purchases
 one dagger, reports two physical ones for the first Savage damage, and retains
 the actual Goblin's 10→5 HP change. The first receipt ends at global turn 2; the
@@ -582,9 +584,9 @@ conclusion and with no central work remaining. Only the real next Start at turn 
 clears that Reaction, retaining the prior Savage marker until the next actual
 Savage roll. Its lethal melee result is resolved by the normal knockout choice.
 Independent file restore/resume surrounds material boundaries; full-store refusals,
-old receipt retry bytes and retained raw roll history are checked. This is authored
-test source, not a passing runtime result. Published CI and this local checkpoint
-remain separate until root authorizes the next source publication.
+old receipt retry bytes and retained raw roll history are checked. This source
+initially had no passing runtime result; its focused pass is recorded above and
+its two complete published-head runtime passes below.
 
 The following local custody checkpoint also authors a genuine file-SQLite path.
 The source Goblin doffs its actual shield, waits for its next real turn, and fires
@@ -606,7 +608,8 @@ attack. At every material boundary the original arrow stack remains 19 and the
 same bow remains at its old scene position, absent from the new map and loadout.
 Independent file restore/cold resume, original bow-response retry bytes and a
 changed-body whole-store refusal are included. This test/helper-only checkpoint
-has not compiled or run; no production change or runtime acceptance is claimed.
+initially had not compiled or run; the source-qualified focused and complete CI
+passes are now recorded in this plan. It changes no production rule.
 
 The third local family reuses the real source attack from
 `table_medicine_cases::prepare(false)`: a Goblin critical with physical 5 and 5
@@ -631,7 +634,7 @@ after the owner is absent and the session/encounter has changed; changed physica
 bodies refuse without any durable mutation. Material boundaries use independent
 file restore and cold public resume. This was test/helper source only at its
 authoring checkpoint; its first runtime failure and correction are recorded above.
-The published CI head remains separate.
+The corrected scenario is included in the published-head passes below.
 
 The fourth local family creates a real Mage and Adult Red Dragon, casts actual
 Mage Armor, and exports the settled dragon turn before its first breath. Two
@@ -656,7 +659,76 @@ actual source legendary windows are individually declined through their normal
 commands. Material transitions use independent file restore/cold public resume,
 original response retries and changed-body full-store refusals. This additional
 test/helper source initially had only formatting and whitespace checks. Its full
-scenario now passes in the original 96b4faf focused run; it has not been pushed.
+scenario passes in the original 96b4faf focused run and the two published-head
+runtime jobs below.
+
+### Published 75991dd verification checkpoint — 2026-09-28 review
+
+Root published the reviewed test/evidence checkpoint as
+`75991dd6c1e782b8fe42257bcb65c26a8d0f3997`. Fresh inspection of the actual
+job logs, workflow metadata and artifact API confirms all six CI jobs passed.
+Linux run [36320964281](https://github.com/idiotswill/DMd/actions/runs/36320964281)
+checked out synthetic merge `514e5ad4912295d6e6401260c90a89477e267486`.
+That fetched commit has parents cache main
+`046109cdc849c16100c42588e771f8abe710c787` and the literal 75991dd source.
+Both source and synthetic merge have full tree
+`5e5f36c03a22e36fc25e7cc9622b1819fd138953`; their complete file delta is empty.
+This establishes the source tested by Linux without calling its synthetic SHA
+the literal branch checkout or treating it as normal parent reconciliation.
+
+- Linux runtime job **108624568916** passes fast verification, strict all-target
+  Clippy and the complete workspace: **768 Rust tests across 55 result groups**,
+  zero failures or ignored tests. All **59 table scenarios** pass in **6232.06s**.
+  The six Reactions histories pass in 47.28s, including the genuine closed flow 2
+  upgrade/finish; five frozen Shield histories pass in 105.30s. All 31 movement
+  tests pass in 0.52s and all 52 turn tests in 1.82s.
+- Linux architecture job **108624568731** passes all eight guard tests and the
+  boundary scan. Genericity job **108624568912** passes. MSRV job
+  **108624568855** passes the complete all-target check on Rust 1.88.0 in 50.43s.
+- Windows run [36320964277](https://github.com/idiotswill/DMd/actions/runs/36320964277)
+  checks out literal source 75991dd in both jobs. Stable job **108624568286**
+  passes formatting, strict desktop lint and the native workspace: **770 Rust
+  tests across 55 result groups**, zero failures or ignored tests. All **59 table
+  scenarios** pass in **3541.41s**; six Reactions histories in 26.75s, five Shield
+  histories in 88.27s, 31 movement tests in 0.32s and 52 turn tests in 1.06s.
+  Windows MSRV job **108624568472** passes the Rust 1.88.0 workspace/all-target
+  check in 28.55s. Both jobs pass **103 UI tests in 17 files**, Svelte checking
+  with zero errors/warnings and a **140-module** frontend build.
+- Both runtime logs contain literal passing results for the original two-encounter
+  release case and all four new real file-SQLite families: Savage/off-turn Reaction,
+  spent arrows/unconscious bow custody/first aid, actual death/survivor-only play,
+  and actual failed-then-successful recharge with the separate dead-Mage Armor
+  refusal history. The genuine closed flow 2 case passes separately. These results
+  replace neither the recorded earlier failures nor the missing flow 4 corpus.
+- Windows stable completes fresh optimized application and offline NSIS packaging.
+  Artifact **10933931692**, named
+  `dmd-windows-75991dd6c1e782b8fe42257bcb65c26a8d0f3997`, is **232261406
+  bytes**, created 2026-09-27T14:14:14Z. The upload log and artifact API agree on
+  SHA256 `9f7a2baeecc09dc39af9e575069842cc9dbce19d00d4e6f45a823a1f28cc6468`.
+  This checkpoint verifies creation and metadata, not a local archive download,
+  internal file-manifest check, installation or packaged release play.
+
+The independent review covers the complete 4f38c1d→75991dd source delta:
+eight test/helper files and this evidence plan. No production code, dependency,
+catalog/content, frozen JSON history or original request body changes in that
+delta. The movement correction retains all nine corruption checks and the
+post-Finished corruption check, and adds the explicit unauthenticated-Finished
+refusal before genuine Conclude/Finish commands. The death correction matches
+the unchanged `tactical_damage::kill` representation while retaining physical
+1→2 saves, their accepted provenance and the intermediate two failures.
+Review of all four complete families finds actual creation/actions/physical dice,
+independent file restore plus cold public resume, exact response retries and
+complete export equality on changed-body refusal (only export time normalized).
+No source defect was found in this delta; no local build was started for this
+read-only CI/source review. The heavy slot remains assigned to root.
+
+External evidence is retained as `tooling/release-75991dd-ci-<job-id>.log`,
+`tooling/release-75991dd-ci-evidence.json` and
+`tooling/release-75991dd-review.md`. This is a successful **development
+checkpoint**, not final release or Gate 4 acceptance. The final integrated head
+still requires canonical verification, all six checks, actual packaged play,
+protected merge and separate post-main evidence after the verified prerequisites
+and genuine flow 4 original-source baselines are incorporated.
 
 The original uncached `0f43823` capture producer was stopped by root's instruction
 for controlled cache measurements before any of its four scenarios completed.
@@ -701,13 +773,11 @@ the next slice, with real controller/session and semantic recovery evidence.
 User-facing controls use “Finish encounter” and “Prepare battlefield”; they
 do not expose executor or schema internals.
 
-Next action: review this evidence checkpoint and obtain root's next publication or
-normal dependency-integration assignment. All four source families, the movement
-correction and the terminal-death expectation correction have clear source review
-and the focused results above. Preserve their physical chronology and exact refusal
-assertions through the eventual verified parent reconciliation.
-Published PR48 remains at its separately reviewed compiler-fix head until root
-authorizes the next publication; both original runtime jobs have completed.
-Final verified cache/MM main, genuine flow 4
-baselines and the complete runtime/UI/package matrix remain hard acceptance
-blockers. Draft publication is not slice or Gate 4 acceptance.
+Next action: root reviews this documentation-only evidence checkpoint before
+publication. Keep draft PR48 at 75991dd until that review, and obtain root's
+normal dependency-integration assignment after verified MM main and genuine
+flow 4 exports/original-source baselines are ready. Preserve the four real
+families' physical chronology and exact refusal assertions through reconciliation.
+Published 75991dd development CI passes; final integrated canonical/CI verification,
+packaged release play and separate merged-main verification remain outstanding.
+Draft publication is not slice or Gate 4 acceptance.
