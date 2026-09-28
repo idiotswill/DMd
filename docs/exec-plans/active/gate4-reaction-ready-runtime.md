@@ -18,8 +18,11 @@ d82d7b2 after all six source and post-main checks; its bounded source plan is ar
 ReactionsV1 attack, knockout, paid-Ready and original1-to2 upgrade saves are retained
 in PR42 before any new response semantics.
 Player-owned source control PR43, aftermath PR44 and bounded hit Shield PR45 are
-merged with their qualified evidence. Cache PR47 is merged as046109c with exact
-tree parity; separate post-main proof is pending. The current bounded missile plan
+merged with their qualified evidence. Cache PR47 is merged as 046109c with exact
+tree parity and all six separate post-main checks/fresh packaging passing. The
+completed [Shield](../completed/gate4-shield-hit-runtime.md) and
+[cache](../completed/gate4-immutable-catalog-cache.md) plans retain their exact proof.
+The current bounded missile plan
 records source-qualified counts and remaining canonical, packaged and final-head
 checks. Source casting completeness, privacy, Counterspell and all Ready mechanisms
 remain mandatory Gate4 work. No family or gate closure is claimed.

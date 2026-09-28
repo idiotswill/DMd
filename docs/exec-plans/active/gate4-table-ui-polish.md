@@ -1,8 +1,8 @@
 # Gate 4 — Keep tactical play readable across decisions
 
-Status: active; native package `56a2225` exposed a pending-prompt focus gap. The
-bounded correction passed independent static review; successor compile, runtime
-and package verification remain pending.
+Status: active final integration. Native package `56a2225` exposed a pending-prompt
+focus gap. Corrected `7289c5e` passes independent review and local frontend
+verification; canonical, final CI and corrected native package acceptance remain.
 Writer: root following the coherent correction commit and explicit 2026-09-28
 ownership handback. `gate4_verification_review` implemented the correction under
 exclusive ownership; root independently reviewed the complete diff and retains
@@ -10,11 +10,38 @@ the heavy verification slot. Branch:
 `codex/gate4-table-ui-polish`. Reuses the clean, inactive weapon worktree; its
 previous branch and commits remain preserved. Development base is missile
 candidate `f4890b73814d7c0f3551350352601eb5ed0d19ed`, whose full production tree
-matches the source-verified ffc3 package. Fetched main is
-`046109cdc849c16100c42588e771f8abe710c787`. This branch must reconcile verified
-missile main and pass its own final checks before acceptance; candidate ancestry
-is not a substitute for that proof. Draft PR 49:
+matches the source-verified ffc3 package. Root has now reconciled merged missile
+main `c4d8c34c19b5c92eca789f292f99632a0107d861`; its literal-main CI remains
+under separate audit. This branch must pass its own final checks and native
+acceptance; candidate ancestry is not a substitute for that proof. Draft PR 49:
 <https://github.com/idiotswill/DMd/pull/49>.
+
+## Current integration checkpoint — 2026-09-28
+
+Exact `7289c5ee24faac26e6f4ce6a9293aff19cb9c488` passes local frontend checks
+07:19–07:22 UTC with Node24.19.0/npm11.17.0 and one test worker: Svelte0 errors
+and0 warnings,112 tests in18 files, and a successful141-module production build.
+Its Windows MSRV job independently reports the same frontend result. The other
+completed checks are Linux MSRV and both guards; both full runtime jobs/package
+are still under audit. Preserve that remote source until its package completes.
+
+PR46 protected-merged exact reviewed a877 as literalc4d8 at07:21 UTC after
+canonical746 GNU Rust/55 groups/all54 table cases and all six source checks.
+Fetched main and a877 have identical complete tree
+`9e3be62afc7af111acf06ac7b82e8aff8367e194`. Post-main checks are separate and still
+running. The normal local UI reconciliation retains728's complete production,
+test, dependency and content trees. Squash-history conflicts in EncounterPanel
+and MissileResponsePanel retain the verified UI versions; prerequisite plan
+conflicts take merged main. No code correction is introduced by reconciliation.
+
+Next: commit this integration/evidence checkpoint, run canonical verification
+on the clean resulting head, and obtain all six final-head checks. Do not cancel
+the existing728 jobs/package by publishing early. Repeat the actual failed
+Cast-to-order and order-to-owned-response transitions on the corrected native
+package, preserving fresh blank dice/payment controls and actor-safe maps.
+The normally created fresh QA encounter is preparation, not passing acceptance.
+Hold this PR's merge until the strict c4d8 producer capture/original-source
+baseline needed by release PR48 completes. No Gate4 family is closed here.
 
 ## Objective and observed defects
 

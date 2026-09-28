@@ -1,19 +1,36 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active final integration. Exact `ffc3c342dd542c48f05edf39a7123d0f6325f750`
-passes all six source CI checks, all four actual SQLite missile families, both
+Status: merged; separate literal-main verification and plan archival remain.
+PR46 protected-merged reviewed a877 as `c4d8c34c19b5c92eca789f292f99632a0107d861`
+on2026-09-28 at07:21 UTC, with fetched complete-tree equality
+`9e3be62afc7af111acf06ac7b82e8aff8367e194`. Exact a877 passes canonical
+`./scripts/verify` (746 GNU Rust/55 result groups,0 failed/ignored/filtered,
+54 table cases5723.94s, strict lint and guards) and all six source CI jobs
+(747 Linux/749 native Rust,99 UI tests). The local architecture guard's one
+Windows symlink-privilege skip is exercised on Linux. Source-qualified ffc3
+native play below remains production/UI-identical. Literal-main checks are
+running; root holds other main merges for genuine flow4 captures and the
+original-source baseline afterward. Preserve the failed940 OOM attempt. Current
+next action is post-main proof and compatibility capture, superseding historical
+pending-verification notes below. No Gate4 completion is claimed.
+
+Earlier integration checkpoint: exact `f4890b73814d7c0f3551350352601eb5ed0d19ed`
+and earlier `ffc3c342dd542c48f05edf39a7123d0f6325f750` pass all six source CI
+checks, all four actual SQLite missile families, both
 five-case historical suites and 99 desktop tests. Canonical verification of the
-final integrated head, actual packaged restart, final review/checks and protected
-merge/post-main proof remain required. The earlier uncached `0f43823` run was
+final integrated head, final review/checks and protected merge/post-main proof
+remain required. Actual packaged restart and continuation pass on the source-qualified
+ffc3 artifact below. The earlier uncached `0f43823` run was
 intentionally stopped with all four cases unfinished; it is not passing evidence.
-PR45's literal post-main checks pass. PR47 is merged with complete fetched tree
-parity; its separate literal post-main checks are running. Both mains are normally
+PR45 and PR47 pass all six separate literal post-main checks and fresh packaging,
+with complete fetched tree parity. Both mains are normally
 reconciled here without changing production source from ffc3.
 Branch: `codex/gate4-shield-missile-runtime`.
 Draft PR: <https://github.com/idiotswill/DMd/pull/46>.
 Writer: root, exclusively after the explicit 2026-09-27 transfer from inactive
 `shield_integration_review`. Root coordinates independent review and serializes
-all heavy builds; the release branch currently holds the local heavy slot.
+all heavy builds. Root owns the local slot. Memory is available again on
+2026-09-28; the final-head canonical retry remains required after the failure below.
 Development base: `98399da19def1f5a4cbf6d7ef230bd98c6d1c421`, which integrates
 verified PR43 main `e813e3a13911497902a3d4a55aec3c70653afb2a` into the Shield
 candidate. Its complete tree equals `7bc01afc46f3591e38e5168072496e91c115c10d`;
@@ -50,8 +67,8 @@ historical implementation record below; their original attempts remain recorded.
 - Fresh EXE/NSIS artifact 10930791509 is 232166713 bytes, SHA256
   `eb820d8bdee358d15f84522c8e4565ce1d42384db7bb2bdbcb5b4bb95daa8c91`.
   Upload log, artifact API and downloaded archive agree; all 1070 packaged file
-  hashes pass. Its build metadata names ffc3. Root is exercising its normal UI
-  in a separate QA campaign; a restart result is not yet claimed.
+  hashes pass. Its build metadata names ffc3. Actual normal-UI restart and
+  continuation pass in the separate QA campaign described below.
 - PR45 merged as `a0b12d2d0144a744e3419c1ba69e2d7aac64fd79`, full-tree equal to
   reviewed bfe. Literal post-main runs 36311244326/36311244361 pass all six jobs:
   724 Linux and 726 native Rust tests, 89 UI tests and fresh EXE/NSIS artifact
@@ -63,7 +80,15 @@ historical implementation record below; their original attempts remain recorded.
   strict lint and guards. Protected squash main is
   `046109cdc849c16100c42588e771f8abe710c787`, whose complete fetched tree equals619
   (`cdeae1df5a0f82532cbf36ab5347cc4fd61150b4`). Literal post-main runs
-  36317294013/36317293934 remain pending, independent of source passes.
+  36317294013/36317293934 separately pass all six jobs. Actual Linux job
+  108614304572 records 726 Rust tests/54 suites, all 50 table cases in 355.31s and
+  five histories in 23.39s. Actual native job 108614304307 records 728/54, all 50
+  table cases in 757.24s and five histories in 48.45s. Both have zero failures or
+  ignores; both warmed-content controls pass. Native UI is 89 tests/16 files,
+  zero static errors/warnings and 139 modules. Fresh EXE/NSIS artifact 10931129810
+  is 231902908 bytes, SHA256
+  `997630a8def1e47d2413de8f29464628db3230007d54237d9d9ec79e18df79ae`;
+  actual upload and independently read artifact API agree on literal main.
 - Normal merge `678842ade338815ed4998db60c6e47502b1b54a7` reconciles619 first:
   exactly four cache-warmup test lines and cache-plan evidence change from ffc3.
   Normal merge `dcd30ed7147d4f60338cb2fd8af8afe817b23f17` then reconciles literal046
@@ -72,12 +97,117 @@ historical implementation record below; their original attempts remain recorded.
   genuine captures remain byte-identical to ffc3; full final-head checks remain
   mandatory despite that parity.
 
-Next: complete cache post-main proof and packaged missile/Shield restart; record
-and archive the completed Shield/cache prerequisite plans, retaining this plan and
-its integrated app subplan until final acceptance. Independently review the complete
-final diff, run canonical verification when the shared slot is released, and require
-all six final-head jobs before protected merge and literal main proof. Counterspell,
-Ready, off-turn producers and encounter release remain active Gate4 obligations.
+The bounded [Shield plan](../completed/gate4-shield-hit-runtime.md), its
+[rules support](../completed/gate4-shield-hit-rules-tests.md) and
+[application support](../completed/gate4-shield-hit-app-drivers.md), and the
+[cache plan](../completed/gate4-immutable-catalog-cache.md) are archived with their
+separate final-source and literal-main proof. Their historical checkpoints remain
+source-qualified. This plan and its integrated app subplan remain active.
+
+Exact `940c92b64530dbd9507998f5a60d5a47bf7b7e29` attempted canonical
+`./scripts/verify` on 2026-09-27, 13:01:22–13:10:08 UTC, with Rust1.98.1 GNU,
+one build job, incremental off and `RUST_MIN_STACK` unset. Formatting, workspace
+check and strict all-target Clippy passed. The test compilation failed with
+`rustc-LLVM ERROR: out of memory` in the dmd-app library test binary; exit101.
+No runtime or complete canonical pass is claimed. The complete original log and
+source/environment metadata remain in `tooling/missile-940c92b-canonical.{log,json}`.
+Closing the completed QA app still left less than 1GB of Windows commit headroom;
+the owner was asked to free unused applications while remote CI/source work continues.
+
+The complete implementation and subsequent evidence-only changes have independent
+review. The f489 jobs that were unfinished on 2026-09-27 subsequently completed;
+none were cancelled. On 2026-09-28 root read their actual runtime logs and artifact
+API. Linux36317934910/108616074714 passes 747 Rust tests across 55 suites, zero
+failures/ignores, all54 table cases in5285.37s, five Reactions histories in39.07s
+and five Shield histories in105.60s. Previously checked synthetic73c05c2 and literal
+f489 share complete tree `b9ce0f67cce724810ded062fd39827ebf660afc3`.
+Native36317934871/108616074179 checks out literal f489 and passes749 Rust/55suites,
+zero failures/ignores, all54 table cases in5976.26s, five Reactions histories
+in43.34s and five Shield histories in128.21s. All four missile families explicitly
+pass on both systems. Native UI passes99 tests/17files, zero static diagnostics
+and140 modules. The other four checks also pass; their actual logs were previously
+read. Fresh artifact10933486970 is232166519bytes, SHA256
+`e278b4055efe6ff5e473054b44a8dcde4dc9c8b6ce63e64ad1cfa66dffd016e8`;
+upload log and independent artifact API agree. This package was not used for
+additional play. The actual ffc3 UI proof above remains separately qualified.
+
+The only changes after f489 are documentation and ledger evidence. All six checks
+must still run on the final published head. At resumption Windows reports over
+30GB committed-memory headroom, permitting a canonical retry with unchanged
+compiler/test settings; availability itself is not verification evidence.
+
+Next: publish the reviewed final head, rerun canonical verification once memory is
+available, and require all six final-head jobs before protected merge and literal
+main proof. The retry must retain the failed attempt and record its own exact source
+and environment. Counterspell, Ready, off-turn producers and encounter release
+remain active Gate4 obligations.
+
+Remaining UI polish observed during real packaged Gate 4 play: Character Sheet
+Equipment/features still contains Gate 3 wording that says weapon attack/damage
+controls and mastery/full weapon properties are unavailable, despite the implemented
+bounded Gate 4 paths. Update that wording to describe the actual supported subset.
+The source-channel map also lists observer-known Mage/Rook/Hag alongside controlled
+You/Rook/Hag entries, producing duplicate visible labels. These are recorded UI
+cleanup obligations, not demonstrated mechanics failures, and are not fixed or
+silently waived by this Magic Missile slice.
+Each committed dart choice also returns the page to its top, requiring repeated
+scrolling to reach the next choice. Preserve useful scroll/focus during these
+sequential decisions as part of Gate 4 UI cleanup.
+These three issues are now implemented separately in draft PR49,
+`codex/gate4-table-ui-polish`, with independent review and 106 native UI tests,
+zero static diagnostics and a 140-module build at exact56a2225. That branch still
+requires final dependency reconciliation, canonical/full CI and actual native
+scroll/map/sheet exercises; its draft evidence does not close this UI debt here.
+
+### Actual packaged restart and continuation
+
+On 2026-09-27 root used the verified ffc3 portable `DMd.exe`, through its native
+window and normal forms, to create the separate campaign `Missile Shield QA ffc3`.
+The older campaign was left untouched. This was actual persisted application play,
+without a development server, mock, preloaded test fixture, SQL edit or injected
+application command. The built package's MSVC metadata and all 1070 file hashes
+were checked before play. This proof belongs to ffc3, whose production source,
+dependencies, content and desktop match the integrated candidate; the four added
+cache-warmup test lines and documentation still require final-head verification.
+
+The normal creation path made player Arin QA and Human Fighter Rook QA, bought and
+prepared Leather Armor, started a session, enabled source control, created a real
+Mage and Night Hag, assigned Mage to Arin and Hag to Host, and staged a bright
+50-foot court. Physical initiative faces 1/10/20 produced Rook3/Mage12/Hag25.
+Host selected the Hag's actual Magic Missile grant, bound all six target fields
+to Mage, then submitted the separate potential-response order. Arin's Rook channel
+only showed waiting; explicitly selecting the controlled Mage exposed its own
+private Shield offer and selected decision.
+
+At the selected Shield decision, root closed the actual app window, verified that
+the process window was absent, and relaunched the same portable executable. The
+new window retained the campaign/session, Arin/Mage channel, round1 and the same
+selected Shield decision; no new offer or order was necessary. The resource chooser
+remained uncommitted. Selecting the source use and `Cast Shield · spend Reaction`
+then succeeded. Host reported all six physical d4 faces, in order 1,2,3,4,1,2.
+Only after the sixth report did all six dart consequence choices appear. Root
+chose darts 6,1,4,2,5; the sole remaining dart3 completed automatically. Each
+chosen dart left the queue, ordinary controls stayed blocked until the final
+resolution, and End Turn then became available with the Hag's Action still spent.
+
+A separate read-only SQLite audit after UI completion, using URI `mode=ro` and
+`query_only`, corroborates sequence29: Mage81/81 HP, exactly one protective-magic
+use and Mage Reaction spent, one Shield effect expiring at its next own Start,
+six distinct Physical roll requests/accepted commands with the entered faces,
+no pending rules/effect work and Active flow4. HP/cost are saved-state evidence,
+not a claim that the source HP sheet was visible in the final UI. The first audit
+assertion incorrectly expected an empty list for the optional rules pending field;
+inspection showed its actual absent value is null. Correcting that audit type
+expectation produced a complete pass without any application mutation.
+
+Local evidence is `tooling/missile-ffc3-packaged-ui-observations.txt` (actual
+before-restart, after-restart and completed accessibility text),
+`tooling/audit-missile-ffc3-packaged.py` and
+`tooling/missile-ffc3-packaged-state-audit.json`. This bounded smoke proves restart
+and continuation for one owned target; the four real SQLite acceptance families
+cover the broader multi-owner, concentration, first-aid/death and receipt matrix.
+It does not complete Counterspell, Ready, off-turn casting, encounter release or
+Gate 4. Final canonical, exact-head CI/review, merge and separate main proof remain.
 
 ## Objective, product traceability and boundaries
 

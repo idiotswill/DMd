@@ -2,8 +2,11 @@
 
 Status: required active Gate4 work. Bounded hit Shield PR45 is merged and verified
 on literal main a0b12d2. Missile PR46 passes source CI atffc3 but still needs final
-integrated canonical, packaged restart, review/checks and merge/main proof.
+integrated canonical, review/checks and merge/main proof. Source-qualified ffc3
+packaged restart and continuation pass as recorded in the missile plan.
 Broader source reactions and Ready release remain outstanding.
+The completed [hit-Shield plan](../completed/gate4-shield-hit-runtime.md) records
+its final source, protected merge and separate literal-main proof.
 Writer: root; current implementation branch codex/gate4-shield-missile-runtime.
 The original compatibility branch codex/gate4-live-reaction-responses was created from
 fetched main d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38 after the protected PR38
