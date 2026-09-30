@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ShoveDecision, ShoveView, TacticalAction } from '../tactical-api';
+  import { tacticalPromptIdentity } from '../tactical-focus';
   let { shove, disabled=false, onAction }: { shove:ShoveView;disabled?:boolean;onAction:(action:TacticalAction)=>void }=$props();
   let horizontal=$state('');
   let vertical=$state('');
@@ -10,7 +11,7 @@
   function choose(decision:ShoveDecision){onAction({ShoveDecision:{handle:shove.key,decision}});}
   function push(){if(!valid||!shove.from)return;const [x,y]=horizontal.split(',').map(Number);choose({Outcome:{choice:{Push:{destination:{x:shove.from.x+x*10,y:shove.from.y+y*10,z:shove.from.z+Number(vertical)*10}}}}});}
 </script>
-<fieldset {disabled}><legend>{shove.stage==='SaveChoice'?'Choose your Shove saving throw':shove.stage==='OutcomeChoice'?'Choose the Shove result':'Private host push review'}</legend>
+<fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'shove',key:shove.key,actor:shove.actor,stage:shove.stage})} tabindex="-1" {disabled}><legend>{shove.stage==='SaveChoice'?'Choose your Shove saving throw':shove.stage==='OutcomeChoice'?'Choose the Shove result':'Private host push review'}</legend>
   {#if shove.stage==='SaveChoice'}
     <p>Choose Strength or Dexterity. The rules determine any automatic failure and the dice needed. Choosing to fail a save remains a separate decision.</p>
     <button onclick={()=>choose({Save:{ability:'Strength'}})}>Strength saving throw</button>

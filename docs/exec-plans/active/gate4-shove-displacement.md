@@ -108,14 +108,17 @@ unchanged. Optional new record fields skip serialization when absent.
   Air profile or altered old catalog. Genuine Prone-immunity table/native
   evidence stays unresolved until that source dependency is verified.
   Its immutable local checkpoint is
-  `4a27cb0776f1ba5efe0bc2c9fa4a3e782093039e`; this Shove branch remains on c4d8
-  without that checkpoint. Root must reconcile the added creation source pin and
-  source-aware save helper when integrating; source tests here use frozen V1.
+  `4a27cb0776f1ba5efe0bc2c9fa4a3e782093039e`, imported by local merge
+  `4567aaf` under root's explicit integration authorization. The new ledge
+  creation supplies the exact Mage source pin, and the shared save helper keeps
+  Air's immutable source-aware lookup. Original ID-only helpers remain frozen V1.
 - UI: root exclusively owns the reviewed focus/remount correction and local
   main reconciliation at `65b7606bd486120a1c650e44028e4195763a5b6c`. Integrate it
-  precisely later; do not build a second focus/draft framework. Every fresh raw
+  precisely; do not build a second focus/draft framework. Every fresh raw
   request is blank while its viewport remains reachable. Exact retries retain
   the original envelope rather than creating a fresh request.
+  Local merge `4be7b3e` now preserves that exact commit in ancestry; new Shove
+  prompts extend its existing kind/actor/key/stage identity and focus metadata.
 - Release/history: root owns original flow4 producer captures/baseline and
   release5. Do not edit historical producers, fixture bytes or expected results.
   Archive/provenance/parent interpretation must be checked on the integrated head.
@@ -184,16 +187,43 @@ The independent read-only reviewer identified fixture ammunition/control and
 retained proof weaknesses before the checkpoint. Replaced the pure Goblin fixture
 with a genuine Mage source, assigned the app source to Host through real commands,
 and strengthened final-save authority/result, exact source-node ancestry and
-accepted route/landing reconstruction. Independent exact-commit review remains
-required. No native evidence, compiler result or gate acceptance is claimed.
+accepted route/landing reconstruction. Independent review of checkpoint
+`b7e4e71aa446e1537d16f1d02d2237e3d61258fb` (tree
+`dbea4f13b62b88b3e6b731820e1eda39c14e05d6`) reported no remaining concrete
+findings; that review was static only. No native evidence, compiler result or gate
+acceptance is claimed.
 
-Next: hand the coherent local checkpoint to the independent reviewer, fix any
-findings, then let root integrate Air and the exact UI focus/remount correction.
+2026-09-30 integration: root authorized the sole writer to merge the exact Air
+and UI checkpoints locally, preserving both original commits. Spatial conflict
+resolution retained Air's source-special geometry checks and Shove's separate
+positive obstruction proof; UI conflict resolution retained the selected-actor
+map and both Shove forms. No flow/release5 change was introduced.
+
+Additional authored, unexecuted app cases select Air's exact pin from the real
+installed Host catalog, create it normally, assign Host through accepted source
+control and establish a supported PC beside actual Hover flight. Real file SQLite
+reopen/independent restore/exact retry covers paid immune Prone with no effect or
+fall, a healthy airborne five-foot Push, and an initially clear Air body pushed
+toward a private partial solid: both Commit and Blocked must reject unchanged,
+then Return preserves the paid save for an explicit immune Prone choice. The
+source's +2 STR/+5 DEX and immunity/Hover facts are asserted from the created actor;
+no custom immunity or flight fixture substitutes for that source.
+
+The existing UI focus path is unchanged. Shove supplies its prompt identity and
+focusable fieldset. Added TableApp interaction cases cover target save choice,
+fresh physical save, shover outcome, Host review, returned blank direction/elevation,
+fresh child damage and concentration dice, and absence of an unavailable Host
+choice. The form checks and TypeScript syntax parse do not establish native focus
+or gameplay acceptance. Rustfmt and diff checks passed; no cargo/npm/build/test
+command ran in this integration task.
+
+Next: send the stable integrated checkpoint for fresh independent static review,
+fix any findings and transfer it to root's serial executable verification slot.
 Root owns serial focused tests, fast/canonical checks, historical flow4 producer
 parity, release5 reconciliation, exact-head CI and genuine native desktop capture
 (including fresh raw-face blanking/reachability and pending-state restart).
-Actual Air Prone-immunity, Air Form refusal and healthy Hover proof must run only
-against the integrated real source; do not replace them with invented mechanics.
+Actual Air Prone-immunity, Air Form refusal and healthy Hover proof must now be run
+against the integrated real source before those acceptance items can close.
 The branch's behavior remains unverified until those checks succeed.
 
 Remaining Gate4 work stays binding: Grapple/Escape/dragging, unarmed equipment

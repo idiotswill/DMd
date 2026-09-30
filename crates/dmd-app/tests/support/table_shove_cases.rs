@@ -2,6 +2,8 @@
 //! file. Every accepted Shove stage is cold reopened, mirrored and retried.
 use super::*;
 use dmd_rules::tactical::TacticalAction;
+#[path = "table_shove_air.rs"]
+mod air;
 #[path = "table_shove_ledge.rs"]
 mod ledge;
 
