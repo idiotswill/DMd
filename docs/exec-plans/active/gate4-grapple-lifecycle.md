@@ -1,10 +1,9 @@
 # Gate 4 — Grapple and Escape lifecycle
 
-Writer: `shove_publish_correction` for the current derived-hand checkpoint,
-coordinated by root. Branch:
-`codex/gate4-grapple-lifecycle`. Status: **root-approved source/domain and bounded
-derived-hand composition authored for independent review; no runnable Grapple
-gameplay or executable verification**.
+Writer: root, following the source/domain and derived-hand author's handback.
+Branch: `codex/gate4-grapple-lifecycle`. Status: **guarded foundation independently
+reviewed; draft publication for first executable checks, no runnable Grapple
+gameplay or executable verification yet**.
 Date: 2026-09-30.
 
 Development base: `387b74241d1870964be0e88cb0f3216e151c9b55`, tree
@@ -797,7 +796,8 @@ flight/forced-displacement ordering. The immutable source revision needs
 independent review and executable content/source verification. The full resolver
 must replace the checkpoint guard with authenticated source/admission/result
 validation, exact consumer retention/retirement, origin collection and original
-replay before any gameplay acceptance or publication. These are engineering/source proof
+replay before any gameplay acceptance or release publication. A guarded draft for
+CI is separately authorized below. These are engineering/source proof
 obligations within Gate4, not requests to waive product acceptance.
 
 The narrow installed-source correction was committed as
@@ -838,7 +838,19 @@ resolver obligation remains in this plan. The detailed plan records exact caller
 coverage and qualifies synthetic fixture setup, source-only controls and deferred
 full-lifecycle evidence.
 
-Exact next action: complete permitted static/format/diff checks, send root the
-clean checkpoint commit, exact tree and complete diff, then freeze this branch.
-Do not build, run tests, publish or expand into resolver/gameplay/transport/UI.
-Root must arrange independent review and later serial executable verification.
+The complete bounded hand delta at `ec886ac147e91bb670692f69c46cf8f36fe83000`
+has now passed independent static review; its exact memo/hash and qualifications
+are recorded in the derived-hand plan. Root resumes sole branch ownership and
+authorizes a guarded draft PR for first remote compilation and regression
+evidence. This supersedes the prior author's publication hold only, not the
+full resolver, acceptance or guarded-authority contract. The draft initially
+targets published Shove c1124004 for a bounded review and must never merge into
+that development branch. Final accepted dependency integration, main retargeting,
+exact-head review/checks and relevant production evidence remain mandatory.
+
+Exact next action: publish the reviewed foundation plus this documentation,
+inspect actual CI results and fix justified findings. Original fixtures and
+early guards remain intact. Release owns the sole local heavy verification slot;
+no simultaneous Cargo/npm/database/native operation is authorized. Genuine
+old/new Goblin coexistence, release integration and the complete resolver,
+transport, UI, privacy and native lifecycle remain unaccepted Gate4 work.

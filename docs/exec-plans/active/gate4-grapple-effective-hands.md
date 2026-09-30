@@ -1,9 +1,9 @@
 # Gate 4 — Derived effective-hand reservations
 
-Status: **bounded implementation authored for independent review; static checks
-only, executable verification outstanding**.
-Writer: `shove_publish_correction`, coordinated by root; sole writable checkout
-`gate4-attacks`, branch `codex/gate4-grapple-lifecycle`. No PR for this checkpoint.
+Status: **independent static review clear; guarded draft publication for first
+executable verification, not gameplay acceptance**.
+Writer: root, following handback from `shove_publish_correction`; sole writable
+checkout `gate4-attacks`, branch `codex/gate4-grapple-lifecycle`.
 Date: 2026-09-30.
 
 ## Objective, authority and exact starting point
@@ -269,9 +269,34 @@ before implementing it.
 Verification so far: direct stable-GNU `rustfmt --edition 2024` parsing/formatting
 and Git whitespace checks only. These do not establish compilation or behavior.
 
-Exact next action: return the clean checkpoint and its complete diff to root,
-then freeze the branch. Root must arrange
-independent review and serial executable verification before further expansion.
-No Cargo/npm/build/test/database/native operation or remote publication has run
-for this checkpoint. Existing source/domain and installed-binding tests also
-remain unrun; their static review does not validate the new implementation.
+### Independent review and draft verification checkpoint
+
+Source checkpoint `ec886ac147e91bb670692f69c46cf8f36fe83000`, tree
+`2481a1fbed7265d324acd6af484a792dd6d8825f`, is clean and returned to root.
+Root reviewed its production delta; a separate reviewer inspected the complete
+16-file effective-hands delta and found no actionable static defect. The review
+is external `tooling/gate4-grapple-ec886ac-effective-hands-independent-review-2026-09-30.md`,
+SHA256 `e4e2d9e61d313c0be140d010dedafcb806ff3805f4c409202669cff7908ee09f`.
+The earlier source/domain review and installed-binding correction remain
+separate evidence. None of these reviews establishes compilation or runtime.
+
+Root now authorizes a draft PR containing the reviewed guarded foundation and
+this documentation checkpoint so remote CI can provide the first executable
+results. This supersedes the author's publication hold only. The PR initially
+targets published Shove `c1124004dfb3fcc84d105b512a5fe4f9502a7727` to expose
+the bounded delta; it must never merge into that development branch. Shove and
+Air are unaccepted dependencies. Final main/release/source integration, retargeting,
+review and exact-head verification remain required before any merge.
+
+No execution guard is removed, no Grapple command is exposed, and no source,
+domain, hand or installed-content code changes in this checkpoint. The local
+heavy slot remains exclusively owned by release verification. No Cargo/npm,
+database or native operation is authorized alongside it.
+
+Exact next action: publish the guarded draft, inspect actual current-head CI
+output and fix concrete failures without weakening tests or original histories.
+Then integrate reviewed dependencies and the genuine Goblin coexistence proof,
+and continue the full resolver contract through its own reviewed plan. Canonical
+local verification, genuine old-history continuation, accepted lifecycle,
+transport/UI/privacy and native evidence all remain outstanding. Draft
+publication is not gameplay publication, slice acceptance or Gate4 completion.
