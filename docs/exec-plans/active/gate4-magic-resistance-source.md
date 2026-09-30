@@ -248,3 +248,10 @@ legacy-API rejection. Its original three call sites are unchanged. Direct Rustfm
 and Git whitespace checks pass. This is not a runtime pass: independent correction
 review, new-head CI and local canonical verification remain required. The original
 parent suite, captures, production code and source content are unchanged.
+
+Independent correction review found the same mistaken typed retry separately in
+the final independent cold-restore helper. It must be corrected before publication;
+the first local correction alone is insufficient. Share the original-envelope
+retry between the three chronology cuts and final independent restored runtime,
+retaining per-operation whole-export checks and the existing all-bindings cold
+retry loop. This is the same bounded test-only protocol correction.

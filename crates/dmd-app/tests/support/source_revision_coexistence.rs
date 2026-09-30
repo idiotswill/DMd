@@ -161,8 +161,22 @@ fn assert_source_pair(state: &CampaignState, old: &CreatureProfile, new: &Creatu
 // The original creation already used presented transport version1. Retry its
 // exact retained envelope, including its old revision and absent source pin.
 async fn retry_original_hag_creation(f: &Fixture, old: &CreatureProfile) {
-    let event = f
-        .original
+    Box::pin(retry_original_hag_creation_in(
+        &f.app,
+        &f.pool,
+        &f.original,
+        old,
+    ))
+    .await;
+}
+
+async fn retry_original_hag_creation_in(
+    app: &CampaignRuntime,
+    pool: &sqlx::SqlitePool,
+    original: &CampaignExport,
+    old: &CreatureProfile,
+) {
+    let event = original
         .event_journal
         .iter()
         .find(|event| event.command_id == old.origin.id.0.to_string())
@@ -177,8 +191,7 @@ async fn retry_original_hag_creation(f: &Fixture, old: &CreatureProfile) {
         "retain the original absent-pin historical body"
     );
     assert_eq!(saved.meta, old.origin);
-    let binding = f
-        .original
+    let binding = original
         .table_transport_bindings
         .iter()
         .find(|binding| binding.meta.id == old.origin.id)
@@ -208,24 +221,33 @@ async fn retry_original_hag_creation(f: &Fixture, old: &CreatureProfile) {
     assert_eq!(receipt.command_id, old.origin.id);
     assert_eq!(receipt.outcome.message, saved.outcome.message);
     assert!(saved.outcome.mechanics.is_none());
-    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let campaign = old.origin.campaign_id;
+    let before = export_campaign(pool, campaign).await.unwrap();
     assert_eq!(
-        Box::pin(f.app.submit_presented_table(request))
-            .await
-            .unwrap(),
+        Box::pin(app.submit_presented_table(request)).await.unwrap(),
         expected
     );
-    f.assert_export(&before).await;
+    let mut after = export_campaign(pool, campaign).await.unwrap();
+    after.exported_at_utc.clone_from(&before.exported_at_utc);
+    assert_eq!(
+        after, before,
+        "original creation retry changes no durable row"
+    );
     // Reusing that presented identity through the legacy typed API remains
     // forbidden. A successful retry must not erase this protocol boundary.
     assert!(matches!(
-        Box::pin(f.app.execute_table(saved.meta, saved.action))
+        Box::pin(app.execute_table(saved.meta, saved.action))
             .await
             .unwrap_err(),
         RunnableCampaignError::TableRejected(message)
             if message == "This request identity already belongs to different input."
     ));
-    f.assert_export(&before).await;
+    let mut after = export_campaign(pool, campaign).await.unwrap();
+    after.exported_at_utc.clone_from(&before.exported_at_utc);
+    assert_eq!(
+        after, before,
+        "cross-protocol rejection changes no durable row"
+    );
 }
 
 async fn retry_created(f: &Fixture, request: &TableTransportRequest) {
@@ -993,23 +1015,13 @@ async fn cold_final_restore_and_receipts(
             expected
         );
     }
-    let original = f
-        .original
-        .event_journal
-        .iter()
-        .find(|event| event.command_id == old.origin.id.0.to_string())
-        .unwrap();
-    let saved: TableEvent = serde_json::from_str(&original.payload_json).unwrap();
-    let receipt = Box::pin(app.execute_table(saved.meta, saved.action))
-        .await
-        .unwrap();
-    assert!(receipt.already_accepted);
-    assert_eq!(receipt.command_id, old.origin.id);
-    assert_eq!(
-        receipt.event_sequence,
-        u64::try_from(original.sequence).unwrap()
-    );
-    assert_eq!(receipt.outcome, saved.outcome);
+    Box::pin(retry_original_hag_creation_in(
+        &app,
+        &pool,
+        &f.original,
+        old,
+    ))
+    .await;
     let mut changed = created.clone();
     changed.input = tactical(TacticalAction::Dodge);
     assert!(Box::pin(app.submit_presented_table(changed)).await.is_err());
