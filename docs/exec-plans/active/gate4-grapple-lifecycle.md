@@ -1,14 +1,15 @@
 # Gate 4 — Grapple and Escape lifecycle
 
 Writer: `gate4_shove_recovery`, coordinated by root. Branch:
-`codex/gate4-grapple-lifecycle`. Status: **plan only, awaiting root review; no
-implementation or executable verification**. Date: 2026-09-30.
+`codex/gate4-grapple-lifecycle`. Status: **amended plan only, awaiting root review
+of the temporal/data contract; no implementation or executable verification**.
+Date: 2026-09-30.
 
 Development base: `387b74241d1870964be0e88cb0f3216e151c9b55`, tree
 `ffd06e4d73cca2188014c0120b6e702df89935bb`, containing the Shove development
 parent and normal integration of corrected Air source `021421c4`. These are
-unaccepted development dependencies, not evidence of a merged feature. A fresh
-`git fetch origin main` still resolves main to
+unaccepted development dependencies, not evidence of a merged feature. At initial
+plan creation, a fresh `git fetch origin main` resolved main to
 `c4d8c34c19b5c92eca789f292f99632a0107d861`. The supplied development checkout is
 clean and stays on its explicitly assigned base. PR51 and other branches belong
 to root; this plan does not authorize editing them.
@@ -76,6 +77,19 @@ pp7–8, 14–15, 86, 89–92, 177, 180, 182–184, 187, 190–191 and 290/305.
    (`tactical/attacks/validation.rs`, `validate_source`). Merely letting Release
    through the guard would strand a pending attack against a third creature.
    This is a required design seam, not grounds for an idle-only release rule.
+7. `movement::validate_opportunity` compares an active unanswered window's
+   options with the current resolver's exact vector. Effective hand reservations
+   make those options sensitive to release. This is a different temporal case
+   from an issued roll: refresh the unanswered menu causally, rather than freeze
+   it or reinterpret an already selected attack. `advance_segment` already
+   rescans every participant before departure and allows a prior automatic
+   Unavailable actor to become eligible; preserve that behavior.
+8. Source damage can depend on the attack's mode: the actual Goblin Scimitar
+   adds damage only for Advantage (`attacks/creature_weapon::source_damage`,
+   also the intrinsic attack adapter). A sealed context must govern derived
+   source damage as well as dice count. Existing unfinished `FlightLost` falls
+   also rederive live flight loss; release needs separate new-grip causal proof
+   without weakening that old validation branch.
 
 ## Bounded admission and source anatomy
 
@@ -94,11 +108,13 @@ ordinary-hand capability. Its actual p290 Shortbow attack uses a physical weapon
 which requires two hands (pp90–91), and its Scimitar/Shield Gear uses the existing
 physical equipment path. This is the proposed source evidence for admission,
 not a rule that every creature with Gear or a Fey/Humanoid tag has two hands.
-The two-slot normalization is an explicit anatomy interpretation to review
-before authoring. No inference that another source has a maw/tentacle grant is
-allowed. If that evidence is insufficient on review, select a source with an
-affirmative audited capability; do not substitute a fabricated sheet or silently
-claim the source-controller matrix is complete.
+Root and independent source review accept this bounded ordinary two-hand
+normalization, and the reconstructed Human normalization above, as engineering
+interpretations rather than quoted hand counts. They do not assert a universal
+maximum number of anatomical appendages. No inference that another source has a
+maw/tentacle grant is allowed. Actual immutable payload/admission implementation
+still requires its own review; this decision is not executable source evidence
+or permission to claim the source-controller matrix complete.
 
 Use an optional typed source anatomy field omitted from old definition JSON,
 and a separate new immutable revision/file/current-admission entry, following
@@ -109,6 +125,18 @@ Installed content, the actual manifest generator, exact entry-set assertions,
 current creation pin, and coexistence tests must all reflect the added revision.
 Reconcile the independent Hag revision by exact source identity during root's
 later integration; never replace Air or an old revision by an ID-only match.
+
+Root's source investigation identifies an existing genuine coexistence starting
+point: `crates/dmd-app/tests/fixtures/reactions-v1-upgrade-100c7da.json` retains
+the old Goblin alive at HP4 in settled flow2. The planned production proof, after
+release5 integration, is an actual owner EndTurn to clear its open Attack-action
+window, explicit `UpgradeExecutionTo(EncounterReleaseV1)`, `ConcludeHostilities`,
+`FinishEncounter`, and normal current-catalog creation of the exact new Goblin
+pin in that same campaign. Preserve the original Goblin/source throughout, then
+verify cold accepted retries and original export/restore. This is a source-read
+candidate path identified by root, not an executed test or an already accepted
+release outcome. It avoids assuming a new historical capture is necessary and
+does not authorize creating an old pin through the new live picker.
 
 New Grapple admission checks, before payment: actual active-turn controller;
 living actor able to act and harm this target; authenticated anatomy and chosen
@@ -157,6 +185,18 @@ Unarmed damage can still use a kick/headbutt where lawful; a reserved hand canno
 be silently reused for a distinct creature. Special body-part attacks require
 their own typed source mapping before admission.
 
+The effective-hand audit must cover the real reader/writer chain, not only the
+new Grapple button:
+
+| Production seam | Required use of grip authority |
+| --- | --- |
+| `tactical_weapons/equipment.rs`, shared weapon planners and creature-weapon adapter | Before/after equipment allowance, two-handed use, ammunition loading, throw and physical assignment; keep real Item custody. |
+| `attacks/intrinsic.rs`, `attacks/opportunity.rs`, `attacks/planning.rs`, `attacks/validation.rs` | Actual held implements, current unchosen options, selected attack admission and historical physical equipment reconstruction use the appropriate current or sealed reservation view. |
+| `tactical/shields.rs`, `tactical_spells.rs`, `tactical_spells/binding.rs` | Shield don/doff and real S/M/free-hand exceptions; releasing a grip does not alter a paid spell or fabricate a held focus. |
+| `tactical_inventory.rs`, `tactical_creature_equipment.rs`, legacy kernel guard | Two physical slots never prove anatomy; no Item/grip collision or bypass through the legacy free-hand flag. No-authority old actions keep their old path. |
+| `tactical_vitality_adapter.rs`, vitality and condition continuations | Grip reconciliation is independent of Item dropping and cannot be skipped by an empty-loadout return. |
+| App `table_attacks`, `table_movement`, `table_shields`, `table_equipment`; desktop `AttackForm`, `ShieldForm` | Use the same authoritative availability. A physically Free but reserved hand must not be labeled usable; owned occupancy disclosure must not reveal a hidden target's identity. |
+
 Grapple starts or spends one existing ordinary Attack attack, with payment once
 before the target's save choice. Reuse source modifiers, body armor training,
 conditions, cover/Dodge and physical dice semantics from the inspected save path;
@@ -200,18 +240,51 @@ Bonus Action or Reaction cost. It removes only that relation/hand reservation.
 No visibility test can strand the controller's own grip. Public presentation of
 the release still follows knowledge rules; the command grants no extra sight.
 
-The temporal rule is explicit: an already issued physical-roll request retains
-its authenticated issued context across later free release. Later work uses
-current conditions. Add the smallest optional grapple-condition cut to work
-which can outlive a release: exact involved relations at the relevant source
-admission/issue occurrence, with original grip proofs and later release/break
-causes. It must not be a trusted cached `RollMode` or a saved whole-state override.
-Reconstruct only that historical grapple contribution when validating the sealed
-request; continue all other source, actor, equipment and request checks. Original
-semantic replay must prove that those relations actually existed at that cut and
-that the exact later command legitimately ended them. A forged cut, changed
-origin, forged release or substituted work parent must fail retained validation
-and full replay. Live action admission must never use an old cut as permission.
+The temporal rule has three distinct cases. An already issued physical request
+retains its authenticated issued grapple context; an unanswered action menu uses
+current legal options; an already initiated physical consequence retains its
+authenticated initiating cause. Later newly admitted work uses current truth.
+None of these cases grants an old saved `RollMode`, copied option vector or
+whole-state snapshot independent authority.
+
+For issued work, retain the exact new relations at the relevant source admission
+and request issue, with immutable establishment proofs and subsequent actual
+end causes. Reconstruct only their condition/hand contribution when validating
+that work. Continue the existing source, actor, equipment, position, unrelated
+condition and request checks, including the existing physical-item/ammunition
+undo used to validate admitted attacks. The same derived hit circumstances must
+govern request mode, accepted kept faces, hit outcome, critical handling and the
+source damage program. In particular, release cannot add/remove the Goblin
+Scimitar's Advantage-derived extra damage on an already issued attack. This is
+not permission to restore unrelated old conditions or equipment.
+
+Original accepted-command replay proves the relations existed at the cut, the
+cut is complete for its reader, and the exact later controller/cause ended them.
+A forged or incomplete cut, substituted source/work parent, or fabricated old
+grip/release must fail retained structural checks and original semantic replay.
+Live admission must never use a historical cut as permission. The proposed
+concrete records and their retirement rules are specified below.
+
+For an active unanswered OA window, a lawful release refreshes its affected
+options with the ordinary current `movement::options` resolver and effective
+hands, recording the original window identity and the exact release cause.
+Preserve original window origin, reactor/mover, from/to crossing, step, frame,
+work ancestry, offered order, reaction budget and already answered decisions.
+The updated vector must still equal the current resolver's vector; do not simply
+remove the equality guard. Do not reissue rolls, auto-decline, auto-select a newly
+legal weapon, replace an owner or eagerly pump beyond an unanswered child.
+An already selected OA belongs to the sealed-work rule, not menu refresh.
+
+After the existing children finish, `advance_segment` must keep scanning every
+current participant in its existing deterministic order. Attack/Declined stays
+answered; prior automatic Unavailable may be reoffered when currently eligible.
+Do not freeze a reactor roster or rewrite completed choices. A genuine automatic
+unavailability still uses the existing causal path, never a fabricated decline.
+The motivating two-handed melee/reach weapon plus occupied other hand is a
+supported pure planner invariant. Current Human starters and Goblin source gear
+do not establish its genuine table acquisition, so label that control synthetic.
+Unarmed already works without a free hand for these first admissions; freeing
+a hand alone does not create their first five-foot opportunity reach.
 
 Apply this audit to weapon, unarmed, creature and spell attacks; saves/checks;
 accepted-hit/Shield and Magic Missile collection/ordering; liquid landing;
@@ -233,16 +306,25 @@ Newly unsupported/impossible source anatomy or immunity must not leave a corrupt
 grip; audit only actual admitted producers and require explicit semantics before
 admitting new transformation producers.
 
+Reconcile outgoing grips after the real vitality/effect transition independently
+of `tactical_vitality_adapter::drop_held`. That helper returns early when no Item
+is held; a hand occupied only by a grip must still release on the grappler's
+Incapacitated/death transition. Include all actual derived Incapacitated causes,
+not only the existing newly-Unconscious item-drop comparison. Object custody,
+shield assignment and relation authority stay distinct.
+
 Death needs an explicit distinction. A dead grappler cannot sustain an active
 physical grip; record this as a dead/inert-grappler consequence alongside existing
 vitality/drop processing, including direct death without an intermediate saved
-Unconscious image. Target death alone is not the p182 release rule: p180 preserves
-ongoing conditions through death/revival when durations remain. Do not silently
-free the living grappler's hand merely because the held target died. Preserve
-the relation until release/range/other actual ending cause, forbid dead-target
-Escape, and do not claim corpse carrying is implemented. The dead-grappler
-physical interpretation must be reviewed explicitly, not mislabeled as a quoted
-p182 clause. Incapacitating the target alone likewise does not release its holder.
+Unconscious image. Target death alone is not the p182 release rule. Page180 says
+conditions/effects return upon revival if their durations remain; it does not
+literally specify every intermediate condition on a corpse. Root accepts keeping
+the living holder's occupied grip until release/range/another actual ending cause
+as the lifecycle interpretation, consistent with that revival rule and p182's
+endings. Root also accepts the dead/inert-grappler ending as a physical engineering
+interpretation. Neither is presented as a quoted death clause. Forbid dead-target
+Escape and do not claim corpse carrying is implemented. Incapacitating the target
+alone likewise does not release its living holder.
 
 Installing Grappled can cause non-Hover flight loss. Use actual fall/liquid/damage/
 concentration children in the existing frame stack and correct causal ancestry.
@@ -250,6 +332,19 @@ The falling body may move beyond grip range and end it; neither body is silently
 carried, suspended by the other's hand, or moved through an unsupported solid.
 Retain an already triggered fall's authenticated cause across later release and
 test that restoration does not invent a second landing or erase accepted dice.
+
+Specifically, a legal ordinary Human grip can reduce an actual Large Chimera's
+non-Hover Fly Speed to zero. Current `falling/validation.rs` rederives unfinished
+`FlightLost` from live flight support; release before landing would restore
+healthy flight and fail that check. Use the new explicit grapple-flight-loss
+cause below, with the exact establishing work and historical grip cut, for this
+new producer only. Keep old `FlightLost` validation unchanged. Still validate
+the retained actor's current pre-landing position and exact destination/surface
+against actual geometry, the fall's work parent and all landing/damage ancestry.
+Release cannot cancel a triggered fall or restart a child. The genuine fixture
+must place the Human on actual support and the adjacent Chimera legally airborne;
+the real Air target supplies immune no-effect, not a fabricated nonimmune Hover
+positive.
 
 ## Movement until the dragging slice
 
@@ -263,6 +358,17 @@ first committed crossing beyond range, end the relevant grip and resume only
 the remaining legal path. An OA still resolves before departure and can prevent
 the crossing or cause an earlier break. Target Speed zero prevents its own
 ordinary movement; it does not prohibit source forced motion.
+
+Retain the self-only admission and its original outgoing grip IDs even if the
+last grip is released while an OA suspends this movement. Original movement
+origin/path, accepted prefix, cursor, spent budget, crossing and target position
+remain unchanged. The explicit intent does not become invalid merely because
+it is no longer required for a newly admitted move. Each later uncommitted segment
+still uses current capability/allowance; do not recost the committed prefix,
+refund movement, move the former target or resurrect a completed/interrupted
+route. This is a genuine new-slice scenario to test. An incoming grip acquired
+mid-movement is not yet genuinely admitted by this own-turn-only Grapple slice;
+future reaction/Ready/special producers must join the same prefix proof explicitly.
 
 Shove Push moves its selected body only. For new proved grips, apply actual
 geometry, retain grips still in range, and end those beyond range without dragging
@@ -278,6 +384,77 @@ dragging remains a named Gate4 follow-up: coupled swept volumes/support, source
 size exceptions and cost, multiple grips/cycles, before-crossing opportunities,
 terrain/jump/fly/liquid/fall interactions, interruption/recovery and private
 geometry. This temporary admission limit is not permission to close Gate4.
+
+## Proposed optional records and cut validation
+
+The following is the concrete schema proposal for root review, not implemented
+types or authority granted by deserialization. Use existing `CommandMeta`,
+`TacticalWorkKey`, `TacticalRollKey`, `Hand`, source-pin and spatial types. New IDs
+have separate deterministic domains; no raw-role occurrence is consumed for a
+free release. All optional fields default to None and omit None; producers write
+None for empty attachments and retained validation rejects noncanonical empty
+attachments. All new records deny unknown fields. Their allocation is
+proportional to real admitted grips/work, with checked
+counts; do not invent a scene, command, grip or history cap.
+
+| Attachment/type | Proposed exact contents and role |
+| --- | --- |
+| `RulesState.tactical_grapples: Option<TacticalGrapples>` | Version1 plus deterministic ordered `active: Vec<TacticalGrip>`. This is the only live relation authority and is absent when active is empty. Pending attempts live in the resolution, not as provisional live conditions. |
+| `TacticalGrip` | `id`, original paid `CommandMeta` and attack window, `grappler`, `target`, selected `Hand`, typed anatomy/source proof, range, escape DC, final save key/proof reference and establishment command/work. ID derives from the actual paid command, actors and selected hand. Use full creature pins; Human proof requires the reconstructed admitted character profile, not a string or a new client hash. The source proof records the approved ordinary-hand interpretation. |
+| `TacticalResolution.grapple: Option<TacticalGrappleResolution>` | `activity: Option<GrappleActivity>` with Attempt/Escape stage variants, immutable `proofs: Vec<TacticalGrip>`, `cuts: Vec<GrappleReadCut>`, `ends: Vec<GrappleEndReceipt>`, and `opportunity_refreshes: Vec<GrappleOpportunityRefresh>`. Activity data reuses paid save/check and existing request/work identities; an attempt retains its selected-hand reservation before a live grip exists. Activity may be absent while other work consumes proofs. This does not execute a second queue. Proofs may retain an ended grip only while suspended work references it; they never project a live condition or reserve a hand. |
+| `GrappleCutKey` / `GrappleReadCut` | Key is existing work key plus closed reader discriminator: `AttackAdmission { attack: CommandId }`, `RequestIssue { roll: TacticalRollKey }`, or `FlightLoss { actor: EntityId }`. Record exact issue command, sorted unique relevant grip IDs referencing `proofs`, and `source_attack: Option<GrappleCutKey>` for an inherited attack descendant only. The reader determines the complete relevant actor/relation set; the client cannot select a convenient subset. |
+| `GrappleEndReceipt` | Grip ID, actual causing `CommandMeta`, and a closed cause: owner `Released`; `Escaped { roll, work }`; `Incapacitated { work }`; `Dead { work }`; or `OutOfRange { work, moved_actor }`. Work-bearing causes refer to the exact existing effect/vitality/position producer and its retained ancestry/receipts. Owner release has no invented executing work node; any affected wait is identified by its existing cut/window. Original replay proves the prior grip and actual transition. |
+| `GrappleOpportunityRefresh` | Original window work key, movement/window origin, reactor and step; causing end-receipt reference; exact previous and resulting ordered option vectors. The chain explains an update to the existing window, without replacing its origin, crossing, frame or offered/answered history. Unchanged vectors do not need a refresh record. |
+| `TacticalMovement.grapple_self_only: Option<GrappleSelfOnlyAdmission>` | Original explicit movement command plus sorted original outgoing grip IDs. Their immutable proofs are retained in the resolution. This remains valid after release; it records why the admitted choice was required, not a demand that those grips stay active. |
+| `TacticalFallCause::GrappleFlightLost` | Establishing grip ID, actual consequence command, establishing work key and `FlightLoss` cut key. The existing `TacticalFall.path`, actor, origin, stage and work trace retain all geometry and child progress. Do not duplicate a mutable fall path or change old `FlightLost`. |
+
+The closed reader keys deliberately distinguish an attack's admitted source
+program from a later request. For example, damage and Inspiration descendants
+which belong to that admitted attack inherit its proven mode-dependent program;
+they do not become a new attack when release occurs between attack and damage
+dice. A genuinely new attack has a new admission/cut and uses current conditions.
+Use a cut only for a reader which actually consumes new grip authority. Existing
+no-authority histories never gain an empty cut as a generic opt-in switch.
+
+The live grip and a retained proof must be byte-equal while both exist. A cut's
+IDs must be unique, known, source-valid and compatible with its actors, hand
+ownership, source reader and exact work node. A retained proof which is no longer
+live needs its unique chronological ending receipt. Rederive the request and
+all source-derived damage using this narrow historical relation view; reject
+missing/extra cuts, mode-only evidence, changed save/DC, mixed source revisions,
+wrong work kind/parent or an end receipt preceding establishment or a cut at
+which that grip is claimed live. A descendant request may legitimately issue
+after release while referencing its earlier source attack cut. Original
+replay proves the complete as-of relation set and each real paid/physical result;
+local consistency alone does not prove a genuine earlier history.
+
+Refresh validation checks the unchanged original window/crossing/work, the real
+owner-bound release or automatic end, each previous-to-next vector link, and
+latest vector equality with ordinary current options. Replay checks the prior
+vector against its actual pre-release state. No cut replaces that live equality.
+The free-release command is applied atomically to relation authority, receipts
+and affected owned projections, with existing accepted-retry-first handling. It
+must not alter an unrelated pending request or advance its cursor simply to make
+the new image validate. Escape obsolescence cancels only its own pending ID and
+retains payment, accepted faces and cause. Attempt withdrawal uses the analogous
+owned cancellation proof; it is distinct from ending an established grip.
+
+For a new causal fall, replay must show the actual grip establishment reduced
+the actor's sustaining non-Hover flight to zero at its initiating cut. Local
+validation checks its exact source/grip/work link and existing geometry/child
+proof. Later release explains why live flight may differ; it cannot substitute
+for that initial proof. Old `FlightLost` continues to require its original live
+loss query, and old unsupported/legacy Grappled effects cannot select this case.
+
+Retire resolution-only proofs, cuts and receipts only with their last retained
+consumer; completing a source attack is insufficient while its child still
+depends on it. After the resolution retires, the original journal and existing
+raw/result history authenticate past work. A release with no suspended consumer
+needs its normal accepted command/result, not an unbounded second lifetime ledger
+in `RulesState`. Recovery anchors must reject injected active grips **or** retained
+proof/cut/refresh/self-only authority; collect every new origin for the same
+original-anchor replay used by other tactical provenance. A nearest snapshot
+containing a convenient old grip is not a substitute for its original commands.
 
 ## Version, wire, ownership and recovery proof
 
@@ -295,6 +472,28 @@ remain byte/operation-identical. Do not allocate flow6: it is reserved for the
 future Counterspell executor after root's release5 work. Root will integrate
 this feature with release5 explicitly, including retained-grip preflight and
 release/aftermath obligations; this branch does not implement release5 itself.
+
+The required compatibility proof is path-specific. New attempt/Escape/release/
+self-only commands enter only the current flow4 executor; earlier flow versions
+reject them. Live ordinary readers take the existing path when no new grip
+authority or authenticated retained consumer exists. New sources have immutable
+new pins, not modified old definitions. New cuts are produced only by real new
+grip reads; old raw roles, paid receipts, work stamps, accepted pending vectors,
+fall causes and generic Grappled effects retain their original interpretation
+and serialized bytes. Do not add a global historical-roll trust flag or relax a
+raw-pending guard for arbitrary commands: the exception authenticates this
+specific owner's live grip/attempt before any mutation.
+
+The admission constraint supporting the temporal proof must be checked in code:
+ordinary Grapple begins on its actor's turn without an existing resolution, and
+is not an OA/Ready replacement in this slice. It therefore cannot introduce a
+new grip into previously issued unrelated old work. Release/automatic ending
+can only affect work exposed to an actual new grip; proof records preserve that
+fact even after the last live relation ends. Audit every actual producer before
+relying on this claim. Old generic effect records alone do not create such an
+exception. Integration order is source/anatomy and optional domain, strict rules
+and old-history controls, app/restore/UI, then root's explicit release5
+integration and combined original-history verification. No flow6 is allocated.
 
 If the temporal/hand audit finds that old pending work must change even without
 new grips/cuts, stop and report the counterexample. Do not hide a semantic upgrade
@@ -318,10 +517,10 @@ preconditions. Never discard grips merely to finish/replace an encounter.
 
 ## Planned implementation and acceptance
 
-1. **Review this plan first.** Resolve anatomy interpretation/admission and
-   temporal-cut/death details with independent source review; record approval
-   and chosen exact data shape before gameplay edits. No implementation is
-   authorized by this plan's existence.
+1. **Review this amended plan first.** Anatomy/death interpretations are accepted
+   as recorded below. Root must review the proposed exact optional records,
+   temporal branches and compatibility proof before gameplay edits. No
+   implementation is authorized by this plan's existence.
 2. **Source and domain.** Authenticated PC capability and audited immutable
    creature revision, optional grip/cut authority, pure condition/hand projection
    and strict structural validation. Add meaningful legacy byte/pin controls.
@@ -363,23 +562,62 @@ Required meaningful controls and production evidence:
   no grip, no forced Prone, no invented fall. No mutated immunity sheet can stand
   in for this source test. Additional pure synthetic invariants are labeled.
 - Real hand conflicts with shield, weapon equip, two-handed attack, ammunition,
-  spell S/M components and a second grapple; explicit lawful release restores
-  only that reservation. Before/after weapon allowance preserves real items.
+  and a second grapple; explicit lawful release restores only that reservation.
+  Before/after weapon allowance preserves real items. Spell S/M and two-handed
+  melee/reach OA hand invariants require focused pure controls; the first
+  admitted Human Fighter/Goblin grapplers do not yet establish a genuine
+  spellcaster or two-handed melee-weapon acquisition path. Do not fabricate such
+  table evidence; source admission of those positive cases remains Gate4 work.
 - Release on another actor's turn at raw attack against a third creature, after
   accepted attack before damage/Shield completion, pending Escape and non-roll
   choices. Original faces and request IDs persist where relevant; later attacks
   use current conditions. A rejected foreign/stale release changes nothing.
+- Real Goblin Scimitar source-damage control: use accepted creation/equipment,
+  a Human's maintained grip and a separate actual Shove to make a reachable
+  opposing source target Prone. On the Goblin's real turn, its attack at that
+  target has Prone Advantage canceled by Grappled Disadvantage. Release during
+  its issued Normal attack: the same faces, Normal request and base source damage
+  remain, with no newly acquired Advantage extra die. A later new legal attack
+  against the still-Prone target must use current Advantage and the real source
+  extra damage. Prove actual positions, dispositions, turn sequence and source
+  program; this is a proposed genuine fixture, not an executed result.
+- Unanswered OA refresh: pure controls cover added two-handed options and a
+  newly legal longer-reach actor, exact refresh cause/vector chain, no change to
+  selected attacks/answered decisions, and ordinary rescan of prior Unavailable.
+  Real Human/Goblin movement covers owner release while the outgoing grappler's
+  explicit self-only route waits at an actual OA: preserve original crossing,
+  prefix, expenditure and stationary target, then continue current legal steps.
+  The first source scenario must not be mislabeled as a real two-handed menu
+  change. Rejected refresh/cut/controller mutations leave the full state intact.
+- Selected Escape canceled by actual holder release retains its paid Action and
+  accepted faces, cancels only its pending request and never becomes a voluntary
+  fail-save or free retry. Non-roll save/after-equipment/knockout/landing and
+  simultaneous-work choices remain owned, reachable and unanswered. New
+  after-equipment choices use live effective occupancy without rewriting the
+  admitted source attack; other source-derived selected consequences retain
+  their original proof. Audit Shield/Missile collection against its current
+  source/response contract without inventing new respondents or reopening paid
+  responses solely to demonstrate release.
 - Multiple incoming grapples: attacking either holder still has Disadvantage if
   another grip supplies it; one Escape/release removes only the selected source.
   Target-only Incapacitated/death, grappler Incapacitated/direct death, exact
   range threshold, leaving/re-entering route, blocked/clear Push and OA-before-
   departure all produce source-specific results and preserved ancestry.
+- Itemless outgoing grappler: real paralysis/Incapacitated and direct-death
+  producers end the grip even with no Item in either physical slot. Target-only
+  Incapacitated/death preserves the living holder's relation/reservation. Use
+  actual admitted source casts/damage and original replay; keep any unavailable
+  positive explicitly unverified rather than injecting condition/HP state.
 - Genuine airborne non-Hover source target against a legal supported grappler
   from a real platform: Grappled causes the real fall/landing/damage chain and
   range break. The installed Large Chimera is a candidate for a Medium Human
   grappler; verify its exact source and live creation/geometry before using it.
   Do not enlarge a PC or modify a creature. Reopen at landing choice/dice and any
-  genuinely reached concentration child.
+  genuinely reached concentration child. Include Grip to Chimera flight loss
+  to free release **before landing**: authenticated initiating cause, exact
+  retained path and original child identities survive despite restored live
+  flight. No second fall or canceled accepted dice. Old no-grip FlightLost
+  controls retain their old validation behavior.
   Source immunity and Hover controls do not claim a nonimmune flying case by
   manufacturing Air's condition list. If an admitted source/setup cannot supply
   a particular positive, record the gap and add the real source prerequisite.
@@ -397,7 +635,14 @@ Required meaningful controls and production evidence:
 - Hostile retained/restore images: coherent fake hand capability/pin, forged grip
   or DC/save result, missing/duplicate source node, forged old condition cut,
   rewritten release controller/cause, canceled-ID substitution, impossible
-  distance/end chronology and altered paid budget all reject atomically.
+  distance/end chronology and altered paid budget all reject atomically. Include
+  coherent forged OA-refresh chains, omitted relevant grip cuts, changed Goblin
+  damage program, false flight-loss cut and injected recovery-anchor authority.
+- Original no-new-grip histories, including old generic Grappled effects,
+  pending attacks/OA windows, source damage, cancellation, physical equipment and
+  FlightLost children, retain exact canonical state/export bytes, raw requests,
+  operation stamps, receipts and continuation. New optional authority must be
+  rejected by historical schema/executor routes instead of being ignored.
 - Desktop production flow: actual PC and Host-source directions, physical saves
   and Escape checks, off-turn release available during waits, blank new dice,
   correct focus/scroll and actor handoffs, clear self-only movement choice,
@@ -420,13 +665,27 @@ No Cargo/npm/build/test, database, native UI or GitHub publication was performed
 Root holds the heavy slot for independent original-history work. No test result,
 source admission, grip lifecycle or native behavior is claimed here.
 
-Principal review risks are the anatomy interpretation/current-source revision,
-the exact temporal cut needed for release during live-rederived work, all effective
-hand readers, and flight/forced-displacement ordering. These are engineering/source
-proof obligations within Gate4, not requests to waive product acceptance. The
-dead-grappler interpretation and target-death distinction need explicit review.
+Review amendment, 2026-09-30: independent review of plan commit
+`2213790271b6553d389450f22f819f003672b4d1` (tree
+`9fbcbc46a98284e61f275962c636baf86ee3fdb8`) identified the live OA equality,
+source-damage, suspended movement, causal flight-loss and itemless cleanup seams.
+The full corrected external review is
+`tooling/gate4-grapple-plan-independent-review-2026-09-30.md` outside this repo;
+its corrected SHA256 is
+`fb3e420ce25488669d505aae54efa6d506c37d7b5f426a37182c37e069a86c71`.
+Its initial base-tree transcription was explicitly corrected by the reviewer.
+Root accepted its substantive findings and the documented Human/Goblin ordinary
+two-hand and death/living-holder interpretations. Root authorized this plan-only
+amendment, not gameplay implementation. All new controls above are future work.
 
-Exact next action: commit this plan-only checkpoint, send root the full SHA and
-the unresolved source/temporal decisions, and wait for root's review before any
-implementation. Keep this checkout/branch the sole write target. Subsequent
-approval must be recorded with authored and verified status kept separate.
+Principal remaining review risks are the exact temporal record/reader coverage,
+all effective-hand callers, strict original-replay/retirement proof and
+flight/forced-displacement ordering. The immutable source revision still needs
+implementation and content verification. These are engineering/source proof
+obligations within Gate4, not requests to waive product acceptance.
+
+Exact next action: commit this one-file amendment and send root its full SHA/tree
+for review of the proposed data/version contract. Wait for explicit root gameplay
+authorization; do not implement, build, run tests or publish. Keep this checkout/
+branch the sole write target. Subsequent approval, authored work and verified
+results must be recorded separately.
