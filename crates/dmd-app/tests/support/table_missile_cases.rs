@@ -3,6 +3,9 @@
 use super::*;
 use dmd_rules::tactical::TacticalAction;
 
+#[path = "table_timed_expiry_cases.rs"]
+mod timed_expiry;
+
 struct Sources {
     actors: [EntityId; 4],
     owners: [PlayerId; 4],
@@ -551,7 +554,7 @@ async fn prepare_with_character(
         f,
         TableTransportChannel::Host,
         tactical(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
             combatants,
             groups,
         }),

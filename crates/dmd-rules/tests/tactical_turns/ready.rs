@@ -196,7 +196,7 @@ fn ready_trigger_text_is_bounded_and_named_hidden_subject_does_not_probe_positio
 fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_when_idle() {
     let mut f = Fixture::new();
     let action = TacticalAction::Begin {
-        execution: TacticalExecutionVersion::ShieldMissileV1,
+        execution: TacticalExecutionVersion::EncounterReleaseV1,
         combatants: f
             .actors
             .into_iter()
@@ -273,13 +273,13 @@ fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_wh
     );
     f.rejected(Some(0), ready_move());
     // The originally accepted typed upgrade-to3 must keep its exact semantics
-    // under replay, even though new targeted upgrades now require4.
+    // under replay, even though new targeted upgrades now require flow 5.
     let before = f.state.clone();
     let current_upgrade = resolve_tactical(
         &before,
         &f.meta(None),
         &TacticalAction::UpgradeExecutionTo {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
         },
         &f.pack,
     )
@@ -290,6 +290,23 @@ fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_wh
     };
     f.rejected(None, old_upgrade.action.clone());
     let historical = replay_tactical(&before, &old_upgrade, &f.pack).unwrap();
+    // An accepted typed upgrade to flow 4 keeps that precise destination too.
+    let mut old_four = current_upgrade.event.clone();
+    old_four.action = TacticalAction::UpgradeExecutionTo {
+        execution: TacticalExecutionVersion::ShieldMissileV1,
+    };
+    f.rejected(None, old_four.action.clone());
+    let historical_four = replay_tactical(&before, &old_four, &f.pack).unwrap();
+    let mut expected_four = current_upgrade.next_state.clone();
+    expected_four
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 4;
+    assert_eq!(historical_four.next_state, expected_four);
     let mut expected = current_upgrade.next_state;
     expected
         .encounter
@@ -312,7 +329,7 @@ fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_wh
     f.run(
         None,
         TacticalAction::UpgradeExecutionTo {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
         },
     );
     f.run(Some(0), ready_move());

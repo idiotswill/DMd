@@ -85,6 +85,15 @@ integrated canonical/CI/review and missile merge/main proof remain pending;
 Counterspell, Ready release and the other required mechanisms remain open.
 This is technical evidence, not human acceptance.
 
+The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
+owns the approved flow 5 completion/highwater and retained-scene design. Its first
+checkpoint contains reviewed domain records and pure release preflight. The next
+authored checkpoint connects authenticated release/replacement/session handling,
+recovery and desktop controls, with isolated rules tests and genuine table scenarios
+that have not yet run. Exact-head runtime proof, original flow 4 recovery baselines
+and packaged UI remain outstanding. These checkpoints add
+no passing evidence to the machine-readable ledger and advances no family status.
+
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 
 `cargo test --locked -p dmd-domain --test rules_coverage_ledger` runs offline in normal workspace CI. It checks the pin, complete chapter span, reviewed catalog counts, unique names/IDs, source-page bounds, every inventory-to-family relationship, gate assignment and evidence for advanced statuses. Negative cases demonstrate rejection of orphaned families/entries, duplicate ownership, removed catalog entries and unsupported completion claims. It checks consistency against the reviewed source inventory; it is not a claim that software can infer legal scope or prove faithful gameplay from JSON alone.

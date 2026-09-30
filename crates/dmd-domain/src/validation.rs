@@ -29,6 +29,26 @@ impl CampaignState {
     #[must_use]
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = self.validate_references();
+        if self.encounter_history.is_none()
+            && self
+                .encounter
+                .as_ref()
+                .and_then(|encounter| encounter.flow.as_ref())
+                .is_some_and(|flow| {
+                    flow.version
+                        == crate::TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                        && flow.phase == crate::TacticalPhase::Finished
+                })
+        {
+            violations.push(StateInvariantViolation::InvalidEncounterState(
+                "Finished encounter lacks authenticated completion history".into(),
+            ));
+        }
+        if let Some(history) = &self.encounter_history
+            && let Err(message) = history.validate(self)
+        {
+            violations.push(StateInvariantViolation::InvalidEncounterState(message));
+        }
         if let Some(creatures) = self
             .rules
             .as_ref()

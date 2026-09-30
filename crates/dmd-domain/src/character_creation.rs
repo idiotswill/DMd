@@ -106,7 +106,8 @@ pub struct CharacterFeatureState {
     pub second_wind_remaining: u8,
     /// A source-triggered optional transfer awaits this PC's controller, not a guessed recipient.
     pub inspiration_transfer_pending: bool,
-    /// Combat turn used, cleared when combat ends. No free repeated use in the same turn.
+    /// Global combat turn used. Versioned encounter release preserves this scalar
+    /// against authenticated highwater; no free repeated use in the same turn.
     pub savage_attacker_turn: Option<u64>,
 }
 
