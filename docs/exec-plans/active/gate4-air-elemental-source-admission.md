@@ -1,7 +1,7 @@
 # Gate 4 Air Elemental immutable source admission
 
 Status: all six CI jobs passed on exact corrected e915bbb; local release development
-integration is authorized below. Integrated canonical/replay/native/final review
+integration is complete but UNCOMPILED/UNRUN. Integrated canonical/replay/native/final review
 and prerequisite acceptance remain outstanding; this is not Air acceptance.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
 Writer: `flow4_import_review`, sole local integration writer assigned by root on
@@ -284,3 +284,37 @@ complete packaged Air source placement/initiative and persistence evidence. Rele
 acceptance remains separate. The future paid Shove Prone-immunity/no-effect path
 remains open. Neither e915 green CI nor this local development merge closes those
 obligations or any Gate 4 requirement.
+
+### Local release integration checkpoint — 2026-09-30
+
+Plan commit `9cf3d3f37a2064bbda810be7f19dded415f3632c` preceded normal merge
+`e6c44a129cc9ccdda4ad30bafc798c4212ffee6e`, whose parents are that plan and exact
+release8c. The merge tree is `2776a15915134f520e8a87d389da81e54de39694`. This is
+local development ancestry, not publication or prerequisite acceptance.
+
+There were three conflicted files. `Creature.test.ts` retains both current-pin/
+execution-limit tests and release's required-lasting-actor placement test.
+`tactical.rs` retains authenticated replacement/dependency/identity preflight,
+stages participant locations into `next`, runs Air source placement validation
+against that coherent candidate, then validates/activates the new scene. The
+coverage ledger retains both Air and release obligations, with corrected e915 CI
+distinguished from unexecuted integrated source. Auto-merged admission keeps the
+exact current full-pin check before the Finished creation exception, and historical
+missing pins/retries are unchanged. Optional source and release DTO fields, exact
+source initiative lookup, release high-water/history validation and both UI routes
+remain present.
+
+The sole additional current-fixture edit supplies exact Mage/adult-red-dragon pins
+in `table_release_recharge_cases.rs`; no assertions, resource costs or historical
+inputs change. The existing six-file Air manifest, generator, strict distribution
+expectation, every content payload and frozen V1 picker remain exact e915 bytes.
+Release fixtures and all legacy replay suites, including the original Flow4 corpus
+and binary-protection attributes, remain exact release8c. No MR source, corrected
+Hag, private save classifier or coexistence child is imported.
+
+Direct Rustfmt parsing/format checks and Git diff whitespace checks pass. These
+are static evidence only; no integrated compilation, test, GUI or native result
+is claimed. Next action is root's independent review of the clean exact checkpoint,
+followed by accepted dependency/main reconciliation and the outstanding exact-head
+canonical, required CI, genuine replay and native obligations above. This writer
+performed no push, cancellation, build/test, database, UI or source capture.
