@@ -377,7 +377,7 @@ main PR receive a protected merge, followed by literal merged-main verification.
 Gate 4 remains active; the earlier failures and remaining obligations are retained.
 
 
-### Planned Air/release integration checkpoint — 2026-09-30
+### Planned Air/release integration checkpoint â€” 2026-09-30
 
 Read root AGENTS and this full plan, then freshly fetched main and the published
 Shove/Air branches. The clean starting head is
@@ -445,7 +445,7 @@ author the approved narrow execution reconciliation and controls; report any
 further concrete conflict before editing outside this bounded union.
 
 
-### Authored Air/release integration checkpoint — 2026-09-30
+### Authored Air/release integration checkpoint â€” 2026-09-30
 
 The plan-first commit is `a27b63b891db7a81015c91b56dc27023e86b0d80`. Normal merge
 `d6026bfac791876794b1cf190deca216ca3e58e7`, tree
@@ -501,3 +501,31 @@ to root for independent integration review, then root coordinates accepted
 prerequisites/main, focused/canonical execution, six exact-head checks, genuine
 old-producer receiving evidence and native acceptance. Do not merge PR #51 into
 Air or infer completion from any parent-head checks. Gate 4 stays active.
+
+
+### Independent integration review and text-encoding correction
+
+Root independently reviewed complete integration head
+`4db71e5ca2bb52d5e8c9251a2eeae519011574f8`, including the remerge conflicts,
+all combined production paths, actual admission/replay/transport callers and the
+two new test bodies. No actionable production or assertion defect was found.
+The shared guard accepts only4/5, live fresh Shove remains current5-only, and each
+permitted old-flow choice still requires its paid selected work, stage, source,
+controller and ancestry. Release and Shove optional DTOs, prompt ownership and
+pending/Finish behavior remain composed.
+
+Root re-read and reran the static audit into a separate evidence file; the full
+result is identical to the author's final audit, SHA256
+`ca2143864199f57debd2d4d07998fd2e331926ddc8e0594f1e77219f3def3e5b`.
+All29 fixture blobs, all five legacy suites,21 protected raw files and exact
+Air content are preserved. This is byte/static evidence, not executable proof.
+
+Review found two Windows-1252 dash bytes in the newly appended headings, making
+this plan invalid UTF-8. This documentation-only correction replaces exactly
+those bytes with UTF-8 em dashes and records the review; production/test/content
+files are unchanged. The original4db audit and review target remain preserved.
+
+The published c112 runtime jobs must still finish normally before replacing that
+head. New integrated canonical/CI, historical continuation and native acceptance
+remain outstanding. Root owns the clean integration candidate and publication;
+no dependency or feature is accepted by this documentation checkpoint.
