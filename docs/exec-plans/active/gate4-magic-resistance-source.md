@@ -239,3 +239,12 @@ the parent suite and all original fixture bytes. Update the helper's provenance
 comment, independently review the full correction, and publish a fresh verified
 development head for CI. No local heavy run is authorized while release8c owns
 the slot. This correction plan is not a passing coexistence result or acceptance.
+
+Plan commit `7b37ae9efbed9c8c5161f81b89727cfdc2236380` precedes the test-only
+correction. The helper now reuses the fixture's exact original presented request,
+checks its saved meta/action/absent pin, binding event sequence and complete stored
+response, and verifies the whole export after both the valid retry and deliberate
+legacy-API rejection. Its original three call sites are unchanged. Direct Rustfmt
+and Git whitespace checks pass. This is not a runtime pass: independent correction
+review, new-head CI and local canonical verification remain required. The original
+parent suite, captures, production code and source content are unchanged.

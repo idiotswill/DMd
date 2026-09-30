@@ -1,4 +1,4 @@
-//! Authored, uncompiled integration draft. Receiver: reconciled release flow5 + MR.
+//! Genuine original-flow3 history received by the release-flow5/MR integration.
 //! This is a child of legacy_shield_hit_v1_replay; the original helpers and
 //! genuine capture bytes are unchanged. No synthetic positive state is accepted.
 use super::*;
@@ -158,8 +158,8 @@ fn assert_source_pair(state: &CampaignState, old: &CreatureProfile, new: &Creatu
     );
 }
 
-// The original Hag was created by a genuine typed table command, before the
-// fixture's opaque transport bindings. Retry that exact historical body as well.
+// The original creation already used presented transport version1. Retry its
+// exact retained envelope, including its old revision and absent source pin.
 async fn retry_original_hag_creation(f: &Fixture, old: &CreatureProfile) {
     let event = f
         .original
@@ -177,17 +177,54 @@ async fn retry_original_hag_creation(f: &Fixture, old: &CreatureProfile) {
         "retain the original absent-pin historical body"
     );
     assert_eq!(saved.meta, old.origin);
-    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
-    let receipt = Box::pin(f.app.execute_table(saved.meta, saved.action))
-        .await
+    let binding = f
+        .original
+        .table_transport_bindings
+        .iter()
+        .find(|binding| binding.meta.id == old.origin.id)
         .unwrap();
-    assert!(receipt.already_accepted);
-    assert_eq!(receipt.command_id, old.origin.id);
+    assert_eq!(binding.meta, saved.meta);
     assert_eq!(
-        receipt.event_sequence,
-        u64::try_from(event.sequence).unwrap()
+        binding.acceptance,
+        dmd_persistence::TransportAcceptance::Command {
+            resulting_event_sequence: u64::try_from(event.sequence).unwrap(),
+        }
     );
-    assert_eq!(receipt.outcome, saved.outcome);
+    let request: TableTransportRequest = serde_json::from_str(&binding.request_json).unwrap();
+    assert_eq!(request.version, 1, "preserve the genuine original protocol");
+    assert_eq!(request.command_id, old.origin.id);
+    let TableTransportInput::Action(action) = &request.input else {
+        panic!("the original creation binding must contain its accepted action");
+    };
+    assert_eq!(action.as_ref(), &saved.action);
+    assert_eq!(
+        serde_json::to_string(&request).unwrap(),
+        binding.request_json
+    );
+    let expected: TableTransportResult = serde_json::from_str(&binding.response_json).unwrap();
+    let TableTransportResult::Accepted(receipt) = &expected else {
+        panic!("the original creation binding must contain an accepted response");
+    };
+    assert_eq!(receipt.command_id, old.origin.id);
+    assert_eq!(receipt.outcome.message, saved.outcome.message);
+    assert!(saved.outcome.mechanics.is_none());
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(
+        Box::pin(f.app.submit_presented_table(request))
+            .await
+            .unwrap(),
+        expected
+    );
+    f.assert_export(&before).await;
+    // Reusing that presented identity through the legacy typed API remains
+    // forbidden. A successful retry must not erase this protocol boundary.
+    assert!(matches!(
+        Box::pin(f.app.execute_table(saved.meta, saved.action))
+            .await
+            .unwrap_err(),
+        RunnableCampaignError::TableRejected(message)
+            if message == "This request identity already belongs to different input."
+    ));
     f.assert_export(&before).await;
 }
 
