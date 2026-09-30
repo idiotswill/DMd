@@ -65,6 +65,7 @@ fn choose(f: &mut Fixture, id: EffectTicketId) {
 #[test]
 fn no_due_boundary_retains_both_historical_observation_steps() {
     let mut f = Fixture::new();
+    assert!(f.rules().tactical_effects.is_none());
     f.begin();
     assert_eq!(attachment(&f).last_operation.as_ref().unwrap().step, 1);
     let meta = f.meta(None);

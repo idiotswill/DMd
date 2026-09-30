@@ -256,3 +256,24 @@ assign the local serial verification slot for the focused and canonical checks
 above. Original-source replay, final exact-head CI, protected merge and separate
 merged-main proof remain acceptance prerequisites. Draft publication, source review
 and authored tests are not acceptance or Gate 4 completion.
+
+### First executable finding — 2026-09-30
+
+Linux runtime job 109938945831 on published `95e41edf58517c1770224d2a78aedafb1b4cd932`
+passed fast verification, strict Clippy and compilation, then failed all five
+unchanged `legacy_reactions_v1_replay` tests at restore sequence 12 with
+`missing effect attachment`. The full log is preserved externally under
+`tooling/expiry-95e41ed-ci/`. The suite stopped there; neither the new regressions
+nor full compatibility passed. The initial source reviews missed this boundary.
+
+The new predicate called `effects(state)?` before the historical Time operation
+could initialize an absent legacy attachment. Read the optional attachment without
+mutating it instead: absence contains no due records, so it follows the exact old
+Time-then-Turn path. The existing adapter's `unwrap_or_default` still owns the
+initialization and original stamps. Do not eagerly insert an attachment, change old
+fixtures or bypass restore checks. The no-due focused case now explicitly asserts
+its initial attachment is absent before checking the original two operation stamps.
+
+The corrected source needs independent review and a fresh full run. All five
+genuine historical failures must clear unchanged; formatting or static review
+alone is not recovery evidence. The original flow4 baseline remains untouched.
