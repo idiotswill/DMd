@@ -1,6 +1,17 @@
 # Gate 4 — Magic Missile application and desktop integration
 
-Writer: shield_integration_review. Branch: `codex/gate4-shield-missile-app`.
+Status: PR46 merged as literalc4d8 after exact a877 canonical/all-six-source checks;
+separate literal-main verification remains under `gate4-shield-missile-runtime.md`.
+The historical checkpoints below retain their original evidence. Exact ffc3 passes all four real missile
+application families on Linux/native Windows and 99 UI tests. Final integrated
+canonical verification, final-head review/CI and merge/main proof are still required.
+Actual ffc3 packaged UI restart at the selected owned Shield decision, followed by
+all six physical faces and explicit dart ordering, passes; the parent plan records
+the exact artifact, normal creation path, read-only outcome audit and limits.
+The earlier unrun notes below describe historical checkpoints.
+
+Current writer: root on `codex/gate4-shield-missile-runtime`. Original writer:
+shield_integration_review. Original branch: `codex/gate4-shield-missile-app`.
 Base: engine checkpoint `d5a6e959b99284a3ac2183c906220f63f67d590c`.
 This is the app/UI integration subbranch of the approved
 `gate4-shield-missile-runtime.md` plan; all its acceptance criteria remain required.

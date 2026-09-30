@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Id } from '../table-api';
   import type { HitDecision, HitView, ReactionUnlistedOrder, TacticalAction } from '../tactical-api';
+  import { tacticalPromptIdentity } from '../tactical-focus';
   let { hit, actor, host, playerControlledSources=[], disabled=false, onAction }: {
     hit:HitView; actor:Id|null; host:boolean; playerControlledSources?:Id[]; disabled?:boolean; onAction:(action:TacticalAction)=>void;
   }=$props();
@@ -27,7 +28,7 @@
 
 <section aria-label="Hit response">
   {#if hit.order && mayOrder}
-    <fieldset {disabled}><legend>Order responses to this hit</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'hit-order',key:hit.order.key})} tabindex="-1" {disabled}><legend>Order responses to this hit</legend>
       <p>Choose an order for this hit. You can rank known participants and choose where everyone else belongs.</p>
       {#each hit.order.participants as participant}
         <label><input type="checkbox" value={participant.actor} bind:group={ranked}/>{participant.label}</label>
@@ -49,7 +50,7 @@
     </fieldset>
   {/if}
   {#if hit.response && mayRespond}
-    <fieldset {disabled}><legend>{hit.response.selected?'Resolve your Shield response':'Respond to this hit'}</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'hit-response',key:hit.response.key,actor:hit.response.actor,selected:hit.response.selected})} tabindex="-1" {disabled}><legend>{hit.response.selected?'Resolve your Shield response':'Respond to this hit'}</legend>
       {#if hit.response.selected}
         <p>Cast Shield now to gain +5 AC, including against this attack, until the start of your next turn. A natural 20 still hits.</p>
         <label>Shield resource<select bind:value={chosen}><option value="" disabled>Choose a resource</option>

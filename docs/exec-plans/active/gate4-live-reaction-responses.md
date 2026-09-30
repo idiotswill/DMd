@@ -1,8 +1,13 @@
 # Gate4 — Live reaction responses and Ready release
 
-Status: required active Gate4 work; hit Shield implementation is in draft PR45,
-with broader source reactions and Ready release still outstanding.
-Writer: root; current implementation branch codex/gate4-shield-hit-runtime.
+Status: required active Gate4 work. Bounded hit Shield PR45 is merged and verified
+on literal main a0b12d2. Missile PR46 passes source CI atffc3 but still needs final
+integrated canonical, review/checks and merge/main proof. Source-qualified ffc3
+packaged restart and continuation pass as recorded in the missile plan.
+Broader source reactions and Ready release remain outstanding.
+The completed [hit-Shield plan](../completed/gate4-shield-hit-runtime.md) records
+its final source, protected merge and separate literal-main proof.
+Writer: root; current implementation branch codex/gate4-shield-missile-runtime.
 The original compatibility branch codex/gate4-live-reaction-responses was created from
 fetched main d5d1db76532be6f4f0b2f6fc13c78e8bd8d7cc38 after the protected PR38
 foundation merge. Umbrella: gate4-reaction-ready-runtime.md.
@@ -50,11 +55,12 @@ creature identity must not leak through ordering options, revision changes or er
 
 ## Validation status and next action
 
-No live window/release implementation or passing runtime evidence exists yet.
-Foundation tests are prerequisites only. Current source, product requirements and
-ADR028 are read. First retain the genuine prior saves and their portable regression
-coverage, then implement the explicitly versioned Shield vertical path while keeping
-Counterspell and all Ready mechanisms mandatory here.
+Hit windows and their actual owned-source SQLite scenario now pass canonical and
+source/main CI under the bounded Shield plan. Missile source CI atffc3 passes all
+four application families and both five-case historical suites; its current plan
+records exact heads, counts and unfinished acceptance. Retained genuine captures
+remain mandatory before changing interpretation. Counterspell, Ready release and
+off-turn producers remain open; these passing slices do not complete this umbrella.
 The full twelve-family Gate4 ledger and eighteen spell mechanisms remain binding.
 
 Compatibility PR42 head7616cf7a4ccef34505bfdb117a4077bf858d783c has now passed all
