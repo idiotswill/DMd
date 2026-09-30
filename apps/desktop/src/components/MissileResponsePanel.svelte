@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Id } from '../table-api';
   import type { MissileDecision, MissileView, ReactionUnlistedOrder, TacticalAction } from '../tactical-api';
+  import { tacticalPromptIdentity } from '../tactical-focus';
   let { missile, actor, host, participants=[], playerControlledSources=[], disabled=false, onAction }: {
     missile:MissileView; actor:Id|null; host:boolean; participants?:{entity_id:Id;public_label:string}[];
     playerControlledSources?:Id[]; disabled?:boolean; onAction:(action:TacticalAction)=>void;
@@ -27,7 +28,7 @@
 
 <section aria-label="Magic Missile responses">
   {#if missile.order && mayOrder}
-    <fieldset {disabled}><legend>Order responses to Magic Missile</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'missile-order',key:missile.order.key})} tabindex="-1" {disabled}><legend>Order responses to Magic Missile</legend>
       <p>Choose the order for this targeting event. Rank known participants and choose where everyone else belongs. Dart impacts will be ordered separately.</p>
       {#each missile.order.participants as participant}
         <label><input type="checkbox" value={participant.actor} bind:group={ranked}/>{participant.label}</label>
@@ -50,7 +51,7 @@
   {/if}
   {#each responses as response (response.key)}
     {@const selected=response.shield.find(choice=>JSON.stringify(choice)===chosen[response.key])}
-    <fieldset {disabled}><legend>{participants.find(participant=>participant.entity_id===response.actor)?.public_label??'Your creature'} · Magic Missile response</legend>
+    <fieldset data-tactical-focus="prompt" data-tactical-focus-id={tacticalPromptIdentity({kind:'missile-response',key:response.key,actor:response.actor,selected:response.selected})} tabindex="-1" {disabled}><legend>{participants.find(participant=>participant.entity_id===response.actor)?.public_label??'Your creature'} · Magic Missile response</legend>
       {#if response.selected}
         <p>You are targeted by Magic Missile. Casting Shield now prevents its damage to you until the start of your next turn. Each dart's physical face is still recorded.</p>
         <label>Shield resource<select value={chosen[response.key]??''} onchange={event=>chosen={...chosen,[response.key]:event.currentTarget.value}}>

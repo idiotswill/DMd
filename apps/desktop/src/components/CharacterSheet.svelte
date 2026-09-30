@@ -32,8 +32,8 @@
         {#if profile.equipment.length}<ul>{#each profile.equipment as item}<li>{item.quantity} × {item.display_name}</li>{/each}</ul>{:else}<p>No starting equipment purchased.</p>{/if}
         {#if onPrepare}<button type="button" {disabled} onclick={onPrepare}>Prepare {character.name}'s equipment</button>{/if}
       {/if}
-      <p><strong>Mastery grants:</strong> {profile.masteries.map(label).join(', ')}. Mastery effects and full weapon-property resolution are not available in this table interface yet.</p>
-      <ul><li>Second Wind: report a d10; Fighter level is added by the rules engine. Limited uses are saved.</li><li>Human Resourceful: grants Heroic Inspiration after a completed long rest. Rest controls are not available in this table interface yet.</li><li>Savage Attacker: recorded on your sheet. Weapon attack and damage selection controls are not available in this table interface yet.</li><li>Skillful and Skilled: the selected skill proficiencies are included in supported checks.</li></ul>
+      <p><strong>Mastery grants:</strong> {profile.masteries.map(label).join(', ')}. Encounter controls support Nick and Graze with eligible weapons. Other mastery effects are not available yet.</p>
+      <ul><li>Second Wind: report a d10; your Fighter level is added. Limited uses are saved.</li><li>Human Resourceful: grants Heroic Inspiration after a completed long rest. Rest controls are not available in this table interface yet.</li><li>Savage Attacker: once per turn, roll the weapon damage dice twice and choose which set to use when the damage form offers it. Additional damage dice are shared between the sets.</li><li>Skillful and Skilled: the selected skill proficiencies are included in supported checks.</li></ul>
     </details>
     <details><summary>Description and backstory</summary><p>{profile.description || 'No description supplied.'}</p><p class="preserve">{profile.backstory || 'No backstory supplied.'}</p><p class="muted">Player-authored background; not automatically accepted world facts.</p></details>
   {:else}<p class="muted">Private sheet details are visible to this character's controller and the local host.</p>{/if}
