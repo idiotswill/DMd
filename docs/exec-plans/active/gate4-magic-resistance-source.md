@@ -191,3 +191,15 @@ Published acf remains untouched while its original runtime jobs finish. No local
 heavy or native operation is part of this reconciliation. New exact-head CI,
 canonical/receiving coexistence, accepted dependencies and final main/native
 acceptance remain outstanding; PR53 must never merge into Air.
+
+
+Plan checkpoint e1d5f4c preceded normal Air reconciliation merge
+`fe862652151edee224969afb790c5e0b0839984e`, tree
+`beb0f01fb48cd9f6c843ab01f9fd9688464d1630`. Only the coverage-ledger text
+conflicted: keep the MR/coexistence paragraphs and the incoming accurate Air
+parent-CI/integrated-pending disclosure. The complete delta from reviewed0b70923
+contains exactly the Air plan, this plan and that ledger paragraph. All production,
+tests, immutable content, genuine captures and the complete coexistence child are
+byte-identical to reviewed0b70923. Root inspected the conflict and final diff;
+whitespace checks pass. This is ancestry/documentation reconciliation only,
+not new runtime verification. Published acf remains frozen for its existing jobs.
