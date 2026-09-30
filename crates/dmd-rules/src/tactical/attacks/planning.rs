@@ -25,7 +25,7 @@ pub(super) fn require_located_target(
 
 /// Only for admitting a new vitality attack. Retained source reconstruction must
 /// remain valid when that same attack has killed its target.
-pub(super) fn admit_target(
+pub(in crate::tactical) fn admit_target(
     state: &CampaignState,
     actor: EntityId,
     target: EntityId,

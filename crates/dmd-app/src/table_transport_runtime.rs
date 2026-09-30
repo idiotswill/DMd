@@ -93,6 +93,7 @@ fn derive_intent(
 ) -> Result<Intent, String> {
     let tactical_input = match &request.input {
         TableTransportInput::SelectWork { .. }
+        | TableTransportInput::ShoveDecision { .. }
         | TableTransportInput::HitResponse { .. }
         | TableTransportInput::MissileResponse { .. } => true,
         TableTransportInput::Action(action) => {
@@ -121,6 +122,49 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::ShoveDecision { handle, decision } => {
+            let (origin, occurrence, stage) = current
+                .handles
+                .iter()
+                .find_map(|h| match h.capability {
+                    ProjectionCapability::ShoveDecision {
+                        origin,
+                        occurrence,
+                        stage,
+                    } if h.opaque == handle.0 => Some((origin, occurrence, stage)),
+                    _ => None,
+                })
+                .ok_or("That body-action decision is not available in this view.")?;
+            let retained = state
+                .encounter
+                .as_ref()
+                .and_then(|e| e.flow.as_ref())
+                .and_then(|f| f.resolution.as_ref())
+                .filter(|r| r.origin.id == origin)
+                .and_then(|r| r.shove.as_ref())
+                .filter(|s| {
+                    s.stage == stage
+                        && s.selected
+                            .as_ref()
+                            .is_some_and(|w| w.occurrence == occurrence)
+                })
+                .ok_or("That body-action decision is no longer available.")?;
+            let action = match (retained.stage, decision.as_ref()) {
+                (TacticalShoveStage::SaveChoice, TableShoveInput::Save { ability }) => {
+                    TacticalAction::ChooseShoveSave { ability: *ability }
+                }
+                (TacticalShoveStage::OutcomeChoice, TableShoveInput::Outcome { choice }) => {
+                    TacticalAction::ChooseShoveOutcome {
+                        choice: choice.clone(),
+                    }
+                }
+                (TacticalShoveStage::PushReview, TableShoveInput::RulePush { ruling }) => {
+                    TacticalAction::RuleShovePush { ruling: *ruling }
+                }
+                _ => return Err("That decision does not match the visible body action.".into()),
+            };
+            Intent::Action(Box::new(TableAction::Tactical { action }))
+        }
         TableTransportInput::HitResponse { handle, decision } => {
             let (origin, occurrence, role) = current
                 .handles
@@ -269,6 +313,11 @@ fn derive_intent(
             match &mut action {
                 TableAction::SubmitPhysical { request_id, .. } => *request_id = roll(*request_id)?,
                 TableAction::Tactical { action } => match action {
+                    TacticalAction::ChooseShoveSave { .. }
+                    | TacticalAction::ChooseShoveOutcome { .. }
+                    | TacticalAction::RuleShovePush { .. } => {
+                        return Err("Select the visible body-action decision handle.".into());
+                    }
                     TacticalAction::ChooseTurnWork { .. }
                     | TacticalAction::RespondToHit { .. }
                     | TacticalAction::OrderHitResponses { .. }

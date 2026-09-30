@@ -12,6 +12,8 @@
   import HitResponsePanel from './HitResponsePanel.svelte';
   import MissileResponsePanel from './MissileResponsePanel.svelte';
   import UnarmedForm from './UnarmedForm.svelte';
+  import ShoveForm from './ShoveForm.svelte';
+  import ShoveDecisionForm from './ShoveDecisionForm.svelte';
   import FirstAidForm from './FirstAidForm.svelte';
   import AftermathForm from './AftermathForm.svelte';
   let { tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, pendingRoll=false, onAction }: {
@@ -22,7 +24,7 @@
   let tieOrder=$state<Record<string,Id[]>>({});
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
   const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='ShieldMissileV1');
-  const pendingDecision=$derived(!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
+  const pendingDecision=$derived(!!tactical.shove||!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
   const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   const firstAidTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Unseen creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
@@ -54,6 +56,9 @@
     {#if host}<button disabled={disabled||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'ShieldMissileV1'}})}>Continue saved encounter</button>{/if}
   {/if}
   <TacticalMap {tactical} {characters}/>
+  {#if tactical.shove && ((tactical.shove.stage==='PushReview' && host) || (tactical.shove.stage!=='PushReview' && controls(tactical.shove.actor)))}
+    {#key `${host}:${player}:${actor}:${tactical.shove.key}:${tactical.shove.stage}`}<ShoveDecisionForm shove={tactical.shove} disabled={disabled||pendingRoll} {onAction}/>{/key}
+  {/if}
   {#if tactical.missile}
     {#key `${host}:${player}:${actor}:${tactical.missile.order?.key}:${tactical.missile.delegate}`}
       <MissileResponsePanel missile={tactical.missile} participants={tactical.participants} {actor} {host} {playerControlledSources} disabled={disabled||pendingRoll} {onAction}/>
@@ -79,6 +84,7 @@
       {#if activeCharacter?.second_wind_remaining != null}<button disabled={tactical.budget.bonus_action_spent||activeCharacter.second_wind_remaining===0} onclick={()=>onAction('SecondWind')}>Second Wind · {activeCharacter.second_wind_remaining} uses</button>{/if}
       <button class="secondary" onclick={()=>onAction('EndTurn')}>End turn</button></div></fieldset>
     {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<UnarmedForm targets={unarmedTargets} disabled={disabled||pendingRoll||pendingDecision||(tactical.budget.action_spent&&tactical.budget.attacks_remaining===0)} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<ShoveForm targets={unarmedTargets} disabled={disabled||pendingRoll||pendingDecision||(tactical.budget.action_spent&&tactical.budget.attacks_remaining===0)} {onAction}/>{/key}
     {#key `${host}:${player}:${actor}:${tactical.active_actor}`}<FirstAidForm targets={firstAidTargets} disabled={disabled||pendingRoll||pendingDecision||tactical.budget.action_spent} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.area_options && controls(tactical.area_options.actor)}

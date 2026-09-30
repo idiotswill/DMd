@@ -17,6 +17,7 @@ mod reaction_order;
 mod ready;
 mod second_wind;
 mod shields;
+mod shove;
 mod turn_validation;
 mod turns;
 mod validation;
@@ -96,6 +97,18 @@ pub enum TacticalAction {
     },
     UnarmedStrike {
         target: EntityId,
+    },
+    Shove {
+        target: EntityId,
+    },
+    ChooseShoveSave {
+        ability: ShoveSaveAbility,
+    },
+    ChooseShoveOutcome {
+        choice: ShoveChoice,
+    },
+    RuleShovePush {
+        ruling: ShoveGeometryRuling,
     },
     FirstAid {
         target: EntityId,
@@ -415,6 +428,14 @@ fn resolve_with_policy(
         TacticalAction::UnarmedStrike { target } => {
             attacks::begin_unarmed(&mut next, meta, *target)?;
         }
+        TacticalAction::Shove { target } => shove::begin(&mut next, meta, *target)?,
+        TacticalAction::ChooseShoveSave { ability } => {
+            shove::choose_save(&mut next, meta, *ability)?
+        }
+        TacticalAction::ChooseShoveOutcome { choice } => {
+            shove::choose_outcome(&mut next, meta, choice)?
+        }
+        TacticalAction::RuleShovePush { ruling } => shove::rule_push(&mut next, meta, *ruling)?,
         TacticalAction::SubmitSavageAttacker { roll } => {
             attacks::submit_savage(&mut next, meta, roll, pack)?;
         }

@@ -78,6 +78,10 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::BeginShove
+        | TacticalWorkKind::ShoveSave
+        | TacticalWorkKind::ChooseShoveOutcome
+        | TacticalWorkKind::FinishShove => super::shove::validate_work(state, work)?,
         TacticalWorkKind::BeginMissile { .. }
         | TacticalWorkKind::ResumeMissile { .. }
         | TacticalWorkKind::CommitMissileShield { .. }
@@ -245,6 +249,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut ticket_ids = HashSet::new();
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
+            + usize::from(super::shove::waiting(state))
             + usize::from(super::hit_reactions::waiting(state))
             + usize::from(super::missiles::waiting(state))
             + usize::from(super::falling::selected(state)?.is_some())
@@ -280,6 +285,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             .chain(r.pending.iter().map(|p| &p.work))
             .chain(r.failed_save.iter().map(|f| &f.pending.work))
             .chain(r.legendary_window.iter().map(|w| &w.work))
+            .chain(r.shove.iter().filter_map(|s| s.selected.as_ref()))
         {
             if !occurrences.insert(work.occurrence) {
                 return Err(invalid("duplicate consequence occurrence"));
@@ -320,7 +326,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
             super::failed_save::validate_failed_save(state, failed)?;
-        } else if super::hit_reactions::waiting(state) || super::missiles::waiting(state) {
+        } else if super::shove::waiting(state)
+            || super::hit_reactions::waiting(state)
+            || super::missiles::waiting(state)
+        {
             if rules.pending.is_some() {
                 return Err(invalid("hit response has competing raw dice"));
             }
@@ -364,6 +373,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     }
     super::creature_bridge::validate(state)?;
     super::attacks::validate(state)?;
+    super::shove::validate(state)?;
     super::hit_reactions::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
@@ -420,6 +430,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     | TacticalRollRole::Concentration
                     | TacticalRollRole::SpellSave
                     | TacticalRollRole::AreaSave
+                    | TacticalRollRole::ShoveSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence

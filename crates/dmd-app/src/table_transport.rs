@@ -38,6 +38,10 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    ShoveDecision {
+        handle: CommandId,
+        decision: Box<TableShoveInput>,
+    },
     Action(Box<TableAction>),
     Text {
         text: String,
@@ -53,6 +57,14 @@ pub enum TableTransportInput {
         handle: CommandId,
         decision: Box<TableMissileInput>,
     },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum TableShoveInput {
+    Save { ability: ShoveSaveAbility },
+    Outcome { choice: ShoveChoice },
+    RulePush { ruling: ShoveGeometryRuling },
 }
 
 /// Separate wire input: old accepted HitResponse bodies keep their exact meaning.
@@ -281,6 +293,7 @@ pub(crate) fn presented_view(
         .tactical
         .map(|tactical| {
             let TableTacticalView {
+                shove,
                 encounter_id,
                 aftermath,
                 execution,
@@ -310,6 +323,21 @@ pub(crate) fn presented_view(
                 shield_options,
                 area_options,
             } = tactical;
+            let shove = shove
+                .map(|s| {
+                    Ok::<_, &str>(TableShoveView {
+                        key: CommandId(handle(&ProjectionCapability::ShoveDecision {
+                            origin: s.key.resolution,
+                            occurrence: s.key.occurrence,
+                            stage: s.stage,
+                        })?),
+                        actor: s.actor,
+                        stage: s.stage,
+                        from: s.from,
+                        destination: s.destination,
+                    })
+                })
+                .transpose()?;
             let hit = hit
                 .map(|hit| {
                     let key = |key: TacticalWorkKey, role| {
@@ -432,6 +460,7 @@ pub(crate) fn presented_view(
                 })
                 .transpose()?;
             Ok::<_, &str>(TableTacticalView {
+                shove,
                 encounter_id,
                 aftermath,
                 execution,

@@ -77,6 +77,10 @@ pub(super) fn continuation(
                             };
                         }
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::BeginShove
+                            | TacticalWorkKind::ShoveSave
+                            | TacticalWorkKind::ChooseShoveOutcome
+                            | TacticalWorkKind::FinishShove => (None, "Body action consequence"),
                             TacticalWorkKind::BeginMissile { .. }
                             | TacticalWorkKind::ResumeMissile { .. }
                             | TacticalWorkKind::CommitMissileShield { .. }
@@ -218,6 +222,7 @@ pub(super) fn save_actor(
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
+            | TacticalRollRole::ShoveSave
     ) {
         return None;
     }
@@ -345,6 +350,7 @@ mod tests {
             legendary_window: None,
             hit_review: None,
             attack: None,
+            shove: None,
             movement: None,
             casts: vec![],
             missiles: vec![],
@@ -409,6 +415,7 @@ mod tests {
             legendary_window: None,
             hit_review: None,
             attack: None,
+            shove: None,
             movement: None,
             casts: vec![],
             missiles: vec![],
