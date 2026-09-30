@@ -1,6 +1,7 @@
 # Gate 4 — Grapple and Escape lifecycle
 
-Writer: `gate4_shove_recovery`, coordinated by root. Branch:
+Writer: `shove_publish_correction` for the current plan-only checkpoint,
+coordinated by root. Branch:
 `codex/gate4-grapple-lifecycle`. Status: **root-approved source/domain checkpoint
 authored for independent review; no gameplay implementation or executable
 verification**.
@@ -769,7 +770,9 @@ campaign data. One authored runtime test covers missing, undeclared and rehashed
 packages after compiled-cache warmup and real campaign initialization. Each case
 rejects a query and an otherwise valid command, compares the whole export after
 normalizing only its export timestamp, then restores the genuine package and
-accepts that same command through the same runtime at the unchanged journal head.
+accepts the same action/context through the same runtime at the unchanged journal
+head. Each `execute_rules` invocation creates a new internal CommandId, so this
+is a positive repaired-package control, not an accepted-command retry identity test.
 These controls remain **unrun**; the correction has only direct rustfmt and Git
 diff checks. No payload, source fixture, gameplay guard or Grapple scope changes.
 
@@ -797,10 +800,30 @@ validation, exact consumer retention/retirement, origin collection and original
 replay before any gameplay acceptance or publication. These are engineering/source proof
 obligations within Gate4, not requests to waive product acceptance.
 
-Exact next action: commit the narrow installed-source correction and send root
-its full SHA/tree and three-file scope for fresh independent review. Stop before
-effective-hand, resolver/gameplay/transport/UI implementation; do not build, run
-tests or publish. Keep this checkout/branch the sole write target. The original
-660631a review remains evidence for that original head, not acceptance of this
-correction. Further authoring and later serial executable verification require
-root's coordination and must be recorded separately.
+The narrow installed-source correction was committed as
+`522d427b0387a5a2f415e0973888a1a2b46e1638`, tree
+`3fe2fbe443268d8a7767819beb4b03428eb0869a`. Independent corrective review is
+clear by static inspection only: external
+`tooling/gate4-grapple-522d427-corrective-independent-review-2026-09-30.md`,
+SHA256 `cdd25e4d86d5d774756e38af9023cb4e399c5c63a4ae3e65e2212389a673dc6b`.
+All authored tests remain unrun. The original 660631a finding remains valid for
+that original head; it was not erased by the correction.
+
+Root next authorized normal dependency integration and a bounded plan only.
+Merge `c3f3e73488840c5f27aa3f099ec702d893b203b1`, tree
+`b5f6893df46eebe86b6d187281105b2f2f85b865`, preserves corrected source/domain
+522d427 and published Shove `c1124004dfb3fcc84d105b512a5fe4f9502a7727`.
+It merged cleanly and changes only the reviewed Air setup test and Air/Shove
+plans. No Grapple source/domain/guard change or executable acceptance follows.
+
+The proposed next checkpoint is now recorded in the
+[derived effective-hand plan](gate4-grapple-effective-hands.md). It preserves
+physical Item slots, unknown-anatomy compatibility, early execution rejection,
+source-validation ordering and historical/current reader separation. Its caller
+matrix names the preparatory composition and the full-lifecycle/UI work excluded
+from that checkpoint. No helper implementation is authorized by the plan itself.
+
+Exact next action: send root the plan-only commit, exact tree and complete diff
+for review, then freeze this branch. Stop before effective-hand, resolver,
+gameplay, transport or UI edits; do not build, run tests or publish. Root must
+assign further authoring and coordinate later serial executable verification.
