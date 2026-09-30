@@ -1,10 +1,11 @@
 # Gate 4 Air Elemental immutable source admission
 
-Status: draft PR50 under verification. Original source 1a0a5e7 fails the strict
-distribution file-set assertion on Linux and Windows; the reviewed correction
-below awaits fresh CI. Partial passing scenarios do not establish acceptance.
+Status: all six CI jobs passed on exact corrected e915bbb; local release development
+integration is complete but UNCOMPILED/UNRUN. Integrated canonical/replay/native/final review
+and prerequisite acceptance remain outstanding; this is not Air acceptance.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
-Writer: coordinating root, 2026-09-30; the source agent has handed back the clean branch.
+Writer: `flow4_import_review`, sole local integration writer assigned by root on
+2026-09-30. Root retains independent final review, publication and acceptance.
 
 ## Objective and authority
 
@@ -224,3 +225,96 @@ immutable payload. Root now publishes that correction with this evidence update.
 No assertion is removed or generalized. Fresh exact-head CI, local canonical
 verification, genuine flow4 compatibility and packaged source placement/initiative
 remain required; the original baseline continues to own the local heavy slot.
+
+### Corrected-head completed CI and reviewed integration plan — 2026-09-30
+
+All six actual jobs completed successfully on corrected source
+`e915bbb9568f14a21c253bebf75d05ad2e91476e`, tree
+`37db98204f1f91d0ebe44573b5d556fc2f58a55c`. Linux run
+[36743556839](https://github.com/idiotswill/DMd/actions/runs/36743556839)
+passed Rust, MSRV, architecture and genericity jobs; Windows run
+[36743556655](https://github.com/idiotswill/DMd/actions/runs/36743556655)
+passed stable and 1.88.0 jobs. Linux's actual checkout
+`908baf757b33e39bd0bbe89179a14f8c08307261` has c4d8/e915 parents and the exact
+source tree; Windows checked out literal e915. Linux Rust completed at 17:24:42Z
+with 754 passed and zero failed across 55 result groups; Windows stable completed
+at 17:48:24Z with 756 passed and zero failed across 55 groups. Both include the
+strict distribution test, all 55 table cases, original Reactions/Shield histories
+and source/content tests. Windows frontend reports 101 tests in 17 files,
+zero Svelte errors/warnings and a 140-module build. These are real corrected-head
+CI results, not evidence for the forthcoming integrated tree.
+
+The Windows artifact API and upload log agree on artifact `11116031577`, name
+`dmd-windows-e915bbb9568f14a21c253bebf75d05ad2e91476e`, 232,377,773 bytes,
+archive SHA256 `c1065e0ccaca3780bb66ab1f36058ac50103dbc7664fd7ab5158227ba376ae23`.
+Artifact creation is not native GUI acceptance. Completed evidence is external
+`tooling/air-e915bbb-ci/final-evidence.json`, SHA256
+`56a85dc7a9cc81eefb855a5d4ce5207b3aa7807f5fd1a4230a0356f5f02d50f5`.
+Root independently rehashed all six logs and recalculated all Rust result groups
+in `root-completed-log-audit.json`, SHA256
+`d660c46393d49276ece089c54ba7c7fcaf2e229566d02cc0d94ab3b3777b1ea6`.
+The integration writer also rehashed each preserved job log against that completed
+evidence before this plan commit. No old failed or successful evidence is removed.
+
+Root now authorizes a bounded normal local merge of exact encounter release
+`8c03f9fb0058610fd37c0cfe7762e8b96d658f38` into clean e915 after committing this
+plan. Release8c already contains UI65 and fetched main
+`d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`; it is an **UNACCEPTED release
+development dependency**. Its first local canonical attempt failed compilation;
+root owns the fresh-target retry and all acceptance. The existing no-merge
+restriction is superseded only for this explicit development merge. No Cargo/npm/
+build/test, database, native UI, source capture, push or job cancellation is
+authorized for this writer. Do not import MR, corrected Hag or its coexistence
+child into Air.
+
+Resolve the complete source/release union: exact live full-pin admission plus the
+authenticated Finished creation exception; absent historical pins and accepted
+retry precedence; staged coherent replacement scene/actor locations before Air
+placement validation; flow5/completion history and turn high-water plus full
+source lookup. Retain the complete source-pin UI tests and lasting-actor tests.
+Update only newly authored current test constructors/Begin fixtures where needed;
+keep original source bytes, all genuine historical fixtures and the imported
+Flow4 corpus exactly unchanged. Inspect all conflicts semantically and the complete
+integrated delta, then return a clean checkpoint for root's independent review.
+
+Before acceptance, root must reconcile final main/dependency movement, verify the
+exact integrated head with focused/canonical checks and fresh required CI, execute
+the genuine old-history/Flow4 continuation suites, inspect the final full diff and
+complete packaged Air source placement/initiative and persistence evidence. Release
+acceptance remains separate. The future paid Shove Prone-immunity/no-effect path
+remains open. Neither e915 green CI nor this local development merge closes those
+obligations or any Gate 4 requirement.
+
+### Local release integration checkpoint — 2026-09-30
+
+Plan commit `9cf3d3f37a2064bbda810be7f19dded415f3632c` preceded normal merge
+`e6c44a129cc9ccdda4ad30bafc798c4212ffee6e`, whose parents are that plan and exact
+release8c. The merge tree is `2776a15915134f520e8a87d389da81e54de39694`. This is
+local development ancestry, not publication or prerequisite acceptance.
+
+There were three conflicted files. `Creature.test.ts` retains both current-pin/
+execution-limit tests and release's required-lasting-actor placement test.
+`tactical.rs` retains authenticated replacement/dependency/identity preflight,
+stages participant locations into `next`, runs Air source placement validation
+against that coherent candidate, then validates/activates the new scene. The
+coverage ledger retains both Air and release obligations, with corrected e915 CI
+distinguished from unexecuted integrated source. Auto-merged admission keeps the
+exact current full-pin check before the Finished creation exception, and historical
+missing pins/retries are unchanged. Optional source and release DTO fields, exact
+source initiative lookup, release high-water/history validation and both UI routes
+remain present.
+
+The sole additional current-fixture edit supplies exact Mage/adult-red-dragon pins
+in `table_release_recharge_cases.rs`; no assertions, resource costs or historical
+inputs change. The existing six-file Air manifest, generator, strict distribution
+expectation, every content payload and frozen V1 picker remain exact e915 bytes.
+Release fixtures and all legacy replay suites, including the original Flow4 corpus
+and binary-protection attributes, remain exact release8c. No MR source, corrected
+Hag, private save classifier or coexistence child is imported.
+
+Direct Rustfmt parsing/format checks and Git diff whitespace checks pass. These
+are static evidence only; no integrated compilation, test, GUI or native result
+is claimed. Next action is root's independent review of the clean exact checkpoint,
+followed by accepted dependency/main reconciliation and the outstanding exact-head
+canonical, required CI, genuine replay and native obligations above. This writer
+performed no push, cancellation, build/test, database, UI or source capture.
