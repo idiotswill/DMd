@@ -203,3 +203,39 @@ tests, immutable content, genuine captures and the complete coexistence child ar
 byte-identical to reviewed0b70923. Root inspected the conflict and final diff;
 whitespace checks pass. This is ancestry/documentation reconciliation only,
 not new runtime verification. Published acf remains frozen for its existing jobs.
+
+### Integrated-head failure and bounded correction plan — 2026-09-30
+
+Root published reviewed `d77691ed52075ada15e74283d31d8efd287f9475` after acf
+completed all six checks normally and its full evidence was preserved. The new
+head passes four quick checks, including both all-target MSRV checks. Both runtime
+jobs fail the newly added coexistence case at
+`support/source_revision_coexistence.rs:183`: `TableRejected("This request
+identity already belongs to different input.")`. The five original flow3 cases
+pass on each platform. Linux job110057721270 completes the affected group5/1 in
+135.83s; Windows job110057721765 completes5/1 in155.12s. Later suites never run.
+The complete failed-head bundle SHA256 is
+`9afc3e237e7ce7ae23e075e081bd1104322ab34907fa79997571ca1a25f3395b`;
+Linux log `5eae46c51bd5ceb4d11d6296b1f7d805144232ae6aee9c099906c93867c41798`,
+Windows log `005bb3bea9c46930dd8b428f99639b651a6b58de03d39998250753889b0d0090`.
+Both jobs completed normally; neither produced a package.
+
+Root inspected the actual immutable fixture and retry implementation. The old
+Hag creation is command audit schema2, with its original version1 presented
+transport request and response already retained in `table_transport_bindings`.
+The new helper incorrectly called the legacy typed API, whose deliberate schema1
+check rejects that cross-protocol reuse. Its comment claiming creation preceded
+opaque bindings was wrong. The production refusal is correct; no source pin,
+request identity or compatibility policy should change.
+
+Before modifying the helper, root records this bounded plan: locate that exact
+original binding by the saved creation command identity, authenticate its meta,
+action, absent source pin and resulting event against the unchanged journal;
+round-trip and retry the original full request through `submit_presented_table`;
+require its exact stored response and whole-export equality. Retain the mistaken
+cross-protocol submission as an explicit no-write rejection control. Keep all
+three existing chronology cuts and every other coexistence assertion. Preserve
+the parent suite and all original fixture bytes. Update the helper's provenance
+comment, independently review the full correction, and publish a fresh verified
+development head for CI. No local heavy run is authorized while release8c owns
+the slot. This correction plan is not a passing coexistence result or acceptance.
