@@ -1,6 +1,8 @@
 # Gate 4 Air Elemental immutable source admission
 
-Status: implementation authored; static checks only, no executable verification or acceptance yet.
+Status: draft PR50 under verification. Original source 1a0a5e7 fails the strict
+distribution file-set assertion on Linux and Windows; the reviewed correction
+below awaits fresh CI. Partial passing scenarios do not establish acceptance.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
 Writer: coordinating root, 2026-09-30; the source agent has handed back the clean branch.
 
@@ -162,3 +164,63 @@ focused/canonical and frontend checks when the heavy slot is available. Preserve
 the exact old exports and prove their continuations under this source before
 acceptance. Reconcile accepted dependency movement, review the final full diff,
 and complete native source/placement evidence before any protected merge.
+
+### Manifest tooling correction — 2026-09-30
+
+The later same-ID creature revision work found two omissions in the Air change:
+the manifest regeneration script still enumerated only the five legacy files,
+and the existing distribution test expected that same five-file set. Running
+the old script would drop the required Air entry. The script and exact-set
+assertion now include the installed Air payload; the assertion remains strict.
+No source payload, current manifest, legacy picker or historical fixture changes.
+
+Root ran the corrected actual script against an isolated copy of all six declared
+files. Its output is byte-identical to the installed manifest, SHA256
+`63196eccc85324e248973fb65741ada9b02404ce9e0b74939ddbc8dc0fd0a5bd`.
+The script SHA256 is
+`792f232ed554a9fe649338bd8c9147e278f33c7ff16d4806b02ce64c419a613e`.
+External evidence is `tooling/air-manifest-regeneration-2026-09-30/result.json`.
+This verifies regeneration only; the Rust assertion has not executed locally.
+Original 1a0a5e7 runtime CI remains separately under audit, and no green result on
+that head verifies this correction. The corrected head requires fresh checks.
+The original-flow baseline still owns the local heavy slot. Preserve the prior
+remote runs until normal completion before publishing the corrected source.
+
+### Actual original-head CI and correction publication — 2026-09-30
+
+Both original 1a0a5e7 runtime jobs completed normally, without cancellation:
+Linux job 109923678299 in run
+[36726225309](https://github.com/idiotswill/DMd/actions/runs/36726225309)
+at 16:07:47Z, and Windows stable job 109923674475 in run
+[36726225269](https://github.com/idiotswill/DMd/actions/runs/36726225269)
+at 16:18:14Z. Both fail `distributed_rules_pack.rs:23` because the actual six-file
+manifest includes `air-elemental-v1.json` while the test still expects five.
+Linux ends with 153 passed and one failed test across 17 emitted result groups;
+Windows ends with 155 passed and one failed. No packaged artifact was produced.
+
+Before that failure, all 55 table cases pass on both systems (7086.79s Linux,
+7460.13s Windows), including actual current-catalog Air creation/cold restore and
+all four Magic Missile cases. The installed-source integrity refusal case, five
+legacy Reactions histories and five Shield histories also pass. The other four
+CI jobs pass, including both MSRV checks, all eight architecture guard tests and
+genericity. Both Windows jobs pass 101 frontend tests in 17 files, zero Svelte
+errors/warnings and a 140-module build. These are bounded results on the failed
+original head, not full workspace or corrected-head verification.
+
+Linux checks out synthetic merge `bcd9d3c85e31503e91ce592bd34fcbcbf4935c24`,
+whose parents are c4d8 main and 1a0a5e7. Its complete tree equals source tree
+`589dfa92d70b1f63f2195de78df010133d8bf5b2`; Windows checks out literal 1a0a5e7.
+The actual six logs, tree comparison and empty artifact API are preserved in
+`tooling/air-1a0a5e7-ci/completed-failure-evidence.json` outside the repository,
+SHA256 `cf85ab2ccc4a8cf7530190db47252e6e899ca8fb95608a1352080e6e85b10d62`.
+Runtime log SHA256 values are
+`b373cddc6a4e1f659b9ad75abcdf1833d1383e886c1950e9a35ea17a01bf6a8a`
+and `c6514177b2ff73f5146ed7d5ade841fcc9176d457142f5fd90e98b4cd81caf35`.
+
+The already independently reviewed correction is source checkpoint
+`021421c4990c686e31a6ad8da0b6ef3571f087ae`: add Air to the exact expected set
+and to the manifest generator, preserving the installed manifest and every
+immutable payload. Root now publishes that correction with this evidence update.
+No assertion is removed or generalized. Fresh exact-head CI, local canonical
+verification, genuine flow4 compatibility and packaged source placement/initiative
+remain required; the original baseline continues to own the local heavy slot.
