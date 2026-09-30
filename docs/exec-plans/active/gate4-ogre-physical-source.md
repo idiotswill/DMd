@@ -17,7 +17,9 @@ this plan does not activate Grapple or satisfy that separate obligation.
 Development base: source-count candidate
 `f562f30a8e82931b9bd007f27ab67da2e5b0c6fc`, tree
 `e5633723ca9cc038e0828d242eb71c64c2171ba7`. Its independent static review is clear;
-focused verification is running separately. It inherits unaccepted foundationfa4,
+focused verification completed normally:51 selected tests, compile/format and
+strict Clippy pass. Full canonical/CI and application acceptance remain pending.
+It inherits unaccepted foundationfa4,
 Shovef9, Air3f and release8c. Main freshly fetched is
 `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`. These are development dependencies,
 not accepted main. Reconcile all accepted prerequisites normally before final
@@ -101,8 +103,13 @@ the Ogre formula belongs to its exact source, never the Item definition.
    choices; do not depend on list position after refresh. Normal creation derives
    item_count4 and no ammunition from the catalog. UI supplies no damage, actor
    authority, invented pin or hidden target information.
-5. **Recovery, source review and admission.** Add current admission only when
-   every printed form and OA path exists and the full coherent delta is reviewed.
+5. **Active-map ground weapon recovery.** Implement the missing production pickup
+   prerequisite described below. The existing Equip operation accepts only already
+   carried weapons; thrown completion leaves real Location custody and a ground
+   placement. Changing test custody directly cannot satisfy ordinary-loot acceptance.
+6. **Recovery, source review and admission.** Add current admission only when
+   every printed form, OA and ground recovery path exists and the full coherent
+   delta is reviewed.
    Run focused tests, canonical verification, both-platform exact-head CI and
    packaged native play. Preserve earlier failures and exact source-qualified
    evidence. Reconcile accepted prerequisites; expected-head merge and separate
@@ -114,6 +121,52 @@ Relevant seams: `tactical_creatures`, `tactical_definitions`,
 `table_attacks`, `table_movement`, table protocol, desktop tactical API,
 AttackForm/OpportunityForm and installed content verification. Extend the existing
 physical planner/resolver; do not add a parallel source-attack engine.
+
+### Ground recovery prerequisite identified during independent plan review
+
+The exact139f976 plan review identified a real missing command: neither table nor
+tactical action exposes ground pickup; Equip/Unequip require Entity custody.
+The original ordinary-loot acceptance is retained and this production prerequisite
+is now explicit. It is not discharged by a synthetic Item or private state edit.
+
+The pinned SRD's Attack action (printed p177) explicitly includes picking a weapon
+up in its one equip-or-unequip allowance, before or after an attack. Extend that
+existing transition with an explicit ground-pickup choice and actual custody
+receipt. Do not silently reinterpret accepted legacy Equip payloads. The new
+choice is currentflow5-only in both policies; the immutable original command path
+and old receipt serialization remain exact. It spends the same single attack
+equipment allowance, not another free transfer or an invented mandatory Action.
+It creates no extra attack, Action, item grant, ammunition or ownership change.
+
+Bind the actual active actor/controller, one intact quantity-one physical weapon,
+its current-map Location custody and exact ground record. Require an available
+physical hand through EffectiveHands, ordinary5-foot unobstructed interaction
+reach from the actual footprint/height, and a player-visible/reachable item. Do
+not use a monster's extended attack reach as automatic object-manipulation reach.
+Wrong scene, inaccessible height/geometry, remote/foreign item, occupied/reserved
+hand, consumed/destroyed item, duplicate pickup or stale ground proof refuses
+before payment or mutation. The reach rule is this bounded physical interaction
+interpretation, not a quotation that every creature has identical anatomy.
+
+Atomically move that same Item from Location to the actor's custody, assign the
+selected hand and remove only its active ground placement. Keep owner, quantity,
+definition, original grant and prior throw/drop cause unchanged. The accepted
+journal plus equipment receipt retain the exact prior ground location/position
+and causal origin needed to authenticate a pending attack after pickup; current
+post-pickup custody alone is insufficient historical proof. Update actual receipt,
+source attack and after-equipment validators together. There is no append-only
+duplicate live ground authority and no copying of source damage onto the Item.
+
+Expose reachable ground weapons as stable Item choices in the actual Attack form
+and any existing after-equipment choice; raw client IDs, position or visibility
+claims cannot establish access. A genuine other actor picks up a previously thrown
+Javelin before its attack and rolls ordinary1d6 base damage. Cover before and after
+equipment allowance, no second change, same-command retry, changed-body no-write,
+cold pending attack/damage and independent portable restore from accepted history.
+Native play must include a real pickup through the new control. Generic nonweapon
+interactions, off-turn looting and travel back to retired scenes remain separate
+requirements, without claiming their completion here. Before authoring this
+checkpoint, review the concrete receipt/authority changes against these rules.
 
 ## Execution and old-history boundary
 
@@ -135,10 +188,10 @@ missing pin is filled from current admission. Public Grapple guards stay closed.
 | Physical creation | Four distinct qty1 items through actual catalog/creation; wrong count, duplicate/nil/existing IDs and quantity forgery refuse atomically; retry/reload grants nothing twice. |
 | Printed forms | Real own-turn Greatclub, Javelin melee and Thrown; physical hit/miss/critical; all consume one Action, actual hands/items and printed dice, preserving generic situational rules. |
 | Finite custody | Throw each of the three real Javelins, covering hit and miss; no fourth unrecovered throw; exact source/loadout/ground positions survive cold/portable continuation without replenishment. |
-| Ordinary loot | A real other actor acquires the actual dropped weapon by supported commands and uses ordinary dice; no copied Ogre source damage. |
+| Ordinary loot | A real other actor uses the supported active-map Attack pickup to acquire the actual dropped weapon and rolls ordinary dice; no copied Ogre source damage. Exact same-item custody/ground transition, real hand/reach/visibility, before/after allowance, cold/retry and hostile requests are required. |
 | Opportunity | Real movement crossing offers the exact held weapon and legal grip; one Reaction, printed damage, no Action/draw; unavailable supporting hand and old gripless choice refuse. |
 | Cold/retry | Pending own-turn attack/damage and OA survive real file SQLite close/reopen, independent portable restore and exact original retries; changed bodies/foreign controls/stale handles preserve the complete store. |
-| UI/native | Normally create the pinned Ogre; see four distinguishable items and all forms; play physical attacks/throw/OA and pending cold resume in the verified package. No direct state repair or harness replaces native reachability. |
+| UI/native | Normally create the pinned Ogre; see four distinguishable items and all forms; play physical attacks/throw/OA, real other-actor pickup and pending cold resume in the verified package. No direct state repair or harness replaces native reachability. |
 | Compatibility | Every old allocation/fingerprint, immutable content, original capture and accepted command remains unchanged; all original continuation suites execute on the receiving head. |
 
 Current EffectiveHands unit fixtures may test the new OA planner's immediate hand
@@ -157,7 +210,7 @@ checks through the old OA variant, double-paying source Action/Reaction costs,
 replenishing thrown gear, changing legacy serialization and advertising partial
 printed actions. The acceptance matrix addresses each explicitly.
 
-One writer per branch. The local heavy slot belongs to the separate count verifier;
+One writer per branch. The local heavy slot belongs to the separate guarded-core verifier;
 no parallel Cargo/npm/compiler/database/native operation is authorized here.
 Static authoring/review may proceed once this plan is independently reviewed.
 Next: independent exact-plan review, resolve findings, then implement checkpoint1
