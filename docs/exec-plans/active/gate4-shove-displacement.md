@@ -278,3 +278,11 @@ All six original job logs and the failed source/tree identity are preserved in
 root's external `tooling/shove-d8e1c72-ci/failure-evidence.json`. The correction
 requires a fresh remote run; local heavy verification remains reserved for the
 original-source baseline. All remaining acceptance obligations above still apply.
+
+The next head `7adbf99f33be00aa98f728190f12b1657f0450b0` cleared that validator
+lint. Linux runtime job 109934925107 then stopped at strict `replace_box` in the
+table test's wrong-stage command mutation, before Rust tests. Replace the existing
+box's inner value directly; the mutated Save body and full-store refusal assertion
+are unchanged. The complete failed log is preserved externally under
+`tooling/shove-7adbf99-ci/`. Formatting and diff checks pass for this correction;
+fresh exact-head CI is required. No assertion or lint is weakened.

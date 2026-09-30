@@ -279,9 +279,9 @@ async fn exercise(f: &mut Fixture, url: &str, push: bool, falling: bool) {
     let mut wrong_stage = choose.clone();
     wrong_stage.command_id = CommandId::new();
     if let TableTransportInput::ShoveDecision { decision, .. } = &mut wrong_stage.input {
-        *decision = Box::new(TableShoveInput::Save {
+        **decision = TableShoveInput::Save {
             ability: ShoveSaveAbility::Strength,
-        });
+        };
     }
     Box::pin(reject(f, wrong_stage)).await;
     Box::pin(cold(f, url, choose)).await;
