@@ -5,6 +5,8 @@ use super::*;
 use crate::tactical_creature_equipment::*;
 use crate::tactical_creatures::*;
 
+mod review;
+
 pub(super) struct Fixture {
     pub state: CampaignState,
     pub pack: RulesPack,
@@ -133,10 +135,13 @@ impl Fixture {
         self.run(Some(self.target), |s, m| choose_save(s, m, id, ability));
     }
     fn submit(&mut self, face: u16) {
+        self.submit_as(self.target, face, RollSource::Physical);
+    }
+    fn submit_as(&mut self, actor: EntityId, face: u16, source: RollSource) -> CommandMeta {
         let p = self.state.rules.as_ref().unwrap().pending.as_ref().unwrap();
         let result = RollResult {
             request_id: p.request.id,
-            source: RollSource::Physical,
+            source,
             dice: vec![
                 DieResult {
                     sides: 20,
@@ -149,9 +154,9 @@ impl Fixture {
                 }
             ],
         };
-        self.run(Some(self.target), |s, m| {
+        self.run(Some(actor), |s, m| {
             super::super::continuations::submit(s, m, &result, None)
-        });
+        })
     }
     fn decline(&mut self, id: GrappleId) {
         let work = work_key(

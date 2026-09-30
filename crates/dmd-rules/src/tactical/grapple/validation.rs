@@ -220,6 +220,16 @@ fn validate_evidence(
         if consumed != proof.legendary.as_ref().is_some_and(|l| l.use_resistance) {
             return Err(invalid("Grapple LR proof differs from source expenditure"));
         }
+        // This guarded core permits no intervening source/resource change. A
+        // failure with available LR must have reached the producer's decision
+        // pause; omitting a decline cannot turn it into an ordinary failure.
+        // Exact-key expenditure above also covers the last available use.
+        if !base_success
+            && proof.legendary.is_none()
+            && super::super::failed_save::available(state, declaration.target)?
+        {
+            return Err(invalid("Grapple failure omitted its required LR decision"));
+        }
         if let Some(legendary) = &proof.legendary {
             causal(
                 state,
@@ -579,6 +589,15 @@ fn validate_escape(state: &CampaignState, e: &TacticalGrappleEscape) -> Result<(
             let raw = matches
                 .next()
                 .ok_or_else(|| invalid("Escape accepted dice absent"))?;
+            if (raw.request.visibility == RollVisibility::Secret
+                || raw.result.source == RollSource::Digital)
+                && !matches!(
+                    raw.accepted_by.issuer,
+                    CommandIssuer::Admin | CommandIssuer::System
+                )
+            {
+                return Err(RulesError::Unauthorized);
+            }
             if matches.next().is_some()
                 || raw.request != request
                 || raw.issued_by != e.origin
@@ -622,6 +641,14 @@ fn validate_escape(state: &CampaignState, e: &TacticalGrappleEscape) -> Result<(
             ended_by,
             cancelled,
         } => {
+            let holder = context(state)?
+                .proofs
+                .iter()
+                .find(|proof| proof.declaration.id == e.grip)
+                .ok_or_else(|| invalid("Released Escape grip proof absent"))?
+                .declaration
+                .grappler;
+            causal(state, ended_by, &e.origin, holder)?;
             if *cancelled != Some(e.key.request_id())
                 || rules
                     .cancelled_roll_ids
@@ -656,6 +683,19 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
     {
         for grip in &live.active {
             validate_grip(state, grip)?;
+            // Only live holders reserve current physical hands. Ended proofs
+            // below authenticate history and must not block lawful re-equipping.
+            // The physical primitive does not recurse through source anatomy.
+            let holder = grip.declaration.grappler;
+            let loadout = admission::loadout(state, holder)?;
+            crate::tactical_inventory::validate_loadout(state, loadout)
+                .map_err(|e| invalid(&e.to_string()))?;
+            crate::tactical_hands::EffectiveHands::current(
+                state,
+                state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+                holder,
+            )?
+            .validate_loadout(&loadout.hands)?;
         }
     }
     let Some(r) = &flow(state)?.resolution else {
