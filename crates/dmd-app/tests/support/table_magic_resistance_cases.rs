@@ -23,6 +23,23 @@ async fn view(f: &Fixture) -> TablePresentedView {
         .await
         .unwrap()
 }
+async fn destination_rows(pool: &sqlx::SqlitePool) -> std::collections::BTreeMap<String, i64> {
+    let tables: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name")
+            .fetch_all(pool)
+            .await
+            .unwrap();
+    let mut rows = std::collections::BTreeMap::new();
+    for table in tables {
+        let quoted = table.replace('"', "\"\"");
+        let count = sqlx::query_scalar(&format!("SELECT COUNT(*) FROM \"{quoted}\""))
+            .fetch_one(pool)
+            .await
+            .unwrap();
+        rows.insert(table, count);
+    }
+    rows
+}
 fn tactical(action: TacticalAction) -> TableTransportInput {
     TableTransportInput::Action(Box::new(TableAction::Tactical { action }))
 }
@@ -184,7 +201,7 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
                 }],
                 creatures: actors
                     .into_iter()
-                    .zip([point(10, 40, 0), point(40, 40, 0), point(75, 45, 0)])
+                    .zip([point(10, 40, 0), point(40, 40, 0), point(80, 40, 0)])
                     .enumerate()
                     .map(|(index, (actor, position))| TableCreaturePlacement {
                         actor,
@@ -315,7 +332,26 @@ async fn corrected_hag_has_real_fiend_no_effect_and_nonmagical_breath_controls_a
     )
     .unwrap();
     forged.current_state.state_json = altered.encode_json().unwrap();
-    assert!(Box::pin(f.runtime.restore_campaign(&forged)).await.is_err());
+    // A fresh destination cannot mask failed semantic validation behind an
+    // already-existing campaign. Check every table, including retained receipts.
+    let destination_pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let destination = runtime(destination_pool.clone());
+    let empty_rows = destination_rows(&destination_pool).await;
+    assert!(
+        Box::pin(destination.restore_campaign(&forged))
+            .await
+            .is_err()
+    );
+    assert_eq!(destination_rows(&destination_pool).await, empty_rows);
+    assert_eq!(
+        Box::pin(destination.restore_campaign(&original))
+            .await
+            .unwrap()
+            .state(),
+        &before,
+        "the genuine export must still restore into the same rejected destination"
+    );
+    destination_pool.close().await;
     let mut unchanged = export_campaign(&f.pool, f.campaign).await.unwrap();
     unchanged.exported_at_utc = original.exported_at_utc.clone();
     assert_eq!(unchanged, original);
