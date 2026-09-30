@@ -75,8 +75,8 @@ pub(super) fn weapon_plan(
                 .ok_or_else(|| invalid("character source profile absent"))?,
         ),
         TacticalSource::Creature { definition_id } => WeaponActorSource::CreatureOrdinaryWeapon(
-            defs.creature(definition_id)
-                .ok_or_else(|| invalid("creature source absent"))?,
+            crate::tactical_creatures::source_for_actor(state, actor, definition_id)
+                .map_err(|e| invalid(&e.to_string()))?,
         ),
     };
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
@@ -216,10 +216,8 @@ pub(super) fn hit_facts_for(
         .find(|c| c.actor == actor)
         .map(|c| &c.source)
     {
-        let definitions = definitions()?;
-        let source = definitions
-            .creature(definition_id)
-            .ok_or_else(|| invalid("attacker source absent"))?;
+        let source = crate::tactical_creatures::source_for_actor(state, actor, definition_id)
+            .map_err(|e| invalid(&e.to_string()))?;
         for property in &source.traits {
             if let crate::tactical_definitions::MonsterTrait::PackTactics { ally_distance_feet } =
                 property

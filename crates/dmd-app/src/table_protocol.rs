@@ -107,6 +107,9 @@ pub struct TableCreatureCreation {
     pub entity_id: EntityId,
     pub name: String,
     pub definition_id: String,
+    /// Absence is frozen V1 replay, never a current-catalog default.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<CreatureSourcePin>,
     pub size: CreatureSize,
     pub additional_languages: Vec<String>,
     pub ammunition_units: u16,
@@ -286,6 +289,8 @@ pub struct TableCreatureSetupView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableCreatureOption {
     pub definition_id: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source: Option<CreatureSourcePin>,
     pub name: String,
     pub sizes: Vec<CreatureSize>,
     pub additional_languages: u8,
@@ -293,6 +298,8 @@ pub struct TableCreatureOption {
     pub item_count: usize,
     pub abilities: Vec<String>,
     pub omitted_features: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub execution_limits: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

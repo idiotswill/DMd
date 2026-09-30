@@ -21,6 +21,12 @@ async fn verify_creature_creation(f: &Fixture) -> (CampaignState, EntityId) {
         entity_id: actor,
         name: "Private sentry".into(),
         definition_id: "goblin-warrior".into(),
+        source: Some(
+            dmd_rules::tactical_creatures::creature_source_pin(
+                dmd_rules::tactical_creatures::creature_definition("goblin-warrior").unwrap(),
+            )
+            .unwrap(),
+        ),
         size: CreatureSize::Small,
         additional_languages: vec![],
         ammunition_units: 20,

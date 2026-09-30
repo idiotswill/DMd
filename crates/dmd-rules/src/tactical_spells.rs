@@ -336,15 +336,59 @@ fn source_pin(
     })
 }
 
+fn creature_for_spell_source(
+    defs: &TacticalDefinitions,
+    spell: &TacticalSpellDefinition,
+    pin: &SpellSourcePin,
+) -> Result<&'static CreatureDefinition, RulesError> {
+    for creature in crate::tactical_creatures::immutable_creature_sources()
+        .map_err(|e| invalid(&e.to_string()))?
+    {
+        if pin.creature_definition_id.as_ref() != Some(&creature.id) {
+            continue;
+        }
+        if let Some(feature) = creature
+            .features
+            .iter()
+            .find(|f| Some(&f.id) == pin.feature_id.as_ref())
+            && source_pin(defs, spell, Some(creature), Some(feature))? == *pin
+        {
+            return Ok(creature);
+        }
+    }
+    Err(invalid(
+        "spell tuple has no exact immutable creature source",
+    ))
+}
+
+/// A separately valid actor pin and spell pin do not prove the same revision.
+pub fn validate_creature_spell_source(
+    profile: &CreatureProfile,
+    pin: &SpellSourcePin,
+) -> Result<(), RulesError> {
+    let defs = definitions()?;
+    let spell = defs
+        .spell(&pin.spell_id)
+        .ok_or_else(|| invalid("unknown spell source"))?;
+    let actor_source = crate::tactical_creatures::source_for_profile(profile)
+        .map_err(|e| invalid(&e.to_string()))?;
+    if creature_for_spell_source(defs, spell, pin)? != actor_source {
+        return Err(invalid("actor and spell source revisions differ"));
+    }
+    Ok(())
+}
+
 fn source_components(
     defs: &TacticalDefinitions,
     spell: &TacticalSpellDefinition,
     pin: &SpellSourcePin,
-) -> SpellComponentsNeeded {
-    let waivers = pin
-        .creature_definition_id
-        .as_ref()
-        .and_then(|id| defs.creature(id))
+) -> Result<SpellComponentsNeeded, RulesError> {
+    let creature = if pin.creature_definition_id.is_some() {
+        Some(creature_for_spell_source(defs, spell, pin)?)
+    } else {
+        None
+    };
+    let waivers = creature
         .and_then(|creature| {
             creature
                 .features
@@ -352,11 +396,11 @@ fn source_components(
                 .find(|f| Some(&f.id) == pin.feature_id.as_ref())
         })
         .and_then(|feature| feature.spell_component_waivers);
-    SpellComponentsNeeded {
+    Ok(SpellComponentsNeeded {
         verbal: spell.components.verbal && !waivers.is_some_and(|w| w.verbal),
         somatic: spell.components.somatic && !waivers.is_some_and(|w| w.somatic),
         material: spell.components.material.is_some() && !waivers.is_some_and(|w| w.material),
-    }
+    })
 }
 
 fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
@@ -495,9 +539,9 @@ fn plan_spell_cast_authorized(
             let TacticalSource::Creature { definition_id } = &source.source else {
                 return Err(unavailable("actor has no source creature grant"));
             };
-            let creature = defs
-                .creature(definition_id)
-                .ok_or_else(|| invalid("creature source absent"))?;
+            let creature =
+                crate::tactical_creatures::source_for_actor(state, choice.actor, definition_id)
+                    .map_err(|e| invalid(&e.to_string()))?;
             let feature = creature
                 .features
                 .iter()
@@ -563,7 +607,7 @@ fn plan_spell_cast_authorized(
             "Ready requires an action spell and a bounded perceivable trigger",
         ));
     }
-    let components = source_components(defs, spell, &program.source);
+    let components = source_components(defs, spell, &program.source)?;
     if !components.material && choice.material != SpellMaterialChoice::None {
         return Err(invalid("unneeded material component selection"));
     }
@@ -648,12 +692,7 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
             (source_pin(defs, spell, None, None)?, payment)
         }
         SpellGrantChoice::CreatureFeature { feature_id } => {
-            let creature = program
-                .source
-                .creature_definition_id
-                .as_ref()
-                .and_then(|id| defs.creature(id))
-                .ok_or_else(|| invalid("retained creature source absent"))?;
+            let creature = creature_for_spell_source(defs, spell, &program.source)?;
             let feature = creature
                 .features
                 .iter()
@@ -735,7 +774,7 @@ pub fn validate_spell_plan(plan: &SpellCastPlan) -> Result<(), RulesError> {
         _ => return Err(invalid("retained Ready choice is invalid")),
     };
     if plan.cost != cost
-        || plan.components != source_components(defs, spell, &program.source)
+        || plan.components != source_components(defs, spell, &program.source)?
         || (!plan.components.material && plan.choice.material != SpellMaterialChoice::None)
         || plan.concentration_group
             != (program.concentration || ready)

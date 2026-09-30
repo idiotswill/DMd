@@ -9,6 +9,12 @@ pub(super) async fn prepare(f: &mut Fixture) -> EntityId {
                 entity_id: mage,
                 name: "Private ledge Mage".into(),
                 definition_id: "mage".into(),
+                source: Some(
+                    dmd_rules::tactical_creatures::creature_source_pin(
+                        dmd_rules::tactical_creatures::creature_definition("mage").unwrap(),
+                    )
+                    .unwrap(),
+                ),
                 size: CreatureSize::Medium,
                 additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
                 ammunition_units: 0,

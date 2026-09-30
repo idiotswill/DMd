@@ -140,6 +140,12 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
                     entity_id: actor,
                     name: format!("Private {id}"),
                     definition_id: id.into(),
+                    source: Some(
+                        dmd_rules::tactical_creatures::creature_source_pin(
+                            dmd_rules::tactical_creatures::creature_definition(id).unwrap(),
+                        )
+                        .unwrap(),
+                    ),
                     size,
                     additional_languages: vec![],
                     ammunition_units: 0,

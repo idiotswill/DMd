@@ -33,9 +33,8 @@ pub(super) fn save_modifier(
     {
         TacticalSource::Character => Ok(crate::test_modifier(entity, &TestKind::Save { ability })),
         TacticalSource::Creature { definition_id } => Ok(i32::from(
-            definitions()?
-                .creature(definition_id)
-                .ok_or_else(|| invalid("unknown source creature"))?
+            crate::tactical_creatures::source_for_actor(state, actor, definition_id)
+                .map_err(|e| invalid(&e.to_string()))?
                 .statistics
                 .saving_throw_modifiers[ability.index()],
         ) - i32::from(entity.exhaustion) * 2),

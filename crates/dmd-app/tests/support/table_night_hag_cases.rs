@@ -97,6 +97,7 @@ async fn create_sources(f: &Fixture) -> (EntityId, EntityId) {
                     entity_id: actor,
                     name: format!("Private {id}"),
                     definition_id: source.definition_id.clone(),
+                    source: source.source.clone(),
                     size: source.sizes[0],
                     additional_languages: vec![],
                     ammunition_units: 0,

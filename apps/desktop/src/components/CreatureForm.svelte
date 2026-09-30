@@ -13,12 +13,12 @@
   }
   function submit(event: SubmitEvent) {
     event.preventDefault(); error = '';
-    if (!selected) return;
+    if (!selected?.source) { error = 'Refresh the creature sources before preparing a creature.'; return; }
     const additional_languages = languages.split(',').map(language => language.trim()).filter(Boolean);
     if (additional_languages.length !== selected.additional_languages || new Set(additional_languages).size !== additional_languages.length) {
       error = `Choose ${selected.additional_languages} distinct additional languages.`; return;
     }
-    onCreate({ entity_id: newId(), name: name.trim() || selected.name, definition_id: selected.definition_id, size, additional_languages,
+    onCreate({ entity_id: newId(), name: name.trim() || selected.name, definition_id: selected.definition_id, source: selected.source, size, additional_languages,
       ammunition_units: selected.ammunition_required ? ammunition : 0, item_ids: Array.from({length:selected.item_count}, newId) });
   }
 </script>
@@ -31,6 +31,7 @@
     {#if selected.additional_languages}<label>Additional languages ({selected.additional_languages}, comma separated)<input required bind:value={languages} /></label>{/if}
     {#if selected.ammunition_required}<label>Starting ammunition per type<input type="number" required min="1" max="1000" step="1" bind:value={ammunition} /></label><p>This finite supply is saved with the creature and is spent during play.</p>{/if}
     <p>Source abilities: {selected.abilities.join(', ')}.</p>
+    {#if selected.execution_limits?.length}<p>Not yet available: {selected.execution_limits.join(' ')}</p>{/if}
     {#if selected.omitted_features.length}<p>This creature definition does not yet include: {selected.omitted_features.map(label).join(', ')}.</p>{/if}
     {#if error}<p role="alert">{error}</p>{/if}
     <button type="submit">Prepare creature</button>

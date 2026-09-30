@@ -120,6 +120,7 @@ pub(super) async fn create_mage(
                 entity_id: actor,
                 name: "Private source Mage".into(),
                 definition_id: source.definition_id.clone(),
+                source: source.source.clone(),
                 size: CreatureSize::Medium,
                 additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
                 ammunition_units: 0,
