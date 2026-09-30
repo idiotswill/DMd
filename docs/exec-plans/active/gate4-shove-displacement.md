@@ -286,3 +286,42 @@ box's inner value directly; the mutated Save body and full-store refusal asserti
 are unchanged. The complete failed log is preserved externally under
 `tooling/shove-7adbf99-ci/`. Formatting and diff checks pass for this correction;
 fresh exact-head CI is required. No assertion or lint is weakened.
+
+### Source-control setup correction — 2026-09-30
+
+Head `5c70954f9a9b765a4154470b0873d452fe4e654c` completed the Linux table-loop
+suite with 56 passing tests and one failure in 6901.05 seconds. Job 109938078211
+failed the real Air Shove case at the shared legacy typed-command helper:
+`Refresh this legacy request before submitting new input.` The actual complete
+job log is preserved externally at `tooling/shove-5c70954-ci/job-109938078211.log`.
+The four Magic Missile cases and the separate ordinary Shove case passed in that
+run; the Air scenario did not pass, and this is not a complete workspace result.
+The Windows run must be recorded independently when it finishes normally.
+
+The Air setup had enabled source control but then submitted PrepareEquipment,
+PrepareBattlefield, Begin, and both initiative faces through old typed helpers.
+Use the current presented transport and each current opaque initiative handle
+for those five steps. Preserve the original actors, source pin, geometry, dice
+values, and all scenario assertions. These accepted setup steps now also use the
+existing file close/reopen, independent restore, exact retry, and changed-body
+no-write helper. The production rejection of fresh legacy commands after source
+control activation remains unchanged. Explicitly assert normal single-d20
+initiative before reporting the original physical faces.
+
+The branch also contains the independently reviewed Air manifest/generator
+correction from `021421c4990c686e31a6ad8da0b6ef3571f087ae`, brought in by normal
+merge `158256ac2b3fe82a3069890344f05ef1c4122cb5`. That corrects the known later
+six-definition expectation without changing source content or runtime behavior.
+Only formatting and diff checks have run locally for the setup correction;
+original-source baseline verification still owns the heavy slot. A fresh exact
+head needs runtime CI, canonical verification, release5 reconciliation, and the
+native and historical acceptance already required above.
+
+Independent static review of the corrected Air test reports no blocking finding.
+It traced current transport admission, PC/Host ownership, Normal initiative,
+initial placement, clear Hover Push, private-wall Unsupported refusal, and the
+unchanged cold helper. That helper uses an independent in-memory restore plus
+two reopenings of the real file; it does not claim a second cold file. The review
+is external `tooling/gate4-shove-air-transport-correction-independent-review-2026-09-30.md`,
+SHA256 `eec36ddb72a41f10a8d5b254011b12aa29810b0192b1f543662889b82cf5a4f2`.
+The review is static only and does not substitute for the required execution.

@@ -57,6 +57,8 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
         },
     ))
     .await;
+    let character = f.characters[0];
+    let character_actor = f.actors[0];
     let setup = f
         .runtime
         .table_view(f.campaign, TableViewer::Host)
@@ -65,19 +67,20 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
     let count = setup
         .characters
         .iter()
-        .find(|c| c.character_id == f.characters[0])
+        .find(|c| c.character_id == character)
         .unwrap()
         .equipment
         .as_ref()
         .unwrap()
         .initial_item_count;
-    f.host(
+    Box::pin(host_cold(
+        f,
+        url,
         TableAction::PrepareEquipment {
-            character_id: f.characters[0],
+            character_id: character,
             item_ids: (0..count).map(|_| ItemId::new()).collect(),
         },
-        Some(f.session),
-    )
+    ))
     .await;
     let p = |x, y, z| SpatialPoint { x, y, z };
     let mut obstacles = vec![SpatialObstacle {
@@ -104,22 +107,24 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
             cover: CoverDegree::None,
         });
     }
-    f.host(TableAction::PrepareBattlefield { setup: Box::new(TableBattlefieldSetup {
+    Box::pin(host_cold(f, url, TableAction::PrepareBattlefield { setup: Box::new(TableBattlefieldSetup {
         encounter_id:EncounterId::new(), scene_id:SceneId::new(), location_id:LocationId::new(),
         name:"Supported character beside a hovering creature".into(),
         battlefield:Battlefield { bounds:SpatialBox { min:p(0,0,0), max:p(100,100,100) }, floor_z:0,
             floor_surface:"stone".into(), ambient_light:LightLevel::Bright, obstacles, terrain:vec![], lights:vec![] },
-        characters:vec![TableCharacterPlacement { character_id:f.characters[0], position:p(10,10,40), height:12, allies:vec![], enemies:vec![air] }],
-        creatures:vec![TableCreaturePlacement { actor:air, public_label:"Visible whirling shape".into(), position:p(20,10,40), height:20, allies:vec![], enemies:vec![f.actors[0]] }],
+        characters:vec![TableCharacterPlacement { character_id:character, position:p(10,10,40), height:12, allies:vec![], enemies:vec![air] }],
+        creatures:vec![TableCreaturePlacement { actor:air, public_label:"Visible whirling shape".into(), position:p(20,10,40), height:20, allies:vec![], enemies:vec![character_actor] }],
         area_grid_policy:None, geometry_ruling:Ruling { basis:RulingBasis::GmAdjudication, reason:"Character stands on a real platform beside actual source-supported hovering flight.".into() },
-    }) }, Some(f.session)).await;
-    f.host(
+    }) })).await;
+    Box::pin(host_cold(
+        f,
+        url,
         TableAction::Tactical {
             action: TacticalAction::Begin {
                 execution: TacticalExecutionVersion::ShieldMissileV1,
                 combatants: vec![
                     TacticalCombatant {
-                        actor: f.actors[0],
+                        actor: character_actor,
                         source: TacticalSource::Character,
                         surprised: false,
                     },
@@ -133,7 +138,7 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
                 ],
                 groups: vec![
                     InitiativeGroup {
-                        actors: vec![f.actors[0]],
+                        actors: vec![character_actor],
                         request_id: RollRequestId::new(),
                     },
                     InitiativeGroup {
@@ -143,11 +148,32 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
                 ],
             },
         },
-        Some(f.session),
-    )
+    ))
     .await;
-    table_attack_cases::submit(f, false, &[18]).await;
-    table_attack_cases::submit(f, true, &[2]).await;
+    for (host, value) in [(false, 18), (true, 2)] {
+        let roll = view(f, host).await.roll.unwrap();
+        assert_eq!(roll.mode, RollMode::Normal);
+        assert_eq!(
+            roll.dice,
+            [DieSpec {
+                count: 1,
+                sides: 20
+            }]
+        );
+        let command = request(
+            f,
+            host,
+            action(TacticalAction::SubmitRoll {
+                result: RollResult {
+                    request_id: roll.id,
+                    source: RollSource::Physical,
+                    dice: vec![DieResult { sides: 20, value }],
+                },
+            }),
+        )
+        .await;
+        Box::pin(cold(f, url, command)).await;
+    }
     (air, pin)
 }
 
