@@ -88,13 +88,24 @@ This is technical evidence, not human acceptance.
 The bounded [Air Elemental source admission](../exec-plans/active/gate4-air-elemental-source-admission.md)
 adds a separate complete immutable SRD pages 258-259 source and explicit current
 creation pins while retaining V1 definitions and historical picker bytes. Its
-source, resolver, installed-content, refusal and recovery tests are authored but
-have not run. No mechanical or production evidence array advances for this work.
+source, resolver, installed-content, refusal and recovery tests passed on corrected
+source e915bbb in the actual completed six-job CI recorded in the plan. The later
+release integration remains UNCOMPILED/UNRUN; canonical/native/final acceptance
+is outstanding. No mechanical or production evidence array advances here.
 Air Form special geometry, Multiattack and Whirlwind execution remain open Gate 4
 mechanics; their representation and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or the Gate 6 `monster-content` catalog family.
 The later Shove slice still owes genuine paid Prone-immunity continuation and
 recovery against this admitted source.
+
+The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
+owns the approved flow 5 completion/highwater and retained-scene design. Its first
+checkpoint contains reviewed domain records and pure release preflight. The next
+authored checkpoint connects authenticated release/replacement/session handling,
+recovery and desktop controls, with isolated rules tests and genuine table scenarios
+that have not yet run. Exact-head runtime proof, original flow 4 recovery baselines
+and packaged UI remain outstanding. These checkpoints add
+no passing evidence to the machine-readable ledger and advances no family status.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 

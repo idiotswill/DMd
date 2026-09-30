@@ -226,6 +226,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         return Ok(());
     };
     validate_tactical_creatures(state, creatures).map_err(error)?;
+    validate_recharge_history(state)?;
     let encounter = encounter(state)?;
     let flow = flow(state)?;
     let effect_turn = effects(state)?
@@ -275,6 +276,39 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             {
                 return Err(invalid("source recharge omitted from central work"));
             }
+        }
+        if turn.boundary == TurnBoundary::End
+            && encounter.participant(runtime.actor).is_some()
+            && creature_legendary_action_available(state, creatures, runtime.actor)
+                .map_err(error)?
+            && !legendary_actors.contains(&runtime.actor)
+        {
+            return Err(invalid("available after-turn source opportunity omitted"));
+        }
+    }
+    let after_turn = flow.resolution.as_ref().is_some_and(|r| {
+        r.legendary_window.is_some()
+            || r.frames.last().is_some_and(|f| {
+                !f.is_empty()
+                    && f.iter()
+                        .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
+            })
+    });
+    if after_turn && flow.budget.disengaged.is_some() {
+        return Err(invalid("Disengage retained after turn ended"));
+    }
+    Ok(())
+}
+
+/// Retained raw recharge proof is independent of the current encounter cursor.
+/// Finished and replacement setup must not skip it when no turn exists.
+pub(super) fn validate_recharge_history(state: &CampaignState) -> Result<(), RulesError> {
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let Some(creatures) = &rules.tactical_creatures else {
+        return Ok(());
+    };
+    for runtime in &creatures.runtime {
+        for row in &runtime.recharge {
             if let Some(record) = &row.last_roll {
                 let roll = rules
                     .rolls
@@ -301,25 +335,6 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 }
             }
         }
-        if turn.boundary == TurnBoundary::End
-            && encounter.participant(runtime.actor).is_some()
-            && creature_legendary_action_available(state, creatures, runtime.actor)
-                .map_err(error)?
-            && !legendary_actors.contains(&runtime.actor)
-        {
-            return Err(invalid("available after-turn source opportunity omitted"));
-        }
-    }
-    let after_turn = flow.resolution.as_ref().is_some_and(|r| {
-        r.legendary_window.is_some()
-            || r.frames.last().is_some_and(|f| {
-                !f.is_empty()
-                    && f.iter()
-                        .all(|w| matches!(w.kind, TacticalWorkKind::LegendaryWindow { .. }))
-            })
-    });
-    if after_turn && flow.budget.disengaged.is_some() {
-        return Err(invalid("Disengage retained after turn ended"));
     }
     Ok(())
 }

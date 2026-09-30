@@ -1,9 +1,11 @@
 # Gate 4 — Source-bound Shove and displacement
 
 Status: implementation authored; the first complete remote runtime runs failed
-the Air setup. The reviewed correction awaits execution; feature acceptance is
-pending. Root owns integration and the heavy verification slot, and delegated the
-2026-09-30 evidence/publication checkpoint to one branch writer. Branch:
+the Air setup. The published correction is frozen for its existing remote run.
+The separate local Air/release integration checkpoint below is authored and
+statically checked, but uncompiled and unrun; feature acceptance remains pending.
+Root owns the heavy verification
+slot and delegated this 2026-09-30 integration to one branch writer. Branch:
 `codex/gate4-shove-displacement`; root-created clean base and freshly fetched main
 `c4d8c34c19b5c92eca789f292f99632a0107d861` (2026-09-28).
 
@@ -373,3 +375,157 @@ independent final review, and genuine native play/restart on the integrated head
 Only after those criteria and all six final-head checks pass may the retargeted
 main PR receive a protected merge, followed by literal merged-main verification.
 Gate 4 remains active; the earlier failures and remaining obligations are retained.
+
+
+### Planned Air/release integration checkpoint — 2026-09-30
+
+Read root AGENTS and this full plan, then freshly fetched main and the published
+Shove/Air branches. The clean starting head is
+`c1124004dfb3fcc84d105b512a5fe4f9502a7727`, tree
+`e97d1eca51a84332af5b26ed8d96333c8f35550a`; current fetched main is
+`d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`. Root authorizes a normal merge of
+independently reviewed local Air head
+`3f3e3590e7977eca529168fa9069e8e1bca72434`, tree
+`75350e552cac0ad404c2e130b8c595d396d13d50`. Its Air/release inputs are
+`e915bbb9568f14a21c253bebf75d05ad2e91476e` and
+`8c03f9fb0058610fd37c0cfe7762e8b96d658f38`; both remain unaccepted. Their union
+contains the reviewed UI and current main ancestry. Air's independent static
+review is external `tooling/air-3f3e359-independent-integration-review-2026-09-30.md`,
+SHA256 `cbf2eed9c6fbb028ef3e4dffe2ce118d19716f1cb48dcc7d4ded6774a2ed9161`.
+That review is not executable verification or dependency acceptance.
+
+Preserve Shove paid work, exact source/authority, selected-work history and immune
+Prone no-effect behavior. Preserve release Finish, Finished identity/history and
+full-source/high-water rules; preserve Air full-pin admission before Finished
+creation and coherent source placement on the staged candidate. All source
+payloads, picker histories, manifests and their strict expectations must retain
+Air bytes. All 29 fixture Git blobs, five old-execution receiving suites and
+protected raw capture/log bytes must retain the reviewed dependency unchanged.
+No historical fixture is to be recreated or edited for the integration.
+
+Reconcile current test Begin/DTO producers with flow5 while preserving every
+assertion. In particular, the corrected Air opaque-transport test must retain
+its setup, actual source pins, cold/retry helper and scenario assertions; any
+current Begin literal update must be recorded as an explicit one-line delta,
+not claimed as identical bytes. Shove/release UI and optional DTO additions must
+form a coherent union, including the existing prompt identity and retry paths.
+
+A concrete execution seam was surfaced to root before source authoring:
+`shove::require_execution` currently accepts only flow4 and also guards retained
+validation, so new flow5 Shove cannot run/restore after a plain merge. The newer
+central live guard also lacks the three paid Shove choice commands in its old-
+flow continuation list. Proposed bounded reconciliation is an internal explicit
+flow4/flow5 guard plus those exact authenticated, stage-bound continuation
+commands; fresh flow4 Shove remains blocked by the central live gate. Root
+approved this bounded reconciliation before source authoring; an independent
+read-only peer confirmed the same seam. Focused controls must cover
+current5 and retained paid4 continuation versus fresh4
+rejection without rewriting a captured history or claiming historical producer
+provenance for a reducer fixture. No execution tag/roll-role change is proposed.
+
+This checkpoint advances the same production/persistence/agency requirements
+and defers none of their acceptance obligations. It imports no MR, corrected Hag,
+classifier, Grapple, or expiry child. No unrelated gameplay, source content, DTO,
+or historical-compatibility expansion is authorized. Surface any additional
+semantic conflict before extending scope.
+
+Validation for this delegated checkpoint is static: inspect the full remerge,
+compare combined files against both parents, audit immutable bytes, run direct
+Rust formatting/parse and whitespace checks, then commit a clean reviewable
+checkpoint with actual evidence and return exact head/tree/diff to root for
+independent review. Cargo/npm/build/database/native execution and publication
+are reserved to root. The published c112400 CI must finish normally and is not
+cancelled or replaced by this local work. No old-head CI result validates this
+integration. Exact integrated focused/canonical verification, six required
+checks, old-history continuation and native play/restart remain acceptance
+blockers; PR #51 must never be merged into Air. Root owns accepted dependency/main
+reconciliation, later publication/retargeting, exact-head review and protected
+merge. Next action: finish the normal merge of the pinned reviewed dependency and
+author the approved narrow execution reconciliation and controls; report any
+further concrete conflict before editing outside this bounded union.
+
+
+### Authored Air/release integration checkpoint — 2026-09-30
+
+The plan-first commit is `a27b63b891db7a81015c91b56dc27023e86b0d80`. Normal merge
+`d6026bfac791876794b1cf190deca216ca3e58e7`, tree
+`cbdeac68576d288f6d06a3b24b983f63416bf78d`, has that plan as first parent and the
+reviewed Air `3f3e359` as second parent. Only EncounterPanel and tactical-api had
+textual conflicts. Both were resolved as unions: current flow5 administration,
+Finish/replacement and Shove forms/decisions coexist; Shove remains a pending
+choice and both optional release/Shove DTO shapes survive.
+
+Root approved the surfaced execution boundary before source edits. The shared
+Shove guard now accepts exactly retained flow4/current flow5; the central live
+old-flow list adds only ChooseShoveSave, ChooseShoveOutcome and RuleShovePush.
+Their actual selected-stage/source/ownership/causal validation remains unchanged.
+Fresh Shove still requires current5. No roll tag, paid mechanic, source rule,
+geometry, immunity no-effect behavior or cold helper changed.
+
+Two new reducer tests are authored and UNRUN. They exercise current5 and a
+clearly labeled synthetic paid4 state through save choice, actual physical save,
+outcome and Host push review while preserving origin, spent attack and final
+position/HP/reaction invariants. Wrong owner, stale metadata, missing selected
+work and duplicate fresh attempts refuse. A separate synthetic idle4 control
+refuses fresh Shove and all unpaid choices, then admits Shove after explicit
+upgrade5. These fixtures serialize/replay through the existing reducer helper;
+they do not establish original-producer historical capture provenance. Genuine
+old-producer continuation evidence remains required independently.
+
+The corrected Air test and ledge test each differ from published c112400 by only
+the current Begin4-to-5 literal; every other byte/assertion is preserved. Air's new
+Git blob is `0379513508b3a2c9ed1b21c688af3d76d4eeaa0f` (the audit compares the
+exact transformation), rather than the old correction blob recorded above.
+The Shove UI fixture likewise changes only its current execution literal; the
+shared rules fixture's current Begin5 is inherited unchanged from Air/release.
+
+Author static audit of d6026bf passed: all 29 fixture Git blobs, all five legacy
+receiving suites and .gitattributes equal release8c; all 21 protected raw capture/
+log bytes match. All source payloads, frozen picker/manifest/tooling/expectations
+equal reviewed Air, with all six installed lengths/FNV checksums recalculated.
+Source admission, initiative full-source/high-water, retained history validation
+and release implementation retain the reviewed dependency. Shove geometry,
+retained validator, opaque transport handler and ordinary application case retain
+the published Shove blobs. No unrelated child/source revision was imported.
+Full remerge and both-parent combined-file inspection found only the intended
+union plus approved reconciliation. All 13 combined Rust files pass direct
+rustfmt parse/check, and the complete diff passes whitespace checks. The audit is
+external `tooling/shove-d6026bf-release-integration-static-audit-2026-09-30.json`,
+SHA256 `fa4e795445200e9e08b179c33175c8b19067ddc8987d65a048798e70ac25c5eb`.
+
+This final checkpoint changes documentation only after the implementation merge.
+No compiler, Cargo/npm/build/test/database/native operation or publication ran;
+existing published CI remains untouched. Both dependencies and Shove remain
+unaccepted. Next action: return the clean exact final head/tree and external audit
+to root for independent integration review, then root coordinates accepted
+prerequisites/main, focused/canonical execution, six exact-head checks, genuine
+old-producer receiving evidence and native acceptance. Do not merge PR #51 into
+Air or infer completion from any parent-head checks. Gate 4 stays active.
+
+
+### Independent integration review and text-encoding correction
+
+Root independently reviewed complete integration head
+`4db71e5ca2bb52d5e8c9251a2eeae519011574f8`, including the remerge conflicts,
+all combined production paths, actual admission/replay/transport callers and the
+two new test bodies. No actionable production or assertion defect was found.
+The shared guard accepts only4/5, live fresh Shove remains current5-only, and each
+permitted old-flow choice still requires its paid selected work, stage, source,
+controller and ancestry. Release and Shove optional DTOs, prompt ownership and
+pending/Finish behavior remain composed.
+
+Root re-read and reran the static audit into a separate evidence file; the full
+result is identical to the author's final audit, SHA256
+`ca2143864199f57debd2d4d07998fd2e331926ddc8e0594f1e77219f3def3e5b`.
+All29 fixture blobs, all five legacy suites,21 protected raw files and exact
+Air content are preserved. This is byte/static evidence, not executable proof.
+
+Review found two Windows-1252 dash bytes in the newly appended headings, making
+this plan invalid UTF-8. This documentation-only correction replaces exactly
+those bytes with UTF-8 em dashes and records the review; production/test/content
+files are unchanged. The original4db audit and review target remain preserved.
+
+The published c112 runtime jobs must still finish normally before replacing that
+head. New integrated canonical/CI, historical continuation and native acceptance
+remain outstanding. Root owns the clean integration candidate and publication;
+no dependency or feature is accepted by this documentation checkpoint.

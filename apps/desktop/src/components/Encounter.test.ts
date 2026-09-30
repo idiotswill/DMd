@@ -36,12 +36,12 @@ it('keeps legacy continuations available and requires an explicit settled host u
   expect(screen.getByRole('button',{name:'Pass this opportunity'})).toBeTruthy();
   await component.rerender({tactical});
   await user.click(screen.getByRole('button',{name:'Continue saved encounter'}));
-  expect(onAction).toHaveBeenCalledExactlyOnceWith({UpgradeExecutionTo:{execution:'ShieldMissileV1'}});
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({UpgradeExecutionTo:{execution:'EncounterReleaseV1'}});
   await component.rerender({tactical:{...tactical,execution:'ReactionsV1',ready:[{actor:'actor',action:'Attack',may_abandon:false}]}});
   expect((screen.getByRole('button',{name:'Continue saved encounter'}) as HTMLButtonElement).disabled).toBe(true);
   await component.rerender({host:false,actor:'actor',player:'player'});
   expect(screen.queryByRole('button',{name:'Continue saved encounter'})).toBeNull();
-  await component.rerender({tactical:{...tactical,execution:'ShieldMissileV1'}});
+  await component.rerender({tactical:{...tactical,execution:'EncounterReleaseV1'}});
   expect(screen.queryByText(/Finish any pending rolls/)).toBeNull();
   expect(screen.getByRole('button',{name:'Dodge'})).toBeTruthy();
 });
@@ -49,7 +49,7 @@ it('keeps legacy continuations available and requires an explicit settled host u
 it('offers an owned unarmed attack from this actors current contacts and available attacks',async()=>{
   const user=userEvent.setup();const onAction=vi.fn();
   const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ShieldMissileV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'EncounterReleaseV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
     observers:[{observer:'actor',position:null,contacts:[contact('target','Seen'),contact('remembered','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('private-to-other','Seen')],cells:[]}],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
@@ -72,7 +72,7 @@ it('offers an owned unarmed attack from this actors current contacts and availab
 it('offers first aid from the acting characters current contacts and preserves the selected purpose', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
   const contact=(entity_id:string,status:'Seen'|'Located'|'Remembered')=>({entity_id,label:entity_id,position:{x:20,y:10,z:0},status,modality:'Sight'});
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ShieldMissileV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'EncounterReleaseV1',battlefield:null,participants:[],initiative:[],ties:[],combatant_sources:[],
     observers:[{observer:'actor',position:{x:10,y:10,z:0},contacts:[contact('patient','Seen'),contact('old-contact','Remembered')],cells:[]},{observer:'other',position:null,contacts:[contact('other-players-contact','Seen')],cells:[]}],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
@@ -94,7 +94,7 @@ it('offers first aid from the acting characters current contacts and preserves t
 
 it('uses an owned Second Wind bonus action and blocks another or pending turn', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ShieldMissileV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'EncounterReleaseV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:true,bonus_action_spent:false,reaction_available:true},
     continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const character:CharacterView={character_id:'pc',player_id:'player',entity_id:'actor',name:'Fighter',profile:null,sheet:null,details:null,second_wind_remaining:2};
@@ -156,7 +156,7 @@ it('maps only the selected controlled observer and replaces its contacts and ter
 
 it('keeps ordinary turns blocked and sends the retained consequence identity', async () => {
   const user=userEvent.setup();const onAction=vi.fn();
-  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'ShieldMissileV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+  const tactical:TacticalView={encounter_id:'encounter',round:2,active_actor:'actor',phase:'active',execution:'EncounterReleaseV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
     budget:{movement_spent:0,attacks_remaining:0,action_spent:false,bonus_action_spent:false,reaction_available:true},
     continuation:{actor:'actor',host_adjudication:false,choices:[{handle:'opaque-death',label:'Death saving throw'},{handle:'opaque-consequence',label:'Concurrent consequence'}]},may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   const component=render(EncounterPanel,{tactical,characters:[],host:false,actor:'actor',player:'player',onAction});
@@ -181,7 +181,7 @@ it('shares identical creature initiative while separating current roll circumsta
     observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
   render(EncounterPanel,{tactical,characters:[],host:true,actor:null,player:null,onAction});
   await user.click(screen.getByRole('button',{name:'Roll initiative'}));
-  expect(onAction.mock.calls[0][0].Begin.execution).toBe('ShieldMissileV1');
+  expect(onAction.mock.calls[0][0].Begin.execution).toBe('EncounterReleaseV1');
   expect(onAction.mock.calls[0][0].Begin.groups.map((group:{actors:string[]})=>group.actors)).toEqual([['a','b'],['c']]);
   expect(Object.keys(onAction.mock.calls[0][0].Begin.combatants[0]).sort()).toEqual(['actor','source','surprised']);
 });

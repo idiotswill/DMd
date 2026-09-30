@@ -28,7 +28,7 @@ fn channel(f: &Fixture, player: usize) -> TableTransportChannel {
     }
 }
 
-async fn prepare(f: &mut Fixture) -> EntityId {
+pub(super) async fn prepare(f: &mut Fixture) -> EntityId {
     // Start immutable presentation history before this new feature is used.
     view(f, 0).await;
     let target = Box::pin(table_attack_cases::prepare_at(

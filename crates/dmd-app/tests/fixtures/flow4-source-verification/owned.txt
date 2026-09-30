@@ -1,0 +1,8 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running tests\table_loop.rs (<verification-workspace>\tooling\target\debug\deps\table_loop-ece936da79d07193.exe)
+
+running 1 test
+test table_missile_cases::missile_owned_sources_keep_private_responses_and_cold_actor_bound_controls ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 53 filtered out; finished in 1758.54s
+

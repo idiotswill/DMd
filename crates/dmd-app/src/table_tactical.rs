@@ -176,6 +176,30 @@ fn view_with_source_access(
                 host_ruling: host.then(|| aftermath.ruling.clone()),
                 may_pause_session: host && require_aftermath_session_boundary(state).is_ok(),
             }),
+        release: if host
+            && flow.is_some_and(|flow| {
+                flow.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+            }) {
+            if flow.is_some_and(|flow| flow.phase == TacticalPhase::Finished) {
+                Some(crate::TableEncounterReleaseView {
+                    may_finish: false,
+                    blocker: None,
+                    required_actors: retained_encounter_dependencies(state)
+                        .map_err(|error| error.to_string())?,
+                })
+            } else {
+                let readiness = encounter_release_preflight(state);
+                Some(crate::TableEncounterReleaseView {
+                    may_finish: readiness.is_ok(),
+                    blocker: readiness.as_ref().err().map(ToString::to_string),
+                    required_actors: readiness
+                        .map(|ready| ready.required_actors)
+                        .unwrap_or_default(),
+                })
+            }
+        } else {
+            None
+        },
         execution: encounter
             .flow
             .as_ref()
@@ -412,8 +436,11 @@ pub(crate) fn prepare(
     pack: &RulesPack,
 ) -> Result<TacticalTransition, String> {
     bounded_text(&setup.name, 200)?;
-    if state.encounter.is_some()
-        || state.scenes.contains_key(&setup.scene_id)
+    let replacement = state.encounter.is_some();
+    if replacement {
+        require_finished_encounter(state).map_err(|error| error.to_string())?;
+    }
+    if state.scenes.contains_key(&setup.scene_id)
         || setup.location_id.0.is_nil()
         || setup.scene_id.0.is_nil()
         || setup.encounter_id.0.is_nil()
@@ -437,6 +464,14 @@ pub(crate) fn prepare(
         || setup.characters.len().saturating_add(setup.creatures.len()) > 100
     {
         return Err("Choose a new encounter and scene with at least one character.".into());
+    }
+    if replacement
+        && state
+            .encounter_history
+            .as_ref()
+            .is_some_and(|history| history.contains_encounter(setup.encounter_id))
+    {
+        return Err("Choose a new encounter identity; completed encounters remain saved.".into());
     }
     let mut next = state.clone();
     if let Some(location) = next.locations.get(&setup.location_id) {
@@ -463,6 +498,16 @@ pub(crate) fn prepare(
         let player = character
             .controlling_player_id
             .ok_or("An encounter character requires a controller.")?;
+        if replacement
+            && (character.status != CharacterStatus::Active
+                || state
+                    .rules
+                    .as_ref()
+                    .and_then(|rules| rules.entities.get(&character.entity_id))
+                    .is_none_or(|entity| entity.death.dead))
+        {
+            return Err("A dead character cannot enter a new encounter.".into());
+        }
         let session = meta
             .session_id
             .ok_or("Encounter setup requires an active session.")?;
@@ -504,10 +549,12 @@ pub(crate) fn prepare(
             allies: placement.allies.clone(),
             enemies: placement.enemies.clone(),
         });
-        next.entities
-            .get_mut(&character.entity_id)
-            .ok_or("Character entity is absent.")?
-            .location_id = Some(setup.location_id);
+        if !replacement {
+            next.entities
+                .get_mut(&character.entity_id)
+                .ok_or("Character entity is absent.")?
+                .location_id = Some(setup.location_id);
+        }
     }
     for placement in &setup.creatures {
         bounded_text(&placement.public_label, 200)?;
@@ -522,6 +569,12 @@ pub(crate) fn prepare(
             .and_then(|creatures| creatures.profile(placement.actor))
             .ok_or("Creature source profile is absent.")?;
         if world.existence != EntityExistence::Present
+            || replacement
+                && state
+                    .rules
+                    .as_ref()
+                    .and_then(|rules| rules.entities.get(&placement.actor))
+                    .is_none_or(|entity| entity.death.dead)
             || state
                 .rules
                 .as_ref()
@@ -557,10 +610,12 @@ pub(crate) fn prepare(
             allies: placement.allies.clone(),
             enemies: placement.enemies.clone(),
         });
-        next.entities
-            .get_mut(&placement.actor)
-            .ok_or("Creature entity is absent.")?
-            .location_id = Some(setup.location_id);
+        if !replacement {
+            next.entities
+                .get_mut(&placement.actor)
+                .ok_or("Creature entity is absent.")?
+                .location_id = Some(setup.location_id);
+        }
     }
     next.scenes.insert(
         setup.scene_id,
@@ -569,7 +624,13 @@ pub(crate) fn prepare(
             campaign_id: meta.campaign_id,
             location_id: setup.location_id,
             mode: SceneMode::Combat,
-            status: SceneStatus::Active,
+            // A replacement is staged closed until the rules transition installs
+            // it atomically. The retained old scene stays closed throughout.
+            status: if replacement {
+                SceneStatus::Closed
+            } else {
+                SceneStatus::Active
+            },
             started_at: state.clock.now,
             presences: participants
                 .iter()

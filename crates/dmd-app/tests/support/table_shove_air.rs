@@ -121,7 +121,7 @@ async fn prepare(f: &mut Fixture, url: &str, wall: bool) -> (EntityId, CreatureS
         url,
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: TacticalExecutionVersion::ShieldMissileV1,
+                execution: TacticalExecutionVersion::EncounterReleaseV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: character_actor,

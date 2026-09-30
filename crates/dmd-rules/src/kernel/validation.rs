@@ -433,6 +433,9 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             "Grapple execution is not enabled by this source/domain checkpoint",
         ));
     }
+    if let Some(history) = &state.encounter_history {
+        history.validate(state).map_err(invalid)?;
+    }
     if state.schema_version != CURRENT_STATE_SCHEMA_VERSION {
         return Err(RulesError::Incompatible(
             "unsupported campaign state schema".into(),
@@ -533,7 +536,15 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             && rules
                 .timing
                 .as_ref()
-                .is_none_or(|t| turn == 0 || turn > t.turn_number)
+                .map(|timing| timing.turn_number)
+                .or_else(|| {
+                    state
+                        .encounter_history
+                        .as_ref()
+                        .and_then(|history| history.last())
+                        .map(|receipt| receipt.final_turn.number)
+                })
+                .is_none_or(|highwater| turn == 0 || turn > highwater)
         {
             return Err(invalid("Savage Attacker references no valid combat turn"));
         }
