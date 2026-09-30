@@ -108,6 +108,14 @@ remain Gate 4 requirements, as does old/new same-ID application coexistence afte
 the separately accepted encounter-release integration or an original pre-encounter
 capture. Historical source payloads, picker bytes and accepted fixtures stay frozen.
 
+The locally integrated release/source candidate now includes an independently
+reviewed genuine old/new Hag coexistence child of the frozen Shield-Hit replay
+suite. It completes original pending work, explicitly upgrades/releases, creates
+the current revision and authors both revisions' later real spell execution and
+cold persistence controls. The imported test is **UNCOMPILED/UNRUN**; its presence
+does not close coexistence or provide positive Magic Resistance gameplay evidence.
+Both development dependencies remain subject to separate acceptance.
+
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Its first
 checkpoint contains reviewed domain records and pure release preflight. The next
