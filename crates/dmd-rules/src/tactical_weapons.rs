@@ -290,9 +290,18 @@ pub fn prepare_weapon_attack(
         }
     };
     history::validate(input, weapon, mastery)?;
-    let loadout_for_attack = equipment::before_attack(input, weapon)?;
-    let ammunition = equipment::ammunition(input, weapon, &loadout_for_attack)?;
-    let loadout_after_attack = equipment::after_attack(input, &loadout_for_attack)?;
+    let hands = crate::tactical_hands::EffectiveHands::current(
+        state,
+        state
+            .rules
+            .as_ref()
+            .ok_or_else(|| invalid("missing rules"))?,
+        context.actor,
+    )
+    .map_err(|error| invalid(error.to_string()))?;
+    let loadout_for_attack = equipment::before_attack(input, weapon, &hands)?;
+    let ammunition = equipment::ammunition(input, weapon, &loadout_for_attack, &hands)?;
+    let loadout_after_attack = equipment::after_attack(input, &loadout_for_attack, &hands)?;
     let reach = context
         .base_reach
         .checked_add(u32::from(weapon.reach_bonus_feet) * 2)

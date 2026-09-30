@@ -21,6 +21,12 @@ pub(super) fn options(
         return Ok(None);
     };
     let definitions = bundled_tactical_definitions().map_err(|error| error.to_string())?;
+    let rules = state.rules.as_ref().ok_or("Attack rules are absent.")?;
+    let hands = dmd_rules::tactical_hands::EffectiveHands::current(state, rules, actor)
+        .map_err(|error| error.to_string())?;
+    hands
+        .validate_loadout(&loadout.hands)
+        .map_err(|error| error.to_string())?;
     let usable = |item: &&ItemInstance| {
         item.custody == Custody::Entity(actor)
             && item.state == ItemState::Intact
@@ -60,6 +66,15 @@ pub(super) fn options(
         };
         if weapon.versatile_damage.is_some() {
             grips.push(WeaponGrip::TwoHands);
+        }
+        // These remain candidates: an explicit source-allowed before-attack
+        // equipment change can free an Item slot, but cannot erase a relation.
+        grips.retain(|grip| match grip {
+            WeaponGrip::OneHand(hand) => !hands.is_reserved(*hand),
+            WeaponGrip::TwoHands => !hands.has_reservation(),
+        });
+        if grips.is_empty() {
+            continue;
         }
         let ammunition_id = dmd_rules::tactical_weapons::required_ammunition_definition(weapon);
         let mut ammunition = state

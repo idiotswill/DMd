@@ -24,6 +24,11 @@ pub(super) fn options(
     else {
         return Ok(None);
     };
+    let available = dmd_rules::tactical_hands::EffectiveHands::current(state, rules, actor)
+        .map_err(|error| error.to_string())?;
+    available
+        .validate_loadout(&loadout.hands)
+        .map_err(|error| error.to_string())?;
     let mut shields = Vec::new();
     if loadout.shield.is_none() {
         for item in state.items.values().filter(|item| {
@@ -39,8 +44,7 @@ pub(super) fn options(
             let hands = [Hand::Left, Hand::Right]
                 .into_iter()
                 .filter(|hand| {
-                    (loadout.hands.hands[hand.index()] == HandAssignment::Free
-                        || loadout.hands.hands[hand.index()] == HandAssignment::Item(item.id))
+                    available.can_hold(&loadout.hands, *hand, item.id)
                         && loadout.hands.hands[1 - hand.index()] != HandAssignment::Item(item.id)
                 })
                 .collect::<Vec<_>>();

@@ -70,10 +70,12 @@ pub fn validate_spell_components(
         .tactical_inventory
         .as_ref()
         .and_then(|i| i.loadout(plan.choice.actor));
-    let free_hand = loadout.map_or_else(
-        || entity.spellcasting.as_ref().is_some_and(|c| c.free_hand),
-        |l| l.hands.hands.contains(&HandAssignment::Free),
-    );
+    let hands = crate::tactical_hands::EffectiveHands::current(state, rules, plan.choice.actor)?;
+    let free_hand = component_free_hand(
+        loadout,
+        entity.spellcasting.as_ref().is_some_and(|c| c.free_hand),
+        &hands,
+    )?;
     if !plan.components.material {
         if material_fact.is_some() || plan.choice.material != SpellMaterialChoice::None {
             return Err(invalid("unneeded material evidence"));
@@ -147,7 +149,11 @@ pub fn validate_spell_components(
             "material item is not intact and carried by caster",
         ));
     }
-    let held = loadout.is_some_and(|l| l.hands.hands.contains(&HandAssignment::Item(item_id)));
+    let held = loadout.is_some_and(|l| {
+        [Hand::Left, Hand::Right]
+            .into_iter()
+            .any(|hand| hands.holds(&l.hands, hand, item_id))
+    });
     // SRD105: a hand holding/accessing M may also perform this spell's S component.
     let held_material_hand = held
         && !matches!(
@@ -161,6 +167,25 @@ pub fn validate_spell_components(
         return Err(unavailable("the spellcasting focus must be held"));
     }
     Ok(requirement.consumed.then_some(item_id))
+}
+
+fn component_free_hand(
+    loadout: Option<&ActorEquipmentLoadout>,
+    legacy_free: bool,
+    hands: &crate::tactical_hands::EffectiveHands,
+) -> Result<bool, RulesError> {
+    if let Some(loadout) = loadout {
+        hands.validate_loadout(&loadout.hands)?;
+        Ok([Hand::Left, Hand::Right]
+            .into_iter()
+            .any(|hand| hands.is_free(&loadout.hands, hand)))
+    } else if hands.has_reservation() {
+        Err(unavailable(
+            "reserved hands require actual physical equipment",
+        ))
+    } else {
+        Ok(legacy_free)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

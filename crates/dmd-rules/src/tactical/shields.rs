@@ -43,9 +43,13 @@ pub(super) fn change(
                 "select one intact source shield in actor custody",
             ));
         }
-        if loadout.hands.hands[hand.index()] != HandAssignment::Free
-            && loadout.hands.hands[hand.index()] != HandAssignment::Item(id)
-        {
+        let hands = crate::tactical_hands::EffectiveHands::current(
+            state,
+            state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+            actor,
+        )?;
+        hands.validate_loadout(&loadout.hands)?;
+        if !hands.can_hold(&loadout.hands, hand, id) {
             return Err(prerequisite("the selected shield hand is occupied"));
         }
         if loadout.hands.hands[1 - hand.index()] == HandAssignment::Item(id) {
@@ -70,6 +74,12 @@ pub(super) fn change(
     }
     loadout.command = meta.clone();
     validate_loadout(state, &loadout).map_err(|error| prerequisite(&error.to_string()))?;
+    crate::tactical_hands::EffectiveHands::current(
+        state,
+        state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+        actor,
+    )?
+    .validate_loadout(&loadout.hands)?;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     spend_cost(rules, actor, TacticalCost::Action)?;
     let current = rules
@@ -161,4 +171,126 @@ fn refresh_armor(
         .ok_or_else(|| invalid("actor absent"))?
         .armor = armor;
     Ok(())
+}
+
+#[cfg(test)]
+mod hand_tests {
+    use super::*;
+
+    #[test]
+    fn real_shield_collision_precedes_cost_and_doff_preserves_the_other_reservation() {
+        // Internal change control, not command acceptance: source authority is
+        // genuine, but the grip, available Action and shield transfer are fixtures.
+        let mut state = crate::tactical_hands::tests::source_state();
+        let actor = crate::tactical_hands::tests::human(&state);
+        let shield = state
+            .items
+            .values()
+            .find(|item| item.definition_id == "shield")
+            .unwrap()
+            .id;
+        state.items.get_mut(&shield).unwrap().custody = Custody::Entity(actor);
+        let loadout = state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts
+            .iter_mut()
+            .find(|l| l.actor == actor)
+            .unwrap();
+        loadout.hands.hands = [HandAssignment::Free; 2];
+        let declaration =
+            crate::tactical_hands::tests::install_attempt(&mut state, actor, Hand::Right);
+        let meta = declaration.origin.clone();
+        state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution = None;
+        let rules = state.rules.as_mut().unwrap();
+        rules.timing.as_mut().unwrap().action_spent = false;
+        rules.tactical_grapples = Some(TacticalGrapples {
+            schema_version: 1,
+            active: vec![crate::tactical_hands::tests::live(declaration)],
+        });
+        let before = serde_json::to_value(&state).unwrap();
+        assert!(
+            change(
+                &mut state,
+                &meta,
+                Some((shield, Hand::Right)),
+                &crate::tactical_hands::tests::pack()
+            )
+            .unwrap_err()
+            .to_string()
+            .contains("selected shield hand is occupied")
+        );
+        assert_eq!(serde_json::to_value(&state).unwrap(), before);
+        change(
+            &mut state,
+            &meta,
+            Some((shield, Hand::Left)),
+            &crate::tactical_hands::tests::pack(),
+        )
+        .unwrap();
+        assert!(
+            state
+                .rules
+                .as_ref()
+                .unwrap()
+                .timing
+                .as_ref()
+                .unwrap()
+                .action_spent
+        );
+        assert_eq!(
+            state
+                .rules
+                .as_ref()
+                .unwrap()
+                .tactical_inventory
+                .as_ref()
+                .unwrap()
+                .loadout(actor)
+                .unwrap()
+                .shield,
+            Some(shield)
+        );
+
+        state
+            .rules
+            .as_mut()
+            .unwrap()
+            .timing
+            .as_mut()
+            .unwrap()
+            .action_spent = false;
+        change(
+            &mut state,
+            &meta,
+            None,
+            &crate::tactical_hands::tests::pack(),
+        )
+        .unwrap();
+        let rules = state.rules.as_ref().unwrap();
+        let loadout = rules
+            .tactical_inventory
+            .as_ref()
+            .unwrap()
+            .loadout(actor)
+            .unwrap();
+        assert_eq!(loadout.hands.hands, [HandAssignment::Free; 2]);
+        assert_eq!(loadout.shield, None);
+        assert_eq!(state.items[&shield].custody, Custody::Entity(actor));
+        let hands = crate::tactical_hands::EffectiveHands::current(&state, rules, actor).unwrap();
+        assert!(hands.is_free(&loadout.hands, Hand::Left));
+        assert!(!hands.is_free(&loadout.hands, Hand::Right));
+        assert!(rules.timing.as_ref().unwrap().action_spent);
+    }
 }

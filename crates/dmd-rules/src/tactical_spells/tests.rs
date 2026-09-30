@@ -727,6 +727,123 @@ fn live_occupied_hands_override_legacy_free_hand_flag() {
     assert!(validate_spell_components(&state, &plan, true, None).is_err());
 }
 
+#[test]
+fn derived_grip_preserves_specified_material_sharing_but_not_somatic_only_access() {
+    // Pure component-policy composition: actual Human anatomy supplies the hand
+    // view; a temporary caster facet produces source-valid spell plans only.
+    // This is not an admitted Human spellcaster, focus grant or cast command.
+    let mut state = crate::tactical_hands::tests::source_state();
+    let actor = crate::tactical_hands::tests::human(&state);
+    let original_mechanics = state.rules.as_ref().unwrap().entities[&actor].clone();
+    {
+        let mechanics = state
+            .rules
+            .as_mut()
+            .unwrap()
+            .entities
+            .get_mut(&actor)
+            .unwrap();
+        mechanics
+            .prepared_spells
+            .extend(["hold-person".into(), "cure-wounds".into()]);
+        mechanics.spellcasting = Some(Spellcasting {
+            ability: Ability::Wisdom,
+            slot_maxima: [4; 9],
+            slots: [4; 9],
+            can_speak: true,
+            free_hand: true,
+            material_focus: true,
+        });
+    }
+    let origin = CommandMeta {
+        id: CommandId::new(),
+        campaign_id: state.campaign_id(),
+        session_id: None,
+        issuer: CommandIssuer::Admin,
+        actor: Some(AgentRef::Entity(actor)),
+        expected_event_sequence: state.applied_event_sequence,
+    };
+    let material = ItemId::new();
+    let material_choice = SpellCastChoice {
+        actor,
+        spell_id: "hold-person".into(),
+        grant: SpellGrantChoice::Prepared,
+        resource: SpellResourceChoice::Slot { level: 2 },
+        material: SpellMaterialChoice::Material { item: material },
+        mode: SpellCastMode::Immediate,
+    };
+    let somatic_choice = SpellCastChoice {
+        spell_id: "cure-wounds".into(),
+        resource: SpellResourceChoice::Slot { level: 1 },
+        material: SpellMaterialChoice::None,
+        ..material_choice.clone()
+    };
+    let material_plan = plan_spell_cast(&state, &origin, &material_choice).unwrap();
+    let somatic_plan = plan_spell_cast(&state, &origin, &somatic_choice).unwrap();
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .insert(actor, original_mechanics);
+    state.items.insert(
+        material,
+        ItemInstance {
+            id: material,
+            campaign_id: state.campaign_id(),
+            definition_id: "source-material".into(),
+            display_name: "Policy fixture material".into(),
+            quantity: 1,
+            owner: Ownership::Entity(actor),
+            custody: Custody::Entity(actor),
+            state: ItemState::Intact,
+        },
+    );
+    let loadout = state
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts
+        .iter_mut()
+        .find(|l| l.actor == actor)
+        .unwrap();
+    loadout.hands.hands = [HandAssignment::Item(material), HandAssignment::Free];
+    crate::tactical_hands::tests::install_attempt(&mut state, actor, Hand::Right);
+    let fact = SpellMaterialFact::Specified {
+        item: material,
+        spell_id: "hold-person".into(),
+        value_cp: 0,
+    };
+    let before = serde_json::to_value(&state).unwrap();
+    assert_eq!(
+        validate_spell_components(&state, &material_plan, true, Some(&fact)).unwrap(),
+        None
+    );
+    assert!(
+        validate_spell_components(&state, &somatic_plan, true, None)
+            .unwrap_err()
+            .to_string()
+            .contains("somatic component needs a free hand")
+    );
+    let hands = crate::tactical_hands::EffectiveHands::current(
+        &state,
+        state.rules.as_ref().unwrap(),
+        actor,
+    )
+    .unwrap();
+    assert!(
+        component_free_hand(None, true, &hands).is_err(),
+        "legacy flag cannot override a real reservation without physical equipment"
+    );
+    assert_eq!(serde_json::to_value(&state).unwrap(), before);
+    // A held component remains subject to exact custody; occupancy is no waiver.
+    state.items.get_mut(&material).unwrap().custody = Custody::Missing;
+    assert!(validate_spell_components(&state, &material_plan, true, Some(&fact)).is_err());
+}
+
 fn add_flow(
     state: &mut CampaignState,
     meta: &CommandMeta,

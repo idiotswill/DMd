@@ -1,10 +1,10 @@
 # Gate 4 — Grapple and Escape lifecycle
 
-Writer: `shove_publish_correction` for the current plan-only checkpoint,
+Writer: `shove_publish_correction` for the current derived-hand checkpoint,
 coordinated by root. Branch:
-`codex/gate4-grapple-lifecycle`. Status: **root-approved source/domain checkpoint
-authored for independent review; no gameplay implementation or executable
-verification**.
+`codex/gate4-grapple-lifecycle`. Status: **root-approved source/domain and bounded
+derived-hand composition authored for independent review; no runnable Grapple
+gameplay or executable verification**.
 Date: 2026-09-30.
 
 Development base: `387b74241d1870964be0e88cb0f3216e151c9b55`, tree
@@ -732,7 +732,7 @@ Authored checkpoint scope:
   raw roles without an attachment. Restore-anchor and old-schema preflight
   exclusions are authored. This is an intentionally unaccepted checkpoint:
   structural validity never makes these states executable. No command, work-kind
-  producer, condition projection, effective-hand planner, resolver, table action,
+  producer, condition projection, resolver, table action,
   desktop control or functional Grapple/Escape/release is exposed.
 - Authored synthetic domain controls cover save evidence, one-hand occupancy,
   provisional/retired distinctions, nested origins/direct inheritance, same-
@@ -816,14 +816,29 @@ Merge `c3f3e73488840c5f27aa3f099ec702d893b203b1`, tree
 It merged cleanly and changes only the reviewed Air setup test and Air/Shove
 plans. No Grapple source/domain/guard change or executable acceptance follows.
 
-The proposed next checkpoint is now recorded in the
+The bounded derived-hand checkpoint is recorded in the
 [derived effective-hand plan](gate4-grapple-effective-hands.md). It preserves
 physical Item slots, unknown-anatomy compatibility, early execution rejection,
 source-validation ordering and historical/current reader separation. Its caller
 matrix names the preparatory composition and the full-lifecycle/UI work excluded
-from that checkpoint. No helper implementation is authorized by the plan itself.
+from that checkpoint. Root reviewed and approved plan commit
+`e3e22e75ef7e2a2be4867b2052424957097d3707` (tree
+`b11b30b85700d06322d7d9881c87bfbeaac6a24f`) and then authorized its implementation.
+The source-derived current-hand view and included existing planner/app-option
+composition are now authored, with focused pure controls; all remain unrun.
+Physical Item loadouts, current source validation, execution guards, source
+damage programs and old captures stay unchanged. Selected attack reconstruction
+explicitly refuses new authority until original admission can be authenticated.
 
-Exact next action: send root the plan-only commit, exact tree and complete diff
-for review, then freeze this branch. Stop before effective-hand, resolver,
-gameplay, transport or UI edits; do not build, run tests or publish. Root must
-assign further authoring and coordinate later serial executable verification.
+Root approved deferring the own-Attempt exclusion API and hostile identity
+controls until the real authenticated admission caller exists. Current derivation
+always reserves a pending Attempt. No public mask, unused bypass flag or synthetic
+command acceptance is introduced. This sequences the checkpoint; the complete
+resolver obligation remains in this plan. The detailed plan records exact caller
+coverage and qualifies synthetic fixture setup, source-only controls and deferred
+full-lifecycle evidence.
+
+Exact next action: complete permitted static/format/diff checks, send root the
+clean checkpoint commit, exact tree and complete diff, then freeze this branch.
+Do not build, run tests, publish or expand into resolver/gameplay/transport/UI.
+Root must arrange independent review and later serial executable verification.

@@ -1,6 +1,7 @@
 # Gate 4 — Derived effective-hand reservations
 
-Status: **plan only, awaiting root review before implementation**.
+Status: **bounded implementation authored for independent review; static checks
+only, executable verification outstanding**.
 Writer: `shove_publish_correction`, coordinated by root; sole writable checkout
 `gate4-attacks`, branch `codex/gate4-grapple-lifecycle`. No PR for this checkpoint.
 Date: 2026-09-30.
@@ -63,7 +64,7 @@ initial ordinary Grapple anatomy admissions.
 | --- | --- |
 | Live outgoing grip | Reserve its proved grappler's exact hand. An incoming Grappled relation alone reserves none of the target's hands. |
 | Pending Attempt before final outcome | Reserve the selected hand even when there is no live attachment. A completed, resisted or withdrawn attempt is not provisional occupancy. |
-| Attempt's own admission reconstruction | Exclude only that exact authenticated declaration identity at its original cut: grip ID, paid origin, actor and hand must all match. No public `ignore_pending`, actor-only match or arbitrary mask. This internal context is unavailable as live command authority. |
+| Attempt's own admission reconstruction | Deferred to the real authenticated resolver/admission caller, with root approval. This checkpoint never excludes a pending reservation and exposes no unused exclusion entry point. The full feature must later match the exact grip ID, paid origin, actor and hand at the original cut; no public `ignore_pending`, actor-only match or arbitrary mask. |
 | Ended retained proof/cut/receipt | Reserve no current hand. Never treat a retained proof vector as live occupancy. Its possible historical use is a separate later authenticated consumer. |
 | No new authority | Preserve the previous physical-only path, error/source-query ordering and omitted JSON fields. Do not invoke new anatomy admission for every old action. |
 | Missing/temporarily taken RulesState | Missing authority is not proof of an empty reservation set. Pass the actual separately held RulesState where required, or fail the relevant internal context explicitly; never use `unwrap_or_default` to erase occupancy. |
@@ -156,8 +157,9 @@ planners, not merely mirror the helper implementation:
 1. Live outgoing and pending Attempt each reserve the exact selected hand;
    provisional occupancy works without a live attachment; incoming and ended
    proofs reserve none. Duplicate/colliding reservations and an Item/reservation
-   overlap reject. Own-admission exclusions reject wrong ID, origin, actor or hand.
-   A missing separately held rules context cannot erase a reservation.
+   overlap reject. A missing separately held rules context cannot erase a
+   reservation. Own-admission exclusion and wrong-ID/origin/actor/hand controls
+   remain required with the real resolver caller; none is implemented here.
 2. Use actual weapon definitions: one usable hand plus a reservation permits a
    lawful one-hand attack/throw, rejects TwoHands and one-handed ammunition
    loading, and preserves custody/quantity. Explicit unequip frees an Item only;
@@ -184,8 +186,8 @@ planners, not merely mirror the helper implementation:
    accepted release, refresh chains, Goblin damage across release, SQLite cold
    retries and native ownership/privacy evidence remain in the parent plan.
 
-No test in this plan has been authored or executed by this checkpoint. Once
-root allocates the heavy slot, run appropriate focused tests, `./scripts/verify-fast`
+The bounded internal controls below are now authored but **unrun**. Once root
+allocates the heavy slot, run appropriate focused tests, `./scripts/verify-fast`
 and canonical `./scripts/verify` on the actual candidate, followed by independent
 full-diff review and all required exact-head CI. Failures require actual output
 inspection and narrow fixes; older development success cannot validate this head.
@@ -208,10 +210,68 @@ records, changing before-image equipment reconstruction, over-filtering legal
 equipment choices, and recasting selected historical attacks as current options.
 Keep each distinction explicit in code review and tests.
 
-Current verification is limited to source/document reads, exact merge/parent
-inspection and Git diff checks. No helper/gameplay code, Rust test, Cargo/npm,
-database/native operation or remote publication was performed for this plan.
+The implementation now contains one source-derived `EffectiveHands` view, using
+the explicitly supplied RulesState and an explicit physical image. Its old-state
+fast path does not consult anatomy. New authority requires the actual attached
+rules/source context; detached new authority fails closed rather than becoming
+an empty reservation set. Shape/source checks do not authenticate accepted
+history. The factory collects current outgoing live and pending Attempt hands,
+excludes incoming/ended records, and rejects duplicate or source-mismatched hands.
+There is no own-Attempt exclusion entry point. Root approved deferring it because
+the authenticated admission caller does not exist yet; this is sequencing, not
+a reduction of the full feature or its required hostile controls.
 
-Exact next action: return this plan-only commit and its complete diff to root for
-review, then freeze the branch. Do not start the helper or caller edits until root
-assigns that bounded authoring checkpoint. Root retains the sole heavy slot.
+Weapon equipment, ammunition, shields, components, current rules/app opportunity
+options and attack grip candidates compose that same view. Physical inventory
+validation remains unchanged to prevent source/armor recursion. The old selected
+weapon reconstruction retains its physical undo path and explicitly refuses new
+Grapple authority until original admission is authenticated. App candidates can
+still include physically occupied hands that an explicit allowed Item change may
+free; a reservation cannot be erased by that operation. Empty grip candidates are
+omitted. `table_casting` already shares `bind_spell`, so no UI policy was added.
+
+Authored controls are internal/pure and do not prove command acceptance:
+
+- Live/provisional/incoming/ended distinctions, source mismatch, collision,
+  detached authority, unknown Goblin V1 anatomy, old optional-field equality and
+  the unchanged early kernel rejection.
+- Real longsword, dagger, sling and Goblin V2 Scimitar/Shortbow definitions exercise
+  one-hand versus TwoHands, loading, Thrown draw, explicit before/after Item changes
+  and reservation retention. Synthetic acquisition is not presented as gameplay.
+- The private shield change path checks a real shield collision before Action
+  cost, successful don on the other hand, and doff/custody/reservation retention.
+  Source state is genuine; the grip, shield transfer and available Action are
+  internal fixture setup, never accepted commands.
+- Actual Hold Person and Cure Wounds component programs distinguish held M/S
+  sharing from S-only access, enforce custody, and reject legacy free-hand fallback
+  without actual equipment. A temporary caster facet prepares the plans; the real
+  Human source mechanics are restored before deriving hands. This proves neither
+  an admitted Human spellcaster nor a new Focus/ComponentPouch grant.
+- A pure Glaive current-menu control keeps the unarmed option while removing an
+  unavailable two-hand option, then recomputes it after synthetic withdrawal;
+  it creates no release or refresh receipt. A genuine old selected-attack capture
+  exercises its actual Free-before/held-after image and rejects a new current
+  Attempt as historical admission proof. Original capture bytes stay unchanged.
+
+Unchanged source-body, Shove, source component waiver, Mage/Hag/Air, app projection,
+schema and recovery suites still require execution with the new candidate. Static
+caller inspection is not their regression proof. New app predicates share the
+derived view; no native, privacy, release/refresh or app acceptance is claimed.
+
+Root reviewed the complete plan commit `e3e22e75ef7e2a2be4867b2052424957097d3707`
+and external next-slice map, then approved the bounded helper, included existing
+planner/current-option composition and meaningful pure controls. This supersedes
+the plan-only authoring hold, not the execution guards or other non-goals.
+No Cargo/npm/build/database/native/publication operation is authorized; root
+retains the sole heavy slot. Surface any concrete temporal/component expansion
+before implementing it.
+
+Verification so far: direct stable-GNU `rustfmt --edition 2024` parsing/formatting
+and Git whitespace checks only. These do not establish compilation or behavior.
+
+Exact next action: return the clean checkpoint and its complete diff to root,
+then freeze the branch. Root must arrange
+independent review and serial executable verification before further expansion.
+No Cargo/npm/build/test/database/native operation or remote publication has run
+for this checkpoint. Existing source/domain and installed-binding tests also
+remain unrun; their static review does not validate the new implementation.
