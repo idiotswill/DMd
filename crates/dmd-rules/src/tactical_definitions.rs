@@ -2,9 +2,11 @@
 //! Kept separate from the version-1 kernel pack so historical replay keeps its meaning.
 use dmd_domain::{Ability, Condition, DamageType, DieSpec, Skill};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::OnceLock;
 use thiserror::Error;
+
+mod gear_quantities;
 
 pub const TACTICAL_DEFINITIONS_JSON: &str =
     include_str!("../../../content/srd-5.2.1/tactical.json");
@@ -493,6 +495,14 @@ pub struct CreatureStatistics {
     pub additional_languages: u8,
     pub can_speak: bool,
     pub gear: Vec<String>,
+    /// Fixed source quantities; omission preserves all original source fingerprints.
+    /// Individual equipment is later expanded into distinct quantity-one items.
+    #[serde(
+        default,
+        skip_serializing_if = "BTreeMap::is_empty",
+        deserialize_with = "gear_quantities::deserialize"
+    )]
+    pub gear_quantities: BTreeMap<String, u32>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -1123,6 +1133,14 @@ impl CreatureDefinition {
             label(language)?;
         }
         unique_ids(s.gear.iter().map(String::as_str))?;
+        // Equipment classification is post-load: the global equipment registry
+        // itself loads this catalog and must not reenter its initializing lock.
+        for (id, quantity) in &s.gear_quantities {
+            ensure(
+                *quantity >= 2 && s.gear.contains(id),
+                "gear quantity must override a listed definition with at least two",
+            )?;
+        }
         unique_ids(self.features.iter().map(|f| f.id.as_str()))?;
         ensure(
             !self.features.is_empty(),
