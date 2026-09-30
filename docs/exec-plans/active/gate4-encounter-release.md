@@ -5,10 +5,13 @@ reviewed; reviewed cache development dependency integrated. Published draft PR48
 at `75991dd6c1e782b8fe42257bcb65c26a8d0f3997` passes all six CI jobs,
 including all 59 table scenarios on Linux and native Windows, the four additional
 release histories, both reviewed fixture corrections and fresh Windows packaging.
-Final verified-parent reconciliation, genuine flow 4 compatibility evidence,
-canonical verification and packaged release play remain acceptance blockers.
-Writer: `gate4_release_verify`, assigned sole writer of
-`codex/gate4-encounter-release` for the 2026-09-28 evidence checkpoint.
+The original-source flow 4 capture and eight-test baseline completed on
+2026-09-30; their immutable corpus is now imported for receiving-head verification.
+Final verified-parent reconciliation, canonical/CI continuation verification and
+packaged release play remain acceptance blockers.
+Writer: root, sole writer of `codex/gate4-encounter-release` for the
+2026-09-30 corpus import and parent integration. `gate4_release_verify` authored
+the preceding 2026-09-28 evidence checkpoint.
 The prior implementation writer was `aftermath_finish`.
 Development base: `e0adf8071cc3cbbba50dc1a43952d0ac001a0f4b`, the reviewed
 Magic Missile candidate. Fetched main at branch creation:
@@ -773,11 +776,54 @@ the next slice, with real controller/session and semantic recovery evidence.
 User-facing controls use “Finish encounter” and “Prepare battlefield”; they
 do not expose executor or schema internals.
 
-Next action: root reviews this documentation-only evidence checkpoint before
-publication. Keep draft PR48 at 75991dd until that review, and obtain root's
-normal dependency-integration assignment after verified MM main and genuine
-flow 4 exports/original-source baselines are ready. Preserve the four real
-families' physical chronology and exact refusal assertions through reconciliation.
-Published 75991dd development CI passes; final integrated canonical/CI verification,
-packaged release play and separate merged-main verification remain outstanding.
-Draft publication is not slice or Gate 4 acceptance.
+### Original-source compatibility completion — 2026-09-30
+
+PR46's verified original production main is
+`c4d8c34c19b5c92eca789f292f99632a0107d861`. Test-only direct-child capture
+`2b839d7fc7c8caa8574304ea6f99020ed491e849` completed all three original
+scenarios normally, including continuations and cleanup. Seven official exports
+cover selected ordinary-hit Shield, selected missile Shield, three physical faces,
+all faces before impact, the first and fifth concentration children, and the first
+save of an already committed ordinary spell. Original baseline direct child
+`05b43bddade5c400e4efa12fadec1d798d5fc0c6` completed all eight tests,
+unfiltered and serial: **8 passed, 0 failed, 0 ignored**, 10897.39 seconds in
+the test harness (10899.172 seconds recorded command wall time). Both source
+checkouts stayed clean and the producer main stayed pinned until completion.
+
+Root and independent completion audits separately verified all seven export
+hashes, clean source/tree, normal exit, exact compiled and preserved executables,
+full logs and source provenance. Their SHA256 values are respectively
+`782846d644f789d758e703ab4101cfd491b01ec2148903f630396ccce656dc2b`
+and `ae536fe85b444588441c28b2fb4ff72429c41523d7a5c12591ad2f31deb2fd59`.
+The original baseline log SHA256 is
+`2cbe4fd66585ec3daecb3d80934afec93191bf719c45579036582701a6dcbd52`.
+Both diagnostic commits are published under `codex/gate4-flow4-capture-c4d8`
+and `codex/gate4-flow4-baseline-c4d8` solely for reproduction; their diagnostic
+hooks must never merge into production. The earlier interrupted candidates remain
+unaccepted historical evidence and are not the origin of this corpus.
+
+The receiving import preserves all seven raw export bytes and protects them with
+Git attributes. `fixtures/flow4-c4d8-provenance.json` records source identities,
+per-file hashes, commands, normal completion, binary hashes and original versus
+workspace-normalized display-log hashes. The companion Markdown explains the
+seven boundaries and reproduction. `legacy_shield_missile_v1_replay.rs` preserves
+every original test/helper assertion; only its module comment and fixture loader
+change. No receiving-head runtime pass is claimed by this import.
+
+UI PR49 subsequently merged with expected-head protection as
+`d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`; fetched main has the complete
+tree of reviewed source `65b7606bd486120a1c650e44028e4195763a5b6c`.
+Its canonical and all-six source CI results and the qualified, source-equivalent
+7289c5e packaged UI play are separately recorded in the UI plan. Literal d88a692
+main checks are running; neither a source result nor older native play is relabelled
+as a post-main pass.
+
+Next action: finish independent import review and commit the immutable corpus,
+then normally merge UI source 65b7606 followed by fetched main d88a692. Preserve
+both release Finished/Aftermath rendering and the reviewed UI focus boundary in
+the known EncounterPanel conflict. Review the complete integrated delta, run the
+canonical verifier, publish the clean head for all six checks and play two actual
+encounters with restart in its packaged build. The four real release families'
+physical chronology and refusal assertions remain unchanged. Protected merge and
+separate final-main verification follow only after those results. Gate 4 remains
+active; no Gate 5 work is authorized by this checkpoint.
