@@ -1,7 +1,7 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
-Status: **Authored for independent static review on 2026-09-30 after root approved
-the adapter-level proof below. Compilation and test execution remain pending.**
+Status: **Root and independent static reviews completed on 2026-09-30. Draft
+publication is authorized for remote verification; compilation and tests remain pending.**
 
 ## Objective, ownership and baseline
 
@@ -9,8 +9,8 @@ Repair the supported case where a still-live timed tactical effect prevents norm
 turn advancement at its deadline. Preserve every previously accepted history's
 operation stamps, expiry tickets, work ordering and durable continuation.
 
-Branch: `codex/gate4-timed-expiry-boundary`. Sole writer: the assigned expiry-repair
-agent, coordinated by root. No PR exists. Base is freshly fetched `origin/main`
+Branch: `codex/gate4-timed-expiry-boundary`. Sole writer: root after the expiry-repair
+agent's completed handback. A draft PR targets main. Base is freshly fetched `origin/main`
 `c4d8c34c19b5c92eca789f292f99632a0107d861`. The clean, unused historical turn-core
 checkout was reused; `codex/gate4-table-turn-core` remains preserved at
 `25be7f6c5f31e60a065f009c52ab44c852639aed`. No reset or force operation was used.
@@ -233,9 +233,26 @@ steal a simultaneous choice; an imprecise app fixture could end Hold Person earl
 and never exercise the deadline. Rule-only success would not establish file-SQLite
 retry/restore correctness. Source analysis does not establish full Gate 4 acceptance.
 
-**Next action:** independently review the complete authored commit, then let root
-assign the serial verification slot. No compilation, tests, npm/builds or push are
-authorized while root's baseline run owns that slot. Address concrete review or
-execution failures without weakening historical equality, then run the focused and
-canonical checks above. Original-source replay and final-head CI/merged-main proof
-remain acceptance prerequisites; authored tests are not passing evidence.
+### Reviewed draft verification checkpoint — 2026-09-30
+
+Root and an independent reviewer inspected the complete eight-file diff at
+`6e601fef2eea066d057d57bd029ab661d1a42f4b`, tree
+`b323fd74cfa7f6bbcaa0721c7f0fe5ee26b2d16b`. Both found no actionable static
+defect in the due-only change, the composed accepted-history proof or the seven
+authored regressions. External review evidence is retained as
+`tooling/timed-expiry-6e601fef-independent-review-2026-09-30.md`, SHA256
+`43eaf0dfdf553465fea17e825b32bf1b0371c155e98f0a7f18cfc91be0528248`, and root's
+separate review. This does not establish compilation or runtime behavior.
+
+Root authorizes publishing the reviewed source plus this documentation checkpoint
+as a draft so remote CI can run while the original-source baseline retains the
+local heavy slot. This supersedes the earlier push hold only. No local compile,
+test, npm or build may overlap that baseline, and main remains fixed until its
+complete proof succeeds. Original captures are neither regenerated nor imported
+before their baseline acceptance.
+
+**Next action:** inspect actual remote results and fix concrete failures, then
+assign the local serial verification slot for the focused and canonical checks
+above. Original-source replay, final exact-head CI, protected merge and separate
+merged-main proof remain acceptance prerequisites. Draft publication, source review
+and authored tests are not acceptance or Gate 4 completion.
