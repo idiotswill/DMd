@@ -74,6 +74,17 @@ pub(crate) fn current_catalog() -> Result<Vec<crate::TableCreatureOption>, Strin
                     .features
                     .iter()
                     .map(|feature| feature.name.clone())
+                    .chain(
+                        source
+                            .traits
+                            .iter()
+                            .filter_map(|source_trait| match source_trait {
+                                dmd_rules::tactical_definitions::MonsterTrait::MagicResistance => {
+                                    Some("Magic Resistance".into())
+                                }
+                                _ => None,
+                            }),
+                    )
                     .collect(),
                 omitted_features: match &source.coverage {
                     dmd_rules::tactical_definitions::DefinitionCoverage::CompleteStatBlock => {

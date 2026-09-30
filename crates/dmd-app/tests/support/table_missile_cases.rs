@@ -361,12 +361,7 @@ async fn prepare_with_character(
                     entity_id: sources.actors[index],
                     name: format!("Private source {index}"),
                     definition_id: definition.into(),
-                    source: Some(
-                        dmd_rules::tactical_creatures::creature_source_pin(
-                            dmd_rules::tactical_creatures::creature_definition(definition).unwrap(),
-                        )
-                        .unwrap(),
-                    ),
+                    source: source.source.clone(),
                     size: CreatureSize::Medium,
                     additional_languages: if definition == "mage" {
                         vec!["dwarvish".into(), "elvish".into(), "draconic".into()]

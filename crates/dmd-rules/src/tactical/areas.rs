@@ -254,6 +254,7 @@ pub(super) fn request(
             key,
             program.ability(),
             "Saving throw against an area effect",
+            super::save_cause::SaveCause::Area(&program),
         )?;
         if let Some(request) = &mut request
             && program.ability() == Ability::Dexterity

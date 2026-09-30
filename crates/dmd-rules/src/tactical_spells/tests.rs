@@ -1,6 +1,83 @@
 use super::*;
 mod binding_tests;
 
+#[test]
+fn same_id_hag_spell_tuples_resolve_full_revisions_and_reject_cross_revision_borrowing() {
+    use crate::tactical_creatures::*;
+    let defs = definitions().unwrap();
+    let spell = defs.spell("magic-missile").unwrap();
+    let old = creature_definition("night-hag").unwrap();
+    let corrected = crate::tactical_definitions::bundled_night_hag_v2().unwrap();
+    let pin = |source: &CreatureDefinition| {
+        source_pin(
+            defs,
+            spell,
+            Some(source),
+            Some(
+                source
+                    .features
+                    .iter()
+                    .find(|feature| feature.id == "spellcasting")
+                    .unwrap(),
+            ),
+        )
+        .unwrap()
+    };
+    let old_spell = pin(old);
+    let new_spell = pin(corrected);
+    assert_ne!(old_spell, new_spell);
+    assert_eq!(
+        old_spell.creature_definition_id,
+        new_spell.creature_definition_id
+    );
+    assert_eq!(
+        creature_for_spell_source(defs, spell, &old_spell).unwrap(),
+        old
+    );
+    assert_eq!(
+        creature_for_spell_source(defs, spell, &new_spell).unwrap(),
+        corrected
+    );
+    assert_eq!(
+        source_components(defs, spell, &old_spell).unwrap(),
+        source_components(defs, spell, &new_spell).unwrap()
+    );
+    let (mut state, meta, selection) = fixture("magic-missile", SpellResourceChoice::SourceFeature);
+    state
+        .rules
+        .as_mut()
+        .unwrap()
+        .entities
+        .remove(&selection.actor);
+    state.entities.get_mut(&selection.actor).unwrap().kind = EntityKind::Creature;
+    for (source, matching, foreign) in [
+        (old, &old_spell, &new_spell),
+        (corrected, &new_spell, &old_spell),
+    ] {
+        let source = creature_source_pin(source).unwrap();
+        let built = build_creature_from_source(
+            &state,
+            &meta,
+            selection.actor,
+            &CreatureBuildChoice {
+                definition_id: "night-hag".into(),
+                size: CreatureSize::Medium,
+                additional_languages: vec![],
+                hit_points: CreatureHitPointChoice::Average,
+                controller: CreatureController::Autonomous,
+                in_lair: false,
+            },
+            Some(&source),
+        )
+        .unwrap();
+        validate_creature_spell_source(&built.profile, matching).unwrap();
+        assert!(validate_creature_spell_source(&built.profile, foreign).is_err());
+        let mut forged = matching.clone();
+        forged.fingerprint.push('0');
+        assert!(creature_for_spell_source(defs, spell, &forged).is_err());
+    }
+}
+
 fn fixture(
     spell_id: &str,
     resource: SpellResourceChoice,

@@ -96,6 +96,18 @@ mechanics; their representation and explicit unavailable boundaries do not close
 The later Shove slice still owes genuine paid Prone-immunity continuation and
 recovery against this admitted source.
 
+The bounded [Magic Resistance source prerequisite](../exec-plans/active/gate4-magic-resistance-source.md)
+adds a separate selected Night Hag revision with its printed trait, exact same-ID
+revision lookup and current-admission separation. Private save categories derive
+from canonical spell work, retained source clauses or the audited nonmagical breath
+and Concentration causes. Tests for source/admission/content integrity, synthetic
+category composition and real Hold Person-Fiend/breath controls are authored only;
+no compile, test, native or production evidence is claimed and no evidence array
+advances. Real positive MR via Counterspell and a genuine repeated-save mechanism
+remain Gate 4 requirements, as does old/new same-ID application coexistence after
+the separately accepted encounter-release integration or an original pre-encounter
+capture. Historical source payloads, picker bytes and accepted fixtures stay frozen.
+
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 
 `cargo test --locked -p dmd-domain --test rules_coverage_ledger` runs offline in normal workspace CI. It checks the pin, complete chapter span, reviewed catalog counts, unique names/IDs, source-page bounds, every inventory-to-family relationship, gate assignment and evidence for advanced statuses. Negative cases demonstrate rejection of orphaned families/entries, duplicate ownership, removed catalog entries and unsupported completion claims. It checks consistency against the reviewed source inventory; it is not a claim that software can infer legal scope or prove faithful gameplay from JSON alone.

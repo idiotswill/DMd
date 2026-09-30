@@ -34,7 +34,8 @@ fn distributed_srd_manifest_verifies_kernel_source_and_license_bytes() {
             "kernel.json",
             "character-creation.json",
             "tactical.json",
-            "air-elemental-v1.json"
+            "air-elemental-v1.json",
+            "night-hag-v2.json"
         ])
     );
 }

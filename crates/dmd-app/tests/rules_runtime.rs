@@ -1865,6 +1865,16 @@ async fn pending_rules_export_restores_and_content_changes_fail_before_mutation(
 #[tokio::test]
 async fn missing_undeclared_or_rehashed_air_source_cannot_mutate_a_campaign() {
     let _ = dmd_rules::tactical_definitions::bundled_air_elemental().unwrap();
+    rejected_installed_creature_source("air-elemental-v1.json").await;
+}
+
+#[tokio::test]
+async fn missing_undeclared_or_rehashed_corrected_hag_cannot_mutate_a_campaign() {
+    let _ = dmd_rules::tactical_definitions::bundled_night_hag_v2().unwrap();
+    rejected_installed_creature_source("night-hag-v2.json").await;
+}
+
+async fn rejected_installed_creature_source(filename: &str) {
     for mode in ["missing", "undeclared", "rehashed"] {
         let f = Fixture::new();
         let (pool, runtime) = f.runtime().await;
@@ -1874,17 +1884,17 @@ async fn missing_undeclared_or_rehashed_air_source_cannot_mutate_a_campaign() {
         let mut manifest: serde_json::Value =
             serde_json::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
         let files = manifest["files"].as_array_mut().unwrap();
-        let path = f.content.join("air-elemental-v1.json");
+        let path = f.content.join(filename);
         match mode {
             "missing" => fs::remove_file(&path).unwrap(),
-            "undeclared" => files.retain(|file| file["path"] != "air-elemental-v1.json"),
+            "undeclared" => files.retain(|file| file["path"] != filename),
             _ => {
                 let mut bytes = fs::read(&path).unwrap();
                 bytes.push(b' ');
                 fs::write(&path, &bytes).unwrap();
                 let file = files
                     .iter_mut()
-                    .find(|file| file["path"] == "air-elemental-v1.json")
+                    .find(|file| file["path"] == filename)
                     .unwrap();
                 file["byte_len"] = serde_json::json!(bytes.len());
                 file["checksum"]["value"] = serde_json::json!(fnv1a64_hex(&bytes));
