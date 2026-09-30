@@ -115,13 +115,43 @@ it('replaces host map truth when the selected viewer changes', async () => {
   const host:TacticalView={encounter_id:'encounter',round:null,active_actor:null,phase:'setup',
     battlefield:{bounds:{min:{x:0,y:0,z:0},max:{x:100,y:100,z:40}},floor_z:0,floor_surface:'stone',ambient_light:'Darkness',terrain:[],obstacles:[],lights:[]},
     participants:[{entity_id:'secret-actor',public_label:'Unseen sentinel',position:{x:70,y:80,z:0},size:'Medium'}],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
-  const component=render(TacticalMap,{tactical:host,characters:[]});
+  const component=render(TacticalMap,{tactical:host,characters:[],actor:null});
   expect(screen.getAllByText(/Unseen sentinel: 35 feet east/).length).toBeGreaterThan(0);
   const player:TacticalView={...host,battlefield:null,participants:[],observers:[{observer:'player-actor',position:{x:10,y:10,z:0},contacts:[],cells:[]}]};
-  await component.rerender({tactical:player,characters:[]});
+  await component.rerender({tactical:player,characters:[],actor:'player-actor'});
   expect(screen.queryByText(/Unseen sentinel/)).toBeNull();
   expect(screen.getByRole('img',{name:'Your known surroundings'})).toBeTruthy();
   expect(screen.queryByRole('img',{name:'Host encounter map'})).toBeNull();
+});
+
+it('maps only the selected controlled observer and replaces its contacts and terrain on switch', async () => {
+  const point=(x:number)=>({x,y:0,z:0});
+  const tactical:TacticalView={encounter_id:'encounter',round:1,active_actor:'mage',phase:'active',
+    battlefield:null,participants:[],initiative:[],ties:[],budget:null,continuation:null,
+    may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],
+    observers:[
+      {observer:'pc',position:point(0),contacts:[{entity_id:'mage',label:'Mage',position:point(20),status:'Seen',modality:'Sight'},
+        {entity_id:'old',label:'Old guard',position:point(40),status:'Remembered',modality:'Sight'}],
+        cells:[{position:point(40),blocked:true,difficult:false,currently_seen:false}]},
+      {observer:'mage',position:point(20),contacts:[{entity_id:'pc',label:'River',position:point(0),status:'Seen',modality:'Sight'},
+        {entity_id:'new',label:'New guard',position:point(80),status:'Seen',modality:'Sight'}],
+        cells:[{position:point(80),blocked:false,difficult:true,currently_seen:true}]},
+    ]};
+  const component=render(TacticalMap,{tactical,characters:[],actor:'mage'});
+  expect(screen.getAllByRole('listitem').map(item=>item.textContent)).toEqual([
+    'You: 10 feet east, 0 feet south','River: 0 feet east, 0 feet south','New guard: 40 feet east, 0 feet south']);
+  expect(screen.queryByText(/Old guard/)).toBeNull();
+  expect(screen.getByRole('img').querySelector('rect[x="40"]')).toBeNull();
+  expect(screen.getByRole('img').querySelector('rect[x="80"]')).not.toBeNull();
+  await component.rerender({actor:'pc'});
+  expect(screen.getAllByRole('listitem').map(item=>item.textContent)).toEqual([
+    'You: 0 feet east, 0 feet south','Mage: 10 feet east, 0 feet south','Old guard: 20 feet east, 0 feet south (last known)']);
+  expect(screen.queryByText(/New guard/)).toBeNull();
+  expect(screen.getByRole('img').querySelector('rect[x="80"]')).toBeNull();
+  await component.rerender({actor:'unavailable'});
+  expect(screen.queryAllByRole('listitem')).toHaveLength(0);
+  expect(screen.getByText('No surroundings are currently known.')).toBeTruthy();
+  expect(screen.getByRole('img').querySelector('rect[x="40"]')).toBeNull();
 });
 
 it('keeps ordinary turns blocked and sends the retained consequence identity', async () => {
