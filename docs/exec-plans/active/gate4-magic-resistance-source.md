@@ -2,7 +2,7 @@
 
 Status: reviewed development dependencies locally integrated, 2026-09-30; coexistence test imported and statically inspected, UNCOMPILED/UNRUN and not accepted.
 Branch: `codex/gate4-magic-resistance-source`; published PR53 remains at `acf61abf188eda1f91a8007e799c43c410453cd8` while its separate checks finish.
-Writer: `flow4_import_review`, sole integration writer assigned by the coordinating root; root retains independent final review and all publication/acceptance.
+Writer: root, following the integration author's handback; root owns final review, publication and acceptance.
 Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority
@@ -166,3 +166,28 @@ The release merge had three conflicted files. `Creature.test.ts` retains both so
 The reviewed coexistence child is now wired into the genuine Shield-Hit replay suite. Its 1,265-line source remains byte-identical to the external draft hash above. The original 26,958-byte parent is retained as an exact prefix; only a blank line and the two-line child declaration are appended. The original partial-missile export and all imported release/flow4 fixture bytes remain unchanged. The child preserves original flow3 pending completion and old accepted creation before explicit upgrade/release, then tests new admission, same-campaign old/new profiles and full spell tuples through actual commands and independent cold recovery. This is an authored obligation, **not a passing test or positive MR save**.
 
 Direct `rustfmt --check` on reconciled Rust and the imported child/parent, plus Git diff whitespace checks, provide static parse/format evidence only. Root still owns full independent integrated review, compilation, executable tests, exact-head CI, native evidence and acceptance. The branch remains local beyond published `acf61ab`; no publication or heavy operation occurred during this integration. The earlier same-campaign coexistence gap is now represented by an imported genuine-history test, but remains unclosed until execution succeeds on the final integrated head.
+
+### Reviewed Air ancestry reconciliation
+
+Root independently reviewed integrated `0b709239f62322fe3812b6a6714964e3aa148a86`,
+tree `27a539ec4ca168ed09e16aa81ca4bd7945064935`, including the full genuine
+coexistence child and all production seams. The static review found no actionable
+defect; external review SHA256 is
+`e513ac10c9004440747f10f8c1349014ccb89e0f73bdf632ed5a417632f924ad`.
+The independently rerun byte audit is
+`365dc47baacbca27d0ad867c9eafff045d57780b71320ec4c15953bb477ccaf7`.
+Neither is executable or native acceptance.
+
+Freshly fetched Air is now `3f3e3590e7977eca529168fa9069e8e1bca72434`, its
+separately reviewed normal release8c integration. This MR branch already combines
+the same Air e915/release8c production seams, plus MR and the genuine child.
+Root will normally merge exact Air3f after committing this plan to align the
+development ancestry. Expect documentation reconciliation only; inspect every
+conflict and require production, test, content and historical bytes to remain
+exact0b70923. Preserve both source/MR and Air/release disclosures. Any unexpected
+semantic delta requires explicit review before publication.
+
+Published acf remains untouched while its original runtime jobs finish. No local
+heavy or native operation is part of this reconciliation. New exact-head CI,
+canonical/receiving coexistence, accepted dependencies and final main/native
+acceptance remain outstanding; PR53 must never merge into Air.
