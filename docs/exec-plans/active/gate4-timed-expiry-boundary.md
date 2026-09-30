@@ -1,7 +1,7 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
-Status: **Root and independent static reviews completed on 2026-09-30. Draft
-publication is authorized for remote verification; compilation and tests remain pending.**
+Status: **All six CI checks pass on corrected source 41d034ce. Development
+integration with release8c is planned below; final acceptance remains pending.**
 
 ## Objective, ownership and baseline
 
@@ -277,3 +277,54 @@ its initial attachment is absent before checking the original two operation stam
 The corrected source needs independent review and a fresh full run. All five
 genuine historical failures must clear unchanged; formatting or static review
 alone is not recovery evidence. The original flow4 baseline remains untouched.
+
+### Corrected-source results and integration plan — 2026-09-30
+
+All six checks completed successfully on corrected source
+`41d034ce12eb2861c811441cbe031f20488827ae`, tree
+`80044b602be5b8b0417182cda804d91f72ac5f70`. Linux runtime job 109941663863
+in [run 36731400969](https://github.com/idiotswill/DMd/actions/runs/36731400969)
+passed 754 Rust tests across 55 result groups, including all 55 table cases in
+5535.55s. Windows stable job 109941770012 in
+[run 36731401000](https://github.com/idiotswill/DMd/actions/runs/36731401000)
+passed 756 Rust tests across 55 groups and all 55 table cases in 6358.63s.
+Both passed the unchanged five Reactions histories, the actual timed Hold Person
+case and all four Magic Missile cases. Windows also passed 99 frontend tests in
+17 files, zero Svelte errors/warnings and a 140-module build.
+
+The original missing-attachment failure and corrective independent review remain
+preserved. Full corrected logs and API/tree evidence are retained externally in
+`tooling/expiry-41d034c-ci/final-evidence.json`, SHA256
+`ed84a1d1b552b61cd0fca38d3f467cd82aedff8746fa6aa3e307716560a02b49`.
+Linux synthetic `4b11f802f09ef8a9f6bd55f71f48bdeb0c71205d` has parents
+c4d8/41d034c and exactly the corrected source tree. Windows used literal 41d034c.
+Artifact 11112627704, SHA256
+`efdaff1499d85aff7318b3177ef80ac016e1ac26094b96085d4c4f59efa5503e`, was uploaded;
+it has not been played. These results do not validate a later combined head.
+
+The genuine original flow4 baseline has now completed all eight cases. UI PR49
+merged at fetched main `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`.
+Root owns this bounded integration and commits this plan before changing code:
+
+1. Normally merge release `8c03f9fb0058610fd37c0cfe7762e8b96d658f38`, which
+   already includes main/UI and the exact preserved seven-export, eight-case
+   flow4 corpus. Release remains an **unaccepted development dependency** while
+   its canonical and native acceptance continue. Its first shared-target compile
+   failure is preserved; the fresh isolated check and Clippy passed on unchanged
+   source, and its runtime tests remain in progress.
+2. Preserve the due-only repair and exact no-due initialization/stamps, release
+   completion/highwater and all current flow5 admission and old-pause semantics.
+   Retain every original fixture and replay suite exactly. Update only newly
+   authored current test setup if the combined current executor requires it.
+3. Inspect all conflicts and compare combined production/test changes against
+   both reviewed parents. Obtain an independent static review before publishing.
+   No second local heavy run, database/native action or evidence regeneration is
+   part of this integration.
+4. Publish the reviewed candidate for new exact-head CI. Schedule canonical and
+   receiving original-flow compatibility in the serial verification slot. Resolve
+   actual failures without weakening assertions; protected merge and literal-main
+   checks still require final dependency and slice acceptance.
+
+Offstage/no-turn tactical deadlines and all other Gate 4 work remain open. This
+integration does not add a second scheduler, alter wire formats, or advance a
+coverage-ledger family merely because prior checks passed.
