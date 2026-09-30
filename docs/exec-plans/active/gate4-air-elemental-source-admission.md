@@ -162,3 +162,24 @@ focused/canonical and frontend checks when the heavy slot is available. Preserve
 the exact old exports and prove their continuations under this source before
 acceptance. Reconcile accepted dependency movement, review the final full diff,
 and complete native source/placement evidence before any protected merge.
+
+### Manifest tooling correction — 2026-09-30
+
+The later same-ID creature revision work found two omissions in the Air change:
+the manifest regeneration script still enumerated only the five legacy files,
+and the existing distribution test expected that same five-file set. Running
+the old script would drop the required Air entry. The script and exact-set
+assertion now include the installed Air payload; the assertion remains strict.
+No source payload, current manifest, legacy picker or historical fixture changes.
+
+Root ran the corrected actual script against an isolated copy of all six declared
+files. Its output is byte-identical to the installed manifest, SHA256
+`63196eccc85324e248973fb65741ada9b02404ce9e0b74939ddbc8dc0fd0a5bd`.
+The script SHA256 is
+`792f232ed554a9fe649338bd8c9147e278f33c7ff16d4806b02ce64c419a613e`.
+External evidence is `tooling/air-manifest-regeneration-2026-09-30/result.json`.
+This verifies regeneration only; the Rust assertion has not executed locally.
+Original 1a0a5e7 runtime CI remains separately under audit, and no green result on
+that head verifies this correction. The corrected head requires fresh checks.
+The original-flow baseline still owns the local heavy slot. Preserve the prior
+remote runs until normal completion before publishing the corrected source.
