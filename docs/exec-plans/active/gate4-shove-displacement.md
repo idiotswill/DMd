@@ -1,10 +1,10 @@
 # Gate 4 — Source-bound Shove and displacement
 
 Status: implementation and tests authored; no executable verification or feature
-acceptance. Writer: `gate4_shove_recovery`, exclusively. Root owns
-integration, the heavy verification slot and publication. Branch:
+acceptance. Writer: root after the implementation agent's clean handoff on
+2026-09-30. Root owns integration, the heavy verification slot and publication. Branch:
 `codex/gate4-shove-displacement`; root-created clean base and freshly fetched main
-`c4d8c34c19b5c92eca789f292f99632a0107d861` (2026-09-28). No PR yet.
+`c4d8c34c19b5c92eca789f292f99632a0107d861` (2026-09-28).
 
 ## Objective and authority
 
@@ -102,7 +102,7 @@ Old UnarmedStrike, source definitions, save modifiers, movement/fall producers,
 UpgradeExecution 1→2, source fingerprints and historical serializers remain
 unchanged. Optional new record fields skip serialization when absent.
 
-- Air prerequisite: `gate4_air_recovery` exclusively owns
+- Air prerequisite: root now exclusively owns
   `codex/gate4-air-source-admission` in gate4-content. Consume only root-integrated
   immutable source resolution and source-aware geometry boundaries. No invented
   Air profile or altered old catalog. Genuine Prone-immunity table/native
@@ -234,6 +234,28 @@ parity, release5 reconciliation, exact-head CI and genuine native desktop captur
 Actual Air Prone-immunity, Air Form refusal and healthy Hover proof must now be run
 against the integrated real source before those acceptance items can close.
 The branch's behavior remains unverified until those checks succeed.
+
+### Draft verification checkpoint — 2026-09-30
+
+Root reviewed the complete presentation-only correction at
+`3f8024bde89f8878bcc42197e42d60169182cceb` after independent full static review of
+integrated a09fee2. Root then normally merged Air's documentation-only checkpoint
+`1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, preserving both dependency histories.
+That reconciliation changes no production or test source.
+
+Root authorizes a dependent draft PR targeting the Air source branch so remote CI
+can find compiler, test and integration failures while the original-source flow4
+baseline owns the local heavy slot. The draft also inherits UI65 through the
+already-recorded development merge; it does not independently accept or duplicate
+that UI objective. Before final acceptance, merge/reconcile the verified Air/UI
+prerequisites and retarget main so the remaining review covers the Shove slice.
+No prerequisite, test or native acceptance is waived by draft publication.
+
+This supersedes the earlier publication hold only. No local Cargo/npm/build/test
+run has been performed for this draft. Root must inspect actual remote output,
+fix concrete failures, and then coordinate all remaining focused, canonical,
+history, release5, native and final exact-head checks above. Main remains fixed
+until the original-source capture/baseline proof succeeds.
 
 Remaining Gate4 work stays binding: Grapple/Escape/dragging, unarmed equipment
 allowances, opportunity/Ready Shove, other mastery/spell displacement, teleport,
