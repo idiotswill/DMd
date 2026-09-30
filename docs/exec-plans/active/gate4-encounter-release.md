@@ -818,11 +818,28 @@ Its canonical and all-six source CI results and the qualified, source-equivalent
 main checks are running; neither a source result nor older native play is relabelled
 as a post-main pass.
 
-Next action: finish independent import review and commit the immutable corpus,
-then normally merge UI source 65b7606 followed by fetched main d88a692. Preserve
-both release Finished/Aftermath rendering and the reviewed UI focus boundary in
-the known EncounterPanel conflict. Review the complete integrated delta, run the
-canonical verifier, publish the clean head for all six checks and play two actual
+The bounded import passed independent review (SHA256
+`50d2831641a11ae479d1504dd20bc1a2ae01e88d54c79ef6165af6bbdc697a7f`)
+and was committed as `134aad3050c4bc09d080c4486f5d42e9883d1dfc`.
+The source-verification log attribute permits only the harness's original trailing
+blank line while preserving every log byte and all other whitespace checks.
+Normal UI merge `4e6c58a80874133bf84896182ee50343ce06be44` combines
+release Finished/Aftermath rendering with the UI encounter focus boundary. It
+changes no backend or old release test/helper. Normal literal-main ancestry merge
+`2e4deb7748e00440b4ff0ba11ef85b687fb46751` retains that complete tree,
+`379acf1dc05784a59287aa84b2919a6f6e012897`; its repeated squash-history
+EncounterPanel conflict keeps the already combined file byte-for-byte.
+
+Root found one integration-only test fixture mismatch: new UI `TablePosition`
+cases still advertised flow4 for current EndTurn/Cast controls, which flow5
+correctly hides behind the legacy-upgrade boundary. Only that synthetic current
+DTO's executor becomes `EncounterReleaseV1`; commands/assertions and every frozen
+old export/request remain unchanged. Independent review confirms the distinction.
+No production guard is relaxed. Updated UI, gate and closure plans record the
+actual source/native/merge evidence and separate pending post-main results.
+
+Next action: complete review of this integrated delta, run the canonical verifier,
+publish the clean head for all six checks and play two actual
 encounters with restart in its packaged build. The four real release families'
 physical chronology and refusal assertions remain unchanged. Protected merge and
 separate final-main verification follow only after those results. Gate 4 remains

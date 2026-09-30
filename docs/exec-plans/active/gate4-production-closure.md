@@ -5,7 +5,35 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR43
+## Current checkpoint after PR49 — 2026-09-30
+
+Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`, the protected
+UI49 merge. Its full tree equals reviewed source65b7606. The UI plan records
+canonical746 GNU Rust tests, all six final source checks (747 Linux/749 native
+Windows Rust tests, 112 UI tests), and actual corrected package728 play with
+verified complete non-documentation parity. Literal d88 main runtime checks and
+artifact remain pending; four quick checks pass. Earlier same-head cancelled
+push runs remain distinct from current results.
+
+The original verified flow4 production parent is c4d8c34. Before main advanced,
+all three diagnostic capture producers completed normally and the separate
+original-source baseline passed all eight tests. Root and independent audits
+verified the seven immutable exports, source/tree, binary and normal-completion
+logs. Those diagnostic branches preserve provenance only; capture hooks are
+excluded from production. Release PR48 now imports the unchanged corpus and
+original continuation suite and normally reconciles UI65 plus literalmain d88.
+Its prior75991dd all-six development CI remains qualified to that old source.
+The new integrated release head still requires canonical/CI continuation results,
+independent final review, native two-encounter play and separate merged-main proof.
+
+Air, Shove, timed expiry, Magic Resistance and Grapple are separate unaccepted
+Gate4 workstreams. Source admission, derived hand records or a passing leaf suite
+do not establish complete tactical play. All twelve ledger families, the full
+eighteen-family spell matrix, witnessed knowledge, remaining interruption/Ready
+work, offstage timing, improvisation and opponent behavior remain owned by Gate4.
+No Gate5 work or gate-completion claim follows from this checkpoint.
+
+## Historical checkpoint after PR43
 
 Current verified main is e813e3a13911497902a3d4a55aec3c70653afb2a;
 all six post-main checks pass. The compatibility prerequisite
