@@ -368,6 +368,16 @@ fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
     }
     order.sort_by(|a, b| b.total.cmp(&a.total).then(a.tie_break.cmp(&b.tie_break)));
     let accepted_ties = ties.clone();
+    let first_turn =
+        if flow(state)?.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
+            state
+                .encounter_history
+                .as_ref()
+                .map_or(Ok(1), |history| history.next_turn_number())
+                .map_err(|error| invalid(&error))?
+        } else {
+            1
+        };
     state
         .rules
         .as_mut()
@@ -376,7 +386,7 @@ fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
         order,
         index: 0,
         round: 1,
-        turn_number: 1,
+        turn_number: first_turn,
         action_spent: false,
         bonus_action_spent: false,
         slot_spent_this_turn: false,

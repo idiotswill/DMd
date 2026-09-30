@@ -1,6 +1,20 @@
 # Gate 4 — Magic Missile target Shield and simultaneous impacts
 
-Status: active final integration. Exact `f4890b73814d7c0f3551350352601eb5ed0d19ed`
+Status: merged; separate literal-main verification and plan archival remain.
+PR46 protected-merged reviewed a877 as `c4d8c34c19b5c92eca789f292f99632a0107d861`
+on2026-09-28 at07:21 UTC, with fetched complete-tree equality
+`9e3be62afc7af111acf06ac7b82e8aff8367e194`. Exact a877 passes canonical
+`./scripts/verify` (746 GNU Rust/55 result groups,0 failed/ignored/filtered,
+54 table cases5723.94s, strict lint and guards) and all six source CI jobs
+(747 Linux/749 native Rust,99 UI tests). The local architecture guard's one
+Windows symlink-privilege skip is exercised on Linux. Source-qualified ffc3
+native play below remains production/UI-identical. Literal-main checks are
+running; root holds other main merges for genuine flow4 captures and the
+original-source baseline afterward. Preserve the failed940 OOM attempt. Current
+next action is post-main proof and compatibility capture, superseding historical
+pending-verification notes below. No Gate4 completion is claimed.
+
+Earlier integration checkpoint: exact `f4890b73814d7c0f3551350352601eb5ed0d19ed`
 and earlier `ffc3c342dd542c48f05edf39a7123d0f6325f750` pass all six source CI
 checks, all four actual SQLite missile families, both
 five-case historical suites and 99 desktop tests. Canonical verification of the

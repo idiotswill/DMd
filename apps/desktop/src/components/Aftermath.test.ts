@@ -6,7 +6,7 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { TacticalView } from '../tactical-api';
 
 function tactical():TacticalView {
-  return {encounter_id:'encounter',phase:'active',execution:'ShieldMissileV1',round:1,active_actor:'pc',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null};
+  return {encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'pc',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:null};
 }
 
 it('requires explicit cadence and ruling before submitting the typed conclusion', async()=>{
@@ -61,4 +61,26 @@ it('blocks conclusion while the Shield response or its physical damage is pendin
   expect((button.closest('fieldset') as HTMLFieldSetElement).disabled).toBe(true);
   await user.click(button);
   expect(onAction).not.toHaveBeenCalled();
+});
+
+it('admits only the derived host finish capability after a session has closed', async()=>{
+  const user=userEvent.setup(),onAction=vi.fn();
+  const source={...tactical(),aftermath:{cadence:'ContinueExistingOrder' as const,host_ruling:'Retain the consequences.',may_pause_session:true},release:{may_finish:false,blocker:'A private retained actor still owes a save.',required_actors:[]}};
+  const component=render(EncounterPanel,{tactical:source,characters:[],host:true,actor:null,player:null,disabled:true,administrativeDisabled:false,onAction});
+  const finish=screen.getByRole('button',{name:'Finish encounter'});
+  expect((finish as HTMLButtonElement).disabled).toBe(true);
+  await user.click(finish);expect(onAction).not.toHaveBeenCalled();
+  await component.rerender({tactical:{...source,release:{may_finish:true,blocker:null,required_actors:[]}}});
+  await user.click(finish);expect(onAction).toHaveBeenCalledExactlyOnceWith('FinishEncounter');
+  await component.rerender({host:false,actor:'pc',player:'player',tactical:source});
+  expect(screen.queryByRole('button',{name:'Finish encounter'})).toBeNull();
+  expect(screen.queryByText('A private retained actor still owes a save.')).toBeNull();
+});
+
+it('shows retained consequences and next battlefield guidance for Finished state', ()=>{
+  render(EncounterPanel,{tactical:{...tactical(),phase:'finished',round:null,active_actor:null,release:{may_finish:false,blocker:null,required_actors:['mage']}},characters:[],host:true,actor:null,player:null,onAction:vi.fn()});
+  expect(screen.getByText(/Items left on this battlefield stay at their recorded positions/)).toBeTruthy();
+  expect(screen.getByText(/prepare the next battlefield/)).toBeTruthy();
+  expect(screen.queryByRole('button',{name:'Finish encounter'})).toBeNull();
+  expect(screen.queryByRole('button',{name:'Conclude hostilities and retain timing'})).toBeNull();
 });

@@ -2,6 +2,30 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
+## Current integration checkpoint — 2026-09-30
+
+Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
+protected merge. The complete tree equals reviewed source65b7606. Exact source
+canonical verification and all six CI checks pass, and corrected native package728
+was played with verified non-documentation source parity; separate literal-main
+runtime checks are pending. The [UI plan](gate4-table-ui-polish.md) qualifies the
+actual package, observations, earlier failures and remaining main proof.
+
+All three original c4d8 flow4 capture producers and all eight original-source
+baseline tests completed normally before that main advancement. Both completion
+audits verified immutable bytes and exact provenance. The
+[release plan](gate4-encounter-release.md) owns their seven-file import and unchanged
+continuation suite, normal UI/main reconciliation, final canonical/CI verification
+and real two-encounter desktop acceptance. Its old75991dd development checks pass;
+the newly integrated head is still unverified and PR48 remains unaccepted.
+
+Air, Shove, timed expiry, Magic Resistance and Grapple remain separate Gate4
+development slices. All twelve rules families and eighteen spell mechanisms keep
+their full scope. Remaining tactical knowledge, timing, interruptions, environment
+interaction and opponent behavior must be integrated and verified through real
+play before gate closeout. [The production-path audit](gate4-production-closure.md)
+retains the open obligations. No Gate5 work starts at this checkpoint.
+
 ## Objective and baseline
 
 Complete the twelve Gate 4 rules families through the real desktop application, with

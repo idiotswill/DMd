@@ -252,13 +252,17 @@ pub(crate) fn authorize_tactical(
         let needs_access = match action {
             A::Begin {
                 execution:
-                    TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1,
+                    TacticalExecutionVersion::ShieldHitV1
+                    | TacticalExecutionVersion::ShieldMissileV1
+                    | TacticalExecutionVersion::EncounterReleaseV1,
                 combatants,
                 ..
             } => combatants.iter().any(|combatant| owned(combatant.actor)),
             A::UpgradeExecutionTo {
                 execution:
-                    TacticalExecutionVersion::ShieldHitV1 | TacticalExecutionVersion::ShieldMissileV1,
+                    TacticalExecutionVersion::ShieldHitV1
+                    | TacticalExecutionVersion::ShieldMissileV1
+                    | TacticalExecutionVersion::EncounterReleaseV1,
             } => state.encounter.as_ref().is_some_and(|encounter| {
                 encounter
                     .participants
@@ -307,6 +311,7 @@ pub(crate) fn authorize_tactical(
         A::Establish { .. }
         | A::Begin { .. }
         | A::ConcludeHostilities { .. }
+        | A::FinishEncounter
         | A::UpgradeExecution
         | A::UpgradeExecutionTo { .. }
         | A::ProposeInitiativeTie { .. }

@@ -83,10 +83,10 @@ it('map area adjudication is an explicit unselected host choice',async()=>{
   render(BattlefieldForm,{characters:[character],onPrepare});
   const policy=screen.getByRole('checkbox',{name:/Use occupied-space sampling/}) as HTMLInputElement;
   expect(policy.checked).toBe(false);
-  await user.click(screen.getByRole('button',{name:'Prepare encounter map'}));
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
   expect(onPrepare.mock.calls[0][0].area_grid_policy).toBeNull();
   await user.click(policy);
-  await user.click(screen.getByRole('button',{name:'Prepare encounter map'}));
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
   expect(onPrepare.mock.calls[1][0].area_grid_policy).toBe('OccupiedCellCentersV1');
   expect(screen.getByText(/Small portions use their own midpoint/)).toBeTruthy();
 });

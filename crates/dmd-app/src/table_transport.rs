@@ -283,6 +283,7 @@ pub(crate) fn presented_view(
             let TableTacticalView {
                 encounter_id,
                 aftermath,
+                release,
                 execution,
                 ready,
                 hit,
@@ -434,6 +435,7 @@ pub(crate) fn presented_view(
             Ok::<_, &str>(TableTacticalView {
                 encounter_id,
                 aftermath,
+                release,
                 execution,
                 ready,
                 hit,

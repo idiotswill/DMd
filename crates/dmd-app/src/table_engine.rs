@@ -174,10 +174,10 @@ fn resolve_table_internal(
                     .rules
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_some())
-                || state
-                    .encounter
-                    .as_ref()
-                    .is_some_and(|encounter| encounter.flow.is_some())
+                || state.encounter.as_ref().is_some_and(|encounter| {
+                    encounter.flow.is_some()
+                        && dmd_rules::tactical::require_finished_encounter(state).is_err()
+                })
             {
                 return Err(
                     "Finish pending decisions and prepare equipment before initiative.".into(),
@@ -194,7 +194,9 @@ fn resolve_table_internal(
                 return Err("Creature setup does not belong to an active session.".into());
             }
             idle(state)?;
-            if state.encounter.is_some() {
+            if state.encounter.is_some()
+                && dmd_rules::tactical::require_finished_encounter(state).is_err()
+            {
                 return Err("Prepare source creatures before setting up the battlefield.".into());
             }
             next = crate::table_creatures::create(state, meta, creation, pack)?;
@@ -210,7 +212,7 @@ fn resolve_table_internal(
             "Source control updated.".into()
         }
         TableAction::Tactical { action } => {
-            active(state, meta)?;
+            require_tactical_session(state, meta, action)?;
             crate::table_source_control::authorize_tactical(state, meta, action)?;
             match meta.issuer {
                 CommandIssuer::Player(_) => {
@@ -242,6 +244,8 @@ fn resolve_table_internal(
                 dmd_rules::tactical::TacticalAction::ConcludeHostilities { .. }
             ) {
                 "Hostilities concluded. Ongoing saves and durations continue in the existing turn order.".into()
+            } else if matches!(action, dmd_rules::tactical::TacticalAction::FinishEncounter) {
+                "Encounter finished. Lasting consequences and equipment remain saved.".into()
             } else {
                 "Encounter action recorded.".into()
             }
@@ -327,6 +331,7 @@ fn resolve_table_internal(
                 .encounter
                 .as_ref()
                 .is_some_and(|encounter| encounter.flow.is_some())
+                && dmd_rules::tactical::require_finished_encounter(&next).is_err()
             {
                 dmd_rules::tactical::require_aftermath_session_boundary(&next)
                     .map_err(|error| error.to_string())?;
@@ -747,7 +752,7 @@ fn require_aftermath_attendance(
         .encounter
         .as_ref()
         .and_then(|encounter| encounter.flow.as_ref())
-        .filter(|flow| flow.aftermath.is_some())
+        .filter(|flow| flow.aftermath.is_some() && flow.phase == TacticalPhase::Active)
     else {
         return Ok(());
     };
@@ -779,6 +784,35 @@ fn require_aftermath_attendance(
             return Err("Resume aftermath with every retained source creature's controller explicitly present.".into());
         }
     }
+    Ok(())
+}
+
+/// Only these two typed host commands may even request the closed-session route.
+/// Recovery checks this shape, then semantic replay repeats the complete preflight.
+pub(crate) fn closed_session_release_action(action: &dmd_rules::tactical::TacticalAction) -> bool {
+    matches!(
+        action,
+        dmd_rules::tactical::TacticalAction::FinishEncounter
+            | dmd_rules::tactical::TacticalAction::UpgradeExecutionTo {
+                execution: TacticalExecutionVersion::EncounterReleaseV1,
+            }
+    )
+}
+
+fn require_tactical_session(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    action: &dmd_rules::tactical::TacticalAction,
+) -> Result<(), String> {
+    if table(state)?.active_session.is_some() {
+        active(state, meta)?;
+        return Ok(());
+    }
+    host(meta)?;
+    if meta.session_id.is_some() || !closed_session_release_action(action) {
+        return Err("The command does not belong to the active session.".into());
+    }
+    dmd_rules::tactical::encounter_release_preflight(state).map_err(|error| error.to_string())?;
     Ok(())
 }
 
