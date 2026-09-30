@@ -217,8 +217,17 @@ choice. The form checks and TypeScript syntax parse do not establish native focu
 or gameplay acceptance. Rustfmt and diff checks passed; no cargo/npm/build/test
 command ran in this integration task.
 
-Next: send the stable integrated checkpoint for fresh independent static review,
-fix any findings and transfer it to root's serial executable verification slot.
+Independent static review of integrated checkpoint
+`a09fee2c968b24bd27c245e8c24c60c82afba06e` reported no concrete findings. Root's
+subsequent presentation review identified internal half-foot coordinates in the
+Host push review. Those start/end locations now display feet east, feet south
+and elevation in feet, consistent with the tactical map's units and orientation.
+Only presentation is converted; transport and geometry values are unchanged.
+This narrow correction passed a Svelte syntax parse and diff check; no build
+or extra copy-only tests ran.
+
+Next: root reviews the presentation correction and transfers the stable checkpoint
+to the serial executable verification slot.
 Root owns serial focused tests, fast/canonical checks, historical flow4 producer
 parity, release5 reconciliation, exact-head CI and genuine native desktop capture
 (including fresh raw-face blanking/reachability and pending-state restart).
