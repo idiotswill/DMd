@@ -1,7 +1,8 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
 Status: **All six CI checks pass on corrected source 41d034ce. Development
-integration with release8c is planned below; final acceptance remains pending.**
+integration with release8c is complete; the combined head is UNCOMPILED/UNRUN
+and final acceptance remains pending.**
 
 ## Objective, ownership and baseline
 
