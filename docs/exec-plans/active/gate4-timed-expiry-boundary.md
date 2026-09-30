@@ -1,7 +1,7 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
-Status: **Plan only, 2026-09-30. Implementation and executable verification have
-not started. Root review of this plan is the next checkpoint.**
+Status: **Authored for independent static review on 2026-09-30 after root approved
+the adapter-level proof below. Compilation and test execution remain pending.**
 
 ## Objective, ownership and baseline
 
@@ -40,8 +40,10 @@ retains suppressed effects and their durations. SRD 5.2.1 timing remains the
 pinned rules source; this repair adds no adjudication or house rule.
 
 This bounded repair does not complete Gate 4. Other tactical families and packaged
-encounter acceptance remain open. Noncombat elapsed-time scheduling belongs to
-Gate 5, broad catalogs to Gate 6, living-world simulation to Gate 7, autonomous
+encounter acceptance remain open. Broad noncombat elapsed-time scheduling belongs
+to Gate 5; the already-recorded Gate 4 offstage/no-turn tactical deadline and
+aftermath timing obligations remain in Gate 4 and must be preserved. Broad catalogs
+belong to Gate 6, living-world simulation to Gate 7, autonomous
 language/DM to Gate 9, and voice to Gate 10. No product scope is reduced.
 
 ## Source finding and reachability
@@ -101,9 +103,10 @@ scope. No implementation of such an alternative is currently authorized.
 
 Every previously accepted boundary must retain its complete operations and tickets.
 The intended proof is that, after existing preliminary cleanup, any raw due AtTime
-record would have queued at least one ticket under Time and failed Turn. Observation
-does not remove records. Therefore every historically successful boundary takes
-the unchanged no-due branch. Suppression does not exempt a record from this proof.
+record would have queued at least one ticket under Time and failed Turn. The inner
+observation does not remove records. Therefore every historically successful
+boundary takes the unchanged no-due branch. Suppression does not exempt a record
+from this proof.
 
 Review must check this argument against queue deduplication, group/target membership,
 pending guards and preceding Ready cleanup. Tests must verify actual historical
@@ -112,6 +115,39 @@ source pins, outcomes, projections and receipts, not only final HP/conditions.
 Preserve successful history prefixes and all original capture bytes. If a previously
 accepted history changes, this design has failed its acceptance criterion; fixture
 regeneration or relaxed equality is not a repair.
+
+Independent review correctly required composing that inner observation argument
+with the adapter's fixed-point concentration cleanup. Root and the author inspected
+the following preservation facts before resuming source work:
+
+- Kernel entry validation invokes `validate_effect_attachment`, rejecting every
+  grouped owner who is dead or Incapacitated. Legacy concentration pointers and
+  disjoint identities prohibit a simultaneous legacy/grouped binding for an owner.
+- `active_effect_views` suppression depends only on retained tactical target,
+  overlap and establishment records, not time, pending tickets or legacy effects.
+  Time changes no such records. Installing its identical groups/conditions cannot
+  newly incapacitate an owner. Legacy expiry only removes conditions; the only
+  subtractive condition rule is Petrified suppressing Poisoned, and Poisoned does
+  not imply Incapacitated.
+- Initial initiative completion only installs timing. At boundary entry, Ready
+  expiry removes ordinary declarations; held spell expiry is explicitly unsupported.
+  Dodge removal changes no condition. Adding an absent recovery attachment cannot
+  introduce Incapacitated; it can only remove legacy HP-zero Unconscious for an
+  immune actor. Round/turn advancement resets timing and budgets, not conditions.
+- Internal End completion preserves the same invariant: lifecycle expiry/save
+  acknowledgments run the fixed-point adapter before returning; vitality work
+  immediately handles EndConcentration followups; failed concentration removes its
+  group before pump resumes. EndOccupiedSpace adds only Prone. Recharge/Legendary
+  hooks change source counters and windows; after-turn cleanup removes Disengage.
+  Movement/fall can incapacitate only through the same vitality path. Pump drains
+  these children before advancing to the next Start.
+
+Consequently the hypothetical cleanup of all newly due tickets requires invalid
+input or a missed invariant-breaking producer, not a discovered accepted history.
+No reachable counterexample was found. Root accepted this composed proof and
+reauthorized the bounded fix without clone preview or guard relaxation. Focused
+tests must distinguish an invalid grouped owner (rejected unchanged at entry) from
+actual accepted source histories; original-history replay remains a required check.
 
 ## Acceptance and planned slices
 
@@ -165,9 +201,31 @@ captures to obtain a pass.
 ## Validation, risks and exact next action
 
 Completed: source-only audit, product/ADR/checkpoint review, clean unused-checkout
-check, fresh main fetch and exact-base branch creation, and this plan. No production
-or test source changed. No executable reproduction, compiler, test, npm, build, UI,
-database inspection, push, PR or merge was performed for this repair.
+check, fresh main fetch and exact-base branch creation, root plan/proof review,
+minimal due-only selection in `turns.rs`, and seven authored regressions:
+
+- Five explicitly synthetic turn/lifecycle cases cover no-due stamps and exact
+  ticket/raw-request identity, group-only deadlines, suppressed raw deadlines,
+  simultaneous timed/owner expiry and suppressed damage in both selected orders,
+  and unchanged pending guards.
+- One source-built Hold Person rules case uses two actual initiative orders to
+  cross 60 seconds either on EndTurn or the final owned repeat-save result. It
+  preserves paid use/old dice, checks target versus ordering authority and group
+  cancellation, and rejects an explicitly forged incapacitated group owner before
+  restoring the genuine test image. The existing source setup helper is factored
+  before initiative; its historical default call sequence remains unchanged.
+- One real file-SQLite case uses unchanged normal catalog creation/control helpers,
+  a real Cultist casting on the real Mage, actual +4 Wisdom saves with physical
+  ones, and ten ordinary round crossings. Authored cold steps restore independent
+  files at initial save, last repeat, deadline boundary and expiry selection, with
+  accepted retries and changed-body/no-write controls. Earlier journal/audit and
+  projection prefixes, each UUID-sorted binding, paid source counters and raw rolls
+  are compared; foreign player, wrong controlled actor and stale input are refused.
+
+Owned Rust files passed rustfmt parsing/formatting, including recursive module-path
+resolution, and `git diff --check` passes. These are static checks only. No compiler,
+test, npm, build, UI, database inspection, push, PR or merge was run for this repair.
+The original-source capture/baseline checkouts and histories remain untouched.
 
 Risks: a raw due record missed by the predicate would preserve the bug; unconditional
 Time removal would change accepted provenance; expiry-first automatic cleanup would
@@ -175,8 +233,9 @@ steal a simultaneous choice; an imprecise app fixture could end Hold Person earl
 and never exercise the deadline. Rule-only success would not establish file-SQLite
 retry/restore correctness. Source analysis does not establish full Gate 4 acceptance.
 
-**Next action:** root reviews this exact plan commit. Until root authorizes source
-work, keep the branch clean and do not implement, compile, test, run npm/builds or
-push. After authorization, implement only the bounded due-only observation selection
-and its tests, preserving every no-due execution path and reporting any counterexample
-to the historical proof before changing the design.
+**Next action:** independently review the complete authored commit, then let root
+assign the serial verification slot. No compilation, tests, npm/builds or push are
+authorized while root's baseline run owns that slot. Address concrete review or
+execution failures without weakening historical equality, then run the focused and
+canonical checks above. Original-source replay and final-head CI/merged-main proof
+remain acceptance prerequisites; authored tests are not passing evidence.
