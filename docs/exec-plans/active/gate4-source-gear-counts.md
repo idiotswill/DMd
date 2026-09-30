@@ -1,9 +1,10 @@
 # Gate 4 — Fixed quantities in immutable creature gear
 
 Status: plan-first checkpoint, 2026-09-30. No implementation or runtime evidence.
-Root is the sole writer on `codex/gate4-source-gear-counts`, checkout
-`gate4-source-gear-counts`. No PR yet. The local heavy verification slot remains
-reserved by the release verifier; this branch must not start concurrent builds,
+The assigned source-count implementation agent is the sole writer on
+`codex/gate4-source-gear-counts`, checkout `gate4-source-gear-counts`, following
+root's explicit transfer from clean plan checkpoint `cf43609`. No PR yet. The
+local heavy verification slot remains reserved by root; this branch must not start concurrent builds,
 tests, database or native work.
 
 ## Objective and dependency boundary
@@ -33,7 +34,12 @@ the remaining Gate4 mechanics and later product gates remain required.
 Design input: external `tooling/ogre-source-preflight-2026-09-30.md`, SHA256
 `5019edbbbc997a8b44dac333fbe96a308493e84fe867654501e40710accf5b66`.
 Root read the full memo and the pinned source text on pages255/312. Independent
-preflight review is in progress; resolve its findings before implementation.
+preflight and exact-plan review is CLEAR in external
+`tooling/ogre-source-preflight-independent-review-2026-09-30.md`, SHA256
+`24fb0714abfce3cff1bf8dff509ed519fd4c65810df91b4b1f651be9fc10fcd5`.
+Its canonicalization, namespace, auto-equipment and nonrecursive-validation
+findings are incorporated below. This is plan clearance, not implementation or
+runtime acceptance. Main was fetched again at writer takeover and remains d88.
 
 ## Scope and canonical representation
 
@@ -137,6 +143,9 @@ its branch; this branch must not modify its source or fixtures. No positive LR
 claim follows from this plan. Record exact findings, commits, commands, failures
 and evidence here as work proceeds.
 
-Next action: finish independent preflight review, resolve its canonicalization
-and source-boundary findings in this plan, then implement the bounded quantity
-producer while release verification retains the sole local heavy slot.
+Next action: the assigned sole writer implements the bounded quantity producer
+and meaningful controls, then hands back a clean source/plan checkpoint for a
+separate full-diff review. Root retains the sole local heavy slot. Formatting and
+static Git/byte audits are permitted; compilation, tests, DB/native work and
+publication are not authorized for this implementation assignment. Every newly
+authored control must remain explicitly UNCOMPILED / UNRUN until executed.
