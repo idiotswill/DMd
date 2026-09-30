@@ -328,3 +328,19 @@ Root owns this bounded integration and commits this plan before changing code:
 Offstage/no-turn tactical deadlines and all other Gate 4 work remain open. This
 integration does not add a second scheduler, alter wire formats, or advance a
 coverage-ledger family merely because prior checks passed.
+
+### Local integration checkpoint
+
+Plan `e554f96` preceded normal merge `af87b98` of exact release8c. The only
+textual conflict was the `tactical_turns.rs` module list; it retains both release
+and timed-expiry suites. The auto-merged missile parent retains the timed-expiry
+child and release's current Begin. The one additional current rules-test Begin
+in `casting_timed_expiry.rs` now requests `EncounterReleaseV1`; all actors, raw
+faces, costs and assertions are retained. No captured historical body changes.
+
+The sole production difference from release8c remains the exact corrected
+`turns.rs` implementation from 41d034ce. Release code, UI and all genuine fixture
+bytes/suites remain inherited without alteration. This records an integration
+candidate, **UNCOMPILED/UNRUN** on the combined source. Independent review, fresh
+checks, local canonical/receiving replay and dependency acceptance remain the
+next actions; the corrected parent's CI is not evidence for this new tree.
