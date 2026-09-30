@@ -751,6 +751,28 @@ slot for independent original-history work. Compilation, behavioral source
 admission, byte-exact replay, cold continuation and native acceptance are not
 established by this checkpoint.
 
+Source-binding correction, 2026-09-30: independent review of source/domain head
+`660631a4ca5f7547b4cf45d3517ee2d8dc41402d` (tree
+`f138ad514b790e40a15991141eb9db28e539bdb3`) found that current compiled Goblin V2
+admission lacked an exact installed-byte check in `load_rules_pack`. General
+manifest integrity alone permitted an omitted entry or a self-consistently
+rehashed changed payload. The external review is
+`tooling/gate4-grapple-660631a-independent-review-2026-09-30.md`, SHA256
+`774c84fe5336a2e52509223637f89a9147fe8eda10280c7977d9cf36ce8443e8`.
+Root confirmed the finding and authorized only this narrow correction before
+further source/gameplay work.
+
+The corrected loader requires the explicit Goblin V2 declaration, re-reads its
+file, and checks declared byte length, FNV checksum and exact compiled bytes.
+Recoverable content errors request an installed-package update without changing
+campaign data. One authored runtime test covers missing, undeclared and rehashed
+packages after compiled-cache warmup and real campaign initialization. Each case
+rejects a query and an otherwise valid command, compares the whole export after
+normalizing only its export timestamp, then restores the genuine package and
+accepts that same command through the same runtime at the unchanged journal head.
+These controls remain **unrun**; the correction has only direct rustfmt and Git
+diff checks. No payload, source fixture, gameplay guard or Grapple scope changes.
+
 Review amendment, 2026-09-30: independent review of plan commit
 `2213790271b6553d389450f22f819f003672b4d1` (tree
 `9fbcbc46a98284e61f275962c636baf86ee3fdb8`) identified the live OA equality,
@@ -775,9 +797,10 @@ validation, exact consumer retention/retirement, origin collection and original
 replay before any gameplay acceptance or publication. These are engineering/source proof
 obligations within Gate4, not requests to waive product acceptance.
 
-Exact next action: finish static review, commit this bounded source/domain
-checkpoint, and send root its full SHA/tree and qualified diff scope for fresh
-independent review. Stop before resolver/gameplay/transport/UI implementation;
-do not build, run tests or publish. Keep this checkout/branch the sole write
-target. Further authoring and later serial executable verification require root's
-coordination and must be recorded separately.
+Exact next action: commit the narrow installed-source correction and send root
+its full SHA/tree and three-file scope for fresh independent review. Stop before
+effective-hand, resolver/gameplay/transport/UI implementation; do not build, run
+tests or publish. Keep this checkout/branch the sole write target. The original
+660631a review remains evidence for that original head, not acceptance of this
+correction. Further authoring and later serial executable verification require
+root's coordination and must be recorded separately.
