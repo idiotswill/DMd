@@ -1,9 +1,25 @@
 # Gate 4 — Complete Ogre physical source actions
 
-Status: plan only, 2026-09-30. Root is sole writer of
+Status: checkpoint1 source authoring authorized, 2026-09-30. The assigned
+source implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. No Ogre implementation,
 source admission, tests, PR or runtime result is claimed by this checkpoint.
+
+Root transferred this checkout from clean reviewed `df0e0e2` after independent
+plan amendment clearance, SHA256
+`b2960d12592a93380e0e3cd918ce6a4189b1de7d9ff305bd74b579309380d4f4`.
+This writer/scope commit precedes source edits. Checkpoint1 is limited to the
+immutable Ogre definition, full-pin loader, installed package checks and closed
+physical source policy with authored controls. Ogre current admission remains
+explicitly CLOSED; ID-only V1 lookup and historical admission must not gain it.
+No attack adapter, OA, UI, pickup or Grapple activation belongs to this checkpoint.
+All twelve old immutable revisions and allocation expectations remain exact;
+the Ogre expectation is additive. No source-policy helper is claimed to execute
+attacks before its later production consumer is integrated and reviewed.
+Static formatting, JSON/manifest and byte audits only are allocated here; all
+new compilation/tests and runtime evidence remain UNRUN. No push or PR edit.
+Fresh fetch at writer takeover still resolves main to `d88a6923`.
 
 ## Objective, dependency and authority
 
