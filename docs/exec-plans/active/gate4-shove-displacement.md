@@ -1,8 +1,9 @@
 # Gate 4 — Source-bound Shove and displacement
 
-Status: implementation and tests authored; no executable verification or feature
-acceptance. Writer: root after the implementation agent's clean handoff on
-2026-09-30. Root owns integration, the heavy verification slot and publication. Branch:
+Status: implementation authored; the first complete remote runtime runs failed
+the Air setup. The reviewed correction awaits execution; feature acceptance is
+pending. Root owns integration and the heavy verification slot, and delegated the
+2026-09-30 evidence/publication checkpoint to one branch writer. Branch:
 `codex/gate4-shove-displacement`; root-created clean base and freshly fetched main
 `c4d8c34c19b5c92eca789f292f99632a0107d861` (2026-09-28).
 
@@ -286,3 +287,89 @@ box's inner value directly; the mutated Save body and full-store refusal asserti
 are unchanged. The complete failed log is preserved externally under
 `tooling/shove-7adbf99-ci/`. Formatting and diff checks pass for this correction;
 fresh exact-head CI is required. No assertion or lint is weakened.
+
+### Source-control setup correction — 2026-09-30
+
+Head `5c70954f9a9b765a4154470b0873d452fe4e654c` completed the Linux table-loop
+suite with 56 passing tests and one failure in 6901.05 seconds. Job 109938078211
+failed the real Air Shove case at the shared legacy typed-command helper:
+`Refresh this legacy request before submitting new input.` The actual complete
+job log is preserved externally at `tooling/shove-5c70954-ci/job-109938078211.log`.
+The four Magic Missile cases and the separate ordinary Shove case passed in that
+run; the Air scenario did not pass, and this is not a complete workspace result.
+Windows stable job 109938328359 independently completed with the same failure at
+`table_loop.rs:227:56`: 56 table tests passed and one failed in 8238.51 seconds.
+The ordinary Shove case and all four Magic Missile cases passed there too. Its
+complete log is `tooling/shove-5c70954-ci/job-109938328359.log`. Both jobs ended
+normally with failed conclusions; neither was cancelled or replaced by this fix.
+
+The Air setup had enabled source control but then submitted PrepareEquipment,
+PrepareBattlefield, Begin, and both initiative faces through old typed helpers.
+Use the current presented transport and each current opaque initiative handle
+for those five steps. Preserve the original actors, source pin, geometry, dice
+values, and all scenario assertions. These accepted setup steps now also use the
+existing file close/reopen, independent restore, exact retry, and changed-body
+no-write helper. The production rejection of fresh legacy commands after source
+control activation remains unchanged. Explicitly assert normal single-d20
+initiative before reporting the original physical faces.
+
+The branch also contains the independently reviewed Air manifest/generator
+correction from `021421c4990c686e31a6ad8da0b6ef3571f087ae`, brought in by normal
+merge `158256ac2b3fe82a3069890344f05ef1c4122cb5`. That corrects the known later
+six-definition expectation without changing source content or runtime behavior.
+Only formatting and diff checks ran locally for the setup correction;
+original-source baseline verification owned the heavy slot at that checkpoint.
+A fresh exact head needs runtime CI, canonical verification, release5 reconciliation, and the
+native and historical acceptance already required above.
+
+Independent static review of the corrected Air test reports no blocking finding.
+It traced current transport admission, PC/Host ownership, Normal initiative,
+initial placement, clear Hover Push, private-wall Unsupported refusal, and the
+unchanged cold helper. That helper uses an independent in-memory restore plus
+two reopenings of the real file; it does not claim a second cold file. The review
+is external `tooling/gate4-shove-air-transport-correction-independent-review-2026-09-30.md`,
+SHA256 `eec36ddb72a41f10a8d5b254011b12aa29810b0192b1f543662889b82cf5a4f2`.
+The review is static only and does not substitute for the required execution.
+
+### Corrected dependent draft publication — 2026-09-30
+
+The complete six-job failure record for `5c70954` is preserved externally in
+`tooling/shove-5c70954-ci/completed-failure-evidence.json`, SHA256
+`9c00fbae11cfdc38b527b7e84e28d0de2665fd8a4dc31cba6a5d2abde4526f00`.
+Both runtime jobs stopped after eight Rust result groups (114 passed, one failed)
+at the table suite, before the remaining workspace suites and package build.
+Both MSRV checks, architecture and genericity checks passed. Both Windows
+frontend runs passed 122 tests across 19 files, with zero Svelte errors or warnings.
+The artifact listing is empty. This is partial evidence on a failed old head.
+
+The Linux full-log SHA256 is
+`7a8d3cc925cbe7d7c4746aa964e4acc36a29116a7f69325e40e1761bddccce98`;
+the Windows full-log SHA256 is
+`f701ca521ef735bc1f8b72d7af157d598b4b8021677ac5e427a9078397db2995`.
+The Linux synthetic merge `4170357bd8f5e3b90450a4c2afa2b98bc192b5ec`
+has parents Air `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92` and Shove
+`5c70954f9a9b765a4154470b0873d452fe4e654c`; its complete tree equals the
+failed Shove source tree `df97653892ff882f5250fad8451b0d1bc9341665`.
+Windows checked out that exact Shove source head directly.
+
+The setup correction is commit `3979863457def26a841d63059291467562051c09`.
+Its test blob remains `e4ec07ff043540449d45995af7ff8c1007e9045e`, with
+working-file SHA256
+`9db909346b25c53f370c9f4b6185b16bf2710f4969a96c0454cccf26f49fd270`,
+identical to the independently reviewed correction above. Normal merge
+`6c5095174542213d0c3ea54c2b0097069b974199` then incorporated Air's
+documentation checkpoint `e915bbb9568f14a21c253bebf75d05ad2e91476e`;
+that merge changed only the Air plan. The current evidence checkpoint changes
+only this Shove plan. No production or test assertion changes accompany it.
+
+Root authorized normal publication of this corrected dependent draft to PR #51,
+still based on `codex/gate4-air-source-admission`. Do not merge it into the Air
+branch. Freeze the published head for fresh six-check CI and inspect actual
+completed outputs. No compiler or test execution has yet validated the corrected
+setup, and no local Cargo/npm/database/native operation ran for this publication.
+Root retains the local heavy slot and must coordinate canonical `./scripts/verify`,
+verified dependency/main and release5 reconciliation, historical continuation,
+independent final review, and genuine native play/restart on the integrated head.
+Only after those criteria and all six final-head checks pass may the retargeted
+main PR receive a protected merge, followed by literal merged-main verification.
+Gate 4 remains active; the earlier failures and remaining obligations are retained.
