@@ -501,7 +501,7 @@ async fn offer(f: &mut Fixture, path: &Path, mage: EntityId) {
     );
     assert_eq!(rules_after.rolls, rules_before.rolls);
 }
-async fn cast(f: &mut Fixture, path: &Path, mage: EntityId) -> CommandId {
+async fn cast(f: &mut Fixture, path: &Path, mage: EntityId, capture_first: bool) -> CommandId {
     let channel = owner(f, mage);
     let owned = view(f, &channel)
         .await
@@ -560,6 +560,23 @@ async fn cast(f: &mut Fixture, path: &Path, mage: EntityId) -> CommandId {
         stolen.revision = view(f, &channel).await.revision;
         stolen.channel = channel;
         Box::pin(unchanged(f, stolen)).await;
+    }
+    if capture_first {
+        Box::pin(table_flow4_capture::capture(
+            f,
+            table_flow4_capture::HIT[0],
+            table_flow4_capture::Boundary::HitSelected {
+                attacker: f.actors[0],
+                target: mage,
+            },
+            serde_json::json!({
+                "attacker": {"actor": f.actors[0], "channel": attacker(f)},
+                "respondent": {"actor": mage, "channel": owner(f, mage)},
+                "fixture_players": f.players, "fixture_characters": f.characters,
+            }),
+            Some(&cast),
+        ))
+        .await;
     }
     let id = cast.command_id;
     Box::pin(cold_step(f, path, cast)).await;
@@ -706,7 +723,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     Box::pin(offer(&mut f, &path, mage)).await;
     Box::pin(order(&mut f, &path)).await;
     Box::pin(reject_pending_conclusion(&f)).await;
-    Box::pin(cast(&mut f, &path, mage)).await;
+    Box::pin(cast(&mut f, &path, mage, true)).await;
     let after = state(&f).await;
     assert_eq!(after.rules.as_ref().unwrap().entities[&mage].hp, 81);
     assert!(
@@ -753,7 +770,7 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
     let hit_cause = Box::pin(hit(&mut f, &path, mage, 20)).await;
     Box::pin(order(&mut f, &path)).await;
     Box::pin(offer(&mut f, &path, mage)).await;
-    let response_cause = Box::pin(cast(&mut f, &path, mage)).await;
+    let response_cause = Box::pin(cast(&mut f, &path, mage, false)).await;
     Box::pin(reject_pending_conclusion(&f)).await;
     let pending = state(&f).await;
     assert_eq!(
@@ -810,9 +827,15 @@ async fn owned_source_shield_reopens_each_decision_preserves_attack_cause_and_re
             DieResult { sides: 4, value: 2 }
         ]
     );
+    Box::pin(table_flow4_capture::seal_receipts(
+        &f,
+        table_flow4_capture::HIT,
+    ))
+    .await;
     f.pool.close().await;
     drop(f);
     sqlite_test_cleanup::remove_closed_file(&path)
         .await
         .unwrap();
+    table_flow4_capture::producer_finished("hit", table_flow4_capture::HIT);
 }

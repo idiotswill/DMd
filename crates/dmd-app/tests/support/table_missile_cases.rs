@@ -16,6 +16,14 @@ impl Sources {
         }
     }
 }
+fn capture_roles(sources: &Sources) -> serde_json::Value {
+    serde_json::json!({
+        "scenario_actors_by_index": sources.actors,
+        "scenario_owners_by_index": sources.owners,
+        "channels_by_index": (0..4).map(|index| sources.channel(index)).collect::<Vec<_>>(),
+        "unrelated_spectator": sources.spectator,
+    })
+}
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -657,6 +665,7 @@ async fn amounts(
     sources: &Sources,
     caster: usize,
     cold: bool,
+    capture_concentration: bool,
 ) -> Box<CampaignState> {
     let before = Box::pin(state(f)).await;
     let hp: Vec<_> = sources.actors[2..]
@@ -702,6 +711,22 @@ async fn amounts(
         }
         drop(snapshot);
         let request = request(f, sources.channel(caster), raw(projected, 1)).await;
+        if capture_concentration && ordinal == 3 {
+            Box::pin(table_flow4_capture::capture(
+                f,
+                "flow4-missile-three-faces",
+                table_flow4_capture::Boundary::MissileProgress {
+                    caster: sources.actors[caster],
+                    target: sources.actors[3],
+                    faces: 3,
+                    completed: 0,
+                    starting_hp: hp[1],
+                },
+                capture_roles(sources),
+                Some(&request),
+            ))
+            .await;
+        }
         if cold && (ordinal == 2 || ordinal == 5) {
             Box::pin(cold_step(
                 f,
@@ -733,6 +758,22 @@ async fn amounts(
             complete.rules.as_ref().unwrap().entities[actor].hp,
             hp[index]
         );
+    }
+    if capture_concentration {
+        Box::pin(table_flow4_capture::capture(
+            f,
+            "flow4-missile-all-faces-before-impact",
+            table_flow4_capture::Boundary::MissileProgress {
+                caster: sources.actors[caster],
+                target: sources.actors[3],
+                faces: 6,
+                completed: 0,
+                starting_hp: hp[1],
+            },
+            capture_roles(sources),
+            None,
+        ))
+        .await;
     }
     complete
 }
@@ -1007,6 +1048,7 @@ async fn missile_owned_sources_keep_private_responses_and_cold_actor_bound_contr
     for same_owner in [false, true] {
         Box::pin(owned_source_scenario(same_owner)).await;
     }
+    table_flow4_capture::producer_finished("owned", table_flow4_capture::OWNED);
 }
 async fn owned_source_scenario(same_owner: bool) {
     let directory = std::env::temp_dir().join(format!("dmd-missile-owned-{}", CampaignId::new().0));
@@ -1158,6 +1200,19 @@ async fn owned_source_scenario(same_owner: bool) {
             ),
         )
         .await;
+        if !same_owner && index == 3 {
+            Box::pin(table_flow4_capture::capture(
+                &f,
+                table_flow4_capture::OWNED[0],
+                table_flow4_capture::Boundary::MissileSelected {
+                    caster: sources.actors[0],
+                    selected: sources.actors[index],
+                },
+                capture_roles(&sources),
+                Some(&selected_request),
+            ))
+            .await;
+        }
         let accepted = Box::pin(cold_step(
             &mut f,
             &path,
@@ -1194,7 +1249,7 @@ async fn owned_source_scenario(same_owner: bool) {
                 .is_some()
         );
     }
-    let impact = Box::pin(amounts(&mut f, &path, &sources, 0, true)).await;
+    let impact = Box::pin(amounts(&mut f, &path, &sources, 0, true, false)).await;
     let premature = request(&f, TableTransportChannel::Host, conclusion()).await;
     Box::pin(unchanged(&f, premature)).await;
     Box::pin(reject_changed_current_missile(&f)).await;
@@ -1264,6 +1319,13 @@ async fn owned_source_scenario(same_owner: bool) {
         let mut after = Box::new(export_campaign(&f.pool, f.campaign).await.unwrap());
         after.exported_at_utc = before.exported_at_utc.clone();
         assert_eq!(after, before);
+    }
+    if !same_owner {
+        Box::pin(table_flow4_capture::seal_receipts(
+            &f,
+            table_flow4_capture::OWNED,
+        ))
+        .await;
     }
     f.pool.close().await;
     drop(f);
@@ -1350,7 +1412,15 @@ async fn missile_zero_one_two_eligible_sources_keep_uniform_ordering_and_private
             ))
             .await;
         }
-        Box::pin(amounts(&mut branch, &branch_path, &sources, 0, false)).await;
+        Box::pin(amounts(
+            &mut branch,
+            &branch_path,
+            &sources,
+            0,
+            false,
+            false,
+        ))
+        .await;
         Box::pin(impacts(
             &mut branch,
             &branch_path,
@@ -1464,7 +1534,15 @@ async fn missile_zero_one_two_eligible_sources_keep_uniform_ordering_and_private
             ordering,
         ))
         .await;
-        Box::pin(amounts(&mut branch, &branch_path, &sources, 1, false)).await;
+        Box::pin(amounts(
+            &mut branch,
+            &branch_path,
+            &sources,
+            1,
+            false,
+            false,
+        ))
+        .await;
         Box::pin(impacts(&mut branch, &branch_path, &sources, 1, true, false)).await;
         // Response delegation was consumed at this exact window; Host could not
         // use it for any impact choices in impacts(). Already active Shields from
@@ -1517,7 +1595,7 @@ async fn missile_each_dart_finishes_its_owned_concentration_child_before_next_im
         .unwrap()
         .choice
         .clone();
-    Box::pin(accept(
+    let hold_request = Box::pin(accept(
         &f,
         sources.channel(3),
         tactical(TacticalAction::CastSpell {
@@ -1526,7 +1604,20 @@ async fn missile_each_dart_finishes_its_owned_concentration_child_before_next_im
         }),
     ))
     .await;
-    let failed = raw(view(&f, &sources.channel(2)).await, 1);
+    let target_view = view(&f, &sources.channel(2)).await;
+    Box::pin(table_flow4_capture::capture(
+        &f,
+        "flow4-ordinary-committed-first-save",
+        table_flow4_capture::Boundary::OrdinarySave {
+            caster: sources.actors[3],
+            target: sources.actors[2],
+            accepted: hold_request.command_id,
+        },
+        capture_roles(&sources),
+        None,
+    ))
+    .await;
+    let failed = raw(target_view, 1);
     Box::pin(accept(&f, sources.channel(2), failed)).await;
     assert!(
         Box::pin(state(&f)).await.rules.as_ref().unwrap().entities[&sources.actors[3]]
@@ -1570,7 +1661,7 @@ async fn missile_each_dart_finishes_its_owned_concentration_child_before_next_im
         missile(response.key, TableMissileInput::Respond { accept: false }),
     ))
     .await;
-    let before = Box::pin(amounts(&mut f, &path, &sources, 0, true)).await;
+    let before = Box::pin(amounts(&mut f, &path, &sources, 0, true, true)).await;
     let starting_hp = before.rules.as_ref().unwrap().entities[&sources.actors[3]].hp;
     let mut saves = 0;
     let mut choices = 0;
@@ -1618,6 +1709,26 @@ async fn missile_each_dart_finishes_its_owned_concentration_child_before_next_im
                 "the outer owner cannot skip the pending concentration child"
             );
             let request = request(&f, sources.channel(3), input).await;
+            if saves == 0 || saves == 4 {
+                Box::pin(table_flow4_capture::capture(
+                    &f,
+                    if saves == 0 {
+                        "flow4-missile-first-concentration-child"
+                    } else {
+                        "flow4-missile-penultimate-concentration-child"
+                    },
+                    table_flow4_capture::Boundary::MissileProgress {
+                        caster: sources.actors[0],
+                        target: sources.actors[3],
+                        faces: 6,
+                        completed: (saves + 1) as usize,
+                        starting_hp,
+                    },
+                    capture_roles(&sources),
+                    Some(&request),
+                ))
+                .await;
+            }
             if saves == 0 {
                 Box::pin(failed_concentration_branch(
                     &f,
@@ -1684,11 +1795,17 @@ async fn missile_each_dart_finishes_its_owned_concentration_child_before_next_im
         .await
         .unwrap();
     pool.close().await;
+    Box::pin(table_flow4_capture::seal_receipts(
+        &f,
+        table_flow4_capture::CONCENTRATION,
+    ))
+    .await;
     f.pool.close().await;
     drop(f);
     sqlite_test_cleanup::remove_closed_directory(&directory)
         .await
         .unwrap();
+    table_flow4_capture::producer_finished("concentration", table_flow4_capture::CONCENTRATION);
 }
 
 async fn failed_concentration_branch(
