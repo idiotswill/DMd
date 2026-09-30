@@ -1,7 +1,8 @@
 # Gate 4 — Magic Missile application and desktop integration
 
-Status: source integration complete in PR46; final combined acceptance remains
-under `gate4-shield-missile-runtime.md`. Exact ffc3 passes all four real missile
+Status: PR46 merged as literalc4d8 after exact a877 canonical/all-six-source checks;
+separate literal-main verification remains under `gate4-shield-missile-runtime.md`.
+The historical checkpoints below retain their original evidence. Exact ffc3 passes all four real missile
 application families on Linux/native Windows and 99 UI tests. Final integrated
 canonical verification, final-head review/CI and merge/main proof are still required.
 Actual ffc3 packaged UI restart at the selected owned Shield decision, followed by

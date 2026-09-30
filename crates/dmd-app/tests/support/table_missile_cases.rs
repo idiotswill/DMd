@@ -557,7 +557,7 @@ async fn prepare_with_character(
         f,
         TableTransportChannel::Host,
         tactical(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
             combatants,
             groups,
         }),

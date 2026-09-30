@@ -543,6 +543,153 @@ async fn aftermath_request(
 }
 
 #[tokio::test]
+async fn genuine_closed_v2_aftermath_upgrades_and_finishes_without_inventing_a_session() {
+    let json = include_str!("fixtures/reactions-v1-aftermath-be544.json");
+    let mut f = Box::pin(Fixture::restore(json, 15, 10, 9)).await;
+    let original = Box::new(f.state().await);
+    assert!(original.table.as_ref().unwrap().active_session.is_none());
+    let mage = flow(&original).combatants[0].actor;
+    let CreatureController::Player(player) = original
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_creatures
+        .as_ref()
+        .unwrap()
+        .runtime(mage)
+        .unwrap()
+        .controller
+    else {
+        panic!("genuine fixture must retain its actual source controller")
+    };
+    let upgrade = TacticalAction::UpgradeExecutionTo {
+        execution: TacticalExecutionVersion::EncounterReleaseV1,
+    };
+    let mut request = aftermath_request(
+        &f,
+        PlaySessionId::new(),
+        TableTransportChannel::Host,
+        TableAction::Tactical {
+            action: upgrade.clone(),
+        },
+    )
+    .await;
+    // A made-up or formerly closed session binding cannot authorize the exception.
+    Box::pin(f.reject(request.clone())).await;
+    request.session_id = None;
+    let mut player_request = request.clone();
+    player_request.command_id = CommandId::new();
+    player_request.channel = TableTransportChannel::SourceCreature {
+        player_id: player,
+        actor: mage,
+    };
+    player_request.revision = f
+        .app
+        .presented_table_view(f.campaign, TableViewer::Player(player))
+        .await
+        .unwrap()
+        .revision;
+    Box::pin(f.reject(player_request)).await;
+    for action in [
+        TacticalAction::EndTurn,
+        TacticalAction::FinishEncounter,
+        TacticalAction::UpgradeExecution,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ShieldMissileV1,
+        },
+    ] {
+        let mut wrong = request.clone();
+        wrong.command_id = CommandId::new();
+        wrong.input = TableTransportInput::Action(Box::new(TableAction::Tactical { action }));
+        Box::pin(f.reject(wrong)).await;
+    }
+    Box::pin(f.accept_cold(request.clone())).await;
+    let upgraded = Box::new(f.state().await);
+    assert_eq!(flow(&upgraded).version, 5);
+    let mut compared = upgraded.clone();
+    compared
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = 2;
+    compared.applied_event_sequence = original.applied_event_sequence;
+    assert_eq!(
+        compared, original,
+        "closed upgrade changes only explicit execution and sequence"
+    );
+    let mut finish = aftermath_request(
+        &f,
+        PlaySessionId::new(),
+        TableTransportChannel::Host,
+        TableAction::Tactical {
+            action: TacticalAction::FinishEncounter,
+        },
+    )
+    .await;
+    finish.session_id = None;
+    Box::pin(f.accept_cold(finish.clone())).await;
+    let finished = Box::new(f.state().await);
+    assert_eq!(flow(&finished).phase, TacticalPhase::Finished);
+    assert!(finished.table.as_ref().unwrap().active_session.is_none());
+    assert_eq!(finished.clock, original.clock);
+    assert_eq!(finished.items, original.items);
+    let current = finished.rules.as_ref().unwrap();
+    let old = original.rules.as_ref().unwrap();
+    assert_eq!(current.entities, old.entities);
+    assert_eq!(current.tactical_inventory, old.tactical_inventory);
+    assert_eq!(
+        current.tactical_effects.as_ref().unwrap().effects,
+        old.tactical_effects.as_ref().unwrap().effects
+    );
+    assert_eq!(
+        current
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(mage)
+            .unwrap()
+            .limited_uses,
+        old.tactical_creatures
+            .as_ref()
+            .unwrap()
+            .runtime(mage)
+            .unwrap()
+            .limited_uses
+    );
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(saved.play_sessions, f.original.play_sessions);
+    assert_eq!(
+        saved.play_session_participants,
+        f.original.play_session_participants
+    );
+    // Original accepted source requests retain their literal response bytes even
+    // after an unrelated administrative session-free boundary has been accepted.
+    for binding in &f.original.table_transport_bindings {
+        let original_request: TableTransportRequest =
+            serde_json::from_str(&binding.request_json).unwrap();
+        assert_eq!(
+            serde_json::to_string(
+                &Box::pin(f.app.submit_presented_table(original_request))
+                    .await
+                    .unwrap()
+            )
+            .unwrap(),
+            binding.response_json
+        );
+    }
+    f.assert_export(&saved).await;
+    let mut changed = request;
+    changed.input = TableTransportInput::Action(Box::new(TableAction::Tactical {
+        action: TacticalAction::FinishEncounter,
+    }));
+    Box::pin(f.reject(changed)).await;
+    f.close().await;
+}
+
+#[tokio::test]
 async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor() {
     let json = include_str!("fixtures/reactions-v1-aftermath-be544.json");
     let mut f = Box::pin(Fixture::restore(json, 15, 10, 9)).await;
@@ -654,14 +801,14 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
         TableTransportChannel::Host,
         TableAction::Tactical {
             action: TacticalAction::UpgradeExecutionTo {
-                execution: TacticalExecutionVersion::ShieldMissileV1,
+                execution: TacticalExecutionVersion::EncounterReleaseV1,
             },
         },
     ))
     .await;
     Box::pin(f.accept_cold(upgrade)).await;
     let upgraded = Box::new(f.state().await);
-    assert_eq!(flow(&upgraded).version, 4);
+    assert_eq!(flow(&upgraded).version, 5);
     let mut compared = upgraded.clone();
     compared
         .encounter

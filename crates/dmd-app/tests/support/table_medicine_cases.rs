@@ -192,7 +192,7 @@ pub(super) async fn prepare(f: &mut Fixture, knockout: bool) {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: f.actors[0],

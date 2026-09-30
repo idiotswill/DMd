@@ -2,7 +2,7 @@
   import { untrack } from 'svelte';
   import { newId, type CharacterView, type CreatureView } from '../table-api';
   import type { BattlefieldSetup } from '../tactical-api';
-  let { characters, creatures = [], ownedSourceActors = [], disabled = false, onPrepare }: { characters: CharacterView[]; creatures?: CreatureView[]; ownedSourceActors?: string[]; disabled?: boolean; onPrepare: (setup: BattlefieldSetup) => void } = $props();
+  let { characters, creatures = [], ownedSourceActors = [], requiredActors = [], disabled = false, onPrepare }: { characters: CharacterView[]; creatures?: CreatureView[]; ownedSourceActors?: string[]; requiredActors?: string[]; disabled?: boolean; onPrepare: (setup: BattlefieldSetup) => void } = $props();
   let name = $state('Encounter'); let width = $state(50); let depth = $state(50);
   let areaPolicy = $state(false);
   let light = $state<'Bright'|'Dim'|'Darkness'>('Bright');
@@ -10,13 +10,15 @@
   const footprint = (size:string) => ({Tiny:2.5,Small:5,Medium:5,Large:10,Huge:15,Gargantuan:20}[size] ?? 5);
   let positions = $state(untrack(() => [
     ...characters.map((character, index) => ({ actor:character.entity_id, characterId:character.character_id as string|null, name:character.name, publicLabel:character.name, prepared:!!character.equipment?.prepared, space:footprint(character.profile?.size??'Medium'), included:true, x:5+index*5, y:5, height:6, team:'Party' })),
-    ...creatures.map((creature,index) => ({ actor:creature.actor, characterId:null, name:creature.name, publicLabel:'Creature', prepared:true, space:footprint(creature.size), included:creature.hp>0, x:25, y:5+index*15, height:6, team:'Opposition' }))
+    ...creatures.map((creature,index) => ({ actor:creature.actor, characterId:null, name:creature.name, publicLabel:'Creature', prepared:true, space:footprint(creature.size), included:creature.hp>0||requiredActors.includes(creature.actor), x:25, y:5+index*15, height:6, team:'Opposition' }))
   ]));
   let regions = $state<{ kind: 'wall'|'difficult'; x: number; y: number; width: number; depth: number; height: number }[]>([]);
   let error = $state('');
   function submit(event: SubmitEvent) {
     event.preventDefault(); error = '';
     const selected = positions.filter(p => p.included);
+    if (selected.length>100) { error='A battlefield supports at most 100 participants.'; return; }
+    if (requiredActors.some(actor=>!selected.some(position=>position.actor===actor))) { error='Include every actor with a lasting consequence and ensure their controllers are attending this session.'; return; }
     if (!selected.some(p=>p.characterId || ownedSourceActors.includes(p.actor)) || selected.some(p => !p.prepared)) { error = "Select an attending player's actor and prepare every selected character's equipment first."; return; }
     if (selected.some(p => p.x < 0 || p.y < 0 || p.x + p.space > width || p.y + p.space > depth)) { error = 'Place every participant inside the map.'; return; }
     if (regions.some(r => r.x < 0 || r.y < 0 || r.x + r.width > width || r.y + r.depth > depth)) { error = 'Place each terrain region inside the map.'; return; }
@@ -34,7 +36,7 @@
       geometry_ruling:{basis:'GmAdjudication',reason} });
   }
 </script>
-<form onsubmit={submit}><fieldset {disabled}><legend>Prepare an encounter map</legend>
+<form onsubmit={submit}><fieldset {disabled}><legend>Prepare battlefield</legend>
   <p>Place the current scene in feet. Characters keep their saved equipment and source movement speeds.</p>
   <label>Location name<input required maxlength="200" bind:value={name} /></label>
   <div class="form-grid"><label>Width (feet)<input type="number" min="10" max="250" step="5" required bind:value={width} /></label><label>Depth (feet)<input type="number" min="10" max="250" step="5" required bind:value={depth} /></label><label>Light<select bind:value={light}><option>Bright</option><option>Dim</option><option>Darkness</option></select></label></div>
@@ -50,5 +52,5 @@
   {#each regions as region,index}<fieldset><legend>Region {index+1}</legend><div class="form-grid"><label>Kind<select bind:value={region.kind}><option value="wall">Opaque solid obstacle</option><option value="difficult">Difficult ground</option></select></label><label>East (feet)<input type="number" min="0" step="5" required bind:value={region.x} /></label><label>South (feet)<input type="number" min="0" step="5" required bind:value={region.y} /></label><label>Width (feet)<input type="number" min="5" step="5" required bind:value={region.width} /></label><label>Depth (feet)<input type="number" min="5" step="5" required bind:value={region.depth} /></label><label>Height (feet)<input type="number" min="0.5" max="40" step="0.5" required bind:value={region.height} /></label></div><button type="button" class="secondary" onclick={()=>regions=regions.filter((_,i)=>i!==index)}>Remove region {index+1}</button></fieldset>{/each}
   <button type="button" class="secondary" onclick={()=>regions=[...regions,{kind:'wall',x:20,y:20,width:5,depth:5,height:10}]}>Add terrain region</button>
   <label>Geometry and placement ruling<textarea required maxlength="4000" bind:value={reason}></textarea></label>
-  {#if error}<p role="alert">{error}</p>{/if}<button type="submit">Prepare encounter map</button>
+  {#if error}<p role="alert">{error}</p>{/if}<button type="submit">Prepare battlefield</button>
 </fieldset></form>
