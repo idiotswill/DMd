@@ -1,6 +1,6 @@
 # Gate 4 — Fixed quantities in immutable creature gear
 
-Status: plan-first checkpoint, 2026-09-30. No implementation or runtime evidence.
+Status: bounded producer and controls authored, 2026-09-30; UNCOMPILED / UNRUN.
 The assigned source-count implementation agent is the sole writer on
 `codex/gate4-source-gear-counts`, checkout `gate4-source-gear-counts`, following
 root's explicit transfer from clean plan checkpoint `cf43609`. No PR yet. The
@@ -137,15 +137,46 @@ The most important review risks are source fingerprint drift, reentrant catalog
 initialization, overwritten generated quantities, silently selecting equipped
 armor/shields, and mistaking helper evidence for an admitted-source positive.
 
-No source/test code has been changed or executed on this branch. All new behavior
-and acceptance remain pending. The separate Grapple core correction writer owns
-its branch; this branch must not modify its source or fixtures. No positive LR
-claim follows from this plan. Record exact findings, commits, commands, failures
-and evidence here as work proceeds.
+The source count field, duplicate-key parser and post-load allocation extension
+are authored. All new runtime behavior and acceptance remain pending. The separate
+Grapple core correction writer owns its branch; this branch has not modified its
+source or fixtures. No positive LR claim follows from this prerequisite.
 
-Next action: the assigned sole writer implements the bounded quantity producer
-and meaningful controls, then hands back a clean source/plan checkpoint for a
-separate full-diff review. Root retains the sole local heavy slot. Formatting and
-static Git/byte audits are permitted; compilation, tests, DB/native work and
-publication are not authorized for this implementation assignment. Every newly
-authored control must remain explicitly UNCOMPILED / UNRUN until executed.
+## Authored checkpoint and verification limits
+
+Writer handoff and independent plan clearance were committed first at `9947662`.
+The public planner still resolves the full immutable source pin before a private
+post-load helper. Source validation checks membership and canonical overrides
+without touching the global equipment registry. The helper classifies actual
+registered equipment, refuses repeated armor/shields and fixed/generated
+collisions, preserves generated deduplication, then reserves a checked allocation
+count and expands Individual quantities into ordered quantity-one entries. Stack
+quantities stay in one entry. No materializer, registry, current admission,
+content blob, app/UI/transport or fixture was changed.
+
+Eight new controls are authored: canonical omitted/empty serialization and count
+fingerprint sensitivity; raw duplicate-key and invalid-count refusal; actual
+Greatclub/Javelin Individual versus arrows Stack planning; post-load unknown and
+repeated equipped-gear refusal; known-ID forged quantity pin refusal before
+expansion; fixed/generated namespace separation; generated requirement dedup;
+and all twelve immutable source revisions' original ordered allocation vectors.
+The proposed source copies used by planner controls are explicitly unadmitted;
+they are not an Ogre stat block, source admission, physical materialization or
+application/native positive. Existing materialization/creation/retry tests remain
+unchanged and must still run at verification. The omitted-field and round-trip
+controls do not claim an executed old/new binary fingerprint comparison.
+
+Direct `rustfmt --edition 2024` and static whole-diff inspection completed. The
+handoff additionally records exact Git/UTF-8/fixture/source byte audits. These are
+formatting/static evidence only. No compiler, Cargo/npm, tests, DB/native action
+or publication ran. All eight controls and exact-head canonical/CI checks remain
+UNCOMPILED / UNRUN; root owns scheduling of the heavy verification slot. Original
+source fingerprint preservation is currently a static conclusion from byte-exact
+inputs and the solely additive, default-empty, omitted serialization field;
+required executed compatibility/replay verification is still outstanding.
+
+Next action: root receives the frozen source/plan checkpoint and writer ownership,
+obtains an independent full-diff review, then assigns focused/canonical and exact
+head CI verification when available. Reconcile accepted dependencies before any
+merge. Keep complete Ogre source/printed attacks/OA/UI and its real count-bearing
+app/native positive on the later coherent source slice; no acceptance is waived.
