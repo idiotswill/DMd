@@ -60,9 +60,8 @@ pub fn preview_initiative_circumstances(
         TacticalSource::Character => crate::test_modifier(mechanics, &TestKind::Initiative),
         TacticalSource::Creature { definition_id } => {
             i32::from(
-                definitions()?
-                    .creature(definition_id)
-                    .ok_or_else(|| invalid("unknown creature definition"))?
+                crate::tactical_creatures::source_for_actor(state, actor, definition_id)
+                    .map_err(|e| invalid(&e.to_string()))?
                     .statistics
                     .initiative_modifier,
             ) - i32::from(mechanics.exhaustion) * 2

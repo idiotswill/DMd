@@ -44,8 +44,9 @@ export interface CreationOptions {
   fighter_skills: Skill[]; fighter_masteries: string[]; standard_languages: string[]; alignments: string[];
 }
 export type CreatureSize = 'Tiny' | 'Small' | 'Medium' | 'Large' | 'Huge' | 'Gargantuan';
-export interface CreatureCreation { entity_id: Id; name: string; definition_id: string; size: CreatureSize; additional_languages: string[]; ammunition_units: number; item_ids: Id[] }
-export interface CreatureOption { definition_id: string; name: string; sizes: CreatureSize[]; additional_languages: number; ammunition_required: boolean; item_count: number; abilities: string[]; omitted_features: string[] }
+export interface CreatureSourcePin { ruleset_id: string; ruleset_version: string; definition_id: string; definition_fingerprint: string }
+export interface CreatureCreation { entity_id: Id; name: string; definition_id: string; source?: CreatureSourcePin; size: CreatureSize; additional_languages: string[]; ammunition_units: number; item_ids: Id[] }
+export interface CreatureOption { definition_id: string; source?: CreatureSourcePin; execution_limits?: string[]; name: string; sizes: CreatureSize[]; additional_languages: number; ammunition_required: boolean; item_count: number; abilities: string[]; omitted_features: string[] }
 export interface CreatureView { actor: Id; name: string; definition_id: string; size: CreatureSize; hp: number; max_hp: number }
 export interface CreatureSetupView { catalog: CreatureOption[]; creatures: CreatureView[] }
 export type CreatureController = 'Autonomous' | 'Host' | { Player: Id };

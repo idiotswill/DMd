@@ -42,22 +42,24 @@ pub(crate) fn view(
 
 pub(crate) fn current_catalog() -> Result<Vec<crate::TableCreatureOption>, String> {
     let definitions = creature_definitions().map_err(|e| e.to_string())?;
-    definitions
-        .creatures
-        .iter()
+    current_creature_sources()
+        .map_err(|e| e.to_string())?
+        .into_iter()
         .map(|source| {
+            let pin = creature_source_pin(source).map_err(|e| e.to_string())?;
             let ammunition_required = source.statistics.gear.iter().any(|id| {
                 definitions
                     .weapon(id)
                     .is_some_and(|weapon| weapon.ammunition.is_some())
             });
-            let plan = dmd_rules::tactical_creature_equipment::creature_equipment_plan(
-                &source.id,
+            let plan = dmd_rules::tactical_creature_equipment::creature_equipment_plan_from_source(
+                &pin,
                 if ammunition_required { 1 } else { 0 },
             )
             .map_err(|e| e.to_string())?;
             Ok(crate::TableCreatureOption {
                 definition_id: source.id.clone(),
+                source: Some(pin),
                 name: source.name.clone(),
                 sizes: source
                     .statistics
@@ -81,6 +83,7 @@ pub(crate) fn current_catalog() -> Result<Vec<crate::TableCreatureOption>, Strin
                         omitted,
                     } => omitted.clone(),
                 },
+                execution_limits: creature_execution_limits(source),
             })
         })
         .collect::<Result<Vec<_>, String>>()
@@ -111,7 +114,7 @@ pub(crate) fn create(
             location_id: None,
         },
     );
-    let built = build_creature(
+    let built = build_creature_from_source(
         &next,
         meta,
         creation.entity_id,
@@ -123,6 +126,7 @@ pub(crate) fn create(
             controller: CreatureController::Autonomous,
             in_lair: false,
         },
+        creation.source.as_ref(),
     )
     .map_err(|e| e.to_string())?;
     let rules = next.rules.as_mut().ok_or("Missing mechanical state.")?;
@@ -141,4 +145,35 @@ pub(crate) fn create(
     .map_err(|e| e.to_string())?;
     dmd_rules::validate_state(&next, pack).map_err(|e| e.to_string())?;
     Ok(next)
+}
+
+#[cfg(test)]
+mod source_wire_tests {
+    use super::*;
+    #[test]
+    fn historical_picker_and_absent_creation_pin_keep_their_wire_shape() {
+        let original = include_str!("table_creature_catalog_v1.json");
+        let options: Vec<crate::TableCreatureOption> = serde_json::from_str(original).unwrap();
+        assert!(
+            options
+                .iter()
+                .all(|o| o.source.is_none() && o.execution_limits.is_empty())
+        );
+        assert_eq!(
+            serde_json::to_string_pretty(&options).unwrap(),
+            original.replace("\r\n", "\n").trim_end()
+        );
+        let json = serde_json::json!({"entity_id":EntityId::new(),"name":"Legacy","definition_id":"wolf","size":"Medium","additional_languages":[],"ammunition_units":0,"item_ids":[]});
+        let creation: crate::TableCreatureCreation = serde_json::from_value(json.clone()).unwrap();
+        assert!(creation.source.is_none());
+        assert_eq!(serde_json::to_value(creation).unwrap(), json);
+        let current = current_catalog().unwrap();
+        assert!(current.iter().all(|o| o.source.is_some()));
+        assert!(
+            current
+                .iter()
+                .any(|o| o.definition_id == "air-elemental" && !o.execution_limits.is_empty())
+        );
+        assert!(!options.iter().any(|o| o.definition_id == "air-elemental"));
+    }
 }

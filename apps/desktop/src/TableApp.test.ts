@@ -264,7 +264,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup(); const view=emptyView();
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.creature_setup={catalog:[],creatures:[]};
-    const mage={definition_id:'mage',name:'Mage',sizes:['Medium' as const],additional_languages:3,ammunition_required:false,item_count:2,abilities:['Spellcasting'],omitted_features:['light']};
+    const mage={definition_id:'mage',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'mage',definition_fingerprint:'fixture-mage'},name:'Mage',sizes:['Medium' as const],additional_languages:3,ammunition_required:false,item_count:2,abilities:['Spellcasting'],omitted_features:['light']};
     vi.mocked(tableApi.creatureOptions).mockResolvedValue([mage]);
     vi.mocked(tableApi.view).mockResolvedValue(view);
     vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
@@ -302,7 +302,7 @@ describe('durable UI retry',()=>{
       await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
     };
     await switchView();
-    resolveOld([{definition_id:'old-secret',name:'Old private source',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,abilities:[],omitted_features:[]}]);
+    resolveOld([{definition_id:'old-secret',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'old-secret',definition_fingerprint:'fixture-old-secret'},name:'Old private source',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,abilities:[],omitted_features:[]}]);
     await pending;
     if(change!=='channel') await user.click(screen.getByRole('button',{name:'Setup and host controls'}));
     expect(screen.queryByRole('option',{name:'Old private source'})).toBeNull();
@@ -421,7 +421,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup();
     const view=emptyView();
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
-    view.creature_setup={catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,abilities:['Scimitar','Shortbow'],omitted_features:[]}],creatures:[]};
+    view.creature_setup={catalog:[{definition_id:'goblin-warrior',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'goblin-warrior',definition_fingerprint:'fixture-goblin-warrior'},name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,abilities:['Scimitar','Shortbow'],omitted_features:[]}],creatures:[]};
     vi.mocked(tableApi.creatureOptions).mockResolvedValue(view.creature_setup.catalog);
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));

@@ -2004,3 +2004,169 @@ fn source_conditions_restrict_approach_without_requiring_sight() {
         10
     );
 }
+
+#[test]
+fn air_form_geometry_refuses_special_operations_without_changing_ordinary_forced_overlap() {
+    use crate::tactical_creatures::*;
+    let mut f = Fixture::new();
+    f.state.rules.as_mut().unwrap().entities.remove(&f.a);
+    let source = crate::tactical_definitions::bundled_air_elemental().unwrap();
+    let pin = creature_source_pin(source).unwrap();
+    let meta = CommandMeta {
+        expected_event_sequence: f.state.applied_event_sequence,
+        ..f.encounter.origin.clone()
+    };
+    let built = build_creature_from_source(
+        &f.state,
+        &meta,
+        f.a,
+        &CreatureBuildChoice {
+            definition_id: "air-elemental".into(),
+            size: CreatureSize::Large,
+            additional_languages: vec![],
+            hit_points: CreatureHitPointChoice::Average,
+            controller: CreatureController::Autonomous,
+            in_lair: false,
+        },
+        Some(&pin),
+    )
+    .unwrap();
+    let rules = f.state.rules.as_mut().unwrap();
+    rules.entities.insert(f.a, built.mechanics);
+    rules.tactical_creatures = Some(TacticalCreatures {
+        schema_version: 1,
+        profiles: vec![built.profile],
+        runtime: vec![built.runtime],
+    });
+    let actor = f.actor(f.a);
+    actor.size = CreatureSize::Large;
+    actor.movement = built.movement;
+    actor.senses = built.senses;
+    validate_source_placement(&f.encounter, &f.state).unwrap();
+    let mut airborne = f.encounter.clone();
+    airborne
+        .participants
+        .iter_mut()
+        .find(|participant| participant.entity_id == f.a)
+        .unwrap()
+        .position
+        .z = 20;
+    assert_eq!(flight_loss_fall(&airborne, &f.state, f.a).unwrap(), None);
+    let flight = evaluate_path(
+        &airborne,
+        &f.state,
+        f.a,
+        &SpatialPath {
+            steps: vec![MovementStep {
+                destination: point(20, 10, 20),
+                mode: MovementMode::Fly,
+            }],
+        },
+        &MovementAllowance::default(),
+    )
+    .unwrap();
+    assert!(!flight.falls_at_end && flight.segments.iter().all(|segment| !segment.falls_after));
+    let path = SpatialPath {
+        steps: vec![MovementStep {
+            destination: point(20, 10, 0),
+            mode: MovementMode::Walk,
+        }],
+    };
+    assert!(
+        evaluate_path(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &path,
+            &MovementAllowance::default()
+        )
+        .is_ok()
+    );
+    f.actor(f.b).position = point(30, 10, 0);
+    assert_eq!(
+        evaluate_path(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &path,
+            &MovementAllowance::default()
+        ),
+        Err(SpatialError::Unsupported)
+    );
+    assert!(
+        evaluate_path(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &path,
+            &MovementAllowance {
+                forced: true,
+                ..Default::default()
+            }
+        )
+        .is_ok(),
+        "involuntary overlap needs no Air Form exception"
+    );
+    // Source permission is unnecessary for ordinary intermediate allied transit.
+    let ally = f.b;
+    f.actor(f.a).allies = vec![ally];
+    let transit = SpatialPath {
+        steps: vec![
+            MovementStep {
+                destination: point(20, 10, 0),
+                mode: MovementMode::Fly,
+            },
+            MovementStep {
+                destination: point(30, 10, 0),
+                mode: MovementMode::Fly,
+            },
+            MovementStep {
+                destination: point(40, 10, 0),
+                mode: MovementMode::Fly,
+            },
+        ],
+    };
+    assert!(
+        evaluate_path(
+            &f.encounter,
+            &f.state,
+            f.a,
+            &transit,
+            &MovementAllowance::default()
+        )
+        .is_ok()
+    );
+    let before = f.encounter.clone();
+    f.actor(f.a).position = point(20, 10, 0);
+    assert_eq!(
+        validate_source_placement(&f.encounter, &f.state),
+        Err(SpatialError::Unsupported)
+    );
+    f.encounter = before;
+    f.actor(f.b).position = point(50, 10, 0);
+    f.wall(
+        "solid",
+        volume(point(35, 10, 0), point(36, 40, 30)),
+        CoverDegree::Total,
+        true,
+    );
+    for forced in [false, true] {
+        assert_eq!(
+            evaluate_path(
+                &f.encounter,
+                &f.state,
+                f.a,
+                &path,
+                &MovementAllowance {
+                    forced,
+                    ..Default::default()
+                }
+            ),
+            Err(SpatialError::Unsupported)
+        );
+    }
+    assert_eq!(
+        SpatialError::Unsupported.to_string(),
+        "spatial operation is not yet supported"
+    );
+}

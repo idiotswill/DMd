@@ -476,6 +476,8 @@ fn resolve_with_policy(
             }
             let mut authored = authored.as_ref().clone();
             authored.origin = meta.clone();
+            crate::spatial::validate_source_placement(&authored, state)
+                .map_err(|e| RulesError::Prerequisite(e.to_string()))?;
             authored
                 .validate(state)
                 .map_err(|e| RulesError::Invalid(e.to_string()))?;

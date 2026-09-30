@@ -140,8 +140,6 @@ pub(super) fn opportunity(
         }
         options.weapons.retain(|weapon| !weapon.grips.is_empty());
     }
-    let definitions = dmd_rules::tactical_definitions::bundled_tactical_definitions()
-        .map_err(|error| error.to_string())?;
     let creature = encounter
         .flow
         .as_ref()
@@ -150,10 +148,20 @@ pub(super) fn opportunity(
                 .iter()
                 .find(|combatant| combatant.actor == window.reactor)
         })
-        .and_then(|combatant| match &combatant.source {
-            TacticalSource::Creature { definition_id } => definitions.creature(definition_id),
-            TacticalSource::Character => None,
-        });
+        .map(|combatant| match &combatant.source {
+            TacticalSource::Creature { definition_id } => {
+                dmd_rules::tactical_creatures::source_for_actor(
+                    state,
+                    window.reactor,
+                    definition_id,
+                )
+                .map(Some)
+                .map_err(|e| e.to_string())
+            }
+            TacticalSource::Character => Ok(None),
+        })
+        .transpose()?
+        .flatten();
     let features = window
         .options
         .iter()

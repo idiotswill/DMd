@@ -85,6 +85,17 @@ integrated canonical/CI/review and missile merge/main proof remain pending;
 Counterspell, Ready release and the other required mechanisms remain open.
 This is technical evidence, not human acceptance.
 
+The bounded [Air Elemental source admission](../exec-plans/active/gate4-air-elemental-source-admission.md)
+adds a separate complete immutable SRD pages 258-259 source and explicit current
+creation pins while retaining V1 definitions and historical picker bytes. Its
+source, resolver, installed-content, refusal and recovery tests are authored but
+have not run. No mechanical or production evidence array advances for this work.
+Air Form special geometry, Multiattack and Whirlwind execution remain open Gate 4
+mechanics; their representation and explicit unavailable boundaries do not close
+`monster-running`, `combat-actions` or the Gate 6 `monster-content` catalog family.
+The later Shove slice still owes genuine paid Prone-immunity continuation and
+recovery against this admitted source.
+
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 
 `cargo test --locked -p dmd-domain --test rules_coverage_ledger` runs offline in normal workspace CI. It checks the pin, complete chapter span, reviewed catalog counts, unique names/IDs, source-page bounds, every inventory-to-family relationship, gate assignment and evidence for advanced statuses. Negative cases demonstrate rejection of orphaned families/entries, duplicate ownership, removed catalog entries and unsupported completion claims. It checks consistency against the reviewed source inventory; it is not a claim that software can infer legal scope or prove faithful gameplay from JSON alone.

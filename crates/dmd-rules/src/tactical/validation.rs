@@ -15,7 +15,6 @@ pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
         return Err(invalid("invalid bounded encounter execution state"));
     }
     privileged(&f.origin)?;
-    let definitions = definitions()?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let mut actors = HashSet::new();
     for combatant in &f.combatants {
@@ -37,9 +36,12 @@ pub(super) fn validate_groups(state: &CampaignState) -> Result<(), RulesError> {
                 }
             }
             TacticalSource::Creature { definition_id } => {
-                let source = definitions
-                    .creature(definition_id)
-                    .ok_or_else(|| invalid("unknown source creature"))?;
+                let source = crate::tactical_creatures::source_for_actor(
+                    state,
+                    combatant.actor,
+                    definition_id,
+                )
+                .map_err(|e| invalid(&e.to_string()))?;
                 if let Some(profile) = rules
                     .tactical_creatures
                     .as_ref()

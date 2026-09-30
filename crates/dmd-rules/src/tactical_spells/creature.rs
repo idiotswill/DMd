@@ -74,10 +74,6 @@ pub fn plan_spell_from_feature(
         mode,
     };
     let plan = plan_spell_cast_authorized(state, &feature.invocation, &choice, occurrence)?;
-    if plan.program.source.creature_definition_id.as_ref() != Some(&profile.source.definition_id) {
-        return Err(invalid(
-            "encounter source differs from retained creature profile",
-        ));
-    }
+    validate_creature_spell_source(profile, &plan.program.source)?;
     Ok(plan)
 }

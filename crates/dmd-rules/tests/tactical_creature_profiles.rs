@@ -371,3 +371,170 @@ fn invalid_source_choices_authority_and_provenance_are_rejected_without_mutation
     value["caller_attack_bonus"] = serde_json::json!(100);
     assert!(serde_json::from_value::<CreatureProfile>(value).is_err());
 }
+
+#[test]
+fn air_source_is_additive_faithful_and_requires_an_exact_pin() {
+    use dmd_rules::tactical_definitions::*;
+    let bytes = TACTICAL_DEFINITIONS_JSON.as_bytes();
+    let hash = bytes.iter().fold(0xcbf29ce484222325u64, |h, b| {
+        (h ^ u64::from(*b)).wrapping_mul(0x100000001b3)
+    });
+    assert_eq!(
+        hash, 0x83e72a9963e5b579,
+        "historical V1 bytes must not change"
+    );
+    assert!(creature_definition("air-elemental").is_err());
+    let air = bundled_air_elemental().unwrap();
+    let pin = creature_source_pin(air).unwrap();
+    assert_eq!(creature_source(&pin).unwrap(), air);
+    assert_eq!(air.coverage, DefinitionCoverage::CompleteStatBlock);
+    assert_eq!(air.source_pages, [258, 259]);
+    assert_eq!(air.statistics.ability_scores, [14, 20, 14, 6, 10, 6]);
+    assert_eq!(air.statistics.saving_throw_modifiers, [2, 5, 2, -2, 0, -2]);
+    assert_eq!(air.statistics.proficiency_bonus, 3);
+    assert_eq!(air.statistics.challenge_rating, "5");
+    assert_eq!(air.statistics.experience_points, 1800);
+    assert_eq!(air.statistics.senses.passive_perception, 10);
+    assert_eq!(air.statistics.languages, ["Primordial (Auran)"]);
+    assert!(air.statistics.can_speak && air.statistics.exhaustion_immune);
+    assert_eq!(
+        air.traits,
+        [MonsterTrait::AirForm {
+            minimum_passage_inches: 1
+        }]
+    );
+    let multiattack = air.features.iter().find(|f| f.id == "multiattack").unwrap();
+    assert_eq!(multiattack.source_page, 258);
+    assert!(
+        matches!(&multiattack.feature, MonsterFeature::Multiattack { count: 2, attack_options }
+        if attack_options == &["thunderous-slam"])
+    );
+    let slam = air
+        .features
+        .iter()
+        .find(|f| f.id == "thunderous-slam")
+        .unwrap();
+    assert_eq!(slam.source_page, 258);
+    assert!(matches!(&slam.feature, MonsterFeature::Attack {
+        bonus: 8, delivery: AttackDelivery::Melee { reach_feet: 10 }, damage,
+        extra_damage_if_attack_had_advantage, conditional_hits
+    } if damage == &[DamageComponent {
+        amount: DamageFormula { dice: vec![DieSpec { count: 2, sides: 8 }], fixed: 5 },
+        damage_type: DamageType::Thunder,
+    }] && extra_damage_if_attack_had_advantage.is_empty() && conditional_hits.is_empty()));
+    let whirlwind = air.features.iter().find(|f| f.id == "whirlwind").unwrap();
+    assert_eq!(whirlwind.source_page, 259);
+    assert_eq!(
+        whirlwind.usage,
+        Some(FeatureUsage::Recharge(Recharge {
+            die_sides: 6,
+            minimum: 4,
+            maximum: 6
+        }))
+    );
+    assert!(
+        matches!(&whirlwind.feature, MonsterFeature::SharedSpaceSave {
+        target_size_at_most: SourceSize::Medium, ability: Ability::Strength, dc:13,
+        push_up_to_feet:20, condition_on_failure:Condition::Prone, half_damage_on_success:true,
+        damage: DamageComponent { amount: DamageFormula { dice, fixed:2 }, damage_type:DamageType::Thunder }
+    } if dice == &[DieSpec { count:4, sides:10 }])
+    );
+    let (state, meta, actor) = fixture();
+    let selection = choice("air-elemental", CreatureSize::Large);
+    assert!(build_creature(&state, &meta, actor, &selection).is_err());
+    let built = build_creature_from_source(&state, &meta, actor, &selection, Some(&pin)).unwrap();
+    assert_eq!(built.mechanics.armor, ArmorClass::Fixed(15));
+    assert_eq!((built.mechanics.hp, built.mechanics.max_hp), (90, 90));
+    assert_eq!(
+        built.mechanics.resistances,
+        [
+            DamageType::Bludgeoning,
+            DamageType::Lightning,
+            DamageType::Piercing,
+            DamageType::Slashing
+        ]
+        .into()
+    );
+    assert_eq!(
+        built.mechanics.damage_immunities,
+        [DamageType::Poison, DamageType::Thunder].into()
+    );
+    assert_eq!(
+        built.mechanics.condition_immunities,
+        [
+            Condition::Grappled,
+            Condition::Paralyzed,
+            Condition::Petrified,
+            Condition::Poisoned,
+            Condition::Prone,
+            Condition::Restrained,
+            Condition::Unconscious
+        ]
+        .into()
+    );
+    assert_eq!(
+        (
+            built.movement.walk,
+            built.movement.fly,
+            built.movement.hover
+        ),
+        (20, Some(180), true)
+    );
+    assert_eq!(built.senses.darkvision, 120);
+    assert_eq!(
+        creature_test_modifier(&built.profile, &built.mechanics, &TestKind::Initiative).unwrap(),
+        5
+    );
+    for (ability, expected) in [
+        (Ability::Strength, 2),
+        (Ability::Dexterity, 5),
+        (Ability::Constitution, 2),
+        (Ability::Intelligence, -2),
+        (Ability::Wisdom, 0),
+        (Ability::Charisma, -2),
+    ] {
+        assert_eq!(
+            creature_test_modifier(
+                &built.profile,
+                &built.mechanics,
+                &TestKind::Save { ability }
+            )
+            .unwrap(),
+            expected
+        );
+    }
+    validate_creature_profile(&state, &built.profile, &built.mechanics).unwrap();
+    let restored: CreatureProfile =
+        serde_json::from_slice(&serde_json::to_vec(&built.profile).unwrap()).unwrap();
+    assert_eq!(source_for_profile(&restored).unwrap(), air);
+    assert!(
+        dmd_rules::tactical_creature_equipment::creature_equipment_plan_from_source(&pin, 0)
+            .unwrap()
+            .is_empty()
+    );
+    assert_eq!(
+        dmd_rules::tactical_creature_equipment::creature_attack_gear(
+            &built.profile,
+            "thunderous-slam"
+        )
+        .unwrap(),
+        None
+    );
+    for field in 0..4 {
+        let mut forged = pin.clone();
+        match field {
+            0 => forged.ruleset_id.push('x'),
+            1 => forged.ruleset_version.push('x'),
+            2 => forged.definition_id = "wolf".into(),
+            _ => forged.definition_fingerprint = "0000000000000000".into(),
+        }
+        assert!(creature_source(&forged).is_err());
+        assert!(
+            build_creature_from_source(&state, &meta, actor, &selection, Some(&forged)).is_err()
+        );
+    }
+    assert!(
+        source_for_actor(&state, actor, "air-elemental").is_err(),
+        "profileless lookup is V1 only"
+    );
+}

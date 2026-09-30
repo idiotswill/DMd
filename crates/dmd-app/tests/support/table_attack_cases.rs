@@ -30,6 +30,13 @@ pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId
                 entity_id: target,
                 name: "Private sentry".into(),
                 definition_id: "goblin-warrior".into(),
+                source: Some(
+                    dmd_rules::tactical_creatures::creature_source_pin(
+                        dmd_rules::tactical_creatures::creature_definition("goblin-warrior")
+                            .unwrap(),
+                    )
+                    .unwrap(),
+                ),
                 size: CreatureSize::Small,
                 additional_languages: vec![],
                 ammunition_units: 20,

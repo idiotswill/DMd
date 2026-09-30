@@ -1,0 +1,183 @@
+{
+  "id": "air-elemental",
+  "name": "Air Elemental",
+  "coverage": "CompleteStatBlock",
+  "statistics": {
+    "size": "Large",
+    "allowed_sizes": [
+      "Large"
+    ],
+    "creature_type": "Elemental",
+    "creature_tags": [],
+    "alignment": "Neutral",
+    "armor_class": 15,
+    "hit_points": 90,
+    "hit_point_formula": {
+      "dice": [
+        {
+          "count": 12,
+          "sides": 10
+        }
+      ],
+      "fixed": 24
+    },
+    "ability_scores": [
+      14,
+      20,
+      14,
+      6,
+      10,
+      6
+    ],
+    "saving_throw_modifiers": [
+      2,
+      5,
+      2,
+      -2,
+      0,
+      -2
+    ],
+    "initiative_modifier": 5,
+    "proficiency_bonus": 3,
+    "challenge_rating": "5",
+    "experience_points": 1800,
+    "speeds": {
+      "walk": 10,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 90,
+      "swim": 0,
+      "hover": true
+    },
+    "skills": [],
+    "senses": {
+      "blindsight": 0,
+      "darkvision": 60,
+      "tremorsense": 0,
+      "passive_perception": 10,
+      "truesight": 0
+    },
+    "damage_resistances": [
+      "Bludgeoning",
+      "Lightning",
+      "Piercing",
+      "Slashing"
+    ],
+    "damage_vulnerabilities": [],
+    "damage_immunities": [
+      "Poison",
+      "Thunder"
+    ],
+    "condition_immunities": [
+      "Grappled",
+      "Paralyzed",
+      "Petrified",
+      "Poisoned",
+      "Prone",
+      "Restrained",
+      "Unconscious"
+    ],
+    "exhaustion_immune": true,
+    "languages": [
+      "Primordial (Auran)"
+    ],
+    "additional_languages": 0,
+    "can_speak": true,
+    "gear": []
+  },
+  "traits": [
+    {
+      "AirForm": {
+        "minimum_passage_inches": 1
+      }
+    }
+  ],
+  "features": [
+    {
+      "id": "multiattack",
+      "name": "Multiattack",
+      "activation": "Action",
+      "feature": {
+        "Multiattack": {
+          "count": 2,
+          "attack_options": [
+            "thunderous-slam"
+          ]
+        }
+      },
+      "source_page": 258
+    },
+    {
+      "id": "thunderous-slam",
+      "name": "Thunderous Slam",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 8,
+          "delivery": {
+            "Melee": {
+              "reach_feet": 10
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 8
+                  }
+                ],
+                "fixed": 5
+              },
+              "damage_type": "Thunder"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 258
+    },
+    {
+      "id": "whirlwind",
+      "name": "Whirlwind",
+      "activation": "Action",
+      "usage": {
+        "Recharge": {
+          "die_sides": 6,
+          "minimum": 4,
+          "maximum": 6
+        }
+      },
+      "feature": {
+        "SharedSpaceSave": {
+          "target_size_at_most": "Medium",
+          "ability": "Strength",
+          "dc": 13,
+          "damage": {
+            "amount": {
+              "dice": [
+                {
+                  "count": 4,
+                  "sides": 10
+                }
+              ],
+              "fixed": 2
+            },
+            "damage_type": "Thunder"
+          },
+          "push_up_to_feet": 20,
+          "condition_on_failure": "Prone",
+          "half_damage_on_success": true
+        }
+      },
+      "source_page": 259
+    }
+  ],
+  "legendary_budget": null,
+  "source_pages": [
+    258,
+    259
+  ]
+}
