@@ -854,3 +854,10 @@ early guards remain intact. Release owns the sole local heavy verification slot;
 no simultaneous Cargo/npm/database/native operation is authorized. Genuine
 old/new Goblin coexistence, release integration and the complete resolver,
 transport, UI, privacy and native lifecycle remain unaccepted Gate4 work.
+
+Root subsequently transferred sole branch writing to flow4_import_review for the
+bounded plan-first [dependency/coexistence integration](gate4-grapple-development-integration.md).
+That plan pins reviewed Shove f9 with Air/release as unaccepted dependencies,
+preserves the 801 lint correction and every Grapple execution guard, and imports
+only the independently reviewed genuine Goblin child plus exact parent append.
+No resolver authoring, heavy verification or publication is authorized there.
