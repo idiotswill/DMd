@@ -173,7 +173,12 @@ async fn doff_and_reopen(
     (shield, bow, arrows, meta)
 }
 
-fn bow_action(bow: ItemId, arrows: ItemId, target: EntityId, stow: bool) -> TacticalAction {
+pub(super) fn bow_action(
+    bow: ItemId,
+    arrows: ItemId,
+    target: EntityId,
+    stow: bool,
+) -> TacticalAction {
     TacticalAction::CreatureWeaponAttack {
         feature_id: "shortbow".into(),
         choice: CreatureWeaponUseChoice {

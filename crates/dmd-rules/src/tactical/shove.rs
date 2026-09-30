@@ -22,7 +22,12 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalShove, RulesErr
         .ok_or_else(|| invalid("Shove work absent"))
 }
 fn require_execution(state: &CampaignState) -> Result<(), RulesError> {
-    if flow(state)?.version != TacticalExecutionVersion::ShieldMissileV1.flow_version() {
+    // Retained flow4 work keeps its paid semantics. The central live gate admits
+    // a fresh Shove only on current flow5, before this shared restore guard.
+    let version = flow(state)?.version;
+    if version != TacticalExecutionVersion::ShieldMissileV1.flow_version()
+        && version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+    {
         return Err(prerequisite(
             "Shove requires the current encounter execution.",
         ));

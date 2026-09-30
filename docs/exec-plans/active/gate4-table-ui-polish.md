@@ -1,8 +1,8 @@
 # Gate 4 — Keep tactical play readable across decisions
 
-Status: active final integration. Native package `56a2225` exposed a pending-prompt
-focus gap. Corrected `7289c5e` passes independent review and local frontend
-verification; canonical, final CI and corrected native package acceptance remain.
+Status: bounded UI PR49 merged as `d88a692` on 2026-09-30 after exact-head
+review, canonical verification, six source CI passes and corrected native play.
+Literal merged-main runtime checks remain pending. Gate 4 remains active.
 Writer: root following the coherent correction commit and explicit 2026-09-28
 ownership handback. `gate4_verification_review` implemented the correction under
 exclusive ownership; root independently reviewed the complete diff and retains
@@ -11,12 +11,12 @@ the heavy verification slot. Branch:
 previous branch and commits remain preserved. Development base is missile
 candidate `f4890b73814d7c0f3551350352601eb5ed0d19ed`, whose full production tree
 matches the source-verified ffc3 package. Root has now reconciled merged missile
-main `c4d8c34c19b5c92eca789f292f99632a0107d861`; its literal-main CI remains
-under separate audit. This branch must pass its own final checks and native
-acceptance; candidate ancestry is not a substitute for that proof. Draft PR 49:
+main `c4d8c34c19b5c92eca789f292f99632a0107d861`; that prerequisite's separate
+main checks passed before this merge. The final source/native evidence and pending
+d88 main proof are recorded below. Merged PR 49:
 <https://github.com/idiotswill/DMd/pull/49>.
 
-## Current integration checkpoint — 2026-09-28
+## Historical integration checkpoint — 2026-09-28
 
 Exact `7289c5ee24faac26e6f4ce6a9293aff19cb9c488` passes local frontend checks
 07:19–07:22 UTC with Node24.19.0/npm11.17.0 and one test worker: Svelte0 errors
@@ -188,8 +188,66 @@ unspent source resources. External `tooling/ui-prompt-focus-fresh-qa-preparation
 retains the actual setup observation. This prepares the failing-sequence rerun;
 it is not successor package acceptance. The earlier QA campaign is preserved.
 
-Next: root runs the frontend checks and required verification, publishes the
-reviewed successor for exact-head CI, and repeats packaged prompt reachability.
-Reconcile verified missile main,
-then require the canonical suite, native package exercises and complete final
-checks before protected merge and literal-main proof.
+## Verified source, native play and protected merge — 2026-09-30
+
+Final reviewed source `65b7606bd486120a1c650e44028e4195763a5b6c` normally
+reconciles c4d8 main. Its complete non-documentation diff against corrected source
+`7289c5ee24faac26e6f4ce6a9293aff19cb9c488` is empty: production, tests,
+dependencies, content and scripts match. Full independent source review is clear.
+
+Canonical `./scripts/verify` at exact 65b passed on September 28: formatting,
+all-target workspace check, strict Clippy, **746 GNU Rust tests in 55 groups**,
+all **54 table cases** in 5725.20 seconds, all four Magic Missile scenarios and
+both guards. One Windows Python symlink-privilege case skips locally; Linux runs
+all eight architecture tests. Source65 CI then passed all six jobs. Linux run
+[36716529916](https://github.com/idiotswill/DMd/actions/runs/36716529916)
+records 747 Rust tests / 55 groups / 54 table cases in 4154.76 seconds. Windows
+run [36716529740](https://github.com/idiotswill/DMd/actions/runs/36716529740)
+records 749 Rust tests / 55 groups / 54 table cases in 6024.23 seconds. Both pass
+all four Magic Missile scenarios, with no Rust failures or ignored tests.
+Frontend results are 112 tests in 18 files, zero errors/warnings and 141 modules.
+Linux synthetic `ffaf714036c7832b263397629a5f7b6599470631` has c4d8/65b
+parents and the complete 65b tree; Windows checks out literal65b. Artifact
+11104432748 is 232332349 bytes, SHA256
+`9dd3c0f1e932849ce93b61b5ad962ae3459e966685d7f4ff6bff0da4ab34959b`.
+Upload/API provenance is verified; this final65b artifact was not played.
+
+Actual corrected native play used literal728 artifact10958793367, archive
+SHA256 `bf0f6a4c4e1639fe48b7f44ba8303d56227cfb88e0a0f33717696350548ca71d`.
+Root and independent review verified all 1070 packaged file hashes. The normally
+created QA campaign reached the lower-page Cast, response ordering, owned response
+and consecutive physical dice without the earlier offscreen-prompt failure.
+One Hag self-cast declined Shield and completed six actual faces `1,2,3,4,1,2`
+with five selected impacts and the automatic final singleton. A later cast at the
+owned Mage offered Shield, quit/reopened while selected and unpaid, retained the
+empty resource choice, then paid once and completed six fresh physical faces.
+Same-context prompts remained reachable and freshly remounted; controller/page
+scope changes retained their intentional navigation behavior. Selected observer
+maps showed each contact once; disjoint hidden knowledge is covered by component
+tests, not claimed from this open-map native scene. Sheet prose matched supported
+equipment/features and retained explicit limits. Final quit/reopen recovered
+ordinary turn controls with no pending work.
+
+Read-only saved-state audits corroborate sequences28/34/46, unchanged first six
+roll objects, twelve distinct physical requests and accepted commands, Hag93HP,
+Mage81HP, one Mage source use and Reaction paid, and active source Shield. Final
+audit SHA256 is
+`4675f9947c943275925b9e0d7104b50127b0456fee01d21027405da9ddd5031c`;
+native observation SHA256 is
+`11fe1421164a94d1f0a8787e408cf6fc2a9b403cddc77a31ab14321c0dece290`.
+This is native evidence for literal728 with verified full non-doc parity to65b,
+not literal65b binary execution. Earlier56 viewport failures and corrected
+observation labels remain preserved. Other prompt families have component coverage.
+
+The original c4d8 compatibility baseline required before main advancement then
+completed all eight tests, with root and independent completion audits before
+merge. PR49 merged with expected-head65b protection at 2026-09-30T17:13:03Z as
+`d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`. Fetched main's full tree equals
+reviewed65b (`48c6efadca22ca59efde69eb42e2419f4521ae74`). Separate current
+main runs36749962892/36749962753 have four quick checks passing and two runtime
+jobs pending. Earlier same-head runs were cancelled; they are not passing evidence.
+
+Next: audit both literal-main runtime logs and artifact when complete, then record
+bounded closeout. The encounter-release branch combines this accepted UI with
+flow5 and must pass its own verification and packaged play. No UI source result
+substitutes for release or Gate 4 acceptance.

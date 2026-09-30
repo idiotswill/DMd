@@ -42,6 +42,9 @@ pub enum TacticalExecutionVersion {
     /// Committed Magic Missile darts collect all responses and physical amounts
     /// before their explicitly ordered impacts. Includes attack-hit Shield.
     ShieldMissileV1,
+    /// Authenticated settled-encounter release and monotonic replacement timing.
+    /// App admission is enabled only with the complete release vertical slice.
+    EncounterReleaseV1,
 }
 
 impl TacticalExecutionVersion {
@@ -55,6 +58,7 @@ impl TacticalExecutionVersion {
             Self::ReactionsV1 => 2,
             Self::ShieldHitV1 => 3,
             Self::ShieldMissileV1 => 4,
+            Self::EncounterReleaseV1 => 5,
         }
     }
 
@@ -64,6 +68,7 @@ impl TacticalExecutionVersion {
             2 => Some(Self::ReactionsV1),
             3 => Some(Self::ShieldHitV1),
             4 => Some(Self::ShieldMissileV1),
+            5 => Some(Self::EncounterReleaseV1),
             _ => None,
         }
     }
@@ -71,16 +76,22 @@ impl TacticalExecutionVersion {
     pub fn retains_work_ancestry(self) -> bool {
         matches!(
             self,
-            Self::ReactionsV1 | Self::ShieldHitV1 | Self::ShieldMissileV1
+            Self::ReactionsV1
+                | Self::ShieldHitV1
+                | Self::ShieldMissileV1
+                | Self::EncounterReleaseV1
         )
     }
 
     pub fn supports_hit_shield(self) -> bool {
-        matches!(self, Self::ShieldHitV1 | Self::ShieldMissileV1)
+        matches!(
+            self,
+            Self::ShieldHitV1 | Self::ShieldMissileV1 | Self::EncounterReleaseV1
+        )
     }
 
     pub fn supports_missile_shield(self) -> bool {
-        self == Self::ShieldMissileV1
+        matches!(self, Self::ShieldMissileV1 | Self::EncounterReleaseV1)
     }
 }
 

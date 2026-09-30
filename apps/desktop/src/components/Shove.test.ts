@@ -6,7 +6,7 @@ import EncounterPanel from './EncounterPanel.svelte';
 import type { ShoveView, TacticalView } from '../tactical-api';
 
 const choice=(stage:ShoveView['stage'],key='choice'):ShoveView=>({key,actor:'actor',stage,from:{x:20,y:10,z:0},destination:null});
-const base:TacticalView={encounter_id:'encounter',phase:'active',round:1,execution:'ShieldMissileV1',active_actor:'actor',battlefield:null,
+const base:TacticalView={encounter_id:'encounter',phase:'active',round:1,execution:'EncounterReleaseV1',active_actor:'actor',battlefield:null,
   participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null};
 
 it('chooses only the saving ability without fabricating dice or voluntary failure',async()=>{

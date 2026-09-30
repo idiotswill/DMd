@@ -320,6 +320,9 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = Tact
     pub encounter_id: EncounterId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aftermath: Option<TableAftermathView>,
+    /// Host-only flow 5 capability. Older projection bytes remain unchanged.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub release: Option<TableEncounterReleaseView>,
     /// Omitted for legacy flows so their historical presentation bytes remain
     /// unchanged. Only explicitly versioned new/upgraded state adds this field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -411,6 +414,14 @@ pub struct TableAftermathView {
     /// Private explanation and quiescence are not projected as hidden-work hints.
     pub host_ruling: Option<String>,
     pub may_pause_session: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEncounterReleaseView {
+    pub may_finish: bool,
+    pub blocker: Option<String>,
+    /// Actors with surviving consequences that the next battlefield must include.
+    pub required_actors: Vec<EntityId>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

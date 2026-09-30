@@ -415,9 +415,9 @@ validation, so new flow5 Shove cannot run/restore after a plain merge. The newer
 central live guard also lacks the three paid Shove choice commands in its old-
 flow continuation list. Proposed bounded reconciliation is an internal explicit
 flow4/flow5 guard plus those exact authenticated, stage-bound continuation
-commands; fresh flow4 Shove remains blocked by the central live gate. Root must
-review this concrete proposal before this semantic change is authored. Focused
-controls must cover current5 and retained paid4 continuation versus fresh4
+commands; fresh flow4 Shove remains blocked by the central live gate. Root approved this bounded reconciliation before source authoring; an
+independent read-only peer confirmed the same seam. Focused controls must cover
+current5 and retained paid4 continuation versus fresh4
 rejection without rewriting a captured history or claiming historical producer
 provenance for a reducer fixture. No execution tag/roll-role change is proposed.
 
@@ -438,6 +438,6 @@ integration. Exact integrated focused/canonical verification, six required
 checks, old-history continuation and native play/restart remain acceptance
 blockers; PR #51 must never be merged into Air. Root owns accepted dependency/main
 reconciliation, later publication/retargeting, exact-head review and protected
-merge. Next action: resolve the surfaced execution seam with root, normally merge
-the pinned reviewed dependency, and report any further concrete conflict before
-editing outside this bounded union.
+merge. Next action: finish the normal merge of the pinned reviewed dependency and
+author the approved narrow execution reconciliation and controls; report any
+further concrete conflict before editing outside this bounded union.

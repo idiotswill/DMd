@@ -894,3 +894,153 @@ fn ledge_push_landing_keeps_source_route_and_concentration_ancestry_until_final_
             .is_empty()
     );
 }
+
+#[test]
+fn current_and_synthetic_retained_shove_keep_paid_work_through_all_three_choices() {
+    for execution in [
+        TacticalExecutionVersion::EncounterReleaseV1,
+        TacticalExecutionVersion::ShieldMissileV1,
+    ] {
+        let mut f = fixture();
+        assert_eq!(
+            f.flow().version,
+            TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        );
+        let admitted = f.run(Some(0), attempt(&f));
+        // Deliberately synthetic reducer coverage: only switch the executor of
+        // actual paid work. This is not a capture from the historical producer.
+        f.state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .version = execution.flow_version();
+        validate_tactical_state(&f.state).unwrap();
+        let paid_window = record(&f).window;
+        let original_position = f.state.encounter.as_ref().unwrap().participants[1].position;
+        let destination = SpatialPoint {
+            x: original_position.x + 10,
+            ..original_position
+        };
+        assert_eq!(record(&f).origin, admitted.meta);
+        assert!(f.rules().timing.as_ref().unwrap().action_spent);
+        assert_eq!(f.flow().budget.attacks_remaining, 0);
+        f.rejected(Some(0), attempt(&f));
+        let save = TacticalAction::ChooseShoveSave {
+            ability: ShoveSaveAbility::Dexterity,
+        };
+        f.rejected(Some(0), save.clone());
+        let mut stale = f.meta(None);
+        stale.expected_event_sequence -= 1;
+        assert_eq!(
+            resolve_tactical(&f.state, &stale, &save, &f.pack),
+            Err(RulesError::Stale)
+        );
+        let mut missing_work = f.state.clone();
+        missing_work
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap()
+            .shove
+            .as_mut()
+            .unwrap()
+            .selected = None;
+        assert!(resolve_tactical(&missing_work, &f.meta(None), &save, &f.pack).is_err());
+        // Fixture::run validates state, round-trips bytes and independently
+        // replays each newly admitted continuation before accepting it.
+        f.run(None, save);
+        f.run(
+            None,
+            TacticalAction::SubmitRoll {
+                result: f.raw(&[1]),
+            },
+        );
+        assert_eq!(record(&f).stage, TacticalShoveStage::OutcomeChoice);
+        let outcome = TacticalAction::ChooseShoveOutcome {
+            choice: ShoveChoice::Push { destination },
+        };
+        f.rejected(None, outcome.clone());
+        f.run(Some(0), outcome);
+        assert_eq!(record(&f).stage, TacticalShoveStage::PushReview);
+        assert_eq!(record(&f).window, paid_window);
+        assert_eq!(record(&f).origin, admitted.meta);
+        let ruling = TacticalAction::RuleShovePush {
+            ruling: ShoveGeometryRuling::CommitExactPush,
+        };
+        f.rejected(Some(0), ruling.clone());
+        f.run(None, ruling);
+        assert!(f.flow().resolution.is_none());
+        assert_eq!(f.flow().version, execution.flow_version());
+        assert_eq!(f.flow().budget.attack_window, Some(paid_window));
+        assert_eq!(f.flow().budget.attacks_remaining, 0);
+        assert!(f.rules().timing.as_ref().unwrap().action_spent);
+        assert_eq!(
+            f.state.encounter.as_ref().unwrap().participants[1].position,
+            destination
+        );
+        assert_eq!(f.rules().entities[&f.actors[1]].hp, 81);
+        assert!(!f.rules().entities[&f.actors[1]].prone);
+        assert!(
+            f.rules()
+                .timing
+                .as_ref()
+                .unwrap()
+                .reactions_spent
+                .is_empty()
+        );
+    }
+}
+
+#[test]
+fn synthetic_idle_flow4_refuses_fresh_shove_and_unpaid_choices_until_explicit_upgrade() {
+    let mut f = fixture();
+    // Synthetic old idle state isolates admission; it is not historical evidence.
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .version = TacticalExecutionVersion::ShieldMissileV1.flow_version();
+    let before = f.state.clone();
+    f.rejected(Some(0), attempt(&f));
+    f.rejected(
+        None,
+        TacticalAction::ChooseShoveSave {
+            ability: ShoveSaveAbility::Strength,
+        },
+    );
+    f.rejected(
+        Some(0),
+        TacticalAction::ChooseShoveOutcome {
+            choice: ShoveChoice::Prone,
+        },
+    );
+    f.rejected(
+        None,
+        TacticalAction::RuleShovePush {
+            ruling: ShoveGeometryRuling::ReturnToShover,
+        },
+    );
+    assert_eq!(f.state, before);
+    assert!(!f.rules().timing.as_ref().unwrap().action_spent);
+    f.run(
+        None,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
+        },
+    );
+    f.run(Some(0), attempt(&f));
+    assert_eq!(record(&f).stage, TacticalShoveStage::SaveChoice);
+    assert!(f.rules().timing.as_ref().unwrap().action_spent);
+    assert_eq!(f.flow().budget.attacks_remaining, 0);
+}
