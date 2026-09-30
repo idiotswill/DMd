@@ -1,11 +1,12 @@
 # Gate 4 — Fixed quantities in immutable creature gear
 
-Status: bounded producer and controls authored, 2026-09-30; UNCOMPILED / UNRUN.
-The assigned source-count implementation agent is the sole writer on
-`codex/gate4-source-gear-counts`, checkout `gate4-source-gear-counts`, following
-root's explicit transfer from clean plan checkpoint `cf43609`. No PR yet. The
-local heavy verification slot remains reserved by root; this branch must not start concurrent builds,
-tests, database or native work.
+Status: bounded producer independently reviewed;51 focused tests and compile,
+format and strict Clippy checks pass at f562f30, 2026-09-30. Canonical, CI and
+application acceptance remain pending. Root is sole writer on
+`codex/gate4-source-gear-counts`, checkout `gate4-source-gear-counts`, after the
+implementation/review handback. This documentation checkpoint precedes draft PR
+publication. The local heavy slot belongs to the separate guarded-core verifier;
+this branch must not start concurrent builds, tests, database or native work.
 
 ## Objective and dependency boundary
 
@@ -175,8 +176,52 @@ source fingerprint preservation is currently a static conclusion from byte-exact
 inputs and the solely additive, default-empty, omitted serialization field;
 required executed compatibility/replay verification is still outstanding.
 
-Next action: root receives the frozen source/plan checkpoint and writer ownership,
-obtains an independent full-diff review, then assigns focused/canonical and exact
-head CI verification when available. Reconcile accepted dependencies before any
-merge. Keep complete Ogre source/printed attacks/OA/UI and its real count-bearing
-app/native positive on the later coherent source slice; no acceptance is waived.
+The authored checkpoint's UNRUN statements above record its historical boundary.
+Subsequent independent review and focused execution follow; they do not create an
+admitted-source application positive or waive any remaining acceptance.
+
+## Independent review and focused verification — 2026-09-30
+
+Exact verified source is `f562f30a8e82931b9bd007f27ab67da2e5b0c6fc`, tree
+`e5633723ca9cc038e0828d242eb71c64c2171ba7`. Independent complete six-file review
+is clear: no source registry/admission/materializer/app/transport change, no
+recursive definition-to-registry call, strict counts and duplicate keys, checked
+expansion, exact original fixtures and meaningful eight new controls. Review
+SHA256 is `7ab20ce62f0c523ea6090d9d43184ef957967ecc29fa4e2d25bf3b74e7ad71f6`;
+independent byte-audit hash is
+`ebd1a9eddfe077514ad85b53c18a47797b8d7919daf22d8a54692f9b6e320e93`.
+
+A sequential focused run completed normally at this unchanged clean source,
+21:03:35–21:11:00 UTC. GNU Rust1.98.1, one build job, incremental off, default
+stack/profiles, fresh private target and test harness threads1 were recorded.
+All eight commands passed:
+
+- `cargo fmt --all -- --check`;
+- `cargo check --locked -p dmd-rules --all-targets`;
+- `cargo test --locked -p dmd-rules --lib tactical_creature_equipment:: -- --test-threads=1`:8 tests;
+- `cargo test --locked -p dmd-rules --test tactical_definitions -- --test-threads=1`:17 tests;
+- `cargo test --locked -p dmd-rules --test tactical_inventory -- --test-threads=1`:14 tests;
+- `cargo test --locked -p dmd-rules --test tactical_attacks creature_weapon:: -- --test-threads=1`:10 tests;
+- `cargo test --locked -p dmd-rules --test tactical_attacks spell::source -- --test-threads=1`:2 tests;
+- `cargo clippy --locked -p dmd-rules --all-targets -- -D warnings`.
+
+All51 selected tests passed, including the eight new controls. No test failed,
+was ignored or retried. Other tests were intentionally filtered; this is not full
+canonical verification. Existing source materializer/physical attack/spell paths
+ran, but no app/SQLite/native acceptance or new count-bearing source ran. The
+app suite remains an explicit requirement. No source edits or publication occurred
+during the run. Full logs and exact commands/head/environment are retained under
+external `tooling/source-gear-counts-f562f30-focused-2026-09-30/`.
+Run-result SHA256 is
+`100b30b0226547203c7b3e9dcdbd364f2a8a8dc23b97770e6bda4987fbf0297c`;
+completion-audit SHA256 is
+`5afa725de74288e9ed40fe5fea1fd158bb41c0bc5bb14079ab87eae868a551ae`.
+
+Next: independently review this documentation-only checkpoint, confirm non-doc
+blobs remain exactf562 and publish a draft stacked on foundation PR54 for fresh
+exact-head checks. Never merge into that development base. Run canonical and
+application/replay acceptance, reconcile accepted prerequisites, review the full
+final delta and use expected-head protected merge with separate main verification.
+Complete Ogre source/printed attacks/OA/UI/ground recovery and its real
+count-bearing app/native positive remain separate mandatory integration evidence;
+no acceptance or positive Grapple/LR obligation is waived.
