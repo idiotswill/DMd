@@ -367,6 +367,15 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 .map(|window| &window.work),
         )
         .chain(resolution.shove.iter().filter_map(|s| s.selected.as_ref()))
+        .chain(
+            resolution
+                .grapple
+                .iter()
+                .filter_map(|g| match g.activity.as_ref() {
+                    Some(GrappleActivity::Attempt(a)) => a.selected.as_ref(),
+                    _ => None,
+                }),
+        )
     {
         if scopes
             .get(&work.occurrence)

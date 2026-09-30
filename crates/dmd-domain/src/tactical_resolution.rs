@@ -186,6 +186,18 @@ pub enum TacticalWorkKind {
     LegendaryWindow {
         actor: EntityId,
     },
+    BeginGrapple {
+        grip: crate::GrappleId,
+    },
+    GrappleSave {
+        grip: crate::GrappleId,
+    },
+    GrappleAfterEquipment {
+        grip: crate::GrappleId,
+    },
+    GrappleEscapeCheck {
+        grip: crate::GrappleId,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

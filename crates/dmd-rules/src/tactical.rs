@@ -8,6 +8,7 @@ mod continuations;
 mod creature_bridge;
 mod failed_save;
 mod falling;
+pub(crate) mod grapple;
 mod hit_reactions;
 mod initiative;
 mod medicine;
@@ -205,6 +206,34 @@ pub enum TacticalAction {
     Dodge,
     StandProne,
     StartAttackAction,
+    Grapple {
+        target: EntityId,
+        hand: Hand,
+        before_change: Option<AttackEquipmentOperation>,
+    },
+    ChooseGrappleSave {
+        grip: GrappleId,
+        ability: GrappleSaveAbility,
+    },
+    ApplyGrappleAfterEquipment {
+        grip: GrappleId,
+        work: TacticalWorkKey,
+        operation: AttackEquipmentOperation,
+    },
+    DeclineGrappleAfterEquipment {
+        grip: GrappleId,
+        work: TacticalWorkKey,
+    },
+    WithdrawGrapple {
+        grip: GrappleId,
+    },
+    EscapeGrapple {
+        grip: GrappleId,
+        choice: GrappleEscapeChoice,
+    },
+    ReleaseGrapple {
+        grip: GrappleId,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -332,6 +361,7 @@ fn resolve_with_policy(
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
+    grapple::guard_action(state, action)?;
     crate::validate_state(state, pack)?;
     validate_tactical_state(state)?;
     if policy == ExecutionPolicy::Live {
@@ -351,6 +381,27 @@ fn resolve_with_policy(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::Grapple {
+            target,
+            hand,
+            before_change,
+        } => grapple::begin(&mut next, meta, *target, *hand, *before_change, pack)?,
+        TacticalAction::ChooseGrappleSave { grip, ability } => {
+            grapple::choose_save(&mut next, meta, *grip, *ability)?
+        }
+        TacticalAction::ApplyGrappleAfterEquipment {
+            grip,
+            work,
+            operation,
+        } => grapple::apply_after_equipment(&mut next, meta, *grip, *work, *operation)?,
+        TacticalAction::DeclineGrappleAfterEquipment { grip, work } => {
+            grapple::decline_after_equipment(&mut next, meta, *grip, *work)?
+        }
+        TacticalAction::WithdrawGrapple { grip } => grapple::withdraw(&mut next, meta, *grip)?,
+        TacticalAction::EscapeGrapple { grip, choice } => {
+            grapple::begin_escape(&mut next, meta, *grip, *choice)?
+        }
+        TacticalAction::ReleaseGrapple { grip } => grapple::release(&mut next, meta, *grip)?,
         TacticalAction::RespondToMissile {
             window,
             actor,

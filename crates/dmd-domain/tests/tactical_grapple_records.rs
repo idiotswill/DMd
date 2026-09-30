@@ -195,6 +195,17 @@ fn pending_attempt_reserves_its_exact_hand_without_any_live_attachment() {
     let g = grip();
     let r = resolution();
     let attempt = TacticalGrappleAttempt {
+        equipment: GrappleEquipmentAdmission {
+            equipment_before: ActorEquipmentLoadout {
+                actor: g.declaration.grappler,
+                hands: WeaponLoadout::default(),
+                worn_armor: None,
+                shield: None,
+                command: g.declaration.origin.clone(),
+            },
+            before_change: None,
+            after: None,
+        },
         declaration: g.declaration.clone(),
         stage: TacticalGrappleAttemptStage::SaveChoice,
         selected: None,
@@ -215,6 +226,9 @@ fn pending_attempt_reserves_its_exact_hand_without_any_live_attachment() {
         unreachable!()
     };
     attempt.stage = TacticalGrappleAttemptStage::Complete;
+    attempt.equipment.before_change = Some(AttackEquipmentOperation::Unequip {
+        item: ItemId::new(),
+    });
     attempt.outcome = Some(GrappleAttemptOutcome::Withdrawn {
         withdrawn_by: meta(6),
         cancelled: None,
@@ -585,4 +599,137 @@ fn new_roll_roles_use_only_the_reviewed_append_only_tags() {
             RollRequestId(uuid::Uuid::new_v5(&origin.0, &bytes))
         );
     }
+}
+
+#[test]
+fn contextual_interim_automatic_shape_needs_matching_failed_work_or_withdrawal() {
+    // Synthetic record-shape control only. This is not LR source availability
+    // or an admitted private pump; the genuine positive route remains unmet.
+    let g = grip();
+    let mut r = resolution();
+    let mut save = g.save.clone();
+    save.proof = None;
+    assert!(save.validate_shape(&g.declaration).is_err());
+    let work = TacticalWorkItem {
+        occurrence: save.key.occurrence,
+        kind: TacticalWorkKind::GrappleSave {
+            grip: g.declaration.id,
+        },
+    };
+    r.failed_save = Some(TacticalFailedSave {
+        pending: TacticalPendingWork {
+            work: work.clone(),
+            key: save.key,
+        },
+        issued_by: save.chosen_by.clone(),
+        resolved_by: save.chosen_by.clone(),
+        result: None,
+    });
+    r.work_trace.as_mut().unwrap().nodes.push(TacticalWorkNode {
+        work,
+        parent: Some(1),
+    });
+    r.next_occurrence = 5;
+    let mut c = TacticalGrappleResolution {
+        activity: Some(GrappleActivity::Attempt(Box::new(TacticalGrappleAttempt {
+            declaration: g.declaration.clone(),
+            equipment: GrappleEquipmentAdmission {
+                equipment_before: ActorEquipmentLoadout {
+                    actor: g.declaration.grappler,
+                    hands: WeaponLoadout::default(),
+                    worn_armor: None,
+                    shield: None,
+                    command: g.declaration.origin.clone(),
+                },
+                before_change: None,
+                after: None,
+            },
+            stage: TacticalGrappleAttemptStage::Saving,
+            selected: None,
+            save: Some(save.clone()),
+            outcome: None,
+        }))),
+        proofs: vec![],
+        cuts: vec![],
+        ends: vec![],
+        opportunity_refreshes: vec![],
+    };
+    c.validate_shape(&r, None).unwrap();
+    let mut wrong = r.clone();
+    wrong.failed_save.as_mut().unwrap().pending.key.occurrence += 1;
+    assert!(c.validate_shape(&wrong, None).is_err());
+    r.failed_save = None;
+    assert!(c.validate_shape(&r, None).is_err());
+    let GrappleActivity::Attempt(a) = c.activity.as_mut().unwrap() else {
+        unreachable!()
+    };
+    a.stage = TacticalGrappleAttemptStage::AfterEquipment;
+    a.outcome = Some(GrappleAttemptOutcome::Withdrawn {
+        withdrawn_by: meta(6),
+        cancelled: None,
+    });
+    c.validate_shape(&r, None).unwrap();
+    let GrappleActivity::Attempt(a) = c.activity.as_mut().unwrap() else {
+        unreachable!()
+    };
+    a.stage = TacticalGrappleAttemptStage::Complete;
+    assert!(
+        c.validate_shape(&r, None).is_err(),
+        "complete must consume or decline the allowance"
+    );
+}
+
+#[test]
+fn equipment_decision_is_owned_by_its_actual_after_work_and_cannot_be_reused() {
+    let g = grip();
+    let mut r = resolution();
+    r.work_trace.as_mut().unwrap().nodes[1].work.kind = TacticalWorkKind::GrappleAfterEquipment {
+        grip: g.declaration.id,
+    };
+    let work = TacticalWorkKey {
+        resolution: r.origin.id,
+        occurrence: 2,
+    };
+    let a = TacticalGrappleAttempt {
+        declaration: g.declaration.clone(),
+        equipment: GrappleEquipmentAdmission {
+            equipment_before: ActorEquipmentLoadout {
+                actor: g.declaration.grappler,
+                hands: WeaponLoadout::default(),
+                worn_armor: None,
+                shield: None,
+                command: g.declaration.origin.clone(),
+            },
+            before_change: None,
+            after: Some(GrappleEquipmentDecision::Declined {
+                chosen_by: meta(7),
+                work,
+            }),
+        },
+        stage: TacticalGrappleAttemptStage::Complete,
+        selected: None,
+        save: None,
+        outcome: Some(GrappleAttemptOutcome::Withdrawn {
+            withdrawn_by: meta(6),
+            cancelled: None,
+        }),
+    };
+    let mut c = TacticalGrappleResolution {
+        activity: Some(GrappleActivity::Attempt(Box::new(a))),
+        proofs: vec![],
+        cuts: vec![],
+        ends: vec![],
+        opportunity_refreshes: vec![],
+    };
+    c.validate_shape(&r, None).unwrap();
+    let mut wrong = r.clone();
+    wrong.work_trace.as_mut().unwrap().nodes[1].work.kind = TacticalWorkKind::AttackDamage;
+    assert!(c.validate_shape(&wrong, None).is_err());
+    let GrappleActivity::Attempt(a) = c.activity.as_mut().unwrap() else {
+        unreachable!()
+    };
+    a.equipment.before_change = Some(AttackEquipmentOperation::Unequip {
+        item: ItemId::new(),
+    });
+    assert!(c.validate_shape(&r, None).is_err());
 }

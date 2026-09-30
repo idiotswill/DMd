@@ -31,23 +31,26 @@ fn validate_loadout(
     }
     Ok(())
 }
-fn apply_change(
-    input: &WeaponAttackInput<'_>,
+pub(crate) fn apply_attack_equipment_operation(
+    state: &CampaignState,
+    actor: EntityId,
+    window: WeaponActionWindow,
+    definitions: &TacticalDefinitions,
     loadout: &mut WeaponLoadout,
     change: AttackEquipmentOperation,
     hands: &EffectiveHands,
 ) -> Result<(), WeaponError> {
     require(
-        input.context.window.kind == WeaponActionKind::AttackAction,
+        window.kind == WeaponActionKind::AttackAction,
         "free equip/unequip belongs to an Attack action",
     )?;
     let id = match change {
         AttackEquipmentOperation::Equip { item, .. }
         | AttackEquipmentOperation::Unequip { item } => item,
     };
-    let item = carried_item(input.state, input.context.actor, id)?;
+    let item = carried_item(state, actor, id)?;
     require(
-        item.quantity == 1 && input.definitions.weapon(&item.definition_id).is_some(),
+        item.quantity == 1 && definitions.weapon(&item.definition_id).is_some(),
         "Attack-action equipment change is for one physical weapon",
     )?;
     match change {
@@ -86,7 +89,15 @@ pub(super) fn before_attack(
     if let Some(change) = input.choice.equipment_change
         && change.timing == EquipmentChangeTiming::BeforeAttack
     {
-        apply_change(input, &mut loadout, change.operation, hands)?;
+        apply_attack_equipment_operation(
+            input.state,
+            input.context.actor,
+            input.context.window,
+            input.definitions,
+            &mut loadout,
+            change.operation,
+            hands,
+        )?;
     }
     let assignment = HandAssignment::Item(input.choice.weapon);
     match input.choice.grip {
@@ -189,7 +200,15 @@ pub(super) fn after_attack(
                 && changed_item == input.choice.weapon),
             "the thrown weapon is no longer available to equip or unequip",
         )?;
-        apply_change(input, &mut loadout, change.operation, hands)?;
+        apply_attack_equipment_operation(
+            input.state,
+            input.context.actor,
+            input.context.window,
+            input.definitions,
+            &mut loadout,
+            change.operation,
+            hands,
+        )?;
     }
     Ok(loadout)
 }

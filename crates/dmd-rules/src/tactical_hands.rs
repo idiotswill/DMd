@@ -23,6 +23,15 @@ impl EffectiveHands {
         rules: &RulesState,
         actor: EntityId,
     ) -> Result<Self, RulesError> {
+        Self::current_inner(state, rules, actor, true)
+    }
+
+    fn current_inner(
+        state: &CampaignState,
+        rules: &RulesState,
+        actor: EntityId,
+        durable: bool,
+    ) -> Result<Self, RulesError> {
         let mut result = Self {
             actor,
             reserved: [None; 2],
@@ -49,7 +58,9 @@ impl EffectiveHands {
                 "orphaned Grapple roll authority has no hand context",
             ));
         }
-        validate_tactical_grapple_shapes(state).map_err(invalid)?;
+        if durable {
+            validate_tactical_grapple_shapes(state).map_err(invalid)?;
+        }
         let mut declarations = Vec::new();
         if let Some(live) = &rules.tactical_grapples {
             declarations.extend(live.active.iter().map(|grip| &grip.declaration));
@@ -95,6 +106,66 @@ impl EffectiveHands {
             }
         }
         Ok(result)
+    }
+
+    /// Immediate, provisional-only consumer. The excluded owned view never
+    /// escapes and cannot be cloned/cached by its caller. Source/payment checks
+    /// mint the borrowed token inside the same admission reconstruction.
+    pub(crate) fn validate_attempt_equipment(
+        proof: &crate::tactical::grapple::admission::AuthenticatedAttemptAdmission<'_>,
+    ) -> Result<(), RulesError> {
+        let state = proof.state();
+        let attempt = proof.attempt();
+        let attached = state
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .and_then(|f| f.resolution.as_ref())
+            .and_then(|r| r.grapple.as_ref())
+            .and_then(|g| g.activity.as_ref());
+        if !matches!(attached, Some(GrappleActivity::Attempt(actual)) if std::ptr::eq(actual.as_ref(), attempt))
+            || attempt.reservation().is_none()
+        {
+            return Err(invalid(
+                "own-Attempt proof is not this attached provisional record",
+            ));
+        }
+        let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+        let d = &attempt.declaration;
+        let mut hands = Self::current_inner(state, rules, d.grappler, false)?;
+        if hands.reserved[d.hand.index()] != Some(d.id) {
+            return Err(invalid("own-Attempt hand reservation differs"));
+        }
+        hands.reserved[d.hand.index()] = None;
+        let mut physical = attempt.equipment.equipment_before.clone();
+        crate::tactical_inventory::validate_loadout(state, &physical)
+            .map_err(|e| invalid(e.to_string()))?;
+        hands.validate_loadout(&physical.hands)?;
+        if let Some(operation) = attempt.equipment.before_change {
+            let definitions = crate::tactical_definitions::bundled_tactical_definitions()
+                .map_err(|e| invalid(e.to_string()))?;
+            crate::tactical_weapons::apply_attack_equipment_operation(
+                state,
+                d.grappler,
+                d.window,
+                definitions,
+                &mut physical.hands,
+                operation,
+                &hands,
+            )
+            .map_err(|e| invalid(e.to_string()))?;
+            physical.command = d.origin.clone();
+        }
+        if !hands.is_free(&physical.hands, d.hand)
+            || rules
+                .tactical_inventory
+                .as_ref()
+                .and_then(|i| i.loadout(d.grappler))
+                != Some(&physical)
+        {
+            return Err(invalid("own-Attempt physical admission differs"));
+        }
+        Ok(())
     }
 
     pub fn actor(&self) -> EntityId {

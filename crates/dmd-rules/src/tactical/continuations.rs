@@ -83,6 +83,9 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if super::grapple::is_work(&work.kind) {
+        return super::grapple::key(state, work);
+    }
     if super::shove::is_work(&work.kind) {
         return super::shove::key(state, work);
     }
@@ -110,6 +113,10 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => unreachable!("handled above"),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ShoveSave
         | TacticalWorkKind::ChooseShoveOutcome
@@ -191,13 +198,17 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
                 | TacticalRollRole::LiquidLandingCheck
                 | TacticalRollRole::Medicine
                 | TacticalRollRole::ShoveSave
+                | TacticalRollRole::GrappleSave
+                | TacticalRollRole::GrappleEscape
         )
     {
         return Ruling {
             basis: RulingBasis::HouseRule {
                 id: "ability-test-natural-extremes".into(),
             },
-            reason: if role == TacticalRollRole::Medicine {
+            reason: if role == TacticalRollRole::GrappleEscape {
+                "The table's explicit natural-1/20 rule applies to this Escape check."
+            } else if role == TacticalRollRole::Medicine {
                 "The table's explicit natural-1/20 rule applies to this Medicine check."
             } else if role == TacticalRollRole::LiquidLandingCheck {
                 "The table's explicit natural-1/20 rule applies to this landing check."
@@ -208,9 +219,13 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
-        TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => (
+        TacticalRollRole::GrappleSave => (
+            190,
+            "The target chooses Strength or Dexterity against ordinary Grapple.",
+        ),
+        TacticalRollRole::GrappleEscape => (
             182,
-            "Grapple execution is not enabled by this source/domain checkpoint.",
+            "Escape uses Athletics or Acrobatics against the established escape DC.",
         ),
         TacticalRollRole::ShoveSave => (
             190,
@@ -267,6 +282,10 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => super::grapple::request(state, work, key),
         TacticalWorkKind::ShoveSave => super::shove::request(state, work, key),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ChooseShoveOutcome
@@ -396,6 +415,9 @@ fn start_inner(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::grapple::start(state, &work)? {
+        return Ok(());
+    }
     if super::shove::start(state, &work)? {
         return Ok(());
     }
@@ -412,6 +434,10 @@ fn start_inner(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::GrappleSave { .. } | TacticalWorkKind::GrappleEscapeCheck { .. } => (),
+        TacticalWorkKind::BeginGrapple { .. } | TacticalWorkKind::GrappleAfterEquipment { .. } => {
+            return Err(invalid("Grapple choice was not handled"));
+        }
         TacticalWorkKind::ShoveSave => (),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ChooseShoveOutcome
@@ -594,6 +620,9 @@ pub(super) fn submit(
         .roller
         .ok_or_else(|| invalid("missing tactical roller"))?;
     authorize(state, meta, actor)?;
+    if let PendingPurpose::TacticalResolution { key, .. } = pending.purpose {
+        super::grapple::authorize_pending(state, meta, key)?;
+    }
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, actor)?;
     }
@@ -670,6 +699,7 @@ pub(super) fn voluntarily_fail(
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
             | TacticalRollRole::ShoveSave
+            | TacticalRollRole::GrappleSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -681,6 +711,7 @@ pub(super) fn voluntarily_fail(
             .roller
             .ok_or_else(|| invalid("missing save actor"))?,
     )?;
+    super::grapple::authorize_pending(state, meta, continuation.key)?;
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, continuation.key.subject)?;
     }
@@ -743,6 +774,12 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => {
+            return super::grapple::finish(state, meta, &pending, result, forced_success);
+        }
         TacticalWorkKind::ShoveSave => {
             return super::shove::finish_save(state, meta, &pending, result, forced_success);
         }

@@ -20,6 +20,7 @@ pub(super) fn is_failure(
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
             | TacticalRollRole::ShoveSave
+            | TacticalRollRole::GrappleSave
     ) {
         return Ok(false);
     }
@@ -28,6 +29,9 @@ pub(super) fn is_failure(
     };
     if pending.key.role == TacticalRollRole::AreaSave {
         return super::areas::save_failed(state, pending, Some(result));
+    }
+    if pending.key.role == TacticalRollRole::GrappleSave {
+        return super::grapple::save_failed(state, pending, Some(result));
     }
     if pending.key.role == TacticalRollRole::ShoveSave {
         return super::shove::save_failed(state, pending, Some(result));
@@ -216,6 +220,7 @@ pub(super) fn choose(
         .clone()
         .ok_or_else(|| prerequisite("no Legendary Resistance decision is due"))?;
     let proof = validate_failed_save(state, &failed)?;
+    super::grapple::authorize_pending(state, meta, failed.pending.key)?;
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, failed.pending.key.subject)?;
     }
@@ -235,7 +240,11 @@ pub(super) fn choose(
             .ok_or(RulesError::Uninitialized)?
             .tactical_creatures = Some(consumed);
     }
-    resolution_mut(state)?.failed_save = None;
+    // The new core consumes the actual LR decision while this exact failed
+    // tuple still exists, distinguishing decline from no LR window.
+    if failed.pending.key.role != TacticalRollRole::GrappleSave {
+        resolution_mut(state)?.failed_save = None;
+    }
     super::continuations::finish(
         state,
         meta,

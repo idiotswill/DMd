@@ -1,6 +1,7 @@
 //! Pure source-backed weapon plans. These are not player-authorized commands.
 //! The encounter resolver supplies validated truth and commits resources/receipts atomically.
 mod equipment;
+pub(crate) use equipment::apply_attack_equipment_operation;
 mod history;
 mod mastery;
 #[cfg(test)]

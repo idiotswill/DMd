@@ -86,6 +86,13 @@ impl TacticalGrappleDeclaration {
 
 impl TacticalGrappleSave {
     pub fn validate_shape(&self, declaration: &TacticalGrappleDeclaration) -> Result<(), String> {
+        self.validate_with_interim(declaration, false)
+    }
+    fn validate_with_interim(
+        &self,
+        declaration: &TacticalGrappleDeclaration,
+        interim: bool,
+    ) -> Result<(), String> {
         not_before(&self.chosen_by, &declaration.origin)?;
         require(
             self.key.origin == declaration.origin.id
@@ -111,7 +118,7 @@ impl TacticalGrappleSave {
         }
         let Some(proof) = &self.proof else {
             return require(
-                self.request.is_some(),
+                self.request.is_some() || interim,
                 "unresolved save has no physical request",
             );
         };
@@ -422,8 +429,30 @@ impl TacticalGrappleResolution {
                         attempt.declaration.origin.campaign_id == resolution.origin.campaign_id,
                         "attempt belongs to another campaign",
                     )?;
+                    attempt
+                        .equipment
+                        .validate_shape(&attempt.declaration, resolution)?;
+                    require(
+                        (attempt.stage == TacticalGrappleAttemptStage::Complete
+                            && (attempt.equipment.before_change.is_some()
+                                != attempt.equipment.after.is_some()))
+                            || (attempt.stage != TacticalGrappleAttemptStage::Complete
+                                && attempt.equipment.after.is_none()),
+                        "Grapple equipment decision/stage differs",
+                    )?;
                     if let Some(save) = &attempt.save {
-                        save.validate_shape(&attempt.declaration)?;
+                        let interim = resolution.failed_save.as_ref().is_some_and(|failed| {
+                            failed.pending.key == save.key
+                                && failed.result.is_none()
+                                && failed.pending.work.kind
+                                    == TacticalWorkKind::GrappleSave {
+                                        grip: attempt.declaration.id,
+                                    }
+                        }) || matches!(
+                            attempt.outcome,
+                            Some(GrappleAttemptOutcome::Withdrawn { .. })
+                        );
+                        save.validate_with_interim(&attempt.declaration, interim)?;
                     }
                     if let Some((_, actor, hand)) = attempt.reservation() {
                         require(
@@ -564,6 +593,51 @@ impl TacticalGrappleResolution {
                     "grapple fall source identity differs",
                 )?;
             }
+        }
+        Ok(())
+    }
+}
+
+impl GrappleEquipmentAdmission {
+    fn validate_shape(
+        &self,
+        declaration: &TacticalGrappleDeclaration,
+        resolution: &TacticalResolution,
+    ) -> Result<(), String> {
+        require(
+            self.equipment_before.actor == declaration.grappler,
+            "Grapple equipment belongs to another actor",
+        )?;
+        not_before(&declaration.origin, &self.equipment_before.command)?;
+        require(
+            self.before_change.is_none() || self.after.is_none(),
+            "Grapple equipment allowance used twice",
+        )?;
+        if let Some(after) = &self.after {
+            let (chosen_by, work) = match after {
+                GrappleEquipmentDecision::Declined { chosen_by, work } => (chosen_by, *work),
+                GrappleEquipmentDecision::Applied {
+                    chosen_by,
+                    work,
+                    equipment_before,
+                    ..
+                } => {
+                    require(
+                        equipment_before.actor == declaration.grappler,
+                        "after equipment belongs to another actor",
+                    )?;
+                    meta(&equipment_before.command)?;
+                    (chosen_by, *work)
+                }
+            };
+            not_before(chosen_by, &declaration.origin)?;
+            require(
+                node(resolution, work)?.work.kind
+                    == TacticalWorkKind::GrappleAfterEquipment {
+                        grip: declaration.id,
+                    },
+                "equipment decision names another work",
+            )?;
         }
         Ok(())
     }

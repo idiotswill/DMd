@@ -70,7 +70,7 @@ fn host_source(state: &CampaignState, actor: EntityId) -> bool {
         })
 }
 
-fn source_pin(
+pub(super) fn source_pin(
     state: &CampaignState,
     actor: EntityId,
 ) -> Result<Option<CreatureSourcePin>, RulesError> {
@@ -122,7 +122,11 @@ fn source_pin(
     }
 }
 
-fn opposition(state: &CampaignState, actor: EntityId, target: EntityId) -> Result<(), RulesError> {
+pub(super) fn opposition(
+    state: &CampaignState,
+    actor: EntityId,
+    target: EntityId,
+) -> Result<(), RulesError> {
     let e = encounter(state)?;
     let a = e
         .participant(actor)
@@ -147,7 +151,7 @@ fn opposition(state: &CampaignState, actor: EntityId, target: EntityId) -> Resul
     Ok(())
 }
 
-fn difficulty(state: &CampaignState, actor: EntityId) -> Result<i32, RulesError> {
+pub(super) fn difficulty(state: &CampaignState, actor: EntityId) -> Result<i32, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let entity = rules
         .entities
@@ -169,7 +173,7 @@ fn difficulty(state: &CampaignState, actor: EntityId) -> Result<i32, RulesError>
     Ok(8 + crate::ability_modifier(entity.ability_scores[Ability::Strength.index()]) + proficiency)
 }
 
-fn cover_bonus(
+pub(super) fn cover_bonus(
     state: &CampaignState,
     actor: EntityId,
     target: EntityId,
