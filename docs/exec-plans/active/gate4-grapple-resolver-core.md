@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: checked-in plan, 2026-09-30; no core implementation or passing tests yet. Root owns this new checkout during plan review. Source authoring follows the explicit sole-writer handoff and independent plan challenge.
+Status: guarded core authoring in progress, 2026-09-30. Sole writer: shove_publish_correction, explicitly assigned by root after independent exact-plan CLEAR on cbce4ae5cd5399e758d7d57135b97820efb9a8d0. No core compilation or tests run; root retains the heavy slot. Review memo SHA256 fe25aa369d73ea76b3410ecab755559daba018591f03fc9af6f2c8def117ed31. All public guards remain required.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
