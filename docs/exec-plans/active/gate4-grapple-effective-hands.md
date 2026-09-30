@@ -300,3 +300,26 @@ and continue the full resolver contract through its own reviewed plan. Canonical
 local verification, genuine old-history continuation, accepted lifecycle,
 transport/UI/privacy and native evidence all remain outstanding. Draft
 publication is not gameplay publication, slice acceptance or Gate4 completion.
+
+
+### First executable finding and narrow correction
+
+Draft PR54 published exact `b5572e3cd8c274609013c2befdba9366acb9fd31` against
+Shove c112. Linux runtime job110034741249 in
+[run36758500747](https://github.com/idiotswill/DMd/actions/runs/36758500747)
+passed fast verification, then failed strict Clippy at opportunity.rs:151 with
+`clippy::items_after_test_module`: the new `hand_tests` module precedes the
+existing production functions. The job completed normally at18:27:04Z; its
+workspace runtime tests never started. Full log SHA256 is
+`8f5c0e27dca3e0774a3f8fa0c0e9ca15ac69d365577e98f34b817c114b1f1804`, preserved in
+external `tooling/grapple-b5572e3-ci/job-110034741249.log`. Earlier independent
+static review missed this placement issue. Windows results remain pending.
+
+Root's narrow correction moves the entire unchanged test module after the
+production functions. Byte comparison verifies every test body and the complete
+production portion are unchanged. No lint allow/suppression, assertion change,
+guard relaxation or gameplay change is introduced. Direct formatter and diff
+checks are static only; fresh Clippy and runtime proof remain required. Preserve
+all original b557 results, allow its existing Windows run to finish, and publish
+the correction with any further justified findings after review. No local heavy
+operation accompanies this correction.
