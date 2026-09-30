@@ -2,6 +2,7 @@
 
 Status: implementation authored; static checks only, no executable verification or acceptance yet.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
+Writer: coordinating root, 2026-09-30; the source agent has handed back the clean branch.
 
 ## Objective and authority
 
@@ -138,4 +139,26 @@ and table-loop source creation tests, frontend tests/check/build, and unchanged
 historical replay/retry suites. Resolve actual failures without weakening evidence.
 New Air tabletop placement/initiative and the eventual genuine Shove immune
 no-effect retry/reopen proof remain required before claiming those gameplay paths.
-No push/merge or Gate4 completion is implied by this checkpoint.
+No merge or Gate4 completion is implied by this checkpoint.
+
+### Draft verification checkpoint — 2026-09-30
+
+Root reviewed the independent complete 51-file static review of source
+`4a27cb0776f1ba5efe0bc2c9fa4a3e782093039e`, full tree
+`e1e90f9fa046505cd79dfd0275cc00acface1e00`. No actionable static defect was found;
+source fidelity, all six installed manifest lengths/checksums, unchanged V1 Git
+blobs, exact source resolution, live/replay admission and explicit unsupported
+boundaries were checked. Formatting and whitespace checks pass. This adds no
+passing Rust, frontend, application, native or compatibility result.
+
+Root now authorizes draft publication to run remote CI while the local heavy slot
+continues the original flow 4 capture and baseline. This supersedes the earlier
+agent publication hold only. Main remains fixed at verified c4d8 until that
+original-source proof completes; neither this draft nor a green CI result can
+waive the remaining acceptance above. This checkpoint changes documentation only.
+
+Next action: inspect actual draft CI output and fix concrete failures; run local
+focused/canonical and frontend checks when the heavy slot is available. Preserve
+the exact old exports and prove their continuations under this source before
+acceptance. Reconcile accepted dependency movement, review the final full diff,
+and complete native source/placement evidence before any protected merge.
