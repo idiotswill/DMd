@@ -334,7 +334,7 @@ async fn prepare(f: &mut Fixture, path: &Path) -> EntityId {
         path,
         TableTransportChannel::Host,
         action(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: actors[0],

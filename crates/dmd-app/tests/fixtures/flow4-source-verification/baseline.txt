@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+     Running tests\flow4_original_source_baseline.rs (<verification-workspace>\tooling\target\debug\deps\flow4_original_source_baseline-2692cacf67c2e648.exe)
+
+running 8 tests
+test all_flow4_faces_keep_original_impacts_and_concentration_children ... ok
+test committed_flow4_hold_person_keeps_its_paid_source_and_original_first_save ... ok
+test fifth_flow4_child_resumes_the_last_automatic_singleton_and_its_save ... ok
+test first_flow4_concentration_child_precedes_the_remaining_five_darts ... ok
+test genuine_flow4_selected_owned_shield_finishes_as_a_miss_without_replacing_dice ... ok
+test selected_owned_flow4_missile_shields_pay_once_then_prevent_all_six_darts ... ok
+test seven_original_flow4_exports_restore_cold_and_retry_every_original_binding ... ok
+test three_flow4_faces_continue_through_barrier_and_six_concentration_children ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 10897.39s
+

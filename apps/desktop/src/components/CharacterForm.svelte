@@ -68,7 +68,7 @@
     <p aria-live="polite"><strong>Remaining: {money(remaining)}</strong></p>
     <label class="check"><input type="checkbox" bind:checked={armor} disabled={!quantities['leather-armor']} />Wear purchased Leather Armor</label>
     <label class="check"><input type="checkbox" bind:checked={shield} disabled={!quantities.shield} />Equip purchased Shield</label>
-    <p class="muted">Buying an item does not execute its use. Weapon properties, ammunition and hand requirements are not yet resolved by this table interface.</p>
+    <p class="muted">After creating your character, prepare these purchases from the character sheet before using them in an encounter.</p>
     {#if error}<p role="alert" class="error">{error}</p>{/if}
     <button type="submit" disabled={!playerId}>Create character</button>
   </fieldset>

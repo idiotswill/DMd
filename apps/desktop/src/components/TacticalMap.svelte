@@ -1,11 +1,12 @@
 <script lang="ts">
   import type { TacticalView } from '../tactical-api';
-  import type { CharacterView } from '../table-api';
-  let { tactical, characters }: { tactical: TacticalView; characters: CharacterView[] } = $props();
-  const tokens = $derived(tactical.battlefield ? tactical.participants.map(p=>({id:p.entity_id,label:p.public_label,position:p.position,remembered:false})) : tactical.observers.flatMap(observer=>[
+  import type { CharacterView, Id } from '../table-api';
+  let { tactical, characters, actor }: { tactical: TacticalView; characters: CharacterView[]; actor: Id|null } = $props();
+  const observers = $derived(tactical.observers.filter(observer=>observer.observer===actor));
+  const tokens = $derived(tactical.battlefield ? tactical.participants.map(p=>({id:p.entity_id,label:p.public_label,position:p.position,remembered:false})) : observers.flatMap(observer=>[
     ...(observer.position ? [{id:observer.observer,label:characters.find(c=>c.entity_id===observer.observer)?.name ?? 'You',position:observer.position,remembered:false}] : []),
     ...observer.contacts.map(contact=>({id:`${observer.observer}-${contact.entity_id}`,label:contact.label ?? (contact.status==='Remembered'?'Last known position':'Located creature'),position:contact.position,remembered:contact.status==='Remembered'}))]));
-  const cells = $derived(tactical.observers.flatMap(observer=>observer.cells));
+  const cells = $derived(observers.flatMap(observer=>observer.cells));
   const points = $derived([...cells.map(c=>c.position),...tokens.map(t=>t.position)]);
   const minX = $derived(tactical.battlefield?.bounds.min.x ?? Math.min(0,...points.map(p=>p.x)));
   const minY = $derived(tactical.battlefield?.bounds.min.y ?? Math.min(0,...points.map(p=>p.y)));

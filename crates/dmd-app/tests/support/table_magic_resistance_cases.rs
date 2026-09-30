@@ -249,7 +249,7 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
     Box::pin(submit(
         f,
         tactical(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::ShieldMissileV1,
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
             combatants,
             groups,
         }),

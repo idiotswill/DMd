@@ -77,9 +77,10 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | 'FinishEncounter'
   | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
-  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' | 'ShieldMissileV1' } }
+  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' } }
   | { HitResponse: { handle: Id; decision: HitDecision } }
   | { MissileResponse: { handle: Id; decision: MissileDecision } }
   | { AbandonReady: { actor: Id } }
@@ -100,12 +101,13 @@ export type TacticalAction =
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
-  | { Begin: { execution: 'ShieldMissileV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
+  | { Begin: { execution: 'ShieldMissileV1' | 'EncounterReleaseV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
-  execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | null;
+  execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | null;
+  release?: { may_finish: boolean; blocker: string | null; required_actors: Id[] } | null;
   hit?: HitView | null;
   missile?: MissileView | null;
   aftermath?: { cadence: 'ContinueExistingOrder'; host_ruling: string | null; may_pause_session: boolean };
