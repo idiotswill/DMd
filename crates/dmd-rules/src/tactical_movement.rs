@@ -364,6 +364,7 @@ pub(crate) fn admit(
         capability(state, actor, step.mode)?;
     }
     Ok(TacticalMovement {
+        grapple_self_only: None,
         origin: meta.clone(),
         actor,
         path: path.to_vec(),

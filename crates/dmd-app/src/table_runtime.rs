@@ -52,6 +52,9 @@ pub(crate) fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> Str
     match purpose {
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::TacticalResolution { key, .. } => match key.role {
+            // No current producer can issue these roles; runtime admission rejects
+            // all Grapple records until the separately reviewed resolver exists.
+            TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => "Unsupported roll",
             TacticalRollRole::ShoveSave => "Shove saving throw",
             TacticalRollRole::Medicine => "Wisdom (Medicine) first aid",
             TacticalRollRole::SecondWind => "Second Wind healing",

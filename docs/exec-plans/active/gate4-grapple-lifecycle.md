@@ -1,8 +1,9 @@
 # Gate 4 — Grapple and Escape lifecycle
 
 Writer: `gate4_shove_recovery`, coordinated by root. Branch:
-`codex/gate4-grapple-lifecycle`. Status: **amended plan only, awaiting root review
-of the temporal/data contract; no implementation or executable verification**.
+`codex/gate4-grapple-lifecycle`. Status: **root-approved source/domain checkpoint
+authored for independent review; no gameplay implementation or executable
+verification**.
 Date: 2026-09-30.
 
 Development base: `387b74241d1870964be0e88cb0f3216e151c9b55`, tree
@@ -11,7 +12,7 @@ parent and normal integration of corrected Air source `021421c4`. These are
 unaccepted development dependencies, not evidence of a merged feature. At initial
 plan creation, a fresh `git fetch origin main` resolved main to
 `c4d8c34c19b5c92eca789f292f99632a0107d861`. The supplied development checkout is
-clean and stays on its explicitly assigned base. PR51 and other branches belong
+was clean and stays on its explicitly assigned base. PR51 and other branches belong
 to root; this plan does not authorize editing them.
 
 ## Objective and authority
@@ -129,13 +130,16 @@ later integration; never replace Air or an old revision by an ID-only match.
 Root's source investigation identifies an existing genuine coexistence starting
 point: `crates/dmd-app/tests/fixtures/reactions-v1-upgrade-100c7da.json` retains
 the old Goblin alive at HP4 in settled flow2. The planned production proof, after
-release5 integration, is an actual owner EndTurn to clear its open Attack-action
-window, explicit `UpgradeExecutionTo(EncounterReleaseV1)`, `ConcludeHostilities`,
-`FinishEncounter`, and normal current-catalog creation of the exact new Goblin
+release5 integration, is explicit `UpgradeExecutionTo(EncounterReleaseV1)`
+**first**, then the actual owner's EndTurn to clear its empty retained
+Attack-action window, `ConcludeHostilities`, `FinishEncounter`, and normal
+current-catalog creation of the exact new Goblin
 pin in that same campaign. Preserve the original Goblin/source throughout, then
 verify cold accepted retries and original export/restore. This is a source-read
 candidate path identified by root, not an executed test or an already accepted
-release outcome. It avoids assuming a new historical capture is necessary and
+release outcome. The corrected order matters: release5's live-execution guard
+forbids a fresh legacy-flow2 EndTurn, while its explicit upgrade guard permits
+this settled empty Attack-action window. It avoids assuming a new historical capture is necessary and
 does not authorize creating an old pin through the new live picker.
 
 New Grapple admission checks, before payment: actual active-turn controller;
@@ -387,8 +391,9 @@ geometry. This temporary admission limit is not permission to close Gate4.
 
 ## Proposed optional records and cut validation
 
-The following is the concrete schema proposal for root review, not implemented
-types or authority granted by deserialization. Use existing `CommandMeta`,
+The following is the reviewed schema contract. Its source/domain types and local
+shape controls are now authored; they grant no runnable authority at this
+checkpoint. Use existing `CommandMeta`,
 `TacticalWorkKey`, `TacticalRollKey`, `Hand`, source-pin and spatial types. New IDs
 have separate deterministic domains; no raw-role occurrence is consumed for a
 free release. All optional fields default to None and omit None; producers write
@@ -400,8 +405,8 @@ counts; do not invent a scene, command, grip or history cap.
 | Attachment/type | Proposed exact contents and role |
 | --- | --- |
 | `RulesState.tactical_grapples: Option<TacticalGrapples>` | Version1 plus deterministic ordered `active: Vec<TacticalGrip>`. This is the only live relation authority and is absent when active is empty. Pending attempts live in the resolution, not as provisional live conditions. |
-| `TacticalGrip` | `id`, original paid `CommandMeta` and attack window, `grappler`, `target`, selected `Hand`, typed anatomy/source proof, range, escape DC, final save key/proof reference and establishment command/work. ID derives from the actual paid command, actors and selected hand. Use full creature pins; Human proof requires the reconstructed admitted character profile, not a string or a new client hash. The source proof records the approved ordinary-hand interpretation. |
-| `TacticalResolution.grapple: Option<TacticalGrappleResolution>` | `activity: Option<GrappleActivity>` with Attempt/Escape stage variants, immutable `proofs: Vec<TacticalGrip>`, `cuts: Vec<GrappleReadCut>`, `ends: Vec<GrappleEndReceipt>`, and `opportunity_refreshes: Vec<GrappleOpportunityRefresh>`. Activity data reuses paid save/check and existing request/work identities; an attempt retains its selected-hand reservation before a live grip exists. Activity may be absent while other work consumes proofs. This does not execute a second queue. Proofs may retain an ended grip only while suspended work references it; they never project a live condition or reserve a hand. |
+| `TacticalGrip` | `declaration: TacticalGrappleDeclaration` owns `id`, original paid `CommandMeta` and attack window, `grappler`, `target`, selected `Hand`, typed anatomy/source proof, original body positions, range and escape DC. `save: TacticalGrappleSave` owns the chosen save/request/final proof; `established_by` and `work` retain the actual establishing command and work. ID derives from the actual paid command, actors and selected hand. Use full creature pins; Human proof requires the reconstructed admitted character profile, not a string or a new client hash. The source proof records the approved ordinary-hand interpretation. |
+| `TacticalResolution.grapple: Option<Box<TacticalGrappleResolution>>` | `activity: Option<GrappleActivity>` with boxed Attempt/Escape stage variants, immutable `proofs: Vec<TacticalGrip>`, `cuts: Vec<GrappleReadCut>`, `ends: Vec<GrappleEndReceipt>`, and `opportunity_refreshes: Vec<GrappleOpportunityRefresh>`. Activity data reuses paid save/check and existing request/work identities; an attempt retains its selected-hand reservation before a live grip exists. Activity may be absent while other work consumes proofs. This does not execute a second queue. Proofs may retain an ended grip only while suspended work references it; they never project a live condition or reserve a hand. |
 | `GrappleCutKey` / `GrappleReadCut` | Key is existing work key plus closed reader discriminator: `AttackAdmission { attack: CommandId }`, `RequestIssue { roll: TacticalRollKey }`, or `FlightLoss { actor: EntityId }`. Record exact issue command, sorted unique relevant grip IDs referencing `proofs`, and `source_attack: Option<GrappleCutKey>` for an inherited attack descendant only. The reader determines the complete relevant actor/relation set; the client cannot select a convenient subset. |
 | `GrappleEndReceipt` | Grip ID, actual causing `CommandMeta`, and a closed cause: owner `Released`; `Escaped { roll, work }`; `Incapacitated { work }`; `Dead { work }`; or `OutOfRange { work, moved_actor }`. Work-bearing causes refer to the exact existing effect/vitality/position producer and its retained ancestry/receipts. Owner release has no invented executing work node; any affected wait is identified by its existing cut/window. Original replay proves the prior grip and actual transition. |
 | `GrappleOpportunityRefresh` | Original window work key, movement/window origin, reactor and step; causing end-receipt reference; exact previous and resulting ordered option vectors. The chain explains an update to the existing window, without replacing its origin, crossing, frame or offered/answered history. Unchanged vectors do not need a refresh record. |
@@ -455,6 +460,44 @@ in `RulesState`. Recovery anchors must reject injected active grips **or** retai
 proof/cut/refresh/self-only authority; collect every new origin for the same
 original-anchor replay used by other tactical provenance. A nearest snapshot
 containing a convenient old grip is not a substitute for its original commands.
+
+Record-shape constraints from independent review `318649ed` are part of the
+implementation contract:
+
+- A work key identifies its enclosing resolution and occurrence; a paid roll key
+  identifies its actual action origin, role, subject and occurrence. Nested work
+  may have different resolution and paid origins. Do not equate them. The local
+  shape controls keep both identities; later rules must match actual node kinds,
+  parent records and source programs, and original replay must prove producers.
+- Establishment, flight loss and range break can share one accepted command.
+  Their ordering requires the actual later child ancestry, rather than a strict
+  event-sequence increment or an occurrence-number comparison. Free owner
+  release is a separate accepted command. `source_attack` is a direct,
+  same-attack AttackAdmission reference with identical relation IDs; its source
+  cannot itself inherit, and another request cannot stand in for that admission.
+- A pending Attempt reserves its exact `(grip ID, actor, hand)` even when the
+  live attachment is None. Only reconstruction of that same paid admission may
+  recognize its own reservation. A resisted/withdrawn attempt or an ended proof
+  does not reserve a hand. The later effective-hand implementation must consume
+  the provisional reservation and install live authority atomically.
+- Final saves retain either the canonical physical roll reference or the real
+  `TacticalSaveDecision` for automatic/voluntary failure. Automatic failure has
+  no physical request; voluntary failure retains its issued request. The chosen
+  ability, issue/finalizer, actual LR decision and final success remain distinct.
+  Later rules/replay must authenticate final arithmetic, ownership, relevant
+  source conditions and the existing LR receipt; these shape records cannot
+  authorize a forged success/failure or fabricate dice.
+- A live grip can outlast its establishing resolution. Its historical work
+  reference does not demand that the retired trace still exist as current work.
+  Consumer resolutions copy its immutable proof and require equality while it
+  remains live. Preserve proofs/ends/cuts until the actual last consumer retires,
+  including completed falls with concentration children, refreshed OA chains and
+  the original self-only route. Do not retire them merely when an attack ends.
+- The no-authority path and recovery guards inspect provisional and retained
+  fields, including orphan self-only movement and causal fall fields, rather
+  than only live grips. Old schemas/executors cannot acquire authority by
+  deserialization. Full origin collection and original-anchor replay validation
+  are prerequisites to removing the temporary checkpoint rejection below.
 
 ## Version, wire, ownership and recovery proof
 
@@ -660,10 +703,53 @@ silently drop samples to fit them.
 
 ## Current status, risks and exact next action
 
-Only read-only source inspection and this plan have occurred on this branch.
-No Cargo/npm/build/test, database, native UI or GitHub publication was performed.
-Root holds the heavy slot for independent original-history work. No test result,
-source admission, grip lifecycle or native behavior is claimed here.
+Root approved bounded source/domain implementation from exact amended plan
+`3338fbf51a2cba8b7b3938c2b292e76e617323dd`, tree
+`af3e4fd38f61afff4b8e3a3baafeff1a3af8713c`, after the independent record-shape
+review in `tooling/gate4-grapple-amended-record-shape-review-2026-09-30.md`
+(external SHA256
+`318649ed1b20c6163698ff7d1b3afb55b0ada68fe9ea20bcd881ae39cfe51c6d`).
+Root separately approved a narrow fail-closed guard for every new live,
+provisional, retained or raw-only Grapple record until the full resolver exists.
+
+Authored checkpoint scope:
+
+- New immutable `goblin-warrior-v2.json` differs from the frozen Goblin only by
+  typed `TwoHandsV1` anatomy. A source loader enforces that equality. The current
+  registry selects its exact new pin; immutable lookup and ID-only helpers retain
+  V1. The actual manifest generator and distributed exact-file assertion include
+  the seventh payload. Other sources receive no inferred hands.
+- The pure anatomy query reconstructs the actual supported Human creation
+  profile/mechanics, or validates the actual creature profile and full source
+  pin. No human-readable name/type or default two-slot inventory grants anatomy.
+- Domain records implement the attachments/table above, physical versus no-die
+  save evidence, provisional reservation identity and append-only raw tags19/20.
+  Local shape validation checks identities, nonempty ordered live hands, direct
+  inheritance, chronological/causal endings and retained consumer references.
+  Existing constructors write None, and absent fields retain old JSON omission.
+- Kernel and tactical validation reject all new Grapple records, including new
+  raw roles without an attachment. Restore-anchor and old-schema preflight
+  exclusions are authored. This is an intentionally unaccepted checkpoint:
+  structural validity never makes these states executable. No command, work-kind
+  producer, condition projection, effective-hand planner, resolver, table action,
+  desktop control or functional Grapple/Escape/release is exposed.
+- Authored synthetic domain controls cover save evidence, one-hand occupancy,
+  provisional/retired distinctions, nested origins/direct inheritance, same-
+  command ancestry, retained movement/OA/fall consumers, optional absence,
+  unknown fields and stable old/new roll tags. Source controls read the genuine
+  old Goblin export without rewriting it, preserve its fingerprint and JSON
+  value, reconstruct its Human, and label pure new-source construction separately
+  from production coexistence. Hostile runtime and old-schema/duplicate-field
+  controls assert rejection. Fresh current-Goblin table fixtures select the new
+  current pin; historical captures and journals remain unchanged.
+
+Verification status: direct toolchain `rustfmt` parsing/formatting and Git diff
+checks only; the actual manifest generator was run as source metadata generation.
+All authored Rust tests are **unrun**. No Cargo build/check/test/clippy, npm,
+database, native UI or GitHub publication was performed. Root holds the heavy
+slot for independent original-history work. Compilation, behavioral source
+admission, byte-exact replay, cold continuation and native acceptance are not
+established by this checkpoint.
 
 Review amendment, 2026-09-30: independent review of plan commit
 `2213790271b6553d389450f22f819f003672b4d1` (tree
@@ -676,16 +762,22 @@ its corrected SHA256 is
 Its initial base-tree transcription was explicitly corrected by the reviewer.
 Root accepted its substantive findings and the documented Human/Goblin ordinary
 two-hand and death/living-holder interpretations. Root authorized this plan-only
-amendment, not gameplay implementation. All new controls above are future work.
+amendment, not gameplay implementation. The later source/domain authorization
+and authored-only status are recorded above; the gameplay acceptance controls
+remain future work.
 
 Principal remaining review risks are the exact temporal record/reader coverage,
 all effective-hand callers, strict original-replay/retirement proof and
-flight/forced-displacement ordering. The immutable source revision still needs
-implementation and content verification. These are engineering/source proof
+flight/forced-displacement ordering. The immutable source revision needs
+independent review and executable content/source verification. The full resolver
+must replace the checkpoint guard with authenticated source/admission/result
+validation, exact consumer retention/retirement, origin collection and original
+replay before any gameplay acceptance or publication. These are engineering/source proof
 obligations within Gate4, not requests to waive product acceptance.
 
-Exact next action: commit this one-file amendment and send root its full SHA/tree
-for review of the proposed data/version contract. Wait for explicit root gameplay
-authorization; do not implement, build, run tests or publish. Keep this checkout/
-branch the sole write target. Subsequent approval, authored work and verified
-results must be recorded separately.
+Exact next action: finish static review, commit this bounded source/domain
+checkpoint, and send root its full SHA/tree and qualified diff scope for fresh
+independent review. Stop before resolver/gameplay/transport/UI implementation;
+do not build, run tests or publish. Keep this checkout/branch the sole write
+target. Further authoring and later serial executable verification require root's
+coordination and must be recorded separately.

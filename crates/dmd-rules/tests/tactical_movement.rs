@@ -100,6 +100,7 @@ impl Fixture {
             },
         );
         state.rules = Some(RulesState {
+            tactical_grapples: None,
             tactical_recovery: None,
             tactical_creatures: None,
             tactical_inventory: None,

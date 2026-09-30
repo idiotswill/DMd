@@ -32,7 +32,10 @@ pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId
                 definition_id: "goblin-warrior".into(),
                 source: Some(
                     dmd_rules::tactical_creatures::creature_source_pin(
-                        dmd_rules::tactical_creatures::creature_definition("goblin-warrior")
+                        dmd_rules::tactical_creatures::current_creature_sources()
+                            .unwrap()
+                            .into_iter()
+                            .find(|source| source.id == "goblin-warrior")
                             .unwrap(),
                     )
                     .unwrap(),

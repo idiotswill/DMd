@@ -267,6 +267,7 @@ pub(super) fn begin(
     flow_mut(state)?.budget = budget;
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
         turn_number,
