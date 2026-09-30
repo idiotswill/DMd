@@ -262,3 +262,19 @@ allowances, opportunity/Ready Shove, other mastery/spell displacement, teleport,
 mounts, full zone contacts, improvised object/body/self actions, natural tactical
 intent, typed consent, and all other twelve-family/eighteen-mechanism obligations.
 No next gate begins and no scope reduction is implied by this bounded slice.
+
+### First remote verification finding — 2026-09-30
+
+Draft head `d8e1c7290fdf3787fa2e34eedd71bdc7d5c93bbc` failed strict Clippy on
+both Linux and Windows stable before Rust workspace tests ran. The finding was
+`collapsible_if` in the Shove save-parent validator. Collapse that nested guard
+without changing either parent/occurrence predicate, evaluation order or error.
+The strict lint remains enabled. Both MSRV checks, architecture and genericity
+checks passed; both Windows frontend runs passed 122 tests across 19 files with
+zero Svelte errors or warnings. No Rust runtime or package acceptance follows
+from those partial results.
+
+All six original job logs and the failed source/tree identity are preserved in
+root's external `tooling/shove-d8e1c72-ci/failure-evidence.json`. The correction
+requires a fresh remote run; local heavy verification remains reserved for the
+original-source baseline. All remaining acceptance obligations above still apply.

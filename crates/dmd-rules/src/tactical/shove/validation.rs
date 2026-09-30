@@ -350,12 +350,11 @@ fn validate_ancestry(r: &TacticalResolution, s: &TacticalShove) -> Result<(), Ru
             "Shove causal nodes are absent, duplicated or premature",
         ));
     }
-    if let Some(save) = &s.save {
-        if saves[0].parent != Some(begin[0].work.occurrence)
-            || saves[0].work.occurrence != save.key.occurrence
-        {
-            return Err(invalid("Shove save has another selected parent"));
-        }
+    if let Some(save) = &s.save
+        && (saves[0].parent != Some(begin[0].work.occurrence)
+            || saves[0].work.occurrence != save.key.occurrence)
+    {
+        return Err(invalid("Shove save has another selected parent"));
     }
     if failed && outcomes[0].parent != Some(saves[0].work.occurrence) {
         return Err(invalid("Shove outcome is not a child of its failed save"));
