@@ -113,6 +113,16 @@ pub(super) fn opportunity(
     };
     let mut weapons = super::attacks::options(state, window.reactor)?;
     if let Some(options) = &mut weapons {
+        let rules = state
+            .rules
+            .as_ref()
+            .ok_or("Opportunity rules are absent.")?;
+        let hands =
+            dmd_rules::tactical_hands::EffectiveHands::current(state, rules, window.reactor)
+                .map_err(|error| error.to_string())?;
+        hands
+            .validate_loadout(&options.hands)
+            .map_err(|error| error.to_string())?;
         options.targets = vec![target.clone()];
         options.weapons.retain(|weapon| {
             window.options.iter().any(|option|
@@ -123,19 +133,8 @@ pub(super) fn opportunity(
             weapon.deliveries = vec![WeaponDelivery::Melee];
             weapon.purposes = vec![WeaponAttackPurpose::Normal];
             weapon.grips.retain(|grip| match grip {
-                WeaponGrip::OneHand(hand) => {
-                    options.hands.hands[hand.index()] == HandAssignment::Item(weapon.item)
-                }
-                WeaponGrip::TwoHands => {
-                    options
-                        .hands
-                        .hands
-                        .contains(&HandAssignment::Item(weapon.item))
-                        && options.hands.hands.iter().all(|hand| {
-                            *hand == HandAssignment::Free
-                                || *hand == HandAssignment::Item(weapon.item)
-                        })
-                }
+                WeaponGrip::OneHand(hand) => hands.holds(&options.hands, *hand, weapon.item),
+                WeaponGrip::TwoHands => hands.can_use_two_hands(&options.hands, weapon.item),
             });
         }
         options.weapons.retain(|weapon| !weapon.grips.is_empty());

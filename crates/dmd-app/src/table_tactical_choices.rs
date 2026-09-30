@@ -328,6 +328,7 @@ mod tests {
         };
         let mut resolution = TacticalResolution {
             origin,
+            grapple: None,
             turn_actor: own_actor,
             turn_number: 4,
             boundary: TurnBoundary::Start,
@@ -405,6 +406,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            grapple: None,
             origin: origin.clone(),
             turn_actor: actor,
             turn_number: 1,

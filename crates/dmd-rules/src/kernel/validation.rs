@@ -426,6 +426,13 @@ pub(super) fn validate_entity(
     Ok(())
 }
 pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
+    // Source/domain-only checkpoint: structural records cannot authorize play.
+    // Replace with full source/causal validation only in the reviewed resolver slice.
+    if has_unimplemented_grapple_records(state) {
+        return Err(invalid(
+            "Grapple execution is not enabled by this source/domain checkpoint",
+        ));
+    }
     if let Some(history) = &state.encounter_history {
         history.validate(state).map_err(invalid)?;
     }
@@ -584,6 +591,9 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 return Err(invalid("invalid tactical roll identity"));
             }
             let expected = match key.role {
+                TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => {
+                    return Err(invalid("Grapple raw history has no enabled producer"));
+                }
                 TacticalRollRole::DeathSave
                 | TacticalRollRole::EffectSave
                 | TacticalRollRole::Attack

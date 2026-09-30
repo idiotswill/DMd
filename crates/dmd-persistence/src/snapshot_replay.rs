@@ -66,10 +66,11 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Legacy versions must not acquire future authority merely because their JSON has extra fields.
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
-    if legacy
-        .table
-        .as_ref()
-        .is_some_and(|table| table.source_actor_access.is_some())
+    if dmd_domain::has_unimplemented_grapple_records(legacy)
+        || legacy
+            .table
+            .as_ref()
+            .is_some_and(|table| table.source_actor_access.is_some())
         || legacy.encounter.is_some()
         || legacy.rules.as_ref().is_some_and(|rules| {
             rules.tactical_effects.is_some()
@@ -101,6 +102,7 @@ pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
         tactical_inventory: Option<serde_json::Value>,
         tactical_recovery: Option<serde_json::Value>,
         tactical_creatures: Option<serde_json::Value>,
+        tactical_grapples: Option<serde_json::Value>,
     }
     let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
     if probe.rules.is_some_and(|rules| {
@@ -108,6 +110,7 @@ pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
             || rules.tactical_inventory.is_some()
             || rules.tactical_recovery.is_some()
             || rules.tactical_creatures.is_some()
+            || rules.tactical_grapples.is_some()
     }) {
         return Err("legacy state unexpectedly contains tactical effect authority".into());
     }

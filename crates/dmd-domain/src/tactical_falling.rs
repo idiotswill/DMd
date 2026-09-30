@@ -52,6 +52,14 @@ pub enum TacticalFallStage {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalFallCause {
+    /// New ordinary grip actually removed sustaining non-Hover flight. Rules and
+    /// original replay must authenticate the cause even after that grip ends.
+    GrappleFlightLost {
+        grip: crate::GrappleId,
+        consequence: CommandMeta,
+        work: crate::TacticalWorkKey,
+        cut: crate::GrappleCutKey,
+    },
     /// A source-bound Shove consequence, retaining both the paid declaration and
     /// the exact later choice/ruling which changed support or flight.
     Shove {

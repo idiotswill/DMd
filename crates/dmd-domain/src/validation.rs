@@ -29,6 +29,9 @@ impl CampaignState {
     #[must_use]
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = self.validate_references();
+        if let Err(message) = crate::validate_tactical_grapple_shapes(self) {
+            violations.push(StateInvariantViolation::InvalidEncounterState(message));
+        }
         if self.encounter_history.is_none()
             && self
                 .encounter

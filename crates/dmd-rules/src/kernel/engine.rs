@@ -88,6 +88,7 @@ pub fn resolve(
             rules.permission = None;
         } else {
             next.rules = Some(RulesState {
+                tactical_grapples: None,
                 tactical_recovery: None,
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
@@ -132,6 +133,7 @@ pub fn resolve(
             return Err(invalid("duplicate/empty mechanical initialization"));
         }
         next.rules = Some(RulesState {
+            tactical_grapples: None,
             tactical_recovery: None,
             pack_id: pack.id.clone(),
             pack_version: pack.version.clone(),
