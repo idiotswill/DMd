@@ -1,6 +1,7 @@
 # Gate 4 — Grapple dependency and genuine Goblin coexistence integration
 
-Status: **plan first; integration and imported test remain unverified**.
+Status: **integration and exact child imported; author static audit passes;
+independent integrated review and executable verification remain outstanding**.
 Date: 2026-09-30. Sole writer: flow4_import_review, by root handoff.
 Branch: `codex/gate4-grapple-lifecycle`, checkout `gate4-attacks`, draft PR54.
 
@@ -128,3 +129,61 @@ an auto-merge that drops Shove/release provenance. The next action is the normal
 merge of the exact f9 dependency, followed by the bounded import and static audit.
 The separately reviewed resolver map is design input only; no resolver authoring
 is authorized in this integration checkpoint.
+
+## Authored integration checkpoint
+
+Plan commit `cc5233eb53e4f6b83246eaafdf7e92da22076021` precedes normal merge
+`4490e343199d1b127840bb6a462ccc91fedd2e21`, tree
+`465ceb08aed4d28be86c9d248ea05e51a577b009`, whose second parent is exact Shove f9.
+Four textual conflicts were resolved as strict unions:
+
+- Original restore anchor rejects both new Grapple authority and injected release
+  history before trusting either. Existing source/tactical exclusions remain.
+- Campaign validation retains Grapple shape validation and release completion
+  shape/history checks independently.
+- Kernel validation keeps the unconditional Grapple guard first, then performs
+  release history validation. Raw role19/20 rejection remains unchanged.
+- Tactical validation keeps its unconditional Grapple guard, then calls release
+  history validation before the ordinary encounter path.
+
+The remaining nine combined Rust paths are the domain module/export list,
+Shove's absent Grapple resolution field, three shared RulesState constructors
+and four current-source table fixtures. They retain both parents' exact intent:
+Grapple absence/current Goblin V2 source selection plus incoming current flow5
+setup. No new manual constructor correction was needed, no assertion changed,
+and no resolver or broader production change was introduced.
+
+The complete desktop tree, source creation/scene/initiative admission, source
+control, Shove stage guards/geometry and release implementation retain exact f9
+blobs. Content, registry, installed-byte checks, manifest/generator/exact-file
+expectations, Grapple records/guards and the opportunity lint correction retain
+their intended 801 blobs. All seven installed payload lengths/FNV checksums were
+recomputed; Air and Goblin V2 coexist without a Magic Resistance import.
+
+Import commit `8d7e96d88ccfb0d9b0bed386103c213243066e9a`, tree
+`eee8fad1b34bf3f83cafffb7f33f860e3069fd3d`, adds exactly the reviewed 42,155-byte
+child and 81-byte parent append. Windows checkout had expanded the unchanged
+parent to CRLF; its Git blob remained exact release8c. Import wrote that exact
+30,259-byte LF prefix plus the approved append, yielding the reviewed parent
+SHA256 `f6cbdd1d4130a907e772450269168b197b5442d3709c7316d0ddaa880faabef1`.
+No existing helper/assertion was changed. Child remains exact
+`cc05169704be8c9e15f127594f0c63c6b13e72574fc44395a33c4ff8f1365aa6`.
+
+Author audit at the import head is external
+`tooling/grapple-8d7e96d-integration-static-audit-2026-09-30.json`, SHA256
+`de30b92e5dc122f774616953dda5ea3898208fb1331df767735d909aeae845cb`.
+It verifies all29 fixture Git blobs,21 protected raw working files, all five
+original receiving suites (only the authorized append differs), exact parent/
+child bytes, content and source/guard identities, and the complete parent-path
+union. It records all17 combined paths and the full changed-file list versus801.
+Direct rustfmt parse/check passed on all15 combined Rust paths plus the preserved
+opportunity file; the complete Git diff passes whitespace checks. These are
+static checks, not compilation or behavior evidence.
+
+This concluding checkpoint changes this plan only. Return the frozen clean
+head/tree and external final audit/handback to root for independent full-diff
+review. Root resumes sole writing and coordinates pending original CI, any
+justified failures, later exact-head publication/verification and the separately
+reviewed guarded resolver-core plan. No push or PR edit occurred. The coexistence
+test is **UNCOMPILED / UNRUN**, all dependencies remain unaccepted, and canonical,
+receiving-history, native/restart and full Grapple lifecycle obligations remain.
