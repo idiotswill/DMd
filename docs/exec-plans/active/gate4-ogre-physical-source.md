@@ -307,3 +307,13 @@ behavior, content bytes, admission or acceptance boundary changes. Direct format
 diff and static inspection are allowed; all Rust controls remain UNCOMPILED /
 UNRUN until the separately allocated verification slot runs them. Hand the clean
 correction back to root for review before further authoring.
+
+Correction completed after plan commit `37b86a3`: the test adds only Ogre plus
+the required comma on the previous final entry. Static text comparison preserves
+the entire original test otherwise, and the eight unique expected paths equal the
+actual manifest paths. Inspection found no other fixed distribution-file count:
+the generic manifest validator iterates declared files, installed validation uses
+named rows, the generator already includes Ogre, and both package routes copy the
+complete content directory. Generic catalog tests use their own isolated data.
+Direct rustfmt `--check` and Git whitespace checks pass. This existing distribution
+test and all new Rust controls remain UNCOMPILED / UNRUN on the corrected head.
