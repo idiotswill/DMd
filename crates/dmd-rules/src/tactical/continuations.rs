@@ -14,7 +14,7 @@ pub(super) fn ticket(
         .find(|t| t.id == id)
         .ok_or_else(|| invalid("effect ticket is no longer pending"))
 }
-fn save_modifier(
+pub(super) fn save_modifier(
     state: &CampaignState,
     actor: EntityId,
     ability: Ability,
@@ -40,7 +40,7 @@ fn save_modifier(
         ) - i32::from(entity.exhaustion) * 2),
     }
 }
-fn visibility(state: &CampaignState, actor: EntityId) -> RollVisibility {
+pub(super) fn visibility(state: &CampaignState, actor: EntityId) -> RollVisibility {
     if controller(state, actor).is_some() {
         RollVisibility::Public
     } else {
@@ -83,6 +83,9 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if super::shove::is_work(&work.kind) {
+        return super::shove::key(state, work);
+    }
     if super::areas::is_work(&work.kind) {
         return super::areas::key(state, work);
     }
@@ -107,6 +110,10 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::BeginShove
+        | TacticalWorkKind::ShoveSave
+        | TacticalWorkKind::ChooseShoveOutcome
+        | TacticalWorkKind::FinishShove => unreachable!("handled above"),
         TacticalWorkKind::BeginMissile { .. }
         | TacticalWorkKind::ResumeMissile { .. }
         | TacticalWorkKind::CommitMissileShield { .. }
@@ -183,6 +190,7 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
                 | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
                 | TacticalRollRole::Medicine
+                | TacticalRollRole::ShoveSave
         )
     {
         return Ruling {
@@ -200,6 +208,10 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::ShoveSave => (
+            190,
+            "The target chooses Strength or Dexterity against Shove.",
+        ),
         TacticalRollRole::Medicine => (18, "First aid requires a DC 10 Wisdom (Medicine) check."),
         TacticalRollRole::SecondWind => (48, "Second Wind heals 1d10 plus Fighter level."),
         TacticalRollRole::AreaSave => (16, "Saving throw against the accepted source area."),
@@ -251,6 +263,10 @@ pub(super) fn request(
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::ShoveSave => super::shove::request(state, work, key),
+        TacticalWorkKind::BeginShove
+        | TacticalWorkKind::ChooseShoveOutcome
+        | TacticalWorkKind::FinishShove => Err(invalid("Shove choice has no raw request")),
         TacticalWorkKind::BeginMissile { .. }
         | TacticalWorkKind::ResumeMissile { .. }
         | TacticalWorkKind::CommitMissileShield { .. }
@@ -376,6 +392,9 @@ fn start_inner(
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::shove::start(state, &work)? {
+        return Ok(());
+    }
     if super::areas::start(state, meta, &work)? {
         return Ok(());
     }
@@ -389,6 +408,10 @@ fn start_inner(
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::ShoveSave => (),
+        TacticalWorkKind::BeginShove
+        | TacticalWorkKind::ChooseShoveOutcome
+        | TacticalWorkKind::FinishShove => return Err(invalid("Shove phase was not handled")),
         TacticalWorkKind::BeginMissile { cast } => {
             return super::missiles::open(state, meta, &work, *cast);
         }
@@ -567,6 +590,9 @@ pub(super) fn submit(
         .roller
         .ok_or_else(|| invalid("missing tactical roller"))?;
     authorize(state, meta, actor)?;
+    if resolution(state)?.shove.is_some() {
+        super::shove::authorize_owner(state, meta, actor)?;
+    }
     if (result.source == RollSource::Digital
         || pending.request.visibility == RollVisibility::Secret)
         && !matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System)
@@ -639,6 +665,7 @@ pub(super) fn voluntarily_fail(
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
+            | TacticalRollRole::ShoveSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -650,6 +677,9 @@ pub(super) fn voluntarily_fail(
             .roller
             .ok_or_else(|| invalid("missing save actor"))?,
     )?;
+    if resolution(state)?.shove.is_some() {
+        super::shove::authorize_owner(state, meta, continuation.key.subject)?;
+    }
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     rules.pending = None;
     rules.cancelled_roll_ids.push(pending.request.id);
@@ -709,6 +739,14 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::ShoveSave => {
+            return super::shove::finish_save(state, meta, &pending, result, forced_success);
+        }
+        TacticalWorkKind::BeginShove
+        | TacticalWorkKind::ChooseShoveOutcome
+        | TacticalWorkKind::FinishShove => {
+            return Err(invalid("Shove choice cannot await raw dice"));
+        }
         TacticalWorkKind::BeginMissile { .. }
         | TacticalWorkKind::ResumeMissile { .. }
         | TacticalWorkKind::CommitMissileShield { .. }
