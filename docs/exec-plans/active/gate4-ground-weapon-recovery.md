@@ -1,6 +1,8 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Status: plan/preflight only, 2026-09-30. Root is sole writer of
+Status: concrete plan amendment only, 2026-10-01; no implementation or runtime
+acceptance. Root temporarily transferred sole writer ownership to the assigned
+plan author from clean `053f736e27d5897d6cf197c5a7b0bf8f20113d7d` on
 `codex/gate4-ground-weapon-recovery`, reusing the clean historical
 `gate4-source-creature-control` checkout. Its old catalog-cache branch remains
 preserved at619ada0. No command, schema, source, test or admission change exists.
@@ -16,10 +18,13 @@ by the independently reviewed Ogre plan, not general noncombat inventory work.
 Development base is source-count candidate
 `2559bfe7404e642b11ea36a1323de7a35e0cb56c`, tree
 `1832e561008d621099e6e8afaa77cad6104e7708`, draftPR55. It inherits unaccepted
-foundationfa4, Shovef9, Air3f and release8c. Fresh fetched main remains
+foundationfa4, Shovef9, Air3f and release8c. At the original plan checkpoint, fetched main was
 `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`. These are reviewed development
 dependencies, not accepted main. Reconcile accepted prerequisites normally and
-never merge a stacked PR into its development base.
+never merge a stacked PR into its development base. The current main observed on
+2026-10-01 is `dbf1d633460473183324b4ec519e8d1980884b5c`; this checkout has not
+merged it. Earlier d88 observations remain historical; root coordinates normal
+prerequisite integration and final exact-head verification.
 
 The separate Ogre writer owns immutable source, printed attack adapters and
 physical source opportunity attacks. This branch owns the general active-map
@@ -45,15 +50,22 @@ damage belongs to its source, not to the Javelin Item. Neither source is changed
 
 Current `AttackEquipmentOperation` offers only Equip/Unequip, both requiring
 Entity custody. Generic weapon preparation checks custody before the equipment
-transition; source attack facts have another earlier check. Actual thrown and
+transition. Source `creature_weapon::facts` separately checks the actual Item's
+required definition, not custody; preserve both checks in their proper consumers.
+Actual thrown and
 unconscious-drop producers leave the same Item in Location custody with a
 `TacticalGroundItem` position and causal command. There is no pickup producer.
 The existing `TacticalWeaponAttack` before-image contains loadout and ammunition,
 so reconstruction cannot yet authenticate an original ground-custody transfer.
 
 External source inspection `tooling/ogre-ground-pickup-consumer-notes-2026-09-30.md`
-records these actual seams and unresolved after-attack timing. It is not an
-implemented design or runtime result.
+records these initial seams and unresolved after-attack timing; its early source
+custody wording is corrected above. The complete source-grounded design memo is
+`tooling/ground-053f736-equipment-lifecycle-independent-design-2026-10-01.md`, SHA256
+`f86ca70db8c3d2f00b89ed84b3c2b67471e0fff328b0b1df2ccbd25a837648cc`.
+Root read and agreed its concrete proposal. The decisions below reconcile it into
+repository memory, pending independent review of this exact checked plan before
+source authoring. Neither external note is implemented behavior or runtime proof.
 
 ## Required design boundaries
 
@@ -89,27 +101,189 @@ implemented design or runtime result.
    be validated at its real causal execution point, including an intervening
    movement/fall, loss of usable hands or changed custody. Do not obtain a remote
    Item or strand an already paid/resolved attack because its planned after choice
-   became impossible. A real retained owned choice/decline may be needed; inspect
-   the common work queue and original after-equipment semantics before choosing
-   the precise domain representation.
+   became impossible. Use the explicit opt-in, separate retained work and owned
+   Apply/Decline lifecycle decided below; preserve original after-equipment semantics.
 7. Distinguish an existing ground Item from the weapon newly thrown by this same
    attack. The latter's actual ground cause does not yet exist at declaration.
-   Resolve that concrete legal case in the design instead of silently treating a
-   pre-attack ground receipt as its proof or inheriting old Equip's prohibition.
+   The later Pickup consumes that actual new ground record if currently legal;
+   never use a pre-attack ground image as its proof or change old Equip's prohibition.
 8. App offers and UI use stable real Item identities, legal hands and exact
    before/after choices. The server derives access, cost, position, source and
    damage. Hidden/unreachable ground items must not be disclosed through option
    lists or identifier probes. A failed/uncertain acknowledgment retains the exact
    submitted command; it must not manufacture a replacement pickup.
 
+## Concrete wire and receipt decision
+
+Add only typed choices and executor-derived evidence; names below describe the
+intended domain contract, not already implemented APIs. New optional fields use
+default/omit-when-absent serialization, preserving old bytes and fingerprints.
+
+| Addition | Authority and shape |
+| --- | --- |
+| `AttackEquipmentOperation::Pickup { item, hand }` | Selects an actual Item and receiving hand only. Supported in BeforeAttack and in the new selected after-work Apply. Declaration-time `AfterAttack/Pickup` refuses; it cannot prove a future ground state. |
+| `after_equipment: Option<AfterAttackEquipmentIntent>` on both `WeaponUseChoice` and `CreatureWeaponUseChoice`, with sole intent `Choose` | Explicit opt-in to a later decision. Requires `equipment_change == None`. Absent retains old behavior and creates no new pause. An old after operation or any before operation, including Pickup, excludes this intent. |
+| `ChooseAttackEquipment { work: TacticalWorkKey, choice: Decline | Apply(AttackEquipmentOperation) }` | Resolves exactly the selected after occurrence; no client-supplied position, source, formula, cost, before-image, allowance boolean or post-state. |
+| Optional before-pickup receipt on `TacticalWeaponAttack` and its `WeaponAttackReceipt` | Exact executor-derived Item before-image, `TacticalGroundItem`, encounter/scene/location identity, plus actual actor equipment before-image. Required exactly for before Pickup, absent for other operations. The original command binds the pre-action spatial/authority cut through replay. |
+| `TacticalWorkKind::AttackAfterEquipment` and an optional retained `TacticalAttackAfterEquipment` on the resolution | Binds exact work key, originating attack, actor, action window, completed weapon-receipt identity, completion command and requested intent. Exists independently of `resolution.attack`; no RollRequest/raw role. Only one eligible own-turn physical attack starts this resolution, and no OA/nested source grants another follow-up. Reject duplicate retained authority. |
+| Optional final after decision on `WeaponAttackReceipt` | `Declined { work, chosen_by }` or `Applied { work, chosen_by, operation, equipment_before, ground_before? }`. Ground image is required exactly for Pickup. Selection, decision and completion identities must agree; chronological proof comes from exact accepted commands. |
+
+The allowance is derived from the actual declaration and AttackAction window.
+No source or caller provides a remaining-allowance flag. Before Pickup followed by
+throwing that weapon has spent the allowance; it cannot request recovery after
+the same attack. Thrown's existing intrinsic draw permission remains distinct.
+No Opportunity/Reaction, BonusAction or unrelated command family admits Pickup or
+the new follow-up. The shared guarded Grapple consumer explicitly refuses the new
+operation until its separate reviewed scope supports it. Preserve all Grapple guards.
+
+Require exact flow5 under both Live and Historical at every new producer/choice
+boundary, including Decline: a command that retires all its new state must not
+evade a state-only version guard. Retained new receipts/work require that same
+executor. Original retry lookup remains first; no old paid continuation is changed.
+No source pin migration, current source admission or implicit execution upgrade.
+
+## Shared preparation and causal execution
+
+Introduce one rules-owned `prepare_attack_equipment` boundary for ordinary and
+future source attacks. It accepts actual state, trusted origin, actor, derived
+window and typed operation, and derives a sealed non-deserializable preparation
+plus before-image. A preparation is bound to the exact input state/call lifetime,
+or its complete before-image is revalidated at consumption. Never expose a generic
+accepted candidate state or "pickup already checked" flag. The candidate is local
+rules computation, not another public mutation path or a source admission bypass.
+
+For before Pickup, check actor knowledge before disclosing identity/geometry errors;
+then validate current map, real custody/ground record, intact quantity-one known
+weapon, usable hand and manipulation reach. Derive the same Item's Location-to-
+Entity custody, selected hand and removal of one ground record in a local candidate.
+Pass the coherent candidate to ordinary/source physical planning before its
+selected-weapon carried-item check. Preserve the actual original choice/receipt
+and consume that operation internally once; do not apply it again in the old
+before planner or hide it by rewriting the accepted command. Only after target,
+source, mastery, Action, ammo and supporting-hand checks all succeed commit pickup,
+costs, source activation and pending dice in the existing atomic transition.
+Picking up a different weapon must leave a legal attack grip and supporting hand.
+
+The future Ogre adapter supplies only its separately validated exact-pin printed
+program/damage; this boundary owns physical preparation and custody proof. Its
+checkpoint2 plan at `c205759` is separately under review. Do not implement its source
+adapter here or lift its current/profile/Historical creation guard. Another actor
+using the recovered Item keeps ordinary weapon dice. Integration must use this same
+preparation boundary and reconstruct the original before Pickup exactly once.
+
+For an opted-in after choice, preserve the existing completion cut: attack outcome,
+ammunition, same-Item thrown custody/ground cause and any original old after operation
+complete before downstream damage consequences. The old Equip/Unequip behavior,
+including refusal for the just-thrown weapon, is unchanged. Create the new follow-up
+only for its explicit unused allowance, **below** the resulting damage/Graze effect,
+concentration and fall frames. Retain it when `resolution.attack` is cleared; never
+leave a fake Finishing attack that can re-run damage or reconstruct the thrown Item
+as still carried. The completed physical receipt remains available for the follow-up.
+
+`turns::pump` drains child frames and queues flight losses before selecting later
+work. Register the new occurrence in the existing bounded work trace, not a parallel
+queue. It cannot share a simultaneous ordering frame with its prior consequences
+or set a global wait before those children drain. Once selected, retain it as an
+owned non-roll choice. Extend pump, ordering, work-trace and turn validation so the
+resolution cannot retire, accept another attack, EndTurn, Conclude or Finish around
+unanswered work. Do not expose it through raw-dice submission or ChooseTurnWork.
+
+Apply rederives actual capability, EffectiveHands, current custody, ground record,
+visibility and reach at that command's real causal cut. Decline checks the exact
+selected work and current controller/session authority but does not require a free
+hand, an available weapon or mechanical ability to act. A controller can decline
+after its actor becomes unconscious/dead; the pending optional operation must not
+strand the paid attack. Invalid/stale Apply is a full no-write rejection and leaves
+the same decision available for a valid Apply or Decline, without undoing/repeating
+the earlier attack, damage or costs. No automatically selected alternative. Record
+the decision before retiring the follow-up and resuming the shared pump.
+
+Same-attack thrown recovery uses the actual ground record produced by completion,
+including its real completing-command origin. It needs no invented pre-attack
+ground receipt. Current adjacent reach can allow it; a distant target, forced
+movement, fall, blindness, changed custody or lost hand can make it unavailable.
+The actor may then choose another legal operation or Decline. A later genuinely
+available attack can provide its own allowance; do not invent an extra attack or
+resource grant to prove finite weapon recycling.
+
+## Ground admission, original-cut proof and later cuts
+
+Add a bounded ground-point query in the spatial module, shared by offers and
+acceptance. Reuse actual awareness/senses, illumination/obscuration, clear sight
+and clear physical effect/reach primitives. The exact stored Item point/height
+and actual occupied actor footprint/vertical cells define the ordinary5-foot
+manipulation check. Document/test the object-point metric against the existing
+participant-distance convention; do not fabricate a creature/volume to call
+entity perception. A visible point through an obstruction is not necessarily
+physically reachable. Host knowledge, a remembered floor cell, creature contact,
+Tremorsense of a creature or a supplied ItemId is not current object knowledge.
+Unknown, hidden, remote or foreign ID probes must not disclose hidden item facts.
+
+Check exact Item/campaign identity, Intact state, quantity1, known weapon definition,
+actual scene/location and exactly one matching active ground record, with no holder
+or conflicting hand assignment. Require actual hand anatomy/reservations. Different
+prior owner is allowed; keep owner, definition, quantity, original grant and journal
+cause unchanged. Location custody alone is insufficient without that live record;
+Finished-scene receipts do not grant current-map access. A repeated drop of the same
+Item under a later cause is a distinct cut, not reusable earlier pickup permission.
+
+The before-image supports reconstruction but is not self-authenticating authority.
+Extend `attacks/planning::reconstruct`'s current equipment/ammo inverse with only the
+recorded pickup transition. Verify the expected current physical image before
+restoring original Item custody/ground entry/equipment in a local reconstruction;
+do not rewind unrelated later mutations. The genuine original command replay proves
+its then-current geometry, perception, source and controller. After choices are
+replayed at their own accepted command cut, not original attack geometry or today's
+post-fall state. Completion may create the same-attack ground origin; require exact
+causal ordering without falsely requiring that drop to precede attack declaration.
+
+Extend `rules_restore::command_origins` for nested removed-ground origins, equipment
+images, completion and decision metadata. Bind exact audit/action, original attack,
+window, source, selected trace key, chronology and event outcome. Earliest pre-tactical
+anchor replay must reproduce every snapshot and final current image; matching a
+forged request and raw faces is insufficient. Preserve ADR020's integrity trust
+limit rather than claiming cryptographic authenticity of a rewritten entire history.
+Completed turn receipts can retire under existing turn-history rules; their full
+older proof remains in accepted journal/snapshots. Do not add an unbounded duplicate
+inventory ledger or remove earlier throw/drop history.
+
+## Application/UI and concrete verification targets
+
+Extend carried-only `table_attacks::options` with safely admitted ground choices and
+an independent equipment item/hand selector so before pickup of a different weapon
+is expressible. The server determines legal choices; UI emits stable actual IDs.
+Expose a separate owned after-work view because today's `attack_decision` requires
+a live `resolution.attack`. Route authority from the retained attack actor through
+normal table session/attendance/source control, not the current turn actor or former
+item owner. Current controller authorizes the continuation; the original command
+retains the original admission proof. Preserve exact opaque binding, presentation
+history and uncertain-acknowledgment retry behavior across close/reopen/restore.
+
+AttackForm gains explicit later-choice opt-in and the selected after view gains
+Apply/Decline with a work-key-based focus identity. No legal options must still
+show Decline. Keep old draw/stow choices and accepted absent-field views exact.
+The UI cannot create a replacement request after an uncertain acknowledgment or
+supply ground positions, cost, source pin, damage or accepted after-images.
+
+Author controls for selected-versus-different-weapon before Pickup; one allowance;
+same-attack throw and actual later Pickup; remote/changed circumstances followed by
+Decline; damage/concentration/fall/unconscious-drop ordering without re-equip;
+unchanged prior payment on rejected Apply; exact finite Item/owner/grant history;
+supporting/reserved hand, duplicate/missing ground, wrong scene/height/obstacle;
+blindness/darkness/hidden-ID non-disclosure; player/source control and session
+binding; wrong work/occurrence/actor/stale handle/changed payload full no-write;
+flow1–4 Live/Historical rejection including no-effect Decline; and genuine original
+retry plus real file SQLite/cold/independent portable restore at pending attack,
+pending damage, selected after choice and final decision. Forge ground cause,
+position/custody and matching request/raw evidence only as labeled negative restore
+controls. Real admitted play, original history execution and native UI proof remain
+mandatory; a direct state edit or synthetic candidate is never a positive substitute.
+
 ## Plan-first checkpoints
 
-1. Read the actual before/after physical planner, source adapter, completion,
-   visibility/geometry and historical authentication consumers. Resolve the
-   receipt and after-choice lifecycle in this plan, including recovery when the
-   proposed after operation becomes unavailable. Obtain independent review of
-   the concrete design before source changes. No public bypass or new schema is
-   preapproved merely by this initial plan.
+1. Consumer preflight is complete and the concrete decisions above are checked
+   in as a plan-only amendment. Obtain independent review of this exact plan
+   before source changes; resolve any record/lifecycle findings there first.
 2. Implement the bounded pure admission and current versioned producer/receipt,
    preserving all legacy paths. Meaningful controls cover physical identity,
    hands/reach, exact allowance and historical reconstruction. Do not mutate
@@ -138,9 +312,11 @@ implemented design or runtime result.
 | Persistence | Real file SQLite and independent portable restore at pickup-owned choice and pending attack/damage; exact original retry, changed body/foreign actor/stale handle leave complete store unchanged. |
 | Compatibility | All29 frozen fixtures and five original receiving suites retain exact bytes and execute; old Equip/Unequip and source pins/fingerprints remain exact. |
 
-Status is plan/preflight only. The existing Ogre review establishes why pickup is
-required; it does not review this as-yet unresolved after-choice representation.
-Root owns this branch. The local heavy slot remains reserved by the guarded-core
-verification lane; no Cargo/npm/database/native operation is authorized here yet.
-Exact next action: complete the consumer preflight and concrete receipt/timing
-decision, then independent plan review before any implementation.
+Status remains PLAN ONLY. Root agreed the external design; this concrete checked
+amendment still needs independent review. No schema, source, test, UI or source
+admission change and no runtime evidence exists. Git whitespace/static diff checks
+are the only verification appropriate to this amendment. Root owns the native Air
+heavy slot; no Cargo/npm/build/test/database/native operation or push is authorized.
+Exact next action: return this clean plan commit and writer ownership to root for
+independent review before confirming a bounded source-authoring assignment. Keep
+Ogre creation closed until its complete forms/OA/pickup/UI path is reviewed.
