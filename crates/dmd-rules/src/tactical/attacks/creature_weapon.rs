@@ -1,7 +1,8 @@
 //! Printed source weapon actions retain the ordinary physical reservation/receipt.
 use super::*;
 use crate::tactical_creatures::{
-    CreatureActionCost, CreatureScheduleOperation, apply_creature_schedule,
+    CreatureActionCost, CreatureScheduleOperation, OgreWeaponProgram, apply_creature_schedule,
+    ogre_weapon_program,
 };
 use crate::tactical_definitions::{
     AttackDelivery, FeatureActivation, MonsterFeature, WeaponKind, WeaponProperty,
@@ -15,6 +16,34 @@ struct SourceWeaponFacts {
     advantage_damage: Vec<AttackDamageComponent>,
     reach: Option<u32>,
     abilities: Vec<Ability>,
+    /// Only this sealed exact source may differ in base dice. Old sources retain
+    /// their strict complete-formula comparison.
+    ogre: Option<OgreWeaponProgram>,
+}
+
+pub(in crate::tactical) fn require_ogre_execution(state: &CampaignState) -> Result<(), RulesError> {
+    if flow(state)?.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
+        return Err(prerequisite(
+            "physical Ogre attacks require the current executor",
+        ));
+    }
+    Ok(())
+}
+
+fn ogre_facts(program: OgreWeaponProgram) -> SourceWeaponFacts {
+    SourceWeaponFacts {
+        pin: program.source().clone(),
+        delivery: program.delivery(),
+        bonus: i32::from(program.attack_bonus()),
+        base: component(program.printed_base_damage()),
+        advantage_damage: vec![],
+        reach: match program.source_delivery() {
+            AttackDelivery::Melee { reach_feet } => Some(u32::from(*reach_feet) * 2),
+            AttackDelivery::Ranged { .. } => None,
+        },
+        abilities: vec![program.ability()],
+        ogre: Some(program),
+    }
 }
 
 pub(super) struct PreparedCreatureWeapon {
@@ -77,6 +106,14 @@ fn facts(
         return Err(prerequisite(
             "select the actual weapon required by this source feature",
         ));
+    }
+    if source.id == "ogre" {
+        // This is a producer and retained-source boundary under either policy,
+        // independent of the top-level Live-only legacy-action allowlist.
+        require_ogre_execution(state)?;
+        return ogre_weapon_program(&profile.source, feature_id)
+            .map(ogre_facts)
+            .map_err(|error| invalid(&error.to_string()));
     }
     let feature = source
         .features
@@ -142,11 +179,12 @@ fn facts(
             .collect(),
         reach,
         abilities,
+        ogre: None,
     })
 }
 
-/// Normal-weapon calculations must faithfully represent the printed base facts.
-/// They never substitute an ordinary formula for a discrepant stat-block attack.
+/// Normal-weapon calculations remain ordinary. Only the sealed Ogre program may
+/// substitute printed base dice after all remaining source facts match exactly.
 fn require_matching_plan(
     state: &CampaignState,
     actor: EntityId,
@@ -158,9 +196,43 @@ fn require_matching_plan(
         .as_ref()
         .and_then(|rules| rules.entities.get(&actor))
         .ok_or_else(|| invalid("source attacker mechanics absent"))?;
-    if plan.attack_modifier != facts.bonus - i32::from(entity.exhaustion) * 2
+    require_matching_facts(facts, plan, entity.exhaustion)
+}
+
+fn require_matching_facts(
+    facts: &SourceWeaponFacts,
+    plan: &WeaponAttackPlan,
+    exhaustion: u8,
+) -> Result<(), RulesError> {
+    let expected_dice = match &facts.ogre {
+        Some(program) => {
+            let grip_matches = match program.weapon().hands {
+                crate::tactical_definitions::WeaponHands::Two => {
+                    plan.receipt.grip == WeaponGrip::TwoHands
+                }
+                crate::tactical_definitions::WeaponHands::One => {
+                    matches!(plan.receipt.grip, WeaponGrip::OneHand(_))
+                }
+                _ => false,
+            };
+            if plan.receipt.definition_id != program.weapon().id
+                || !grip_matches
+                || plan.ammunition.is_some()
+                || plan.receipt.ammunition.is_some()
+                || plan.thrown_weapon
+                    != (program.delivery() == WeaponDelivery::Thrown).then_some(plan.receipt.weapon)
+            {
+                return Err(prerequisite(
+                    "Ogre form differs from its physical weapon plan",
+                ));
+            }
+            &program.weapon().damage.dice
+        }
+        None => &facts.base.dice,
+    };
+    if plan.attack_modifier != facts.bonus - i32::from(exhaustion) * 2
         || plan.damage.damage_type != facts.base.damage_type
-        || plan.damage.dice != facts.base.dice
+        || &plan.damage.dice != expected_dice
         || plan.damage.modifier != facts.base.modifier
         || facts.reach.is_some_and(|reach| plan.reach != reach)
         || plan.mastery.is_some()
@@ -173,6 +245,55 @@ fn require_matching_plan(
         ));
     }
     Ok(())
+}
+
+/// New physical OA is bounded to exact Ogre melee forms. It does not invoke the
+/// Action scheduler or spend anything; the shared OA caller owns Reaction cost.
+pub(super) fn opportunity_source(
+    state: &CampaignState,
+    actor: EntityId,
+    target: EntityId,
+    meta: &CommandMeta,
+    feature_id: &str,
+    item: ItemId,
+    grip: WeaponGrip,
+) -> Result<TacticalAttackSource, RulesError> {
+    require_ogre_execution(state)?;
+    let facts = facts(state, actor, feature_id, item)?;
+    if facts.ogre.is_none() || facts.delivery != WeaponDelivery::Melee {
+        return Err(prerequisite(
+            "physical source opportunity requires an Ogre melee form",
+        ));
+    }
+    let equipment = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_inventory.as_ref())
+        .and_then(|inventory| inventory.loadout(actor))
+        .cloned()
+        .ok_or_else(|| prerequisite("current physical equipment required"))?;
+    Ok(TacticalAttackSource::CreatureWeapon {
+        source: facts.pin,
+        feature_id: feature_id.into(),
+        weapon: Box::new(TacticalWeaponAttack {
+            choice: WeaponUseChoice {
+                weapon: item,
+                target,
+                delivery: WeaponDelivery::Melee,
+                ability: Ability::Strength,
+                grip,
+                purpose: WeaponAttackPurpose::Normal,
+                ammunition: None,
+                equipment_change: None,
+            },
+            window: WeaponActionWindow {
+                id: meta.id,
+                kind: WeaponActionKind::Reaction,
+            },
+            equipment_before: equipment,
+            ammunition: None,
+        }),
+    })
 }
 
 fn source_damage(facts: &SourceWeaponFacts, mode: RollMode) -> Vec<AttackDamageComponent> {
@@ -294,20 +415,38 @@ pub(super) fn validate_source(
         return Err(invalid("retained attack is not a source physical weapon"));
     };
     let facts = facts(state, attack.actor, feature_id, weapon.choice.weapon)?;
+    let expected_kind = match &attack.admission {
+        TacticalAttackAdmission::CreatureAction { approach: None } => {
+            WeaponActionKind::AttackAction
+        }
+        TacticalAttackAdmission::Opportunity(_)
+            if facts.ogre.is_some()
+                && facts.delivery == WeaponDelivery::Melee
+                && weapon.choice.equipment_change.is_none()
+                && weapon.choice.ammunition.is_none()
+                && weapon.ammunition.is_none() =>
+        {
+            WeaponActionKind::Reaction
+        }
+        _ => {
+            return Err(invalid(
+                "source weapon lacks its exact Action or physical Reaction admission",
+            ));
+        }
+    };
     if source != &facts.pin
-        || !matches!(
-            attack.admission,
-            TacticalAttackAdmission::CreatureAction { approach: None }
-        )
         || weapon.window
             != (WeaponActionWindow {
                 id: attack.origin.id,
-                kind: WeaponActionKind::AttackAction,
+                kind: expected_kind,
             })
     {
-        return Err(invalid("source weapon pin or Action admission differs"));
+        return Err(invalid("source weapon pin or physical admission differs"));
     }
     require_matching_plan(state, attack.actor, &facts, plan)?;
     let (mode, _, _) = planning::hit_facts(state, attack.actor, &weapon.choice, plan)?;
     Ok(source_damage(&facts, mode))
 }
+
+#[cfg(test)]
+mod ogre_tests;

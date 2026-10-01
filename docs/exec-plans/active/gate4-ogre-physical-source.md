@@ -2,8 +2,8 @@
 
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
 root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
-Checkpoint2 plan is reviewed; bounded adapter authoring is now assigned, with all
-new verification UNCOMPILED / UNRUN. The assigned
+Checkpoint2 adapters and eight controls are authored for independent static review,
+with all new verification UNCOMPILED / UNRUN. The assigned
 source implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
@@ -489,7 +489,78 @@ compatibility and no old-version Ogre producer. Full canonical, both-platform CI
 native own-turn/OA/ground pickup and final-main checks remain required, separately
 allocated; no test/build/database/native/push is authorized by this plan checkpoint.
 
-Exact next action: root reviews this committed plan and returns any amendments;
-only then transfer/confirm bounded adapter authoring. Return branch ownership to
-root with the plan-only head/tree and unchanged non-document blobs. Source tests
-from checkpoint1 remain UNCOMPILED / UNRUN; this plan adds no execution evidence.
+The plan-only next action above was completed by root's review and the recorded
+writer transfer. The checkpoint2 author handback below now supplies the next action.
+Source tests from checkpoint1 remain UNCOMPILED / UNRUN.
+
+## Checkpoint2 author handback — 2026-10-01
+
+Writer/status commit `6dfc7e7` preceded all adapter edits, on reviewed `c205759`.
+The exact Ogre descriptor now supplies the existing own-turn physical source path
+with the three printed forms. The ordinary plan is unchanged: custody, intact
+quantity-one weapon, equipment transition, EffectiveHands, ability, range, cover,
+underwater, Exhaustion and disadvantage remain owned by the shared planner. A
+private sealed-policy branch requires the exact ordinary weapon definition and
+dice, matching source bonus/type/flat damage, delivery, legal grip and no ammunition
+before deriving printed damage. Existing source facts keep their complete-formula
+comparison and advantage riders. The source scheduler, Action expenditure, ordinary
+attack reservation, critical request builder and actual thrown completion remain
+unchanged. No item is granted or replenished by this adapter.
+
+The additive physical-source OA choice contains only feature, weapon and grip;
+its crossing identity is separate from the old gripless feature identity. Options
+are derived from exact full-pin melee forms and actual held/intact/current-custody
+items with effective supporting hands, then sorted by feature and ItemId. The
+shared planner rechecks the chosen grip before the existing single Reaction cost.
+The new producer does not call BeginFeature, change equipment or reserve ammo.
+Retained source validation explicitly distinguishes CreatureAction/AttackAction
+from this exact Ogre melee Opportunity/Reaction path, retaining original origin,
+pin, weapon choice, equipment before-image and ordinary receipt reconstruction.
+Existing crossing and spent-Reaction validation still runs. The intrinsic source
+planner explicitly rejects Ogre's old gripless route.
+
+Exact flow5 is checked in new source facts (both producer and retained validation),
+the physical OA helper, option derivation and retained OA source mapping. Shared
+Live/Historical command dispatch also refuses a new physical OA choice before
+selecting its parent on any old executor. This does not rewrite or disable old
+ordinary/intrinsic source choices. All current catalog, common creation, initial
+and retained profile guards remain unchanged and CLOSED for Ogre; merely reaching
+the immutable descriptor is not admission. No accepted Ogre positive is fabricated.
+
+Eight new controls are authored, not executed: printed-versus-ordinary composition
+for three forms; shared normal/critical damage request shape; thirteen numeric,
+delivery, grip, ammunition and item-form corruptions for each form; unchanged strict
+formula policy; additive wire identity and forbidden mechanical fields; direct
+executor boundary; both-policy old-executor command refusal with no input mutation;
+and held/supporting-hand grip candidates. The private numeric plans, critical
+request images, altered-version negatives and hypothetical hand assignments are
+explicitly synthetic. They prove no accepted source profile, actual Action/Reaction
+payment, critical result, geometry, restore or Grapple history. The untouched flow2
+snapshot supplies the real old-state refusal context; modified versions are not
+accepted upgrades. All seven tests in the new child module and the single hand
+control remain UNCOMPILED / UNRUN. Checkpoint1 full-pin/refusal controls and original
+Goblin/Skeleton/source-weapon/replay cases are retained exactly and must also run
+on the receiving head when verification is allocated.
+
+A separate read-only enumeration found all exhaustive Rust new-choice matches
+covered. The existing table projection still selects only ordinary Weapon and
+gripless CreatureFeature rows; DTO/transport/OpportunityForm have no new physical
+source option. Those intentional, fail-closed omissions remain the later UI
+checkpoint, never an alias to the old gripless option. Root's separate ground plan
+is now committed at `28defe5`; no ground receipt, pickup, after-choice or equipment
+preparation change belongs to this diff. The later sealed preparation integration
+must preserve the original physical/source reconstruction and OA exclusions.
+
+Static author evidence consists of direct rustfmt parsing/format checks, Git
+whitespace checks and an immutable tree/content/fixture audit. The audit preserves
+all29 fixture blobs,21 protected raw captures, five original history suite files,
+every source content/manifest byte, all profile admission guards, application/UI
+files, global weapon planning and thrown completion. It is not an independent code
+review or execution result. No compiler/Cargo/npm/test, database/native/UI action,
+push or PR edit ran in this checkpoint.
+
+Exact next action: return sole writer ownership and the clean checkpoint head/tree,
+complete diff and static audit to root for independent code review. Resolve concrete
+findings before separately allocated focused/canonical/CI verification. Keep Ogre
+closed through the remaining ground/UI integration; actual finite gear, own-turn,
+OA, pickup, cold/retry/forgery/native and lawful Grapple/LR positives remain UNMET.

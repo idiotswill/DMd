@@ -32,6 +32,11 @@ pub fn creature_attack_gear(
     }) {
         return Err(invalid("The selected source feature is not an attack."));
     }
+    if source.id == "ogre" {
+        let program = ogre_weapon_program(&profile.source, feature_id)
+            .map_err(|error| invalid(error.to_string()))?;
+        return Ok(Some(program.weapon().id.as_str()));
+    }
     let gear = match (source.id.as_str(), feature_id) {
         ("goblin-warrior", "scimitar") => Some("scimitar"),
         ("goblin-warrior" | "skeleton", "shortbow") => Some("shortbow"),

@@ -1,6 +1,6 @@
 //! Closed, read-only policy for the reviewed Ogre source. This does not authorize
-//! an actor, plan an attack or override ordinary equipment damage. The future
-//! physical own-turn/OA adapters must resolve this exact pin themselves and still
+//! an actor, plan an attack or override ordinary equipment damage. The physical
+//! own-turn/OA adapters resolve this exact pin themselves and still
 //! validate current custody, hands, costs and retained admission before use.
 use super::*;
 use crate::tactical_definitions::{
@@ -46,7 +46,7 @@ impl OgreWeaponProgram {
     }
 }
 
-/// Source descriptor only; no production attack consumer is enabled yet.
+/// Source descriptor only; consuming attack adapters do not open profile admission.
 pub fn ogre_weapon_program(
     pin: &CreatureSourcePin,
     feature_id: &str,
