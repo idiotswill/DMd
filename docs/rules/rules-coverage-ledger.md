@@ -93,7 +93,8 @@ Its verified Windows package completed actual source creation, atomic overlap
 refusal, corrected placement, owned initiative with pending-request cold restart,
 and five-foot flight with airborne cold restart in the existing campaign. Prior
 resources, identities and histories survive. The plan qualifies labeled QA dice
-inputs and the read-only capture scope. Local canonical, current-main reconciliation
+inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled with
+all 411 non-document files unchanged from `3f3e359`; local canonical verification
 and final-head checks/review remain outstanding. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close

@@ -2,8 +2,9 @@
 
 Status: all six CI jobs passed on integrated `3f3e359`; its verified Windows
 package completed the bounded native creation/placement/initiative/flight route
-on 2026-10-01. Release prerequisite PR48 is merged. Current-main reconciliation,
-local canonical verification and final exact-head review/CI remain outstanding;
+on 2026-10-01. Release prerequisite PR48 is merged, and accepted main `dbf1d63`
+is reconciled with all 411 non-document files unchanged from verified `3f3e359`.
+Local canonical verification and final exact-head review/CI remain outstanding;
 this is not Air acceptance or complete Air Elemental gameplay.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
 Writer: root, sole writer after the reviewed integration handback. Historical
