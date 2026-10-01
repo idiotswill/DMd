@@ -341,6 +341,55 @@ fn physical_blocked(encounter: &TacticalEncounter, volume: SpatialBox, mode: Mov
                 .iter()
                 .any(|t| t.burrowable && t.volume.intersects(volume)))
 }
+fn air_form(state: &CampaignState, actor: EntityId) -> Result<bool, SpatialError> {
+    let Some(profile) = state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_creatures.as_ref())
+        .and_then(|c| c.profile(actor))
+    else {
+        return Ok(false);
+    };
+    let source = crate::tactical_creatures::source_for_profile(profile)
+        .map_err(|e| invalid(e.to_string()))?;
+    Ok(crate::tactical_creatures::has_air_form(source))
+}
+
+fn overlaps_creature(
+    encounter: &TacticalEncounter,
+    actor: &TacticalParticipant,
+) -> Result<bool, SpatialError> {
+    let volume = actor.volume().map_err(invalid)?;
+    for other in &encounter.participants {
+        if other.entity_id != actor.entity_id && volume.intersects(other.volume().map_err(invalid)?)
+        {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+/// Setup cannot establish geometry whose source permission has no executor. This
+/// is not an invariant forbidding involuntary overlap from historical fall rules.
+pub fn validate_source_placement(
+    encounter: &TacticalEncounter,
+    state: &CampaignState,
+) -> Result<(), SpatialError> {
+    for actor in &encounter.participants {
+        if air_form(state, actor.entity_id)?
+            && (overlaps_creature(encounter, actor)?
+                || physical_blocked(
+                    encounter,
+                    actor.volume().map_err(invalid)?,
+                    MovementMode::Walk,
+                ))
+        {
+            return Err(SpatialError::Unsupported);
+        }
+    }
+    Ok(())
+}
+
 fn swept_blocked(
     encounter: &TacticalEncounter,
     from: &TacticalParticipant,
@@ -449,6 +498,7 @@ pub fn evaluate_path_progress(
         .position(|p| p.entity_id == actor_id)
         .ok_or(SpatialError::UnknownActor)?;
     let mut moving = working.participants[index].clone();
+    let air_form = air_form(state, actor_id)?;
     if !allowance.forced && dead(state, actor_id) {
         return Err(illegal("dead creatures cannot move voluntarily"));
     }
@@ -473,6 +523,9 @@ pub fn evaluate_path_progress(
         if step.destination.x.rem_euclid(alignment) != 0
             || step.destination.y.rem_euclid(alignment) != 0
         {
+            if air_form {
+                return Err(SpatialError::Unsupported);
+            }
             return Err(illegal("destination is not aligned to the creature's grid"));
         }
         let distance = grid_distance(moving.position, step.destination)?;
@@ -495,6 +548,39 @@ pub fn evaluate_path_progress(
         let mut next = moving.clone();
         next.position = step.destination;
         let volume = next.volume().map_err(invalid)?;
+        if air_form && !encounter.battlefield.bounds.encloses(volume) {
+            return Err(illegal("destination is outside the battlefield"));
+        }
+        let last = ends_move && step_index + 1 == path.steps.len();
+        let ordinary_occupancy = if allowance.forced {
+            Ok(false)
+        } else {
+            occupancy(&working, state, &next, last)
+        };
+        if air_form && matches!(ordinary_occupancy, Err(SpatialError::Illegal(_))) {
+            return Err(SpatialError::Unsupported);
+        }
+        // Being wholly inside an authored solid cannot be a narrow-passage
+        // exception. Partial footprint/sweep contact needs an unimplemented shape
+        // query; it is not proof of either a passage or permission through a wall.
+        if air_form
+            && encounter
+                .battlefield
+                .obstacles
+                .iter()
+                .any(|o| o.blocks_movement && o.volume.encloses(volume))
+        {
+            return Err(illegal("destination is inside solid terrain"));
+        }
+        // Do not decide Air Form's shared-space/one-inch exceptions using an
+        // ordinary body. Forced movement does not bypass this execution boundary.
+        // The typed error contains no hidden source, terrain or occupant detail.
+        if air_form
+            && (physical_blocked(encounter, volume, step.mode)
+                || (!teleport && swept_blocked(encounter, &moving, &next, step.mode)?))
+        {
+            return Err(SpatialError::Unsupported);
+        }
         super::falling::validate_physical_position(encounter, &next)
             .map_err(|_| illegal("destination lacks legal physical support"))?;
         if !encounter.battlefield.bounds.encloses(volume)
@@ -528,16 +614,14 @@ pub fn evaluate_path_progress(
                     corner_actor.volume().map_err(invalid)?,
                     step.mode,
                 ) {
+                    if air_form {
+                        return Err(SpatialError::Unsupported);
+                    }
                     return Err(illegal("diagonal movement cannot cross a solid corner"));
                 }
             }
         }
-        let last = ends_move && step_index + 1 == path.steps.len();
-        let occupied_difficult = if allowance.forced {
-            false
-        } else {
-            occupancy(&working, state, &next, last)?
-        };
+        let occupied_difficult = ordinary_occupancy?;
         if !allowance.forced && !teleport {
             if conditions(state, actor_id).contains(&Condition::Prone)
                 && step.mode != MovementMode::Crawl

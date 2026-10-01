@@ -147,6 +147,17 @@ pub(in crate::tactical_creatures) fn available(
     s: &CreatureFeatureSelection,
 ) -> Result<(), CreatureError> {
     let f = validate_selection(source, s)?;
+    if matches!(f.feature, MonsterFeature::SharedSpaceSave { .. })
+        || (has_air_form(source)
+            && matches!(
+                f.feature,
+                MonsterFeature::Multiattack { .. } | MonsterFeature::MultiattackRoutine { .. }
+            ))
+    {
+        return Err(CreatureError::Unavailable(
+            "source action is not yet executable".into(),
+        ));
+    }
     if rt
         .recharge
         .iter()

@@ -35,6 +35,18 @@ pub fn build_creature(
     actor: EntityId,
     choice: &CreatureBuildChoice,
 ) -> Result<BuiltCreature, CreatureError> {
+    build_creature_from_source(state, meta, actor, choice, None)
+}
+
+/// Missing pins intentionally select frozen V1, for unchanged historical callers.
+/// New table admission enforces a current explicit pin before reaching this builder.
+pub fn build_creature_from_source(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    choice: &CreatureBuildChoice,
+    pin: Option<&CreatureSourcePin>,
+) -> Result<BuiltCreature, CreatureError> {
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(CreatureError::Stale);
     }
@@ -70,7 +82,11 @@ pub fn build_creature(
     {
         return Err(invalid("creature source and campaign ruleset differ"));
     }
-    let source = creature_definition(&choice.definition_id)?;
+    let source = match pin {
+        Some(pin) if pin.definition_id == choice.definition_id => creature_source(pin)?,
+        Some(_) => return Err(invalid("creation and pinned source identities differ")),
+        None => creature_definition(&choice.definition_id)?,
+    };
     let hit_points = match &choice.hit_points {
         CreatureHitPointChoice::Average => CreatureHitPointOrigin::Average,
         CreatureHitPointChoice::Rolled { request_id, result } => {

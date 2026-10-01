@@ -4,9 +4,11 @@ Status: integrated source `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` passes
 canonical verification, all six CI jobs and the actual packaged two-encounter
 continuation with Finished and pending-attack cold restarts. Original-source flow 4
 capture/baseline and all eight receiving continuations pass. Independent source,
-package and saved-state reviews are clear. This evidence-only checkpoint still
-requires exact-head checks/review, protected PR48 merge and separate merged-main
-verification. Gate 4 remains active; this bounded release is not gate completion.
+package and saved-state reviews are clear. Final documentation head d4 passed
+exact-head review and all six checks, then PR48 merged as dbf1d63. Separate literal
+merged-main runtime verification remains pending. Gate4 remains active; this
+bounded release is not gate completion. Historical checkpoints below retain their
+original evidence status.
 Writer: root, sole writer of `codex/gate4-encounter-release` for the
 2026-09-30 corpus import and parent integration. `gate4_release_verify` authored
 the preceding 2026-09-28 evidence checkpoint.
@@ -946,3 +948,29 @@ on its published exact head before expected-head protected merge; then fetch and
 separately verify literal merged main. Do not relabel8c canonical/native evidence
 as a different binary/head's execution. Keep the bounded release limitations and
 remaining Gate4 families; do not begin Gate5.
+
+### Protected merge and separate main verification — 2026-10-01
+
+The final documentation head `d4adb1b1a959ea1c4e2032b6512bd33496177afa`, tree
+`a0a350cf695cce9cc7aa228931d5b10014bc66ce`, passed complete independent review.
+All410 non-document blobs remain exact8c. Its actual six CI jobs succeeded:
+[Linux36778662703](https://github.com/idiotswill/DMd/actions/runs/36778662703)
+and [Windows36778662617](https://github.com/idiotswill/DMd/actions/runs/36778662617).
+Actual totals are776/778 Rust tests,56groups,59table cases, all eight original
+Flow4 continuations, all five release histories and all four Magic Missile cases.
+The final evidence bundle SHA256 is
+`6d7c79180e26e89db813a60ac85a1a5726c9f2bf4a9a937bcc0ed17b5b8f083a`.
+Root independently rehashed all six logs before merging.
+
+[PR48](https://github.com/idiotswill/DMd/pull/48) merged with expected-head
+protection as `dbf1d633460473183324b4ec519e8d1980884b5c`. Fresh main and the
+candidate have exactly equal full trees; no post-review source delta was accepted.
+The prior8c canonical run and native package remain attributed to8c, with complete
+non-document equivalence established. No native execution of the d4/dbf artifact
+is claimed. Separate literal-main runs
+[36834974479](https://github.com/idiotswill/DMd/actions/runs/36834974479) and
+[36834974592](https://github.com/idiotswill/DMd/actions/runs/36834974592) have four
+quick checks passed and both runtime jobs pending at this checkpoint.
+
+Next: audit actual completed main logs, then record that separate result. Continue
+the approved Gate4 workstreams; preserve release's limits and remaining gate debt.

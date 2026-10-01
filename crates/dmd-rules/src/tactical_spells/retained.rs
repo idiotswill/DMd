@@ -31,6 +31,22 @@ pub fn retain_spell_cast(
                         .clone()
                         .unwrap_or_default() =>
         {
+            let defs = definitions()?;
+            let spell = defs
+                .spell(&cast.plan.choice.spell_id)
+                .ok_or_else(|| invalid("retained spell definition is absent"))?;
+            let source = crate::tactical_creatures::creature_source(&feature.source)
+                .map_err(|e| invalid(&e.to_string()))?;
+            if creature_for_spell_source(defs, spell, &cast.plan.program.source)? != source
+                || !source
+                    .features
+                    .iter()
+                    .any(|canonical| canonical == &feature.feature)
+            {
+                return Err(invalid(
+                    "retained activation and spell source revisions differ",
+                ));
+            }
             Some(SpellCreatureActivation {
                 origin: feature.enclosing_activation.origin.clone(),
                 activation: match feature.enclosing_activation.activation {

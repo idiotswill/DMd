@@ -40,6 +40,7 @@ pub fn creature_attack_gear(
         | ("warhorse", "hooves")
         | ("young-red-dragon" | "adult-red-dragon", "rend")
         | ("cultist-fanatic", "pact-blade")
+        | ("air-elemental", "thunderous-slam")
         | ("chimera", "bite" | "claw" | "ram") => None,
         _ => return Err(invalid("Source attack implement interpretation is absent.")),
     };
@@ -84,8 +85,19 @@ pub fn creature_equipment_plan(
     definition_id: &str,
     ammunition_units: u16,
 ) -> Result<Vec<CreatureEquipmentAllocation>, RulesError> {
-    let definitions = creature_definitions().map_err(|e| invalid(e.to_string()))?;
     let source = creature_definition(definition_id).map_err(|e| invalid(e.to_string()))?;
+    creature_equipment_plan_from_source(
+        &creature_source_pin(source).map_err(|e| invalid(e.to_string()))?,
+        ammunition_units,
+    )
+}
+
+pub fn creature_equipment_plan_from_source(
+    pin: &CreatureSourcePin,
+    ammunition_units: u16,
+) -> Result<Vec<CreatureEquipmentAllocation>, RulesError> {
+    let definitions = creature_definitions().map_err(|e| invalid(e.to_string()))?;
+    let source = creature_source(pin).map_err(|e| invalid(e.to_string()))?;
     let mut result = BTreeMap::new();
     let mut ammunition = HashSet::new();
     for id in &source.statistics.gear {
@@ -166,7 +178,7 @@ pub fn materialize_creature_equipment(
             "Creature equipment must be materialized once with its creation.",
         ));
     }
-    let allocations = creature_equipment_plan(&profile.source.definition_id, ammunition_units)?;
+    let allocations = creature_equipment_plan_from_source(&profile.source, ammunition_units)?;
     if item_ids.len() != allocations.len()
         || item_ids
             .iter()
