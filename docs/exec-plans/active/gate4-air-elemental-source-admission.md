@@ -418,3 +418,26 @@ with byte equivalence established explicitly if only documents change.
 
 Local canonical and final receiving-head CI are still unmet. Air acceptance,
 Shove acceptance and Gate4 completion are not implied by this checkpoint.
+
+### Accepted-main union recorded — 2026-10-01
+
+Plan3593c1 preceded normal merge
+`5b45c7f5646027ba059bd1a1ea086946ae09ad43`, tree
+`6620c91d5c3e31a92fcc046bf70ff3200bff31ed`, with accepted dbf main as its second
+parent. Squash ancestry exposed eight conflicts. Root inspected each: the three
+source/test conflicts were already-reviewed Air additions (source-pin UI controls,
+current Mage/dragon creation pins, and source placement against the staged release
+candidate). Their exact3f blobs were retained. Five documentation conflicts combine
+the accepted release checkpoint and qualified Air evidence; no source union was
+silently discarded or replaced by the older release-only version.
+
+The complete merge differs from3f only in six documentation files. A fresh root
+audit checks all411 non-document tracked blobs,29 fixture blobs and21 protected
+raw worktree artifacts against the previously reviewed3f; every one is exact.
+Audit SHA256 is `541631139a58c1ec5ff71c2009caf10bbde43a11dc3bcc52baab8a8a7da9642f`.
+The accepted main is now an ancestor. This proves byte equivalence, not new-head
+execution. The next frozen documentation checkpoint receives independent review
+and local canonical verification after the guarded-core focused run returns the
+heavy slot. No additional source edits, fixture recapture or parallel native run
+are needed for this reconciliation. Canonical results and final-head CI remain
+to be recorded before protected merge.
