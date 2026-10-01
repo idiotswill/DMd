@@ -294,3 +294,16 @@ workspace toolchain's direct rustfmt was then used without changing configuratio
 No Cargo/compiler/npm, unit/integration test, database, UI/native, branch push or
 PR edit ran. All eight new controls remain UNCOMPILED / UNRUN. No current Ogre,
 own-turn/OA/pickup/native positive or genuine Grapple/LR obligation is satisfied.
+
+## Independent checkpoint1 review correction — 2026-10-01
+
+Root found that `distributed_rules_pack.rs` still expected exactly the seven old
+manifest files. The additive eighth Ogre row therefore necessarily breaks that
+existing assertion; the original static audit missed this distribution consumer.
+The author temporarily owns this branch solely to add Ogre to that exact expected
+set, retaining every old entry and the exact-set assertion, and inspect other
+manifest cardinality consumers. This plan precedes the correction. No production
+behavior, content bytes, admission or acceptance boundary changes. Direct format,
+diff and static inspection are allowed; all Rust controls remain UNCOMPILED /
+UNRUN until the separately allocated verification slot runs them. Hand the clean
+correction back to root for review before further authoring.
