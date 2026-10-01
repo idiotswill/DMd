@@ -10,6 +10,28 @@ pub const TACTICAL_DEFINITIONS_JSON: &str =
     include_str!("../../../content/srd-5.2.1/tactical.json");
 pub const AIR_ELEMENTAL_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/air-elemental-v1.json");
+pub const NIGHT_HAG_V2_SOURCE_JSON: &str =
+    include_str!("../../../content/srd-5.2.1/night-hag-v2.json");
+
+/// Complete stored revision of the selected adaptation. The historical Hag in
+/// tactical.json remains immutable, including its deliberately omitted trait.
+pub fn bundled_night_hag_v2() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(NIGHT_HAG_V2_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Night Hag revision JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            ensure(
+                source.id == "night-hag" && legacy.creature(&source.id).is_some(),
+                "corrected source lacks its immutable V1 identity",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
 
 /// Additive immutable entry. It uses V1's spell/weapon vocabulary without changing
 /// the V1 catalog or any definition serialized into a historical fingerprint.
@@ -470,6 +492,9 @@ pub struct CreatureStatistics {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum MonsterTrait {
+    /// SRD311/185: saves against spells or another explicitly magical effect.
+    /// Damage type and a concentration save's preceding damage are not proof.
+    MagicResistance,
     /// SRD258: enter and stop in a creature's space; pass through a space as
     /// narrow as this many inches without extra movement for that passage.
     /// This is neither incorporeality nor a general difficult-terrain waiver.
@@ -1105,6 +1130,7 @@ impl CreatureDefinition {
         }
         for t in &self.traits {
             match t {
+                MonsterTrait::MagicResistance => {}
                 MonsterTrait::AirForm {
                     minimum_passage_inches,
                 } => ensure(

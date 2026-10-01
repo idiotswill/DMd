@@ -101,6 +101,26 @@ Gate4 obligations; source data and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
 slice still owes its genuine paid Prone-immunity continuation and recovery.
 
+The bounded [Magic Resistance source prerequisite](../exec-plans/active/gate4-magic-resistance-source.md)
+adds a separate selected Night Hag revision with its printed trait, exact same-ID
+revision lookup and current-admission separation. Private save categories derive
+from canonical spell work, retained source clauses or the audited nonmagical breath
+and Concentration causes. Tests for source/admission/content integrity, synthetic
+category composition and real Hold Person-Fiend/breath controls are authored only;
+no compile, test, native or production evidence is claimed and no evidence array
+advances. Real positive MR via Counterspell and a genuine repeated-save mechanism
+remain Gate 4 requirements, as does old/new same-ID application coexistence after
+the separately accepted encounter-release integration or an original pre-encounter
+capture. Historical source payloads, picker bytes and accepted fixtures stay frozen.
+
+The locally integrated release/source candidate now includes an independently
+reviewed genuine old/new Hag coexistence child of the frozen Shield-Hit replay
+suite. It completes original pending work, explicitly upgrades/releases, creates
+the current revision and authors both revisions' later real spell execution and
+cold persistence controls. The imported test is **UNCOMPILED/UNRUN**; its presence
+does not close coexistence or provide positive Magic Resistance gameplay evidence.
+Both development dependencies remain subject to separate acceptance.
+
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Integrated
 8c03f9f connects authenticated release/replacement/session handling, recovery and

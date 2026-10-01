@@ -82,12 +82,21 @@ pub fn immutable_creature_sources() -> Result<Vec<&'static CreatureDefinition>, 
     sources.push(
         crate::tactical_definitions::bundled_air_elemental().map_err(|e| invalid(e.to_string()))?,
     );
+    sources.push(
+        crate::tactical_definitions::bundled_night_hag_v2().map_err(|e| invalid(e.to_string()))?,
+    );
     Ok(sources)
 }
 
-/// Current admission does not supersede any V1 source in this additive slice.
+/// Current admission is separate from immutable historical lookup. A corrected
+/// revision supersedes only new admission of that ID, never an existing profile.
 pub fn current_creature_sources() -> Result<Vec<&'static CreatureDefinition>, CreatureError> {
-    immutable_creature_sources()
+    let current_hag =
+        crate::tactical_definitions::bundled_night_hag_v2().map_err(|e| invalid(e.to_string()))?;
+    Ok(immutable_creature_sources()?
+        .into_iter()
+        .filter(|source| source.id != current_hag.id || *source == current_hag)
+        .collect())
 }
 
 /// A retained profile always wins over the flow's historical ID-only reference.

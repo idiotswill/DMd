@@ -461,6 +461,7 @@ pub(super) fn request(
             key,
             *ability,
             "Spell saving throw",
+            super::save_cause::SaveCause::Spell(&record.cast.plan),
         ),
         [SpellProgramNode::Heal { .. } | SpellProgramNode::AutomaticDamage { .. }] => {
             let visibility = if controller(state, record.cast.plan.choice.actor).is_some() {

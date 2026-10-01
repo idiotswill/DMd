@@ -83,7 +83,7 @@ async fn create_sources(f: &Fixture) -> (EntityId, EntityId) {
             assert_eq!(source.additional_languages, 0);
             assert_eq!(source.sizes, [CreatureSize::Medium]);
             assert!(
-                source
+                !source
                     .omitted_features
                     .iter()
                     .any(|s| s == "magic-resistance")

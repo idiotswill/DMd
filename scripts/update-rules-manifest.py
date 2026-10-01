@@ -20,7 +20,7 @@ def main():
     files = []
     for name in (
         "NOTICE.md", "source.json", "kernel.json", "character-creation.json",
-        "tactical.json", "air-elemental-v1.json",
+        "tactical.json", "air-elemental-v1.json", "night-hag-v2.json",
     ):
         data = (root / name).read_bytes()
         if b"\r" in data:

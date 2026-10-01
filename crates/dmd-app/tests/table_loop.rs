@@ -23,6 +23,8 @@ mod table_falling_cases;
 mod table_hit_cases;
 #[path = "support/table_hit_driver.rs"]
 mod table_hit_driver;
+#[path = "support/table_magic_resistance_cases.rs"]
+mod table_magic_resistance_cases;
 #[path = "support/table_medicine_cases.rs"]
 mod table_medicine_cases;
 #[path = "support/table_missile_cases.rs"]
