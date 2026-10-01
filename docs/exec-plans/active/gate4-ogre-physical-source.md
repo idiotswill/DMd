@@ -2,7 +2,8 @@
 
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
 root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
-Checkpoint2 below is PLAN ONLY and awaits root review before production edits. The assigned
+Checkpoint2 plan is reviewed; bounded adapter authoring is now assigned, with all
+new verification UNCOMPILED / UNRUN. The assigned
 source implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
@@ -320,6 +321,17 @@ Direct rustfmt `--check` and Git whitespace checks pass. This existing distribut
 test and all new Rust controls remain UNCOMPILED / UNRUN on the corrected head.
 
 ## Checkpoint2 concrete adapter plan — 2026-10-01
+
+Writer authorization: root read this complete plan at `c205759` and the independent
+static design review, SHA256
+`d063a4fb46044742ca3c86ca5d002a627eac0c46245870287fa94df863601a5c`.
+The complete review is preserved externally as
+`tooling/ogre-c205759-checkpoint2-plan-independent-review-2026-10-01.md` with audit
+SHA256 `308cdd54cb5ec374d818b1c4230bc6e29c5c7490a2669ba179cac0fcb69b36f0`.
+Root assigned this sole writer bounded checkpoint2 implementation after returning
+the separate ground plan `28defe5` and its writer ownership. This status commit
+precedes adapter edits. Only the reviewed source/domain/refusal/control scope below
+is authorized; creation remains closed, no ground/UI activation or heavy operation.
 
 Root reviewed the complete checkpoint1 delta and the distribution correction at
 `b8b099cc29d88c51f32c6049c37e3073dffa7005`, tree
