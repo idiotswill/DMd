@@ -1,7 +1,8 @@
 # Gate 4 — Complete Ogre physical source actions
 
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
-UNCOMPILED / UNRUN. The assigned
+root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
+Checkpoint2 below is PLAN ONLY and awaits root review before production edits. The assigned
 source implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
@@ -228,12 +229,12 @@ checks through the old OA variant, double-paying source Action/Reaction costs,
 replenishing thrown gear, changing legacy serialization and advertising partial
 printed actions. The acceptance matrix addresses each explicitly.
 
-One writer per branch. The local heavy slot belongs to the separate guarded-core verifier;
+One writer per branch. The local heavy slot currently belongs to root's native Air verification;
 no parallel Cargo/npm/compiler/database/native operation is authorized here.
 Static authoring/review may proceed once this plan is independently reviewed.
-Next: independent complete checkpoint1 source review, then allocated focused and
-receiving-head verification. Keep admission closed and review the concrete next
-adapter scope before expanding. The separate ground-recovery plan must reconcile
+Next: review the concrete checkpoint2 plan below before adapter authoring, then
+allocate focused and receiving-head verification separately. Keep admission closed.
+The separate ground-recovery plan must reconcile
 actual after-equipment timing and custody receipts before that later producer.
 Run appropriate focused checks and `./scripts/verify` when allocated the slot;
 never promote static source or a test-only constructed definition to acceptance.
@@ -317,3 +318,166 @@ named rows, the generator already includes Ogre, and both package routes copy th
 complete content directory. Generic catalog tests use their own isolated data.
 Direct rustfmt `--check` and Git whitespace checks pass. This existing distribution
 test and all new Rust controls remain UNCOMPILED / UNRUN on the corrected head.
+
+## Checkpoint2 concrete adapter plan — 2026-10-01
+
+Root reviewed the complete checkpoint1 delta and the distribution correction at
+`b8b099cc29d88c51f32c6049c37e3073dffa7005`, tree
+`c52c59b6b3d9b4671fa16a441db62ac786f2433e`: static CLEAR, runtime still UNRUN.
+Root now transfers sole writer ownership for this PLAN ONLY checkpoint. Commit
+and return this plan for review before changing production code. The freshly
+fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c`; its executor still maps
+EncounterReleaseV1 to flow5. Earlier d88 observations above are historical. This
+checkout has not merged that new main; root coordinates prerequisite integration.
+
+### Bounded implementation after plan review
+
+Implement the exact Ogre own-turn physical adapter and typed physical source OA
+in the existing attack engine, with focused source/compatibility controls. Keep
+`current_creature_sources` exclusion, ID-only V1 unknown behavior and the common
+profile construction/validation refusal unchanged. No Ogre materialization,
+current/Historical creation, selectable menu, fixture capture or public gameplay
+positive is admitted by this checkpoint. No test bypass, alternative constructor
+or forged Ogre profile may replace that gate. UI enablement and ground recovery
+are later reviewed work; all three forms, OA, pickup and UI must be complete before
+the final coherent admission change. Grapple remains publicly disabled.
+
+Concrete existing consumers and the required changes:
+
+| Consumer | Checkpoint2 decision |
+| --- | --- |
+| `tactical_creature_equipment::creature_attack_gear` | After full-pin resolution, use the sealed exact `ogre_weapon_program` for its three forms and required ordinary weapon ID. An Ogre program error cannot fall back to an intrinsic or ID-only source. Preserve every old mapping. |
+| `attacks/creature_weapon::facts` and `require_matching_plan` | Introduce an internal exact-Ogre policy branch alongside the existing strict policy. Actual selected Item definition still matches required Gear. This function presently checks definition, not custody; the shared physical planner owns custody. |
+| `attacks::begin_with_source` / `planning::weapon_plan` | Retain ordinary payment, hands, equipment, ammunition, geometry and request construction. Own-turn Ogre uses the existing source Action invocation and one AttackAction attack, not an extra source cost or Multiattack. |
+| `creature_weapon::validate_source`, `attacks/validation` and `planning::reconstruct` | Re-derive the same full-pin program from retained source, original physical choice and equipment/ammo before-image. Split Action versus new physical OA admission checks explicitly; current code requires CreatureAction/AttackAction for every CreatureWeapon. |
+| `attacks/opportunity`, `movement::validate_opportunity` | Derive actual held-source options with current usable grips, preserve exact crossing membership, and construct one physical CreatureWeapon attack under Reaction admission. Current retained OA validator explicitly rejects CreatureWeapon; replace only that bounded rejection with exact new-source validation. |
+| `attacks/intrinsic` | Explicitly refuse the new Ogre physical program through the old gripless CreatureFeature path, including retained reconstruction. A held Item alone is not proof of a legal two-hand attack. |
+
+The shared ordinary `WeaponAttackPlan` remains ordinary. For Ogre, derive a separate
+printed damage component only after validating the sealed program against that
+plan: exact source/feature/required weapon, Strength, Normal purpose, no mastery,
+correct delivery/reach/range, no ammunition, printed attack bonus minus actual
+Exhaustion, matching damage type and flat modifier. Also require the plan's base
+dice to equal that ordinary weapon's definition before substituting the source's
+printed base dice. Do not replace an arbitrary or already altered plan. For old
+Goblin/Skeleton sources, retain the existing exact numerical matching policy,
+including their advantage riders; no general permission for discrepant formulas.
+
+Greatclub uses legal TwoHands and printed2d8+4 Bludgeoning; Javelin melee uses
+OneHand and2d6+4 Piercing; Javelin thrown uses Strength/Thrown,30/120 range and the
+same2d6+4. Never represent it as Shot or generate ammunition. All generic source-
+independent circumstances remain active: target knowledge/cover, ranged threats,
+advantage cancellation, reach, underwater/long range and automatic miss, current
+anatomy/supporting hand, custody, state and quantity. Critical doubling remains
+the existing request path (`attacks::request`):4d8/4d6, with flat+4 once in damage
+application. An ordinary attack with the same Item retains ordinary dice even
+when the Item originated in an Ogre grant. No global equipment/source mutation.
+
+Preserve one Action and one attack expenditure plus the source scheduler's exact
+`BeginFeature` invocation on own-turn play. Keep source runtime last-operation,
+turn/window and physical receipt validation together. Invalid source or physical
+choices refuse before costs. Both hit and miss, including automatic miss, use
+existing thrown completion exactly once: same Item goes to Location custody and
+receives its actual target-position/completing-command ground record. No refill,
+replacement identity or fourth unrecovered Javelin is introduced.
+
+### Typed physical source OA and retained proof
+
+Add `TacticalMeleeChoice::CreatureWeapon { feature_id, weapon, grip }` and a distinct
+`TacticalMeleeSource::CreatureWeapon { feature_id, item }` crossing option identity.
+These are additive variants; preserve old variants and serialized bytes. The new
+choice supplies no target, ability, delivery, damage, pin, cost or equipment change:
+the selected crossing binds actor/target, and the exact program binds the mechanics.
+Initially this route is closed to all sources except the exact Ogre program's two
+melee forms. Its source full pin is retained in the existing
+`TacticalAttackSource::CreatureWeapon`, with a real `TacticalWeaponAttack` before-
+image and `WeaponActionWindow { id: response.id, kind: Reaction }`.
+
+Offer only actually held, intact quantity-one matching Items in current custody.
+Greatclub must have both effective hands usable; holding it in one hand with the
+other free may choose TwoHands without drawing a new item. Javelin melee uses an
+actually holding usable hand. No stowed weapon, Thrown form, pickup, after choice,
+free Equip/Unequip, ammunition or Action scheduler invocation is available in OA.
+Filter before adding the option and check the exact grip again at acceptance;
+sort by feature and ItemId deterministically. Do not also emit the old gripless
+CreatureFeature option for Ogre. Existing intrinsic/source/ordinary options retain
+their old meaning; a genuine ordinary-weapon option is not printed source damage.
+
+Use the existing movement window check and actual source reach5 before spending
+exactly one Reaction. Do not call own-turn `begin_creature_weapon` or BeginFeature.
+Commit the same physical loadout/receipt path and record the actual response on
+the movement parent before the ordinary attack pump. Retained validation must prove
+full pin/form, source and selected Item option identity, exact crossing/from/to/
+step, owner, response origin, spent Reaction, Normal/Melee choice, no equipment/
+ammo operation, and the original equipment image. Reconstruct the crossing with
+the original before-loadout as the existing ordinary OA path does, then validate
+the printed damage separately. Reusing the source Action validator or omitting the
+physical receipt is invalid. Completed/missed responses cannot reopen the crossing.
+
+Require exact flow5 in new own-turn Ogre producer, new OA producer and retained
+new-source validation under both Live and Historical policy, not just the live
+legacy-action allowlist. The old gripless route refuses even under flow5. Preserve
+existing paid old continuations and raw roll tags; no legacy Ogre acceptance is
+invented. Current profile admission guards remain the outer public barrier while
+this code is authored; immutable program inspection itself is not gameplay.
+
+### Shared ground interface and later application work
+
+Ground work is owned by root in `gate4-source-creature-control`, not this checkout.
+Its reviewed source-grounded proposal is
+`tooling/ground-053f736-equipment-lifecycle-independent-design-2026-10-01.md`, SHA256
+`f86ca70db8c3d2f00b89ed84b3c2b67471e0fff328b0b1df2ccbd25a837648cc`.
+That proposal still requires a checked concrete ground-plan review before code.
+This adapter must be compatible with one rules-owned, sealed preparation boundary
+that derives the coherent actual custody/loadout candidate once, before ordinary
+physical planning and source damage validation. It must not accept a caller's
+post-pickup state, skip token or Item patch. Ogre contributes only its exact printed
+program; the ground producer owns pickup admission, same-Item transfer, original
+ground/loadout proof and owned after-equipment lifecycle. No new pickup enum,
+receipt or continuation is implemented here, nor a placeholder that reports it
+working. Later integration must re-run retained reconstruction and ensure the
+before operation is consumed once, while OA explicitly excludes it.
+
+The later UI checkpoint must add a separate physical-source OA option with stable
+ItemId/feature/legal grips, not overload today's `TableCreatureAttackChoice`, whose
+weapon is optional and has no grip. Add an omitted-when-empty DTO field, leaving
+old views/opaque presentation histories byte-exact. Extend actual table projection,
+transport, tactical API and OpportunityForm; original intrinsic buttons remain.
+Own-turn AttackForm already submits feature/item/grip but must display all three
+source forms and distinguish the three real Javelins. Any exhaustive new-enum
+consumer needed in checkpoint2 must fail closed without UI exposure or source
+admission; the complete actual controls remain mandatory before activation.
+
+### Controls, evidence limits and next action
+
+Checkpoint2 can author/verify pure immutable-program composition, exact policy
+refusals, new choice serialization, flow1–4 rejection, guard preservation and
+regressions of the real old admitted-source paths. Pure formula/hand candidate
+controls must be labeled as such. Do not fabricate an Ogre profile/materialization
+to call the public gameplay path, or claim an internal source-composition fixture
+proves accepted own-turn/OA play. Genuine Ogre positives remain UNMET until the
+complete source is admitted through normal catalog/creation in the final slice.
+
+Required receiving-head controls include: all three exact printed forms and
+critical requests; wrong full pin, feature/item swap, changed dice/bonus/flat/type,
+Shot or ammo Javelin, wrong Strength/grip and supporting-hand conflicts; both
+legacy/intrinsic and forged Historical bypasses; actual source Action versus
+Reaction cost separation; unchanged old Goblin/Skeleton/intrinsic replay; and
+after admission real four-item creation, finite throws, own-turn/OA pending cold
+restore, source/receipt/request forgeries, original retries and full no-write
+changed-body/foreign/stale refusals. Include OA support-hand unavailable at offer,
+changed before response, and retained before-image reconstruction. Synthetic
+EffectiveHands reservations do not prove accepted Grapple release/refresh history.
+
+All29 fixture blobs,21 protected raw artifacts, five original history suite files,
+old source content/pins and old serialized examples stay exact. Preserve checkpoint1
+creation-refusal controls until deliberate final admission, then replace only their
+future-policy expectation with genuine admitted coverage while retaining historical
+compatibility and no old-version Ogre producer. Full canonical, both-platform CI,
+native own-turn/OA/ground pickup and final-main checks remain required, separately
+allocated; no test/build/database/native/push is authorized by this plan checkpoint.
+
+Exact next action: root reviews this committed plan and returns any amendments;
+only then transfer/confirm bounded adapter authoring. Return branch ownership to
+root with the plan-only head/tree and unchanged non-document blobs. Source tests
+from checkpoint1 remain UNCOMPILED / UNRUN; this plan adds no execution evidence.
