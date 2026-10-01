@@ -237,9 +237,20 @@ fn completed_escape_preserves_the_producers_physical_digital_and_secret_issuer_r
             None,
         );
         validate(&retained).unwrap();
+        let accepted_raw = retained
+            .rules
+            .as_ref()
+            .unwrap()
+            .rolls
+            .iter()
+            .find(|r| r.request.id == e.key.request_id())
+            .unwrap();
+        assert_eq!(accepted_raw.result.source, source);
+        assert_eq!(accepted_raw.resolved.source, source);
         if player_owned {
-            // Same physical faces, request, arithmetic, owner and outcome. Only
-            // the result's claimed source changes in this malformed snapshot.
+            // Same faces, request, arithmetic, owner and outcome. Forge both
+            // source fields consistently so the issuer rule, not an arithmetic
+            // or provenance mismatch, must reject this malformed snapshot.
             let mut forged = retained;
             let raw = forged
                 .rules
@@ -249,8 +260,12 @@ fn completed_escape_preserves_the_producers_physical_digital_and_secret_issuer_r
                 .iter_mut()
                 .find(|r| r.request.id == e.key.request_id())
                 .unwrap();
+            let mut expected = raw.resolved.clone();
+            assert_eq!(expected.source, RollSource::Physical);
             raw.result.source = RollSource::Digital;
-            assert_eq!(raw.resolved, raw.request.resolve(&raw.result).unwrap());
+            raw.resolved = raw.request.resolve(&raw.result).unwrap();
+            expected.source = RollSource::Digital;
+            assert_eq!(raw.resolved, expected);
             let before = serde_json::to_vec(&forged).unwrap();
             assert!(matches!(validate(&forged), Err(RulesError::Unauthorized)));
             let holder = context(&forged).unwrap().proofs[0].declaration.grappler;
