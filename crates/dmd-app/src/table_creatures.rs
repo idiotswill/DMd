@@ -148,6 +148,9 @@ pub(crate) fn create(
 }
 
 #[cfg(test)]
+mod ogre_tests;
+
+#[cfg(test)]
 mod source_wire_tests {
     use super::*;
     #[test]

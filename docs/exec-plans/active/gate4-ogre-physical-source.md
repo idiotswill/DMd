@@ -1,10 +1,11 @@
 # Gate 4 — Complete Ogre physical source actions
 
-Status: checkpoint1 source authoring authorized, 2026-09-30. The assigned
+Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
+UNCOMPILED / UNRUN. The assigned
 source implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
-The previous equipment branch and commit remain preserved. No Ogre implementation,
-source admission, tests, PR or runtime result is claimed by this checkpoint.
+The previous equipment branch and commit remain preserved. Ogre creation and
+attack execution remain closed. No PR or runtime acceptance is claimed.
 
 Root transferred this checkout from clean reviewed `df0e0e2` after independent
 plan amendment clearance, SHA256
@@ -220,7 +221,8 @@ as a lawful Knock Out; no HP, condition, size or LR injection is permitted.
 
 ## Validation, risks and exact next action
 
-This commit changes only this plan. No source or runtime result exists yet.
+The original reviewed plan commits changed only this plan. Checkpoint1's authored
+source and controls are recorded below; there is no runtime result for them yet.
 Main risks are leaking printed dice onto ordinary loot, bypassing supporting-hand
 checks through the old OA variant, double-paying source Action/Reaction costs,
 replenishing thrown gear, changing legacy serialization and advertising partial
@@ -229,7 +231,66 @@ printed actions. The acceptance matrix addresses each explicitly.
 One writer per branch. The local heavy slot belongs to the separate guarded-core verifier;
 no parallel Cargo/npm/compiler/database/native operation is authorized here.
 Static authoring/review may proceed once this plan is independently reviewed.
-Next: independent exact-plan review, resolve findings, then implement checkpoint1
-with no current admission and review source/physical policy before expanding.
+Next: independent complete checkpoint1 source review, then allocated focused and
+receiving-head verification. Keep admission closed and review the concrete next
+adapter scope before expanding. The separate ground-recovery plan must reconcile
+actual after-equipment timing and custody receipts before that later producer.
 Run appropriate focused checks and `./scripts/verify` when allocated the slot;
 never promote static source or a test-only constructed definition to acceptance.
+
+## Checkpoint1 author handback — 2026-10-01
+
+Writer/scope authorization was committed first at `51dfc3d`, based on reviewed
+`df0e0e2`. The pinned p312 Ogre is now an additive immutable `ogre-v1.json` with
+exact statistics, three Action forms, one Greatclub/three Javelins and the reviewed
+TwoHands annotation. The loader validates it against the existing V1 vocabulary;
+the original tactical catalog and every earlier immutable source remain unchanged.
+The source registry now holds thirteen revisions, while the current catalog still
+contains eleven sources. Ogre is explicitly excluded and ID-only lookup remains
+V1/unknown. No historical Ogre producer is invented.
+
+Historical table creation bypasses current catalog admission, so a common profile
+guard rejects this registry-only source after exact lookup. The guard is also used
+by initial/retained profile validation, preventing a manually invented profile from
+turning immutable lookup into gameplay authority. Existing source creation and
+historical paths retain their prior semantics. No source-specific bypass creates
+an Ogre for tests.
+
+The sealed `OgreWeaponProgram` descriptor exposes exact-pin, three-form read-only
+facts: actual ordinary weapon definition, source delivery, Strength, printed bonus
+and printed damage. It checks retained Two-Handed/Thrown vocabulary and never
+changes equipment definitions, creates an attack, pays a cost, or claims a current
+attack consumer. Checkpoint2's ordinary physical source adapter is its intended
+first production execution consumer; OA and pickup remain later reviewed work.
+Current intrinsic/physical attack adapters, scheduling and UI are unchanged.
+
+The package manifest adds the exact Ogre file and updates only NOTICE's existing
+row for appended attribution/interpretation text. Installed-content validation
+requires the declared file, correct length/checksum and exact compiled bytes even
+after a source cache has initialized. Existing Tauri and portable packaging copy
+the whole content directory; their configuration is unchanged. This is static
+distribution-path evidence, not a built or launched package.
+
+Eight new controls are authored: full printed facts; full-pin/ID-only/current
+admission boundaries; invented retained-profile refusal; closed physical forms
+and ordinary-versus-printed damage; exact four-position Individual allocation
+without ammo; exact manifest bytes; actual pure table Live/Historical refusals
+with/without a pin plus an old-source positive control; and installed package
+missing/undeclared/changed/rehashed refusal, complete-store equality and repair
+recovery. Allocation positions are not accepted ItemIds, materialized Ogre gear,
+or count-bearing gameplay. The adversarial event/profile controls are explicitly
+synthetic negatives. The package case will use the existing real SQLite runtime
+when executed, but has not run here.
+
+Both pre-existing count tests retain all twelve original vectors/omission and
+fingerprint assertions; only Ogre is excluded from those old-source loops and
+tested additively. No original capture, original replay suite, admission picker,
+source-control, transport or combat execution field has changed.
+
+Direct rustfmt and Git whitespace checks, strict JSON/manifest verification and
+old-content/fixture byte inspection are static author evidence. An initial call
+through the rustup proxy could not choose a default formatter; the existing
+workspace toolchain's direct rustfmt was then used without changing configuration.
+No Cargo/compiler/npm, unit/integration test, database, UI/native, branch push or
+PR edit ran. All eight new controls remain UNCOMPILED / UNRUN. No current Ogre,
+own-turn/OA/pickup/native positive or genuine Grapple/LR obligation is satisfied.

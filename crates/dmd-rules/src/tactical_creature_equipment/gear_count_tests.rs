@@ -127,7 +127,12 @@ fn repeated_generated_requirements_keep_one_original_stack() {
 
 #[test]
 fn every_immutable_source_keeps_its_original_ordered_allocations() {
-    let sources = immutable_creature_sources().unwrap();
+    // Ogre's new allocation is tested separately; retain every original vector.
+    let sources: Vec<_> = immutable_creature_sources()
+        .unwrap()
+        .into_iter()
+        .filter(|source| source.id != "ogre")
+        .collect();
     assert_eq!(sources.len(), 12);
     for source in sources {
         assert!(source.statistics.gear_quantities.is_empty());
