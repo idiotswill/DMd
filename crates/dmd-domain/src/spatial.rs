@@ -387,30 +387,6 @@ impl TacticalEncounter {
     /// Geometry-only checks are also used by immutable queries on a standalone battlefield.
     pub fn validate_geometry(&self) -> Result<(), String> {
         let field = &self.battlefield;
-        field.bounds.validate()?;
-        identifier(&field.floor_surface)?;
-        if field.floor_z < field.bounds.min.z
-            || field.floor_z >= field.bounds.max.z
-            || [
-                field.bounds.min.x,
-                field.bounds.min.y,
-                field.bounds.max.x,
-                field.bounds.max.y,
-            ]
-            .into_iter()
-            .any(|n| n % GRID_SQUARE_UNITS != 0)
-        {
-            return Err("invalid battlefield floor/grid bounds".into());
-        }
-        let cells = i64::from((field.bounds.max.x - field.bounds.min.x) / GRID_SQUARE_UNITS)
-            * i64::from((field.bounds.max.y - field.bounds.min.y) / GRID_SQUARE_UNITS);
-        if cells > MAX_BATTLEFIELD_GRID_CELLS
-            || field.terrain.len() > 512
-            || field.obstacles.len() > 512
-            || field.lights.len() > 128
-        {
-            return Err("battlefield exceeds bounded geometry capacity".into());
-        }
         if self.participants.is_empty()
             || self.participants.len() > MAX_TACTICAL_PARTICIPANTS
             || self.knowledge.len() > self.participants.len()
@@ -421,29 +397,12 @@ impl TacticalEncounter {
         {
             return Err("authored geometry requires a bounded ruling".into());
         }
-        let mut features = HashSet::new();
-        for terrain in &field.terrain {
-            identifier(&terrain.id)?;
-            terrain.volume.validate()?;
-            if !features.insert(&terrain.id) || !field.bounds.encloses(terrain.volume) {
-                return Err("invalid/duplicate terrain volume".into());
-            }
-            if let Some(surface) = &terrain.surface {
-                identifier(surface)?;
-            }
-        }
-        for obstacle in &field.obstacles {
-            identifier(&obstacle.id)?;
-            obstacle.volume.validate()?;
-            if !features.insert(&obstacle.id) || !field.bounds.encloses(obstacle.volume) {
-                return Err("invalid/duplicate obstacle volume".into());
-            }
-        }
         let actors = self
             .participants
             .iter()
             .map(|p| p.entity_id)
             .collect::<HashSet<_>>();
+        field.validate_for_participants(&actors)?;
         if actors.len() != self.participants.len() {
             return Err("duplicate encounter participant".into());
         }
@@ -502,18 +461,6 @@ impl TacticalEncounter {
                 }
             }
         }
-        for light in &field.lights {
-            identifier(&light.id)?;
-            light.position.validate()?;
-            if !features.insert(&light.id)
-                || light.bright_radius > light.dim_radius
-                || light.dim_radius > 4000
-                || !field.bounds.contains(light.position)
-                || light.attached_to.is_some_and(|id| !actors.contains(&id))
-            {
-                return Err("invalid/duplicate spatial light".into());
-            }
-        }
         let mut observers = HashSet::new();
         for memory in &self.knowledge {
             if !actors.contains(&memory.observer)
@@ -540,6 +487,69 @@ impl TacticalEncounter {
                 if !field.bounds.contains(cell.position) || !cells.insert(cell.position) {
                     return Err("invalid/duplicate remembered terrain".into());
                 }
+            }
+        }
+        Ok(())
+    }
+}
+
+impl Battlefield {
+    /// Shared structural geometry checks for the live and retained scene spaces.
+    /// Actor identities bind attached lights without retaining gameplay resources.
+    pub fn validate_for_participants(&self, actors: &HashSet<EntityId>) -> Result<(), String> {
+        let field = self;
+        field.bounds.validate()?;
+        identifier(&field.floor_surface)?;
+        if field.floor_z < field.bounds.min.z
+            || field.floor_z >= field.bounds.max.z
+            || [
+                field.bounds.min.x,
+                field.bounds.min.y,
+                field.bounds.max.x,
+                field.bounds.max.y,
+            ]
+            .into_iter()
+            .any(|n| n % GRID_SQUARE_UNITS != 0)
+        {
+            return Err("invalid battlefield floor/grid bounds".into());
+        }
+        let cells = i64::from((field.bounds.max.x - field.bounds.min.x) / GRID_SQUARE_UNITS)
+            * i64::from((field.bounds.max.y - field.bounds.min.y) / GRID_SQUARE_UNITS);
+        if cells > MAX_BATTLEFIELD_GRID_CELLS
+            || field.terrain.len() > 512
+            || field.obstacles.len() > 512
+            || field.lights.len() > 128
+        {
+            return Err("battlefield exceeds bounded geometry capacity".into());
+        }
+        let mut features = HashSet::new();
+        for terrain in &field.terrain {
+            identifier(&terrain.id)?;
+            terrain.volume.validate()?;
+            if !features.insert(&terrain.id) || !field.bounds.encloses(terrain.volume) {
+                return Err("invalid/duplicate terrain volume".into());
+            }
+            if let Some(surface) = &terrain.surface {
+                identifier(surface)?;
+            }
+        }
+        for obstacle in &field.obstacles {
+            identifier(&obstacle.id)?;
+            obstacle.volume.validate()?;
+            if !features.insert(&obstacle.id) || !field.bounds.encloses(obstacle.volume) {
+                return Err("invalid/duplicate obstacle volume".into());
+            }
+        }
+        for light in &field.lights {
+            identifier(&light.id)?;
+            light.position.validate()?;
+            if !features.insert(&light.id)
+                || light.bright_radius > light.dim_radius
+                || light.dim_radius > 4000
+                || !field.bounds.contains(light.position)
+                || light.attached_to.is_some_and(|id| !actors.contains(&id))
+            {
+                return Err("invalid/duplicate spatial light".into());
             }
         }
         Ok(())

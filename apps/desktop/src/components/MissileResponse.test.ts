@@ -7,7 +7,7 @@ import type { MissileView, SpellCastChoice, TacticalView } from '../tactical-api
 
 const shield=(actor:string):SpellCastChoice=>({actor,spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'});
 const response=(actor:string,selected=false)=>({key:`${actor}-${selected?'selected':'intent'}`,actor,selected,shield:[shield(actor)]});
-const tactical=(missile:MissileView):TacticalView=>({encounter_id:'encounter',phase:'active',round:1,execution:'ShieldMissileV1',active_actor:'mage-a',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:{action_spent:false,bonus_action_spent:false,reaction_available:true,movement_spent:0,attacks_remaining:0},missile});
+const tactical=(missile:MissileView):TacticalView=>({encounter_id:'encounter',phase:'active',round:1,execution:'EncounterReleaseV1',active_actor:'mage-a',battlefield:null,participants:[],combatant_sources:[],observers:[],initiative:[],ties:[],continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,budget:{action_spent:false,bonus_action_spent:false,reaction_available:true,movement_spent:0,attacks_remaining:0},missile});
 
 it('keeps acknowledgment explicit without Shield and requires separate ordering even with no offers',async()=>{
   const user=userEvent.setup(), onAction=vi.fn();

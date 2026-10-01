@@ -2,6 +2,35 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
+## Current integration checkpoint — 2026-09-30
+
+Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
+protected merge. The complete tree equals reviewed source65b7606. Exact source
+canonical verification and all six CI checks pass, and corrected native package728
+was played with verified non-documentation source parity. Separate literal-main
+checks now pass all six jobs, including747 Linux/749 native Windows Rust tests.
+The [UI plan](gate4-table-ui-polish.md) retains the qualified package observations.
+
+All three original c4d8 flow4 capture producers and all eight original-source
+baseline tests completed normally before that main advancement. Both completion
+audits verified immutable bytes and exact provenance. The
+[release plan](gate4-encounter-release.md) owns their seven-file import and unchanged
+continuation suite and normal UI/main reconciliation. Integrated8c03f9f now passes
+canonical775 GNU Rust tests, all six CI jobs (776 Linux/778 native Windows), all59
+table cases and all eight original flow4 continuations. Its verified Windows
+package completed actual closed-session Finish, cold Finished reopen, a second
+battlefield/physical initiative, paid attack cold continuation and active-session
+Finish. The same actors/items, spent uses and original Mage Armor deadline survive.
+This evidence-only checkpoint still needs exact-head checks/review, protected PR48
+merge and separate post-release-main verification; PR48 remains unaccepted.
+
+Air, Shove, timed expiry, Magic Resistance and Grapple remain separate Gate4
+development slices. All twelve rules families and eighteen spell mechanisms keep
+their full scope. Remaining tactical knowledge, timing, interruptions, environment
+interaction and opponent behavior must be integrated and verified through real
+play before gate closeout. [The production-path audit](gate4-production-closure.md)
+retains the open obligations. No Gate5 work starts at this checkpoint.
+
 ## Objective and baseline
 
 Complete the twelve Gate 4 rules families through the real desktop application, with

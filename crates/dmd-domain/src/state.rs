@@ -12,6 +12,10 @@ pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
+    /// Authenticated completion/highwater and old scene placements. Absent keeps
+    /// the exact historical wire; resources remain in their existing stores.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub encounter_history: Option<Box<crate::TacticalEncounterHistory>>,
     /// Authoritative tactical encounter state; absent before an encounter is established.
     #[serde(default)]
     pub encounter: Option<crate::TacticalEncounter>,
@@ -43,6 +47,7 @@ impl CampaignState {
     #[must_use]
     pub fn empty(campaign: Campaign, clock: WorldClock) -> Self {
         Self {
+            encounter_history: None,
             encounter: None,
             table: None,
             rules: None,

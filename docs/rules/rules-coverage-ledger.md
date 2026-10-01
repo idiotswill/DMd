@@ -85,6 +85,20 @@ integrated canonical/CI/review and missile merge/main proof remain pending;
 Counterspell, Ready release and the other required mechanisms remain open.
 This is technical evidence, not human acceptance.
 
+The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
+owns the approved flow 5 completion/highwater and retained-scene design. Integrated
+8c03f9f connects authenticated release/replacement/session handling, recovery and
+desktop controls and passes canonical775 GNU Rust tests plus all six CI jobs
+(776 Linux/778 native Windows). All59 table cases and eight unchanged original
+flow4 continuations pass after genuine original-source capture/baseline completion.
+The verified8c Windows package exercises two actual encounters, closed/active-session
+Finish and cold Finished/pending-attack recovery with the same actors, paid resources,
+items and absolute Mage Armor deadline. The plan distinguishes native evidence from
+the separate real file-SQLite ammunition/drop-custody, replay and refusal families.
+Final evidence-head checks/review, protected merge and separate merged-main proof
+remain required; complete Gate4 families remain implementing. These checkpoints add
+no passing evidence to the machine-readable ledger and advances no family status.
+
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.
 
 `cargo test --locked -p dmd-domain --test rules_coverage_ledger` runs offline in normal workspace CI. It checks the pin, complete chapter span, reviewed catalog counts, unique names/IDs, source-page bounds, every inventory-to-family relationship, gate assignment and evidence for advanced statuses. Negative cases demonstrate rejection of orphaned families/entries, duplicate ownership, removed catalog entries and unsupported completion claims. It checks consistency against the reviewed source inventory; it is not a claim that software can infer legal scope or prove faithful gameplay from JSON alone.

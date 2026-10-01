@@ -1,0 +1,301 @@
+{
+  "producer_commit": "c4d8c34c19b5c92eca789f292f99632a0107d861",
+  "capture_commit": "2b839d7fc7c8caa8574304ea6f99020ed491e849",
+  "baseline_commit": "05b43bddade5c400e4efa12fadec1d798d5fc0c6",
+  "source_environment": {
+    "rustc_verbose": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+    "cargo_version": "cargo 1.98.1 (797e8a9bc 2026-08-05)",
+    "build_jobs": 1,
+    "incremental": 0,
+    "rust_min_stack": "unset",
+    "target_rustflags": "-C link-self-contained=yes"
+  },
+  "scope": "Original-source capture and complete eight-test baseline only; receiving head remains unverified.",
+  "original_capture_manifest_sha256": "67489576c8fb785b19241663e448d4db211e08205f64b4014a10beb2d1047e7c",
+  "root_audit_sha256": "782846d644f789d758e703ab4101cfd491b01ec2148903f630396ccce656dc2b",
+  "independent_audit_sha256": "ae536fe85b444588441c28b2fb4ff72429c41523d7a5c12591ad2f31deb2fd59",
+  "reproduction_environment": {
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0",
+    "RUST_MIN_STACK": "unset",
+    "CARGO_PROFILE_*": "unset",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS": "-C link-self-contained=yes",
+    "CARGO_TARGET_DIR": "An isolated build directory outside the source checkout",
+    "DMD_FLOW4_CAPTURE_DIR_for_capture": "One fresh external output directory shared by all three producer commands; never overwrite historical captures",
+    "DMD_FLOW4_CAPTURE_DIR_for_baseline": "The immutable seven-export directory; the receiving tests/fixtures directory supplies those exact files",
+    "RUSTFLAGS_and_wrappers": "unset; no injected compiler, runner, profile or stack overrides"
+  },
+  "exports": [
+    {
+      "file": "flow4-hit-selected-shield.json",
+      "bytes": 133928,
+      "sha256": "5083dd9ab7227bb1f4e6d280b25316971d04e630f20bf74fd90dde397c3f2960",
+      "event_sequence": 20,
+      "counts": {
+        "audit": 20,
+        "bindings": 9,
+        "causes": 0,
+        "events": 20,
+        "projections": 13,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "HitSelected": {
+          "attacker": "78e52c8e-911b-43b3-b8ef-92023c509b4f",
+          "target": "ef307c63-cf88-4d72-889f-433f196d39b1"
+        }
+      }
+    },
+    {
+      "file": "flow4-missile-all-faces-before-impact.json",
+      "bytes": 293135,
+      "sha256": "ce417901440220186923aa818a5e3ade1070e6fa860b1e68befb3a126d05d1eb",
+      "event_sequence": 41,
+      "counts": {
+        "audit": 41,
+        "bindings": 28,
+        "causes": 0,
+        "events": 41,
+        "projections": 33,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "MissileProgress": {
+          "caster": "20bc9892-db11-42f0-a889-713aa99c3287",
+          "completed": 0,
+          "faces": 6,
+          "starting_hp": 44,
+          "target": "d8b264ae-999c-4bb3-871b-414fec8d9648"
+        }
+      }
+    },
+    {
+      "file": "flow4-missile-first-concentration-child.json",
+      "bytes": 301841,
+      "sha256": "43ba82798d34baebc2fb7caf649e6ac793ac96c57e58219ed4f2b83bdd15b668",
+      "event_sequence": 42,
+      "counts": {
+        "audit": 42,
+        "bindings": 29,
+        "causes": 0,
+        "events": 42,
+        "projections": 34,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "MissileProgress": {
+          "caster": "20bc9892-db11-42f0-a889-713aa99c3287",
+          "completed": 1,
+          "faces": 6,
+          "starting_hp": 44,
+          "target": "d8b264ae-999c-4bb3-871b-414fec8d9648"
+        }
+      }
+    },
+    {
+      "file": "flow4-missile-penultimate-concentration-child.json",
+      "bytes": 371493,
+      "sha256": "1f7b7eaaa198763cc0cc726e7e5be4cdf8f60d96f355598398591d020da1aad0",
+      "event_sequence": 50,
+      "counts": {
+        "audit": 50,
+        "bindings": 37,
+        "causes": 0,
+        "events": 50,
+        "projections": 42,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "MissileProgress": {
+          "caster": "20bc9892-db11-42f0-a889-713aa99c3287",
+          "completed": 5,
+          "faces": 6,
+          "starting_hp": 44,
+          "target": "d8b264ae-999c-4bb3-871b-414fec8d9648"
+        }
+      }
+    },
+    {
+      "file": "flow4-missile-selected-shield.json",
+      "bytes": 203901,
+      "sha256": "22a688f340b988cc8889170be30d80712a15c0d920d04f251da51016dd830259",
+      "event_sequence": 30,
+      "counts": {
+        "audit": 30,
+        "bindings": 17,
+        "causes": 0,
+        "events": 30,
+        "projections": 22,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "MissileSelected": {
+          "caster": "73f5f52f-12b2-48af-9ca6-bd0e22bdaf5a",
+          "selected": "e1faf026-278f-40af-a328-06e2d90703fe"
+        }
+      }
+    },
+    {
+      "file": "flow4-missile-three-faces.json",
+      "bytes": 265323,
+      "sha256": "ad00ae2b362d00e8c90d7e9d2623c503e67dfd4f6d02a93805aa50630ff97332",
+      "event_sequence": 38,
+      "counts": {
+        "audit": 38,
+        "bindings": 25,
+        "causes": 0,
+        "events": 38,
+        "projections": 30,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "MissileProgress": {
+          "caster": "20bc9892-db11-42f0-a889-713aa99c3287",
+          "completed": 0,
+          "faces": 3,
+          "starting_hp": 44,
+          "target": "d8b264ae-999c-4bb3-871b-414fec8d9648"
+        }
+      }
+    },
+    {
+      "file": "flow4-ordinary-committed-first-save.json",
+      "bytes": 197627,
+      "sha256": "5fe3ffd2be4dc1afd3554ccf725f29eadcab2b2811f38c754470907b695093b5",
+      "event_sequence": 30,
+      "counts": {
+        "audit": 30,
+        "bindings": 17,
+        "causes": 0,
+        "events": 30,
+        "projections": 22,
+        "snapshots": 1
+      },
+      "expected_boundary": {
+        "OrdinarySave": {
+          "accepted": "087c7d7a-6f5a-40a0-9ddc-c8c6fd8d55fb",
+          "caster": "d8b264ae-999c-4bb3-871b-414fec8d9648",
+          "target": "b73db880-d125-4bdc-86ab-a8a08e09fc69"
+        }
+      }
+    }
+  ],
+  "runs": [
+    {
+      "name": "hit",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_loop",
+        "table_hit_cases::owned_source_shield_reopens_each_decision_preserves_attack_cause_and_rejects_changed_hits",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "source_sha": "2b839d7fc7c8caa8574304ea6f99020ed491e849",
+      "started_utc": "2026-09-30T13:04:25.281273+00:00",
+      "completed_utc": "2026-09-30T13:06:46.598688+00:00",
+      "wall_seconds": 141.32799999999975,
+      "exit_code": 0,
+      "interruption": null,
+      "log_sha256": "86e6c71ba08daea2fd31a3e0cd7667be54a81e8f664128972dc8e10cf839b537",
+      "log_file": "flow4-source-verification/hit.txt",
+      "published_log_sha256": "c914b6bb58d75671e78a18af3f6b485f4d43b49947fd526467ac214dcb7da5b6",
+      "published_log_normalization": "Absolute verification workspace prefix only; original log_sha256 identifies preserved raw evidence."
+    },
+    {
+      "name": "owned",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_loop",
+        "table_missile_cases::missile_owned_sources_keep_private_responses_and_cold_actor_bound_controls",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "source_sha": "2b839d7fc7c8caa8574304ea6f99020ed491e849",
+      "started_utc": "2026-09-30T13:06:47.077132+00:00",
+      "completed_utc": "2026-09-30T13:36:05.971158+00:00",
+      "wall_seconds": 1758.891,
+      "exit_code": 0,
+      "interruption": null,
+      "log_sha256": "a55a89ddba203b7fd6bc8b9ffc2959c9da4d9166fdfec8ede3dae66f85360e23",
+      "log_file": "flow4-source-verification/owned.txt",
+      "published_log_sha256": "e66d9b06a08e41932ae8357e06f09d26e1a5cc846a77e21dcf041d50cc5c2222",
+      "published_log_normalization": "Absolute verification workspace prefix only; original log_sha256 identifies preserved raw evidence."
+    },
+    {
+      "name": "concentration",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_loop",
+        "table_missile_cases::missile_each_dart_finishes_its_owned_concentration_child_before_next_impact",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "source_sha": "2b839d7fc7c8caa8574304ea6f99020ed491e849",
+      "started_utc": "2026-09-30T13:36:06.786289+00:00",
+      "completed_utc": "2026-09-30T14:01:42.072039+00:00",
+      "wall_seconds": 1535.281,
+      "exit_code": 0,
+      "interruption": null,
+      "log_sha256": "fa9a61d87e4ced49b078f33e7043f436229cafd059483030c7446d9ca02c5e31",
+      "log_file": "flow4-source-verification/concentration.txt",
+      "published_log_sha256": "48becccab3d8e7ccfbfae077279a7ddbe6dee2fa35bbccca777ef75ff4f4e2aa",
+      "published_log_normalization": "Absolute verification workspace prefix only; original log_sha256 identifies preserved raw evidence."
+    },
+    {
+      "name": "baseline",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "flow4_original_source_baseline",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "source_sha": "05b43bddade5c400e4efa12fadec1d798d5fc0c6",
+      "started_utc": "2026-09-30T14:09:16.825807+00:00",
+      "completed_utc": "2026-09-30T17:10:55.990121+00:00",
+      "wall_seconds": 10899.172,
+      "exit_code": 0,
+      "interruption": null,
+      "log_sha256": "2cbe4fd66585ec3daecb3d80934afec93191bf719c45579036582701a6dcbd52",
+      "log_file": "flow4-source-verification/baseline.txt",
+      "published_log_sha256": "c0d6e455329b69ee73a808b990052c7129af4c1fd1058a211d2f7ad5634d77c6",
+      "published_log_normalization": "Absolute verification workspace prefix only; original log_sha256 identifies preserved raw evidence."
+    }
+  ],
+  "capture_binary": {
+    "bytes": 206186730,
+    "sha256": "dad8cc1f4db56921fee9a5dec2c024f684a1b09214eb50ae401cc222c3a0b3dc"
+  },
+  "baseline_binary": {
+    "bytes": 183778793,
+    "sha256": "e83e20212164ca35446e15f7f64e21ff46dc5b4eb5df95763e4aac462dd5c32e"
+  },
+  "original_baseline_file_sha256": "d2543c788a8cafa188fb849e9094a1eff939d329cb622d3ccd6869d11e99fe4a",
+  "receiving_test_changes": "Module documentation and fixed fixture loader only; every test/helper assertion is unchanged."
+}

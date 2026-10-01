@@ -243,6 +243,7 @@ fn validate_ties(
 }
 
 pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> {
+    super::release::validate_history(state)?;
     let Some(encounter) = &state.encounter else {
         return Ok(());
     };

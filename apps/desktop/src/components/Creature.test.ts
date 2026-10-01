@@ -27,7 +27,7 @@ it('uses an explicit visible descriptor without copying the private creature nam
   const descriptor=screen.getByLabelText('The secret captain: visible description');
   expect((descriptor as HTMLInputElement).value).toBe('Creature');
   await user.clear(descriptor); await user.type(descriptor,'Small armored figure');
-  await user.click(screen.getByRole('button',{name:'Prepare encounter map'}));
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
   const setup=onPrepare.mock.calls[0][0];
   expect(setup.creatures[0]).toMatchObject({actor:'npc',public_label:'Small armored figure',enemies:['pc-actor']});
   expect(JSON.stringify(setup)).not.toContain('The secret captain');
@@ -38,7 +38,7 @@ it('uses an explicit visible descriptor without copying the private creature nam
   await user.click(screen.getByRole('checkbox',{name:'The secret captain'}));
   expect((descriptor as HTMLInputElement).disabled).toBe(true);
   expect((south as HTMLInputElement).disabled).toBe(true);
-  await user.click(screen.getByRole('button',{name:'Prepare encounter map'}));
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
   expect(onPrepare).toHaveBeenCalledTimes(2);
   expect(onPrepare.mock.calls[1][0].creatures).toEqual([]);
 });
@@ -51,4 +51,19 @@ it('changing source resets size and removes an inapplicable ammunition grant', a
   expect(screen.queryByLabelText('Starting ammunition per type')).toBeNull();
   await user.click(screen.getByRole('button',{name:'Prepare creature'}));
   expect(onCreate.mock.calls[0][0]).toMatchObject({definition_id:'wolf',size:'Medium',ammunition_units:0,item_ids:[]});
+});
+
+it('requires retained timing actors in the next battlefield and keeps their identities',async()=>{
+  const user=userEvent.setup(),onPrepare=vi.fn();
+  const character:CharacterView={character_id:'pc',player_id:'player',entity_id:'pc-actor',name:'Hero',profile:null,sheet:null,details:null,second_wind_remaining:1,equipment:{prepared:true,initial_item_count:0,items:[],worn_armor:null,shield:null,hands:{hands:['Free','Free']}}};
+  render(BattlefieldForm,{characters:[character],creatures:[{actor:'mage',name:'Retained Mage',definition_id:'mage',size:'Medium',hp:0,max_hp:81}],requiredActors:['mage'],onPrepare});
+  const included=screen.getByRole('checkbox',{name:'Retained Mage'});
+  expect((included as HTMLInputElement).checked).toBe(true);
+  await user.click(included);
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
+  expect(onPrepare).not.toHaveBeenCalled();
+  expect(screen.getByRole('alert').textContent).toContain('every actor with a lasting consequence');
+  await user.click(included);
+  await user.click(screen.getByRole('button',{name:'Prepare battlefield'}));
+  expect(onPrepare.mock.calls[0][0].creatures[0].actor).toBe('mage');
 });
