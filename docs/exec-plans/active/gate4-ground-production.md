@@ -1,5 +1,42 @@
 # Gate 4 — Ground equipment in the production attack path
 
+Current correction status, 2026-10-04: root transferred sole SOURCE-WRITER
+ownership to `gate4_core_oct4` from clean
+`e62f7b8e06763abf1ff5c63916e725a79e7dc191`, tree
+`390875e7e15969571f77c0514f51999ea4e0ea3c`, for the one reviewed P2 below.
+Complete independent source review
+`tooling/ground-e62f7b8-complete-independent-review-2026-10-04.md`, SHA256
+`5890d2020ec84751f6f9c3afede49a661d552cf23e10c0516aa35e1276c9e96f`,
+was read in full. This plan/status commit precedes the narrow source correction.
+
+The strict persisted paid reader currently checks pending issued cause and work
+kind/count but not the exact complete pending tuple before local inversion.
+A changed pending request ID can therefore construct that reader even though
+later outer validation refuses it. This is a private consistency-boundary defect;
+all public guards remain closed and no public bypass or executed failure is claimed.
+
+Before constructing the inverse, require both raw and tactical pending surfaces
+at actual AttackRoll/DamageRoll stages, and neither at actual HitReview,
+KnockoutChoice or MasteryChoice. The strict reader still refuses transient
+Finishing/entered work. Bind selected work to its unique exact same-kind trace
+node, deterministic key, full request ID/template, purpose and issued cause.
+Reuse nonrecursive work-trace and tactical-pending validators: their actual
+request derivation reads the attached attack facts and does not reconstruct source.
+Existing accepted-raw and issued-cause checks remain before inversion. Do not call
+full source/state validation recursively or add a trusted flag or mutable image.
+
+Add separate request-ID/template/purpose/key/node and pending-surface-presence
+negatives from actual privately produced paid AttackRoll and DamageRoll cuts.
+Each first establishes its unaltered reader input and compares the entire refused
+state afterward. Preserve all18 original control bodies and protected old modules,
+source/capture/raw bytes. No prerequisite correction integration or app activation.
+Direct rustfmt/static Git only; no compiler/Cargo/tests/build/native/database,
+publication or CI is authorized. Return a clean narrow checkpoint for independent
+CI-agent/root review before root allocates execution. All new controls are UNRUN.
+
+Historical checkpoint 2 author handback follows; its missing pending binding is
+superseded only by the planned correction above, not by an old test-pass claim.
+
 Status, 2026-10-04: checkpoint 2 source authored, not compiled or executed;
 awaiting full independent source review and allocated verification. Complete
 independent design review preceded source authorization. Root explicitly transferred sole SOURCE-WRITER ownership of
