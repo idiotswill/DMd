@@ -2,9 +2,8 @@
 
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
 root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
-Checkpoint2 adapters and eight controls are authored for independent static review,
-with all new verification UNCOMPILED / UNRUN. The assigned
-source implementation agent is sole writer of
+Checkpoint2 adapters and eight controls passed root's independent static review
+at `1bf6c0d`; all new verification remains UNCOMPILED / UNRUN. Root is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
 attack execution remain closed. No PR or runtime acceptance is claimed.
@@ -564,3 +563,80 @@ complete diff and static audit to root for independent code review. Resolve conc
 findings before separately allocated focused/canonical/CI verification. Keep Ogre
 closed through the remaining ground/UI integration; actual finite gear, own-turn,
 OA, pickup, cold/retry/forgery/native and lawful Grapple/LR positives remain UNMET.
+
+## Checkpoint3 application/UI plan — 2026-10-04
+
+Root resumed from clean `1bf6c0d09d466734c9f646b393e9fa0f9ce031ef`, tree
+`ff5e07e9daba5b55bafcc3fc0fdd8d333c5afd3c`. The complete independent checkpoint2
+review found no actionable static defect; external memo SHA256
+`c9d39a8bdde7d21cbe204c7300e8988b4322c50b08380d3be7458b7e0c46c459`.
+This plan is written before any application/UI changes. Current main freshly
+fetched is `dbf1d633460473183324b4ec519e8d1980884b5c`; the stacked development
+ancestry above remains unaccepted and requires deliberate later reconciliation.
+
+### Bounded implementation
+
+Add an omitted-when-empty, defaulted `physical_source_weapons` vector to
+`TableOpportunityView`. Each entry identifies the actual feature and Item, a
+source-derived action label, the ordinary weapon name and legal current grips.
+Keep the existing `features`, ordinary `weapons`, unarmed and Decline fields and
+their old serialization unchanged. No client-supplied source pin, damage, target,
+cost, equipment change, ammunition or authority belongs to the new selection.
+
+Project entries only for the retained window's distinct
+`TacticalMeleeSource::CreatureWeapon` identities. Resolve the actor's exact full
+source pin and the sealed Ogre melee program. Recheck actual held/intact
+quantity-one custody and EffectiveHands; derive the same legal OneHand/TwoHands
+choices as the rules adapter. Prefer a shared narrow rules query over divergent
+application hand rules. That query provides candidates only; the accepted response
+still revalidates current state. Never repurpose the gripless historical feature.
+Sort deterministically by canonical feature and Item. An unavailable supporting
+hand must remove the corresponding new grip/option without manufacturing an
+ordinary fallback. The target label and audience still come from the reactor's
+existing perception and selected-work authority, not the host's full knowledge.
+
+Extend TypeScript's `MeleeChoice` with the exact additive `CreatureWeapon`
+feature/item/grip shape and make the new view field optional. Use the existing
+typed Tactical Action transport and controller/session checks. Preserve opaque
+presentation history and uncertain-acknowledgment retry handling; no new transport
+version, normalized legacy fields or replacement command is needed. Verify this
+route through the actual request parser, rather than assuming a TypeScript union
+alone establishes transport support.
+
+Add a dedicated physical source reaction control to OpportunityForm. It must
+select only offered feature/Item/grip tuples and emit the typed choice once.
+Use stable tuple/Item keys across refreshes; a list-index change must never switch
+the chosen weapon or grip silently. Losing a selected option invalidates the
+selection until a legal choice is made. Keep Decline usable when no attack is
+offered, existing focus ownership, disabled/in-flight behavior and source-controller
+privacy. Ordinary and intrinsic reaction controls retain their old commands.
+
+Audit the existing own-turn source selector for all three canonical Ogre forms.
+Its source action supplies delivery, Strength and printed mechanics. Test each
+Javelin form and three distinct Item selections, including reordered/removed
+options, without binding selection to display order. Make only concrete necessary
+repairs; do not add a separate attack path, item grant, free draw or unsupported
+mastery. Ground Pickup and owned after-equipment work belong to their separate
+reviewed branch and are not enabled or impersonated here.
+
+### Verification and admission boundary
+
+Author meaningful DTO old-byte/absent-field and new-choice parser controls,
+source/grip candidate controls, component exact-command and stale-selection tests,
+and existing observer/owner/disabled/Decline regression coverage. Pure candidate
+and UI DTO fixtures must be labeled synthetic; no fabricated Ogre profile, current
+catalog exception, test dispatcher bypass or direct state repair may stand in for
+genuine accepted application play. Preserve all29 fixtures,21 raw captures, old
+source content/pins and original replay suites byte-for-byte.
+
+Ogre current creation, common profile and Historical admission remain CLOSED.
+Real creation, all finite gear/actions/OA, correct payment and pending cold/retry/
+forgery/portable/native acceptance remain required after the complete ground/UI
+integration. This checkpoint adds the production UI route while preserving that
+admission boundary; it does not claim the feature usable or the gate complete.
+
+Exact next action: independently review this concrete plan before assigning its
+sole source writer. No source edits, Cargo/npm/build/test, DB/native, publication
+or admission change has occurred in checkpoint3. Verification is allocated by root
+after the interrupted core continuation and Air canonical; source authoring may
+proceed independently after plan review without taking the local heavy slot.
