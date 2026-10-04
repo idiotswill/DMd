@@ -342,6 +342,71 @@ fn a_preparation_cannot_be_consumed_with_another_input_state_origin_or_selected_
 fn private_pickup_does_not_treat_a_provisional_reserved_hand_as_free() {
     let mut f = Fixture::new();
     crate::tactical_hands::tests::install_attempt(&mut f.state, f.attack.actor, Hand::Right);
+    // Keep the helper's supported flow4 shape. This is a private physical
+    // composition control, not accepted Grapple/pickup history.
+    let before = f.state.clone();
+    let input = f.input();
+    let hands =
+        EffectiveHands::current(&f.state, f.state.rules.as_ref().unwrap(), f.attack.actor).unwrap();
+    assert_eq!(input.loadout.hands, [HandAssignment::Free; 2]);
+    assert!(hands.is_reserved(Hand::Right));
+    assert!(hands.is_free(input.loadout, Hand::Left));
+    let derive = |hand| {
+        PreparedPickup::derive(
+            input.state,
+            input.context.origin,
+            input.context.actor,
+            input.context.window,
+            f.choice.weapon,
+            hand,
+            input.pack,
+            input.definitions,
+        )
+    };
+    assert!(derive(Hand::Right).is_err());
+    let picked = derive(Hand::Left).unwrap();
+    assert_eq!(picked.before.item, before.items[&f.choice.weapon]);
+    assert_eq!(picked.before.equipment.hands, *input.loadout);
+    assert_eq!(
+        picked.before.ground,
+        before
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .ground_items[0]
+    );
+    let mut expected = before.clone();
+    expected.items.get_mut(&f.choice.weapon).unwrap().custody = Custody::Entity(f.attack.actor);
+    expected
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .ground_items
+        .clear();
+    expected
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts
+        .iter_mut()
+        .find(|loadout| loadout.actor == f.attack.actor)
+        .unwrap()
+        .hands
+        .hands[Hand::Left.index()] = HandAssignment::Item(f.choice.weapon);
+    assert_eq!(picked.candidate, expected);
+    // Fresh/public admission remains closed separately from the paired hand test.
+    assert!(prepare(&input).is_err());
+    assert!(prepare_weapon_attack(&input).is_err());
+    assert_eq!(f.state, before);
     f.state
         .encounter
         .as_mut()
@@ -350,11 +415,12 @@ fn private_pickup_does_not_treat_a_provisional_reserved_hand_as_free() {
         .as_mut()
         .unwrap()
         .version = 5;
-    let hands =
-        EffectiveHands::current(&f.state, f.state.rules.as_ref().unwrap(), f.attack.actor).unwrap();
-    assert!(hands.is_reserved(Hand::Right));
     let before = f.state.clone();
+    assert!(
+        EffectiveHands::current(&f.state, f.state.rules.as_ref().unwrap(), f.attack.actor).is_err()
+    );
     assert!(prepare(&f.input()).is_err());
+    assert!(prepare_weapon_attack(&f.input()).is_err());
     assert_eq!(f.state, before);
 }
 
