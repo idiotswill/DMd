@@ -760,6 +760,7 @@ fn add_flow(
             reason: "Source timing fixture".into(),
         },
         flow: Some(TacticalFlow {
+            released_time_upgrade: None,
             version: 1,
             origin: meta.clone(),
             combatants: vec![TacticalCombatant {

@@ -1,6 +1,14 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
-Status, 2026-10-04: **GUARDED SOURCE AUTHORING.** Root explicitly transferred sole
+Status, 2026-10-04: **GUARDED CHECKPOINT AUTHORED — REVIEW PENDING.**
+Domain/rules/codec/validation and 16 new controls are authored; every control is
+**UNRUN**. Direct rustfmt and static diff checks passed. Public current/historical/
+restore admission remains closed. See the full [consumer and evidence inventory](gate4-offstage-context-inventory.md).
+The branch is frozen at handback and writer ownership returns to root; full
+independent source review and allocated verification precede any broadening.
+No application/UI/native or gate acceptance is claimed.
+
+Historical writer transfer: root explicitly transferred sole
 source writing to /root/gate4_ci_oct4 from clean corrected plan
 `0f87dae259bc2d899a7dc1189337035f76b5b39b`, tree
 `463f156d6eb7af9cf55ac413fd8aa244ae30ceec`, after full root and independent
@@ -11,15 +19,16 @@ writer/status commit, which precedes source changes. Root review
 `tooling/offstage-0f87dae-complete-independent-review-2026-10-04.md` SHA256
 `0d0219560d230e03a80833b73c94ef00ca2512c34a4d44ddd947e5fce720f871`.
 
-Implement the coherent domain/rules/compatibility/validation and actual producer
-controls checkpoint below, inventorying every mandatory turn-context consumer.
+The transfer authorized the coherent domain/rules/compatibility/validation and
+actual producer controls checkpoint below, with every mandatory turn-context
+consumer inventoried.
 Keep public admission closed until the complete app/UI/restore path is coherent.
 Return clean source for full independent review before broadening. The entire
 production vertical slice, original history, application/recovery and native
 acceptance remain the objective; this guarded checkpoint cannot replace them.
 Direct rustfmt and static Git checks only are authorized. No compiler/Cargo/tests,
-npm/build/native/database, push/PR/CI operation is allocated. Air session87840
-retains root's sole heavy slot. No other checkout, source profile, protected capture
+npm/build/native/database, push/PR/CI operation is allocated. Root retains the sole heavy/native slot (at source handback its current
+focused run is session78392); no heavy execution was performed by this writer. No other checkout, source profile, protected capture
 or raw artifact may be changed. A concrete caller contradiction requires a plan
 amendment before scope expands. Gate 4 remains active.
 
@@ -40,8 +49,9 @@ Branch `codex/gate4-offstage-deadlines`, checkout `gate4-offstage-deadlines`.
 Root created this fresh branch from remote-confirmed expiry candidate
 `c9bbcb5f31a4b296bd88ce96464fda9d9ceffc27`, tree
 `9a127388f5d6878412975371724c77465137d5f9`. Both identities and clean status were
-read locally before planning. Sole source writer is `/root/gate4_ci_oct4`; root
-retains publication, acceptance, dependency integration and the sole heavy slot.
+read locally before planning. Source author was `/root/gate4_ci_oct4`; writer ownership returns to root with
+the frozen checkpoint. Root retains publication, acceptance, dependency integration
+and the sole heavy slot.
 No other checkout is writable under this assignment.
 
 Expiry PR52 is an **unaccepted development dependency**. Its previously verified

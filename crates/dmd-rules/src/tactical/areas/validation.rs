@@ -117,7 +117,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             || r.occurrence >= cursor.next_occurrence
             || r.source.invocation != cursor.origin
             || r.source.enclosing_origin != r.source.invocation
-            || r.source.actor != cursor.turn_actor
+            || r.source.actor != cursor.turn_context().map_err(invalid)?.actor
             || r.geometry_origin != encounter(state)?.origin
             || encounter(state)?.area_grid_policy != Some(r.policy)
             || !rules
@@ -150,7 +150,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                     != Some(CreatureTurn {
                         encounter_id: encounter(state)?.id,
                         actor: r.source.actor,
-                        number: cursor.turn_number,
+                        number: cursor.turn_context().map_err(invalid)?.number,
                         boundary: TurnBoundary::Start,
                     }))
         {

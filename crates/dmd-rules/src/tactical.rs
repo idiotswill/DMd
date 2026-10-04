@@ -16,6 +16,7 @@ mod movement;
 mod reaction_order;
 mod ready;
 mod release;
+pub(crate) mod released_time;
 mod second_wind;
 mod shields;
 mod turn_validation;
@@ -35,6 +36,7 @@ pub use release::{
     require_finished_encounter, retained_encounter_dependencies,
 };
 use serde::{Deserialize, Serialize};
+pub(crate) use validation::validate_tactical_state_with_released;
 pub use validation::{validate_tactical_pending, validate_tactical_state};
 pub use work_trace::tactical_frame_host_ordering;
 
@@ -46,6 +48,11 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 pub enum TacticalAction {
     /// Retire only fully settled, explicitly concluded flow 5 timing.
     FinishEncounter,
+    AdvanceReleasedTime {
+        seconds: u32,
+        ordering: ReleasedTimeOrdering,
+        ruling: String,
+    },
     ConcludeHostilities {
         cadence: AftermathCadence,
         ruling: String,
@@ -313,6 +320,22 @@ fn resolve_with_policy(
     pack: &RulesPack,
     policy: ExecutionPolicy,
 ) -> Result<TacticalTransition, RulesError> {
+    released_time::deny_public(state)?;
+    if matches!(
+        action,
+        TacticalAction::AdvanceReleasedTime { .. }
+            | TacticalAction::Begin {
+                execution: TacticalExecutionVersion::ReleasedTimeV1,
+                ..
+            }
+            | TacticalAction::UpgradeExecutionTo {
+                execution: TacticalExecutionVersion::ReleasedTimeV1
+            }
+    ) {
+        return Err(prerequisite(
+            "released time awaits application and restore admission",
+        ));
+    }
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
@@ -382,6 +405,9 @@ fn resolve_with_policy(
             aftermath::conclude(&mut next, meta, *cadence, ruling)?;
         }
         TacticalAction::FinishEncounter => release::finish(&mut next, meta)?,
+        TacticalAction::AdvanceReleasedTime { .. } => {
+            return Err(prerequisite("released time is not publicly admitted"));
+        }
         TacticalAction::UpgradeExecution => {
             privileged(meta)?;
             let current = flow(&next)?;
@@ -556,6 +582,7 @@ fn resolve_with_policy(
                 return Err(prerequisite("initiative is already established"));
             }
             let initial = TacticalFlow {
+                released_time_upgrade: None,
                 version: execution.flow_version(),
                 origin: meta.clone(),
                 combatants: combatants.clone(),

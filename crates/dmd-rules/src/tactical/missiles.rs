@@ -90,7 +90,8 @@ pub(super) fn open(
     if !is_program(&record)
         || !TacticalExecutionVersion::from_flow_version(flow(state)?.version)
             .is_some_and(TacticalExecutionVersion::supports_missile_shield)
-        || record.cast.plan.choice.actor != resolution(state)?.turn_actor
+        || record.cast.plan.choice.actor
+            != resolution(state)?.turn_context().map_err(invalid)?.actor
         || owns_cast(state, cast).is_some()
         || record.targets.is_empty()
     {
@@ -272,7 +273,11 @@ pub(super) fn delegate(
     window: TacticalWorkKey,
 ) -> Result<(), RulesError> {
     let missile = require_window(state, window)?;
-    owner(state, meta, resolution(state)?.turn_actor)?;
+    owner(
+        state,
+        meta,
+        resolution(state)?.turn_context().map_err(invalid)?.actor,
+    )?;
     let record = current_mut(state, missile)?;
     if record.stage != TacticalMissileStage::Collecting
         || record.order.is_some()
@@ -302,7 +307,11 @@ pub(super) fn order(
     if record.delegated_by.is_some() {
         privileged(meta)?;
     } else {
-        owner(state, meta, resolution(state)?.turn_actor)?;
+        owner(
+            state,
+            meta,
+            resolution(state)?.turn_context().map_err(invalid)?.actor,
+        )?;
     }
     super::hit_reactions::validate_order(state, meta, instruction)?;
     current_mut(state, missile)?.order = Some(TacticalReactionOrderDecision {
@@ -501,7 +510,11 @@ pub(super) fn select_impact(
     let TacticalWorkKind::ApplyMissileImpact { missile, at } = work.kind else {
         return Ok(());
     };
-    owner(state, meta, resolution(state)?.turn_actor)?;
+    owner(
+        state,
+        meta,
+        resolution(state)?.turn_context().map_err(invalid)?.actor,
+    )?;
     let record = current_mut(state, missile)?;
     let dart = record
         .darts

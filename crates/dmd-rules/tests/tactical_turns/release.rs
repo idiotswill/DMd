@@ -544,6 +544,7 @@ fn isolated_finished(f: &mut Fixture) {
         }
     }
     f.state.encounter_history = Some(Box::new(TacticalEncounterHistory {
+        elapsed_intervals: vec![],
         completions: vec![receipt],
         spaces: vec![space],
     }));

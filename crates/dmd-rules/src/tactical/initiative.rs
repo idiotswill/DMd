@@ -368,16 +368,17 @@ fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
     }
     order.sort_by(|a, b| b.total.cmp(&a.total).then(a.tie_break.cmp(&b.tie_break)));
     let accepted_ties = ties.clone();
-    let first_turn =
-        if flow(state)?.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
-            state
-                .encounter_history
-                .as_ref()
-                .map_or(Ok(1), |history| history.next_turn_number())
-                .map_err(|error| invalid(&error))?
-        } else {
-            1
-        };
+    let first_turn = if TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+        .is_some_and(TacticalExecutionVersion::supports_release)
+    {
+        state
+            .encounter_history
+            .as_ref()
+            .map_or(Ok(1), |history| history.next_turn_number())
+            .map_err(|error| invalid(&error))?
+    } else {
+        1
+    };
     state
         .rules
         .as_mut()

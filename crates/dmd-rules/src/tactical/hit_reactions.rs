@@ -233,7 +233,11 @@ pub(super) fn delegate(
     window: TacticalWorkKey,
 ) -> Result<(), RulesError> {
     require_window(state, window)?;
-    owner(state, meta, resolution(state)?.turn_actor)?;
+    owner(
+        state,
+        meta,
+        resolution(state)?.turn_context().map_err(invalid)?.actor,
+    )?;
     let current = review_mut(state)?;
     if current.stage != TacticalHitReviewStage::Collecting
         || current.order.is_some()
@@ -258,7 +262,7 @@ pub(super) fn order(
             "the hit's ordering instruction is already fixed",
         ));
     }
-    let actor = resolution(state)?.turn_actor;
+    let actor = resolution(state)?.turn_context().map_err(invalid)?.actor;
     if current.delegated_by.is_some() {
         privileged(meta)?;
     } else {
@@ -540,7 +544,7 @@ pub(super) fn validate_order(
     meta: &CommandMeta,
     instruction: &TacticalReactionOrdering,
 ) -> Result<(), RulesError> {
-    let actor = resolution(state)?.turn_actor;
+    let actor = resolution(state)?.turn_context().map_err(invalid)?.actor;
     let initiative = state
         .rules
         .as_ref()
@@ -713,19 +717,27 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             Ok(())
         };
     if let Some(delegated) = &hit.delegated_by {
-        retain_decision(delegated, r.turn_actor, &hit.cause)?;
-        owner(state, delegated, r.turn_actor)?;
+        retain_decision(
+            delegated,
+            r.turn_context().map_err(invalid)?.actor,
+            &hit.cause,
+        )?;
+        owner(state, delegated, r.turn_context().map_err(invalid)?.actor)?;
     }
     if let Some(order) = &hit.order {
         retain_decision(
             &order.origin,
-            r.turn_actor,
+            r.turn_context().map_err(invalid)?.actor,
             hit.delegated_by.as_ref().unwrap_or(&hit.cause),
         )?;
         if hit.delegated_by.is_some() {
             privileged(&order.origin)?;
         } else {
-            owner(state, &order.origin, r.turn_actor)?;
+            owner(
+                state,
+                &order.origin,
+                r.turn_context().map_err(invalid)?.actor,
+            )?;
         }
         validate_order(state, &order.origin, &order.instruction)?;
     }
@@ -779,7 +791,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             || record.cast.plan.occurrence >= r.next_occurrence
             || record.cast.phase != SpellCastPhase::Committed
             || record.cast.last_operation != record.cast.plan.origin
-            || record.cast.started_on_turn != r.turn_number
+            || record.cast.started_on_turn != r.turn_context().map_err(invalid)?.number
             || record.cast.started_at != state.clock.now
             || record.completed.as_slice() != [SpellProgramOccurrence { node: 0, target: 0 }]
             || declined.is_some()

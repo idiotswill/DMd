@@ -142,4 +142,7 @@ pub struct TacticalFlow {
     /// preserves the exact old durable JSON and presentation contract.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aftermath: Option<Box<TacticalAftermath>>,
+    /// Exact accepted 5-to-7 bridge after a historical release; never rewrites it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub released_time_upgrade: Option<crate::ReleasedTimeUpgrade>,
 }

@@ -73,6 +73,13 @@ pub(super) fn conclude(
 }
 
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+    super::released_time::deny_public(state)?;
+    validate_with_released(state, None)
+}
+pub(super) fn validate_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
     let f = flow(state)?;
     let Some(record) = &f.aftermath else {
         return Ok(());
@@ -80,14 +87,15 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     privileged(&record.origin)?;
     ruling_shape(&record.ruling)?;
     if f.phase == TacticalPhase::Finished
-        && f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        && TacticalExecutionVersion::from_flow_version(f.version)
+            .is_some_and(TacticalExecutionVersion::supports_release)
     {
         if state.encounter_history.is_none() {
             return Err(invalid(
                 "Finished aftermath lacks authenticated completion history",
             ));
         }
-        return super::release::validate_history(state);
+        return super::release::validate_history_with_released(state, released);
     }
     let timing = state
         .rules
@@ -103,6 +111,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 | TacticalExecutionVersion::ShieldHitV1
                 | TacticalExecutionVersion::ShieldMissileV1
                 | TacticalExecutionVersion::EncounterReleaseV1
+                | TacticalExecutionVersion::ReleasedTimeV1
         )
     ) || f.phase != TacticalPhase::Active
         || record.origin.expected_event_sequence <= f.origin.expected_event_sequence

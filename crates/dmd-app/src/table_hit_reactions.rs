@@ -38,6 +38,9 @@ pub(super) fn view(
     let Some(resolution) = &flow.resolution else {
         return Ok(None);
     };
+    let Ok(turn) = resolution.turn_context() else {
+        return Ok(None);
+    };
     let Some(hit) = &resolution.hit_review else {
         return Ok(None);
     };
@@ -55,7 +58,7 @@ pub(super) fn view(
     let controlled = |actor| own.contains(&actor) || (host && !player_controlled(state, actor));
     // Every target acknowledges collection. This waiting surface never reflects
     // whether an eligible Shield exists or whether a private intent was accepted.
-    if !host && !own.contains(&resolution.turn_actor) && !own.contains(&target) {
+    if !host && !own.contains(&turn.actor) && !own.contains(&target) {
         return Ok(None);
     }
     let key = TacticalWorkKey {
@@ -65,12 +68,12 @@ pub(super) fn view(
     let may_order = if hit.delegated_by.is_some() {
         host
     } else {
-        controlled(resolution.turn_actor)
+        controlled(turn.actor)
     };
     let order = if hit.order.is_none() && may_order {
         let observer = (!host)
             .then(|| {
-                dmd_rules::spatial::project_actor_view(encounter, state, resolution.turn_actor)
+                dmd_rules::spatial::project_actor_view(encounter, state, turn.actor)
                     .map_err(|error| error.to_string())
             })
             .transpose()?;
@@ -82,7 +85,7 @@ pub(super) fn view(
             .order
             .iter()
             .filter_map(|entry| {
-                let label = if host || entry.actor == resolution.turn_actor {
+                let label = if host || entry.actor == turn.actor {
                     encounter
                         .participant(entry.actor)
                         .map(|participant| participant.public_label.clone())
@@ -110,15 +113,14 @@ pub(super) fn view(
             .collect();
         Some(TableHitOrder {
             key,
-            actor: resolution.turn_actor,
+            actor: turn.actor,
             participants,
         })
     } else {
         None
     };
-    let delegate =
-        (hit.order.is_none() && hit.delegated_by.is_none() && controlled(resolution.turn_actor))
-            .then_some(key);
+    let delegate = (hit.order.is_none() && hit.delegated_by.is_none() && controlled(turn.actor))
+        .then_some(key);
     let response = if controlled(target)
         && (hit.stage == TacticalHitReviewStage::Selected
             || hit

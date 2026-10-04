@@ -47,6 +47,8 @@ pub struct TacticalSceneSpace {
 pub struct TacticalEncounterHistory {
     pub completions: Vec<TacticalCompletion>,
     pub spaces: Vec<TacticalSceneSpace>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub elapsed_intervals: Vec<crate::ReleasedElapsedReceipt>,
 }
 
 fn command_origin(state: &CampaignState, origin: &CommandMeta) -> Result<(), String> {
@@ -78,6 +80,69 @@ fn host_origin(state: &CampaignState, origin: &CommandMeta) -> Result<(), String
 }
 
 impl TacticalEncounterHistory {
+    fn validate_elapsed(&self, state: &CampaignState) -> Result<(), String> {
+        let mut previous: Option<&crate::ReleasedElapsedReceipt> = None;
+        let mut commands = self
+            .completions
+            .iter()
+            .flat_map(|c| {
+                [
+                    &c.encounter_origin,
+                    &c.initiative_origin,
+                    &c.conclusion_origin,
+                    &c.released_by,
+                ]
+            })
+            .map(|m| m.id)
+            .collect::<HashSet<_>>();
+        for elapsed in &self.elapsed_intervals {
+            host_origin(state, &elapsed.origin)?;
+            host_origin(state, &elapsed.completed_by)?;
+            let release = self
+                .completions
+                .iter()
+                .rev()
+                .find(|c| {
+                    c.released_by.expected_event_sequence < elapsed.origin.expected_event_sequence
+                })
+                .ok_or("elapsed interval predates every release")?;
+            if elapsed.origin.session_id.is_none()
+                || elapsed.completed_by.session_id.is_none()
+                || elapsed.release != release.released_by.id
+                || elapsed.predecessor != previous.map(|p| p.origin.id)
+                || elapsed.started_at < release.released_at
+                || elapsed.target_at <= elapsed.started_at
+                || elapsed.completed_at != elapsed.target_at
+                || elapsed.completed_at > state.clock.now
+                || !crate::valid_released_time_ruling(&elapsed.ruling)
+                || elapsed.completed_by.expected_event_sequence
+                    < elapsed.origin.expected_event_sequence
+                || (elapsed.completed_by.expected_event_sequence
+                    == elapsed.origin.expected_event_sequence
+                    && elapsed.completed_by != elapsed.origin)
+                || (elapsed.completed_by.id == elapsed.origin.id
+                    && elapsed.completed_by != elapsed.origin)
+                || !commands.insert(elapsed.origin.id)
+                || (elapsed.completed_by.id != elapsed.origin.id
+                    && !commands.insert(elapsed.completed_by.id))
+                || previous.is_some_and(|p| {
+                    p.completed_by.expected_event_sequence >= elapsed.origin.expected_event_sequence
+                        || p.target_at > elapsed.started_at
+                })
+                || self.completions.iter().any(|c| {
+                    c.encounter_origin.expected_event_sequence
+                        > elapsed.origin.expected_event_sequence
+                        && c.encounter_origin.expected_event_sequence
+                            <= elapsed.completed_by.expected_event_sequence
+                })
+            {
+                return Err("invalid released interval receipt chain".into());
+            }
+            previous = Some(elapsed);
+        }
+        Ok(())
+    }
+
     pub fn last(&self) -> Option<&TacticalCompletion> {
         self.completions.last()
     }
@@ -127,7 +192,7 @@ impl TacticalEncounterHistory {
                 .any(|pair| pair[0].expected_event_sequence >= pair[1].expected_event_sequence)
                 || receipt.encounter_id.0.is_nil()
                 || !encounters.insert(receipt.encounter_id)
-                || receipt.execution != TacticalExecutionVersion::EncounterReleaseV1
+                || !receipt.execution.supports_release()
                 || receipt.final_turn.number == 0
                 || receipt.final_turn.number == u64::MAX
                 || receipt.final_turn.boundary != TurnBoundary::Start
@@ -190,6 +255,27 @@ impl TacticalEncounterHistory {
             }
             previous = Some(receipt);
         }
+        self.validate_elapsed(state)?;
+        if let Some(upgrade) = state
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .and_then(|f| f.released_time_upgrade.as_ref())
+        {
+            host_origin(state, &upgrade.origin)?;
+            if upgrade.origin.session_id.is_none()
+                || state
+                    .encounter
+                    .as_ref()
+                    .and_then(|e| e.flow.as_ref())
+                    .is_none_or(|f| {
+                        f.phase != TacticalPhase::Finished
+                            || f.version != TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+                    })
+            {
+                return Err("released upgrade is outside its Finished flow".into());
+            }
+        }
         let current = state
             .encounter
             .as_ref()
@@ -208,7 +294,7 @@ impl TacticalEncounterHistory {
                 || current.origin != last.encounter_origin
                 || current.scene_id != last.scene_id
                 || current.flow.as_ref().is_none_or(|flow| {
-                    flow.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                    !matches_release_execution(flow, last)
                         || flow.phase != TacticalPhase::Finished
                         || flow.origin != last.initiative_origin
                         || flow
@@ -235,4 +321,19 @@ impl TacticalEncounterHistory {
         }
         Ok(())
     }
+}
+
+fn matches_release_execution(flow: &crate::TacticalFlow, receipt: &TacticalCompletion) -> bool {
+    if flow.version == receipt.execution.flow_version() {
+        return flow.released_time_upgrade.is_none();
+    }
+    flow.version == TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+        && receipt.execution == TacticalExecutionVersion::EncounterReleaseV1
+        && flow.released_time_upgrade.as_ref().is_some_and(|upgrade| {
+            upgrade.release == receipt.released_by.id
+                && upgrade.from == TacticalExecutionVersion::EncounterReleaseV1
+                && upgrade.to == TacticalExecutionVersion::ReleasedTimeV1
+                && upgrade.origin.expected_event_sequence
+                    > receipt.released_by.expected_event_sequence
+        })
 }

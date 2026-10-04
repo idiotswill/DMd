@@ -67,7 +67,10 @@ pub(super) async fn decline_hit_responses(f: &Fixture) {
         assert!(hit.delegated_by.is_none());
         let respondent = hit.respondent.as_ref().unwrap();
         assert!(respondent.intent.is_none());
-        let (order_viewer, order_channel) = controller(state, resolution.turn_actor);
+        let (order_viewer, order_channel) = controller(
+            state,
+            resolution.turn_context().expect("turn fixture").actor,
+        );
         let (target_viewer, target_channel) = controller(state, respondent.actor);
         (
             state.applied_event_sequence,

@@ -30,9 +30,9 @@ pub(super) fn boundary(
     let r = resolution(state)?;
     let turn = CreatureTurn {
         encounter_id: encounter(state)?.id,
-        actor: r.turn_actor,
-        number: r.turn_number,
-        boundary: r.boundary,
+        actor: r.turn_context().map_err(invalid)?.actor,
+        number: r.turn_context().map_err(invalid)?.number,
+        boundary: r.turn_context().map_err(invalid)?.boundary,
     };
     let origin = r.origin.id;
     let mut actors = creatures
@@ -207,8 +207,8 @@ pub(super) fn validate_window(
         || r.pending.is_some()
         || r.failed_save.is_some()
         || state.rules.as_ref().is_some_and(|r| r.pending.is_some())
-        || r.boundary != TurnBoundary::End
-        || r.turn_actor == actor
+        || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::End
+        || r.turn_context().map_err(invalid)?.actor == actor
         || flow(state)?.budget.disengaged.is_some()
         || !creature_legendary_action_available(state, current(state)?, actor).map_err(error)?
     {

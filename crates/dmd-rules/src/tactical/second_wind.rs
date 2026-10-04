@@ -83,9 +83,11 @@ pub(super) fn begin(
     flow.budget.movement_origin = None;
     flow.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number,
-        boundary: TurnBoundary::Start,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor: actor,
+            number: turn_number,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,
@@ -122,11 +124,11 @@ pub(super) fn validate_work(
         .timing
         .as_ref()
         .ok_or_else(|| invalid("Second Wind has no turn"))?;
-    if actor != r.turn_actor
+    if actor != r.turn_context().map_err(invalid)?.actor
         || actor != active(state)?
         || work.occurrence != 0
         || r.next_occurrence != 1
-        || r.boundary != TurnBoundary::Start
+        || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::Start
         || !timing.bonus_action_spent
         || !(1..=2).contains(&uses_before)
         || remaining.checked_add(1) != Some(uses_before)
