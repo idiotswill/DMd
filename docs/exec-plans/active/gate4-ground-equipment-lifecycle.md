@@ -2,7 +2,7 @@
 
 Current status: draft PR60 at aff47ba failed its first actual CI compile. The
 private validator findings are resolved by static review; a moved receipt and
-missing test import need the narrow correction recorded below. Root is sole
+incorrect test session type need the narrow correction recorded below. Root is sole
 writer, 2026-10-04. All23 rules controls and the app preflight remain UNRUN;
 runtime and production acceptance are not established.
 
@@ -584,8 +584,11 @@ bb0d93f31b862001d285633b343144ccd743beb8cec4b7a7ebc622ab57a028ac.
 It reports E0382: assignment evaluates its receipt-moving RHS before the LHS
 closure reads receipt.cause.origin.id. Copy that CommandId into a local before
 assignment and use it for lookup; do not clone the entire receipt or alter choice
-semantics. E0425/E0433 identify the missing SessionId import in the new test module;
-add the explicit domain type import. MSRV jobs111467794204 and111467793908 agree.
+semantics. E0425/E0433 identify SessionId as unknown in the new test module.
+The initial interpretation was a missing import. Independent source tracing then
+established the actual type is PlaySessionId (domain command.rs and ids.rs); use
+that existing type at both sites, without adding a new type or alias. MSRV
+jobs111467794204 and111467793908 agree on the original compiler errors.
 No Rust test harness ran in these failed compile jobs; Windows frontend evidence
 is separate. Preserve every failed log and all assertions/fixtures.
 
@@ -594,3 +597,10 @@ run direct rustfmt/Git checks, obtain independent delta review and publish a new
 exact head for full CI. Air87840 keeps the local heavy slot; no local Rust/compiler
 or native/DB execution is authorized alongside it. All runtime/production and
 accepted-main integration obligations above remain required.
+
+Review refinement before publication: source checkpoint78e9c2 copied the receipt
+origin correctly but added an invalid SessionId import; it was not executed or
+published. Independent review caught the real domain name. Root inspected both
+domain declarations and amends the test references to PlaySessionId, already
+available through the existing domain glob import. Preserve the intermediate
+checkpoint as unverified history; only the corrected final head receives CI.
