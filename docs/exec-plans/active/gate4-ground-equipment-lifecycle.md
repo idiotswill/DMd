@@ -1,8 +1,10 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status: source58077e7 is frozen after complete root and independent review;
-two private validator consistency findings require correction. Root is sole writer
-for the bounded correction recorded below, 2026-10-04. All controls remain UNRUN.
+Current status: corrected source6adbd3c is frozen after complete root review and
+independent full-source plus correction review. Both private validator findings
+are resolved by static review. Root is sole writer for this verification/publication
+checkpoint, 2026-10-04. All23 rules controls and the app preflight remain UNRUN;
+compilation, CI and production acceptance are not established.
 
 Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
@@ -43,7 +45,8 @@ full before/after acceptance contract. Its guarded foundation PR57 is frozen in
 its separate checkout. This branch neither edits that checkout nor treats its
 development parent as accepted main. Reconcile prerequisites and actual fetched
 main normally before eventual acceptance; never merge into an unaccepted stacked
-development parent as a substitute. There is no PR for this follow-on branch yet.
+development parent as a substitute. Root will publish a draft against this exact
+development parent for first CI, without merging into that unaccepted parent.
 
 Root read and accepted the scope of the source-grounded proposal
 `tooling/ground-8ec12c3-next-lifecycle-proposal-2026-10-04.md`, SHA256
@@ -534,3 +537,39 @@ generic-valid DAG counterfeits; old21 controls remain unchanged. All23 rules con
 and the app preflight control remain UNRUN. Direct rustfmt/check and Git whitespace
 checks pass; these are static checks only. Exact fix awaits independent delta review
 before publication or actual compiler/test allocation.
+
+## Reviewed correction and first-CI checkpoint — 2026-10-04
+
+The preceding authored checkpoints are historical. Corrected source is
+`6adbd3c2e831b8cd158f44c9a332f019f990f90f`, tree
+`85c69146e4fd2c4ad2884a8263a3a598292b8e96`, after plan-first5b0393f.
+Root completed the full original source review and read the full independent
+review that identified the two findings, then authored the bounded fix.
+The independent correction review is CLEAR:
+`tooling/ground-6adbd3c-correction-independent-review-2026-10-04.md`, SHA256
+`a5b908992f073004e3fb6268d089a454ae8c54610921c455db0fae6758e2d72c`.
+Its audit-v2 SHA256 is
+`84fc899c25d6a1cb952a08ca08852903b6711b13baee5f004885c8660afb721e`;
+the complete correction patch SHA256 is
+`c61ea0db16dedcf12c1881eb66049a0337cb7798823b44e210a25da653d4d411`.
+Root read the whole correction review. No additional static blocker remains.
+
+The review checks the unique real completion parent and the complete after-work
+trace inventory, including selection/inverse/pump retirement. Both controls use
+actual private producers and prove generic DAG validity before private rejection.
+All21 earlier controls remain unchanged, now23 plus the unchanged app preflight.
+All42 protected blobs and21 raw captures retain their exact prior identities.
+No public/restore guard, content input or accepted fixture changed.
+
+This documentation checkpoint changes no source. First Linux/Windows CI will
+provide compiler and runtime evidence on its own exact head; all new controls
+are still UNRUN locally and no passing result is inferred from review. Root's
+Air87840 remains the sole local heavy/native slot. The complete parent pickup
+objective, app/UI integration, accepted original replay, SQLite/cold/portable and
+native verification, canonical checks, prerequisite/main reconciliation and
+protected merge remain required. A green private checkpoint alone will not
+close ground recovery or Gate4.
+
+Exact next action: independently review this docs-only delta, publish the draft
+against codex/gate4-ground-weapon-recovery at8ec12c3, inspect actual exact-head CI
+output and fix concrete failures. Do not merge into the development parent.
