@@ -1,6 +1,39 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
-Status, 2026-10-04: **GUARDED CHECKPOINT AUTHORED — REVIEW PENDING.**
+Status, 2026-10-04: **BOUNDED REVIEW CORRECTION AUTHORING.** Root transferred sole
+source writing to `/root/gate4_ground_oct4` from clean
+`9ffa19a56a09d7f73f735ee0187b05e02a758213`, tree
+`86bb26338c4673e29f1353c3c465e79f6ce4e3ec`, after the full independent review
+recorded three concrete P2 findings. This plan/status amendment is committed
+before correction source. The reviewer now becomes the correction author; root
+will independently review the complete correction and no self-approval is claimed.
+The full external review is
+`tooling/offstage-9ffa19a-full-independent-review-2026-10-04.md`, SHA256
+`57e402cb047927125815f29922f4e27feb33a99cfae0fed58d88e71b4e65d96c`.
+
+The correction scope is exact: (1) validate allowed source/work-kind and exact
+Time-ticket shape for completed as well as live bindings after the source is
+removed, without claiming journal authentication; (2) require the whole existing
+retained-dependency union to have actual released participant positions before
+elapsed time and at paused boundaries; (3) distinguish actual allowed ground/solid
+support from `fall_destination(None)` for liquid suspension; and (4) replace the
+new redundant field initializers with shorthand. Reuse the current records and
+dependency scan; no new serialized fields, source grant, public admission or
+shared falling-semantic change. Unsupported liquid suspension remains refused.
+
+New controls must use otherwise valid predecessors and prove whole-state atomic
+refusal: real post-choice completed-binding/trace forgeries (including ticket
+command/step), omitted eligible legacy dependencies, and authored unsupported
+liquid geometry with ordinary and real stable recovery. Preserve all original 16
+controls and every protected source/history/capture byte; add genuine supported
+ground/solid geometry controls. All new and original controls remain UNRUN.
+Only direct rustfmt and static Git/file checks are authorized; no Cargo/compiler,
+tests, helper execution, npm/build/native/database, push/PR/CI operation. Return
+clean source and full correction evidence to root for independent review before
+any verification allocation or broadening. The complete vertical-slice contract
+below remains unchanged.
+
+Historical status at 9ffa19a: **GUARDED CHECKPOINT AUTHORED — REVIEW PENDING.**
 Domain/rules/codec/validation and 16 new controls are authored; every control is
 **UNRUN**. Direct rustfmt and static diff checks passed. Public current/historical/
 restore admission remains closed. See the full [consumer and evidence inventory](gate4-offstage-context-inventory.md).
