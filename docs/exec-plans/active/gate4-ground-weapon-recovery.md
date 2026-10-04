@@ -11,6 +11,15 @@ The complete contract and foundation history below are retained; their older
 writer/publication statements describe that foundation checkpoint, not a current
 assignment or verified follow-on implementation.
 
+Plan review amendment: root transferred sole PLAN-ONLY writing to
+`gate4_ground_oct4` at `0c3ac0028d916aec5c5b14dded2af2c1baee6bd7` to resolve
+the independent review findings. The continuation plan now requires flight-loss
+queueing before leaving the actual direct completion parent and preserves the
+blanket retained automatic-miss guard, with separate genuine automatic-miss and
+rolled-Graze producer controls. This changes no source or admission. Root and a
+different peer must rereview the exact amendment before any source transfer;
+the full before/after contract and frozen PR57 dependency remain unchanged.
+
 Status: guarded foundation source and 15 controls independently reviewed CLEAR,
 2026-10-04; UNCOMPILED / UNRUN. Root has received sole writer ownership back from
 `gate4_ground_oct4` and is preparing draft publication for receiving-head CI on

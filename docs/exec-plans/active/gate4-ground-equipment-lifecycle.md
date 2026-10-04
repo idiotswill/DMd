@@ -9,6 +9,15 @@ execution, database/native work, publication or CI operation are authorized by
 this assignment. Root and an independent peer must review this concrete plan
 before root explicitly transfers source writing. Root owns the heavy slot.
 
+Review amendment, 2026-10-04: root transferred sole PLAN-ONLY writing from
+`gate4_ci_oct4` to `gate4_ground_oct4` at clean
+`0c3ac0028d916aec5c5b14dded2af2c1baee6bd7` to resolve the two findings in
+`tooling/ground-0c3ac00-lifecycle-plan-independent-review-2026-10-04.md`, SHA256
+`ec6fd606e068b56601e3f811cc81b730894f9782b45f2bbba57ecf1ee47e16d6`.
+This amendment requires root and a different peer to rereview the exact clean
+commit before any source transfer. The amendment author does not self-certify
+independent review. All other branches remain frozen.
+
 The parent [ground recovery plan](gate4-ground-weapon-recovery.md) remains the
 full before/after acceptance contract. Its guarded foundation PR57 is frozen in
 its separate checkout. This branch neither edits that checkout nor treats its
@@ -102,11 +111,16 @@ as today. No live fake Finishing attack may survive to reconstruct a thrown Item
 as carried, repeat damage or repay a cost. No opt-in means the old path is exact.
 
 The after frame is pushed before `apply_damage`/Graze pushes its resulting
-vitality, effect, concentration and fall children. It is a later singleton frame,
-never a simultaneous sibling of those consequences. Existing pump flight-loss
-derivation still runs before it selects later work. Queued presence is not a
-waiting condition. Same-attack Pickup uses the ground record actually created
-by completion, including its completing command, not a pre-attack receipt.
+vitality, effect and concentration children, including immediate unconscious
+drop/end-concentration changes. After those successful changes, explicitly call
+`falling::queue_losses` while the actual completion parent is still entered and
+before leaving that scope. Its later-pushed fall frame therefore precedes the
+after frame without making the two simultaneous siblings. The pump fallback
+must not be the first producer of a flight loss caused by this completion:
+correct frame order alone does not prove the BeginFall node's parent. Queued
+presence is not a waiting condition. Same-attack Pickup uses the ground record
+actually created by completion, including its completing command, not a
+pre-attack receipt.
 
 Ancestry must cover every real completion route:
 
@@ -119,13 +133,14 @@ Ancestry must cover every real completion route:
    AttackDamage key only for the opted-in attack. The direct
    `choose_knockout` continuation validates that retained key/node, attack/raw
    identity where applicable and stage, enters it before completion and vitality
-   children, and restores the previous in-process marker on success or error.
+   children, queues resulting flight losses before leaving, and restores the
+   previous in-process marker on success or error.
    Keep the existing distinct vitality occurrence allocation and command cause.
 4. When `FinishAttack` pauses at MasteryChoice, retain that exact entered key.
    Direct `choose_mastery` validates and re-enters it around completion and
-   Graze consequences, including Decline, then resets the marker. Do not select
-   a merely recent node of the same kind. Existing non-opted-in behavior stays
-   unchanged.
+   Graze consequences, including Decline, queues resulting flight losses before
+   leaving, then resets the marker. Do not select a merely recent node of the
+   same kind. Existing non-opted-in behavior stays unchanged.
 
 Concretely, initialize `after_equipment_parent` to None at physical admission.
 At `apply_damage`'s real `preview.awaiting_choice` branch, before returning the
@@ -136,18 +151,37 @@ If a damage raw exists, its request must equal the attack's deterministic
 AttackDamage key for this parent, and its accepted result must be the one used
 by the actual damage preview. Fixed damage has no invented raw result. At
 `finish`'s actual Graze MasteryChoice branch, capture the entered FinishAttack
-key, `pause = Graze`, current `meta`, Miss outcome and `attack.attack_roll`;
-an automatic miss retains None. A present attack raw must match the exact attack
-request/origin and its miss result; the FinishAttack node must belong to that
-attack's actual trace lineage. Neither branch allocates a completion/follow-up
+key, `pause = Graze`, current `meta`, Miss outcome and the actual accepted
+`attack.attack_roll`. The Graze pause requires that real raw to match the exact
+attack request/origin and its miss result; the FinishAttack node must belong to
+that attack's actual trace lineage. Neither branch allocates a completion/follow-up
 work item at this pause: the attack is still incomplete.
+
+Preserve `attacks/validation::validate`'s blanket rejection of retained
+`automatic_miss` attacks. Current `tactical_weapons` derivation produces automatic
+misses only for underwater ranged/thrown delivery beyond normal range; the only
+bundled Graze weapons, Glaive and Greatsword, are melee with no range, and ordinary
+creature-weapon planning grants no mastery. Thus automatic-miss Graze suspension
+is not a reachable positive source path and stays closed. A real non-Graze
+automatic miss completes immediately through its entered FinishAttack node,
+without an attack raw or a pause-parent record, and may produce the opted-in
+after work there. Test this separately from real rolled-miss Graze Apply/Decline.
+Do not change a source profile, inject this combination into positive setup or
+add an unreachable validator exception; a future genuine source combination
+requires a separate reviewed contract.
 
 On direct knockout or mastery choice, require the retained pause to match the
 current stage, unchanged attack origin/source/intent, suspended outcome and
 accepted raw identity; verify the full exact parent node and same resolution.
 Retained `paused_by` must bind the command that actually established that pause,
-not the later chooser. Enter this node around completion and its child production,
-then restore the prior trace marker before calling pump. The actual chooser is
+not the later chooser. Enter this node around completion and its child production.
+On success call `falling::queue_losses` before leaving the entered node, then
+restore the prior trace marker on both success and error before calling pump.
+This follows the existing `continuations::{start,finish}` wrappers: their loss
+queueing occurs inside the scope, whereas `apply_vitality_from_cause` does not
+queue losses and the later `turns::pump` fallback cannot recover a departed
+parent. Keep the existing distinct vitality occurrence; no synthetic completion
+or fall-parent occurrence is added. The actual chooser is
 recorded as `completed_by` in the new after cause; copy the validated parent key
 there before the completed attack (and temporary parent record) is cleared.
 For non-pausing paths obtain the completion key directly from the current entered
@@ -289,13 +323,21 @@ actual commands finish and logs are read. Do not weaken existing assertions.
 1. Old absent fields serialize identically; old Equip/Unequip and Thrown timing
    stay exact. New intent/explicit operation conflict and wrong purpose/window
    refuse before payment. Positive constructed inputs are labeled private.
-2. Drive actual internal attack begin, raw resolution and completion for miss,
-   hit, fixed damage, knockout Apply and Graze/Decline. Assert one work/receipt,
-   real completion parent and metadata, cleared attack, no second damage/ammo/cost.
-   Do not insert a selected work item or completed receipt as positive setup.
+2. Drive actual internal attack begin, raw resolution and completion for rolled
+   miss, hit, fixed damage, knockout Apply and rolled-miss Graze Apply/Decline.
+   Separately drive a real underwater non-Graze automatic miss, with no fabricated
+   attack raw or pause-parent record. Assert one work/receipt, real completion
+   parent and metadata, cleared attack, no second damage/ammo/cost. Retain the
+   existing restored automatic-miss/natural-twenty refusal. Do not alter source
+   profiles or insert a selected work item/completed receipt as positive setup.
 3. Drive actual vitality, concentration, fall and unconscious-drop children before
    selection; assert bounded ancestry/frame ordering and no early queued wait,
    simultaneous ordering escape, re-equip after drop or inherited area authority.
+   Include real direct-choice damage/incapacity or concentration ending that
+   causes a non-Hover flight loss. Assert the BeginFall node's exact retained
+   AttackDamage/FinishAttack parent and its frame above after work, not only final
+   execution order/counts; check transient-marker reset and outer atomicity on
+   errors. Absent intent keeps its original path and bytes.
 4. Actually throw through completion, then recover that same Item from its actual
    newly created ground origin. Preserve owner/grant/definition/quantity/vector
    order/history. Cover a legal different ground item and carried Equip/Unequip.
@@ -365,5 +407,11 @@ Current validation: plan/source inspection only; implementation absent and every
 new control UNWRITTEN/UNRUN. Risks requiring review are causal parent retention,
 queued-versus-selected waiting, spent-budget admission, old serialization,
 decision-cut inverse scope and cross-branch source constructors. No acceptance
-is reduced. Exact next action: root and peer review this clean plan commit/tree;
-resolve findings in the plan; only then transfer source writing explicitly.
+is reduced. The independent review initially considered a narrow automatic-miss
+Graze validator exception; deeper source inspection disproved that path's current
+reachability, so the amendment preserves the blanket guard and separates the
+two real producer controls. Root and the original plan author agreed with that
+corrected disposition; this is not approval of a fabricated positive source.
+Exact next action: root and a different peer reread the amended clean plan
+commit/tree, including queue-before-leave ancestry and the unchanged automatic
+miss guard; only then may root transfer source writing explicitly.
