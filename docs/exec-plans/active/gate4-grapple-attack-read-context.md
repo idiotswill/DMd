@@ -1,6 +1,24 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: PLAN AMENDMENT AWAITING EXACT ROOT AND PEER REVIEW, 2026-10-04.
+Status: GUARDED SOURCE AUTHORING RESUMED, 2026-10-04.
+Root transferred sole source writing to `gate4_ground_oct4` from clean reviewed
+`40593b2a4398a957fb3a35cf09e01ad4f8cb2950`, tree
+`298a4d9d01ce1941d1aae5d7744b2be368704d1c`, after full root and independent peer
+review. Root review SHA256 is
+`179e4713c13cded1ed192a2e74577de595c1b410158d28c06bdcae3a150ca2f1`;
+peer review is `tooling/grapple-40593b2-amendment-independent-review-2026-10-04.md`,
+SHA256 `a3a991a6bdd640739368897454884c65cea30e789f8025892f6420f4dacf3412`.
+Both full reviews and the complete amended plan were read before this status
+commit. The assigned exact clean head/tree was rechecked; no source changed yet.
+Implement the complete amended owner/shared-dispatch/producer/read contract and
+original four-family controls below. An intermediate owner checkpoint may be
+reviewed but does not reduce the deliverable. Return a clean full source checkpoint
+for independent review before root allocates execution. Direct rustfmt and static
+Git checks are allowed; no compiler/Cargo/tests/npm/build/native/database,
+publication or CI execution is assigned. Root retains the sole heavy slot and all
+other branch ownership. All public guards and protected original bytes remain.
+
+Historical amendment handoff, superseded by the reviewed transfer above:
 Root assigned `gate4_ground_oct4` sole PLAN-ONLY writing from clean
 `4f9cd0e501a5fb6e1f24753fa4e2650985c61d6b`, tree
 `966efa3ee341c7aeb8fff67a6eb844437be29cf3`. That checkpoint contains only the
