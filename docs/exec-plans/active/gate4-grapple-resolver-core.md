@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: PR56 receiving-head Linux CI failed one inherited synthetic opportunity-menu control at `5296d06f` on 2026-10-04. Root transfers sole bounded test-correction writing to `gate4_ground_oct4` in `gate4-grapple-resolver-core`; every other checkout remains separately owned/frozen. This plan checkpoint precedes source edits. Only direct formatting/static checks are authorized; no compiler/test/native/DB/publication run. Earlier focused46 success remains attributed to `afc40ef`, not a full receiving-head pass. All public guards and complete Gate4 obligations remain required.
+Status: the bounded PR56 synthetic opportunity-menu correction is authored and returned clean for root and independent review on 2026-10-04. Plan-before-code is `910a6671928d761007d768d6f0b7ca414a3f8907`. Only this existing test and this plan change; production and all other controls retain exact `5296d06f` bytes. Direct rustfmt and diff checks pass; the correction is UNCOMPILED/UNRUN. Writing returns to root and pauses pending explicit transfer. Earlier focused46 success remains attributed to `afc40ef`, not a full receiving-head pass. All public guards and complete Gate4 obligations remain required.
 
 ## Receiving-head CI failure and bounded correction plan — 2026-10-04
 
@@ -59,6 +59,16 @@ After committing this plan, change only this existing test and this plan:
 
 This is not a waiver of the original lifecycle/read-context/LR/replay/app/native
 contract, and no development-base merge or public activation is authorized.
+
+Authored result: the original missing-decision image now has an exact-error and
+whole-state no-mutation assertion. The positive synthetic Complete image adds a
+Declined receipt with later identity/sequence, its exact AfterEquipment work key,
+matching node and Begin parent, and consistent occurrence bound. It explicitly
+passes the unchanged shape validator before the original menu-equality check;
+that query also leaves the whole state unchanged. All original assertions remain.
+No source/helper/profile/fixture or production guard changed. Root's next action
+is complete exact-head review by root and a different peer before assigning the
+named test and broader verification; no execution result is inferred from syntax.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
