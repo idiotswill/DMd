@@ -53,7 +53,56 @@ pub(super) fn validate_paid_equipment_read(
             "a paid persisted read cannot substitute for entered completion",
         ));
     }
+    validate_paid_pending(state, attack)?;
     validation::validate_structure(state)
+}
+
+/// A persisted paid cut binds both pending surfaces before any local inverse.
+/// These shared validators derive requests from the attached attack fields;
+/// neither reconstructs the physical source or calls this reader recursively.
+fn validate_paid_pending(state: &CampaignState, attack: &TacticalAttack) -> Result<(), RulesError> {
+    let r = resolution(state)?;
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let expected = match attack.stage {
+        TacticalAttackStage::AttackRoll => Some(TacticalWorkKind::AttackRoll),
+        TacticalAttackStage::DamageRoll => Some(TacticalWorkKind::AttackDamage),
+        TacticalAttackStage::HitReview
+        | TacticalAttackStage::KnockoutChoice
+        | TacticalAttackStage::MasteryChoice => None,
+        TacticalAttackStage::Finishing => {
+            return Err(invalid("paid persisted read cannot retain finishing work"));
+        }
+    };
+    super::work_trace::validate(state)?;
+    if let Some(kind) = expected {
+        let selected = r
+            .pending
+            .as_ref()
+            .ok_or_else(|| invalid("paid attack stage lacks selected dice work"))?;
+        let pending = rules
+            .pending
+            .as_ref()
+            .ok_or_else(|| invalid("paid attack stage lacks its pending request"))?;
+        let trace = r
+            .work_trace
+            .as_ref()
+            .ok_or_else(|| invalid("paid selected work lacks its trace"))?;
+        let mut nodes = trace.nodes.iter().filter(|node| node.work.kind == kind);
+        let node = nodes
+            .next()
+            .ok_or_else(|| invalid("paid selected work node is absent"))?;
+        if selected.work.kind != kind || node.work != selected.work || nodes.next().is_some() {
+            return Err(invalid(
+                "paid selected work differs from its unique source node",
+            ));
+        }
+        super::turn_validation::pending(state, pending)?;
+    } else if r.pending.is_some() || rules.pending.is_some() {
+        return Err(invalid(
+            "paid material or hit choice cannot retain dice pending",
+        ));
+    }
+    Ok(())
 }
 
 fn validate_paid_equipment_identity(

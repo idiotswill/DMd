@@ -7,7 +7,7 @@ ownership to `gate4_core_oct4` from clean
 Complete independent source review
 `tooling/ground-e62f7b8-complete-independent-review-2026-10-04.md`, SHA256
 `5890d2020ec84751f6f9c3afede49a661d552cf23e10c0516aa35e1276c9e96f`,
-was read in full. This plan/status commit precedes the narrow source correction.
+was read in full. Plan/status `8ce3b33` preceded the narrow source correction.
 
 The strict persisted paid reader currently checks pending issued cause and work
 kind/count but not the exact complete pending tuple before local inversion.
@@ -33,6 +33,23 @@ source/capture/raw bytes. No prerequisite correction integration or app activati
 Direct rustfmt/static Git only; no compiler/Cargo/tests/build/native/database,
 publication or CI is authorized. Return a clean narrow checkpoint for independent
 CI-agent/root review before root allocates execution. All new controls are UNRUN.
+
+Authored correction handback: plan `8ce3b33` preceded source. The strict reader
+now checks the stage's two pending surfaces and exact unique selected trace node,
+then uses shared nonrecursive work-trace and pending validation before its existing
+raw/issued-cause structure checks and local inverse. No source/state validator is
+called recursively and no caller authority flag was introduced.
+
+Seven new controls are appended, for25 total; all18 original control bodies remain
+exact. Each new pending category covers actual AttackRoll and DamageRoll producer
+cuts, including a coherently copied wrong key and a distinct same-kind trace
+sibling. Presence negatives include queued-without-pending dice and a genuine
+HitReview cut with injected old pending surfaces. Every refusal compares the whole
+state. Direct rustfmt --check and Git whitespace checks pass. All25 controls remain
+UNCOMPILED/UNRUN, and all46 protected blobs plus21 actual raw files remain exact.
+No prerequisite correction, app/public activation or runtime evidence was added.
+Source writing returns to root for complete independent correction review; root
+alone schedules later exact-head execution and any broader integration.
 
 Historical checkpoint 2 author handback follows; its missing pending binding is
 superseded only by the planned correction above, not by an old test-pass claim.

@@ -1269,3 +1269,245 @@ fn private_activated_printed_after_intent_uses_the_same_source_activation_and_ac
     validate_records(&f.state).unwrap();
     assert_eq!(flow(&f.state).unwrap().budget.weapon_history.len(), 1);
 }
+
+// Each corruption starts from a real private paid producer cut. None of these
+// copied negative images is an accepted history or a reader authority source.
+fn paid_pending_fixture(damage: bool) -> Fixture {
+    let mut f = Fixture::new();
+    f.pickup(f.choice.weapon, Hand::Right);
+    f.activate();
+    f.begin();
+    if damage {
+        f.raw(20);
+        f.decline_hit();
+    }
+    assert_eq!(
+        resolution(&f.state).unwrap().attack.as_ref().unwrap().stage,
+        if damage {
+            TacticalAttackStage::DamageRoll
+        } else {
+            TacticalAttackStage::AttackRoll
+        }
+    );
+    let before = f.state.clone();
+    let attack = resolution(&f.state).unwrap().attack.as_ref().unwrap();
+    RetainedPhysicalRead::new(&f.state, attack, &f.pack).unwrap();
+    assert_eq!(f.state, before);
+    f
+}
+
+fn reject_paid_pending(state: CampaignState, pack: &RulesPack) {
+    let before = state.clone();
+    let attack = resolution(&state).unwrap().attack.as_ref().unwrap();
+    assert!(RetainedPhysicalRead::new(&state, attack, pack).is_err());
+    assert_eq!(
+        state, before,
+        "reader refusal must preserve the complete paid cut"
+    );
+}
+
+#[test]
+fn private_paid_pending_request_id_is_bound_before_inverse() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        let mut state = f.state.clone();
+        state
+            .rules
+            .as_mut()
+            .unwrap()
+            .pending
+            .as_mut()
+            .unwrap()
+            .request
+            .id = RollRequestId::new();
+        reject_paid_pending(state, &f.pack);
+    }
+}
+
+#[test]
+fn private_paid_pending_complete_template_and_ruling_are_bound_before_inverse() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        for case in 0..7 {
+            let mut state = f.state.clone();
+            let pending = state.rules.as_mut().unwrap().pending.as_mut().unwrap();
+            match case {
+                0 => pending.request.modifier += 1,
+                1 => pending.request.dice[0].count += 1,
+                2 => {
+                    pending.request.mode = if pending.request.mode == RollMode::Normal {
+                        RollMode::Advantage
+                    } else {
+                        RollMode::Normal
+                    }
+                }
+                3 => pending.request.roller = Some(f.target),
+                4 => {
+                    pending.request.visibility =
+                        if pending.request.visibility == RollVisibility::Public {
+                            RollVisibility::Secret
+                        } else {
+                            RollVisibility::Public
+                        }
+                }
+                5 => pending.request.reason.push_str(" altered"),
+                6 => pending.ruling.reason.push_str(" altered"),
+                _ => unreachable!(),
+            }
+            reject_paid_pending(state, &f.pack);
+        }
+    }
+}
+
+#[test]
+fn private_paid_pending_purpose_is_bound_before_inverse() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        for case in 0..3 {
+            let mut state = f.state.clone();
+            let mut key = resolution(&state).unwrap().pending.as_ref().unwrap().key;
+            let encounter = encounter(&state).unwrap().id;
+            let purpose = match case {
+                0 => PendingPurpose::RestHitDie,
+                1 => PendingPurpose::TacticalResolution {
+                    encounter: EncounterId::new(),
+                    key,
+                },
+                2 => {
+                    key.subject = f.actor;
+                    PendingPurpose::TacticalResolution { encounter, key }
+                }
+                _ => unreachable!(),
+            };
+            state
+                .rules
+                .as_mut()
+                .unwrap()
+                .pending
+                .as_mut()
+                .unwrap()
+                .purpose = purpose;
+            reject_paid_pending(state, &f.pack);
+        }
+    }
+}
+
+#[test]
+fn private_paid_pending_selected_key_is_bound_to_actual_work_before_inverse() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        for coherently_copied in [false, true] {
+            let mut state = f.state.clone();
+            let selected = resolution_mut(&mut state)
+                .unwrap()
+                .pending
+                .as_mut()
+                .unwrap();
+            selected.key.origin = CommandId::new();
+            let key = selected.key;
+            if coherently_copied {
+                let encounter = encounter(&state).unwrap().id;
+                let pending = state.rules.as_mut().unwrap().pending.as_mut().unwrap();
+                pending.purpose = PendingPurpose::TacticalResolution { encounter, key };
+                pending.request.id = key.request_id();
+            }
+            reject_paid_pending(state, &f.pack);
+        }
+    }
+}
+
+#[test]
+fn private_paid_pending_exact_trace_node_is_required_before_inverse() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        for case in 0..4 {
+            let mut state = f.state.clone();
+            let r = resolution_mut(&mut state).unwrap();
+            let work = r.pending.as_ref().unwrap().work.clone();
+            let trace = r.work_trace.as_mut().unwrap();
+            let index = trace.nodes.iter().position(|n| n.work == work).unwrap();
+            match case {
+                0 => {
+                    trace.nodes.remove(index);
+                }
+                1 => trace.nodes[index].work.kind = TacticalWorkKind::FinishAttack,
+                2 => trace.nodes.push(trace.nodes[index].clone()),
+                3 => {
+                    let occurrence = r.next_occurrence;
+                    r.next_occurrence += 1;
+                    trace.nodes.push(TacticalWorkNode {
+                        work: TacticalWorkItem {
+                            occurrence,
+                            kind: work.kind,
+                        },
+                        parent: trace.nodes[index].parent,
+                    });
+                }
+                _ => unreachable!(),
+            }
+            reject_paid_pending(state, &f.pack);
+        }
+    }
+}
+
+#[test]
+fn private_paid_pending_issued_cause_is_bound_at_attack_and_damage_cuts() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        let mut state = f.state.clone();
+        state
+            .rules
+            .as_mut()
+            .unwrap()
+            .pending
+            .as_mut()
+            .unwrap()
+            .issued_by
+            .id = CommandId::new();
+        reject_paid_pending(state, &f.pack);
+    }
+}
+
+#[test]
+fn private_paid_pending_surfaces_follow_the_actual_persisted_stage() {
+    for damage in [false, true] {
+        let f = paid_pending_fixture(damage);
+        for case in 0..3 {
+            let mut state = f.state.clone();
+            match case {
+                0 => state.rules.as_mut().unwrap().pending = None,
+                1 => resolution_mut(&mut state).unwrap().pending = None,
+                2 => {
+                    state.rules.as_mut().unwrap().pending = None;
+                    let r = resolution_mut(&mut state).unwrap();
+                    let work = r.pending.take().unwrap().work;
+                    r.frames.push(vec![work]);
+                }
+                _ => unreachable!(),
+            }
+            reject_paid_pending(state, &f.pack);
+        }
+    }
+    let mut f = paid_pending_fixture(false);
+    let previous_raw = f.state.rules.as_ref().unwrap().pending.clone();
+    let previous_work = resolution(&f.state).unwrap().pending.clone();
+    f.raw(20);
+    assert_eq!(
+        resolution(&f.state).unwrap().attack.as_ref().unwrap().stage,
+        TacticalAttackStage::HitReview
+    );
+    assert!(f.state.rules.as_ref().unwrap().pending.is_none());
+    assert!(resolution(&f.state).unwrap().pending.is_none());
+    let attack = resolution(&f.state).unwrap().attack.as_ref().unwrap();
+    RetainedPhysicalRead::new(&f.state, attack, &f.pack).unwrap();
+    for case in 0..3 {
+        let mut state = f.state.clone();
+        if case != 1 {
+            state.rules.as_mut().unwrap().pending = previous_raw.clone();
+        }
+        if case != 0 {
+            resolution_mut(&mut state).unwrap().pending = previous_work.clone();
+        }
+        reject_paid_pending(state, &f.pack);
+    }
+}
