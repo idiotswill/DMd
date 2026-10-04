@@ -757,3 +757,31 @@ against9c1 lists only the Ogre and gear-count plan files, so every non-document
 blob remains identical to the independently reviewed checkpoint. The development
 base is now an ancestor. This proves source equality, not executed checks on the
 receiving head; first exact-head CI and local verification remain outstanding.
+
+## First draft CI failure and narrow constructor correction — October 4
+
+Draft PR58 targets the unaccepted gear-count development branch. Its first head
+`dbd77d83310c9c982247b06b24792af12e1ce4b7` failed with the same two E0308
+diagnostics in `crates/dmd-app/src/table_creatures/ogre_tests.rs`, lines82 and133.
+The negative Ogre creation and positive old Wolf creation test constructors pass
+`TableCreatureCreation` where the existing action requires
+`Box<TableCreatureCreation>`. Actual Linux Rust job111444140906 (fast verification),
+Linux MSRV job111444140757 (declared Rust1.88 check), and Windows MSRV
+job111444140019 (workspace all-target check) show both errors. No Rust test success
+is inferred. The Windows MSRV job did complete frontend checks first:137 component
+tests in20 files passed, and Svelte reported zero errors and zero warnings.
+
+The complete decoded job logs are preserved outside the repository as UTF-8,
+including original timestamps and ANSI sequences, with SHA256 respectively:
+`773979bf76d8e692ab3612a536e1ab4028ee0a9b6d8b83098ab5ab186dcc1228`,
+`507ee1cd0d1d944e18a879aa589e133d359f25eebb8bf4d9e4fd44324a63bdea`, and
+`250814b4dcb65457ef1fa3f9027a7eda7133028772b5fa7b75d7e200df3da29f`.
+
+Root is the sole writer. Before any implementation, record this plan, then wrap
+exactly these two creation values in `Box::new`. Keep test inputs, assertions,
+production code, source admission, fixtures and replay behavior unchanged. Run
+direct rustfmt, inspect the complete narrow diff and obtain independent review,
+then publish the new head for fresh CI. Preserve this failed attempt; do not retry
+the unchanged head or weaken assertions. Air retains the only local heavy slot.
+Focused/local canonical verification and all prior integration/native obligations
+remain outstanding, and no merge into the development base is authorized.
