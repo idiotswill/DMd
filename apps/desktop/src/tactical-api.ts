@@ -57,8 +57,9 @@ export interface ShoveView { key: Id; actor: Id; stage: 'SaveChoice'|'OutcomeCho
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
 export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[] }
-export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } };
-export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[] }
+export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } } | { CreatureWeapon: { feature_id: string; weapon: Id; grip: WeaponGrip } };
+export interface PhysicalSourceWeaponChoice { feature_id: string; item: Id; label: string; weapon_name: string; grips: WeaponGrip[] }
+export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[]; physical_source_weapons?: PhysicalSourceWeaponChoice[] }
 export interface Volume { min: Point; max: Point }
 export interface Battlefield {
   bounds: Volume; floor_z: number; floor_surface: string; ambient_light: 'Bright' | 'Dim' | 'Darkness';

@@ -472,6 +472,17 @@ pub struct TableOpportunityView {
     pub weapons: Option<TableAttackOptions>,
     pub unarmed: bool,
     pub features: Vec<TableCreatureAttackChoice>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub physical_source_weapons: Vec<TablePhysicalSourceWeaponChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TablePhysicalSourceWeaponChoice {
+    pub feature_id: String,
+    pub item: ItemId,
+    pub label: String,
+    pub weapon_name: String,
+    pub grips: Vec<WeaponGrip>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

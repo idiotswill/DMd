@@ -8,6 +8,9 @@ checkpoint3 application/UI implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
 attack execution remain closed. No PR or runtime acceptance is claimed.
+Checkpoint3 application/UI route and controls are now authored for independent
+review; compilation, component execution and real application acceptance remain
+UNRUN. The checkpoint3 handback at the end supplies the current next action.
 
 Root transferred this checkout from clean reviewed `df0e0e2` after independent
 plan amendment clearance, SHA256
@@ -654,3 +657,67 @@ sole source writer. No source edits, Cargo/npm/build/test, DB/native, publicatio
 or admission change has occurred in checkpoint3. Verification is allocated by root
 after the interrupted core continuation and Air canonical; source authoring may
 proceed independently after plan review without taking the local heavy slot.
+
+## Checkpoint3 author handback — 2026-10-04
+
+Writer/status commit `77e7fff` preceded the source edits on reviewed `f024092`.
+The new public read-only `physical_source_opportunity_grips` query resolves the
+actual actor's full source pin and exact Ogre program under flow5. It shares a
+single held-item/current-custody/quantity/state/definition/EffectiveHands helper
+with the rules crossing producer. The existing grip policy, response admission,
+reaction payment and retained source validation are unchanged. The query grants
+no response authority and does not create, move or equip any Item.
+
+`TableOpportunityView` adds defaulted, omitted-when-empty
+`physical_source_weapons`. Projection derives only retained distinct source
+identities, canonical feature labels, ordinary weapon names and current legal
+grips, sorted by feature and Item. The existing reactor perception/target label,
+audience, ordinary/intrinsic options and Decline route are preserved. The actual
+desktop request already deserializes the typed TacticalAction; an additive
+TypeScript union and parser controls cover its `CreatureWeapon` wire shape using
+`weapon`, distinct from the view's `item`. No transport version or historical
+presentation/retry pipeline is changed.
+
+A dedicated physical-source reaction form submits only offered feature/weapon/
+grip tuples. Item labels and selections stay stable across reordered offers.
+Removing the chosen Item or grip clears the choice without substituting another
+or reviving it automatically if it returns. Existing ownership/channel remount,
+disabled/in-flight behavior, focus surface and Decline remain in their normal
+parents. Own-turn AttackForm now stores grip identity instead of a list index,
+keeps the selected Item/source form across refreshes, and invalidates removed
+Items/grips/source forms instead of silently selecting a different Item or
+falling back to an ordinary attack. Explicitly selecting a new weapon still
+resets incompatible inputs through the existing route. Printed delivery/ability/
+damage remain source-derived; no alternate attack engine or ground option exists.
+
+Four Rust controls and eleven component cases are authored, all UNCOMPILED /
+UNRUN. Rust controls cover shared held-item refusals without mutation, current
+executor/actual old-pin query refusals, exact legacy absent-field bytes and
+roundtrip new DTO, and parsing both melee forms through the real desktop request
+type with forbidden mechanical/authority fields rejected. The shared candidate
+test combines a genuine Human context with explicitly hypothetical assignments
+and the immutable descriptor; a synthetic flow5 image is a negative query test,
+never a journaled upgrade. No Ogre profile is constructed. Component cases are
+explicitly synthetic DTO tests for Greatclub and both Javelin forms across all
+three distinct IDs, exact reaction intent, reorder/removal/reappearance, legal
+reselection, disabled submission, Decline, controller privacy and channel reset.
+The existing ordinary attack test changes only the selector value from index1
+to the actual right-hand grip identity; its exact command assertion is unchanged.
+
+Static author review and direct rustfmt parsing/formatting are complete. The
+external static audit checks the complete tree/worktree, changed-path allowlist,
+strict UTF-8/includes, all 29 fixture blobs, 21 protected raw captures, five
+original replay suites, all source/manifest/NOTICE bytes, source admission guards,
+ordinary weapon and ground engines, and existing response/payment/reconstruction
+boundaries. These are static checks, not passing Rust or Svelte controls. No
+Cargo/compiler/npm/test/build, database/native action, push or PR edit ran.
+
+Return the clean checkpoint, complete diff and static audit to root for independent
+review before allocating verification. Receiving-head verification must include
+the new Rust controls, original source/OA/transport/replay controls, component
+tests and Svelte/type/build checks, canonical verification and exact-head CI.
+Ogre current/common/Historical admission remains CLOSED. Genuine creation, all
+finite physical forms, source OA, ground pickup, cost/receipt/cold/retry/forgery/
+portable/native and lawful Grapple/LR positives remain UNMET until the later
+complete integration. Root coordinates accepted-main reconciliation and the
+separately owned ground implementation; this checkpoint does not close Gate4.

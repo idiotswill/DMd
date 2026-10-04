@@ -16,6 +16,7 @@ use crate::tactical_weapons::*;
 pub(super) use creature::begin_creature_attack;
 pub(super) use creature_weapon::begin_creature_weapon;
 pub(super) use creature_weapon::require_ogre_execution;
+pub use opportunity::physical_source_opportunity_grips;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
 pub(super) use planning::admit_target as admit_body_target;
 pub use savage::savage_attacker_dice;
