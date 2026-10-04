@@ -785,3 +785,22 @@ then publish the new head for fresh CI. Preserve this failed attempt; do not ret
 the unchanged head or weaken assertions. Air retains the only local heavy slot.
 Focused/local canonical verification and all prior integration/native obligations
 remain outstanding, and no merge into the development base is authorized.
+
+Plan `7e77ecd75f2d2beabff54a2f1ba52f972cfb2ea6` preceded the exact correction
+`ccd383ccdb943518cd586af38361817b1760403e`, tree
+`0a786d92f3a1347c8960b7da880a30502c4c3a93`. Root's direct rustfmt check using
+the workspace GNU toolchain and Git whitespace check pass. The first plain-PATH
+rustfmt invocation could not locate the command; it was not a passing check.
+Independent review of the entire delta and actual diagnostics is CLEAR, memo
+SHA256 `993f8a1cc7171e7c00d44a45b2ac454c057c2afa048b3122b5cfbe836d80eb25`.
+Only this plan and the four constructor lines differ from the failed draft.
+
+Windows stable job111444140199 also failed at the same two constructors after
+passing137 frontend tests in20 files and Svelte0/0. Its complete decoded log is
+preserved with SHA256
+`b3a50b704319c968fee8d84a0097b147730c20098d266a24ab29e54e01fec427`.
+These four failed jobs remain attributed to dbd77d8. Publish the reviewed
+correction plus this result documentation for fresh receiving-head CI. No Rust
+test has yet run successfully on the correction. The future focused map adds
+the exact existing Ogre admission/Wolf positive control, for34 selected tests;
+old dbd77d8 external runners remain preserved, unrun and superseded.
