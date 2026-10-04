@@ -1106,6 +1106,25 @@ fn unarmed_fixed_damage_uses_admission_and_creates_no_damage_raw_or_issue_cut() 
         RollMode::Normal,
         "attacking sole holder is exempt"
     );
+    // The genuine captured Goblin has Strength 8: 1 + (-1) is zero damage.
+    assert_eq!(
+        owner.state().rules.as_ref().unwrap().entities[&goblin].ability_scores
+            [Ability::Strength.index()],
+        8
+    );
+    assert_eq!(
+        resolution(owner.state())
+            .unwrap()
+            .attack
+            .as_ref()
+            .unwrap()
+            .damage,
+        vec![AttackDamageComponent {
+            damage_type: DamageType::Bludgeoning,
+            dice: vec![],
+            modifier: 0,
+        }]
+    );
     let origin = resolution(owner.state()).unwrap().origin.id;
     let before = owner.state().rules.as_ref().unwrap().entities[&human].hp;
     apply(
@@ -1118,7 +1137,7 @@ fn unarmed_fixed_damage_uses_admission_and_creates_no_damage_raw_or_issue_cut() 
     assert!(flow(owner.state()).unwrap().resolution.is_none());
     assert_eq!(
         owner.state().rules.as_ref().unwrap().entities[&human].hp,
-        before - 1
+        before
     );
     assert_eq!(owner.state().rules.as_ref().unwrap().rolls.iter().filter(|raw| matches!(raw.purpose, PendingPurpose::TacticalResolution { key, .. } if key.origin == origin)).count(), 1);
 }

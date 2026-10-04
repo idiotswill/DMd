@@ -275,17 +275,6 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         reason: reason.into(),
     }
 }
-pub(super) fn request(
-    state: &CampaignState,
-    work: &TacticalWorkItem,
-    key: TacticalRollKey,
-) -> Result<Option<RollRequest>, RulesError> {
-    request_with_read(
-        &super::grapple::execution::ReadContext::ordinary(state),
-        work,
-        key,
-    )
-}
 pub(super) fn request_with_read(
     read: &super::grapple::execution::ReadContext<'_>,
     work: &TacticalWorkItem,
