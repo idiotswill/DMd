@@ -5,9 +5,9 @@ original native Windows attempts reached the six-hour limit. The reviewed CI
 partition was published at `ad3b82b`. Its first actual isolated target reported
 1 passed/61 filtered in 4116.01s, but the coverage guard correctly rejected six
 missing doctest harnesses and produced no successful manifest. Root reviewed the
-argument-placement correction plan; the bounded argv fix and 32 pure controls
-are now authored/UNRUN, preserving the full default workspace inventory and proof.
-No corrected command has run. Canonical/native evidence, accepted dependencies,
+argument-placement correction plan; the bounded argv fix passed root and independent
+review and all32 synthetic controls passed on1cea684, preserving the full default
+workspace inventory and proof. No corrected Cargo command has run. Canonical/native evidence, accepted dependencies,
 fresh complete partition/package verification and prerequisite acceptance remain
 incomplete. The [Windows CI recovery plan](gate4-windows-ci-recovery.md) records
 exact old/new results, failure evidence, proposed argv and unchanged obligations.
@@ -15,14 +15,16 @@ Branch: `codex/gate4-magic-resistance-source`; draft PR53 at
 `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, freshly fetched on 2026-10-04;
 tree `f6ed6762420e92332435eeb6843529a981dd0cd6`. The checkout is named
 `gate4-shield-missile-runtime`.
-Writer: `gate4_ci_oct4` freezes this source checkpoint and returns ownership to
-root with its clean exact head/tree and handback. Root reviewed a1a9584 before
+Writer: root owns the reviewed source and verification/publication checkpoint
+after gate4_ci_oct4 returned clean1cea684 and its handback. Root reviewed a1a9584 before
 implementation; renewed writer/status commit 5b15083 precedes all source edits.
 Production helper change is only the isolated argv placement and explanation.
 All original 29 controls remain (28 unchanged, one strengthened), with three new
 failure controls. Parser/schema/workflow and gameplay/source/test/fixture bytes
-remain unchanged. Root owns independent review, execution, publication, dependency
-reconciliation and acceptance. The prior 29 passes do not verify this correction.
+remain unchanged. Root read the complete correction and independent review, then
+ran all32 pure controls successfully; the adjacent CI recovery plan records the
+exact log and qualifications. Root owns execution, publication, dependency
+reconciliation and acceptance. The prior29 passes did not verify this correction.
 Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority

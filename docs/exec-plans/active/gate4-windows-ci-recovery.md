@@ -1,14 +1,15 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **Bounded argument-placement correction and controls authored; UNRUN.**
+Status: **Bounded argument-placement correction reviewed; 32 pure controls pass.**
 The old target passed, while its partition failed the strict coverage guard.
-No corrected helper suite or native command has been executed.
-Writer: `gate4_ci_oct4` through this clean source checkpoint; freeze it and
-return branch ownership to root with the full handback. Root reviewed plan
+Root executed the synthetic stdlib suite on1cea684; no corrected Cargo/native
+partition has run. Fresh exact-head coverage and packaging remain unverified.
+Writer: root owns the reviewed source and verification/publication checkpoint
+after gate4_ci_oct4 returned its clean source handback. Root reviewed plan
 `a1a958463000db4f38d66d89a742169891873845`, tree
 `da8ee3d277681a393686d24981cf52e5da6fff41`, before source writing. Renewed writer
 status was committed first at `5b15083b3797a3f17a5cd88f00c243f8f8df1183`.
-Independent source review, all execution and publication remain root-owned.
+Independent source review is complete; execution and publication remain root-owned.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
 Published [PR53](https://github.com/idiotswill/DMd/pull/53) and freshly fetched
 remote baseline: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
@@ -548,3 +549,31 @@ named-pass proof, required checks and packaging can verify the repair. Preserve
 ad3's failed artifact and every prior attempt unchanged. Air87840 keeps the sole
 heavy/native slot; canonical/native/source acceptance, accepted dependencies
 and full Gate4 closure remain outstanding.
+
+## Root verification of the correction — 2026-10-04
+
+The source-writing/UNRUN records above are historical. Root read the complete
+a1a9584..1cea684 correction and its source handback. The independent full delta
+review is CLEAR at `1cea684b838082fcccdff8b15169af28481750d2`, tree
+`c5816e508424f605e689d865feb07935af871d71`:
+`tooling/mr-1cea684-correction-independent-review-2026-10-04.md`, SHA256
+`3dc4794df3d4defcbbe0445245b0d418b8da2735f6dc782e9be523e4afe81512`.
+Root read that review in full. No parser, inventory or package-proof requirement
+was relaxed, and the command delta retains the reviewed Cargo default selection.
+
+At15:22UTC root ran `python -B scripts/tests/test_windows_test_partition.py -v`
+on the clean source head. All32 tests passed in1.030s, exit0; the checkout stayed
+clean. Exact output is `tooling/mr-1cea684-pure-controls-2026-10-04.log`, SHA256
+`af20bfca53373407d9617a4c757903a500792ab0b9ff31cd9d51528c05123b80`,
+with identity/command/exit receipt in the adjacent JSON file. These are synthetic
+evidence controls, including the actual capture helper's tiny Python child;
+no Rust/Cargo, game, DB or native application ran. This result verifies the pure
+controls on1cea684, not the future native workspace graph or whole Gate4 feature.
+
+Root owns the branch and this docs-only checkpoint. Preserve the old ad3 failure
+and collect its other actual running-job results before a superseding push when
+practical. Independently review the final docs delta, then publish the corrected
+head to PR53 and require fresh Linux plus both native partitions and strict
+package union proof on that head. Air87840 still owns the local heavy slot.
+Canonical/native gameplay, source admission, accepted dependencies and full
+Gate4 closure remain outstanding.
