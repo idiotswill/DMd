@@ -79,7 +79,7 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
     );
     for supplied in [None, Some(pin)] {
         let action = TableAction::CreateCreature {
-            creation: crate::TableCreatureCreation {
+            creation: Box::new(crate::TableCreatureCreation {
                 entity_id: EntityId::new(),
                 name: "Unadmitted Ogre".into(),
                 definition_id: "ogre".into(),
@@ -88,7 +88,7 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
                 additional_languages: vec![],
                 ammunition_units: 0,
                 item_ids: (0..4).map(|_| ItemId::new()).collect(),
-            },
+            }),
         };
         let live = match table_engine::resolve_table(&state, &meta, &action, &pack) {
             Ok(_) => panic!("unadmitted Ogre reached live creation"),
@@ -130,7 +130,7 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
     // The same valid table still admits a real old source; refusal is Ogre-specific.
     let wolf = creature_definition("wolf").unwrap();
     let action = TableAction::CreateCreature {
-        creation: crate::TableCreatureCreation {
+        creation: Box::new(crate::TableCreatureCreation {
             entity_id: EntityId::new(),
             name: "Ordinary wolf".into(),
             definition_id: "wolf".into(),
@@ -139,7 +139,7 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
             additional_languages: vec![],
             ammunition_units: 0,
             item_ids: vec![],
-        },
+        }),
     };
     let accepted = table_engine::resolve_table(&state, &meta, &action, &pack).unwrap();
     assert_eq!(
