@@ -1,10 +1,19 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
-Status: **plan only; awaiting root and independent exact-head review before any
-source authoring.** No implementation, executable verification or public Grapple
-acceptance is claimed by this plan.
+Status: **reviewed plan; bounded source authoring authorized and in progress.**
+No implementation, executable verification or public Grapple acceptance is
+claimed by this writer/status checkpoint.
 
-Writer: `gate4_ground_oct4`, transferred by root for this plan only on 2026-10-04.
+Writer: `gate4_ground_oct4`, transferred by root for bounded source authoring on
+2026-10-04 after plan review, at clean `6c8a108de19ecb4e478dc68258e706c54eaa2ed4`,
+tree `052a9afea36bd49387bbd48958ceb96b06fb5ff5`. Root review is CLEAR
+(`tooling/grapple-6c8a108-root-plan-review-2026-10-04.md`, SHA256
+`2cdbc79c3b459b4b59c6d080da4861c30c56126631dee35c2df82c69651c657f`),
+as is the independent amended-plan review
+(`tooling/grapple-6c8a108-lifecycle-plan-independent-review-2026-10-04.md`, SHA256
+`ab158037adeacaf9929be4eb757726a819131284f1244076efc3a5a8b2ec2b37`).
+Both full reviews and the amendment were read before this commit. Fresh fetch of
+main left the assigned branch unchanged. This status is committed before source.
 Branch: `codex/gate4-grapple-condition-lifecycle`; sole writable checkout
 `gate4-grapple-condition-lifecycle`. This is a separate follow-on to the guarded
 core in development [PR56](https://github.com/idiotswill/DMd/pull/56). That core
@@ -278,7 +287,8 @@ The inherited afc core plan records root's 46 focused controls, formatting and
 strict three-package Clippy pass. That is qualified dependency evidence, not a
 run of this plan/branch or complete core/feature acceptance. Earlier failures
 remain in the parent plan. No compiler, test, npm, build, database, native, CI,
-push or PR mutation is authorized by this plan-only assignment.
+push or PR mutation is authorized by the bounded source assignment. Direct
+rustfmt and static checks are authorized; root retains the only heavy slot.
 
 Acceptance for this guarded checkpoint will mean source is coherent, reviewed
 and verified at its exact head, the real private Dodge/save/projection controls
@@ -306,6 +316,8 @@ mislabeling synthetic control topology as accepted play. A concrete unsupported
 gap is surfaced for plan review before its dependent code changes; scope is not
 silently widened or acceptance reduced.
 
-Exact next action: root and an independent agent review this clean plan-only
-commit against `5296d06` and the cited consumers. Await explicit source ownership;
-leave PR56 and every other branch untouched.
+Exact next action: implement the reviewed pending/final evidence split, live-only
+condition view, and permanent real Dodge consequence with meaningful authored
+controls and the two explicit old-control migrations. Return one clean coherent
+static checkpoint for root and independent review before executable verification.
+Leave PR56 and every other branch untouched.
