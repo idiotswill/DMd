@@ -2,6 +2,8 @@
 
 Status: **PLAN ONLY, awaiting root's independent review before implementation.**
 Sole writer: `gate4_ci_oct4`, explicitly assigned by root on 2026-10-04.
+Review amendment: root and independent peer requested workspace-preserving
+selection and native combined-output capture; incorporated below on 2026-10-04.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
 PR: draft [53](https://github.com/idiotswill/DMd/pull/53), published source
 `486ce8ba6ba8fb24f9d9f247f18c07370e8f6c4f`, tree
@@ -107,11 +109,22 @@ The remainder job executes:
 
 The isolated job executes:
 
-`cargo test --locked -p dmd-app --test table_loop --target x86_64-pc-windows-msvc <exact-key> -- --exact`
+`cargo test --locked --workspace --target x86_64-pc-windows-msvc <exact-key> -- --exact`
+
+Both execution commands retain the canonical workspace package selection and
+feature resolution. Prior full-workspace discovery alone would not preserve the
+feature graph of a subsequent package-only command. The isolated invocation
+therefore visits every selected workspace harness, including doc-tests, while
+the globally unique exact key permits just one real test to run.
 
 Use structured argument arrays and native exit-code checks. Neither command
 changes test concurrency or profile. No ignore/retry/capture switch is introduced.
-Capture complete output and preserve the actual exit status even through logging.
+Capture the child process's stderr into stdout at native process creation
+(`stderr=STDOUT`), then read that single pipe into an exclusive raw evidence file
+before streaming it to GitHub. Do not reconstruct test ordering from GitHub's
+separately timestamped stdout/stderr logs: existing saved logs demonstrate that
+a later Cargo harness announcement can otherwise precede the prior summary.
+Preserve complete bytes and the actual exit status even through logging.
 Keep successful and failed evidence separately; an incomplete process has no
 successful result manifest.
 
@@ -120,10 +133,60 @@ inventory. Require normal command completion, no failed/ignored/measured cases,
 no missing or duplicated outcomes, and exact pass/filter counts. The remainder
 must pass every discovered test except the partition key and filter exactly that
 one test, in table_loop. On exact486, table_loop is61 passed/1 filtered. The
-isolated job must actually pass exactly the named one test; on exact486 its other
-61 table tests are filtered. Derive future counts from inventory rather than
-silently accepting61 forever. Extra filtered tests outside this explicit
-complement are failure. Summaries alone and zero-test success are insufficient.
+isolated job must actually pass exactly the named one test across the workspace;
+on exact486 its other61 table tests and every discovered test in other harnesses
+are explicitly filtered. Every harness must still complete. Derive future
+counts from inventory rather than silently accepting61 forever. Extra filtered
+tests outside this explicit complement are failure. Summaries alone and global
+zero-test success are insufficient.
+
+### Parser feasibility and required controls
+
+Separate compilation identity from test completion. Saved actual Cargo JSON
+`compiler-artifact` messages expose package ID, target kind/name/source path,
+test profile and executable. Use versioned metadata and those artifacts for the
+identity map; canonicalize workspace package/source paths relative to the actual
+checkout and match each executable only within its own run. Do not compare
+absolute checkout paths or executable hashes across runners. Cargo's
+`build-finished` success reports compilation, not completed tests. Test result
+JSON is unstable; do not introduce nightly flags or `RUSTC_BOOTSTRAP` to obtain
+it. Keep stable libtest discovery/results and the native command exit status.
+
+Recognize anchored Cargo test-harness and `Doc-tests` boundaries, not arbitrary
+lines containing `Running` (saved packaging logs also contain unrelated build
+commands). Strip known ANSI styling and normalize BOM/CRLF only in the parser's
+view; retain raw bytes/hashes unchanged. Reject unknown terminal controls or
+ambiguous/incomplete records. Concurrent long-running warnings are progress,
+never pass results; completion order need not equal discovery order. Recognize
+libtest's optional `should panic`, `compile fail` and `compile` result labels
+without incorporating those display labels into the discovered test identity.
+Discovery lists ignored tests as ordinary names, so only actual passing results
+can discharge coverage; an ignored result, including one with a reason, fails.
+Benchmark or custom-harness output needs explicit reconciliation, never omission.
+
+One doc-test crate boundary may contain several valid libtest subgroups: Rust
+2024 can execute merged bundles and a standalone group separately. Accumulate
+their unique test names under the package/doc-target identity; validate every
+list summary and every run-start/result pair, then reconcile aggregate pass and
+filter counts with that crate's complete inventory. Retain subgroup counts and
+summaries so an extra summary cannot impersonate a new group. A second summary
+without its own run start, duplicate named outcome, incomplete subgroup or
+unexplained subgroup-count change fails. Do not reject a valid crate merely for
+having multiple summaries, and do not flatten away subgroup completion checks.
+Current successful Windows evidence contains six empty doc-test crate groups;
+each still requires its explicit empty discovery and completed runtime summary.
+Do not add `--show-output` merely to flatten docs: it changes rustdoc's merging.
+
+These semantics were checked against actual saved Windows/Cargo output and
+primary Rust sources because no saved `--list` transcript or installed HTML docs
+were available locally. Rustdoc forwards test arguments into each merged runner
+and executes standalone cases separately. See the [rustdoc dispatcher](https://raw.githubusercontent.com/rust-lang/rust/1.98.0/src/librustdoc/doctest.rs),
+[merged runner](https://raw.githubusercontent.com/rust-lang/rust/1.98.0/src/librustdoc/doctest/runner.rs),
+[libtest formatter](https://raw.githubusercontent.com/rust-lang/rust/1.98.0/library/test/src/formatters/pretty.rs),
+[discovery implementation](https://raw.githubusercontent.com/rust-lang/rust/1.98.0/library/test/src/console.rs)
+and [Cargo external-tool protocol](https://doc.rust-lang.org/cargo/reference/external-tools.html).
+This read-only investigation establishes implementation constraints, not a new
+executed discovery result or acceptance evidence.
 
 Keep `legacy_shield_missile_v1_replay` as one unchanged remainder target, with all
 eight original named tests required to pass unfiltered. Preserve their current
@@ -184,6 +247,10 @@ Windows partition coverage proof and all listed Windows checks pass.
    key; zero dedicated pass; missing/unexpected/ignored/failed/duplicate result;
    incomplete harness/doc discovery; wrong SHA/tree/target/run/attempt; mismatched
    inventories; tampered log/hash; missing original case; evidence from failure.
+   Include ANSI/CRLF and Windows paths; reordered concurrent passes/long-test
+   warnings; all-filtered isolated harnesses; empty doctests; valid multiple
+   doctest subgroups; ignored-with-reason/mode labels; duplicate or missing
+   subgroup summaries; and a Cargo build success without completed tests.
    These verify the new CI guard, not copied assertions about untouched gameplay.
 4. Independently review the complete delta, argument/filter semantics, parser and
    topology. Root schedules any helper tests and exact-head CI after static
