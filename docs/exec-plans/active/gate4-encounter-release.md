@@ -1,14 +1,12 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
-Status: domain, authenticated application and desktop checkpoints independently
-reviewed; reviewed cache development dependency integrated. Published draft PR48
-at `75991dd6c1e782b8fe42257bcb65c26a8d0f3997` passes all six CI jobs,
-including all 59 table scenarios on Linux and native Windows, the four additional
-release histories, both reviewed fixture corrections and fresh Windows packaging.
-The original-source flow 4 capture and eight-test baseline completed on
-2026-09-30; their immutable corpus is now imported for receiving-head verification.
-Final verified-parent reconciliation, canonical/CI continuation verification and
-packaged release play remain acceptance blockers.
+Status: integrated source `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` passes
+canonical verification, all six CI jobs and the actual packaged two-encounter
+continuation with Finished and pending-attack cold restarts. Original-source flow 4
+capture/baseline and all eight receiving continuations pass. Independent source,
+package and saved-state reviews are clear. This evidence-only checkpoint still
+requires exact-head checks/review, protected PR48 merge and separate merged-main
+verification. Gate 4 remains active; this bounded release is not gate completion.
 Writer: root, sole writer of `codex/gate4-encounter-release` for the
 2026-09-30 corpus import and parent integration. `gate4_release_verify` authored
 the preceding 2026-09-28 evidence checkpoint.
@@ -838,9 +836,113 @@ old export/request remain unchanged. Independent review confirms the distinction
 No production guard is relaxed. Updated UI, gate and closure plans record the
 actual source/native/merge evidence and separate pending post-main results.
 
-Next action: complete review of this integrated delta, run the canonical verifier,
-publish the clean head for all six checks and play two actual
-encounters with restart in its packaged build. The four real release families'
-physical chronology and refusal assertions remain unchanged. Protected merge and
-separate final-main verification follow only after those results. Gate 4 remains
-active; no Gate 5 work is authorized by this checkpoint.
+The next action at the import checkpoint was receiving-head verification and native
+play. Those results are recorded below; the original chronology and prior failed
+attempt remain historical evidence, not pending work silently erased from the plan.
+
+### Integrated verification and packaged continuation — 2026-09-30
+
+Verified source is `8c03f9fb0058610fd37c0cfe7762e8b96d658f38`, tree
+`642290cd2a38d91a9913c12cde42c4df91c28a65`. Normal parent reconciliation,
+the byte-exact flow 4 import and the one synthetic current-DTO correction passed
+independent review; the review fingerprint is
+`810f49b3fe251d0c2d2be7bdf1937ff569ae3232293396048a8b5dce5a57b45f`.
+All twenty inherited backend production files and five genuine release histories
+retain their previously reviewed release bytes. The receiving eight-test suite
+retains every original assertion. No capture hook entered production.
+
+The unchanged clean source completed `./scripts/verify` normally on Windows GNU
+Rust 1.98.1, 17:38:29–20:18:50 UTC: **775 Rust tests, 56 result groups, zero
+failures/ignored**, including all eight original flow 4 continuations (2208.75s)
+and all 59 table cases (5755.73s). Formatting, workspace/all-target checking,
+strict all-target Clippy, genericity and architecture checks pass; architecture
+has eight Python tests with one explicit skip, separate from Rust counts. It used
+one build job, incremental off, default stack/profiles and a fresh isolated target.
+The earlier shared-target attempt failed with 19 missing-interface errors and
+exit101 before runtime tests; its log remains preserved. The exact cause is not
+established merely because the unchanged source passes in a fresh target.
+
+All six actual CI logs pass at this source:
+
+- [Linux run 36752377825](https://github.com/idiotswill/DMd/actions/runs/36752377825),
+  runtime job110013954892: **776 Rust tests/56 groups**, original eight in2388.14s,
+  59 table cases in4265.45s. Checkout `8304b42be266726df7d87d178a5e02bc800c7b2a`
+  is the synthetic merge of literal d88 main and8c, with the exact8c full tree.
+- [Windows run 36752378019](https://github.com/idiotswill/DMd/actions/runs/36752378019),
+  stable job110013955697: literal8c, **778 Rust tests/56 groups**, original eight
+  in2245.06s and59 table cases in3974.87s. Both Windows jobs pass116 UI tests in18
+  files, zero Svelte errors/warnings and141-module builds. Both MSRV1.88 checks,
+  genericity and architecture jobs pass.
+- Named outputs explicitly include all five real release histories, the closed
+  legacy upgrade, all original compatibility suites and all four missile cases.
+  The count differences are source-verified platform guards: Linux adds the Unix
+  symlink test; MSVC adds three desktop host tests. Interleaved Cargo banners are
+  not used to invent per-crate totals.
+
+The separate literal UI main d88 also completed all six checks:
+[Linux36749962892](https://github.com/idiotswill/DMd/actions/runs/36749962892)
+has747 Rust tests; [Windows36749962753](https://github.com/idiotswill/DMd/actions/runs/36749962753)
+has749. These are prerequisite evidence, not post-release-main results.
+
+Artifact11120862111 from the literal8c Windows job was downloaded and independently
+verified: archive232430711bytes, SHA256
+`95e6af6caef3119f401e7a01c0b4df4b357565f72898e3e0f3cf265775942562`.
+All1070 checksummed payloads, manifest and exact six installed source-content files
+match. Its portable executable SHA256 is
+`2fc692c37e5eef3da3188183ade3142886597abc00a9699978b3ba3baa1bc39e`.
+The installer was verified but not installed. Native acceptance below used that
+portable executable; it is not an installer or reproducible-build claim.
+
+Root operated the actual existing `Prompt focus QA Sep28` campaign through the
+desktop, without editing game state. The observed chronology is:
+
+| Accepted sequence | Actual action and retained consequence |
+| --- | --- |
+| 46→47 | Open the existing flow4 save; explicitly continue it into flow5. Same actors, HP, geometry, items and spent Mage protective-magic use. |
+| 48→49 | Host concludes hostilities. Finish is visibly disabled for the spent Mage Reaction; the player view omits that private reason/ruling. Actual Hag EndTurn reaches Mage Start5, expiring Shield and clearing only that Reaction. |
+| 50→53 | Player-controlled Mage casts actual Mage Armor using its original cured-leather component. Its deadline is28806. Actual Rook Bonus Action pays Second Wind2→1; submitted raw d10 face4 resolves with level1 modifier and capped HP11/11. |
+| 54→55 | End and save the session, then Host Finish with a real null-session envelope. Old turn controls disappear; first completion ends at global turn6. Normal exit, process absence, same-hash relaunch: exact saved state and every captured table row remain equal at55. |
+| 56→57 | Start a new session with the same player/Rook binding and owned Mage. Prepare a bright50×50-foot battlefield with the same Rook, Hag and Mage at(5,5), (10,5), (25,20). Only the accepted new location changes their world placement; old scene remains Closed. |
+| 58→61 | Request fresh initiative. Actual prompt order is Rook/Hag/Mage, with raw faces20/1/10 and totals22/6/12. Round1 starts with Rook at global turn7, then Mage, then Hag. The player view omits the Host creature's private score. |
+| 62→63 | Rook pays its Action for an Unarmed attack against adjacent Hag. Normal exit/relaunch preserves request `b39ff042-230e-50ce-b301-79c6c9826739`, modifier+5, origin/window `fc1d2556-3f2f-412f-ba7c-48988bb66ccb`, spent Action and exact saved state/tables. Raw1 resolves the same request as a miss, with no damage request or refund. |
+| 64→66 | Actual Rook EndTurn clears its attack window at Mage Start8. Host concludes and Finishes during the active session, appending a second receipt linked to the first, final turn8. Player Finished view has no host controls or private ruling. |
+
+World time stays6 throughout. Hag remains93/112 HP, Mage81/81 and Rook11/11.
+Second Wind remains1; Mage protective-magic spent1, original source/character
+grants, all three physical item identities/quantities/custody/loadouts and the
+original Mage Armor deadline remain intact. The first receipt, old scene spaces,
+raw-roll prefixes and prior journal/audit/transport/projection-history rows are
+retained. Normal app shutdown at21:00:32 UTC ends this native run with no DMd
+process left running. The second session remains active with its encounter Finished.
+
+Read-only campaign snapshots corroborate actual native actions; no SQL mutation,
+synthetic command injection or state repair was used. Snapshots cover only tables
+with `campaign_id`, excluding the separate session-participant table. Attendance
+is checked through the accepted StartSession payload, active-session projection
+and unchanged character/controller mapping. This is not a whole-database backup or
+an independent replay of the native campaign. The separate real file-SQLite tests
+provide portable/replay, hostile-state, exact-retry and whole-store refusal proof.
+This native campaign has no ammunition or throwable weapon: those additional
+custody claims come from the genuine executed release families, not this UI run.
+The disabled Finish inspection is not described as a submitted no-write refusal;
+no pending-Second-Wind cold restart or pending-die Host Finish check is claimed.
+
+Evidence retained outside the repository under `tooling/`:
+
+| Record | SHA256 |
+| --- | --- |
+| `release-8c03f9f-canonical-r2-2026-09-30.json` | `3d59ebe027ab619e5e3862c7445360bf5953c2d4d31c254b1d36ae019b10f305` |
+| Canonical full log | `7dd6aad70cd4e6e9c19661aada80a2a2c1c24fbc296f8d9df40320f966d907e0` |
+| Independent canonical completion audit | `cc584eb892812172ab970cd09b89bd117a45a57678d154437a2152b881017144` |
+| `release-8c03f9f-ci/final-evidence.json` | `f813d641bc062471d8ff8393879dd9c549cabd807874aa7e4bf1df473345ed77` |
+| Independent package byte audit | `02878f1b129775708d0b3a1c8f339adee6064aec37463c0a1c1c3a659e6a6fa3` |
+| Native accessibility observation log, final | `24c85c97b06cf1857c0fdd704858462b4a6549e5081dea93ba4c148c414746f8` |
+| Independent20-cut retention audit through66 | `5bc7cd3faa122ed48130eeb92440639fe568ab14389eacb24ff96d6d8a966dea` |
+| Independent second-Finished detailed audit | `f47c8dce335a8077aa3a7468838961a2e8bc4fac53097d05ec6a95b04ad6a278` |
+
+Next action: review this documentation-only checkpoint and prove every executable,
+test, source-content and fixture blob still equals8c. Verify all required checks
+on its published exact head before expected-head protected merge; then fetch and
+separately verify literal merged main. Do not relabel8c canonical/native evidence
+as a different binary/head's execution. Keep the bounded release limitations and
+remaining Gate4 families; do not begin Gate5.

@@ -205,14 +205,16 @@ separate required Gate4 work with their own source and ownership acceptance.
 
 ## Compatibility and verification obligations
 
-### Authenticated encounter release (implementation authored; verification pending)
+### Authenticated encounter release (candidate verified; merge pending)
 
 `EncounterReleaseV1` owns flow 5. Counterspell requires a later boundary. The
 initial domain/rule checkpoint defined this executor and inherited hit/missile
 predicates. The subsequent application checkpoint enables current admission only
 alongside authenticated finish, closed-session upgrade, replay, replacement and
-desktop controls; runtime proof remains pending. Flows
-1–4 keep their accepted meanings and the historical unit upgrade remains 1→2.
+desktop controls. Integrated8c03f9f passes canonical/CI historical continuations and
+actual packaged two-encounter recovery; the encounter-release plan records precise
+scope and remaining merge/main proof. Flows1–4 keep their accepted meanings and
+the historical unit upgrade remains 1→2.
 
 Explicit conclusion is narrative evidence that fighting stopped. A separate host
 release may retire initiative only after a pure whole-campaign scan proves no owed

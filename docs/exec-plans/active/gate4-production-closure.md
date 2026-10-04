@@ -11,9 +11,10 @@ Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`, the protected
 UI49 merge. Its full tree equals reviewed source65b7606. The UI plan records
 canonical746 GNU Rust tests, all six final source checks (747 Linux/749 native
 Windows Rust tests, 112 UI tests), and actual corrected package728 play with
-verified complete non-documentation parity. Literal d88 main runtime checks and
-artifact remain pending; four quick checks pass. Earlier same-head cancelled
-push runs remain distinct from current results.
+verified complete non-documentation parity. Literal d88 main now passes all six
+checks (747 Linux/749 native Windows Rust tests) and produces its fresh artifact.
+That main artifact has not been played. Earlier same-head cancelled push runs
+remain distinct from these normally completed results.
 
 The original verified flow4 production parent is c4d8c34. Before main advanced,
 all three diagnostic capture producers completed normally and the separate
@@ -22,9 +23,17 @@ verified the seven immutable exports, source/tree, binary and normal-completion
 logs. Those diagnostic branches preserve provenance only; capture hooks are
 excluded from production. Release PR48 now imports the unchanged corpus and
 original continuation suite and normally reconciles UI65 plus literalmain d88.
-Its prior75991dd all-six development CI remains qualified to that old source.
-The new integrated release head still requires canonical/CI continuation results,
-independent final review, native two-encounter play and separate merged-main proof.
+Its prior75991dd evidence remains qualified to that old source. Integrated8c03f9f
+now passes canonical775 GNU Rust tests and all six CI jobs (776 Linux/778 native
+Windows), including all59 table cases and all eight original flow4 continuations.
+Actual verified8c packaged play exercises closed-session Finish, unchanged cold
+Finished state, second battlefield/physical initiative, cold pending paid attack,
+and a second Finish during the active session. Paid uses, HP, original item
+identities/custody and Mage Armor deadline survive; time remains6 and completion
+highwater advances6→8 through real Starts. The release plan records exact source,
+package and independent evidence plus the native route's limited custody coverage.
+Final evidence-only head review/checks, protected merge and separate merged-main
+proof remain required. This does not accept any remaining complete Gate4 family.
 
 Air, Shove, timed expiry, Magic Resistance and Grapple are separate unaccepted
 Gate4 workstreams. Source admission, derived hand records or a passing leaf suite
