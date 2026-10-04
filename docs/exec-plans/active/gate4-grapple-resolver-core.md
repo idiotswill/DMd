@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: corrected `62995ce` passes the focused domain11, private core24, hands5, source4 and two app controls. Its completed strict Clippy attempt on 2026-10-04 fails on an oversized equipment-decision variant; the narrow representation correction below is planned. Root is sole writer and schedules the heavy slot. All public guards remain required; this is not runnable or accepted Grapple.
+Status: corrected `62995ce` passes the focused domain11, private core24, hands5, source4 and two app controls. The independently reviewed enum correction at `3f84e16` passed formatting and advanced strict Clippy to seven rules-layer style errors on 2026-10-04. The narrow style correction below is planned; no new-head test pass is claimed. Root is sole writer and schedules the heavy slot. All public guards remain required; this is not runnable or accepted Grapple.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
@@ -265,3 +265,24 @@ guard or alter test assertions, fixtures or content. Inspect the complete small
 delta and every consumer before rerunning strict Clippy and the affected domain/
 private-core/app checks on the corrected exact head. Keep both interrupted/failed
 attempts; no earlier result becomes execution on that later head.
+
+At clean `3f84e16af413e9db91d461c25132b412c3a3d55e`, tree
+`78a76f3a80ac91e46060f0b224702f9f7ccdc792`, independent complete-diff/consumer/
+serde/runner review was CLEAR (external memo SHA256
+`69577f9a81ed9cb16f5eebf7270fa8c34e1967645f09e1b4739ffd1f2d58c809`).
+The actual fresh-evidence run on October4 at12:53:40–12:54:06UTC passed fmt,
+then strict three-package all-target Clippy exited101 in dmd-rules. It reported
+five `unused_unit` expressions (lifecycle147 and validation729/750/756/764) and
+two `collapsible_if` forms (admission40/319). The enum diagnostic is resolved;
+downstream lint success is not yet established. Full failure log SHA256
+`4dd3075fc5b54bdefc7d46e232efb51de21b0736f9d42a4e79c96226a7941856`
+is preserved in `tooling/grapple-core-3f84e16-focused-2026-10-04`. No tests ran.
+
+After this plan checkpoint, remove only those five redundant unit expressions
+and collapse those two nested conditional checks with Rust2024 let chains.
+Preserve all predicates, short-circuit ordering, errors, match guards, mutations,
+public denials and tests exactly. No lint suppression or behavior redesign.
+Review the complete small source delta, format, then rerun strict Clippy and all
+46 focused controls on the corrected frozen head with a new evidence directory.
+Explicit reuse of the same build target is permitted; preserve and hash every
+prior attempt. A further actual diagnostic must be addressed on its own evidence.
