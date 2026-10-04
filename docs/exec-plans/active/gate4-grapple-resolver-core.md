@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: corrected `62995ce` passes the focused domain11, private core24, hands5, source4 and two app controls. The independently reviewed enum correction at `3f84e16` passed formatting and advanced strict Clippy to seven rules-layer style errors on 2026-10-04. The narrow style correction below is planned; no new-head test pass is claimed. Root is sole writer and schedules the heavy slot. All public guards remain required; this is not runnable or accepted Grapple.
+Status: corrected `afc40ef` passes formatting, strict domain/rules/app all-target Clippy and all46 focused controls on 2026-10-04. Earlier failed and interrupted attempts remain preserved below. Root is sole writer and schedules the heavy slot; Air canonical now owns it. Full canonical/CI, genuine LR positives and temporal/application integration remain unmet. All public guards remain required; this is not runnable or accepted Grapple.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
@@ -42,7 +42,7 @@ pub enum GrappleEquipmentDecision {
         chosen_by: CommandMeta,
         work: TacticalWorkKey,
         operation: AttackEquipmentOperation,
-        equipment_before: ActorEquipmentLoadout,
+        equipment_before: Box<ActorEquipmentLoadout>,
     },
 }
 ```
@@ -286,3 +286,39 @@ Review the complete small source delta, format, then rerun strict Clippy and all
 46 focused controls on the corrected frozen head with a new evidence directory.
 Explicit reuse of the same build target is permitted; preserve and hash every
 prior attempt. A further actual diagnostic must be addressed on its own evidence.
+
+## Corrected focused verification completed — 2026-10-04
+
+Plan47f3eb2 preceded the style correction at
+`afc40ef5d4fb194ea30149e3a6592f4c6259c30f`, tree
+`2243331dec35e6f41c79e06ea554e1284e0c469c`. Independent complete-diff review
+found only the five redundant unit removals and two equivalent let chains;
+all predicates, evaluation order, errors, guards and tests are preserved. Review
+memo SHA256 `3144bce046ec409bafde23e85bb7c627682e4197bddd26ff9c0f13672f1106e7`.
+
+Root ran the reviewed eight-command sequence from12:57:30 to13:03:15UTC at that
+clean frozen head. Formatting and strict three-package all-target Clippy passed.
+Actual focused outcomes are domain11, private Grapple24, EffectiveHands5,
+source4, exact app nonprojection1 and exact app authorization1:46 passed,
+zero failed or ignored. Filtered unrelated library tests are not claimed as run.
+Root read all actual logs and confirmed the named app controls each ran once.
+The run used GNU1.98.1, jobs1, incremental0, normal stack/profiles, one test thread
+for these focused controls and explicitly reused the629 target. It was not a
+fresh build. Earlier evidence files were hash-checked before/after each command.
+Source HEAD/tree/index/worktree remained unchanged throughout.
+
+External evidence directory is `tooling/grapple-core-afc40ef-focused-2026-10-04`.
+Its `run-result.json` SHA256 is
+`1c0eebb7298df0b29ebbb440764d55c7e723df6445aeb3379bf109799ad13d03`;
+the reviewed runner SHA256 is
+`28f5c6893222c91939a7a0992f1174c771a2bfab99fc39bcb8965e67f78cd4c3`.
+Strict Clippy log SHA256 is
+`e9285d125ef7624d98855fefffe99665a810107dc23a29efd2c9564e096aad3c`.
+No database, native/UI, source-admission or public Grapple action ran.
+
+These focused results do not establish whole-workspace canonical/CI acceptance,
+actual Legendary Resistance positives, temporal consumers, table/persistence/
+portable/native behavior or public activation. Root returned the sole heavy
+slot to the previously queued Air canonical run. Keep this core guarded while
+the next temporal checkpoint and its genuine-source dependencies are reviewed;
+do not silently remove deferred projection/flight/release restrictions.
