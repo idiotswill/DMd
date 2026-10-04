@@ -326,6 +326,9 @@ impl Fixture {
             }
         }
         let e = self.state.encounter.as_mut().unwrap();
+        // Keep the real elevated bodies inside the constructed battlefield.
+        // The ledge and the flyer's fall distance remain twenty feet.
+        e.battlefield.bounds.max.z = 60;
         let target = e
             .participants
             .iter_mut()
@@ -394,6 +397,13 @@ impl Fixture {
         self.target = actor;
         self.choice.target = actor;
         self.advance();
+        let encounter = self.state.encounter.as_ref().unwrap();
+        crate::spatial::validate_encounter(encounter, &self.state).unwrap();
+        assert!(
+            crate::spatial::perceive(encounter, &self.state, self.actor, self.target)
+                .unwrap()
+                .precisely_located
+        );
     }
 }
 
@@ -1487,12 +1497,21 @@ fn private_printed_physical_source_propagates_intent_and_retains_exact_pin_and_f
         .as_mut()
         .unwrap()
         .actor = actor;
-    let ids = creature_equipment_plan("goblin-warrior", 0)
+    let ids = creature_equipment_plan("goblin-warrior", 20)
         .unwrap()
         .iter()
         .map(|_| ItemId::new())
         .collect::<Vec<_>>();
-    f.state = materialize_creature_equipment(&f.state, &origin, actor, 0, &ids, &f.pack).unwrap();
+    f.state = materialize_creature_equipment(&f.state, &origin, actor, 20, &ids, &f.pack).unwrap();
+    let arrows = f
+        .state
+        .items
+        .values()
+        .filter(|i| i.custody == Custody::Entity(actor) && i.definition_id == "arrows")
+        .collect::<Vec<_>>();
+    assert_eq!(arrows.len(), 1);
+    let arrows_before = arrows[0].clone();
+    assert_eq!(arrows_before.quantity, 20);
     let weapon = f
         .state
         .items
@@ -1621,4 +1640,5 @@ fn private_printed_physical_source_propagates_intent_and_retains_exact_pin_and_f
     );
     assert_eq!(f.selected().cause.origin, meta);
     f.decision(AttackEquipmentChoice::Decline);
+    assert_eq!(f.state.items[&arrows_before.id], arrows_before);
 }
