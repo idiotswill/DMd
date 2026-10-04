@@ -1,5 +1,13 @@
 # Gate 4 — Guarded attack equipment continuation
 
+Separate production follow-on, 2026-10-04: root created
+`codex/gate4-ground-production` from clean published `ae3906e`. The complete
+[production activation plan](gate4-ground-production.md) awaits independent review;
+no follow-on source or execution has run. It preserves this lifecycle contract,
+adds explicit historically absent activation for presentation compatibility and
+connects real before-pickup commit/paid reconstruction/app/UI/replay. The original
+PR60 checkout remains frozen; its runtime and focused verification are pending.
+
 Current status: draft PR60 at aff47ba failed its first actual CI compile. Source
 43bb7f5 corrects the moved receipt and test session type; independent bounded
 review is CLEAR. Root is sole writer, 2026-10-04. Fresh exact-head compilation

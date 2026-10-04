@@ -1,5 +1,12 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
+Separate production follow-on, 2026-10-04: the root-owned
+[production plan](gate4-ground-production.md) on `codex/gate4-ground-production`
+starts from published private-lifecycle `ae3906e` and awaits full independent
+review. Its explicit activation preserves old presentation digests, while the
+complete before/after, source, app/UI and genuine recovery contract below remains
+mandatory. No follow-on source, runtime or acceptance is claimed.
+
 Follow-on status, 2026-10-04: this checkout is now
 `codex/gate4-ground-equipment-lifecycle`, based on guarded foundation
 `8ec12c3b1b24fe0d1ab28abd17bad99c37be4492`. Root assigned `gate4_ci_oct4`

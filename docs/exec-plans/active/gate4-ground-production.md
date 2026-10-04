@@ -1,0 +1,300 @@
+# Gate 4 — Ground equipment in the production attack path
+
+Status, 2026-10-04: PLAN ONLY, awaiting complete independent design review.
+Root is sole writer of `codex/gate4-ground-production` in `gate4-ground-production`.
+No source, compiler, tests, app, database, push or CI has run for this branch.
+
+Fresh fetched development base is PR60 candidate
+`ae3906e8d24d840b2a196dd4ef64c16ab894ae39`, tree
+`b362234eed85752f23243a1b3ac1f52a71efe58e`. Main was freshly fetched at
+`dbf1d633460473183324b4ec519e8d1980884b5c`. PR60 and its stacked prerequisites
+are unaccepted. The separate original checkout stays frozen for its CI and planned
+focused63 run. That head has actual successful Linux/Windows MSRV all-target
+compilation and frontend/guard results; its23 new lifecycle controls and app
+control remain UNRUN. Neither those checks nor earlier branches verify this plan.
+
+Read AGENTS, product-definition tactical timing/visibility/object interaction and
+exact suspension, Gate4/protocol, ADR018/020/024, and the complete production
+contracts in [ground recovery](gate4-ground-weapon-recovery.md) and
+[after-equipment lifecycle](gate4-ground-equipment-lifecycle.md). Those contracts
+remain binding. This plan completes their actual ordinary/printed attack,
+application, transport, replay and desktop path; it does not replace them with
+another private checkpoint or reduce Gate4 acceptance.
+
+The external source-grounded proposal is
+`tooling/ground-ae3906e-production-admission-proposal-2026-10-04.md`, SHA256
+`141ce2f07a786617f7e24d9d8449b6f7132c3ff4074a3665237ec6dd381bb0df`.
+Root read it in full and directly inspected the actual physical planner,
+begin/retained reconstruction, source adapter, app options/authority/transport,
+DTO and old guard controls. It is planning input, not independent approval or
+runtime evidence. The independent reviewer found the projection-compatibility
+gap addressed explicitly below before any source was authorized.
+
+## Objective and unchanged rules
+
+An ordinary player can recover the same visible reachable ground weapon before
+an attack, including a different weapon from the one attacking, or explicitly
+choose one equipment operation after the actual attack and its consequences.
+The real application preserves Item identity, owner, grant, quantity, custody,
+equipment, payment, original cause and exact current controller. No extra attack,
+Action, item or hidden allowance is created. Current5-foot object-point reach,
+perception, anatomy and usable hands remain the existing reviewed rules.
+
+Before and selected-after choices share one Attack equipment allowance. Preserve
+old Equip/Unequip, old after operations and Thrown intrinsic draw exactly. New
+Pickup or after-intent requires a normal own-turn AttackAction physical ordinary
+or printed creature attack. Opportunity, Ready, LightBonus/Nick, nested Cleave,
+intrinsic/unarmed/spell and Grapple do not acquire this opt-in. An impossible
+Apply leaves the selected work and all paid results unchanged; its current owner
+can Decline even with no usable hand/item or an unconscious/dead actor.
+
+This advances physical rules fidelity, source fidelity, player control, private
+knowledge and exact save/restore. Full Ogre finite equipment/forms/OA integration
+remains required separately below. Generic object interaction, retired-scene
+revisit, mixed Grapple custody/flight, other combat families and all wider Gate4
+obligations remain required. This plan opens no Gate5 work.
+
+## Explicit activation and historical projection compatibility
+
+Adding a new nonempty picker or after-intent offer to an old flow5 state is not
+made compatible merely by `skip_serializing_if`. The application replays old
+events, reprojects views/capabilities and validates immutable presentation digests;
+saved accepted responses also retain old bytes. Activation cannot be inferred
+from current binary version, a new renderer, or the presence of an eligible item.
+
+Add an omitted-None `TacticalFlow.attack_equipment_access` record containing the
+trusted activation origin and explicit `GroundEquipmentV1` capability. Use one
+host/system, actor-None `TacticalAction::ActivateAttackEquipment` through ordinary
+authenticated table transport. It requires exact flow5, a valid Active encounter,
+current active session, no resolution/raw/failed-save/source routine/recharge or
+other pending command, and no prior activation. Existing paid Ready or partial
+attack allowance must be refused rather than reinterpreted; activate only at a
+settled turn before new action payment. No clock, budget, resource, receipt or
+Item mutation accompanies activation. Current session/host checks belong in the
+normal app authority path as well as the appropriate rules provenance checks.
+
+The activation origin follows encounter/initiative origin, matches its actual
+accepted audit/action under replay, and remains immutable for that encounter.
+Keep it through ordinary turn changes and Finished validation, with exact same
+encounter lineage. A replacement encounter starts with it absent. Do not infer it
+from a retired receipt, copy it from another encounter or autoactivate Begin.
+Earliest recovery anchors cannot contain it or any new tactical authority.
+
+Before activation, preserve every old flow5 view, optional-field absence,
+capability membership, presentation digest, event outcome and retry response.
+All new command/retained/public-planner admission requires this activation plus
+exact flow5. Other flows, including reserved6 and separate future7, still refuse.
+When integration later enables executor7, review that capability composition
+explicitly; never replace exact5 with a numeric greater-than test.
+
+The desktop can offer the host an explicit enable action using existing projected
+execution/phase/session facts. It must add no preactivation field/capability to the
+canonical saved view. Actual action admission revalidates hidden eligibility and
+returns a safe restriction. The enable control is policy intent, not a pending
+work handle. Do not expose hidden blocked source names/counts. Give the accepted
+activation a stable explicit outcome and replay it exactly. If the real caller
+audit makes this approach incompatible, amend this plan before implementation;
+do not silently allocate a colliding executor or rewrite historical digests.
+
+Existing guarded fixtures have no activation. Prefer preserving all their test
+blobs and no-activation refusal/error ordering unchanged, including both public
+policies and every forged export cut. Add genuine activated positives and forged
+activation negatives. No blanket migration or deletion of old negative controls
+is authorized. Any necessary expectation change needs its precise old invariant
+and replacement evidence reviewed before changing it.
+
+## Sealed fresh preparation and atomic production commit
+
+Actual current gaps: `PreparedPickup::plan` discards its custody candidate and
+returns a cloneable `WeaponAttackPlan`; `begin_with_source` then writes no ground
+before-image and only commits hands/ammo. A receipt cannot authorize the missing
+transfer. Retained reconstruction also calls the fresh preparation constructor,
+whose fresh budget/no-new-record predicate rejects a real already-paid attack.
+
+Introduce a crate-private non-Clone/non-Deserialize prepared physical attack,
+holding an immutable borrow of the exact input state, trusted command, actual
+actor/window/choice, derived plan, optional ground before-image and internally
+computed custody candidate. Constructors are real own-turn ordinary/source
+preparation only. A read-only plan view is data, never a consuming capability.
+No arbitrary callback, caller after-state, boolean bypass or receipt-based minting.
+
+For Pickup derive coherent same-Item custody, exact current ground removal and
+receiving hand before the selected-weapon carried-item check. Run the one shared
+physical algorithm against that candidate, consuming the typed before operation
+internally once without rewriting the accepted choice. Support selected and
+different picked-up weapons when the resulting grip/supporting hand is legal.
+Derive target knowledge/geometry, ammo, mastery, purpose and source damage before
+payment. Preserve old no-new-operation semantics and error ordering.
+
+The printed adapter may probe genuinely supported abilities through a pure plan
+view, but its selected physical preparation, exact source pin/feature and one
+BeginFeature activation must bind the same unchanged input/command. Probing never
+commits source activation. Source damage remains in the printed adapter; ordinary
+recovered gear uses ordinary weapon dice. No Item definition acquires source dice.
+
+Consume the sealed preparation once against its original input. Within the
+ordinary outer tactical candidate, commit same Item custody/ground/hands and
+identical before-image on both pending weapon and history receipt; then existing
+ammo, Action/attack budget, source activation/rest interruption and AttackRoll work
+are one atomic transition. All errors discard the whole outer candidate. Do not
+clone an accepted state into an authority-bearing import API.
+
+## Paid retained reads, final history and the shared stack
+
+Introduce a narrow internal retained-physical reader from the actual attached
+attack, its unique matching history receipt, original typed choice/source/window,
+paid timing and stage/pending/raw binding. Constructor checks cannot call the full
+validator recursively or accept a caller-supplied matching attack detached from
+state. Authenticate exact current reserved equipment/ammo/Item/ground image and
+the activation lineage before any local inverse. Use the existing recorded inverse
+only as calculation data; it does not become a fresh attack capability.
+
+Run the same physical/source calculation without requiring a second unused
+attack allowance. Do not reset real budget, erase receipts or strip unrelated
+authority to pass a guard. Original accepted-command replay supplies original
+controller/perception/geometry proof. Pending validation is consistency of that
+paid action, not permission to declare a new one. Preserve genuine Goblin
+mode-sensitive source damage through attack, hit/Shield, damage and completion.
+
+Connect complete before/after validation to kernel/tactical entries before any
+public activation. This includes exact unique receipt/image pairs, source/grant,
+old/new equipment exclusion, completion and selected work ancestry, chronological
+origin/selection/decision metadata, phase and exact executor/activation. Completed
+receipts are validated from their immutable command/physical evidence and journal;
+do not invert them against a later unrelated world state or restore dropped gear.
+
+Keep the existing real completion order: physical attack completion before damage
+children; after-work below concentration/effect/fall/unconscious-drop consequences;
+the selected after occurrence remains independent when attack is cleared. Preserve
+the corrected unique AttackDamage/FinishAttack parent, direct Graze/Knockout trace
+entry and whole trace inventory. No sibling, orphan or latest-kind inference.
+Do not fabricate a Finishing attack or pay/apply damage twice.
+
+Selected Apply continues through its actual sealed SelectedEquipment/PreparedAfter
+path and rechecks current owner/access/hands/custody. Decline only requires exact
+work and current controller/session authority. Just-thrown pickup uses its actual
+new completion-created ground cause. Record one final decision, retire its work,
+and continue the existing pump; raw input and generic simultaneous-work commands
+cannot consume this selection. No additional queue or completion ledger.
+
+## Concrete application, capability and UI contract
+
+Add a read-only rules-owned equipment offer query using the same object-point,
+custody/anatomy/hand predicate as acceptance. Query only activated supported
+contexts, from the actual acting creature's perception even for the host. Do not
+send hidden ground truth to the app/UI for client filtering. Unknown, hidden,
+foreign and unreachable probes retain one non-disclosing refusal shape.
+
+After activation only, add omitted `equipment` on TableAttackOptions with visible
+ground Item IDs/names and legal receiving hands, independent of the selected
+attack weapon. New ground weapon attack entries derive from a legal candidate;
+candidate equipment options do not promise every target/grip/source combination
+will be accepted. Server acceptance remains authoritative. No private position,
+source pin, formulas, custody image or remaining-allowance counter is exposed.
+Preserve existing old carried choices and byte shape before activation.
+
+Add omitted `attack_equipment` on TableTacticalView, separate from attack_decision
+and continuation. Its generic key follows the existing canonical/presented split:
+canonical TacticalWorkKey internally, opaque CommandId handle in presented views;
+actor, current legal Apply operations and explicit Decline are its only gameplay
+fields. It exists only for the actual selected after-work and authorized audience,
+including when no attack or legal Apply remains. Display labels derive only from
+visible known Items; the empty choice does not reveal hidden availability.
+
+Add `ProjectionCapability::AttackEquipment { origin, occurrence }` and typed
+`TableTransportInput::AttackEquipment { handle, choice }`, with Apply/Decline choice
+only. Bind handle to actual origin/occurrence, audience and projection revision;
+derive canonical ChooseAttackEquipment on the server. Reject raw canonical bypass
+through generic Action and wrong capability-kind reuse. Do not change existing
+transport1/2 meanings or accept source transport without its existing activation.
+
+Route ownership from retained cause.actor through real current source/player
+controller and attendance, never current turn actor or former Item owner. Preserve
+accepted-before-stale retry lookup and original request bindings: same command and
+payload returns the exact accepted response after changed state/session/ownership;
+changed payload, foreign/stale handle or audience rejects without any durable row.
+Projected after choices and their observations remain private to the owner/host;
+unrelated revisions/transcripts must not disclose hidden equipment counts or steps.
+
+AttackForm gains independent before Pickup Item/hand and explicit Choose after
+attack, mutually exclusive with existing equipment changes. Source and ordinary
+forms share this actual picker. The separate after card has work-key focus and
+Apply/Decline; keep it visible with zero options. OpportunityForm receives no new
+allowance controls. Stable IDs survive reordering; uncertain acknowledgment keeps
+the exact original command/envelope rather than creating replacement intent.
+
+## Replay, source integration and acceptance
+
+Extend origin audit for activation, removed-ground cause, before images, completion,
+selection and final decision. Bind each to its exact accepted action/audit/envelope
+and original work/source. Preserve the earliest pre-tactical anchor requirement;
+replay every original event and compare every later snapshot/current image and
+presentation history. A forged matching request/raw/receipt is not acceptance.
+ADR020 is internal semantic integrity, not cryptographic publisher authentication.
+No SQL checksum rewrite, source migration or new raw tag is planned.
+
+Use the genuine pinned parent Goblin warrior V2 Scimitar/Shortbow and ordinary
+characters for the first source integration. Do not edit profiles or import an
+Ogre descriptor to populate tests. Groundae390 and Ogre3387a538 share exact2559bfe
+but overlap five source paths; deliberately integrate the complete independently
+reviewed Ogre delta after its verification, retaining both contracts and controls.
+Its catalog admission stays closed until all source/physical/OA/app/Ground paths
+are coherent. No merge of this stacked work into an unaccepted development base.
+
+Combined Ogre acceptance still normally creates one Greatclub and three distinct
+quantity-one Javelins; exercises all three printed forms, hit/miss/critical, held
+melee OA with no pickup allowance, throws all three and rejects a fourth before
+real recovery. Another actor recovers the same Item and uses ordinary1d6/1d8 base
+damage, while exact source Ogre retains printed2d6/2d8. No grants/count resets or
+replacement Items. Source/private checks do not discharge this play evidence.
+
+Required meaningful new controls include activation old-byte/privacy/retry/history
+compatibility; genuine selected/different before pickup; late-source/target/grip/
+ammo atomic refusal; already-paid retained reconstruction; ordinary and genuine
+Goblin before/after hit/Shield/damage/source paths; same-attack throw and selected
+recovery; invalidated Apply then Decline; real Graze/Knockout/concentration/fall/
+drop ordering; wrong work/cause/activation/image/source and raw bypass negatives.
+
+Use real file SQLite and independent portable mirror at pending Attack, pending
+Damage, selected after with/without legal Apply and final decisions. Cold reopen
+must retain exact commands/handles/payment/resources. Accepted lost-response
+retry bytes stay identical; stale/foreign/changed-body rejection compares the
+complete persistent export, including audits, snapshots and presentation bindings.
+Hostile current-plus-snapshot or audit/event mutations must fail preflight before
+destination writes. Label mechanism negatives as such, never positive play.
+
+All29 frozen captures, five original receiving suites and21 actual raw artifacts
+remain exact. Retain the existing foundation/lifecycle and application hostile
+inputs without weakening their no-activation assertions. Run original receiving
+suites on the final integrated head, not a rewritten positive fixture.
+
+After full source review and root's slot allocation: focused controls,
+scripts/verify-fast, canonical scripts/verify, desktop checks/tests/build and all
+required exact-head Linux/MSVC/MSRV/guard CI. Keep default stacks/profiles and
+threads; preserve actual failed attempts. Native uses a verified combined portable
+package, normal actor/source creation and physical dice, real before/different
+pickup, selected-after/Decline and cold continuation. No injected state/SQL/clock
+or a synthetic accepted history substitutes for it. Package identity, native
+observations and saved-state/replay evidence remain separately attributed.
+
+## Checkpoints and exact next action
+
+1. Review this complete activation/physical/retained/app/source plan independently;
+   resolve every concrete authority or projection-compatibility finding first.
+2. Record accepted reviews and sole writer before coherent rules preparation,
+   paid reconstruction, activation/validation and meaningful-control source. Keep
+   application enable/activation unavailable until all required consumers/replay
+   are coherent. Return clean full diff for separate review before broadening.
+3. Complete app/transport/presentation/desktop and genuine recovery/privacy proof;
+   then deliberate full Ogre receiving integration and its retained admission.
+4. Root schedules exact-head execution, fixes actual failures, verifies native and
+   accepted-main union, merges with expected-head protection, and verifies literal
+   main separately. Gate4 summary only after full gate acceptance; no Gate5 yet.
+
+Current risks are the fresh-versus-paid preparation split, activation provenance
+and exact historical projection silence, source probe atomicity, source/grip
+reconstruction, retained completed-receipt validation without unsafe inversion,
+after-owner authority when incapacitated, and integration with future Grapple/7.
+Resolve concrete discovered caller gaps in this plan before code expansion.
+Air87840 retains the sole local heavy/native/database slot. This branch is currently
+plan-only; exact next action is full independent plan review, not execution.
