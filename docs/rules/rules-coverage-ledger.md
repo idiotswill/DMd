@@ -94,8 +94,11 @@ refusal, corrected placement, owned initiative with pending-request cold restart
 and five-foot flight with airborne cold restart in the existing campaign. Prior
 resources, identities and histories survive. The plan qualifies labeled QA dice
 inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled with
-all 411 non-document files unchanged from `3f3e359`; local canonical verification
-and final-head checks/review remain outstanding. No evidence array or family status
+all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
+canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
+(783 Linux /785 MSVC); the plan records exact logs and independent review.
+Final documentation-head checks/review, protected merge and literal main proof
+remain outstanding. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
