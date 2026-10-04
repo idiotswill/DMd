@@ -1,16 +1,17 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **Reviewed argument-placement correction authorized for bounded source
-implementation; no corrected helper or native command has run.** The exact old
-target passed, while its partition failed the strict coverage guard.
-Sole SOURCE writer: `gate4_ci_oct4`, transferred by root on 2026-10-04 after
-reviewing the complete two-plan amendment `a1a958463000db4f38d66d89a742169891873845`,
-tree `da8ee3d277681a393686d24981cf52e5da6fff41`, and rechecking actual failure
-and exact Cargo sources. Commit this renewed writer status before any source.
-Helper/native/test execution and publication remain root-owned and unallocated.
+Status: **Bounded argument-placement correction and controls authored; UNRUN.**
+The old target passed, while its partition failed the strict coverage guard.
+No corrected helper suite or native command has been executed.
+Writer: `gate4_ci_oct4` through this clean source checkpoint; freeze it and
+return branch ownership to root with the full handback. Root reviewed plan
+`a1a958463000db4f38d66d89a742169891873845`, tree
+`da8ee3d277681a393686d24981cf52e5da6fff41`, before source writing. Renewed writer
+status was committed first at `5b15083b3797a3f17a5cd88f00c243f8f8df1183`.
+Independent source review, all execution and publication remain root-owned.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
-Draft [PR53](https://github.com/idiotswill/DMd/pull/53) and freshly fetched branch
-head: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
+Published [PR53](https://github.com/idiotswill/DMd/pull/53) and freshly fetched
+remote baseline: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
 `f6ed6762420e92332435eeb6843529a981dd0cd6`. This is unaccepted development work.
 
 Root approved the bounded diagnosis/proposal, external
@@ -451,7 +452,8 @@ Its development Air base stays unaccepted and must never receive a merge.
 
 Root read the complete external proposal and independent audit, then checked
 exact Cargo argument/target/rustdoc forwarding sources. It approved this smallest
-correction for a PLAN-ONLY handback first. Source editing has not started.
+correction for a PLAN-ONLY handback first. Root then reviewed a1a9584 and
+authorized the bounded source checkpoint recorded below.
 
 1. Commit these directly related plan/status changes and return the exact clean
    head/tree for root review. Preserve every old failure and qualified result.
@@ -501,8 +503,48 @@ The present evidence schema already pins exact argv; this correction needs no
 schema change solely to move an argument. Actual new output incompatibility
 would be a fresh finding requiring explicit reconciliation.
 
-Exact next action: commit this renewed writer status, implement only the reviewed
-argv change and controls, then return a clean static source checkpoint for root
-and independent review before any execution. Air87840 keeps root's sole heavy
-slot. Canonical/native/source acceptance, accepted dependencies and full Gate4
-closure remain outstanding.
+The preceding list remains the approved contract. The following source checkpoint
+records authored progress without treating any proposed execution as performed.
+
+## Corrected command source checkpoint — authored, unrun
+
+The isolated command now places KEY after --, preserving default Cargo target
+selection. The only production helper delta is that argument move plus two
+comments explaining positional TESTNAME. Reversing those three lines restores
+the previous complete helper bytes; parser, schema, registry, discovery, raw
+capture, receipts, actual-pass union and package validation remain unchanged.
+Workflow/package dependencies, Linux, Rust/application/test bodies, fixtures,
+content, profiles, concurrency and local canonical scripts were not edited.
+
+The pure suite now has 32 authored test methods. All original 29 remain; 28 bodies
+are byte-identical and the existing full-workspace command control is strengthened
+to pin the literal BASE, the separator position and exact libtest suffixes.
+Three new methods cover the approved concrete failure seams:
+
+- `test_isolated_pass_cannot_replace_missing_all_or_empty_doc_runtime`: one named
+  isolated pass with complete executable summaries cannot compensate for all
+  omitted doc sections or for just the omitted empty doc section.
+- `test_old_positional_isolated_argv_fails_even_with_consistent_receipts`:
+  internally consistent old argv in both manifest and separate receipt is
+  rejected despite otherwise valid matching raw logs.
+- `test_zero_exit_commands_with_missing_docs_preserve_failure_only`: all six
+  mocked commands exit 0 and produce matching raw receipts, but missing docs still
+  require failure.json and prohibit a success manifest. Every saved command,
+  exit, hash and raw byte sequence is checked.
+
+These are pure synthetic controls, not Cargo/native execution or original
+application replay. All 32 methods are **UNRUN on this correction**. The earlier
+29-pass result belongs only to aae8d47. No Python/helper, Cargo/compiler, npm,
+DB/native, CI or publication command ran while authoring this checkpoint.
+Static source/diff inspection, exact old-control preservation comparison and
+Git whitespace checks are the only validation performed here; no syntax or
+behavioral pass is inferred from them.
+
+Exact next action: root and independent reviewer inspect the clean complete
+correction against a1a9584 (writer/status first, then source). Root separately
+allocates the lightweight stdlib tests and any bounded selection-only diagnostic.
+Only actual successful fresh successor-head partitions, complete doctest and
+named-pass proof, required checks and packaging can verify the repair. Preserve
+ad3's failed artifact and every prior attempt unchanged. Air87840 keeps the sole
+heavy/native slot; canonical/native/source acceptance, accepted dependencies
+and full Gate4 closure remain outstanding.

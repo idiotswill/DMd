@@ -98,8 +98,10 @@ def commands(partition):
         "metadata": ["cargo", "metadata", "--locked", "--no-deps", "--format-version", "1"],
         "artifacts": BASE + ["--no-run", "--message-format", "json-render-diagnostics"],
         "discovery": BASE + ["--", "--list"],
+        # Cargo-level TESTNAME switches default targets and omits doctests.
+        # Keep the filter on libtest's side to retain full workspace selection.
         "execution": (BASE + ["--", "--skip", KEY] if partition == "remainder"
-                      else BASE + [KEY, "--", "--exact"]),
+                      else BASE + ["--", KEY, "--exact"]),
     }
 
 

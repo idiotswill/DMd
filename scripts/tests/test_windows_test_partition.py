@@ -138,12 +138,24 @@ class TranscriptTests(unittest.TestCase):
         self.assertEqual(len(remainder["results"][core_docs]), 2)
 
     def test_full_workspace_selection_for_every_cargo_test_command(self):
+        self.assertEqual(guard.BASE, ["cargo", "test", "--locked", "--workspace",
+                                      "--target", "x86_64-pc-windows-msvc"])
         for partition in ("remainder", "isolated"):
             for name in ("artifacts", "discovery", "execution"):
                 args = guard.commands(partition)[name]
                 self.assertIn("--workspace", args)
                 self.assertNotIn("-p", args)
                 self.assertNotIn("--test", args)
+            expected_suffixes = {
+                "discovery": ["--list"],
+                "execution": (["--skip", guard.KEY] if partition == "remainder"
+                              else [guard.KEY, "--exact"]),
+            }
+            for name, suffix in expected_suffixes.items():
+                args = guard.commands(partition)[name]
+                separator = args.index("--")
+                self.assertEqual(args[:separator], guard.BASE)
+                self.assertEqual(args[separator + 1:], suffix)
             self.assertNotIn("--test-threads", " ".join(guard.commands(partition)["execution"]))
 
     def test_ansi_crlf_bom_and_windows_paths_keep_the_same_proof(self):
@@ -255,6 +267,18 @@ class TranscriptTests(unittest.TestCase):
         with self.assertRaisesRegex(guard.EvidenceError, "missing/extra discovery"):
             guard.inspect_logs(raw, "remainder")
 
+    def test_isolated_pass_cannot_replace_missing_all_or_empty_doc_runtime(self):
+        _, _, specs = fixture()
+        for missing in ("all", "empty"):
+            with self.subTest(missing=missing):
+                raw = raw_logs("isolated")
+                kept = [(boundary, groups, doc) for boundary, groups, doc in specs
+                        if not (doc and (missing == "all" or not any(groups)))]
+                raw["execution"] = execution_output(kept, "isolated")
+                self.assertIn(f"test {guard.KEY} ... ok\n".encode(), raw["execution"])
+                with self.assertRaisesRegex(guard.EvidenceError, "missing/extra runtime harness"):
+                    guard.inspect_logs(raw, "isolated")
+
     def test_unexpected_filter_count_and_duplicate_discovery_name_fail(self):
         raw = raw_logs("remainder")
         raw["execution"] = raw["execution"].replace(b"1 filtered out", b"2 filtered out")
@@ -348,6 +372,16 @@ class BundleTests(unittest.TestCase):
             with self.assertRaises(guard.EvidenceError):
                 guard.read_bundle(self.left, "remainder", IDENTITY)
 
+    def test_old_positional_isolated_argv_fails_even_with_consistent_receipts(self):
+        path = self.right / "manifest.json"
+        value = json.loads(path.read_text())
+        value["commands"]["execution"]["args"] = guard.BASE + [guard.KEY, "--", "--exact"]
+        path.write_text(json.dumps(value))
+        (self.right / "execution.receipt.json").write_text(
+            json.dumps(value["commands"]["execution"]))
+        with self.assertRaisesRegex(guard.EvidenceError, "wrong command"):
+            guard.read_bundle(self.right, "isolated", IDENTITY)
+
     def test_tampered_raw_log_cannot_be_hidden_by_manifest_pass_counts(self):
         path = self.left / "execution.log"
         path.write_bytes(path.read_bytes() + b"tampered\n")
@@ -430,6 +464,37 @@ class CaptureTests(unittest.TestCase):
                     guard.run_partition(Path(directory), output, "remainder")
             self.assertFalse((output / "manifest.json").exists())
             self.assertEqual(json.loads((output / "failure.json").read_text())["commands"]["rustc"]["exit"], 101)
+
+    def test_zero_exit_commands_with_missing_docs_preserve_failure_only(self):
+        raw = raw_logs("isolated")
+        _, _, specs = fixture()
+        raw["execution"] = execution_output([spec for spec in specs if not spec[2]], "isolated")
+        with TemporaryDirectory() as directory:
+            output = Path(directory) / "evidence"
+            calls = []
+            def capture(args, root, path):
+                name = path.stem
+                calls.append(name)
+                path.write_bytes(raw[name])
+                return 0
+            with patch.object(guard, "job_identity", return_value=IDENTITY), \
+                    patch.object(guard, "capture", side_effect=capture):
+                with self.assertRaisesRegex(guard.EvidenceError, "missing/extra runtime harness"):
+                    guard.run_partition(Path(directory), output, "isolated")
+            self.assertEqual(calls, ["rustc", "cargo", "metadata", "artifacts", "discovery", "execution"])
+            self.assertFalse((output / "manifest.json").exists())
+            failure = json.loads((output / "failure.json").read_text())
+            self.assertEqual(failure["identity"], IDENTITY)
+            self.assertEqual(failure["partition"], "isolated")
+            self.assertEqual(failure["error"], "missing/extra runtime harness or docs")
+            self.assertEqual(set(failure["commands"]), set(calls))
+            for name in calls:
+                receipt = failure["commands"][name]
+                self.assertEqual(receipt["exit"], 0)
+                self.assertEqual(receipt["args"], guard.commands("isolated")[name])
+                self.assertEqual(receipt["sha256"], guard.digest(raw[name]))
+                self.assertEqual((output / receipt["file"]).read_bytes(), raw[name])
+                self.assertEqual(json.loads((output / (name + ".receipt.json")).read_text()), receipt)
 
     def test_missing_key_stops_before_execution(self):
         raw = raw_logs("isolated")
