@@ -42,6 +42,15 @@ then the minimal fixture correction and return a clean exact head for root and
 independent review. Root assigns any later fresh-head run; all63 focused controls
 and broader public/app/history/SQLite/cold/native obligations remain required.
 
+Authored checkpoint: plan-before-source is
+`db3cc7c0ecb70608abe7893a9a8706e654651aeb`. The Chimera now starts atx20;
+all planned reach/support/real-flight setup assertions are authored. Every old
+assertion remains, and no production or other source/test path changed. Direct
+configured rustfmt and Git diff checks pass; the correction is UNCOMPILED/UNRUN.
+Writing returns to root after this clean checkpoint. Root and a different peer
+must inspect the full exact delta before any new focused run; no10df success
+transfers to the corrected head.
+
 Historical preceding attempt/correction, 2026-10-04 17:00 UTC: actual local verification of clean
 d55519e27c92ad17b7278a0bbb87454820642996 passed fmt and strict three-package
 all-target Clippy. The first focused group ran all23 new continuation controls:

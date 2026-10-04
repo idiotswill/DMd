@@ -339,8 +339,10 @@ impl Fixture {
         target.height = 20;
         target.movement = built.movement;
         target.senses = built.senses;
+        // Adjacent occupied cells are within five-foot melee reach. Mere
+        // edge contact with the ledge at x20 does not support the flyer.
         target.position = SpatialPoint {
-            x: 30,
+            x: 20,
             y: 10,
             z: 40,
         };
@@ -403,6 +405,33 @@ impl Fixture {
             crate::spatial::perceive(encounter, &self.state, self.actor, self.target)
                 .unwrap()
                 .precisely_located
+        );
+        let attacker = encounter.participant(self.actor).unwrap();
+        let target = encounter.participant(self.target).unwrap();
+        assert_eq!(
+            crate::spatial::participant_distance(attacker, target).unwrap(),
+            10
+        );
+        assert_eq!(attacker.reach, 10);
+        assert!(
+            crate::spatial::fall_destination(encounter, self.actor)
+                .unwrap()
+                .is_none()
+        );
+        let fall = crate::spatial::fall_destination(encounter, self.target)
+            .unwrap()
+            .unwrap();
+        assert_eq!(fall.from, target.position);
+        assert_eq!(fall.from.z, 40);
+        assert_eq!(fall.to, SpatialPoint { z: 0, ..fall.from });
+        assert_eq!(fall.surface, FallSurface::Floor);
+        assert!(target.movement.fly.is_some());
+        assert!(!target.movement.hover);
+        assert!(
+            crate::spatial::flight_loss_fall(encounter, &self.state, self.target)
+                .unwrap()
+                .is_none(),
+            "real flight must remain available before the attack causes its loss"
         );
     }
 }
