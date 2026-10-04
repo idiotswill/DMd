@@ -4,7 +4,6 @@ use super::*;
 use crate::tactical_creatures::{CreatureBuildChoice, CreatureHitPointChoice, build_creature};
 use crate::tactical_definitions::{WeaponHands, bundled_tactical_definitions};
 use crate::tactical_effects::*;
-use dmd_domain::SessionId;
 
 struct Fixture {
     state: CampaignState,
@@ -12,7 +11,7 @@ struct Fixture {
     actor: EntityId,
     target: EntityId,
     choice: WeaponUseChoice,
-    session: Option<SessionId>,
+    session: Option<PlaySessionId>,
 }
 impl Fixture {
     fn new(weapon: &str, mastery: bool) -> Self {
@@ -824,7 +823,7 @@ fn private_choice_rejects_wrong_authority_head_key_and_duplicate_work_without_mu
             0 => meta.actor = Some(AgentRef::Entity(f.target)),
             1 => meta.campaign_id = CampaignId::new(),
             2 => meta.expected_event_sequence -= 1,
-            3 => meta.session_id = Some(SessionId::new()),
+            3 => meta.session_id = Some(PlaySessionId::new()),
             4 => bad.resolution = CommandId::new(),
             5 => meta.issuer = CommandIssuer::Admin,
             _ => {
