@@ -748,3 +748,12 @@ gear/all forms/OA/ground/cold/retry/portable evidence, accepted-main reconciliat
 and retargeting remain required before any merge. Root owns publication and exact
 merge protection. Air occupies the sole local heavy slot, so no parallel local
 build/test/native/database work starts here.
+
+Plan1261d05 preceded the normal documentation merge
+`00d297d78c11b409a445e86bc53f0efe2ea526e9`, tree
+`92d29f27997afbdae632dbd51b07d26152e2609a`. It had no conflicts and adds only
+the exact gear-count result-documentation blob from255. Complete comparison
+against9c1 lists only the Ogre and gear-count plan files, so every non-document
+blob remains identical to the independently reviewed checkpoint. The development
+base is now an ancestor. This proves source equality, not executed checks on the
+receiving head; first exact-head CI and local verification remain outstanding.
