@@ -1,6 +1,7 @@
 # Released-time guarded checkpoint: consumer inventory
 
-Status, 2026-10-04: source and controls authored; **all 16 new controls UNRUN**.
+Status, 2026-10-04: source and controls authored; **all 24 controls UNCOMPILED/UNRUN**
+(the original 16 plus eight bounded review-correction controls).
 This inventory accompanies the reviewed offstage plan and guarded implementation.
 It is a static source inventory, not compiler, canonical replay, application,
 restore, database or native evidence. Public current/historical/restore admission
@@ -68,7 +69,13 @@ attack history; Medicine/d4 are produced through the real tactical command path.
 Four domain controls cover original captured Turn bytes, strict duplicate/null/
 partial/mixed context rejection, new omission and versions1–5/7/reserved6. One
 persistence control covers typed old-schema history/duplicate-shadow refusal.
-All sixteen are authored **UNRUN**. Existing assertions and protected original
+All original sixteen are authored **UNRUN**, with their bodies unchanged by the
+review correction. Eight additional controls cover completed/cancelled work and
+ticket forgery, completed legacy/stable identity, omitted raw dependencies at
+admission and a paused batch, liquid suspension/surface refusal for ordinary and
+stable actors, and actual floor/solid support. The correction reuses the complete
+retained dependency union and constrains all binding shapes after source removal;
+neither check claims original journal authentication. Existing assertions and protected original
 histories were not replaced. Direct rustfmt and git diff --check are the only
 execution-like verification at this handback; no compiler/tests/build/DB/native.
 

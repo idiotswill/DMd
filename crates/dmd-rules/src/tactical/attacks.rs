@@ -236,8 +236,8 @@ fn begin_with_source(
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
-            actor: actor,
-            number: number,
+            actor,
+            number,
             boundary: TurnBoundary::Start,
         }),
         frames: vec![],

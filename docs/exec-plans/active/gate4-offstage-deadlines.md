@@ -1,6 +1,13 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
-Status, 2026-10-04: **BOUNDED REVIEW CORRECTION AUTHORING.** Root transferred sole
+Status, 2026-10-04: **BOUNDED CORRECTION AUTHORED — INDEPENDENT REVIEW PENDING.**
+The correction source and eight additional controls are authored. The original
+16 controls remain unchanged; all 24 remain **UNCOMPILED/UNRUN**. Direct rustfmt
+and static diff/preservation checks passed. The clean checkpoint is frozen at
+handback and writer ownership returns to root. No self-review approval, public
+activation, application/restore/native or gate acceptance is claimed.
+
+Historical correction transfer: root transferred sole
 source writing to `/root/gate4_ground_oct4` from clean
 `9ffa19a56a09d7f73f735ee0187b05e02a758213`, tree
 `86bb26338c4673e29f1353c3c465e79f6ce4e3ec`, after the full independent review
@@ -32,6 +39,27 @@ tests, helper execution, npm/build/native/database, push/PR/CI operation. Return
 clean source and full correction evidence to root for independent review before
 any verification allocation or broadening. The complete vertical-slice contract
 below remains unchanged.
+
+Correction implementation notes: elapsed admission uses the existing complete
+retained-dependency scan, then checks actual participant membership; paused shared
+release validation checks the same union through the candidate-bound proof. This
+avoids recursively deriving a proof to scan a due batch. Every deadline binding,
+including applied and cancelled records, now matches its allowed work kind and
+legacy/stable ID, and every Effect ticket matches the batch's original Time
+command/step/ordinal. This is structural consistency, not authentication of a
+removed source. Physical eligibility requires floor or authored solid-top contact
+and refuses liquid intersection, suspension and unsupported liquid-surface support;
+the shared falling functions keep their existing semantics.
+
+The eight added controls cover real post-choice completed Effect forgeries,
+completed legacy ID and real stable-wake actor forgeries, cancelled group-child
+forgeries, eligible omitted source/target/concentration owner, an omitted future
+dependency at an actual paused batch, ordinary/stable liquid suspension and
+surface refusal, and real elapsed sources on supported floor/solid tops. All
+negative controls assert atomic refusal and use otherwise validated predecessors;
+legacy/group/geometry fixture limits remain explicitly labeled. The next action
+is root's independent full corrective-delta review and separately allocated
+verification, with the public/restore guards still closed.
 
 Historical status at 9ffa19a: **GUARDED CHECKPOINT AUTHORED — REVIEW PENDING.**
 Domain/rules/codec/validation and 16 new controls are authored; every control is
@@ -82,7 +110,8 @@ Branch `codex/gate4-offstage-deadlines`, checkout `gate4-offstage-deadlines`.
 Root created this fresh branch from remote-confirmed expiry candidate
 `c9bbcb5f31a4b296bd88ce96464fda9d9ceffc27`, tree
 `9a127388f5d6878412975371724c77465137d5f9`. Both identities and clean status were
-read locally before planning. Source author was `/root/gate4_ci_oct4`; writer ownership returns to root with
+read locally before planning. Original source author was `/root/gate4_ci_oct4`;
+bounded correction author is `/root/gate4_ground_oct4`. Writer ownership returns to root with
 the frozen checkpoint. Root retains publication, acceptance, dependency integration
 and the sole heavy slot.
 No other checkout is writable under this assignment.
@@ -565,5 +594,7 @@ Historical plan verification status: only read-only source/document analysis and
 identity/status checks. No code, new tests, compiler, Cargo, npm, native process,
 database, push, PR or CI operation ran for this plan. Air session87840 remains
 root's sole heavy slot. That plan-review handoff is now complete as recorded above.
-Exact next action is the guarded domain/rules checkpoint and full independent source
-review, with every new control unrun until root separately allocates execution.
+Exact next action is root's independent review of the complete bounded correction
+and its added controls. All controls remain uncompiled/unrun until root separately
+allocates execution; no further source work or public activation is authorized by
+this frozen handback.

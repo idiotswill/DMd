@@ -173,6 +173,8 @@ fn begin(
     {
         return Err(RulesError::Pending);
     }
+    let required = super::release::retained_encounter_dependencies(state)?;
+    super::release::require_retained_participants(state, &required)?;
     deadlines::preflight(state)?;
     let target_at = WorldInstant(
         state

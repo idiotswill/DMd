@@ -1106,3 +1106,576 @@ fn isolated_129_deadline_fixture_rejects_capacity_before_advancing_time() {
     assert!(transition(&f.state, &f.meta(None), &advance(229), &f.pack).is_err());
     assert_eq!(f.state, before);
 }
+
+fn three_mages_after_one_expiry() -> Fixture {
+    let mut f = Fixture::new();
+    f.state.campaign.content_packs = TableContract::default().permitted_content.clone();
+    let mut table = TableState::new(TableContract::default());
+    table.active_session = Some(ActiveTableSession {
+        session_id: PlaySessionId::new(),
+        display_name: "Completed deadline provenance fixture".into(),
+        started_at_world: WorldInstant(0),
+        participants: f
+            .players
+            .iter()
+            .map(|player_id| SessionParticipant {
+                player_id: *player_id,
+                character_id: None,
+                attendance: AttendanceStatus::Present,
+            })
+            .collect(),
+    });
+    f.state.table = Some(table);
+    for index in 0..3 {
+        f.mage(index);
+    }
+    f.begin();
+    f.armor(0);
+    f.end(0);
+    f.armor(1);
+    f.end(1);
+    f.armor(2);
+    f.release();
+    f.guarded(advance(28_860));
+    let occurrence = resolution(&f.state).unwrap().frames[0][0].occurrence;
+    f.guarded(TacticalAction::ChooseTurnWork { occurrence });
+    assert_eq!(resolution(&f.state).unwrap().frames[0].len(), 2);
+    f
+}
+
+fn assert_forged_completion_refused(f: &Fixture, forged: &CampaignState) {
+    let before = forged.clone();
+    assert!(validate(forged, &f.pack).is_err());
+    let occurrence = resolution(forged).unwrap().frames[0][0].occurrence;
+    assert!(
+        transition(
+            forged,
+            &f.meta(None),
+            &TacticalAction::ChooseTurnWork { occurrence },
+            &f.pack
+        )
+        .is_err()
+    );
+    assert_eq!(*forged, before);
+}
+
+#[test]
+fn completed_real_expiry_and_trace_cannot_claim_other_work_or_another_time_ticket() {
+    let f = three_mages_after_one_expiry();
+    validate(&f.state, &f.pack).unwrap();
+    for mutation in 0..5 {
+        let mut forged = f.state.clone();
+        let r = resolution_mut(&mut forged).unwrap();
+        let batch = &mut r.released_interval_mut().unwrap().batches[0];
+        let occurrence = batch.completions[0].work.occurrence;
+        let binding = batch
+            .bindings
+            .iter_mut()
+            .find(|binding| binding.work.occurrence == occurrence)
+            .unwrap();
+        match mutation {
+            0 => binding.work.kind = TacticalWorkKind::DeathSave { actor: f.actors[0] },
+            1..=3 => {
+                let TacticalWorkKind::Effect { ticket } = &mut binding.work.kind else {
+                    panic!("real expiry")
+                };
+                match mutation {
+                    1 => ticket.command = CommandId::new(),
+                    2 => ticket.step += 1,
+                    _ => ticket.ordinal += 1,
+                }
+            }
+            4 => {
+                binding.source = ReleasedDeadlineSource::Legacy {
+                    effect: EffectId::new(),
+                    source: f.actors[0],
+                    target: f.actors[0],
+                    concentration_owner: None,
+                }
+            }
+            _ => unreachable!(),
+        }
+        let changed = binding.work.clone();
+        r.work_trace.as_mut().unwrap().nodes[usize::from(occurrence)].work = changed;
+        assert_forged_completion_refused(&f, &forged);
+    }
+}
+
+fn install_isolated_legacy(
+    f: &mut Fixture,
+    source: EntityId,
+    target: EntityId,
+    owner: Option<EntityId>,
+    at: WorldInstant,
+) -> EffectId {
+    let id = EffectId::new();
+    let rules = f.state.rules.as_mut().unwrap();
+    rules.effects.push(ActiveEffect {
+        id,
+        source,
+        target,
+        condition: None,
+        label: "Isolated legacy deadline validation fixture".into(),
+        expires: Expiry::AtTime(at),
+        concentration_owner: owner,
+    });
+    if let Some(owner) = owner {
+        rules.entities.get_mut(&owner).unwrap().concentration = Some(id);
+    }
+    id
+}
+
+#[test]
+fn completed_legacy_binding_keeps_its_exact_effect_id_after_removal() {
+    let mut f = Fixture::two_mages();
+    let actor = f.actors[0];
+    let effect = install_isolated_legacy(&mut f, actor, actor, None, WorldInstant(28_800));
+    validate(&f.state, &f.pack).unwrap();
+    f.guarded(advance(28_860));
+    let occurrence = resolution(&f.state).unwrap().frames[0]
+        .iter()
+        .find(|w| w.kind == TacticalWorkKind::ExpireLegacyEffect { effect })
+        .unwrap()
+        .occurrence;
+    f.guarded(TacticalAction::ChooseTurnWork { occurrence });
+    assert_eq!(resolution(&f.state).unwrap().frames[0].len(), 2);
+    let mut forged = f.state.clone();
+    let r = resolution_mut(&mut forged).unwrap();
+    let binding = r.released_interval_mut().unwrap().batches[0]
+        .bindings
+        .iter_mut()
+        .find(|b| b.work.occurrence == occurrence)
+        .unwrap();
+    binding.work.kind = TacticalWorkKind::ExpireLegacyEffect {
+        effect: EffectId::new(),
+    };
+    let changed = binding.work.clone();
+    r.work_trace.as_mut().unwrap().nodes[usize::from(occurrence)].work = changed;
+    assert_forged_completion_refused(&f, &forged);
+}
+
+fn released_with_real_stable_recovery() -> Fixture {
+    let mut f = Fixture::new();
+    f.human();
+    f.mage(1);
+    f.mage(2);
+    f.begin();
+    f.end(0);
+    let target = f.actors[0];
+    let meta = f.meta(None);
+    let hp = f.state.rules.as_ref().unwrap().entities[&target].hp;
+    // As in the original control, damage is the actual private adapter over real
+    // mechanics, not an accepted attack history. Medicine and d4 are real inputs.
+    let damage = crate::tactical_vitality_adapter::apply(
+        &mut f.state,
+        target,
+        VitalityOrigin {
+            command: meta.clone(),
+            occurrence: 0,
+        },
+        &VitalityOperation::Damage {
+            packet: DamagePacket {
+                cause: DamageCause::Other,
+                components: vec![DamageComponent {
+                    damage_type: DamageType::Bludgeoning,
+                    amounts: vec![hp],
+                    adjustments: vec![],
+                }],
+            },
+            knockout: None,
+        },
+    )
+    .unwrap();
+    for followup in damage.followups {
+        match followup {
+            VitalityFollowup::DropHeldItems => {
+                crate::tactical_vitality_adapter::drop_held(&mut f.state, target, &meta).unwrap()
+            }
+            VitalityFollowup::InterruptRest => crate::kernel::interrupt_rest(
+                f.state.rules.as_mut().unwrap(),
+                target,
+                f.state.clock.now,
+            ),
+            _ => panic!("unexpected damage followup"),
+        }
+    }
+    f.state.applied_event_sequence += 1;
+    f.run(
+        Some(1),
+        TacticalAction::FirstAid {
+            target,
+            purpose: MedicinePurpose::Stabilize,
+        },
+    );
+    f.roll(1, 20);
+    f.roll(0, 2);
+    f.release();
+    f
+}
+
+#[test]
+fn completed_real_stable_wake_cannot_change_its_actor_in_retained_work() {
+    let mut f = released_with_real_stable_recovery();
+    for actor in [f.actors[1], f.actors[2]] {
+        install_isolated_legacy(&mut f, actor, actor, None, WorldInstant(7_200));
+    }
+    validate(&f.state, &f.pack).unwrap();
+    f.guarded(advance(7_260));
+    let actor = f.actors[0];
+    let occurrence = resolution(&f.state).unwrap().frames[0]
+        .iter()
+        .find(|w| w.kind == TacticalWorkKind::RecoverStable { actor })
+        .unwrap()
+        .occurrence;
+    f.guarded(TacticalAction::ChooseTurnWork { occurrence });
+    assert_eq!(f.state.rules.as_ref().unwrap().entities[&actor].hp, 1);
+    assert_eq!(resolution(&f.state).unwrap().frames[0].len(), 2);
+    let mut forged = f.state.clone();
+    let r = resolution_mut(&mut forged).unwrap();
+    let binding = r.released_interval_mut().unwrap().batches[0]
+        .bindings
+        .iter_mut()
+        .find(|b| b.work.occurrence == occurrence)
+        .unwrap();
+    binding.work.kind = TacticalWorkKind::RecoverStable { actor: f.actors[1] };
+    let changed = binding.work.clone();
+    r.work_trace.as_mut().unwrap().nodes[usize::from(occurrence)].work = changed;
+    assert_forged_completion_refused(&f, &forged);
+}
+
+fn isolated_outside_dependency(case: usize) -> Fixture {
+    let mut f = Fixture::new();
+    f.human();
+    f.mage(1);
+    f.mage(2);
+    let outside = f.actors[2];
+    // Authored geometry before the real Begin: the prepared third actor is not
+    // placed. This is a legacy-boundary fixture, not an accepted capture edit.
+    f.state
+        .encounter
+        .as_mut()
+        .unwrap()
+        .participants
+        .retain(|p| p.entity_id != outside);
+    f.run(
+        None,
+        TacticalAction::Begin {
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            combatants: vec![
+                TacticalCombatant {
+                    actor: f.actors[0],
+                    source: TacticalSource::Character,
+                    surprised: false,
+                },
+                TacticalCombatant {
+                    actor: f.actors[1],
+                    source: TacticalSource::Creature {
+                        definition_id: "mage".into(),
+                    },
+                    surprised: false,
+                },
+            ],
+            groups: f.actors[..2]
+                .iter()
+                .map(|actor| InitiativeGroup {
+                    actors: vec![*actor],
+                    request_id: RollRequestId::new(),
+                })
+                .collect(),
+        },
+    );
+    f.roll(0, 18);
+    f.roll(1, 3);
+    let inside = f.actors[1];
+    let (source, target, owner) = match case {
+        0 => (outside, inside, None),
+        1 => (inside, outside, None),
+        2 => (inside, inside, Some(outside)),
+        _ => unreachable!(),
+    };
+    install_isolated_legacy(&mut f, source, target, owner, WorldInstant(10));
+    f.release();
+    f
+}
+
+#[test]
+fn otherwise_valid_outside_source_target_or_owner_is_refused_before_time_moves() {
+    for case in 0..3 {
+        let f = isolated_outside_dependency(case);
+        validate(&f.state, &f.pack).unwrap();
+        let dependencies =
+            super::super::release::retained_encounter_dependencies(&f.state).unwrap();
+        assert!(dependencies.contains(&f.actors[2]));
+        assert!(
+            encounter(&f.state)
+                .unwrap()
+                .participant(f.actors[2])
+                .is_none()
+        );
+        let before = f.state.clone();
+        let error = transition(&f.state, &f.meta(None), &advance(11), &f.pack).unwrap_err();
+        assert!(
+            matches!(error, RulesError::Prerequisite(ref why) if why.contains("every retained dependency"))
+        );
+        assert_eq!(f.state, before);
+    }
+}
+
+fn liquid_volume() -> TerrainVolume {
+    TerrainVolume {
+        id: "authored-liquid".into(),
+        volume: SpatialBox {
+            min: SpatialPoint { x: 0, y: 0, z: 0 },
+            max: SpatialPoint {
+                x: 100,
+                y: 100,
+                z: 40,
+            },
+        },
+        difficult: false,
+        observable: true,
+        water: true,
+        climbable: false,
+        burrowable: false,
+        supports_top: false,
+        surface: Some("water".into()),
+        obscuration: Obscuration::None,
+        magical_darkness: false,
+    }
+}
+
+fn set_isolated_released_geometry(f: &mut Fixture, at: i32, liquid: bool, solid: bool) {
+    // Geometry fixture only. Both existing authorities agree; no native/replay
+    // geometry provenance is claimed by this private admission control.
+    let encounter = f.state.encounter.as_mut().unwrap();
+    for participant in &mut encounter.participants {
+        participant.position.z = at;
+    }
+    if liquid {
+        encounter.battlefield.terrain.push(liquid_volume());
+    }
+    if solid {
+        encounter.battlefield.obstacles.push(SpatialObstacle {
+            id: "authored-solid-support".into(),
+            volume: SpatialBox {
+                min: SpatialPoint { x: 0, y: 0, z: 0 },
+                max: SpatialPoint {
+                    x: 100,
+                    y: 100,
+                    z: at,
+                },
+            },
+            blocks_movement: true,
+            blocks_sight: true,
+            observable: true,
+            cover: CoverDegree::Total,
+        });
+    }
+    f.state
+        .encounter_history
+        .as_mut()
+        .unwrap()
+        .spaces
+        .last_mut()
+        .unwrap()
+        .battlefield = encounter.battlefield.clone();
+}
+
+#[test]
+fn liquid_suspension_and_surface_are_not_ground_support_even_without_a_fall() {
+    for stable in [false, true] {
+        for at in [20, 40] {
+            let mut f = if stable {
+                released_with_real_stable_recovery()
+            } else {
+                Fixture::two_mages()
+            };
+            set_isolated_released_geometry(&mut f, at, true, false);
+            validate(&f.state, &f.pack).unwrap();
+            for actor in f.actors {
+                assert!(
+                    crate::spatial::fall_destination(encounter(&f.state).unwrap(), actor)
+                        .unwrap()
+                        .is_none()
+                );
+                assert!(
+                    crate::spatial::flight_loss_fall(encounter(&f.state).unwrap(), &f.state, actor)
+                        .unwrap()
+                        .is_none()
+                );
+            }
+            let before = f.state.clone();
+            let error = transition(&f.state, &f.meta(None), &advance(28_860), &f.pack).unwrap_err();
+            assert!(
+                matches!(error, RulesError::Prerequisite(ref why) if why.contains("ground-supported"))
+            );
+            assert_eq!(f.state, before);
+        }
+    }
+}
+
+#[test]
+fn real_elapsed_sources_still_advance_on_actual_floor_and_solid_top_support() {
+    for at in [0, 20] {
+        let mut f = Fixture::two_mages();
+        set_isolated_released_geometry(&mut f, at, false, at != 0);
+        validate(&f.state, &f.pack).unwrap();
+        let before = f.state.clone();
+        f.guarded(advance(10));
+        assert_eq!(f.state.clock.now, WorldInstant(10));
+        assert_eq!(f.state.items, before.items);
+        assert_eq!(effects(&f.state).unwrap(), effects(&before).unwrap());
+        assert_eq!(
+            f.state.encounter.as_ref().unwrap().participants,
+            before.encounter.as_ref().unwrap().participants
+        );
+    }
+}
+
+#[test]
+fn cancelled_group_children_keep_their_allowed_work_and_time_ticket_shape() {
+    let mut f = Fixture::two_mages();
+    let meta = f.meta(None);
+    let group = EffectId::new();
+    let source = EffectSource {
+        definition_id: "isolated-cancelled-binding-fixture".into(),
+        actor: f.actors[1],
+        command: meta.clone(),
+        ordinal: 0,
+    };
+    // Isolated lifecycle installation, not a new admitted spell/profile or an
+    // accepted released-time command. Actual expiry and cleanup use the producer.
+    for (step, operation) in [
+        EffectLifecycleOperation::BeginConcentration {
+            group: ConcentrationGroup {
+                id: group,
+                source: source.clone(),
+                expires: TacticalEffectExpiry::AtTime(WorldInstant(28_800)),
+                stage: ConcentrationStage::Casting,
+            },
+        },
+        EffectLifecycleOperation::Install {
+            effects: [f.actors[1], f.actors[2]]
+                .iter()
+                .map(|actor| TacticalEffect {
+                    id: EffectId::new(),
+                    source: source.clone(),
+                    established_at: None,
+                    target: TacticalEffectTarget::Creature(*actor),
+                    concentration_group: Some(group),
+                    expires: TacticalEffectExpiry::AtTime(WorldInstant(28_800)),
+                    overlap: None,
+                    conditions: vec![],
+                    defenses: vec![],
+                    triggers: vec![],
+                })
+                .collect(),
+        },
+    ]
+    .into_iter()
+    .enumerate()
+    {
+        f.state = crate::tactical_effect_adapter::apply_effect_operation(
+            &f.state,
+            &meta,
+            &EffectLifecycleAction {
+                step: step as u16,
+                operation,
+            },
+        )
+        .unwrap()
+        .0;
+    }
+    f.state.applied_event_sequence += 1;
+    validate(&f.state, &f.pack).unwrap();
+    f.guarded(advance(28_860));
+    let batch = &resolution(&f.state)
+        .unwrap()
+        .released_interval()
+        .unwrap()
+        .batches[0];
+    let occurrence = batch
+        .bindings
+        .iter()
+        .find(|b| {
+            matches!(b.source,
+        ReleasedDeadlineSource::Group { group: id, .. } if id == group)
+        })
+        .unwrap()
+        .work
+        .occurrence;
+    f.guarded(TacticalAction::ChooseTurnWork { occurrence });
+    let r = resolution(&f.state).unwrap();
+    assert_eq!(r.frames[0].len(), 2);
+    let cancelled = r.released_interval().unwrap().batches[0]
+        .completions
+        .iter()
+        .filter(|c| matches!(c.outcome, ReleasedWorkOutcome::CancelledBy { .. }))
+        .map(|c| c.work.occurrence)
+        .collect::<Vec<_>>();
+    assert_eq!(cancelled.len(), 2);
+    for occurrence in cancelled {
+        for change_kind in [false, true] {
+            let mut forged = f.state.clone();
+            let r = resolution_mut(&mut forged).unwrap();
+            let binding = r.released_interval_mut().unwrap().batches[0]
+                .bindings
+                .iter_mut()
+                .find(|b| b.work.occurrence == occurrence)
+                .unwrap();
+            if change_kind {
+                binding.work.kind = TacticalWorkKind::RecoverStable { actor: f.actors[0] };
+            } else {
+                let TacticalWorkKind::Effect { ticket } = &mut binding.work.kind else {
+                    panic!("expiry child")
+                };
+                ticket.command = CommandId::new();
+            }
+            let changed = binding.work.clone();
+            r.work_trace.as_mut().unwrap().nodes[usize::from(occurrence)].work = changed;
+            assert_forged_completion_refused(&f, &forged);
+        }
+    }
+}
+
+#[test]
+fn paused_interval_still_requires_geometry_for_a_future_raw_dependency() {
+    let mut f = isolated_outside_dependency(0);
+    // Establish a real paused batch using isolated legacy deadlines on placed
+    // actors. The later mutation must not hide behind the current due partition.
+    f.state.rules.as_mut().unwrap().effects.clear();
+    for actor in [f.actors[0], f.actors[1]] {
+        install_isolated_legacy(&mut f, actor, actor, None, WorldInstant(10));
+    }
+    validate(&f.state, &f.pack).unwrap();
+    f.guarded(advance(11));
+    assert_eq!(resolution(&f.state).unwrap().frames[0].len(), 2);
+    let mut forged = f.state.clone();
+    let outside = f.actors[2];
+    forged.rules.as_mut().unwrap().effects.push(ActiveEffect {
+        id: EffectId::new(),
+        source: outside,
+        target: outside,
+        condition: None,
+        label: "Forged future outside dependency".into(),
+        expires: Expiry::AtTime(WorldInstant(20)),
+        concentration_owner: None,
+    });
+    assert!(forged.validate().is_empty());
+    let before = forged.clone();
+    let error = validate(&forged, &f.pack).unwrap_err();
+    assert!(
+        matches!(error, RulesError::Prerequisite(ref why) if why.contains("every retained dependency"))
+    );
+    let occurrence = resolution(&forged).unwrap().frames[0][0].occurrence;
+    assert!(
+        transition(
+            &forged,
+            &f.meta(None),
+            &TacticalAction::ChooseTurnWork { occurrence },
+            &f.pack
+        )
+        .is_err()
+    );
+    assert_eq!(forged, before);
+}

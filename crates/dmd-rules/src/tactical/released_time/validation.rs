@@ -253,9 +253,11 @@ fn validate_interval(state: &CampaignState, r: &TacticalResolution) -> Result<()
                 }
             }
         }
+        let mut effect_ordinal = 0;
         for binding in &batch.bindings {
             let occurrence = binding.work.occurrence;
-            if binding.due_at != batch.at
+            if !deadlines::binding_shape(batch, binding, effect_ordinal)
+                || binding.due_at != batch.at
                 || !seen.insert(occurrence)
                 || trace
                     .nodes
@@ -265,6 +267,11 @@ fn validate_interval(state: &CampaignState, r: &TacticalResolution) -> Result<()
                 return Err(invalid(
                     "deadline does not partition exact allocated ancestry",
                 ));
+            }
+            if matches!(binding.work.kind, TacticalWorkKind::Effect { .. }) {
+                effect_ordinal = effect_ordinal
+                    .checked_add(1)
+                    .ok_or_else(|| invalid("released effect ticket capacity"))?;
             }
             if !completed.contains(&occurrence) {
                 if index + 1 != i.batches.len()

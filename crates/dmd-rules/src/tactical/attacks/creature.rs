@@ -127,7 +127,7 @@ pub(in crate::tactical) fn begin_creature_attack(
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
-            actor: actor,
+            actor,
             number: turn_number,
             boundary: TurnBoundary::Start,
         }),

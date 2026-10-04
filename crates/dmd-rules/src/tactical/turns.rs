@@ -216,9 +216,9 @@ fn begin_boundary_from(
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
-            actor: actor,
-            number: number,
-            boundary: boundary,
+            actor,
+            number,
+            boundary,
         }),
         frames: vec![],
         pending: None,

@@ -24,10 +24,38 @@ pub(super) fn preflight(state: &CampaignState) -> Result<(), RulesError> {
     }
     // Source support is read from actual geometry; no synthetic ground actor or
     // flight cadence is installed. Stable Unconscious is deliberately permitted.
-    for participant in &encounter(state)?.participants {
-        if crate::spatial::fall_destination(encounter(state)?, participant.entity_id)
-            .map_err(|e| invalid(&e.to_string()))?
-            .is_some()
+    let current = encounter(state)?;
+    for participant in &current.participants {
+        let body = participant.volume().map_err(|e| invalid(&e))?;
+        let contacts_top = |surface: SpatialBox| {
+            surface.max.z == participant.position.z
+                && body.min.x < surface.max.x
+                && body.max.x > surface.min.x
+                && body.min.y < surface.max.y
+                && body.max.y > surface.min.y
+        };
+        let supported = participant.position.z == current.battlefield.floor_z
+            || current
+                .battlefield
+                .obstacles
+                .iter()
+                .any(|obstacle| obstacle.blocks_movement && contacts_top(obstacle.volume))
+            || current.battlefield.terrain.iter().any(|terrain| {
+                (terrain.supports_top || terrain.burrowable) && contacts_top(terrain.volume)
+            });
+        let intersects_liquid = current
+            .battlefield
+            .terrain
+            .iter()
+            .any(|terrain| terrain.water && body.intersects(terrain.volume));
+        // None also means swimming/submersion to the shared falling reader.
+        // This bounded producer admits actual floor/solid-top support only;
+        // it does not adjudicate elapsed liquid/underwater physical obligations.
+        if !supported
+            || intersects_liquid
+            || crate::spatial::fall_destination(current, participant.entity_id)
+                .map_err(|e| invalid(&e.to_string()))?
+                .is_some()
             || crate::spatial::flight_loss_fall(encounter(state)?, state, participant.entity_id)
                 .map_err(|e| invalid(&e.to_string()))?
                 .is_some()
@@ -38,6 +66,37 @@ pub(super) fn preflight(state: &CampaignState) -> Result<(), RulesError> {
         }
     }
     Ok(())
+}
+
+/// Shape survives source removal. Replay must still authenticate which source
+/// actually occupied this ticket; no retained manifest authenticates itself.
+pub(super) fn binding_shape(
+    batch: &ReleasedDeadlineBatch,
+    binding: &ReleasedDeadlineBinding,
+    effect_ordinal: u16,
+) -> bool {
+    match (&binding.source, &binding.work.kind) {
+        (
+            ReleasedDeadlineSource::Effect { .. } | ReleasedDeadlineSource::Group { .. },
+            TacticalWorkKind::Effect { ticket },
+        ) => {
+            *ticket
+                == EffectTicketId {
+                    command: batch.observed.command.id,
+                    step: batch.observed.step,
+                    ordinal: effect_ordinal,
+                }
+        }
+        (
+            ReleasedDeadlineSource::Legacy { effect, .. },
+            TacticalWorkKind::ExpireLegacyEffect { effect: id },
+        ) => effect == id,
+        (
+            ReleasedDeadlineSource::Stable { actor, .. },
+            TacticalWorkKind::RecoverStable { actor: id },
+        ) => actor == id,
+        _ => false,
+    }
 }
 
 pub(super) fn inventory(

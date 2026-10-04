@@ -205,7 +205,28 @@ fn retained_dependencies(
     for actor in &dependencies {
         require_future_placement(state, *actor)?;
     }
+    if released.is_some_and(|proof| proof.interval(state)) {
+        require_retained_participants(state, &dependencies)?;
+    }
     Ok(dependencies)
+}
+
+/// Released elapsed work requires actual retained geometry for the entire raw
+/// dependency union. Future placement eligibility alone does not provide it.
+pub(super) fn require_retained_participants(
+    state: &CampaignState,
+    dependencies: &[EntityId],
+) -> Result<(), RulesError> {
+    let current = encounter(state)?;
+    if dependencies
+        .iter()
+        .any(|actor| current.participant(*actor).is_none())
+    {
+        return Err(prerequisite(
+            "released time requires every retained dependency's actual participant position",
+        ));
+    }
+    Ok(())
 }
 
 /// The next supported table placement must be possible before timing is removed.

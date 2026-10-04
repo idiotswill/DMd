@@ -84,7 +84,7 @@ pub(super) fn begin(
     flow.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
         context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
-            actor: actor,
+            actor,
             number: turn_number,
             boundary: TurnBoundary::Start,
         }),

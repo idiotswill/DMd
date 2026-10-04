@@ -407,7 +407,7 @@ mod tests {
         let mut resolution = TacticalResolution {
             origin: origin.clone(),
             context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
-                actor: actor,
+                actor,
                 number: 1,
                 boundary: TurnBoundary::Start,
             }),
