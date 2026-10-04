@@ -165,6 +165,23 @@ clone an accepted state into an authority-bearing import API.
 
 ## Paid retained reads, final history and the shared stack
 
+Implementation refinement, 2026-10-04, recorded before changing completion callers:
+the actual `apply_damage`, `finish` and `choose_mastery_inner` currently clone
+their attack before reconstruction. Pumped completion also has an entered
+AttackDamage/FinishAttack node and a transient stage (accepted damage dice or
+Finishing) that must not pass persisted-cut validation. Root reviewed this concrete
+caller gap and authorized a separate internal entered-completion constructor.
+It must obtain the actual attached attack, bind the unique entered completion,
+current command, original source, paid receipt and exact raw cause, and share the
+same physical inverse/calculation. It produces read data only. Direct before-only
+Knockout/Graze choices without an entered node retain their real persisted material
+pause and use the strict attached paid reader after current command/owner checks;
+do not invent a completion node or manufacture a Finishing stage for those calls.
+After-intent choices continue their existing exact-parent re-entry. Exercise real
+automatic miss, fixed/no-die completion, rolled hit, Knockout and Graze boundaries.
+No persisted-stage forgery, budget reset/refund, arbitrary callback, ambient bypass
+or second commit capability is authorized by this refinement.
+
 Introduce a narrow internal retained-physical reader from the actual attached
 attack, its unique matching history receipt, original typed choice/source/window,
 paid timing and stage/pending/raw binding. Constructor checks cannot call the full
