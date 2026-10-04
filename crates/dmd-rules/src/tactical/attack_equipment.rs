@@ -707,11 +707,12 @@ pub(super) fn choose(
     if restored != *state {
         return Err(invalid("equipment inverse changed unrelated state"));
     }
+    let attack_origin = receipt.cause.origin.id;
     flow_mut(&mut candidate)?
         .budget
         .weapon_history
         .iter_mut()
-        .find(|r| r.origin.id == receipt.cause.origin.id)
+        .find(|r| r.origin.id == attack_origin)
         .unwrap()
         .after_equipment = Some(Box::new(receipt));
     resolution_mut(&mut candidate)?.attack_after_equipment = None;

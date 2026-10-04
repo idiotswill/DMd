@@ -4,6 +4,7 @@ use super::*;
 use crate::tactical_creatures::{CreatureBuildChoice, CreatureHitPointChoice, build_creature};
 use crate::tactical_definitions::{WeaponHands, bundled_tactical_definitions};
 use crate::tactical_effects::*;
+use dmd_domain::SessionId;
 
 struct Fixture {
     state: CampaignState,
