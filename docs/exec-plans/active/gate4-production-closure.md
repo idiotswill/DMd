@@ -5,7 +5,12 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR48 — 2026-10-01
+Current accepted main is `dbf1d633460473183324b4ec519e8d1980884b5c` after PR48.
+The [release plan](gate4-encounter-release.md) records the protected merge and
+separate successful literal-main checks. Candidate statuses below are historical;
+all remaining Gate4 obligations stay open.
+
+## Historical checkpoint after PR48 — 2026-10-01
 
 Fetched main is dbf1d633460473183324b4ec519e8d1980884b5c. Release PR48 merged
 with expected-head protection after complete exact d4 review and six successful

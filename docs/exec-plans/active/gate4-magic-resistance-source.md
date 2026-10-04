@@ -320,8 +320,9 @@ match the already reviewed Air head before the status clarification below.
 All418 files outside docs/ remain byte-identical by Git blobs to aa8c36b and
 therefore the reviewed correction1cea684; the pure suite result stays attributed
 to that source head. This checkpoint adds no production behavior or passing
-runtime result. The accepted release statuses are clarified using the same five
-reviewed documentation corrections as expiry c9bbcb5: literal dbf's six checks
+runtime result. The accepted release statuses are clarified using the same
+reviewed evidence as expiry c9bbcb5, adapted to Air's later five-document context:
+literal dbf's six checks
 passed, while source8c retains its own canonical/native attribution. Historical
 MR authored-only ledger paragraphs are labeled as historical; the MR plans retain
 the actual Linux evidence, failed Windows attempts and new coverage repair.
