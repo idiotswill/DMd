@@ -1,8 +1,10 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
-Status: **All six CI checks pass on corrected source 41d034ce. Development
-integration with release8c is complete; the combined head is UNCOMPILED/UNRUN
-and final acceptance remains pending.**
+Status, 2026-10-04: **All six CI checks pass on integrated fcc74a9, including the
+seven expiry controls and original receiving histories. Local canonical, genuine
+native deadline play, accepted-main reconciliation and final receiving-head
+verification remain pending.** Earlier parent/unrun checkpoints below retain their
+historical qualification; they do not describe the latest completed CI.
 
 ## Objective, ownership and baseline
 
@@ -345,3 +347,65 @@ bytes/suites remain inherited without alteration. This records an integration
 candidate, **UNCOMPILED/UNRUN** on the combined source. Independent review, fresh
 checks, local canonical/receiving replay and dependency acceptance remain the
 next actions; the corrected parent's CI is not evidence for this new tree.
+
+### Integrated results and accepted-main reconciliation plan — 2026-10-04
+
+Root freshly fetched this branch and main. Published PR52 remains
+`fcc74a977fd385e5228d158909c23c1cf36aa97c`, tree
+`4fa0480502771f08abee2d57e13c6127ce70eea5`; accepted main is
+`dbf1d633460473183324b4ec519e8d1980884b5c`. Root read this complete plan,
+the actual production delta and complete fresh independent readiness review,
+`tooling/expiry-fcc74a9-acceptance-readiness-independent-review-2026-10-04.md`,
+SHA256 `2906a24511896c7928298d81170f51656c59bcfa07c046b1b9f776da75082802`.
+That review reads the full eight-path source/test delta, earlier failure/repair
+and all actual CI logs. It reports no new source defect and retains all
+canonical/native/final integration requirements. Its independent audit SHA256 is
+`6cd21788525532c031985f52992dd0f2713f4bcb6b60a271ba6c5847b3b7419a`.
+
+Actual integrated Linux run36758091415/runtime110033365813 passes783 Rust tests;
+Windows run36758091491/runtime110033366634 passes785, each56 result groups with
+zero failed/ignored/filtered. All six rules expiry tests and the genuine
+file-SQLite Hold Person deadline test pass, as do all60 table tests, original
+receiving suites, all eight original Flow4 continuations and four Missile cases.
+Both MSRV, architecture and genericity checks pass. Windows frontend reports116
+tests in18 files and zero Svelte errors/warnings. Linux checkout
+`4152a7158332c8309a8c56bf293e0e7e8e698daf` has d88/fcc parents and the exact fcc
+tree; Windows uses literal fcc. Final evidence
+`tooling/expiry-fcc74a9-ci/final-evidence.json` SHA256
+`4a0de46d01a56772b4aacf40855f086946fc882051602933444df8da023bb706`
+retains all six logs. These are integrated fcc results, not later-head executions.
+
+The available artifact11125424998 was downloaded on October4,232429052bytes;
+archive SHA256 `1b3e68c4b35a078c4db8c2a645553c596eba893add64887ead7c9b4276031b25`
+matches the actual upload. Payload/executable validation and native execution
+are not established by download alone. The existing native campaign contains a
+later Air source absent from this package. Do not downgrade or repair that save
+to create a native witness; use a source-appropriate normal new campaign or a
+later verified integrated package. Native expiry still needs actual source Hold
+Person, owned physical failing saves, natural round advancement through60seconds,
+correct expiry selection and cleared concentration/Paralyzed without a refund,
+with real pending/completed cold recovery. No injected clock/effect/JSON/SQLite
+or fake selected state may substitute.
+
+Earlier release/Air native cuts retain world6 and Mage Armor deadline28806; they
+do not cross it. Offstage/no-turn tactical deadlines remain a separate open Gate4
+producer/continuation/native obligation. This one-function boundary repair does
+not implement that route, and its in-combat Hold case does not prove it. Do not
+move that remaining obligation to another gate or call a preserved future
+deadline an expiry witness.
+
+Plan before integration: normally merge accepted dbf into this branch, preserving
+the five accepted release/ADR/gate/ledger documentation updates and the complete
+expiry plan/evidence. The exact integrated release8c-to-dbf delta is documentation
+only; do not claim the unsquashed8c hash itself is an ancestor of main. Preserve
+the exact corrected41d production blob, all actual expiry tests,29 capture blobs,
+five original receiving suites and21 raw files. Inspect every merge conflict;
+unexpected source changes require separate semantic review. Do not import Air,
+Shove, MR, Grapple, counts or Ogre during this bounded reconciliation.
+
+Freeze the resulting source for independent full integration review before normal
+publication and new exact-head CI. Root retains the only heavy slot, currently
+Air canonical. Native and canonical execution await explicit slot allocation;
+the local canonical uses the actual frozen receiving head and original full
+suites. Accepted dependency reconciliation, final checks, protected merge and
+separate literal-main verification remain required. No family/gate status advances.
