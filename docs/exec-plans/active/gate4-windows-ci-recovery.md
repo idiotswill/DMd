@@ -335,3 +335,34 @@ fixing actual findings, root schedules fresh exact-head native CI and the
 unchanged canonical acceptance obligations. This writer retains sole branch
 ownership until explicitly transferred back; publication and final acceptance
 remain root-owned.
+
+## Root review and pure guard execution — October 4
+
+The clean static implementation is
+`aae8d47b7caef8a0a301d190f7921f8079ef45f8`, tree
+`87860497663bf5b1250d73c47553deb24de0d782`. Root read all five changed files,
+the entire helper and adversarial suite, workflow topology, preparation and
+ignore context. No blocking finding was identified. Root review memo SHA256:
+`1b6f6913a68f394a270a895f49021eb5d4fbca34f91f07a0f0d33f27928e32bb`.
+Writer ownership returned to root; the source remains frozen for peer review.
+
+Root explicitly allocated the lightweight stdlib Python suite while Air kept
+the sole heavy/native slot. At clean exact aae8d47, the actual command was
+`C:/Users/jadra/AppData/Local/Programs/Python/Python311/python.exe -I -B -m unittest discover -v -s scripts/tests -p test_windows_test_partition.py`.
+All29 tests passed in0.983 seconds with process exit0. Head and clean status
+were unchanged afterward. Full log SHA256:
+`9ff99a5292013727d6ac7c45e5cab37711b34333fb380ee9082589efc796180d`.
+Its printed14-case proof is synthetic test output, not actual native regression
+coverage. No Cargo, npm, database or native application command ran in this
+allocation. First real native discovery/partition/coverage/package execution
+and the unchanged MR canonical/native acceptance remain outstanding.
+
+Independent complete implementation review is also CLEAR for fresh verification,
+SHA256 `bef0be09986afd543c6949d66268386da0f36b5ac7656aa98f3575becd01e875`.
+Root read that memo in full. The peer independently checked all changed files,
+actual workspace manifests, original-eight names, native transcript semantics,
+raw proof and packaging dependencies; it ran no executable checks. Root freshly
+fetched the published MR branch and confirmed it remains486ce8b with no unexpected
+movement. Publish the reviewed implementation plus these result-only documents
+by normal push to draft PR53 for first exact-head CI of the new topology.
+Its development Air base stays unaccepted and must never receive a merge.
