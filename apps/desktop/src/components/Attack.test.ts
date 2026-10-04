@@ -37,7 +37,7 @@ it('preserves physical weapon, target, hand and ability choices without sending 
   await user.selectOptions(screen.getByLabelText('Target'),'target');
   await user.selectOptions(screen.getByLabelText('Attack method'),'Thrown');
   await user.selectOptions(screen.getByLabelText('Attack ability'),'Dexterity');
-  await user.selectOptions(screen.getByLabelText('Weapon grip'),'1');
+  await user.selectOptions(screen.getByLabelText('Weapon grip'),JSON.stringify({OneHand:'Right'}));
   await user.selectOptions(screen.getByLabelText('Ready or put away weapon'),'draw-right');
   await user.click(screen.getByRole('button',{name:/^Attack$/}));
   expect(onAction).toHaveBeenCalledExactlyOnceWith({Attack:{choice:{weapon:'dagger',target:'target',delivery:'Thrown',ability:'Dexterity',grip:{OneHand:'Right'},purpose:'Normal',ammunition:null,equipment_change:{timing:'BeforeAttack',operation:{Equip:{item:'dagger',hand:'Right'}}}}}});

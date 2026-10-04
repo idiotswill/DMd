@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 3369,
+      "byte_len": 4254,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "849083ed0f02650b"
+        "value": "46767ed5a18f49e8"
       }
     },
     {
@@ -61,6 +61,14 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "3ab5048b144641fc"
+      }
+    },
+    {
+      "path": "ogre-v1.json",
+      "byte_len": 3775,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "fbd9e806fb626bc4"
       }
     }
   ]

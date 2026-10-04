@@ -5,6 +5,10 @@ use dmd_domain::*;
 #[path = "table_opportunity_tests.rs"]
 mod tests;
 
+#[cfg(test)]
+#[path = "table_physical_source_opportunity_tests.rs"]
+mod physical_source_tests;
+
 pub(super) fn options(
     state: &CampaignState,
     actor: EntityId,
@@ -183,11 +187,57 @@ pub(super) fn opportunity(
             })
         })
         .collect();
+    let mut physical_source_weapons = vec![];
+    for option in &window.options {
+        let TacticalMeleeSource::CreatureWeapon { feature_id, item } = &option.source else {
+            continue;
+        };
+        let grips = dmd_rules::tactical::physical_source_opportunity_grips(
+            state,
+            window.reactor,
+            feature_id,
+            *item,
+        )
+        .map_err(|error| error.to_string())?;
+        if grips.is_empty() {
+            continue;
+        }
+        let feature = creature
+            .and_then(|source| {
+                source
+                    .features
+                    .iter()
+                    .find(|feature| &feature.id == feature_id)
+            })
+            .ok_or("Physical source reaction feature is absent.")?;
+        let weapon = state
+            .items
+            .get(item)
+            .ok_or("Physical source weapon is absent.")?;
+        let definitions = dmd_rules::tactical_definitions::bundled_tactical_definitions()
+            .map_err(|error| error.to_string())?;
+        let weapon = definitions
+            .weapon(&weapon.definition_id)
+            .ok_or("Physical source weapon definition is absent.")?;
+        physical_source_weapons.push(crate::TablePhysicalSourceWeaponChoice {
+            feature_id: feature_id.clone(),
+            item: *item,
+            label: feature.name.clone(),
+            weapon_name: weapon.name.clone(),
+            grips,
+        });
+    }
+    physical_source_weapons.sort_by(|a, b| {
+        a.feature_id
+            .cmp(&b.feature_id)
+            .then(a.item.0.cmp(&b.item.0))
+    });
     Ok(crate::TableOpportunityView {
         actor: window.reactor,
         target,
         weapons,
         features,
+        physical_source_weapons,
         unarmed: window
             .options
             .iter()

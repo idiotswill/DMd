@@ -11,7 +11,15 @@ fn gear_counts_are_canonical_and_never_add_a_field_to_old_sources() {
     use dmd_rules::tactical_creatures::{
         creature_definition_fingerprint, immutable_creature_sources,
     };
-    for source in immutable_creature_sources().unwrap() {
+    // Keep every old omitted-field expectation; Ogre's count-bearing immutable
+    // source has its own additive controls in tactical_ogre_source.
+    let originals: Vec<_> = immutable_creature_sources()
+        .unwrap()
+        .into_iter()
+        .filter(|source| source.id != "ogre")
+        .collect();
+    assert_eq!(originals.len(), 12);
+    for source in originals {
         let original = serde_json::to_string(source).unwrap();
         assert!(!original.contains("gear_quantities"));
         assert!(source.statistics.gear_quantities.is_empty());

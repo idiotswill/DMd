@@ -268,6 +268,19 @@ pub(crate) fn load_rules_pack(
         return Err(RunnableCampaignError::RulesContent(
             "Goblin Warrior V2 source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
     }
+    let ogre = installed.manifest.files.iter().find(|file| file.path == "ogre-v1.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent(
+            "Ogre source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let ogre_bytes = fs::read(base.join("ogre-v1.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent(
+            "Ogre source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if ogre_bytes.len() as u64 != ogre.byte_len
+        || fnv1a64_hex(&ogre_bytes) != ogre.checksum.value
+        || ogre_bytes != include_bytes!("../../../content/srd-5.2.1/ogre-v1.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Ogre source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {

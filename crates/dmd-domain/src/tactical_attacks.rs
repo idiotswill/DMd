@@ -22,6 +22,13 @@ pub enum TacticalMeleeChoice {
         /// Only an attack whose canonical Gear requires it accepts an ItemId.
         weapon: Option<ItemId>,
     },
+    /// A printed physical source attack with an explicit legal grip. The retained
+    /// crossing supplies actor/target; the exact source supplies all mechanics.
+    CreatureWeapon {
+        feature_id: String,
+        weapon: ItemId,
+        grip: crate::WeaponGrip,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
