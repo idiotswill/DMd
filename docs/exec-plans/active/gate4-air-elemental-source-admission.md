@@ -1,11 +1,14 @@
 # Gate 4 Air Elemental immutable source admission
 
-Status: all six CI jobs passed on exact corrected e915bbb; local release development
-integration is complete but UNCOMPILED/UNRUN. Integrated canonical/replay/native/final review
-and prerequisite acceptance remain outstanding; this is not Air acceptance.
+Status: all six CI jobs passed on integrated `3f3e359`; its verified Windows
+package completed the bounded native creation/placement/initiative/flight route
+on 2026-10-01. Release prerequisite PR48 is merged, and accepted main `dbf1d63`
+is reconciled with all 411 non-document files unchanged from verified `3f3e359`.
+Local canonical verification and final exact-head review/CI remain outstanding;
+this is not Air acceptance or complete Air Elemental gameplay.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
-Writer: `flow4_import_review`, sole local integration writer assigned by root on
-2026-09-30. Root retains independent final review, publication and acceptance.
+Writer: root, sole writer after the reviewed integration handback. Historical
+checkpoints below retain the evidence status at their original source heads.
 
 ## Objective and authority
 
@@ -78,8 +81,8 @@ reopen with exact statistics, hover and immunities; unsupported actions/geometry
 cannot silently execute or consume resources. Future Shove must separately prove
 paid Prone against this source completes without effect, including retry/reopen.
 
-No tests/builds may run on this branch while the coordinating writer owns the
-heavy slot. No push or merge is authorized until root integration. `rustfmt`,
+No tests/builds may run on this branch while another lane owns the
+heavy slot. Root coordinates verification, publication and protected merge. `rustfmt`,
 static inspection and `git diff --check` are permitted. Authored tests are not
 passing evidence. Preserve source PDFs, historical exports, capture producers and
 the root's baseline. No other worktree is writable by this agent.
@@ -318,3 +321,124 @@ is claimed. Next action is root's independent review of the clean exact checkpoi
 followed by accepted dependency/main reconciliation and the outstanding exact-head
 canonical, required CI, genuine replay and native obligations above. This writer
 performed no push, cancellation, build/test, database, UI or source capture.
+
+### Exact integrated CI and native continuation — 2026-10-01
+
+Independent full integration review found no actionable defect at
+`3f3e3590e7977eca529168fa9069e8e1bca72434`, tree
+`75350e552cac0ad404c2e130b8c595d396d13d50`. The review covers the normal release
+union, source admission, staged placement, exact source consumers and unchanged
+history; its independent byte audit is SHA256
+`c00b57ae03d7c7f39181ee1350f54357d09e2d3a1ca3681aeff17c74ed8cf47f`.
+All29 fixture blobs, five original receiving suites and21 protected raw artifacts
+remain exact release8c; Air payloads/manifest/picker remain exact corrected e915.
+
+All six CI jobs passed on3f. Linux run
+[36758101295](https://github.com/idiotswill/DMd/actions/runs/36758101295), runtime
+job110033398903, executes synthetic merge
+`b0da5b9857c699b912f09ce5cd7ed4341a9e5ed9` with d88/3f parents and exactly the
+3f tree. Windows run
+[36758101277](https://github.com/idiotswill/DMd/actions/runs/36758101277), runtime
+job110033398912, executes literal3f. Actual full logs report783/785 passed,
+zero failed/ignored/filtered,56 result groups; all60 table tests, all8 original
+Flow4 continuations, four Magic Missile and five release cases pass. The source
+creation/cold restore and installed-source refusal controls pass. Windows frontend
+reports118 tests in18 files, zero diagnostics and141 modules. Both MSRV and the
+architecture/genericity guards pass. External completed bundle
+`tooling/air-3f3e359-ci/final-evidence.json` has SHA256
+`4b20ce165a53a570ff9c9253b1dc1ba29d1850431ed84de39180044d11045b57`.
+These results verify3f; they do not become executions on a later documentation head.
+
+The actual Windows artifact11130047457 was downloaded,232467920 bytes, archive
+SHA256 `bcf9eb2441b7965657156a4de43d9e91d2f6d7406c3743461da41a49b9317090`.
+Independent verification checked all1071 payloads against the archive/extraction,
+manifest and source. The portable executable SHA256 is
+`f177c0a05ba445f86256d0f6794b025ad67a72ee7abc79a58d9cfb1f8d61cf45`;
+the independent package audit SHA256 is
+`30bcba73bab75aa227cc061944c0c877d479b038ba4fd1a6340e393260b5ee43`.
+The installer was verified as a payload but was not installed.
+
+Root exercised that portable build through actual native controls in the existing
+QA campaign after the release route's genuine Finished66. Read-only persisted
+cuts independently establish the following bounded observations:
+
+- Actual current-catalog creation67 admits a Large90HP Air with full pin
+  `srd-5.2/5.2.1/air-elemental/b1b6e8fbf0f250cf`, empty loadout and no item/ammo
+  grants. Its catalog shows the documented unavailable actions/geometry. Actual
+  assignment68 gives Host control while preserving Arin's Rook/Mage bindings.
+- A submitted Air/Rook overlap at5/5 is visibly refused. The captured campaign
+  state and all scoped table rows remain exactly68. Correcting Air to10/5 on a
+  bright50-foot square map succeeds69, with10-foot body height and floor elevation0.
+- Normal initiative70 creates four separate groups. Labeled QA faces entered
+  through ordinary owned dice forms yield Rook21, Hag6 and Mage12. Air's actual
+  normal1d20/+5 request is pending73. A normal close, process exit and launch of
+  the same hashed executable preserve that exact request, state and captured rows.
+  The reopened input has its initial accessibility value0; no Air face was accepted
+  before closing. The labeled QA face20 is then accepted once74, yielding25 and
+  first turnAir/global9. These test inputs are not claimed physical die tosses.
+- Host's normal `fly 5 feet up` route succeeds75 at10/5/elevation5feet. Movement
+  spent is5feet; Action and Reaction remain available. No OA, falling work or raw
+  request is produced. A second full process close/reopen retains the identical
+  saved state and captured rows,90HP, airborne position and movement cost. Normal
+  End turn76 reaches Rook/global10. No round wraps; world clock remains6.
+- Existing item identities/custody, source identities, resources,11/81/93HP,
+  Mage Armor's absolute deadline28806, earlier release histories and session state
+  are preserved. The app then closes normally. No database mutation or debug/API
+  path was used to manufacture these states.
+
+The completed native observation log is external
+`tooling/ui-air-3f3e359-native-observations-2026-10-01.txt`, SHA256
+`815794887d924af4e9e7aebd2f88aaa7e244736b9e7b08e00414e13247ee99cf`.
+The snapshots are campaign-scoped read-only evidence, not a full SQLite backup;
+tables without campaign_id, including sessionparticipants, are outside that
+capture. Native observations and saved-state audits serve different purposes.
+This route does not prove native Slam/Multiattack/Whirlwind/Air Form execution,
+all special Hover condition transitions, ammunition/thrown use, or later Shove.
+Those declared limits and receiving obligations remain unchanged.
+
+### Accepted-main reconciliation plan — 2026-10-01
+
+Release PR48 merged as `dbf1d633460473183324b4ec519e8d1980884b5c` after expected-head
+verification of d4 and its exact all-six checks. Its full tree equals reviewed d4;
+compared with the already integrated release8c, only five documentation paths
+change. Root freshly fetched main and the unchanged published Air3f and will
+commit this plan before a normal merge of dbf. Preserve both Air and accepted
+release evidence in any documentation conflict; compare every non-document blob
+with3f afterward. Any unexpected source difference needs fresh semantic review.
+Do not import MR, corrected Hag, Shove, Grapple, counts or Ogre into this slice.
+
+After that reconciliation, inspect the complete delta and independently review
+the candidate. Run the repository's canonical `./scripts/verify` on its frozen
+receiving head with one local heavy slot, private target, normal stack/profile
+and full original history suites. The corrected core focused runner currently
+owns that slot; no parallel local build/native/database operation is authorized.
+Update this plan with actual results, run all six checks on the final published
+head and merge only with expected-head protection. Verify literal merged main
+separately. Prior successful3f CI/package/native evidence remains attributed to3f,
+with byte equivalence established explicitly if only documents change.
+
+Local canonical and final receiving-head CI are still unmet. Air acceptance,
+Shove acceptance and Gate4 completion are not implied by this checkpoint.
+
+### Accepted-main union recorded — 2026-10-01
+
+Plan3593c1 preceded normal merge
+`5b45c7f5646027ba059bd1a1ea086946ae09ad43`, tree
+`6620c91d5c3e31a92fcc046bf70ff3200bff31ed`, with accepted dbf main as its second
+parent. Squash ancestry exposed eight conflicts. Root inspected each: the three
+source/test conflicts were already-reviewed Air additions (source-pin UI controls,
+current Mage/dragon creation pins, and source placement against the staged release
+candidate). Their exact3f blobs were retained. Five documentation conflicts combine
+the accepted release checkpoint and qualified Air evidence; no source union was
+silently discarded or replaced by the older release-only version.
+
+The complete merge differs from3f only in six documentation files. A fresh root
+audit checks all411 non-document tracked blobs,29 fixture blobs and21 protected
+raw worktree artifacts against the previously reviewed3f; every one is exact.
+Audit SHA256 is `541631139a58c1ec5ff71c2009caf10bbde43a11dc3bcc52baab8a8a7da9642f`.
+The accepted main is now an ancestor. This proves byte equivalence, not new-head
+execution. The next frozen documentation checkpoint receives independent review
+and local canonical verification after the guarded-core focused run returns the
+heavy slot. No additional source edits, fixture recapture or parallel native run
+are needed for this reconciliation. Canonical results and final-head CI remain
+to be recorded before protected merge.
