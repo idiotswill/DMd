@@ -1,6 +1,10 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status: bounded source authoring authorized, 2026-10-04. Root explicitly
+Current status: source58077e7 is frozen after complete root and independent review;
+two private validator consistency findings require correction. Root is sole writer
+for the bounded correction recorded below, 2026-10-04. All controls remain UNRUN.
+
+Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
 `caded2228bb841bec6bf056f0d0e7a7202b95b49`, tree
 `e32451a35397054ecf95d3620a7b77796e8d5190`. Root's complete plan review is CLEAR:
@@ -488,3 +492,36 @@ and publication. Do not run beside its heavy slot. Before-pickup source custody
 integration, application offers/session admission, all original replay/cold/store
 and portable recovery, native acceptance, canonical checks, receiving-head CI and
 accepted-main integration remain mandatory. Gate4 is not complete.
+
+## Review correction plan — 2026-10-04
+
+Root read the full independent source review
+`tooling/ground-58077e7-complete-independent-review-2026-10-04.md`, SHA256
+`36268f2c29250953fc0d4874f20a7c8acfa48677d9f2e49df09d36247510f84e`,
+and independently completed the full source/control review. No public bypass was
+found: the existing public and restore guards reject both shapes below. Correct
+the private consistency contract before publication, preserving all old controls.
+
+1. Require a unique relevant completion-kind node for the admitted own-turn single
+   physical attack. A forged second FinishAttack under the genuine AttackRoll can
+   otherwise replace a real Graze pause's parent while preserving kind and ancestry.
+   Keep exact accepted-raw identity and causal path checks. Apply uniqueness at
+   pause validation, actual completion and retained after-record validation; do not
+   choose the newest node or add a serialized receipt. Shield's real SpellProgram /
+   ResumeHit work remains distinct. The raw=None branch is checked without inventing
+   a positive fixed-damage melee Knockout source.
+2. Inventory all AttackAfterEquipment trace nodes at stable private boundaries.
+   The queued/selected record must own exactly one matching trace occurrence; no
+   record means no orphan trace occurrence. Preserve immediate selected-cut inverse
+   and actual decision/pump retirement. No alternative queue or schema is needed.
+3. Add real-producer Graze same-kind sibling rejection and selected extra-retired /
+   trace-only orphan negatives. Prove the counterfeit is a well-formed generic DAG,
+   then assert actual private continuation rejection and complete unchanged state,
+   including transient marker, raw and earlier cost. Keep the old wrong-kind and
+   duplicate-frame negatives and all existing positive consequence/choice controls.
+
+This plan precedes source changes. Only the private runtime, its new controls and
+this plan may change. No source/content/fixture/public-admission/profile/workflow
+change, compiler/test/native/DB execution or publication is part of this correction.
+Root Air87840 retains the heavy slot. Freeze the fix for independent delta review;
+all previously recorded production integration and Gate4 obligations remain open.
