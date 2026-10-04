@@ -1,9 +1,30 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: FOUR-FAMILY STATIC SOURCE CHECKPOINT RETURNED FOR REVIEW, 2026-10-04.
-Writer/status-before-code is `8824caacfd84951a7e1cb23acbfbcc08082c6bea`.
-Sole writing is returned to root at this clean commit; do not infer compiler,
-test, publication or public-activation authority from the authored source.
+Status: TWO REVIEWED NARROW CORRECTIONS AUTHORIZED, 2026-10-04.
+Root transferred sole SOURCE-WRITER ownership to `gate4_core_oct4` from clean
+`9ceb54cea6b7ceaf201249a78c74dd55efa77965`, tree
+`936607e504e0553e581b4473b2d18d1b906309d9`, for only the two findings below.
+This plan/status commit precedes corrections. The complete independent review is
+`tooling/grapple-9ceb54c-complete-independent-review-2026-10-04.md`, SHA256
+`31f46fd97e7769e1a3dc6775048d82acc5aa299bc19326b5a8a39ab5276b6d14`.
+Its complete memo, actual unarmed planner/packet and request callers were read.
+
+1. Preserve the genuine captured Goblin Strength8 and assert the actual intrinsic
+   unarmed component is zero (`1 + (-1)`), with unchanged target HP. Preserve
+   actual admission/release/completion and no-damage-raw/no-issue-cut controls.
+   Do not change production unarmed semantics or source profiles.
+2. Remove only the private unused `continuations::request` forwarding wrapper
+   after a full repository caller/import check. Keep `request_with_read` and all
+   its actual callers unchanged; do not add a lint allowance.
+
+Both are static-review findings, not observed compiler/test failures. No other
+production behavior or broader new tests are authorized. Direct rustfmt/static
+Git only; no Cargo/compiler/tests/build/native/database/publication or CI. Root
+retains the heavy slot. Do not integrate the still-UNRUN upstream d910 correction.
+Return the clean complete narrow delta to root for independent review. The source
+checkpoint and all15 attack plus10 owner controls remain UNCOMPILED/UNRUN.
+Historical writer/status-before-code for the full source was
+`8824caacfd84951a7e1cb23acbfbcc08082c6bea`.
 
 Authored continuation over the reviewed owner/core:
 
@@ -726,8 +747,8 @@ Accepted retry still precedes changed admission. A record walker is not replay.
 
 Current evidence is the static four-family source checkpoint described at the
 top, the unchanged ten owner controls and fifteen new authored UNRUN controls.
-Exact next action is full root/independent source and control review, followed by
-root-assigned exact-head compiler/tests and any required fixes. Writing is paused
-until root transfers it back. Resolve the documented source-positive dependencies
+Exact next action is the two narrow review corrections authorized at the top,
+then clean handback for root's independent delta review and later root-assigned
+exact-head compiler/tests. No broader source transfer is implied. Resolve the documented source-positive dependencies
 without profile edits or acceptance reduction. Public activation, dependency
 merges and the next gate remain unauthorized at this checkpoint.
