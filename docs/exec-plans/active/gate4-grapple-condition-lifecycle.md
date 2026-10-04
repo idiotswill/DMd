@@ -1,5 +1,17 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
+Follow-on status, 2026-10-04: this separate checkout is now
+`codex/gate4-grapple-attack-read-context`, based on exact published
+`9ef15eb92ab96414bb38e6807ba81bc42ae2f8c8`. Root assigned `gate4_ground_oct4`
+sole PLAN-ONLY writing for the
+[own-turn attack read-context checkpoint](gate4-grapple-attack-read-context.md).
+It requires root and independent core-peer review before source transfer, keeps
+all public authority closed, and preserves the full six-family/lifecycle/Gate4
+contract. PR59 and its original checkout remain frozen and root-owned; its ten
+condition tests still require actual exact-head CI evidence at this handoff.
+The source/author history below describes that dependency, not current source
+permission or a verified follow-on implementation.
+
 Status: **guarded source and controls independently reviewed; preparing draft
 publication for exact receiving-head CI.** All new controls remain UNRUN locally.
 Root now owns this branch. No public Grapple acceptance is claimed.
