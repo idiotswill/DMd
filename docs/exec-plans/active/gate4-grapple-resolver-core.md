@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: Reviewed app correction db60dd6 passed formatting and the three-package all-target check on 2026-10-01. Its focused run then stopped at an Escape test provenance assertion: domain11 passed; private core23 passed/1 failed; the remaining five commands did not run. The narrow test-only correction below is authored, pending independent review and execution. Sole correction writer: shove_publish_correction until clean handback to root. Root owns the heavy slot; no compiler/test retry is authorized while authoring. All public guards remain required; this is not runnable or accepted Grapple.
+Status: corrected `62995ce` passes the focused domain11, private core24, hands5, source4 and two app controls. Its completed strict Clippy attempt on 2026-10-04 fails on an oversized equipment-decision variant; the narrow representation correction below is planned. Root is sole writer and schedules the heavy slot. All public guards remain required; this is not runnable or accepted Grapple.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
@@ -227,3 +227,41 @@ Preserve full failure log `tooling/grapple-core-db60dd6-focused-2026-10-01/04-co
 Only static formatting/diff/UTF-8/byte checks may run for this correction. Return the clean committed exact head/tree and full small diff for independent review. No test/build retry or publication now. Both app filters still require actual one-test execution, and the full focused suite, canonical/CI, source-backed LR positives and deferred temporal/replay/app/native/public-activation obligations remain pending.
 
 Plan-first checkpoint `9db7383` preceded the test edit. The corrected test now asserts each attainable raw and resolved source against the submitted source, and constructs the deliberately forged Digital record by recomputing its resolved value. Its expected clone changes only source, so the full equality still checks request/raw faces/kept faces/modifier/total. The two existing Unauthorized assertions, positive retained validation, player/host visibility/ownership checks and whole-state no-mutation assertion remain. Only this test and this plan change; production and all other tests retain exact parent bytes. Direct configured rustfmt edition2024/skip_children formatting/check and diff whitespace passed. The corrected test remains UNCOMPILED / UNRUN; no runtime result above transfers to the new checkpoint.
+
+## Interrupted-run recovery and strict Clippy correction — 2026-10-04
+
+At clean `62995ce0242f771524d4c23c857048297d1c2cd4`, tree
+`0d69fb5055431d7e9f1580a8c3c7c0188cf15c2f`, the October1 attempt completed
+formatting, three-package all-target check and44 tests: domain11, private core24
+(including corrected Escape provenance), EffectiveHands5 and source4. It then
+stopped while compiling the first app test; no completion is inferred. The
+independent interruption audit SHA256 is
+`b64ecbe454f88254ed15ced4915b38c6540fec2efd270a385388b2559c337601`.
+
+Root resumed only commands7–9 using the identical source, GNU1.98.1, default
+profiles/stack, jobs1 and preserved target, with exclusive new evidence. The first
+attempt compiled successfully but its incorrect filename-based filter selected
+zero tests. The runner's actual-one-test guard stopped it, preserving the log
+SHA256 `ece1ad8f985c710ec7bb55c6d4c65e6c9757d9711c21d7ff2bc55469b8707013`.
+The compiled binary's test inventory establishes the real name as
+`table_tactical::choices::tests::guarded_grapple_work_and_attachments_have_no_continuation_projection`.
+Use that exact path in future focused commands; the earlier filename-based path
+is not a runnable test name. The source-authorization filter was already correct.
+
+The second continuation actually passed both named app tests once (46 focused
+tests across the two dates), then strict Clippy exited101 on
+`GrappleEquipmentDecision::Applied.equipment_before`: the enum is at least320
+bytes with315-byte and114-byte variants. Full failure log SHA256
+`87c4ae8a7ff6ea8a4e1ee08e1f636445ba9f94f64cfa60eede4e51067604789a`
+is preserved under `tooling/grapple-core-62995ce-continuation-2026-10-04-attempt2`.
+This is a lint failure, not a completed focused pass. No public/DB/native or
+canonical/CI acceptance follows from the private controls.
+
+After this plan commit, box only the Applied equipment before-image, construct
+that Box at its one producer and compare its borrowed value at retained validation.
+Serde's transparent Box representation must preserve the existing wire shape and
+all provenance/validation semantics. Do not suppress the lint, change a public
+guard or alter test assertions, fixtures or content. Inspect the complete small
+delta and every consumer before rerunning strict Clippy and the affected domain/
+private-core/app checks on the corrected exact head. Keep both interrupted/failed
+attempts; no earlier result becomes execution on that later head.
