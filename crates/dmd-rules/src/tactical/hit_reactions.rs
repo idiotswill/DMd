@@ -1,4 +1,5 @@
 //! Source Shield decisions attached to the accepted hit in the existing cursor.
+use super::grapple::execution::{ExecutionContext, ReadContext};
 use super::turns::*;
 use super::*;
 use crate::tactical_spells::*;
@@ -38,6 +39,13 @@ pub fn shield_choices(
     state: &CampaignState,
     actor: EntityId,
 ) -> Result<Vec<SpellCastChoice>, RulesError> {
+    shield_choices_with_read(&ReadContext::ordinary(state), actor)
+}
+pub(super) fn shield_choices_with_read(
+    read: &ReadContext<'_>,
+    actor: EntityId,
+) -> Result<Vec<SpellCastChoice>, RulesError> {
+    let state = read.state();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let entity = rules
         .entities
@@ -98,7 +106,9 @@ pub fn shield_choices(
             material: SpellMaterialChoice::None,
             mode: SpellCastMode::Immediate,
         };
-        if super::casting::shield_admission(state, &meta, &choice, r.next_occurrence).is_ok() {
+        if super::casting::shield_admission_with_read(read, &meta, &choice, r.next_occurrence)
+            .is_ok()
+        {
             choices.push(choice);
         }
     }
@@ -173,7 +183,11 @@ pub(super) fn waiting(state: &CampaignState) -> bool {
         })
 }
 
-fn advance(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+fn advance(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let current = review(state)?;
     if current.order.is_none()
         || current
@@ -192,14 +206,15 @@ fn advance(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErr
     } else {
         TacticalHitReviewStage::Resolved
     };
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
-pub(super) fn respond(
+pub(super) fn respond_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     window: TacticalWorkKey,
     accept: bool,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_window(state, window)?;
     let current = review(state)?;
@@ -211,7 +226,7 @@ pub(super) fn respond(
     if current.stage != TacticalHitReviewStage::Collecting || respondent.intent.is_some() {
         return Err(prerequisite("that response was already decided"));
     }
-    if accept && shield_choices(state, respondent.actor)?.is_empty() {
+    if accept && shield_choices_with_read(&execution.read(state)?, respondent.actor)?.is_empty() {
         return Err(prerequisite(
             "no source Shield response is currently available",
         ));
@@ -224,7 +239,7 @@ pub(super) fn respond(
         origin: meta.clone(),
         accepted: accept,
     });
-    advance(state, meta)
+    advance(state, meta, execution)
 }
 
 pub(super) fn delegate(
@@ -245,11 +260,12 @@ pub(super) fn delegate(
     Ok(())
 }
 
-pub(super) fn order(
+pub(super) fn order_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     window: TacticalWorkKey,
     instruction: &TacticalReactionOrdering,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_window(state, window)?;
     let current = review(state)?;
@@ -270,13 +286,14 @@ pub(super) fn order(
         origin: meta.clone(),
         instruction: instruction.clone(),
     });
-    advance(state, meta)
+    advance(state, meta, execution)
 }
 
-pub(super) fn decline(
+pub(super) fn decline_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     window: TacticalWorkKey,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_window(state, window)?;
     let current = review(state)?;
@@ -296,14 +313,15 @@ pub(super) fn decline(
         .ok_or(RulesError::Unauthorized)?
         .declined_after_selection = Some(meta.clone());
     current.stage = TacticalHitReviewStage::Resolved;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
-pub(super) fn cast(
+pub(super) fn cast_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     window: TacticalWorkKey,
     choice: &SpellCastChoice,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_window(state, window)?;
     let current = review(state)?;
@@ -320,7 +338,12 @@ pub(super) fn cast(
     if occurrence >= 32_768 || resolution(state)?.casts.len() >= MAX_TACTICAL_CASTS {
         return Err(invalid("response casting capacity exceeded"));
     }
-    let (record, source) = super::casting::shield_admission(state, meta, choice, occurrence)?;
+    let (record, source) = super::casting::shield_admission_with_read(
+        &execution.read(state)?,
+        meta,
+        choice,
+        occurrence,
+    )?;
     *state = apply_spell_casting_cost(state, actor, SpellCastingCost::Reaction)?;
     if let Some(source) = source {
         state
@@ -340,12 +363,14 @@ pub(super) fn cast(
     review_mut(state)?.stage = TacticalHitReviewStage::Casting;
     let original = review(state)?.work.clone();
     let previous = super::work_trace::enter(state, &original)?;
-    push_frame(
+    let queued = push_frame(
         state,
         vec![TacticalWorkKind::CommitShield { cast: occurrence }],
-    )?;
-    super::work_trace::leave(state, previous)?;
-    pump(state, meta)
+    );
+    let reset = super::work_trace::leave(state, previous);
+    queued?;
+    reset?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn finish_shield(
@@ -620,7 +645,8 @@ pub(super) fn validate_work(
 
 /// Shape/source validation complements replay of every accepted command. No
 /// retained number, response, or effect is accepted as an authority of its own.
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    let state = read.state();
     let Some(r) = flow(state)?.resolution.as_deref() else {
         return Ok(());
     };
@@ -843,7 +869,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 || declined.is_some()
                 || (hit.stage == TacticalHitReviewStage::Collecting && all_decided)
                 || (hit.stage == TacticalHitReviewStage::Selected && (!all_decided || !accepted))
-                || (accepted && shield_choices(state, attack.target)?.is_empty())
+                || (accepted && shield_choices_with_read(read, attack.target)?.is_empty())
             {
                 return Err(invalid(
                     "hit collection/selection differs from its waiting work",

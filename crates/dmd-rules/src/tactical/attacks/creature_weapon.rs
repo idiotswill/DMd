@@ -183,12 +183,13 @@ fn source_damage(facts: &SourceWeaponFacts, mode: RollMode) -> Vec<AttackDamageC
     result
 }
 
-pub(in crate::tactical) fn begin_creature_weapon(
+pub(in crate::tactical) fn begin_creature_weapon_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     feature_id: &str,
     selected: &CreatureWeaponUseChoice,
     pack: &RulesPack,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -244,6 +245,9 @@ pub(in crate::tactical) fn begin_creature_weapon(
     };
     let mut selected_choice = None;
     let mut last_error = None;
+    let read = execution
+        .read(state)?
+        .attack_current(actor, selected.target, true)?;
     for ability in &facts.abilities {
         let choice = WeaponUseChoice {
             weapon: selected.weapon,
@@ -255,8 +259,16 @@ pub(in crate::tactical) fn begin_creature_weapon(
             ammunition: selected.ammunition,
             equipment_change: selected.equipment_change,
         };
-        match planning::weapon_plan(state, meta, actor, &choice, window, &equipment.hands, pack)
-            .and_then(|plan| require_matching_plan(state, actor, &facts, &plan))
+        match planning::weapon_plan_with_read(
+            state,
+            meta,
+            actor,
+            &choice,
+            window,
+            &equipment.hands,
+            (pack, read.as_ref()),
+        )
+        .and_then(|plan| require_matching_plan(state, actor, &facts, &plan))
         {
             Ok(()) => {
                 selected_choice = Some(choice);
@@ -267,6 +279,7 @@ pub(in crate::tactical) fn begin_creature_weapon(
     }
     let choice = selected_choice
         .ok_or_else(|| last_error.unwrap_or_else(|| prerequisite("no source weapon plan")))?;
+    drop(read);
     super::begin_with_source(
         state,
         meta,
@@ -277,13 +290,15 @@ pub(in crate::tactical) fn begin_creature_weapon(
             feature_id: feature_id.into(),
             next_creatures: source_step.next,
         }),
+        execution,
     )
 }
 
-pub(super) fn validate_source(
+pub(super) fn validate_source_with_read(
     state: &CampaignState,
     attack: &TacticalAttack,
     plan: &WeaponAttackPlan,
+    read: Option<&super::super::grapple::reads::AttackRead<'_>>,
 ) -> Result<Vec<AttackDamageComponent>, RulesError> {
     let TacticalAttackSource::CreatureWeapon {
         source,
@@ -308,6 +323,7 @@ pub(super) fn validate_source(
         return Err(invalid("source weapon pin or Action admission differs"));
     }
     require_matching_plan(state, attack.actor, &facts, plan)?;
-    let (mode, _, _) = planning::hit_facts(state, attack.actor, &weapon.choice, plan)?;
+    let (mode, _, _) =
+        planning::hit_facts_with_read(state, attack.actor, &weapon.choice, plan, read)?;
     Ok(source_damage(&facts, mode))
 }

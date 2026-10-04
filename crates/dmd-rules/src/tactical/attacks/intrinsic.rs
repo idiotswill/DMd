@@ -60,6 +60,13 @@ pub(super) fn plan(
     state: &CampaignState,
     attack: &TacticalAttack,
 ) -> Result<IntrinsicPlan, RulesError> {
+    plan_with_read(state, attack, None)
+}
+pub(super) fn plan_with_read(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    read: Option<&super::super::grapple::reads::AttackRead<'_>>,
+) -> Result<IntrinsicPlan, RulesError> {
     planning::require_located_target(state, attack.actor, attack.target)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let entity = rules
@@ -79,8 +86,14 @@ pub(super) fn plan(
         attack.admission,
         TacticalAttackAdmission::UnarmedAction { .. }
     ) && super::unarmed::untrained_armor(state, attack.actor)?;
-    let (mode, armor, critical) =
-        planning::hit_facts_for(state, attack.actor, attack.target, false, untrained)?;
+    let (mode, armor, critical) = planning::hit_facts_for_with_read(
+        state,
+        attack.actor,
+        attack.target,
+        false,
+        untrained,
+        read,
+    )?;
     let mut prone = false;
     let (modifier, components, reach) = match &attack.source {
         TacticalAttackSource::Unarmed { ability } => {
@@ -245,8 +258,11 @@ pub(super) fn complete(
     state: &mut CampaignState,
     attack: &TacticalAttack,
     outcome: WeaponAttackOutcome,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    let plan = plan(state, attack)?;
+    let admitted = execution.read(state)?.attack_retained(attack)?;
+    let plan = plan_with_read(state, attack, admitted.as_ref())?;
+    drop(admitted);
     if matches!(outcome, WeaponAttackOutcome::Hit { .. }) && plan.prone {
         let target = state
             .rules

@@ -1,6 +1,68 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: FOUR-FAMILY SOURCE CONTINUATION AUTHORIZED, 2026-10-04.
+Status: FOUR-FAMILY STATIC SOURCE CHECKPOINT RETURNED FOR REVIEW, 2026-10-04.
+Writer/status-before-code is `8824caacfd84951a7e1cb23acbfbcc08082c6bea`.
+Sole writing is returned to root at this clean commit; do not infer compiler,
+test, publication or public-activation authority from the authored source.
+
+Authored continuation over the reviewed owner/core:
+
+- Sealed ephemeral `AttackRead` derives the complete incoming-attacker,
+  incoming-target and physical-outgoing-attacker set. Actual fresh AttackRoll
+  allocation produces AttackAdmission; actual pending creation produces its
+  direct RequestIssue cut. Every cut corresponds to actual pending/recorded
+  Attack or AttackDamage work, using target as the raw key subject. The real
+  issuing command is distinct from an earlier Shield damage mechanical cause.
+- Ordinary, printed creature, intrinsic and unarmed own-turn producers, retained
+  source/request validators, Goblin conditional damage and physical planning
+  share those facts. Current physical completion is separate from pure bounded
+  source reconstruction; it requires actual reserved hands/armor/shield/command
+  and current custody before applying the old same-Item/Thrown operation.
+- Exact direct Knockout/Graze completion re-enters its unique retired source
+  node, retains separate vitality ordinals, queues loss work before leaving and
+  resets the marker on errors. Completed attack cuts survive actual descendants;
+  no serialized completed-attack receipt was added. Unrelated release makes no
+  gratuitous cut. Inherited cuts, ends, proofs and work ancestry cannot be rewritten.
+- The closed private classifier now admits only the four own-turn families,
+  real turn work and the exact accepted-hit Shield response. Current Shield
+  admission uses current hands; commitment retains the real BoundSpell and cost.
+  Savage can complete only its actual newly observed ordinary damage record.
+  Spell attacks, OA, routine, movement, area, missile, fall and holder-break
+  paths remain refused; current public/import/raw guards are unchanged.
+- Fifteen new private producer controls are authored in
+  `grapple/execution/attack_tests.rs`, alongside the unchanged ten owner controls.
+  They cover all four families; two real Human holders; three Goblin release
+  waits and later source damage; real Mage Protective Magic Shield; actual
+  Cultist Hold Person/automatic Grapple save and post-attack CON child; raw-only
+  continuity; fixed and automatic no-die paths; Knockout and finite current-hand
+  AfterAttack/Thrown completion; Savage; unrelated wait; holder-break rollback;
+  cut/source/ancestry tampering and public/import/stale/ungranted-Inspiration
+  refusals. New source actors/equipment use canonical builders; replacement,
+  initiative, turns, Prone, spells, grips and attacks use production reducers.
+  Setup is explicitly private, not a replay or accepted table history.
+
+Static evidence only: direct rustfmt parsing/formatting and `git diff --check`.
+All fifteen new controls and this whole source head are UNCOMPILED/UNRUN. Source
+and baseline assumptions still require independent review and root-assigned
+exact-head Clippy/tests. No correctness, compatibility, CI, app, replay, SQLite
+or native pass is claimed. Domain/app/content/fixture/raw files, the prior
+core/condition/hands controls and the ten owner controls remain byte-unchanged.
+
+Source-grounded control limits remain explicit: current Mage has Protective
+Magic Shield but no `ordinary_hands` annotation, so there is no invented
+Mage-owned grip/Shield hand-release positive. Current starter gear does not
+provide greatsword/glaive, so real Graze acquisition remains required; its
+direct-choice binding is authored, not positively exercised. The unchanged
+retained automatic-miss refusal remains blanket; the authored positive uses a
+real underwater long-range dagger miss with no Graze. The captured Human lacks
+Inspiration and its tactical image cannot use the old kernel GrantInspiration
+path; a genuine granted baseline/positive remains required rather than a flag
+edit (ungranted refusal and Savage are authored). Genuine LR and two-hand reach
+acquisition remain the already recorded dependencies. These are not acceptance
+waivers or transfers to Gate 5. All original six-family, Ground/Ogre, replay,
+application and native requirements below remain mandatory before activation.
+
+Historical source transfer:
 Root renewed sole writing by `gate4_ground_oct4` from clean reviewed
 `f83e12e12c82ddc0f79bf05b72f72948fb918045`, tree
 `6a7c8c8232ce6210d9b79b9c004e9d807819aa04`. Both complete reviews were read
@@ -662,12 +724,10 @@ Accepted retry still precedes changed admission. A record walker is not replay.
    claims; exact-head native/canonical CI and receiving-head verification remain
    required. Prior or pending CI is not evidence for a new source head.
 
-Current evidence is the reviewed intermediate owner/core source at `f83e12e` and
-ten authored, uncompiled and UNRUN controls. Direct formatting and Git/static
-inspection passed; no runtime, replay, application or native acceptance is claimed.
-Exact next action is the renewed authorized four-family implementation above,
-including complete cut membership/issue causality, direct-choice ancestry,
-descendant retention and current physical completion. Preserve the reviewed
-owner/ordered-observation contract and return clean source for independent review
-before any root-assigned execution. Do not lift public authority, merge dependencies
-or begin another gate on the intermediate review's strength.
+Current evidence is the static four-family source checkpoint described at the
+top, the unchanged ten owner controls and fifteen new authored UNRUN controls.
+Exact next action is full root/independent source and control review, followed by
+root-assigned exact-head compiler/tests and any required fixes. Writing is paused
+until root transfers it back. Resolve the documented source-positive dependencies
+without profile edits or acceptance reduction. Public activation, dependency
+merges and the next gate remain unauthorized at this checkpoint.

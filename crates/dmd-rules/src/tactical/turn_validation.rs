@@ -352,7 +352,7 @@ pub(super) fn validate_with_read(
             }
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
-            super::failed_save::validate_failed_save(state, failed)?;
+            super::failed_save::validate_failed_save_with_read(read, failed)?;
         } else if super::grapple::waiting(state)
             || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
@@ -400,12 +400,12 @@ pub(super) fn validate_with_read(
         ));
     }
     super::creature_bridge::validate(state)?;
-    super::attacks::validate(state)?;
+    super::attacks::validate_with_read(read)?;
     super::shove::validate(state)?;
     if has_tactical_grapple_attachments(state) {
         super::grapple::validate(state)?;
     }
-    super::hit_reactions::validate(state)?;
+    super::hit_reactions::validate_with_read(read)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
     super::missiles::validate(state)?;

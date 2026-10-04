@@ -127,6 +127,26 @@ impl<'a> ReadContext<'a> {
         self.guarded.ok_or_else(|| invalid(message)).map(|_| ())
     }
 
+    pub(in crate::tactical) fn attack_current(
+        &self,
+        actor: EntityId,
+        target: EntityId,
+        physical: bool,
+    ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {
+        self.guarded
+            .map(|_| reads::AttackRead::current(self, actor, target, physical))
+            .transpose()
+    }
+
+    pub(in crate::tactical) fn attack_retained(
+        &self,
+        attack: &TacticalAttack,
+    ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {
+        self.guarded
+            .map(|_| reads::AttackRead::retained(self, attack))
+            .transpose()
+    }
+
     pub(crate) fn validate_recorded_grapple(&self, roll: &RecordedRoll) -> Result<(), RulesError> {
         let owned = self
             .guarded
@@ -181,7 +201,7 @@ impl ExecutionContext<'_> {
     ) -> Result<(), RulesError> {
         self.check_state(state)?;
         if self.guarded.is_some() {
-            admission::live_constraints(state)?;
+            admission::supported_context(state)?;
         }
         Ok(())
     }
@@ -190,8 +210,8 @@ impl ExecutionContext<'_> {
         self.check_state(state)?;
         require_execution(state)?;
         admission::supported_context(state)?;
-        // This intermediate owner checkpoint leaves attacks closed until their
-        // complete read/producer/completion adapter is implemented and reviewed.
+        // Only these shared producers participate in this private continuity
+        // chain. Public dispatch and all unsupported nested families stay closed.
         if !matches!(
             action,
             TacticalAction::Grapple { .. }
@@ -207,9 +227,45 @@ impl ExecutionContext<'_> {
                 | TacticalAction::UseLegendaryResistance
                 | TacticalAction::DeclineLegendaryResistance
                 | TacticalAction::EndTurn
+                | TacticalAction::ChooseTurnWork { .. }
+                | TacticalAction::Attack { .. }
+                | TacticalAction::CreatureWeaponAttack { .. }
+                | TacticalAction::CreatureAttack { .. }
+                | TacticalAction::UnarmedStrike { .. }
+                | TacticalAction::SubmitSavageAttacker { .. }
+                | TacticalAction::ChooseAttackKnockout { .. }
+                | TacticalAction::ChooseAttackMastery { .. }
+                | TacticalAction::RespondToHit { .. }
+                | TacticalAction::OrderHitResponses { .. }
+                | TacticalAction::DelegateHitResponses { .. }
+                | TacticalAction::CastHitShield { .. }
+                | TacticalAction::DeclineSelectedHitShield { .. }
         ) {
             return Err(prerequisite(
-                "private temporal attack/turn integration is not yet complete",
+                "action is outside the private Grapple temporal profile",
+            ));
+        }
+        if matches!(action, TacticalAction::Attack { choice } if choice.purpose != WeaponAttackPurpose::Normal)
+        {
+            return Err(prerequisite(
+                "only normal own-turn weapon attacks are supported",
+            ));
+        }
+        if matches!(
+            action,
+            TacticalAction::Attack { .. }
+                | TacticalAction::CreatureWeaponAttack { .. }
+                | TacticalAction::CreatureAttack { .. }
+                | TacticalAction::UnarmedStrike { .. }
+        ) && state
+            .rules
+            .as_ref()
+            .and_then(|r| r.tactical_creatures.as_ref())
+            .and_then(|c| c.runtime(active(state).ok()?))
+            .is_some_and(|r| r.routine.is_some())
+        {
+            return Err(prerequisite(
+                "source routines need their complete temporal adapter",
             ));
         }
         if state
@@ -222,6 +278,7 @@ impl ExecutionContext<'_> {
                 action,
                 TacticalAction::SubmitRoll { .. }
                     | TacticalAction::SubmitRollWithInspiration { .. }
+                    | TacticalAction::SubmitSavageAttacker { .. }
                     | TacticalAction::VoluntarilyFailSave
                     | TacticalAction::WithdrawGrapple { .. }
                     | TacticalAction::ReleaseGrapple { .. }
@@ -325,6 +382,51 @@ impl ExecutionContext<'_> {
         Ok(())
     }
 
+    pub(in crate::tactical) fn observe_savage_completion(
+        &mut self,
+        state: &CampaignState,
+        meta: &CommandMeta,
+        id: RollRequestId,
+        savage: &SavageAttackerRoll,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        let Some(owned) = self.guarded.as_mut() else {
+            return Ok(());
+        };
+        let matches: Vec<_> = owned
+            .produced
+            .rolls
+            .iter_mut()
+            .filter(|raw| raw.request.id == id)
+            .collect();
+        if owned.command != meta || matches.len() != 1 {
+            return Err(invalid("Savage completion does not own a new observed raw"));
+        }
+        let observed = matches
+            .into_iter()
+            .next()
+            .ok_or_else(|| invalid("Savage observation absent"))?;
+        let actual = state
+            .rules
+            .as_ref()
+            .and_then(|r| r.rolls.iter().find(|raw| raw.request.id == id))
+            .ok_or_else(|| invalid("new Savage raw absent"))?;
+        if &*observed != actual
+            || observed.accepted_by != *meta
+            || observed.savage_attacker.is_some()
+            || observed.original_result.is_some()
+            || savage.weapon_dice.is_none()
+            || !matches!(observed.purpose, PendingPurpose::TacticalResolution { key, .. } if key.role == TacticalRollRole::AttackDamage)
+            || crate::kernel::savage_result(&observed.request, savage)? != observed.result
+        {
+            return Err(invalid(
+                "Savage completion changes inherited or non-damage evidence",
+            ));
+        }
+        observed.savage_attacker = Some(savage.clone());
+        Ok(())
+    }
+
     fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
         self.check_state(state)?;
         let Some(owned) = &self.guarded else {
@@ -336,6 +438,34 @@ impl ExecutionContext<'_> {
             .as_ref()
             .ok_or(RulesError::Uninitialized)?;
         let after = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+        if let (Some(before_resolution), Some(after_resolution)) = (
+            &flow(owned.predecessor)?.resolution,
+            &flow(state)?.resolution,
+        ) && before_resolution.origin == after_resolution.origin
+        {
+            if let Some(old) = &before_resolution.grapple {
+                let new = after_resolution
+                    .grapple
+                    .as_ref()
+                    .ok_or_else(|| invalid("ongoing resolution dropped its Grapple evidence"))?;
+                if !new.cuts.starts_with(&old.cuts)
+                    || !new.ends.starts_with(&old.ends)
+                    || old.proofs.iter().any(|proof| !new.proofs.contains(proof))
+                {
+                    return Err(invalid(
+                        "ongoing resolution rewrote inherited Grapple evidence",
+                    ));
+                }
+            }
+            if let Some(old) = &before_resolution.work_trace
+                && after_resolution
+                    .work_trace
+                    .as_ref()
+                    .is_none_or(|new| !new.nodes.starts_with(&old.nodes))
+            {
+                return Err(invalid("ongoing resolution rewrote actual work ancestry"));
+            }
+        }
         fn exact_suffix<T: PartialEq>(before: &[T], after: &[T], produced: &[T]) -> bool {
             after.len() == before.len() + produced.len()
                 && after.starts_with(before)
@@ -361,5 +491,7 @@ impl ExecutionContext<'_> {
     }
 }
 
+#[cfg(test)]
+mod attack_tests;
 #[cfg(test)]
 mod tests;

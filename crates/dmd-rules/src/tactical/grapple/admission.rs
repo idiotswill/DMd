@@ -38,6 +38,7 @@ pub(super) fn loadout(
 pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError> {
     require_execution(state)?;
     if let Some(r) = &flow(state)?.resolution
+        && r.grapple.as_ref().is_some_and(|g| g.activity.is_some())
         && (r.grapple.is_none()
             || r.attack.is_some()
             || r.shove.is_some()
@@ -62,6 +63,13 @@ pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError>
             "This guarded Grapple core does not yet support the retained temporal consumer.",
         ));
     }
+    if flow(state)?
+        .resolution
+        .as_ref()
+        .is_some_and(|r| r.grapple.as_ref().is_none_or(|g| g.activity.is_none()))
+    {
+        profile::validate(state)?;
+    }
     live_constraints(state)
 }
 
@@ -75,6 +83,13 @@ pub(super) fn live_constraints(state: &CampaignState) -> Result<(), RulesError> 
     {
         for grip in &live.active {
             let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+            if loadout(state, grip.declaration.grappler)?.hands.hands[grip.declaration.hand.index()]
+                != HandAssignment::Free
+            {
+                return Err(prerequisite(
+                    "current physical equipment overlaps a live grip",
+                ));
+            }
             if !crate::tactical_conditions::can_act(rules, grip.declaration.grappler)?
                 || rules
                     .entities

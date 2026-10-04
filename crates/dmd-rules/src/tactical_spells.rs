@@ -51,6 +51,29 @@ pub fn validate_spell_components(
     verbal_possible: bool,
     material_fact: Option<&SpellMaterialFact>,
 ) -> Result<Option<ItemId>, RulesError> {
+    validate_spell_components_inner(state, plan, verbal_possible, material_fact, None)
+}
+pub(crate) fn validate_spell_components_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    plan: &SpellCastPlan,
+    verbal_possible: bool,
+    material_fact: Option<&SpellMaterialFact>,
+) -> Result<Option<ItemId>, RulesError> {
+    validate_spell_components_inner(
+        read.state(),
+        plan,
+        verbal_possible,
+        material_fact,
+        Some(read),
+    )
+}
+fn validate_spell_components_inner(
+    state: &CampaignState,
+    plan: &SpellCastPlan,
+    verbal_possible: bool,
+    material_fact: Option<&SpellMaterialFact>,
+    read: Option<&crate::tactical::grapple::execution::ReadContext<'_>>,
+) -> Result<Option<ItemId>, RulesError> {
     validate_spell_plan(plan)?;
     let defs = definitions()?;
     let spell = defs
@@ -70,7 +93,12 @@ pub fn validate_spell_components(
         .tactical_inventory
         .as_ref()
         .and_then(|i| i.loadout(plan.choice.actor));
-    let hands = crate::tactical_hands::EffectiveHands::current(state, rules, plan.choice.actor)?;
+    let hands = match read {
+        Some(read) => {
+            crate::tactical_hands::EffectiveHands::current_with_read(read, plan.choice.actor)?
+        }
+        None => crate::tactical_hands::EffectiveHands::current(state, rules, plan.choice.actor)?,
+    };
     let free_hand = component_free_hand(
         loadout,
         entity.spellcasting.as_ref().is_some_and(|c| c.free_hand),

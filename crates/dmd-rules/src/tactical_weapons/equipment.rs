@@ -180,15 +180,35 @@ pub(super) fn after_attack(
     before: &WeaponLoadout,
     hands: &EffectiveHands,
 ) -> Result<WeaponLoadout, WeaponError> {
+    after_attack_at(
+        input.state,
+        input.context.actor,
+        input.choice,
+        input.context.window,
+        input.definitions,
+        before,
+        hands,
+    )
+}
+
+pub(super) fn after_attack_at(
+    state: &CampaignState,
+    actor: EntityId,
+    choice: &WeaponUseChoice,
+    window: WeaponActionWindow,
+    definitions: &TacticalDefinitions,
+    before: &WeaponLoadout,
+    hands: &EffectiveHands,
+) -> Result<WeaponLoadout, WeaponError> {
     let mut loadout = before.clone();
-    if input.choice.delivery == WeaponDelivery::Thrown {
+    if choice.delivery == WeaponDelivery::Thrown {
         for hand in &mut loadout.hands {
-            if *hand == HandAssignment::Item(input.choice.weapon) {
+            if *hand == HandAssignment::Item(choice.weapon) {
                 *hand = HandAssignment::Free;
             }
         }
     }
-    if let Some(change) = input.choice.equipment_change
+    if let Some(change) = choice.equipment_change
         && change.timing == EquipmentChangeTiming::AfterAttack
     {
         let changed_item = match change.operation {
@@ -196,15 +216,14 @@ pub(super) fn after_attack(
             | AttackEquipmentOperation::Unequip { item } => item,
         };
         require(
-            !(input.choice.delivery == WeaponDelivery::Thrown
-                && changed_item == input.choice.weapon),
+            !(choice.delivery == WeaponDelivery::Thrown && changed_item == choice.weapon),
             "the thrown weapon is no longer available to equip or unequip",
         )?;
         apply_attack_equipment_operation(
-            input.state,
-            input.context.actor,
-            input.context.window,
-            input.definitions,
+            state,
+            actor,
+            window,
+            definitions,
             &mut loadout,
             change.operation,
             hands,

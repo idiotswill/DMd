@@ -709,7 +709,9 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
     let Some(r) = &flow(state)?.resolution else {
         return Ok(());
     };
-    let c = context(state)?;
+    let Some(c) = r.grapple.as_deref() else {
+        return Ok(());
+    };
     for proof in &c.proofs {
         validate_grip(state, proof)?;
     }
@@ -739,6 +741,9 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
         }
     }
     super::super::work_trace::validate(state)?;
+    if c.activity.is_none() {
+        return reads::validate_cuts(state);
+    }
     if r.pending.is_some() && waiting(state) {
         return Err(invalid("Grapple choice has competing dice"));
     }

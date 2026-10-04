@@ -35,6 +35,37 @@ impl EffectiveHands {
         Self::current_inner(state, rules, actor, true, Some(read))
     }
 
+    pub(crate) fn attack(
+        read: &crate::tactical::grapple::reads::AttackRead<'_>,
+    ) -> Result<Self, RulesError> {
+        let actor = read.actor();
+        let mut result = Self {
+            actor,
+            reserved: [None; 2],
+        };
+        if !read.uses_hands() {
+            return Ok(result);
+        }
+        let outgoing: Vec<_> = read
+            .grips()
+            .iter()
+            .filter(|g| g.declaration.grappler == actor)
+            .collect();
+        if outgoing.is_empty() {
+            return Ok(result);
+        }
+        let pack = RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))?;
+        let anatomy = ordinary_grapple_anatomy(read.state(), actor, &pack)?
+            .ok_or_else(|| invalid("admitted hand has no actual source anatomy"))?;
+        for grip in outgoing {
+            let d = &grip.declaration;
+            if d.anatomy != anatomy || result.reserved[d.hand.index()].replace(d.id).is_some() {
+                return Err(invalid("admitted hand source or reservation differs"));
+            }
+        }
+        Ok(result)
+    }
+
     fn current_inner(
         state: &CampaignState,
         rules: &RulesState,

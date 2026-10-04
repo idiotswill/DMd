@@ -422,10 +422,24 @@ pub(super) fn pump_with_context(
     Err(invalid("consequence execution capacity exceeded"))
 }
 
+#[cfg(test)]
 pub(super) fn choose(
     state: &mut CampaignState,
     meta: &CommandMeta,
     occurrence: u16,
+) -> Result<(), RulesError> {
+    choose_with_context(
+        state,
+        meta,
+        occurrence,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn choose_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    occurrence: u16,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if super::grapple::waiting(state)
         || super::shove::waiting(state)
@@ -481,8 +495,8 @@ pub(super) fn choose(
         .ok_or_else(|| invalid("unknown simultaneous work"))?;
     let work = frame.remove(index);
     super::missiles::select_impact(state, meta, &work)?;
-    super::continuations::start(state, meta, work)?;
-    pump(state, meta)
+    super::continuations::start_with_context(state, meta, work, execution)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn speeds(

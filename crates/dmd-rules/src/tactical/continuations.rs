@@ -328,7 +328,7 @@ pub(super) fn request_with_read(
             Err(invalid("movement choice has no raw roll"))
         }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
-            super::attacks::request(state, work, key)
+            super::attacks::request_with_read(read, work, key)
         }
         TacticalWorkKind::FinishAttack => Err(invalid("attack completion has no raw roll")),
         TacticalWorkKind::DeathSave { actor } => {
@@ -405,18 +405,6 @@ pub(super) fn request_with_read(
     }
 }
 
-pub(super) fn start(
-    state: &mut CampaignState,
-    meta: &CommandMeta,
-    work: TacticalWorkItem,
-) -> Result<(), RulesError> {
-    start_with_context(
-        state,
-        meta,
-        work,
-        &mut super::grapple::execution::ExecutionContext::ordinary(),
-    )
-}
 pub(super) fn start_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -458,7 +446,7 @@ fn start_inner(
     if super::movement::start(state, meta, &work)? {
         return Ok(());
     }
-    if super::attacks::start(state, meta, &work)? {
+    if super::attacks::start(state, meta, &work, execution)? {
         return Ok(());
     }
     match &work.kind {
@@ -629,9 +617,17 @@ fn start_inner(
         purpose: PendingPurpose::TacticalResolution { encounter, key },
         ruling: ruling(key.role, &rules.house_rules),
     });
+    let issued_work = resolution(state)?
+        .pending
+        .as_ref()
+        .ok_or_else(|| invalid("issued work absent"))?
+        .work
+        .clone();
+    super::grapple::reads::capture_issue(state, meta, &issued_work, key)?;
     Ok(())
 }
 
+#[cfg(test)]
 pub(super) fn submit(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -941,6 +937,7 @@ fn finish_inner(
             meta,
             &pending,
             result.ok_or_else(|| invalid("attack requires raw dice"))?,
+            execution,
         )?,
         TacticalWorkKind::FinishAttack => {
             return Err(invalid("attack completion is not pending dice"));

@@ -213,6 +213,21 @@ pub fn bind_spell(
     plan: &SpellCastPlan,
     choice: &SpellTargetChoice,
 ) -> Result<BoundSpell, RulesError> {
+    bind_spell_inner(state, plan, choice, None)
+}
+pub(crate) fn bind_spell_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    plan: &SpellCastPlan,
+    choice: &SpellTargetChoice,
+) -> Result<BoundSpell, RulesError> {
+    bind_spell_inner(read.state(), plan, choice, Some(read))
+}
+fn bind_spell_inner(
+    state: &CampaignState,
+    plan: &SpellCastPlan,
+    choice: &SpellTargetChoice,
+    read: Option<&crate::tactical::grapple::execution::ReadContext<'_>>,
+) -> Result<BoundSpell, RulesError> {
     let kind = executable_spell_kind(plan)?;
     if plan.origin.campaign_id != state.campaign_id()
         || plan.origin.expected_event_sequence != state.applied_event_sequence
@@ -255,8 +270,12 @@ pub fn bind_spell(
             .can_speak;
     }
     let material = material_fact(state, plan.choice.material)?;
-    let consumed_material =
-        validate_spell_components(state, plan, verbal_possible, material.as_ref())?;
+    let consumed_material = match read {
+        Some(read) => {
+            validate_spell_components_with_read(read, plan, verbal_possible, material.as_ref())?
+        }
+        None => validate_spell_components(state, plan, verbal_possible, material.as_ref())?,
+    };
     let SpellTargetChoice::Entities(actors) = choice else {
         return Err(unavailable(
             "this spell path requires explicit creature targets",

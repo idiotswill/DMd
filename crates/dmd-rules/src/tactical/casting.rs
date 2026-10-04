@@ -227,6 +227,20 @@ pub(super) fn shield_admission(
     choice: &SpellCastChoice,
     occurrence: u16,
 ) -> Result<(TacticalCasting, Option<TacticalCreatures>), RulesError> {
+    shield_admission_with_read(
+        &super::grapple::execution::ReadContext::ordinary(state),
+        meta,
+        choice,
+        occurrence,
+    )
+}
+pub(super) fn shield_admission_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+    meta: &CommandMeta,
+    choice: &SpellCastChoice,
+    occurrence: u16,
+) -> Result<(TacticalCasting, Option<TacticalCreatures>), RulesError> {
+    let state = read.state();
     if choice.spell_id != "shield"
         || choice.mode != SpellCastMode::Immediate
         || choice.material != SpellMaterialChoice::None
@@ -293,7 +307,7 @@ pub(super) fn shield_admission(
         return Err(invalid("response differs from its source Shield program"));
     }
     let selection = SpellTargetChoice::Entities(vec![choice.actor]);
-    let bound = bind_spell(state, &plan, &selection)?;
+    let bound = bind_spell_with_read(read, &plan, &selection)?;
     if bound.consumed_material().is_some() {
         return Err(invalid("Shield cannot consume material"));
     }

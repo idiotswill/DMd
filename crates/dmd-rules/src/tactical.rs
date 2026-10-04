@@ -474,22 +474,22 @@ fn dispatch(
             missiles::decline(next, meta, *window)?;
         }
         TacticalAction::RespondToHit { window, accept } => {
-            hit_reactions::respond(next, meta, *window, *accept)?;
+            hit_reactions::respond_with_context(next, meta, *window, *accept, execution)?;
         }
         TacticalAction::OrderHitResponses {
             window,
             instruction,
         } => {
-            hit_reactions::order(next, meta, *window, instruction)?;
+            hit_reactions::order_with_context(next, meta, *window, instruction, execution)?;
         }
         TacticalAction::DelegateHitResponses { window } => {
             hit_reactions::delegate(next, meta, *window)?;
         }
         TacticalAction::CastHitShield { window, choice } => {
-            hit_reactions::cast(next, meta, *window, choice)?;
+            hit_reactions::cast_with_context(next, meta, *window, choice, execution)?;
         }
         TacticalAction::DeclineSelectedHitShield { window } => {
-            hit_reactions::decline(next, meta, *window)?;
+            hit_reactions::decline_with_context(next, meta, *window, execution)?;
         }
         TacticalAction::ConcludeHostilities { cadence, ruling } => {
             aftermath::conclude(next, meta, *cadence, ruling)?;
@@ -536,21 +536,23 @@ fn dispatch(
             ready::abandon(next, meta, *actor)?;
         }
         TacticalAction::UnarmedStrike { target } => {
-            attacks::begin_unarmed(next, meta, *target)?;
+            attacks::begin_unarmed_with_context(next, meta, *target, execution)?;
         }
         TacticalAction::Shove { target } => shove::begin(next, meta, *target)?,
         TacticalAction::ChooseShoveSave { ability } => shove::choose_save(next, meta, *ability)?,
         TacticalAction::ChooseShoveOutcome { choice } => shove::choose_outcome(next, meta, choice)?,
         TacticalAction::RuleShovePush { ruling } => shove::rule_push(next, meta, *ruling)?,
         TacticalAction::SubmitSavageAttacker { roll } => {
-            attacks::submit_savage(next, meta, roll, pack)?;
+            attacks::submit_savage_with_context(next, meta, roll, pack, execution)?;
         }
         TacticalAction::DonShield { shield, hand } => {
             shields::change(next, meta, Some((*shield, *hand)), pack)?
         }
         TacticalAction::DoffShield => shields::change(next, meta, None, pack)?,
         TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
-            attacks::begin_creature_weapon(next, meta, feature_id, choice, pack)?
+            attacks::begin_creature_weapon_with_context(
+                next, meta, feature_id, choice, pack, execution,
+            )?
         }
         TacticalAction::CreatureArea {
             feature_id,
@@ -564,7 +566,9 @@ fn dispatch(
             feature_id,
             weapon,
         } => {
-            attacks::begin_creature_attack(next, meta, *target, feature_id, *weapon)?;
+            attacks::begin_creature_attack_with_context(
+                next, meta, *target, feature_id, *weapon, execution,
+            )?;
         }
         TacticalAction::ChooseLiquidLanding { choice } => falling::choose(next, meta, *choice)?,
         TacticalAction::CastSpell { choice, targets } => {
@@ -583,12 +587,14 @@ fn dispatch(
                 pack,
             )?;
         }
-        TacticalAction::Attack { choice } => attacks::begin(next, meta, choice, pack)?,
+        TacticalAction::Attack { choice } => {
+            attacks::begin_with_context(next, meta, choice, pack, execution)?
+        }
         TacticalAction::ChooseAttackKnockout { choice } => {
-            attacks::choose_knockout(next, meta, *choice)?
+            attacks::choose_knockout_with_context(next, meta, *choice, execution)?
         }
         TacticalAction::ChooseAttackMastery { choice } => {
-            attacks::choose_mastery(next, meta, choice)?
+            attacks::choose_mastery_with_context(next, meta, choice, execution)?
         }
         TacticalAction::Establish {
             encounter: authored,
@@ -747,7 +753,9 @@ fn dispatch(
         TacticalAction::AcceptInitiativeTie { total } => {
             initiative::accept_tie(next, meta, *total)?
         }
-        TacticalAction::ChooseTurnWork { occurrence } => turns::choose(next, meta, *occurrence)?,
+        TacticalAction::ChooseTurnWork { occurrence } => {
+            turns::choose_with_context(next, meta, *occurrence, execution)?
+        }
         TacticalAction::VoluntarilyFailSave => {
             continuations::voluntarily_fail_with_context(next, meta, execution)?
         }

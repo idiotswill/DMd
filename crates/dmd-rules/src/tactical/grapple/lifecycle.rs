@@ -16,7 +16,12 @@ pub(super) fn end_grip(
     cause: GrappleEndCause,
 ) -> Result<(), RulesError> {
     let grip = live_grip(state, id)?.clone();
-    if flow(state)?.resolution.is_some() {
+    if flow(state)?
+        .resolution
+        .as_ref()
+        .and_then(|r| r.grapple.as_ref())
+        .is_some_and(|c| c.activity.is_some() || c.cuts.iter().any(|cut| cut.grips.contains(&id)))
+    {
         let c = context_mut(state)?;
         if !c.proofs.iter().any(|g| g.declaration.id == id) {
             c.proofs.push(grip);
@@ -179,6 +184,7 @@ pub(in crate::tactical) fn release_with_context(
         // An unrelated Grapple activity is also outside this core's consumer set.
         if let Ok(c) = context(next) {
             match c.activity.as_ref() {
+                None => admission::supported_context(next)?,
                 Some(GrappleActivity::Attempt(a))
                     if a.declaration.id == id
                         && a.stage == TacticalGrappleAttemptStage::AfterEquipment => {}

@@ -148,6 +148,62 @@ pub fn recoverable_ammunition(expended: u32) -> u32 {
 pub fn prepare_weapon_attack(
     input: &WeaponAttackInput<'_>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
+    prepare_weapon_attack_inner(input, None)
+}
+
+pub(crate) fn prepare_weapon_attack_with_read(
+    input: &WeaponAttackInput<'_>,
+    read: &crate::tactical::grapple::reads::AttackRead<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    prepare_weapon_attack_inner(input, Some(read))
+}
+
+pub(crate) fn complete_weapon_equipment(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    attack: &TacticalAttack,
+    plan: &WeaponAttackPlan,
+) -> Result<WeaponLoadout, WeaponError> {
+    let state = read.state();
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical completion source absent"))?;
+    let current = state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_inventory.as_ref())
+        .and_then(|i| i.loadout(attack.actor))
+        .ok_or_else(|| invalid("physical completion loadout absent"))?;
+    require(
+        current.hands == plan.loadout_for_attack
+            && current.worn_armor == weapon.equipment_before.worn_armor
+            && current.shield == weapon.equipment_before.shield
+            && current.command == attack.origin,
+        "physical completion differs from actual reserved equipment",
+    )?;
+    crate::tactical_inventory::validate_loadout(state, current)
+        .map_err(|e| invalid(e.to_string()))?;
+    let hands = crate::tactical_hands::EffectiveHands::current_with_read(read, attack.actor)
+        .map_err(|e| invalid(e.to_string()))?;
+    hands
+        .validate_loadout(&current.hands)
+        .map_err(|e| invalid(e.to_string()))?;
+    let definitions = crate::tactical_definitions::bundled_tactical_definitions()
+        .map_err(|e| invalid(e.to_string()))?;
+    equipment::after_attack_at(
+        state,
+        attack.actor,
+        &weapon.choice,
+        weapon.window,
+        definitions,
+        &current.hands,
+        &hands,
+    )
+}
+
+fn prepare_weapon_attack_inner(
+    input: &WeaponAttackInput<'_>,
+    read: Option<&crate::tactical::grapple::reads::AttackRead<'_>>,
+) -> Result<WeaponAttackPlan, WeaponError> {
     let WeaponAttackInput {
         state,
         choice,
@@ -291,14 +347,22 @@ pub fn prepare_weapon_attack(
         }
     };
     history::validate(input, weapon, mastery)?;
-    let hands = crate::tactical_hands::EffectiveHands::current(
-        state,
-        state
-            .rules
-            .as_ref()
-            .ok_or_else(|| invalid("missing rules"))?,
-        context.actor,
-    )
+    let hands = if let Some(read) = read {
+        require(
+            read.actor() == context.actor && read.target() == choice.target && read.uses_hands(),
+            "attack read differs from physical reader",
+        )?;
+        crate::tactical_hands::EffectiveHands::attack(read)
+    } else {
+        crate::tactical_hands::EffectiveHands::current(
+            state,
+            state
+                .rules
+                .as_ref()
+                .ok_or_else(|| invalid("missing rules"))?,
+            context.actor,
+        )
+    }
     .map_err(|error| invalid(error.to_string()))?;
     let loadout_for_attack = equipment::before_attack(input, weapon, &hands)?;
     let ammunition = equipment::ammunition(input, weapon, &loadout_for_attack, &hands)?;

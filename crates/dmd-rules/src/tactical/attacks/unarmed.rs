@@ -55,10 +55,11 @@ pub(in crate::tactical) fn untrained_armor(
     Ok(!trained_pc && !trained_creature)
 }
 
-pub(in crate::tactical) fn begin(
+pub(in crate::tactical) fn begin_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     target: EntityId,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -113,12 +114,17 @@ pub(in crate::tactical) fn begin(
         damage_roll: None,
         outcome: None,
     };
-    let plan = intrinsic::plan(state, &attack)?;
+    let read = execution
+        .read(state)?
+        .attack_current(actor, target, false)?;
+    let proofs = read.as_ref().map(|r| r.captured()).unwrap_or_default();
+    let plan = intrinsic::plan_with_read(state, &attack, read.as_ref())?;
     attack.attack_modifier = plan.modifier;
     attack.mode = plan.mode;
     attack.armor_class = plan.armor;
     attack.critical_on_hit = plan.critical;
     attack.damage = plan.damage;
+    drop(read);
     let now = state.clock.now;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     if new_action {
@@ -158,7 +164,8 @@ pub(in crate::tactical) fn begin(
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
-    pump(state, meta)
+    super::super::grapple::reads::capture_admission(state, meta, proofs)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_admission(

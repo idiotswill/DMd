@@ -9,18 +9,19 @@ mod savage;
 mod spell;
 mod unarmed;
 mod validation;
+use super::grapple::execution::{ExecutionContext, ReadContext};
 use super::turns::*;
 use super::*;
 use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
-pub(super) use creature::begin_creature_attack;
-pub(super) use creature_weapon::begin_creature_weapon;
+pub(super) use creature::begin_creature_attack_with_context;
+pub(super) use creature_weapon::begin_creature_weapon_with_context;
 pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
 pub(super) use planning::admit_target as admit_body_target;
 pub use savage::savage_attacker_dice;
-pub(super) use savage::submit as submit_savage;
+pub(super) use savage::submit_with_context as submit_savage_with_context;
 pub(super) use spell::begin_spell_attack;
-pub(super) use unarmed::begin as begin_unarmed;
+pub(super) use unarmed::begin_with_context as begin_unarmed_with_context;
 pub(super) use unarmed::untrained_armor as body_untrained_armor;
 pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellProgramOccurrence)> {
     match attack.source {
@@ -28,8 +29,8 @@ pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellPro
         _ => None,
     }
 }
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
-    validation::validate(state)
+pub(super) fn validate_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    validation::validate_with_read(read)
 }
 
 fn current(state: &CampaignState) -> Result<&TacticalAttack, RulesError> {
@@ -48,13 +49,14 @@ fn weapon_error(error: WeaponError) -> RulesError {
     invalid(&error.to_string())
 }
 
-pub(super) fn begin(
+pub(super) fn begin_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: &WeaponUseChoice,
     pack: &RulesPack,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    begin_with_source(state, meta, choice, pack, None)
+    begin_with_source(state, meta, choice, pack, None, execution)
 }
 
 fn begin_with_source(
@@ -63,6 +65,7 @@ fn begin_with_source(
     choice: &WeaponUseChoice,
     pack: &RulesPack,
     source: Option<creature_weapon::PreparedCreatureWeapon>,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -118,7 +121,19 @@ fn begin_with_source(
         .and_then(|i| i.loadout(actor))
         .cloned()
         .ok_or_else(|| prerequisite("materialized current equipment is required"))?;
-    let plan = planning::weapon_plan(state, meta, actor, choice, window, &equipment.hands, pack)?;
+    let read = execution
+        .read(state)?
+        .attack_current(actor, choice.target, true)?;
+    let proofs = read.as_ref().map(|r| r.captured()).unwrap_or_default();
+    let plan = planning::weapon_plan_with_read(
+        state,
+        meta,
+        actor,
+        choice,
+        window,
+        &equipment.hands,
+        (pack, read.as_ref()),
+    )?;
     // A bounded source slice must fail BEFORE any cost when it cannot finish a rider.
     if plan
         .mastery
@@ -128,7 +143,8 @@ fn begin_with_source(
             "this weapon mastery requires the pending typed modifier/movement continuation",
         ));
     }
-    let (mode, armor_class, critical_on_hit) = planning::hit_facts(state, actor, choice, &plan)?;
+    let (mode, armor_class, critical_on_hit) =
+        planning::hit_facts_with_read(state, actor, choice, &plan, read.as_ref())?;
     let damage = match &source {
         Some(source) => source.damage(state, actor, &plan, mode)?,
         None => vec![AttackDamageComponent {
@@ -179,6 +195,7 @@ fn begin_with_source(
         damage_roll: None,
         outcome: None,
     };
+    drop(read);
     let mut budget = flow(state)?.budget.clone();
     budget.movement_progress = None;
     budget.movement_origin = None;
@@ -257,7 +274,8 @@ fn begin_with_source(
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
-    pump(state, meta)
+    super::grapple::reads::capture_admission(state, meta, proofs)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn key(
@@ -280,12 +298,14 @@ pub(super) fn key(
         occurrence: work.occurrence,
     })
 }
-pub(super) fn request(
-    state: &CampaignState,
+pub(super) fn request_with_read(
+    read: &ReadContext<'_>,
     work: &TacticalWorkItem,
     key: TacticalRollKey,
 ) -> Result<Option<RollRequest>, RulesError> {
+    let state = read.state();
     let attack = current(state)?;
+    let _admitted = read.attack_retained(attack)?;
     let (dice, modifier, mode, reason) = match work.kind {
         TacticalWorkKind::AttackRoll => (
             vec![DieSpec {
@@ -341,6 +361,7 @@ pub(super) fn start(
     state: &mut CampaignState,
     meta: &CommandMeta,
     work: &TacticalWorkItem,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<bool, RulesError> {
     match work.kind {
         TacticalWorkKind::AttackRoll if current(state)?.automatic_miss => {
@@ -353,11 +374,11 @@ pub(super) fn start(
         TacticalWorkKind::AttackDamage
             if current(state)?.damage.iter().all(|c| c.dice.is_empty()) =>
         {
-            apply_damage(state, meta, work.occurrence, None)?;
+            apply_damage(state, meta, work.occurrence, None, execution)?;
             Ok(true)
         }
         TacticalWorkKind::FinishAttack => {
-            finish(state, meta)?;
+            finish(state, meta, execution)?;
             Ok(true)
         }
         _ => Ok(false),
@@ -368,10 +389,11 @@ pub(super) fn resolved(
     meta: &CommandMeta,
     pending: &TacticalPendingWork,
     result: &RollResult,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     match pending.work.kind {
         TacticalWorkKind::AttackRoll => {
-            let request = request(state, &pending.work, pending.key)?
+            let request = request_with_read(&execution.read(state)?, &pending.work, pending.key)?
                 .ok_or_else(|| invalid("attack request absent"))?;
             let roll = request.resolve(result)?;
             let face = roll.kept_dice[0].value;
@@ -408,7 +430,7 @@ pub(super) fn resolved(
         }
         TacticalWorkKind::AttackDamage => {
             current_mut(state)?.damage_roll = Some(result.request_id);
-            apply_damage(state, meta, pending.work.occurrence, None)?;
+            apply_damage(state, meta, pending.work.occurrence, None, execution)?;
         }
         _ => return Err(invalid("not an attack continuation")),
     }
@@ -478,6 +500,7 @@ fn apply_damage(
     meta: &CommandMeta,
     occurrence: u16,
     choice: Option<KnockoutChoice>,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let attack = current(state)?.clone();
     let packet = packet(state)?;
@@ -528,14 +551,16 @@ fn apply_damage(
         ),
         damage_dealt: preview.outcome.damage_taken,
     };
+    let admitted = execution.read(state)?.attack_retained(&attack)?;
     let plan = attack
         .weapon()
-        .map(|_| planning::reconstruct(state, &attack))
+        .map(|_| planning::reconstruct_with_read(state, &attack, admitted.as_ref()))
         .transpose()?;
+    drop(admitted);
     // Finish this attack's physical equipment/history atomically with its damage,
     // before pumping resulting concentration/effect work. Those consequences may
     // incapacitate the attacker and drop equipment; never re-equip it afterward.
-    complete(state, meta, &attack, plan.as_ref(), outcome)?;
+    complete(state, meta, &attack, plan.as_ref(), outcome, execution)?;
     super::continuations::apply_vitality_from_cause(
         state,
         meta,
@@ -549,10 +574,61 @@ fn apply_damage(
     )
     .map(|_| ())
 }
-pub(super) fn choose_knockout(
+pub(super) fn choose_knockout_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: KnockoutChoice,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    choice_scope(
+        state,
+        meta,
+        TacticalWorkKind::AttackDamage,
+        execution,
+        |state, execution| choose_knockout_inner(state, meta, choice, execution),
+    )
+}
+pub(super) fn choose_mastery_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: &WeaponMasteryChoice,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    choice_scope(
+        state,
+        meta,
+        TacticalWorkKind::FinishAttack,
+        execution,
+        |state, execution| choose_mastery_inner(state, meta, choice, execution),
+    )
+}
+fn choice_scope<'a>(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    kind: TacticalWorkKind,
+    execution: &mut ExecutionContext<'a>,
+    action: impl FnOnce(&mut CampaignState, &mut ExecutionContext<'a>) -> Result<(), RulesError>,
+) -> Result<(), RulesError> {
+    let parent = super::grapple::reads::paused_parent(&execution.read(state)?, kind)?;
+    if let Some(parent) = parent {
+        let previous = super::work_trace::enter(state, &parent)?;
+        let result = action(state, execution).and_then(|()| {
+            execution.check_live_constraints(state)?;
+            super::falling::queue_losses(state, meta)
+        });
+        let reset = super::work_trace::leave(state, previous);
+        result?;
+        reset?;
+    } else {
+        action(state, execution)?;
+    }
+    pump_with_context(state, meta, execution)
+}
+fn choose_knockout_inner(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: KnockoutChoice,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let attack = current(state)?.clone();
     if attack.stage != TacticalAttackStage::KnockoutChoice {
@@ -564,18 +640,24 @@ pub(super) fn choose_knockout(
         return Err(invalid("attack occurrence capacity"));
     }
     resolution_mut(state)?.next_occurrence += 1;
-    apply_damage(state, meta, occurrence, Some(choice))?;
-    pump(state, meta)
+    apply_damage(state, meta, occurrence, Some(choice), execution)?;
+    Ok(())
 }
-fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+fn finish(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let attack = current(state)?.clone();
     let outcome = attack
         .outcome
         .ok_or_else(|| invalid("attack outcome absent"))?;
+    let admitted = execution.read(state)?.attack_retained(&attack)?;
     let plan = attack
         .weapon()
-        .map(|_| planning::reconstruct(state, &attack))
+        .map(|_| planning::reconstruct_with_read(state, &attack, admitted.as_ref()))
         .transpose()?;
+    drop(admitted);
     if plan
         .as_ref()
         .is_some_and(|p| p.mastery == Some(WeaponMastery::Graze))
@@ -584,7 +666,7 @@ fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErro
         current_mut(state)?.stage = TacticalAttackStage::MasteryChoice;
         return Ok(());
     }
-    complete(state, meta, &attack, plan.as_ref(), outcome)
+    complete(state, meta, &attack, plan.as_ref(), outcome, execution)
 }
 fn complete(
     state: &mut CampaignState,
@@ -592,15 +674,23 @@ fn complete(
     attack: &TacticalAttack,
     plan: Option<&WeaponAttackPlan>,
     outcome: WeaponAttackOutcome,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if let Some(plan) = plan {
+        let read = execution.read(state)?;
+        let after = if read.attack_retained(attack)?.is_some() {
+            crate::tactical_weapons::complete_weapon_equipment(&read, attack, plan)
+                .map_err(weapon_error)?
+        } else {
+            plan.loadout_after_attack.clone()
+        };
         let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
         let loadout = rules
             .tactical_inventory
             .as_mut()
             .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
             .ok_or_else(|| invalid("equipment absent"))?;
-        loadout.hands = plan.loadout_after_attack.clone();
+        loadout.hands = after;
         loadout.command = meta.clone();
         if let Some(item) = plan.thrown_weapon {
             let encounter = encounter(state)?;
@@ -637,23 +727,26 @@ fn complete(
     } else if matches!(attack.source, TacticalAttackSource::Spell { .. }) {
         spell::complete(state, attack)?;
     } else {
-        intrinsic::complete(state, attack, outcome)?;
+        intrinsic::complete(state, attack, outcome, execution)?;
     }
     resolution_mut(state)?.attack = None;
     resolution_mut(state)?.hit_review = None;
     Ok(())
 }
-pub(super) fn choose_mastery(
+fn choose_mastery_inner(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: &WeaponMasteryChoice,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let attack = current(state)?.clone();
     if attack.stage != TacticalAttackStage::MasteryChoice {
         return Err(prerequisite("no mastery choice is due"));
     }
     authorize(state, meta, attack.actor)?;
-    let plan = planning::reconstruct(state, &attack)?;
+    let admitted = execution.read(state)?.attack_retained(&attack)?;
+    let plan = planning::reconstruct_with_read(state, &attack, admitted.as_ref())?;
+    drop(admitted);
     let target = encounter(state)?
         .participant(attack.target)
         .ok_or_else(|| invalid("target absent"))?;
@@ -675,7 +768,14 @@ pub(super) fn choose_mastery(
         choice,
     )
     .map_err(weapon_error)?;
-    complete(state, meta, &attack, Some(&plan), WeaponAttackOutcome::Miss)?;
+    complete(
+        state,
+        meta,
+        &attack,
+        Some(&plan),
+        WeaponAttackOutcome::Miss,
+        execution,
+    )?;
     if let Some(WeaponMasteryConsequence::GrazeDamage {
         source,
         target,
@@ -710,5 +810,5 @@ pub(super) fn choose_mastery(
             Some(source),
         )?;
     }
-    pump(state, meta)
+    Ok(())
 }
