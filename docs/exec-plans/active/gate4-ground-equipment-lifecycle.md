@@ -1,10 +1,24 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status: draft PR60 at aff47ba failed its first actual CI compile. Source
-43bb7f5 corrects the moved receipt and test session type; independent bounded
-review is CLEAR. Root is sole writer, 2026-10-04. Fresh exact-head compilation
-is pending; all23 rules controls and the app preflight remain UNRUN.
-Runtime and production acceptance are not established.
+Current status, 2026-10-04: draft PR60 at ae3906e passes four quick CI jobs,
+including Linux/Windows MSRV all-target compilation. This verifies the prior
+43bb7f5 compiler correction; the first aff47ba failure remains preserved. Both
+runtime jobs are pending; no completed run of the23 new rules controls or app
+control is yet recorded. Runtime and production acceptance are not established.
+
+Before further execution, normally merge the independently reviewed foundation
+correction f701b3f: one test now keeps the helper's supported flow4 to compare the
+same actual physical derivation for reserved Right versus free Left. Full candidate
+and input equality prove the physical change; fresh/public flow4 and unsupported
+flow5 refusals are separate. PR57's actual8ec Linux failure (run37204883315,
+job111443894733) demonstrated this fixture error. Production guards stay exact.
+Plan eb52ff9 preceded correction f701b3f, whose independent review SHA256 is
+`2817220994b0eda9166f12b0a5f4530fa77c6e5c8dd6107165989971f5db76fe`.
+Root read the complete correction and review. Reconcile the focused63 manifest to
+the new clean receiving head/tree/source hashes and use a fresh evidence/target
+directory; the old ae390 runner must not execute a changed source. Air canonical
+has now completed, so root may allocate the sole heavy slot after this reconciliation.
+No new compile/test success is implied by this plan or the source-only merge.
 
 Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
