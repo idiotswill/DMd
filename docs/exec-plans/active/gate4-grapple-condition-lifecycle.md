@@ -227,8 +227,32 @@ journal, cold SQLite, portable replay or native play evidence.
 
 Avoid tests that merely assert a copied implementation formula. Exercise the
 actual producer-to-final-evidence transition and its release/retirement boundary.
-Preserve the original core controls unless the reviewed Dodge behavior directly
-changes their assertion; retain the dragon half and all unrelated assertions.
+Preserve the original core controls except the two explicitly reviewed migrations
+below; retain the dragon half and all unrelated assertions.
+
+Independent plan review found an additional concrete migration in
+`tests.rs::completed_request_and_automatic_proofs_cannot_authenticate_themselves`
+(starting at line804 on the supplied source). Its first assertion currently
+expects private validation to reject a coherently changed final request modifier,
+matching raw request/arithmetic, and copied Attempt/live/retained evidence. Its
+second expects private validation to reject removal of Paralyzed after a final
+automatic save. Both depend on rederiving completed evidence from current state,
+which this checkpoint deliberately stops doing. Record this change openly;
+do not simply delete the controls or mislabel private validation as original
+history authentication.
+
+Split/rename that test as necessary. Keep the exact negative controls for missing
+automatic decision, bare unfinished no-die pause, pending source derivation,
+shape/arithmetic and ownership. Preserve the coherent-final-forgery and changed
+post-final-condition cases through actual public retained/raw/restore guards,
+with full unchanged-state assertions where an operation is attempted. Explicitly
+document that the narrowly admitted private validator may retain such internally
+consistent completed evidence and cannot prove an arbitrary initial image's
+history. Original command replay must independently reject a counterfeit final
+request or invented automatic cause before activation. This is a reviewed
+temporal-authority boundary migration, not permission to admit forged state.
+The other planned migration changes only the old Dodge-refusal assertion while
+retaining its genuine oversized Dragon refusal.
 
 ## Planned slices, verification and next action
 
