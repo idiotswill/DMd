@@ -4,8 +4,9 @@ Status: `486ce8b` passed Linux CI, including old/current Hag coexistence, but bo
 original native Windows attempts reached the six-hour limit. The reviewed CI
 partition was published at `ad3b82b`. Its first actual isolated target reported
 1 passed/61 filtered in 4116.01s, but the coverage guard correctly rejected six
-missing doctest harnesses and produced no successful manifest. A plan-only argument-placement
-correction now preserves the full default workspace inventory and strict proof.
+missing doctest harnesses and produced no successful manifest. Root reviewed the
+argument-placement correction plan and authorized its bounded implementation,
+preserving the full default workspace inventory and strict proof.
 No corrected command has run. Canonical/native evidence, accepted dependencies,
 fresh complete partition/package verification and prerequisite acceptance remain
 incomplete. The [Windows CI recovery plan](gate4-windows-ci-recovery.md) records
@@ -14,13 +15,14 @@ Branch: `codex/gate4-magic-resistance-source`; draft PR53 at
 `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, freshly fetched on 2026-10-04;
 tree `f6ed6762420e92332435eeb6843529a981dd0cd6`. The checkout is named
 `gate4-shield-missile-runtime`.
-Writer: `gate4_ci_oct4` owns only the two directly related plans after root's
-explicit PLAN-ONLY transfer. Root approved the read-only diagnosis/proposal
-SHA256 `10bde088845ab4c89a8ebe0d15086199e1e2ff732b3ec6605fbf5fe9898de1bd`
-and must review the clean amendment before source writing. Root owns heavy-slot
-scheduling, publication, dependency reconciliation and acceptance. Earlier source
-reviews and 29 passing pure controls belong to aae8d47; they did not prove actual
-Cargo target selection. No MR gameplay production or test-body change is proposed.
+Writer: `gate4_ci_oct4` owns only commands(), the specified meaningful pure
+controls and directly related notes after root's explicit SOURCE transfer at
+clean `a1a958463000db4f38d66d89a742169891873845`. Root read both complete plan
+deltas and rechecked the actual failure/Cargo sources; its plan review is CLEAR.
+This writer-status commit precedes source editing. Root separately owns execution,
+publication, dependency reconciliation and acceptance. Earlier source reviews and
+29 passing pure controls belong to aae8d47; they did not prove actual Cargo target
+selection. No MR gameplay production or test-body change is authorized.
 Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority

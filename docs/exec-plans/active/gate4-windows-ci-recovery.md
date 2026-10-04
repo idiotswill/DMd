@@ -1,12 +1,13 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **Plan amendment only after the first real isolated job failed its
-coverage guard.** The exact named test passed; the partition did not receive a
-successful evidence manifest. The command-selection correction below is proposed
-and has not been implemented or executed.
-Sole PLAN-ONLY writer: `gate4_ci_oct4`, transferred by root on 2026-10-04 after
-root read the complete failure diagnosis and exact Cargo source trace. Source,
-helper tests, native work and publication require the next explicit root transfer.
+Status: **Reviewed argument-placement correction authorized for bounded source
+implementation; no corrected helper or native command has run.** The exact old
+target passed, while its partition failed the strict coverage guard.
+Sole SOURCE writer: `gate4_ci_oct4`, transferred by root on 2026-10-04 after
+reviewing the complete two-plan amendment `a1a958463000db4f38d66d89a742169891873845`,
+tree `da8ee3d277681a393686d24981cf52e5da6fff41`, and rechecking actual failure
+and exact Cargo sources. Commit this renewed writer status before any source.
+Helper/native/test execution and publication remain root-owned and unallocated.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
 Draft [PR53](https://github.com/idiotswill/DMd/pull/53) and freshly fetched branch
 head: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
@@ -15,8 +16,9 @@ head: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
 Root approved the bounded diagnosis/proposal, external
 `tooling/mr-ad3-isolated-diagnosis-2026-10-04/diagnosis-and-plan-proposal.md`,
 SHA256 `10bde088845ab4c89a8ebe0d15086199e1e2ff732b3ec6605fbf5fe9898de1bd`.
-This amendment must return as a clean docs-only checkpoint for root review before
-source editing. It preserves the parser, doctest inventory and package topology.
+Root reviewed the clean docs-only amendment and marked the bounded correction
+CLEAR for source implementation. Preserve parser, doctest inventory and package
+topology. Prior evidence does not verify the forthcoming correction.
 
 Historical plan review: root and peer required full workspace selection and a
 native combined output pipe, incorporated in `fdb106f5d830203e2ca2f4b9fec2431014366d99`.
@@ -50,8 +52,8 @@ six-hour cap or third unchanged retry. Existing failed attempts stay preserved.
 
 Root owns heavy/local execution, publication, prerequisite reconciliation,
 protected merge and final acceptance. Until further transfer, this writer may
-edit only this plan and directly related MR status: no source/helper implementation,
-Cargo/npm/build/test, DB/native operation,
+edit commands(), the reviewed pure controls and directly related plan status only.
+Do not execute helpers/tests, Cargo/npm/build, DB/native operation,
 push, merge, CI retry or cancellation. Do not edit another checkout.
 
 ## Observed failure and evidence
@@ -499,7 +501,8 @@ The present evidence schema already pins exact argv; this correction needs no
 schema change solely to move an argument. Actual new output incompatibility
 would be a fresh finding requiring explicit reconciliation.
 
-Exact next action: root reviews the clean docs-only amendment and transfers
-bounded source writing separately. Until then gate4_ci_oct4 owns only the two
-plan files; Air87840 keeps root's sole heavy slot. Canonical/native/source
-acceptance, accepted dependencies and full Gate4 closure remain outstanding.
+Exact next action: commit this renewed writer status, implement only the reviewed
+argv change and controls, then return a clean static source checkpoint for root
+and independent review before any execution. Air87840 keeps root's sole heavy
+slot. Canonical/native/source acceptance, accepted dependencies and full Gate4
+closure remain outstanding.
