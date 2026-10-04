@@ -84,7 +84,10 @@ exception, not new spell-attack support. Permit only its exact canonical Shield
 cast selected by that hit-review owner and trace, plus its actual CommitShield,
 canonical Defense SpellProgram and FinishSpell work. `hit_reactions`/`casting`
 still validate grant, target,
-component access, Reaction/slot cost and ownership. Do not allow an arbitrary
+component access, Reaction/slot cost and ownership. Release by a Shield responder
+must preserve the already selected BoundSpell, original component/focus access,
+payment and cast identity. It cannot rebind components against newly freed hands
+or charge the response again. Do not allow an arbitrary
 `casts` entry, SpellProgram attack, unrelated spell, Missile or area by calling
 it a descendant. Source casts already completed by that response retain their
 existing completion/proof rules; no new retained spell schema is introduced.
@@ -278,7 +281,12 @@ proofs and completed roles19/20 cannot poison the next actual private ordinary
 action after last release/resolution retirement. Keep source/anatomy validation
 for real reservations and physical inventory validation nonrecursive. The kernel,
 tactical and restore raw-only/retained guards stay closed; this split does not
-make an unauthenticated raw-only image executable. Migrate any old temporary hand
+make an unauthenticated raw-only image executable. Preserve the public
+`EffectiveHands::current` orphan-raw refusal. Any private reader that permits
+genuine completed roles19/20 after retirement must obtain its authorization from
+the actual validated producer/transition context, not from a caller flag or the
+mere presence of raw records. Keep that private authorization separate from the
+derived current reservations. Migrate any old temporary hand
 guard assertion explicitly to the correct public/retained boundary with stronger
 real-retirement coverage, preserving its hostile input and original assertions
 where still applicable.
