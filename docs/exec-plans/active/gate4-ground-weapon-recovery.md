@@ -1,8 +1,8 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Status: guarded foundation source and 15 controls authored, 2026-10-04;
-UNCOMPILED / UNRUN. Root reviewed plan `dfb8585` and transferred sole writer ownership to
-`gate4_ground_oct4` for the exact guarded foundation below on
+Status: guarded foundation source and 15 controls independently reviewed CLEAR,
+2026-10-04; UNCOMPILED / UNRUN. Root has received sole writer ownership back from
+`gate4_ground_oct4` and is preparing draft publication for receiving-head CI on
 `codex/gate4-ground-weapon-recovery`, reusing `gate4-source-creature-control`.
 Fetch and inspection found clean `28defe5a64348b819be028af13d22d3175dfc771`,
 tree `fe1c1c27834746741452947cc6b82c045452b9e0`, with no interrupted edits.
@@ -10,6 +10,27 @@ The old catalog-cache branch remains preserved at619ada0. The additive source an
 receipt changes remain guarded, with no public admission change. The full before/after contract below
 remains mandatory; the next checkpoint deliberately keeps all new public
 ground-pickup authority closed while its shared physical foundation is developed.
+
+Current reviewed source is `acfc01c06cd12cd628b9f8b81edc9eca480b9380`, tree
+`13a80fe353e868eea3b277caf85f987c6ed9097b`. Independent full21-path review and
+consumer audit found no actionable defect; external memo SHA256
+`4404ffa242b98ce77a6f8af0488e3a6562524fa73ff0c887cb45e8a9ee52a09b`.
+The separate audit SHA256 is
+`c164b486c88b8f784dfb8c8eb888d71b3262a7bbd9f153cb76d23343888c7464`.
+Root read that full review and the producer/inverse/guard/perception changes.
+These are static results, not compiler or runtime evidence.
+
+Root freshly fetched the unchanged development parent
+`2559bfe7404e642b11ea36a1323de7a35e0cb56c` on
+`codex/gate4-source-gear-counts`. Publish this guarded checkpoint as a draft
+against that branch only to isolate its delta and obtain exact-head CI while
+Air occupies the sole local heavy slot. No current remote head or PR exists.
+Do not merge into the unaccepted development parent. Accepted-main integration,
+retargeting, full before/after lifecycle, real play/recovery/native evidence and
+all receiving-head verification remain required before acceptance or merge.
+All original captures, source admission and unconditional new-authority guards
+remain intact. Later Ogre and Grapple integration must explicitly initialize
+new optional fields and refuse Pickup in their separately added consumers.
 
 ## Objective and dependency
 
