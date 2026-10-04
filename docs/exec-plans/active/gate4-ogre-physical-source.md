@@ -3,14 +3,14 @@
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
 root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
 Checkpoint2 adapters and eight controls passed root's independent static review
-at `1bf6c0d`; all new verification remains UNCOMPILED / UNRUN. The assigned
-checkpoint3 application/UI implementation agent is sole writer of
+at `1bf6c0d`; all new verification remains UNCOMPILED / UNRUN. Root received
+sole writer ownership back after the checkpoint3 application/UI handback on
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
-attack execution remain closed. No PR or runtime acceptance is claimed.
-Checkpoint3 application/UI route and controls are now authored for independent
-review; compilation, component execution and real application acceptance remain
-UNRUN. The checkpoint3 handback at the end supplies the current next action.
+attack execution remain closed. Checkpoint3 passed root's full independent
+static review; compilation, component execution and real application acceptance
+remain UNRUN. Root is preparing draft CI publication, not feature acceptance.
+The publication checkpoint at the end supplies the current next action.
 
 Root transferred this checkout from clean reviewed `df0e0e2` after independent
 plan amendment clearance, SHA256
@@ -721,3 +721,30 @@ finite physical forms, source OA, ground pickup, cost/receipt/cold/retry/forgery
 portable/native and lawful Grapple/LR positives remain UNMET until the later
 complete integration. Root coordinates accepted-main reconciliation and the
 separately owned ground implementation; this checkpoint does not close Gate4.
+
+## Independent checkpoint3 review and draft publication scope
+
+Root read the full13-path checkpoint3 delta at clean
+`9c1f33256d8d993e8c34b6c69f21899905eb8018`, tree
+`f97bc442eb4b255487ac781407371639f5697fb2`, all four Rust and eleven component
+controls and affected consumers/ownership/serialization context. No actionable
+defect was found. Review memo SHA256 is
+`ae25c217801a0b22800cb83ac841b1d5eaefecf9bef2887785d23fd17834cd88`.
+This CLEAR is static only, preserving earlier checkpoint1/2 reviews and their
+explicit uncompiled status. The complete source remains closed to admission.
+
+Root freshly fetched gear-count development parent
+`2559bfe7404e642b11ea36a1323de7a35e0cb56c`, which differs from this branch's
+`f562f30` parent only in its reviewed result documentation. After this plan commit,
+normally merge255 to make the draft's development base an ancestor. Inspect the
+complete union and require every non-document blob to remain exact9c1.
+No source or ground integration is authorized by this documentation union.
+
+Then publish a draft against `codex/gate4-source-gear-counts`/PR55 to run the
+first whole receiving-head CI, including real component/type/build checks.
+No remote Ogre branch or PR exists at this checkpoint. Never merge into that
+unaccepted development base. Canonical/native acceptance, genuine source/finite
+gear/all forms/OA/ground/cold/retry/portable evidence, accepted-main reconciliation
+and retargeting remain required before any merge. Root owns publication and exact
+merge protection. Air occupies the sole local heavy slot, so no parallel local
+build/test/native/database work starts here.
