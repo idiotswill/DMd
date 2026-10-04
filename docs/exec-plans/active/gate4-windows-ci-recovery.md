@@ -1,9 +1,14 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **PLAN ONLY, awaiting root's independent review before implementation.**
+Status: **Bounded implementation authorized; verification not yet run.**
 Sole writer: `gate4_ci_oct4`, explicitly assigned by root on 2026-10-04.
 Review amendment: root and independent peer requested workspace-preserving
 selection and native combined-output capture; incorporated below on 2026-10-04.
+Root reviewed the complete amended plan at `fdb106f5d830203e2ca2f4b9fec2431014366d99`
+and explicitly authorized this writer's helper/parser/tests/workflow work.
+External root review: `tooling/mr-fdb106f-root-plan-review-2026-10-04.md`, SHA256
+`3cd51872eceebe3a7317dcf5072ac4bd00264b3b45419412d370f2cc96111477`.
+Return a clean static checkpoint before any helper-test or native execution.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
 PR: draft [53](https://github.com/idiotswill/DMd/pull/53), published source
 `486ce8ba6ba8fb24f9d9f247f18c07370e8f6c4f`, tree
@@ -34,7 +39,7 @@ six-hour cap or third unchanged retry. Existing failed attempts stay preserved.
 
 Root owns heavy/local execution, publication, prerequisite reconciliation,
 protected merge and final acceptance. Until further transfer, this writer may
-perform only plan/static work: no Cargo/npm/build/test, DB/native operation,
+perform only implementation/static work: no Cargo/npm/build/test, DB/native operation,
 push, merge, CI retry or cancellation. Do not edit another checkout.
 
 ## Observed failure and evidence
@@ -283,6 +288,7 @@ Actual positive Counterspell/repeated-save Magic Resistance gameplay, remaining
 canonical/native evidence, accepted-main integration and the wider Gate4 finish
 line remain open under the MR plan. No obligation moves to Gate5.
 
-Next action: root independently reviews this PLAN ONLY commit and grants the
-bounded implementation handoff if clear. The writer must return the exact clean
-head/tree and retain sole branch ownership until explicitly transferred back.
+Next action: implement only the approved CI helpers, their pure tests and workflow
+topology; return the complete clean static checkpoint for independent review.
+Root schedules helper tests and native evidence afterward. The writer retains
+sole branch ownership until explicitly transferred back.
