@@ -1,7 +1,8 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Status: bounded foundation plan amendment only, 2026-10-04; no implementation or
-runtime acceptance. Root assigned `gate4_ground_oct4` as sole writer of
+Status: bounded foundation source authoring authorized, 2026-10-04; no runtime
+acceptance. Root reviewed plan `dfb8585` and transferred sole writer ownership to
+`gate4_ground_oct4` for the exact guarded foundation below on
 `codex/gate4-ground-weapon-recovery`, reusing `gate4-source-creature-control`.
 Fetch and inspection found clean `28defe5a64348b819be028af13d22d3175dfc771`,
 tree `fe1c1c27834746741452947cc6b82c045452b9e0`, with no interrupted edits.
@@ -445,10 +446,12 @@ are explicitly UNMET and remain later checkpoints in this same Gate4 objective.
 | Persistence | Real file SQLite and independent portable restore at pickup-owned choice and pending attack/damage; exact original retry, changed body/foreign actor/stale handle leave complete store unchanged. |
 | Compatibility | All29 frozen fixtures and five original receiving suites retain exact bytes and execute; old Equip/Unequip and source pins/fingerprints remain exact. |
 
-Status remains PLAN ONLY. The complete `28defe5` contract is independently reviewed;
-this 2026-10-04 bounded foundation amendment still needs root review. No schema,
-source, test, UI or source admission change and no runtime evidence exists. Git
-whitespace/static diff and non-document identity checks are the only verification
-appropriate to this amendment. Root owns the heavy slot. Exact next action: return
-this clean plan commit and writer ownership to root for review before any bounded
-source-authoring assignment. Keep new ground authority and Ogre creation closed.
+Root's independent exact-plan review of `dfb8585` is CLEAR; memo
+`tooling/ground-dfb8585-root-plan-review-2026-10-04.md`, SHA256
+`63f13a9ef049866e3e312a6ce084a60b14d5a54ef3733236eddb7e7490289867`.
+Root explicitly transferred the sole writer assignment after the separate Ogre
+UI plan review returned. This status commit precedes source edits. No implementation
+or runtime evidence is claimed. Exact next action: author only the guarded physical
+foundation and meaningful controls, then return a clean coherent checkpoint for
+independent review. Keep public ground authority and Ogre creation closed. Root
+owns the heavy slot; every new control is UNCOMPILED / UNRUN until allocated checks.
