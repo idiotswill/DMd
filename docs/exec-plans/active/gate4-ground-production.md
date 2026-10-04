@@ -1,8 +1,12 @@
 # Gate 4 — Ground equipment in the production attack path
 
-Status, 2026-10-04: PLAN ONLY; complete independent design review is CLEAR.
-Root is sole writer of `codex/gate4-ground-production` in `gate4-ground-production`.
-No source, compiler, tests, app, database, push or CI has run for this branch.
+Status, 2026-10-04: source checkpoint 2 authorized after complete independent
+design review. Root explicitly transferred sole SOURCE-WRITER ownership of
+`codex/gate4-ground-production` in `gate4-ground-production` to
+`gate4_core_oct4`, starting from clean `a563aa3dde053369078dec006b01e6f14943b6b9`,
+tree `c2dbe8f50021f1083a36c256ff3a394e2597c007`. This writer/status commit precedes
+new production source. No new production implementation, compiler, tests, app,
+database, push or CI has run here.
 
 Review of f8e0cd0 covered the complete300-line design and actual consumer seams;
 memo SHA256 `f8e31126b620e707127132459f4995a222815edfd2b9b93594d6788dd433079c`.
@@ -13,9 +17,16 @@ reading a provisional hand. The correction pairs actual reserved/free derivation
 and preserves separate fresh/public refusals; no production guard changes.
 Independent correction review SHA256 is
 `2817220994b0eda9166f12b0a5f4530fa77c6e5c8dd6107165989971f5db76fe`.
-This narrow prerequisite reconciliation is authorized; new production source
-writing remains pending its explicit writer checkpoint. Compilation/runtime of the
-correction and full production acceptance remain unverified here.
+The prerequisite was normally reconciled at `a563aa3`: the only non-document
+change from reviewed `f8e0cd0` is the exact independently reviewed `f701b3f`
+test blob. Receiving reconciliation review SHA256 is
+`d8a5b50295a0797a2aaf8c0791fb5b581c177c2cfff72626587f3f1c4fd9b213`.
+Compilation/runtime of that correction and full production acceptance remain
+unverified here. The author may implement only the coherent domain/rules
+activation, sealed fresh commit, paid retained reader, complete before/after
+validation and meaningful controls in checkpoint 2. Public application enable
+remains unavailable until all consumers and replay are coherent. The author
+cannot certify their own future source as independently reviewed.
 
 Fresh fetched development base is PR60 candidate
 `ae3906e8d24d840b2a196dd4ef64c16ab894ae39`, tree
@@ -309,5 +320,11 @@ and exact historical projection silence, source probe atomicity, source/grip
 reconstruction, retained completed-receipt validation without unsafe inversion,
 after-owner authority when incapacitated, and integration with future Grapple/7.
 Resolve concrete discovered caller gaps in this plan before code expansion.
-Air87840 retains the sole local heavy/native/database slot. This branch is currently
-plan-only; exact next action is full independent plan review, not execution.
+Air87840 completed normally. Root allocated the sole local heavy/native/database
+slot to Ground focused63 attempt2 session81251 on frozen `d55519e`; that is a
+separate checkout and does not verify this branch. No Cargo/compiler/tests/npm,
+build, native/live database or publication is authorized for this writer. Direct
+rustfmt, static inspection and Git are permitted. Exact next action is checkpoint
+2 source implementation followed by a clean full handback for root and a different
+independent reviewer. Amend and report any concrete new caller/authority gap before
+expanding the reviewed contract.
