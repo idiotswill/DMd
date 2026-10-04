@@ -123,6 +123,96 @@ pub fn perceive(
     validate_encounter(encounter, state)?;
     perceive_unchecked(encounter, state, observer, target)
 }
+
+/// Private equipment admission: a real stored point, never a fabricated creature.
+/// The point has no creature contacts, remembered visibility or Tremorsense fallback.
+pub(crate) fn object_point_access(
+    encounter: &TacticalEncounter,
+    state: &CampaignState,
+    observer: EntityId,
+    point: SpatialPoint,
+) -> Result<bool, SpatialError> {
+    validate_encounter(encounter, state)?;
+    point.validate().map_err(invalid)?;
+    if !encounter.battlefield.bounds.contains(point) || !aware(state, observer) {
+        return Ok(false);
+    }
+    let actor = participant(encounter, observer)?;
+    let from = actor.center().map_err(invalid)?;
+    let mut work = QueryWork::new();
+    work.sight(&encounter.battlefield)?;
+    let blind_sees = within(from, point, actor.senses.blindsight)?
+        && geometry::clear_effect(&encounter.battlefield, from, point)?;
+    let mut sees = blind_sees;
+    if !sees
+        && !conditions(state, observer).contains(&Condition::Blinded)
+        && geometry::clear_sight_with_truesight(
+            &encounter.battlefield,
+            from,
+            point,
+            actor.senses.truesight,
+        )?
+    {
+        work.charge(encounter.battlefield.terrain.len())?;
+        let magical = encounter
+            .battlefield
+            .terrain
+            .iter()
+            .any(|terrain| terrain.magical_darkness && terrain.volume.contains(point));
+        sees = illumination_unchecked(encounter, point, &mut work)? != LightLevel::Darkness
+            || within(from, point, actor.senses.truesight)?
+            || (!magical && within(from, point, actor.senses.darkvision)?);
+    }
+    if !sees {
+        return Ok(false);
+    }
+    let volume = actor.volume().map_err(invalid)?;
+    // Same endpoint convention as participant_distance, but the object is one
+    // exact point. Include the last occupied-cell-center endpoint for a partial
+    // vertical cell rather than inventing an Item footprint or rounding its point.
+    let centers = |min: i32, max: i32| {
+        let inset = (max - min).min(GRID_SQUARE_UNITS) / 2;
+        let last = max - inset;
+        let mut values = (min + inset..=last)
+            .step_by(GRID_SQUARE_UNITS as usize)
+            .collect::<Vec<_>>();
+        if values.last() != Some(&last) {
+            values.push(last);
+        }
+        values
+    };
+    let xs = centers(volume.min.x, volume.max.x);
+    let ys = centers(volume.min.y, volume.max.y);
+    let zs = centers(volume.min.z, volume.max.z);
+    for x in xs {
+        for &y in &ys {
+            for &z in &zs {
+                work.sight(&encounter.battlefield)?;
+                let hand_point = SpatialPoint { x, y, z };
+                if grid_distance(hand_point, point)? <= GRID_SQUARE_UNITS as u32
+                    && geometry::clear_effect(&encounter.battlefield, hand_point, point)?
+                {
+                    // Seeing through a transparent barrier does not permit a hand
+                    // to pass through it, even if its attack cover is not Total.
+                    work.charge(encounter.battlefield.obstacles.len())?;
+                    let mut blocked = false;
+                    for obstacle in &encounter.battlefield.obstacles {
+                        if obstacle.blocks_movement
+                            && geometry::segment_intersects(hand_point, point, obstacle.volume)?
+                        {
+                            blocked = true;
+                            break;
+                        }
+                    }
+                    if !blocked {
+                        return Ok(true);
+                    }
+                }
+            }
+        }
+    }
+    Ok(false)
+}
 pub(super) fn perceive_unchecked(
     encounter: &TacticalEncounter,
     state: &CampaignState,

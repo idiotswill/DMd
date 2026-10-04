@@ -103,7 +103,8 @@ pub(crate) fn visit_rules_history(
     // New tactical authority has always been event-sourced. Unlike pre-journal legacy
     // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
     // Keep the original pre-tactical anchor so every source-derived payload is replayed.
-    if dmd_domain::has_unimplemented_grapple_records(anchor)
+    if dmd_domain::has_unimplemented_ground_records(anchor)
+        || dmd_domain::has_unimplemented_grapple_records(anchor)
         || anchor.encounter_history.is_some()
         || crate::table_source_control::enabled(anchor)
         || anchor
@@ -1337,6 +1338,10 @@ fn validate_origins(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "rules_restore_ground_tests.rs"]
+mod ground_tests;
 
 #[cfg(test)]
 mod tests {

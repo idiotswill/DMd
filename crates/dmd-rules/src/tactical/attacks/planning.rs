@@ -304,6 +304,8 @@ pub(super) fn reconstruct(
         .ok_or_else(|| invalid("reserved equipment absent"))?;
     *current = weapon.equipment_before.clone();
     let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
+    crate::tactical_weapons::ground::restore_before_image(state, &mut before, attack, &pack)
+        .map_err(weapon_error)?;
     weapon_plan(
         &before,
         &attack.origin,

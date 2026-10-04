@@ -1,13 +1,13 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Status: bounded foundation source authoring authorized, 2026-10-04; no runtime
-acceptance. Root reviewed plan `dfb8585` and transferred sole writer ownership to
+Status: guarded foundation source and 15 controls authored, 2026-10-04;
+UNCOMPILED / UNRUN. Root reviewed plan `dfb8585` and transferred sole writer ownership to
 `gate4_ground_oct4` for the exact guarded foundation below on
 `codex/gate4-ground-weapon-recovery`, reusing `gate4-source-creature-control`.
 Fetch and inspection found clean `28defe5a64348b819be028af13d22d3175dfc771`,
 tree `fe1c1c27834746741452947cc6b82c045452b9e0`, with no interrupted edits.
-The old catalog-cache branch remains preserved at619ada0. No command, schema,
-source, test or admission change exists. The full before/after contract below
+The old catalog-cache branch remains preserved at619ada0. The additive source and
+receipt changes remain guarded, with no public admission change. The full before/after contract below
 remains mandatory; the next checkpoint deliberately keeps all new public
 ground-pickup authority closed while its shared physical foundation is developed.
 
@@ -324,6 +324,9 @@ assignment. The intended checkpoint contains the following cohesive changes:
    omission when None. Field names must agree across their constructors and
    reconstruction. Old choices, receipts, fixtures and fingerprints remain
    byte-for-byte unchanged. The record is evidence to check, never permission.
+   Source inspection additionally requires the original bounded ground-vector
+   index: the inverse must restore exact record order, not append a recovered
+   record at the end. This index is executor-derived evidence, never a choice.
 2. Add one crate-internal object-point admission query in the spatial module.
    Derive the observer from the actual campaign/encounter participant. Use current
    awareness, real senses, light, obscuration and exact stored object point; do
@@ -450,8 +453,58 @@ Root's independent exact-plan review of `dfb8585` is CLEAR; memo
 `tooling/ground-dfb8585-root-plan-review-2026-10-04.md`, SHA256
 `63f13a9ef049866e3e312a6ce084a60b14d5a54ef3733236eddb7e7490289867`.
 Root explicitly transferred the sole writer assignment after the separate Ogre
-UI plan review returned. This status commit precedes source edits. No implementation
-or runtime evidence is claimed. Exact next action: author only the guarded physical
-foundation and meaningful controls, then return a clean coherent checkpoint for
-independent review. Keep public ground authority and Ogre creation closed. Root
-owns the heavy slot; every new control is UNCOMPILED / UNRUN until allocated checks.
+UI plan review returned. Status/writer commit `8437b29eb7c74d499688b1463c96cd26a4877d6c`
+preceded all source edits. Exact next action: return the coherent guarded checkpoint
+for independent full-diff review, then root allocates focused checks and later
+integration. Keep public ground authority and Ogre creation closed. Root owns the
+heavy slot; every new control is UNCOMPILED / UNRUN until allocated checks.
+
+## Guarded foundation source handoff — 2026-10-04
+
+The additive Pickup choice and optional `AttackGroundPickupBefore` are authored.
+Both physical pending attacks and weapon history omit absent evidence. The image
+retains the exact Item, ground record and original index, scene/location/encounter
+and actual equipment. Existing receipts and choices retain their old serialization.
+The shared domain predicate rejects both a new image and a Pickup choice lacking
+one. Kernel/tactical validation and rules-enabled restore reject retained authority;
+the common dispatcher rejects all new choices under both policies before any
+state execution, including ordinary/source attacks, OA and nested Cleave. Direct
+public physical planning also refuses them. No after-work or UI route was added.
+
+Private preparation owns its original state borrow and derived candidate, binds
+the exact origin, actor, window and pickup operation at consumption, checks the
+actual current AttackAction and source-proven hands, and returns only a physical
+plan. It does not expose a commit or candidate setter. Existing ordinary/source
+planning reaches that same implementation; only private constructed controls can
+exercise Pickup behind the unconditional public guard. The internal working choice
+consumes Pickup once; the real command and retained original choice stay intact.
+The common grip helper is shared with reconstruction. Existing Equip/Unequip and
+the completed-throw path retain their behavior.
+
+The new object-point query uses current real actor senses/light/obscuration, exact
+stored height, bounded geometry work and separate five-foot manipulation access.
+It neither fabricates a creature nor uses remembered contacts/Tremorsense. Physical
+reach also rejects a movement-blocking transparent barrier, independently of attack
+cover. Explicit Medium/Large/Tiny and partial vertical-cell endpoint controls
+document the convention inherited from participant distance.
+
+The inverse checks the actual current Item and complete expected equipment image,
+then stages only its recorded physical transition in a local reconstruction and
+rederives physical preparation. It retains unrelated state and ground-record order.
+It does not infer a new Action allowance from the already-paid budget or treat the
+record as authenticated original history. Full later original-cut replay and the
+complete before/after lifecycle remain mandatory before this authority can open.
+
+Fifteen authored controls: eight private preparation/inverse/old-JSON/refusal tests,
+four spatial point tests, two actual common-dispatch/retained-guard tests, and one
+pure application restore-preflight refusal at current/later-snapshot/anchor cuts.
+The private inputs explicitly alter a frozen history's character/scene container;
+they are labeled synthetic and establish no accepted pickup or Ogre gameplay.
+No fixture is rewritten. Reserved hands use the existing explicitly synthetic
+composition helper, not a new admitted Grapple. All tests are UNCOMPILED / UNRUN.
+
+Only direct rustfmt, Git whitespace, UTF-8/include-path and immutable blob/raw-file
+audits are allocated here. No Cargo/rustc/compiler/test, database, native/UI, build,
+CI or publication operation ran. The independent review and runtime checks remain
+pending. The later Ogre integration must initialize the optional before-image in
+its separately added physical-source OA constructor; no other branch was edited.
