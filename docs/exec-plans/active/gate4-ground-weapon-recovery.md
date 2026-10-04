@@ -1,5 +1,16 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
+Follow-on status, 2026-10-04: this checkout is now
+`codex/gate4-ground-equipment-lifecycle`, based on guarded foundation
+`8ec12c3b1b24fe0d1ab28abd17bad99c37be4492`. Root assigned `gate4_ci_oct4`
+sole PLAN-ONLY writing for the concrete
+[attack equipment continuation checkpoint](gate4-ground-equipment-lifecycle.md).
+That plan requires root/peer review before source authoring and keeps every new
+public/restore authority closed. PR57 and its separate checkout remain frozen.
+The complete contract and foundation history below are retained; their older
+writer/publication statements describe that foundation checkpoint, not a current
+assignment or verified follow-on implementation.
+
 Status: guarded foundation source and 15 controls independently reviewed CLEAR,
 2026-10-04; UNCOMPILED / UNRUN. Root has received sole writer ownership back from
 `gate4_ground_oct4` and is preparing draft publication for receiving-head CI on
