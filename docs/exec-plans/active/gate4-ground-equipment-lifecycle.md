@@ -1,6 +1,32 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status, 2026-10-04: draft PR60 at ae3906e passes four quick CI jobs,
+Current status, 2026-10-04 17:00 UTC: actual local verification of clean
+d55519e27c92ad17b7278a0bbb87454820642996 passed fmt and strict three-package
+all-target Clippy. The first focused group ran all23 new continuation controls:
+20 passed and3 failed in fixture preparation/admission. The runner stopped there;
+the remaining40 controls, including the f701b3f reservation correction, did not run.
+The actual failure log SHA256 is
+`0713c3094e2a32e80480696f37436e3d7ae59278270f19f3e8fe08a64ed67ec5`.
+No full canonical, public integration or gate acceptance is implied.
+
+Correction plan before source edits: the two real Chimera fall controls place
+participants at z40 but retain the old battlefield's maxz40. Their occupied
+volumes extend beyond that bound, so encounter validation prevents perception
+and attack admission. Extend this constructed battlefield ceiling to60, retaining
+the actual actor positions, heights, ledge, flight source and fall distance. Assert
+valid geometry and precise target location before beginning either attack.
+The printed Goblin control requests zero ammunition despite its genuine carried
+Shortbow. Plan and materialize the same finite20 arrows, preserving every source
+weapon and the real Scimitar attack; assert the exact ammunition item remains
+unchanged through that melee attack and after-equipment decline.
+Change only this new test module and this plan. Preserve all original assertions,
+production guards, accepted histories and raw captures. Obtain independent delta
+review, then rerun all63 focused controls at the new frozen head with the reviewed
+GNU-host runner and a fresh target/evidence directory. Corrected success remains
+unverified until that actual run completes. The full production obligations below
+remain open, and this branch must not merge into its unaccepted development parent.
+
+Historical status before receiving the foundation fix: draft PR60 at ae3906e passes four quick CI jobs,
 including Linux/Windows MSRV all-target compilation. This verifies the prior
 43bb7f5 compiler correction; the first aff47ba failure remains preserved. Both
 runtime jobs are pending; no completed run of the23 new rules controls or app
