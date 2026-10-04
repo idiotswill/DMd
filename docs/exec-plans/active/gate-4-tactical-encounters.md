@@ -2,22 +2,42 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-## Current integration checkpoint — 2026-09-30
+## Current integration checkpoint — 2026-10-01
 
-Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
+Fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
+PR48 merge. Final reviewed head d4 passed all six checks and has exactly the same
+full tree as dbf. Separate literal dbf runtime checks remain pending. The detailed
+source, canonical, native and final-head evidence is in the release plan.
+
+Air3f passes all six checks and its actual verified package completed creation,
+overlap refusal, pending-initiative cold recovery and airborne cold recovery in
+the same campaign. Its local canonical and final receiving-head checks remain
+unmet. Shove, expiry, MR, guarded Grapple, source gear counts, complete Ogre and
+ground-weapon recovery remain separately owned unaccepted work; none reduces the
+full tactical gate. The Air plan records current-main reconciliation and exact
+next verification. No Gate5 work is authorized.
+
+### Historical integration checkpoint — 2026-09-30
+
+At this checkpoint, fetched main was `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
 protected merge. The complete tree equals reviewed source65b7606. Exact source
 canonical verification and all six CI checks pass, and corrected native package728
-was played with verified non-documentation source parity; separate literal-main
-runtime checks are pending. The [UI plan](gate4-table-ui-polish.md) qualifies the
-actual package, observations, earlier failures and remaining main proof.
+was played with verified non-documentation source parity. Separate literal-main
+checks now pass all six jobs, including747 Linux/749 native Windows Rust tests.
+The [UI plan](gate4-table-ui-polish.md) retains the qualified package observations.
 
 All three original c4d8 flow4 capture producers and all eight original-source
 baseline tests completed normally before that main advancement. Both completion
 audits verified immutable bytes and exact provenance. The
 [release plan](gate4-encounter-release.md) owns their seven-file import and unchanged
-continuation suite, normal UI/main reconciliation, final canonical/CI verification
-and real two-encounter desktop acceptance. Its old75991dd development checks pass;
-the newly integrated head is still unverified and PR48 remains unaccepted.
+continuation suite and normal UI/main reconciliation. Integrated8c03f9f now passes
+canonical775 GNU Rust tests, all six CI jobs (776 Linux/778 native Windows), all59
+table cases and all eight original flow4 continuations. Its verified Windows
+package completed actual closed-session Finish, cold Finished reopen, a second
+battlefield/physical initiative, paid attack cold continuation and active-session
+Finish. The same actors/items, spent uses and original Mage Armor deadline survive.
+This evidence-only checkpoint still needs exact-head checks/review, protected PR48
+merge and separate post-release-main verification; PR48 remains unaccepted.
 
 Air, Shove, timed expiry, Magic Resistance and Grapple remain separate Gate4
 development slices. All twelve rules families and eighteen spell mechanisms keep
