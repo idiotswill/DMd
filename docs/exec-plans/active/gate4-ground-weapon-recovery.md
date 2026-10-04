@@ -1,6 +1,26 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Follow-on status, 2026-10-04: this checkout is now
+Current status, 2026-10-04: PR57 at `8ec12c3` has an actual Linux test failure.
+Run37204883315/job111443894733 completed with exit101 after39 reported groups,
+478 passes and one failure; the full workspace did not complete. The failing
+reserved-hand test changes the synthetic helper's supported flow4 to5 before
+calling EffectiveHands, so shape validation fails before testing reservation.
+The actual log SHA256 is
+`ca95b53aa280599b535611884241363496a724fb894aa6feca2a840880e3ed9f`.
+
+Root's small correction plan, independently diagnosed with `gate4_core_oct4`:
+keep the labeled composition fixture at its supported flow4; prove Right reserved
+and Left free; call the same actual private physical derivation with only hand
+different (Right rejects, Left succeeds with exact custody/ground/hand changes),
+and prove the input unchanged. Separately preserve fresh/public refusal at flow4
+and the unsupported flow5/Grapple combination. Do not relax production shape,
+version, source or public admission to repair this negative control. This is not
+accepted Grapple/pickup history. Commit the test-only fix, review it independently,
+propagate it to receiving candidates and execute focused checks at their exact
+reviewed heads. Windows and receiving PR60 runtime checks remain pending; no
+runtime success or new compilation is claimed for the correction.
+
+Historical follow-on assignment, 2026-10-04: that checkout became
 `codex/gate4-ground-equipment-lifecycle`, based on guarded foundation
 `8ec12c3b1b24fe0d1ab28abd17bad99c37be4492`. Root assigned `gate4_ci_oct4`
 sole PLAN-ONLY writing for the concrete
@@ -20,7 +40,7 @@ rolled-Graze producer controls. This changes no source or admission. Root and a
 different peer must rereview the exact amendment before any source transfer;
 the full before/after contract and frozen PR57 dependency remain unchanged.
 
-Status: guarded foundation source and 15 controls independently reviewed CLEAR,
+Historical publication status: guarded foundation source and 15 controls independently reviewed CLEAR,
 2026-10-04; UNCOMPILED / UNRUN. Root has received sole writer ownership back from
 `gate4_ground_oct4` and is preparing draft publication for receiving-head CI on
 `codex/gate4-ground-weapon-recovery`, reusing `gate4-source-creature-control`.
