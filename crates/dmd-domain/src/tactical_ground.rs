@@ -4,6 +4,20 @@ use crate::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum AttackEquipmentAccessVersion {
+    GroundEquipmentV1,
+}
+
+/// Explicit encounter-local opt-in. Absence preserves every old flow5 projection.
+/// Only original accepted-command replay can authenticate this origin.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TacticalAttackEquipmentAccess {
+    pub version: AttackEquipmentAccessVersion,
+    pub origin: CommandMeta,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AfterAttackEquipmentIntent {
     Choose,
 }
@@ -106,6 +120,17 @@ pub fn is_ground_pickup(change: Option<AttackEquipmentChange>) -> bool {
 /// Check both encoded choices and receipts: neither may become authority at an
 /// earliest restore anchor, through a historical command, or after attack retirement.
 pub fn has_unimplemented_ground_records(state: &CampaignState) -> bool {
+    state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .is_some_and(|flow| flow.attack_equipment_access.is_some())
+        || has_attack_equipment_records(state)
+}
+
+/// Record inventory without rollout policy. Activation does not make a retained
+/// receipt or an orphan frame disappear from this descriptive query.
+pub fn has_attack_equipment_records(state: &CampaignState) -> bool {
     state
         .encounter
         .as_ref()

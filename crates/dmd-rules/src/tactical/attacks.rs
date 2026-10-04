@@ -31,6 +31,270 @@ pub(super) fn spell_occurrence(attack: &TacticalAttack) -> Option<(u16, SpellPro
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     validation::validate(state)
 }
+pub(super) fn validate_paid_equipment_plan(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    plan: &WeaponAttackPlan,
+) -> Result<(), RulesError> {
+    validation::validate_physical_plan(state, attack, plan)
+}
+
+pub(super) fn validate_paid_equipment_read(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+) -> Result<(), RulesError> {
+    validate_paid_equipment_identity(state, attack)?;
+    if resolution(state)?
+        .work_trace
+        .as_ref()
+        .is_some_and(|t| t.active.is_some())
+    {
+        return Err(invalid(
+            "a paid persisted read cannot substitute for entered completion",
+        ));
+    }
+    validation::validate_structure(state)
+}
+
+fn validate_paid_equipment_identity(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+) -> Result<(), RulesError> {
+    if has_unimplemented_grapple_records(state) {
+        return Err(invalid(
+            "Grapple attack reconstruction requires original admission proof",
+        ));
+    }
+    if !std::ptr::eq(current(state)?, attack) {
+        return Err(invalid(
+            "paid physical read requires the actual attached attack",
+        ));
+    }
+    super::attack_equipment_access::require_origin(state, &attack.origin)?;
+    validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
+    opportunity::validate_admission(state, attack)?;
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical source absent"))?;
+    validate_equipment_change_origin(state, &weapon.equipment_before.command, attack.actor)
+        .map_err(|e| invalid(&e))?;
+    if attack.target != weapon.choice.target
+        || (attack.delivery == TacticalAttackDelivery::Melee)
+            != (weapon.choice.delivery == WeaponDelivery::Melee)
+        || weapon.equipment_before.actor != attack.actor
+        || weapon.equipment_before.command.expected_event_sequence
+            > attack.origin.expected_event_sequence
+    {
+        return Err(invalid(
+            "paid physical declaration differs from its original equipment",
+        ));
+    }
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let timing = rules
+        .timing
+        .as_ref()
+        .ok_or_else(|| invalid("paid timing absent"))?;
+    let flow = flow(state)?;
+    let receipts = flow
+        .budget
+        .weapon_history
+        .iter()
+        .filter(|r| r.origin.id == attack.origin.id)
+        .collect::<Vec<_>>();
+    if flow.phase != TacticalPhase::Active
+        || active(state)? != attack.actor
+        || !matches!(
+            attack.admission,
+            TacticalAttackAdmission::OwnTurn
+                | TacticalAttackAdmission::CreatureAction { approach: None }
+        )
+        || weapon.choice.purpose != WeaponAttackPurpose::Normal
+        || weapon.window.kind != WeaponActionKind::AttackAction
+        || !timing.action_spent
+        || flow.budget.attack_window != Some(weapon.window)
+        || receipts.len() != 1
+    {
+        return Err(invalid(
+            "paid physical attack has no unique paid own-turn receipt",
+        ));
+    }
+    let receipt = receipts[0];
+    if receipt.origin != attack.origin
+        || receipt.actor != attack.actor
+        || receipt.target != attack.target
+        || receipt.window != weapon.window
+        || receipt.turn_number != timing.turn_number
+        || receipt.weapon != weapon.choice.weapon
+        || receipt.definition_id
+            != state
+                .items
+                .get(&weapon.choice.weapon)
+                .ok_or_else(|| invalid("selected Item absent"))?
+                .definition_id
+        || receipt.ground_pickup_before != weapon.ground_pickup_before
+        || receipt.after_equipment.is_some()
+        || receipt.outcome != WeaponAttackOutcome::Pending
+    {
+        return Err(invalid(
+            "paid physical receipt differs from the actual declaration",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn validate_equipment_completion_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    let attack = current(state)?;
+    validate_paid_equipment_identity(state, attack)?;
+    validate_completion_command(state, meta, attack)?;
+    let r = resolution(state)?;
+    let trace = r
+        .work_trace
+        .as_ref()
+        .ok_or_else(|| invalid("entered physical work has no trace"))?;
+    let active = trace
+        .active
+        .ok_or_else(|| invalid("physical completion is not entered"))?;
+    let mut nodes = trace.nodes.iter().filter(|n| n.work.occurrence == active);
+    let node = nodes
+        .next()
+        .ok_or_else(|| invalid("entered physical node absent"))?;
+    if nodes.next().is_some()
+        || active >= r.next_occurrence
+        || trace
+            .nodes
+            .iter()
+            .filter(|n| n.work.kind == node.work.kind)
+            .count()
+            != 1
+        || r.pending.is_some()
+        || state.rules.as_ref().is_some_and(|r| r.pending.is_some())
+        || r.frames.iter().flatten().any(|w| w.occurrence == active)
+        || !match node.work.kind {
+            TacticalWorkKind::FinishAttack => {
+                matches!(
+                    attack.stage,
+                    TacticalAttackStage::Finishing | TacticalAttackStage::MasteryChoice
+                ) && attack.outcome == Some(WeaponAttackOutcome::Miss)
+                    && attack.damage_roll.is_none()
+            }
+            TacticalWorkKind::AttackDamage => {
+                matches!(
+                    attack.stage,
+                    TacticalAttackStage::DamageRoll | TacticalAttackStage::KnockoutChoice
+                ) && matches!(
+                    attack.outcome,
+                    Some(WeaponAttackOutcome::Hit {
+                        damage_dealt: 0,
+                        ..
+                    })
+                ) && (attack.damage_roll.is_some()
+                    == attack.damage.iter().any(|c| !c.dice.is_empty()))
+            }
+            _ => false,
+        }
+    {
+        return Err(invalid(
+            "physical completion differs from its entered work and stage",
+        ));
+    }
+    let mut attack_nodes = trace
+        .nodes
+        .iter()
+        .filter(|n| n.work.kind == TacticalWorkKind::AttackRoll);
+    let roll_node = attack_nodes
+        .next()
+        .ok_or_else(|| invalid("physical completion lost attack work"))?;
+    if attack_nodes.next().is_some() {
+        return Err(invalid("ambiguous original attack work"));
+    }
+    let mut cursor = node.parent;
+    let mut ancestor_found = false;
+    while let Some(at) = cursor {
+        let mut parents = trace.nodes.iter().filter(|n| n.work.occurrence == at);
+        let parent = parents
+            .next()
+            .ok_or_else(|| invalid("completion ancestor absent"))?;
+        if parents.next().is_some() || at >= active || parent.parent.is_some_and(|p| p >= at) {
+            return Err(invalid("invalid physical completion ancestry"));
+        }
+        if at == roll_node.work.occurrence {
+            ancestor_found = true;
+            break;
+        }
+        cursor = parent.parent;
+    }
+    if !ancestor_found {
+        return Err(invalid(
+            "completion is not descended from its actual attack",
+        ));
+    }
+    if attack.automatic_miss {
+        if attack.attack_roll.is_some() || node.work.kind != TacticalWorkKind::FinishAttack {
+            return Err(invalid("automatic miss has incompatible raw completion"));
+        }
+    } else {
+        let id = attack
+            .attack_roll
+            .ok_or_else(|| invalid("physical completion lacks attack raw"))?;
+        if id != key(state, &roll_node.work)?.request_id() {
+            return Err(invalid("completion attack raw identity differs"));
+        }
+    }
+    if let Some(id) = attack.damage_roll
+        && id != key(state, &node.work)?.request_id()
+    {
+        return Err(invalid("completion damage raw identity differs"));
+    }
+    if matches!(
+        attack.stage,
+        TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+    ) {
+        super::attack_equipment::validate_pause(state)?;
+    }
+    validation::validate_raw(state)?;
+    Ok(attack)
+}
+
+pub(super) fn validate_equipment_choice_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    let attack = current(state)?;
+    validate_completion_command(state, meta, attack)?;
+    if !matches!(
+        attack.stage,
+        TacticalAttackStage::KnockoutChoice | TacticalAttackStage::MasteryChoice
+    ) || attack
+        .weapon()
+        .is_none_or(|w| w.choice.after_equipment.is_some())
+    {
+        return Err(invalid(
+            "physical direct read requires its actual material choice",
+        ));
+    }
+    authorize(state, meta, attack.actor)?;
+    validate_paid_equipment_read(state, attack)?;
+    Ok(attack)
+}
+
+fn validate_completion_command(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    attack: &TacticalAttack,
+) -> Result<(), RulesError> {
+    validate_equipment_change_origin(state, meta, attack.actor).map_err(|e| invalid(&e))?;
+    if meta.expected_event_sequence != state.applied_event_sequence
+        || meta.session_id != attack.origin.session_id
+    {
+        return Err(invalid(
+            "physical read differs from its current continuation command",
+        ));
+    }
+    Ok(())
+}
 
 fn current(state: &CampaignState) -> Result<&TacticalAttack, RulesError> {
     resolution(state)?
@@ -118,7 +382,9 @@ fn begin_with_source(
         .and_then(|i| i.loadout(actor))
         .cloned()
         .ok_or_else(|| prerequisite("materialized current equipment is required"))?;
-    let plan = planning::weapon_plan(state, meta, actor, choice, window, &equipment.hands, pack)?;
+    let prepared =
+        planning::prepare_weapon(state, meta, actor, choice, window, &equipment.hands, pack)?;
+    let plan = prepared.plan();
     // A bounded source slice must fail BEFORE any cost when it cannot finish a rider.
     if plan
         .mastery
@@ -128,9 +394,9 @@ fn begin_with_source(
             "this weapon mastery requires the pending typed modifier/movement continuation",
         ));
     }
-    let (mode, armor_class, critical_on_hit) = planning::hit_facts(state, actor, choice, &plan)?;
+    let (mode, armor_class, critical_on_hit) = planning::hit_facts(state, actor, choice, plan)?;
     let damage = match &source {
-        Some(source) => source.damage(state, actor, &plan, mode)?,
+        Some(source) => source.damage(state, actor, plan, mode)?,
         None => vec![AttackDamageComponent {
             damage_type: plan.damage.damage_type,
             dice: plan.damage.dice.clone(),
@@ -146,7 +412,7 @@ fn begin_with_source(
         });
     let weapon = Box::new(TacticalWeaponAttack {
         after_equipment_parent: None,
-        ground_pickup_before: None,
+        ground_pickup_before: plan.receipt.ground_pickup_before.clone(),
         choice: choice.clone(),
         window,
         equipment_before: equipment,
@@ -181,6 +447,14 @@ fn begin_with_source(
         damage_roll: None,
         outcome: None,
     };
+    let (physical, plan) = prepared
+        .consume(state, meta, actor, window, choice)
+        .map_err(weapon_error)?;
+    // The consuming preparation alone owns custody. All following writes are to
+    // the ordinary outer tactical candidate; any later error discards it whole.
+    if let Some(physical) = physical {
+        *state = physical;
+    }
     let mut budget = flow(state)?.budget.clone();
     budget.movement_progress = None;
     budget.movement_origin = None;
@@ -534,7 +808,7 @@ fn apply_damage(
     };
     let plan = attack
         .weapon()
-        .map(|_| planning::reconstruct(state, &attack))
+        .map(|_| planning::reconstruct_completion(state, meta))
         .transpose()?;
     // Finish this attack's physical equipment/history atomically with its damage,
     // before pumping resulting concentration/effect work. Those consequences may
@@ -580,7 +854,7 @@ fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErro
         .ok_or_else(|| invalid("attack outcome absent"))?;
     let plan = attack
         .weapon()
-        .map(|_| planning::reconstruct(state, &attack))
+        .map(|_| planning::reconstruct_completion(state, meta))
         .transpose()?;
     if plan
         .as_ref()
@@ -671,7 +945,7 @@ fn choose_mastery_inner(
         return Err(prerequisite("no mastery choice is due"));
     }
     authorize(state, meta, attack.actor)?;
-    let plan = planning::reconstruct(state, &attack)?;
+    let plan = planning::reconstruct_completion(state, meta)?;
     let target = encounter(state)?
         .participant(attack.target)
         .ok_or_else(|| invalid("target absent"))?;

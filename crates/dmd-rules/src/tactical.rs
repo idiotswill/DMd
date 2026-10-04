@@ -3,6 +3,7 @@
 mod aftermath;
 mod areas;
 pub(crate) mod attack_equipment;
+mod attack_equipment_access;
 mod attacks;
 mod casting;
 mod continuations;
@@ -40,6 +41,36 @@ pub use release::{
 };
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
+
+pub(crate) fn validate_paid_equipment_read(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+) -> Result<(), RulesError> {
+    attacks::validate_paid_equipment_read(state, attack)
+}
+
+pub(crate) fn validate_attack_equipment_state(state: &CampaignState) -> Result<(), RulesError> {
+    attack_equipment_access::validate_records(state)
+}
+pub(crate) fn validate_equipment_completion_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    attacks::validate_equipment_completion_read(state, meta)
+}
+pub(crate) fn validate_equipment_choice_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    attacks::validate_equipment_choice_read(state, meta)
+}
+pub(crate) fn validate_paid_equipment_plan(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    plan: &crate::tactical_weapons::WeaponAttackPlan,
+) -> Result<(), RulesError> {
+    attacks::validate_paid_equipment_plan(state, attack, plan)
+}
 pub use work_trace::tactical_frame_host_ordering;
 
 pub const TACTICAL_EVENT_KIND: &str = "tactical.action_resolved";
@@ -48,6 +79,9 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    /// Reserved until the table/presentation/replay consumers are integrated.
+    /// The shared rules producer exists, but public policies still refuse it.
+    ActivateAttackEquipment,
     /// Retire only fully settled, explicitly concluded flow 5 timing.
     FinishEncounter,
     ConcludeHostilities {
@@ -367,6 +401,9 @@ fn resolve_with_policy(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::ActivateAttackEquipment => {
+            attack_equipment_access::activate(&mut next, meta, pack)?;
+        }
         TacticalAction::RespondToMissile {
             window,
             actor,
@@ -612,6 +649,7 @@ fn resolve_with_policy(
                 ground_items: vec![],
                 ready: vec![],
                 aftermath: None,
+                attack_equipment_access: None,
             };
             next.encounter
                 .as_mut()
@@ -742,7 +780,9 @@ pub fn replay_tactical(
 
 fn action_uses_ground_pickup(action: &TacticalAction) -> bool {
     match action {
-        TacticalAction::ChooseAttackEquipment { .. } => true,
+        TacticalAction::ActivateAttackEquipment | TacticalAction::ChooseAttackEquipment { .. } => {
+            true
+        }
         TacticalAction::Attack { choice }
         | TacticalAction::OpportunityAttack {
             choice: TacticalMeleeChoice::Weapon(choice),

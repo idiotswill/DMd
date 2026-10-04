@@ -248,6 +248,7 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
     if has_unimplemented_ground_records(state) {
         return Err(invalid("ground pickup execution is not enabled"));
     }
+    super::validate_attack_equipment_state(state)?;
     if has_unimplemented_grapple_records(state) {
         return Err(invalid(
             "Grapple execution is not enabled by this source/domain checkpoint",

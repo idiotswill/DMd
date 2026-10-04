@@ -6,6 +6,255 @@ use crate::tactical_hands::EffectiveHands;
 
 const UNAVAILABLE: &str = "ground equipment is unavailable";
 
+/// A plan view is data; only this non-Clone, non-Deserialize preparation owns the
+/// exact fresh input and its internally computed physical commit candidate.
+pub(crate) struct PreparedPhysicalAttack<'a> {
+    original: &'a CampaignState,
+    origin: CommandMeta,
+    actor: EntityId,
+    window: WeaponActionWindow,
+    choice: WeaponUseChoice,
+    candidate: Option<CampaignState>,
+    plan: WeaponAttackPlan,
+}
+
+impl<'a> PreparedPhysicalAttack<'a> {
+    pub(crate) fn new(
+        state: &'a CampaignState,
+        input: &WeaponAttackInput<'_>,
+    ) -> Result<Self, WeaponError> {
+        require(std::ptr::eq(state, input.state), UNAVAILABLE)?;
+        validate_equipment_intent(input)?;
+        let (plan, candidate) = match input.choice.equipment_change {
+            Some(AttackEquipmentChange {
+                timing: EquipmentChangeTiming::BeforeAttack,
+                operation: AttackEquipmentOperation::Pickup { item, hand },
+            }) => {
+                let pickup = PreparedPickup::new(
+                    state,
+                    input.context.origin,
+                    input.context.actor,
+                    input.context.window,
+                    item,
+                    hand,
+                    input.pack,
+                    input.definitions,
+                )?;
+                let plan = pickup.calculate_plan(input)?;
+                (plan, Some(pickup.candidate))
+            }
+            _ => (prepare(input)?, None),
+        };
+        Ok(Self {
+            original: state,
+            origin: input.context.origin.clone(),
+            actor: input.context.actor,
+            window: input.context.window,
+            choice: input.choice.clone(),
+            candidate,
+            plan,
+        })
+    }
+
+    pub(crate) fn plan(&self) -> &WeaponAttackPlan {
+        &self.plan
+    }
+
+    /// Discard the consuming capability when a caller needs only a pure probe.
+    pub(crate) fn into_plan(self) -> WeaponAttackPlan {
+        self.plan
+    }
+
+    pub(crate) fn consume(
+        self,
+        state: &CampaignState,
+        origin: &CommandMeta,
+        actor: EntityId,
+        window: WeaponActionWindow,
+        choice: &WeaponUseChoice,
+    ) -> Result<(Option<CampaignState>, WeaponAttackPlan), WeaponError> {
+        require(
+            std::ptr::eq(self.original, state)
+                && self.origin == *origin
+                && self.actor == actor
+                && self.window == window
+                && self.choice == *choice,
+            UNAVAILABLE,
+        )?;
+        Ok((self.candidate, self.plan))
+    }
+}
+
+/// Consistency-only reader for an actual attached paid declaration. It owns no
+/// consuming capability and can never commit its local inverse to current state.
+pub(crate) struct RetainedPhysicalRead<'a> {
+    current: &'a CampaignState,
+    attack: &'a TacticalAttack,
+    before: CampaignState,
+}
+
+impl<'a> RetainedPhysicalRead<'a> {
+    pub(crate) fn new(
+        state: &'a CampaignState,
+        attack: &'a TacticalAttack,
+        pack: &RulesPack,
+    ) -> Result<Self, WeaponError> {
+        crate::tactical::validate_paid_equipment_read(state, attack)
+            .map_err(|e| invalid(e.to_string()))?;
+        Self::from_checked_cut(state, attack, pack)
+    }
+
+    pub(crate) fn entered_completion(
+        state: &'a CampaignState,
+        meta: &CommandMeta,
+        pack: &RulesPack,
+    ) -> Result<Self, WeaponError> {
+        let attack = crate::tactical::validate_equipment_completion_read(state, meta)
+            .map_err(|e| invalid(e.to_string()))?;
+        Self::from_checked_cut(state, attack, pack)
+    }
+
+    pub(crate) fn material_choice(
+        state: &'a CampaignState,
+        meta: &CommandMeta,
+        pack: &RulesPack,
+    ) -> Result<Self, WeaponError> {
+        let attack = crate::tactical::validate_equipment_choice_read(state, meta)
+            .map_err(|e| invalid(e.to_string()))?;
+        Self::from_checked_cut(state, attack, pack)
+    }
+
+    fn from_checked_cut(
+        state: &'a CampaignState,
+        attack: &'a TacticalAttack,
+        pack: &RulesPack,
+    ) -> Result<Self, WeaponError> {
+        let weapon = attack.weapon().ok_or_else(|| illegal(UNAVAILABLE))?;
+        let current = state
+            .rules
+            .as_ref()
+            .and_then(|r| r.tactical_inventory.as_ref())
+            .and_then(|i| i.loadout(attack.actor))
+            .ok_or_else(|| illegal(UNAVAILABLE))?;
+        require(
+            current.command == attack.origin
+                && current.worn_armor == weapon.equipment_before.worn_armor
+                && current.shield == weapon.equipment_before.shield,
+            UNAVAILABLE,
+        )?;
+        let mut before = state.clone();
+        before.applied_event_sequence = attack.origin.expected_event_sequence;
+        match (&weapon.ammunition, weapon.choice.ammunition) {
+            (Some(ammo), Some(chosen)) => {
+                let item = state
+                    .items
+                    .get(&ammo.stack)
+                    .ok_or_else(|| illegal(UNAVAILABLE))?;
+                require(
+                    chosen == ammo.stack
+                        && ammo.quantity_before.checked_sub(1) == Some(item.quantity)
+                        && item.state
+                            == if item.quantity == 0 {
+                                ItemState::Spent
+                            } else {
+                                ItemState::Intact
+                            },
+                    UNAVAILABLE,
+                )?;
+                let original = before
+                    .items
+                    .get_mut(&ammo.stack)
+                    .ok_or_else(|| illegal(UNAVAILABLE))?;
+                original.quantity = ammo.quantity_before;
+                original.state = ItemState::Intact;
+            }
+            (None, None) => (),
+            _ => return Err(illegal(UNAVAILABLE)),
+        }
+        let equipment = before
+            .rules
+            .as_mut()
+            .and_then(|r| r.tactical_inventory.as_mut())
+            .and_then(|i| i.loadouts.iter_mut().find(|i| i.actor == attack.actor))
+            .ok_or_else(|| illegal(UNAVAILABLE))?;
+        *equipment = weapon.equipment_before.clone();
+        restore_before_image(state, &mut before, attack, pack)?;
+        Ok(Self {
+            current: state,
+            attack,
+            before,
+        })
+    }
+
+    pub(crate) fn state(&self) -> &CampaignState {
+        &self.before
+    }
+
+    pub(crate) fn calculate(
+        &self,
+        input: &WeaponAttackInput<'_>,
+    ) -> Result<WeaponAttackPlan, WeaponError> {
+        let weapon = self.attack.weapon().ok_or_else(|| illegal(UNAVAILABLE))?;
+        require(
+            std::ptr::eq(input.state, &self.before)
+                && input.context.origin == &self.attack.origin
+                && input.context.actor == self.attack.actor
+                && input.context.window == weapon.window
+                && input.choice == &weapon.choice
+                && input.loadout == &weapon.equipment_before.hands,
+            UNAVAILABLE,
+        )?;
+        validate_equipment_intent(input)?;
+        let plan = if let Some(AttackEquipmentChange {
+            timing: EquipmentChangeTiming::BeforeAttack,
+            operation: AttackEquipmentOperation::Pickup { item, hand },
+        }) = weapon.choice.equipment_change
+        {
+            // This is physical rederivation at a proven paid cut. It deliberately
+            // does not call the fresh budget constructor or return its capability.
+            PreparedPickup::derive(
+                &self.before,
+                &self.attack.origin,
+                self.attack.actor,
+                weapon.window,
+                item,
+                hand,
+                input.pack,
+                input.definitions,
+            )?
+            .calculate_plan(input)?
+        } else {
+            prepare(input)?
+        };
+        let flow = self
+            .current
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .ok_or_else(|| illegal(UNAVAILABLE))?;
+        let receipt = flow
+            .budget
+            .weapon_history
+            .iter()
+            .find(|r| r.origin.id == self.attack.origin.id)
+            .ok_or_else(|| illegal(UNAVAILABLE))?;
+        let equipment = self
+            .current
+            .rules
+            .as_ref()
+            .and_then(|r| r.tactical_inventory.as_ref())
+            .and_then(|i| i.loadout(self.attack.actor))
+            .ok_or_else(|| illegal(UNAVAILABLE))?;
+        require(
+            plan.receipt == *receipt && plan.loadout_for_attack == equipment.hands,
+            UNAVAILABLE,
+        )?;
+        crate::tactical::validate_paid_equipment_plan(self.current, self.attack, &plan)
+            .map_err(|e| invalid(e.to_string()))?;
+        Ok(plan)
+    }
+}
+
 /// Borrowed, internally derived operation. Only the selected-work token can
 /// create one for execution; receipt inversion below rederives physical data.
 pub(crate) struct PreparedAfter<'a> {
@@ -290,7 +539,7 @@ impl<'a> PreparedPickup<'a> {
                 } else {
                     window.id == origin.id
                 })
-                && !has_unimplemented_ground_records(state),
+                && (flow.attack_equipment_access.is_some() || !has_attack_equipment_records(state)),
             UNAVAILABLE,
         )?;
         Self::derive(
@@ -445,6 +694,13 @@ impl<'a> PreparedPickup<'a> {
     }
 
     fn plan(self, input: &WeaponAttackInput<'_>) -> Result<WeaponAttackPlan, WeaponError> {
+        self.calculate_plan(input)
+    }
+
+    fn calculate_plan(
+        &self,
+        input: &WeaponAttackInput<'_>,
+    ) -> Result<WeaponAttackPlan, WeaponError> {
         require(std::ptr::eq(self.original, input.state), UNAVAILABLE)?;
         require(input.loadout == &self.before.equipment.hands, UNAVAILABLE)?;
         require(
@@ -487,7 +743,7 @@ impl<'a> PreparedPickup<'a> {
             loadout: &loadout.hands,
             history: input.history,
         })?;
-        plan.receipt.ground_pickup_before = Some(self.before);
+        plan.receipt.ground_pickup_before = Some(self.before.clone());
         Ok(plan)
     }
 }

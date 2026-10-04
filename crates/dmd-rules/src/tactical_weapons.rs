@@ -168,6 +168,11 @@ pub fn prepare_weapon_attack(
 pub(crate) fn prepare_tactical_weapon_attack(
     input: &WeaponAttackInput<'_>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
+    validate_equipment_intent(input)?;
+    ground::prepare(input)
+}
+
+fn validate_equipment_intent(input: &WeaponAttackInput<'_>) -> Result<(), WeaponError> {
     if input.choice.after_equipment.is_some() {
         require(
             input.choice.equipment_change.is_none()
@@ -185,7 +190,7 @@ pub(crate) fn prepare_tactical_weapon_attack(
             "later equipment needs an unused ordinary Attack allowance",
         )?;
     }
-    ground::prepare(input)
+    Ok(())
 }
 
 fn prepare_weapon_attack_inner(

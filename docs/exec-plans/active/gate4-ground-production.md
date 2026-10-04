@@ -1,18 +1,19 @@
 # Gate 4 — Ground equipment in the production attack path
 
-Status, 2026-10-04: source checkpoint 2 authorized after complete independent
-design review. Root explicitly transferred sole SOURCE-WRITER ownership of
+Status, 2026-10-04: checkpoint 2 source authored, not compiled or executed;
+awaiting full independent source review and allocated verification. Complete
+independent design review preceded source authorization. Root explicitly transferred sole SOURCE-WRITER ownership of
 `codex/gate4-ground-production` in `gate4-ground-production` to
 `gate4_core_oct4`, starting from clean `a563aa3dde053369078dec006b01e6f14943b6b9`,
 tree `c2dbe8f50021f1083a36c256ff3a394e2597c007`. This writer/status commit precedes
-new production source. No new production implementation, compiler, tests, app,
+new production source. The implementation below follows that writer checkpoint
+and the separate actual-completion caller refinement. No compiler, tests, app,
 database, push or CI has run here.
 
 Review of f8e0cd0 covered the complete300-line design and actual consumer seams;
 memo SHA256 `f8e31126b620e707127132459f4995a222815edfd2b9b93594d6788dd433079c`.
-Root read the complete review. Before new production implementation, normally
-merge the reviewed prerequisite f701b3f test correction described in the recovery
-plan. Actual PR57 Linux CI exposed a helper that changed supported flow4 to5 before
+Root read the complete review. The reviewed prerequisite f701b3f test correction
+was normally reconciled before production implementation as recorded below. Actual PR57 Linux CI exposed a helper that changed supported flow4 to5 before
 reading a provisional hand. The correction pairs actual reserved/free derivation
 and preserves separate fresh/public refusals; no production guard changes.
 Independent correction review SHA256 is
@@ -35,7 +36,8 @@ Fresh fetched development base is PR60 candidate
 are unaccepted. The separate original checkout stays frozen for its CI and planned
 focused63 run. That head has actual successful Linux/Windows MSRV all-target
 compilation and frontend/guard results; its23 new lifecycle controls and app
-control remain UNRUN. Neither those checks nor earlier branches verify this plan.
+control were UNRUN at plan authorization. Subsequent separate-checkout failures
+are qualified below. Neither those checks nor earlier branches verify this source.
 
 Read AGENTS, product-definition tactical timing/visibility/object interaction and
 exact suspension, Gate4/protocol, ADR018/020/024, and the complete production
@@ -337,11 +339,45 @@ and exact historical projection silence, source probe atomicity, source/grip
 reconstruction, retained completed-receipt validation without unsafe inversion,
 after-owner authority when incapacitated, and integration with future Grapple/7.
 Resolve concrete discovered caller gaps in this plan before code expansion.
-Air87840 completed normally. Root allocated the sole local heavy/native/database
-slot to Ground focused63 attempt2 session81251 on frozen `d55519e`; that is a
-separate checkout and does not verify this branch. No Cargo/compiler/tests/npm,
-build, native/live database or publication is authorized for this writer. Direct
-rustfmt, static inspection and Git are permitted. Exact next action is checkpoint
-2 source implementation followed by a clean full handback for root and a different
-independent reviewer. Amend and report any concrete new caller/authority gap before
-expanding the reviewed contract.
+### Checkpoint 2 author handback, 2026-10-04
+
+Writer checkpoint `901406f` and caller-refinement plan `8750615` preceded source.
+The source adds omitted encounter activation, a non-Clone fresh physical
+preparation consumed only at its actual state/command, and a read-only paid
+reconstruction that cannot commit its local inverse. It binds the unique receipt,
+source, current loadout, finite ammunition, raw/work identity and payment. Actual
+entered completion and persisted Knockout/Graze choices use distinct constructors;
+no synthetic stage, budget refund or caller bypass flag supplies authority.
+
+Common record checks inventory activation plus pending/completed before and after
+evidence. Historical completed images are not inverted into later custody. All
+public Live/Historical/kernel/planner/source-control entry points remain closed
+for activation/new records; there is no application enable DTO, transport, renderer
+or capability. Original no-activation error ordering and all four protected
+Ground guard modules remain unchanged from `a563aa3`, including exact `f701b3f`.
+
+Eighteen new private controls are authored and UNRUN. They cover host/session/
+quiescence/lineage refusal, omitted-marker bytes, whole-state preparation and paid
+reader boundaries, selected/different pickup, wrong grip/target/ammo/intent,
+genuine parent Goblin Scimitar/Shortbow with finite three-arrow materialization,
+selected-after invalid Apply then Decline, automatic miss, fixed damage, Knockout
+and Graze. Constructed starting images are labeled mechanism fixtures; actual
+private producers follow them. They are not accepted application history, original
+export replay, portable restore, native play or Ogre admission evidence.
+
+Only direct rustfmt formatting/checks, static source inspection and Git whitespace
+checks ran here. No compilation, lint, tests, full verification, frontend, database,
+native or CI result exists for this source. Root's separate `d55519e` run reached
+strict Clippy then 20/23 lifecycle passes and three setup failures; its `10df`
+fixture correction reached strict Clippy then 21/23, with both flyer reach cases
+still failing. Those failures and the independently reviewed but UNRUN core
+`d910` correction are owned elsewhere and are not incorporated here. This branch
+must receive their final reviewed corrections deliberately before verification.
+
+Exact next action: freeze and review this entire source checkpoint independently,
+then apply justified fixes and allocate exact-head checks. Full checkpoint 3
+application/transport/presentation/desktop, source control, original-event replay,
+private projection/retry, real SQLite/portable recovery and combined Ogre/native
+acceptance remain mandatory. The author cannot certify independent source review.
+No Cargo/compiler/tests/npm, build, native/live database or publication is
+authorized for this writer; root schedules the single heavy/native/database slot.

@@ -53,6 +53,63 @@ pub(super) fn weapon_plan(
     loadout: &WeaponLoadout,
     pack: &RulesPack,
 ) -> Result<WeaponAttackPlan, RulesError> {
+    Ok(prepare_weapon(state, meta, actor, choice, window, loadout, pack)?.into_plan())
+}
+
+pub(super) fn prepare_weapon<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    choice: &WeaponUseChoice,
+    window: WeaponActionWindow,
+    loadout: &WeaponLoadout,
+    pack: &RulesPack,
+) -> Result<crate::tactical_weapons::ground::PreparedPhysicalAttack<'a>, RulesError> {
+    if is_ground_pickup(choice.equipment_change)
+        || (choice.after_equipment.is_some() && flow(state)?.attack_equipment_access.is_some())
+    {
+        super::super::attack_equipment_access::require_origin(state, meta)?;
+    }
+    let calculation = calculation(state, meta, actor, choice, window, loadout, pack)?;
+    crate::tactical_weapons::ground::PreparedPhysicalAttack::new(state, &calculation.input())
+        .map_err(weapon_error)
+}
+
+struct PhysicalCalculation<'a> {
+    state: &'a CampaignState,
+    source: WeaponActorSource<'a>,
+    pack: &'a RulesPack,
+    definitions: &'a crate::tactical_definitions::TacticalDefinitions,
+    choice: &'a WeaponUseChoice,
+    context: WeaponAttackContext<'a>,
+    loadout: &'a WeaponLoadout,
+    history: Vec<WeaponAttackReceipt>,
+}
+
+impl PhysicalCalculation<'_> {
+    fn input(&self) -> WeaponAttackInput<'_> {
+        WeaponAttackInput {
+            state: self.state,
+            source: self.source,
+            pack: self.pack,
+            definitions: self.definitions,
+            choice: self.choice,
+            context: self.context,
+            loadout: self.loadout,
+            history: &self.history,
+        }
+    }
+}
+
+fn calculation<'a>(
+    state: &'a CampaignState,
+    meta: &'a CommandMeta,
+    actor: EntityId,
+    choice: &'a WeaponUseChoice,
+    window: WeaponActionWindow,
+    loadout: &'a WeaponLoadout,
+    pack: &'a RulesPack,
+) -> Result<PhysicalCalculation<'a>, RulesError> {
     let e = encounter(state)?;
     let from = e
         .participant(actor)
@@ -114,7 +171,7 @@ pub(super) fn weapon_plan(
             "partial submersion needs an explicit source geometry ruling",
         ));
     }
-    prepare_tactical_weapon_attack(&WeaponAttackInput {
+    Ok(PhysicalCalculation {
         state,
         source,
         pack,
@@ -142,9 +199,8 @@ pub(super) fn weapon_plan(
                 .map_err(spatial)?,
         },
         loadout,
-        history: &history,
+        history,
     })
-    .map_err(weapon_error)
 }
 pub(super) fn hit_facts(
     state: &CampaignState,
@@ -286,6 +342,28 @@ pub(super) fn reconstruct(
     let weapon = attack
         .weapon()
         .ok_or_else(|| invalid("attack source is not a physical weapon"))?;
+    if is_ground_pickup(weapon.choice.equipment_change)
+        || (weapon.choice.after_equipment.is_some()
+            && flow(state)?.attack_equipment_access.is_some())
+    {
+        let pack =
+            RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
+        let retained =
+            crate::tactical_weapons::ground::RetainedPhysicalRead::new(state, attack, &pack)
+                .map_err(weapon_error)?;
+        let calculation = calculation(
+            retained.state(),
+            &attack.origin,
+            attack.actor,
+            &weapon.choice,
+            weapon.window,
+            &weapon.equipment_before.hands,
+            &pack,
+        )?;
+        return retained
+            .calculate(&calculation.input())
+            .map_err(weapon_error);
+    }
     let mut before = state.clone();
     before.applied_event_sequence = attack.origin.expected_event_sequence;
     if let Some(ammo) = &weapon.ammunition {
@@ -315,6 +393,53 @@ pub(super) fn reconstruct(
         &weapon.equipment_before.hands,
         &pack,
     )
+}
+
+/// Actual private completion callers obtain their attached declaration here.
+/// Entered pump work and a persisted direct material choice have different
+/// validators; neither is represented by a caller flag or a rewritten stage.
+pub(super) fn reconstruct_completion(
+    state: &CampaignState,
+    meta: &CommandMeta,
+) -> Result<WeaponAttackPlan, RulesError> {
+    let attack = current(state)?;
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical attack absent"))?;
+    if !is_ground_pickup(weapon.choice.equipment_change)
+        && !(weapon.choice.after_equipment.is_some()
+            && flow(state)?.attack_equipment_access.is_some())
+    {
+        return reconstruct(state, attack);
+    }
+    if has_unimplemented_grapple_records(state) {
+        return Err(invalid(
+            "Grapple attack reconstruction requires original admission proof",
+        ));
+    }
+    let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
+    let reader = if resolution(state)?
+        .work_trace
+        .as_ref()
+        .is_some_and(|t| t.active.is_some())
+    {
+        crate::tactical_weapons::ground::RetainedPhysicalRead::entered_completion(
+            state, meta, &pack,
+        )
+    } else {
+        crate::tactical_weapons::ground::RetainedPhysicalRead::material_choice(state, meta, &pack)
+    }
+    .map_err(weapon_error)?;
+    let calculation = calculation(
+        reader.state(),
+        &attack.origin,
+        attack.actor,
+        &weapon.choice,
+        weapon.window,
+        &weapon.equipment_before.hands,
+        &pack,
+    )?;
+    reader.calculate(&calculation.input()).map_err(weapon_error)
 }
 
 #[cfg(test)]
