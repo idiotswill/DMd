@@ -9,6 +9,23 @@ pub(super) fn continuation(
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    if resolution.attack_after_equipment.is_some()
+        || resolution
+            .frames
+            .iter()
+            .flatten()
+            .chain(resolution.pending.iter().map(|p| &p.work))
+            .chain(resolution.failed_save.iter().map(|p| &p.pending.work))
+            .chain(
+                resolution
+                    .work_trace
+                    .iter()
+                    .flat_map(|t| t.nodes.iter().map(|n| &n.work)),
+            )
+            .any(|w| w.kind == TacticalWorkKind::AttackAfterEquipment)
+    {
+        return None;
+    }
     if resolution.hit_review.as_ref().is_some_and(|hit| {
         matches!(
             hit.stage,
@@ -131,6 +148,7 @@ pub(super) fn continuation(
                             }
                             TacticalWorkKind::AttackRoll
                             | TacticalWorkKind::AttackDamage
+                            | TacticalWorkKind::AttackAfterEquipment
                             | TacticalWorkKind::FinishAttack => (
                                 resolution.attack.as_ref().map(|attack| attack.actor),
                                 "Attack consequence",
@@ -327,6 +345,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            attack_after_equipment: None,
             origin,
             grapple: None,
             turn_actor: own_actor,
@@ -406,6 +425,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            attack_after_equipment: None,
             grapple: None,
             origin: origin.clone(),
             turn_actor: actor,

@@ -85,6 +85,7 @@ pub(super) fn begin(
     flow.budget.movement_progress = None;
     flow.budget.movement_origin = None;
     flow.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
         grapple: None,
         origin: meta.clone(),
         turn_actor: actor,

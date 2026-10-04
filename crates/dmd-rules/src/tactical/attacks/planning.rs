@@ -114,7 +114,7 @@ pub(super) fn weapon_plan(
             "partial submersion needs an explicit source geometry ruling",
         ));
     }
-    prepare_weapon_attack(&WeaponAttackInput {
+    prepare_tactical_weapon_attack(&WeaponAttackInput {
         state,
         source,
         pack,

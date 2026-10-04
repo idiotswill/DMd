@@ -186,6 +186,7 @@ impl Fixture {
             target,
             second,
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon: item,
                 target,
                 delivery,

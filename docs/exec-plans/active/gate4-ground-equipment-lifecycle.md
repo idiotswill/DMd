@@ -12,10 +12,11 @@ Independent amendment rereview is CLEAR:
 Both complete reviews were read. This status is committed before source edits.
 Direct rustfmt and Git/static inspection are authorized; Cargo/compiler/tests,
 npm/build, database/native, publication and CI operations are not. Root Air87840
-retains the sole heavy slot. All new controls remain UNWRITTEN/UNRUN. No other
+retains the sole heavy slot. New controls are now AUTHORED/UNRUN; see the source checkpoint below. No other
 checkout is writable, and every new public/restore authority stays closed.
 
-Status: PLAN ONLY, 2026-10-04. Root transferred sole plan writing to
+Original plan-only status, retained as history (superseded by source transfer):
+2026-10-04. Root transferred sole plan writing to
 `gate4_ci_oct4` in `gate4-ground-equipment-lifecycle`, branch
 `codex/gate4-ground-equipment-lifecycle`, from clean
 `8ec12c3b1b24fe0d1ab28abd17bad99c37be4492`, tree
@@ -418,15 +419,72 @@ full-diff review, canonical checks, accepted-main integration, exact receiving-h
 CI and protected merge remain mandatory. Gate4 stays active until its full gate
 review; no next gate begins on this checkpoint.
 
-Current validation: plan/source inspection only; implementation absent and every
-new control UNWRITTEN/UNRUN. Risks requiring review are causal parent retention,
-queued-versus-selected waiting, spent-budget admission, old serialization,
-decision-cut inverse scope and cross-branch source constructors. No acceptance
-is reduced. The independent review initially considered a narrow automatic-miss
-Graze validator exception; deeper source inspection disproved that path's current
-reachability, so the amendment preserves the blanket guard and separates the
-two real producer controls. Root and the original plan author agreed with that
-corrected disposition; this is not approval of a fabricated positive source.
-Exact next action: root and a different peer reread the amended clean plan
-commit/tree, including queue-before-leave ancestry and the unchanged automatic
-miss guard; only then may root transfer source writing explicitly.
+## Source checkpoint authored, 2026-10-04
+
+The bounded private lifecycle is authored. The original source-writing status
+commit is f7510731038ae85f58030566bb7fc8141ba60f77. No new command or state is
+publicly admitted. There has been no Cargo/compiler/test/npm/native/database/CI
+execution in this assignment; all new controls are AUTHORED/UNRUN. Direct rustfmt
+and Git whitespace/constructor/diff inspection are static evidence only.
+
+Implementation joins the real attack completion and shared continuation stack.
+Normal ordinary and exact printed physical CreatureAction declarations propagate
+the omitted intent. Actual pauses retain entered AttackDamage/FinishAttack keys;
+direct choices re-enter those parents and queue flight losses before leaving.
+After work is queued before vitality children, selected only after they finish,
+and is not a raw roll or simultaneous ordering option. Selection retains its
+own actor response authority. A player-controlled actor's current controller
+must make the decision; host identity is not a substitute. Decline does not
+require capability or any legal equipment operation.
+
+The decision prepares and consumes a borrowed physical candidate atomically.
+The inverse is restricted to its still-selected immediate decision cut and
+compares the complete restored input, preserving all unrelated attack results.
+Same-attack thrown-item evidence binds its actual completion ground origin.
+Equip/Unequip use the existing carried-item operation body. No fresh attack budget,
+new damage, source profile, before-pickup custody commit or public option is added.
+Final receipt consistency is not authenticated historical replay, and its inverse
+must never be applied to equipment after later play.
+
+Twenty-one rules controls are authored in tactical/attack_equipment_tests.rs.
+They drive actual private begin/raw/completion/decision producers for misses,
+rolled and fixed hits, real underwater automatic miss, knockout, Graze, actual
+throw/recovery, source-built Goblin physical intent, source-built Chimera flight
+loss, concentration and unconscious drops. They also cover selected ownership,
+no raw/simultaneous/duplicate selection, stale/foreign/controller/session/cause
+refusals, inverse forgeries, omitted fields and public guards. The initial images
+are explicitly constructed private fixtures. Canonical build_character and
+build_creature produce Fighter/Goblin/Chimera source facts; no source definition
+is edited to manufacture an automatic-miss Graze combination. Their subsequent
+continuation records are produced by actual implementation, never inserted as
+positive setup. These fixtures do not authenticate accepted journals.
+
+One additional app unit control calls the real validate_rules_export preflight
+on forged intent, temporary parent, orphan queued work, selected record and
+retired final receipt in current, later-snapshot and earliest-anchor positions.
+This is a negative pure preflight control, not a database or portable-play proof.
+The existing foundation preflight test remains intact. The common guard also
+covers orphan trace nodes, and app work projection/source control expose no new
+command or card. Both policies and flows1–5/unsupported versions stay closed.
+
+Mechanical None initializers were required in ordinary source-compiled rules,
+domain and app fixture constructors. They preserve existing assertions and absent
+JSON; the five protected legacy receiving suite files, frozen captures/raw
+artifacts and content files were not edited. The original fifteen foundation
+controls retain their bodies/assertions apart from the necessary None initializer
+in the existing action-guard constructor. Record exact blob-parity evidence in
+the clean handoff; no replay pass is claimed.
+
+Static risks for independent complete review: actual direct-parent/raw lineage,
+selected versus queued ownership, physical inverse boundary, source feature pin
+binding, strict current-controller authority, additive constructor/exhaustive-match
+coverage and old absent serialization. All source/new tests still require actual
+compiler/Clippy/execution results. Tests may reveal fixture or implementation
+errors; no passing result is inferred from authored assertions or rustfmt.
+
+Exact next action: freeze and hand the clean source commit/tree and full diff to
+root for independent complete review. Root owns any later execution allocation
+and publication. Do not run beside its heavy slot. Before-pickup source custody
+integration, application offers/session admission, all original replay/cold/store
+and portable recovery, native acceptance, canonical checks, receiving-head CI and
+accepted-main integration remain mandatory. Gate4 is not complete.

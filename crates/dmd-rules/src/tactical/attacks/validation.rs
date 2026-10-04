@@ -33,6 +33,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         authorize(state, &attack.origin, attack.actor)?;
     }
     opportunity::validate_admission(state, attack)?;
+    super::super::attack_equipment::validate_pause(state)?;
     if attack.automatic_miss {
         return Err(invalid(
             "an automatic miss must finish without accepting an attack roll",
@@ -335,6 +336,7 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
             || weapon.choice.purpose != WeaponAttackPurpose::Normal
             || weapon.choice.delivery != WeaponDelivery::Melee
             || weapon.choice.equipment_change.is_some()
+            || weapon.choice.after_equipment.is_some()
             || weapon.ammunition.is_some()
         {
             return Err(invalid(

@@ -36,6 +36,7 @@ async fn player_action(f: &Fixture, request: TacticalAction) -> CommandMeta {
 }
 fn dagger(weapon: ItemId, target: EntityId, equip: bool) -> WeaponUseChoice {
     WeaponUseChoice {
+        after_equipment: None,
         weapon,
         target,
         delivery: WeaponDelivery::Melee,

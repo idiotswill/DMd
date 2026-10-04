@@ -214,6 +214,7 @@ fn begin_boundary_from(
     }
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
         grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
@@ -293,7 +294,8 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if super::shove::waiting(state)
+        if super::attack_equipment::waiting(state)
+            || super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
             || resolution(state)?
                 .movement
@@ -311,7 +313,8 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             }
         }
         super::movement::prune(state, meta)?;
-        if super::shove::waiting(state)
+        if super::attack_equipment::waiting(state)
+            || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
             || resolution(state)?.pending.is_some()
@@ -390,7 +393,8 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    if super::shove::waiting(state)
+    if super::attack_equipment::waiting(state)
+        || super::shove::waiting(state)
         || super::hit_reactions::waiting(state)
         || super::missiles::waiting(state)
     {

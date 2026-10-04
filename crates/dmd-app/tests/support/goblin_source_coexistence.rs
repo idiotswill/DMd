@@ -567,6 +567,7 @@ async fn scimitar_miss(
         tactical(TacticalAction::CreatureWeaponAttack {
             feature_id: "scimitar".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon: scimitar,
                 target: target.actor,
                 grip: WeaponGrip::OneHand(Hand::Right),

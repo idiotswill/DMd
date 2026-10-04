@@ -246,6 +246,7 @@ pub(in crate::tactical) fn begin_creature_weapon(
     let mut last_error = None;
     for ability in &facts.abilities {
         let choice = WeaponUseChoice {
+            after_equipment: selected.after_equipment,
             weapon: selected.weapon,
             target: selected.target,
             delivery: facts.delivery,

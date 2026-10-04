@@ -59,6 +59,8 @@ pub enum TacticalAttackDelivery {
 #[serde(deny_unknown_fields)]
 pub struct TacticalWeaponAttack {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment_parent: Option<crate::AttackEquipmentCompletionParent>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ground_pickup_before: Option<crate::AttackGroundPickupBefore>,
     pub choice: WeaponUseChoice,
     pub window: WeaponActionWindow,
@@ -71,6 +73,8 @@ pub struct TacticalWeaponAttack {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreatureWeaponUseChoice {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment: Option<crate::AfterAttackEquipmentIntent>,
     pub weapon: ItemId,
     pub target: EntityId,
     pub grip: crate::WeaponGrip,

@@ -146,6 +146,8 @@ pub enum TacticalWorkKind {
     AttackRoll,
     AttackDamage,
     FinishAttack,
+    /// Guarded physical continuation; never a dice request.
+    AttackAfterEquipment,
     /// Independent response authority starts here even when its causal parent
     /// belongs to an area or an opportunity attack.
     CommitShield {
@@ -224,6 +226,8 @@ pub struct TacticalLegendaryWindow {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalResolution {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_after_equipment: Option<Box<crate::TacticalAttackAfterEquipment>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grapple: Option<Box<crate::TacticalGrappleResolution>>,
     pub origin: CommandMeta,

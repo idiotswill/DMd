@@ -442,6 +442,7 @@ impl Fixture {
         self.state.encounter.as_mut().unwrap().participants[0].enemies = vec![self.actors[1]];
         self.state.encounter.as_mut().unwrap().participants[1].enemies = vec![actor];
         WeaponUseChoice {
+            after_equipment: None,
             weapon: weapon_id,
             target: self.actors[1],
             delivery: if ranged {

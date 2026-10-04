@@ -43,6 +43,7 @@ fn every_pickup_producer_including_nested_cleave_refuses_both_policies_at_every_
         TacticalAction::CreatureWeaponAttack {
             feature_id: "javelin-melee".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon: choice.weapon,
                 target: choice.target,
                 grip: choice.grip,

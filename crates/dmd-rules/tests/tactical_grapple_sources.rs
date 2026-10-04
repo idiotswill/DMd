@@ -201,6 +201,7 @@ fn source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection() {
                 // Detection must not depend on a new producer having run first.
                 let flow = forged.encounter.as_mut().unwrap().flow.as_mut().unwrap();
                 flow.resolution = Some(Box::new(TacticalResolution {
+                    attack_after_equipment: None,
                     grapple: Some(Box::new(TacticalGrappleResolution {
                         activity: None,
                         proofs: vec![],
