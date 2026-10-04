@@ -589,3 +589,23 @@ counts or Ogre. Audit every non-document and protected fixture/raw byte after
 the normal merge, freeze for independent complete integration review and publish
 only after that review. New-head CI, local canonical and native remain pending;
 source equivalence alone does not turn old executions into new ones.
+
+The plan above was committed as `a40e56643daf5655823fc14090b471fde32599a9` before
+normal conflict-free merge `318dd6456411bb2fdcd596a4257b99467804e30a`, tree
+`478d2409e4efd603d36f461281018a86f6fdd330`. The second parent is exact Airf932;
+accepted dbf main is now an ancestor. The complete union changes seven docs only
+versus f9. Root's fresh audit checks all422 non-document tracked blobs: every
+one is identical to f9. All29 fixture Git blobs match the prior protected audit,
+including21 actual raw files independently rehashed against it; the five original
+receiving suites are unchanged. External union audit
+`tooling/shove-318dd64-accepted-main-union-audit-2026-10-04.json` SHA256
+`7010ffed71497ad96a6e3dd57e2b71fcf89340f998ef37f69a8cb95d4c4e0d23` records
+those exact identities. No source/test/fixture assertion or capture was edited.
+
+Next: independent full integration/evidence review, then root's normal draft
+publication for this receiving head. Native remains unrun on the verified f9
+package; its exact source equivalence is established above rather than relabeling
+the binary. Local canonical must use the frozen receiving head, a private fresh
+target and the standard full original suites when the Air heavy slot returns.
+Air acceptance, any later main reconciliation, final-head CI and protected merge
+are still required. No gate or public-family status advances at this checkpoint.
