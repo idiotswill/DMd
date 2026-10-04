@@ -25,7 +25,7 @@ remain unchanged. Root read the complete correction and independent review, then
 ran all32 pure controls successfully; the adjacent CI recovery plan records the
 exact log and qualifications. Root owns execution, publication, dependency
 reconciliation and acceptance. The prior29 passes did not verify this correction.
-Original development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. Later reconciliation through3f is recorded below; the next accepted-main union is planned in the final section. Air remains an **unaccepted development dependency**. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
+Original development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. Later reconciliation through3f is recorded below; the accepted-main union is recorded in the final section. Air remains an **unaccepted development dependency**. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority
 
