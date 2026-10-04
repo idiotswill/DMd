@@ -1,11 +1,14 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Status: concrete plan amendment only, 2026-10-01; no implementation or runtime
-acceptance. Root temporarily transferred sole writer ownership to the assigned
-plan author from clean `053f736e27d5897d6cf197c5a7b0bf8f20113d7d` on
-`codex/gate4-ground-weapon-recovery`, reusing the clean historical
-`gate4-source-creature-control` checkout. Its old catalog-cache branch remains
-preserved at619ada0. No command, schema, source, test or admission change exists.
+Status: bounded foundation plan amendment only, 2026-10-04; no implementation or
+runtime acceptance. Root assigned `gate4_ground_oct4` as sole writer of
+`codex/gate4-ground-weapon-recovery`, reusing `gate4-source-creature-control`.
+Fetch and inspection found clean `28defe5a64348b819be028af13d22d3175dfc771`,
+tree `fe1c1c27834746741452947cc6b82c045452b9e0`, with no interrupted edits.
+The old catalog-cache branch remains preserved at619ada0. No command, schema,
+source, test or admission change exists. The full before/after contract below
+remains mandatory; the next checkpoint deliberately keeps all new public
+ground-pickup authority closed while its shared physical foundation is developed.
 
 ## Objective and dependency
 
@@ -22,7 +25,7 @@ foundationfa4, Shovef9, Air3f and release8c. At the original plan checkpoint, fe
 `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`. These are reviewed development
 dependencies, not accepted main. Reconcile accepted prerequisites normally and
 never merge a stacked PR into its development base. The current main observed on
-2026-10-01 is `dbf1d633460473183324b4ec519e8d1980884b5c`; this checkout has not
+2026-10-04 is `dbf1d633460473183324b4ec519e8d1980884b5c`; this checkout has not
 merged it. Earlier d88 observations remain historical; root coordinates normal
 prerequisite integration and final exact-head verification.
 
@@ -63,9 +66,13 @@ records these initial seams and unresolved after-attack timing; its early source
 custody wording is corrected above. The complete source-grounded design memo is
 `tooling/ground-053f736-equipment-lifecycle-independent-design-2026-10-01.md`, SHA256
 `f86ca70db8c3d2f00b89ed84b3c2b67471e0fff328b0b1df2ccbd25a837648cc`.
-Root read and agreed its concrete proposal. The decisions below reconcile it into
-repository memory, pending independent review of this exact checked plan before
-source authoring. Neither external note is implemented behavior or runtime proof.
+Root read and agreed its concrete proposal. Independent review of checked plan
+`28defe5` found no actionable design defect: memo
+`tooling/ground-28defe5-plan-independent-review-2026-10-01.md`, SHA256
+`927907546373beb0b0b59c7d2c77b7d2ec0fdf70cbd1d90aeb6f4aeb466ba9a8`.
+The decisions below preserve that reviewed complete contract. The bounded
+foundation checkpoint added on 2026-10-04 still requires review before source
+authoring. Neither external note is implemented behavior or runtime proof.
 
 ## Required design boundaries
 
@@ -281,14 +288,14 @@ mandatory; a direct state edit or synthetic candidate is never a positive substi
 
 ## Plan-first checkpoints
 
-1. Consumer preflight is complete and the concrete decisions above are checked
-   in as a plan-only amendment. Obtain independent review of this exact plan
-   before source changes; resolve any record/lifecycle findings there first.
-2. Implement the bounded pure admission and current versioned producer/receipt,
-   preserving all legacy paths. Meaningful controls cover physical identity,
-   hands/reach, exact allowance and historical reconstruction. Do not mutate
-   existing fixture states to claim a genuine pickup history.
-3. Connect the real application/projection/UI and ordinary physical attack path;
+1. The complete before/after plan at `28defe5` is independently reviewed. Review
+   this narrower foundation amendment before source changes; it changes the
+   development order, not acceptance or the required final contract.
+2. Implement and review only the guarded foundation described below. All new
+   producer and retained-state authority remains denied in both execution
+   policies at every flow version. Pure helper controls are not accepted play.
+3. Separately review and implement the owned after-equipment lifecycle, then
+   connect the real application/projection/UI and ordinary physical attack path;
    integrate the Ogre source adapter deliberately after its separate review.
    Full source admission stays closed until all required printed forms/OA/pickup
    and controls exist.
@@ -301,6 +308,132 @@ mandatory; a direct state edit or synthetic candidate is never a positive substi
    packaged native pickup/cold continuation. Review the full diff, reconcile
    accepted main, merge with expected-head protection and separately verify main.
 
+## Next bounded checkpoint: guarded physical foundation
+
+This is a development dependency, not a pickup release. Source authoring starts
+only after root reviews this exact plan commit and explicitly returns the writer
+assignment. The intended checkpoint contains the following cohesive changes:
+
+1. Add `AttackEquipmentOperation::Pickup { item, hand }` and a typed
+   `AttackGroundPickupBefore` record in `dmd-domain`. The record contains the
+   original complete `ItemInstance`, exact `TacticalGroundItem`, encounter,
+   scene and location identities, and actual `ActorEquipmentLoadout`. Add
+   `ground_pickup_before: Option<AttackGroundPickupBefore>` to
+   `TacticalWeaponAttack` and `WeaponAttackReceipt`, with serde default and
+   omission when None. Field names must agree across their constructors and
+   reconstruction. Old choices, receipts, fixtures and fingerprints remain
+   byte-for-byte unchanged. The record is evidence to check, never permission.
+2. Add one crate-internal object-point admission query in the spatial module.
+   Derive the observer from the actual campaign/encounter participant. Use current
+   awareness, real senses, light, obscuration and exact stored object point; do
+   not call creature perception with a fake participant. Sight checks begin at
+   the real observer center, as existing perception does. Blindsight may establish
+   object perception through clear effect; blindness excludes ordinary sight,
+   and creature-only Tremorsense/contact does not establish it. Bound query work
+   using the existing spatial capacity discipline. Independently require physical
+   reach with a clear-effect ray from an actually occupied actor cell to the point.
+   Compute ordinary five-foot reach in half-foot units from occupied cell centers,
+   including vertical cells and the real Large/Tiny footprint. Test the endpoint
+   convention explicitly: the Item is its stored point, not a fabricated cell or
+   target volume. No extended weapon reach or host knowledge enters the query.
+3. Add a rules-owned, non-deserializable preparation object whose fields and
+   constructor are private to the physical-equipment implementation. Construct it
+   only from the actual immutable input state, trusted origin, actor, derived
+   AttackAction window and typed choice. It retains its original state borrow and
+   internally derived candidate for the duration of one planning call. No external
+   caller can supply a candidate, receipt, validation flag or consumed-allowance
+   flag. Revalidate the complete physical before-image before any later consuming
+   operation; a preparation cannot authorize a changed state. The preparation
+   performs no authoritative mutation and publishes no generic candidate setter.
+4. Derive a coherent candidate only after the existing admission checks: current
+   active map and controller, visible/reachable intact quantity-one known weapon,
+   exact Location custody and unique matching ground record, usable receiving
+   hand, no conflicting holder, and no prior operation on this attack. Use one
+   non-disclosing refusal class for hidden/foreign/unknown Item probes. Change
+   only custody, that ground record and the chosen hand in the candidate; preserve
+   Item identity, owner, quantity, definition, grant and prior drop origin. The
+   sealed object derives and retains the original receipt before-image.
+5. Route ordinary physical planning through this shared preparation before
+   `carried_item` resolves the selected weapon. Its internal planner consumes the
+   prepared equipment operation once, then applies existing grip, source, ammo,
+   mastery, target and budget checks. Keep the original accepted choice in every
+   receipt; no accepted command is rewritten to disguise Pickup. Old Equip and
+   Unequip use their existing behavior, including the just-thrown prohibition.
+   Existing source attacks reach the same physical planner; Ogre's exact-pin
+   printed adapter remains separately owned and closed. A recovered weapon's
+   ordinary damage definition never inherits source-creature printed dice.
+6. Add a private bounded inverse shared by physical reconstruction. Validate the
+   expected current Item/equipment/ground image before restoring only the recorded
+   pickup transition in a local reconstruction. Reject mismatched identity, cause,
+   location, custody, duplicate ground record, current hand or intervening mutation;
+   never rewind unrelated changes. The inverse consumes the receipt as data and
+   rederives the same sealed preparation; it does not authenticate the original
+   controller/geometry cut. Only later real accepted command replay can do that.
+
+The existing public `prepare_weapon_attack` entry and every tactical producer
+continue to refuse Pickup. The lower private implementation may be tested directly
+with explicitly labeled constructed inputs; that is no public execution authority.
+After assembly, ordinary/source callers share the same internal physical code,
+but none can reach its new branch through an admitted command in this checkpoint.
+Do not add `after_equipment`, `ChooseAttackEquipment`, retained after work, a new
+pump/frame branch, after decisions or after receipt fields in this checkpoint.
+Their reviewed contract above remains required before eventual public admission.
+Do not create a partially owned choice merely to make before Pickup runnable.
+
+### Explicit admission and compatibility guard
+
+Add one shared predicate for new ground records, including live physical attack
+receipts (ordinary and creature sources) and all retained weapon-history entries.
+Rules tactical-state validation rejects it unconditionally before execution,
+including states with no encounter/flow. Domain deserialization may understand
+the additive record but must not make it runnable. Rules-enabled restore also
+rejects new records at the earliest anchor and through every later snapshot;
+semantic replay cannot grant authority to their encoded Pickup actions. Any new
+physical consumer discovered during authoring must be added to this boundary.
+
+Guard command choices outside the Live-only execution check: ordinary Attack,
+CreatureWeaponAttack, OpportunityAttack and nested Cleave weapon selections all
+refuse Pickup under Live and Historical policies at flows1-5 and any unsupported
+version. Cover direct public physical planning as well. A mutation which later
+retires its new state cannot bypass this action check. Existing accepted retry
+lookup stays first, and no historical event fixture is regenerated. Table offers
+remain carried-only and app/source-controller authorization cannot enable the
+new operation. Shared Grapple consumers must explicitly refuse it if present
+after deliberate integration; their separately guarded authority is unchanged.
+
+This temporary checkpoint guard is stricter than the final exact-flow5 contract.
+Removing it requires a separately reviewed complete before/after producer,
+original-cut replay, app/UI ownership and recovery implementation. It must not
+be removed merely because pure helper tests pass. No source admission changes,
+executor allocation, implicit upgrades, new public inventory mutation or direct
+state edit are part of the checkpoint.
+
+### Checkpoint controls and handoff
+
+Author controls for new/old serialization; private preparation with selected and
+different weapons; exact identity/owner/grant retention; supporting/reserved hands;
+duplicate ground records and stale custody; ordinary damage; geometric boundary,
+height, occlusion, darkness and special-sense cases; same refusal for hidden and
+unknown probes; private inverse round-trip and rejected forged before/current
+images. Label constructed helper images as such. Assert complete input equality
+on every failed operation. Do not present direct helper output as admitted play.
+
+Add unconditional public refusal controls for both policies, every relevant
+producer (including nested choices), new records in current/history/anchor states,
+and new raw data with superficially matching requests. Preserve old absent-field
+round-trips and original history bytes. Check all exhaustive enum consumers rather
+than granting new behavior to silence a match error. This checkout predates the
+private Grapple resolver branch; reconcile that consumer with its writer explicitly.
+
+Source handoff must identify the exact clean commit/tree, full diff, authored
+controls, unchanged corpus hashes and remaining acceptance. Root owns the heavy
+slot; no Cargo/npm/rustc/build/test, database, native run, CI mutation or push is
+authorized for this assignment. Root schedules focused domain/rules/app checks
+after static review, followed by the complete slice's canonical verification.
+Until actually run, all authored controls remain UNRUN. Public positive pickup,
+after-work ordering/Decline, real SQLite/cold/portable replay, UI and packaged play
+are explicitly UNMET and remain later checkpoints in this same Gate4 objective.
+
 ## Acceptance and current limits
 
 | Boundary | Required evidence |
@@ -312,11 +445,10 @@ mandatory; a direct state edit or synthetic candidate is never a positive substi
 | Persistence | Real file SQLite and independent portable restore at pickup-owned choice and pending attack/damage; exact original retry, changed body/foreign actor/stale handle leave complete store unchanged. |
 | Compatibility | All29 frozen fixtures and five original receiving suites retain exact bytes and execute; old Equip/Unequip and source pins/fingerprints remain exact. |
 
-Status remains PLAN ONLY. Root agreed the external design; this concrete checked
-amendment still needs independent review. No schema, source, test, UI or source
-admission change and no runtime evidence exists. Git whitespace/static diff checks
-are the only verification appropriate to this amendment. Root owns the native Air
-heavy slot; no Cargo/npm/build/test/database/native operation or push is authorized.
-Exact next action: return this clean plan commit and writer ownership to root for
-independent review before confirming a bounded source-authoring assignment. Keep
-Ogre creation closed until its complete forms/OA/pickup/UI path is reviewed.
+Status remains PLAN ONLY. The complete `28defe5` contract is independently reviewed;
+this 2026-10-04 bounded foundation amendment still needs root review. No schema,
+source, test, UI or source admission change and no runtime evidence exists. Git
+whitespace/static diff and non-document identity checks are the only verification
+appropriate to this amendment. Root owns the heavy slot. Exact next action: return
+this clean plan commit and writer ownership to root for review before any bounded
+source-authoring assignment. Keep new ground authority and Ogre creation closed.
