@@ -1,8 +1,21 @@
 # Gate 4 — Ground equipment in the production attack path
 
-Status, 2026-10-04: PLAN ONLY, awaiting complete independent design review.
+Status, 2026-10-04: PLAN ONLY; complete independent design review is CLEAR.
 Root is sole writer of `codex/gate4-ground-production` in `gate4-ground-production`.
 No source, compiler, tests, app, database, push or CI has run for this branch.
+
+Review of f8e0cd0 covered the complete300-line design and actual consumer seams;
+memo SHA256 `f8e31126b620e707127132459f4995a222815edfd2b9b93594d6788dd433079c`.
+Root read the complete review. Before new production implementation, normally
+merge the reviewed prerequisite f701b3f test correction described in the recovery
+plan. Actual PR57 Linux CI exposed a helper that changed supported flow4 to5 before
+reading a provisional hand. The correction pairs actual reserved/free derivation
+and preserves separate fresh/public refusals; no production guard changes.
+Independent correction review SHA256 is
+`2817220994b0eda9166f12b0a5f4530fa77c6e5c8dd6107165989971f5db76fe`.
+This narrow prerequisite reconciliation is authorized; new production source
+writing remains pending its explicit writer checkpoint. Compilation/runtime of the
+correction and full production acceptance remain unverified here.
 
 Fresh fetched development base is PR60 candidate
 `ae3906e8d24d840b2a196dd4ef64c16ab894ae39`, tree
