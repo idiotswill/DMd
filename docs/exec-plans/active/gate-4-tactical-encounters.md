@@ -2,7 +2,11 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-## Current integration checkpoint — 2026-09-30
+Current accepted main is `dbf1d633460473183324b4ec519e8d1980884b5c` after PR48.
+The [release plan](gate4-encounter-release.md) records the protected merge and
+separate successful literal-main checks. The candidate statuses below are historical.
+
+## Historical integration checkpoint — 2026-09-30
 
 Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
 protected merge. The complete tree equals reviewed source65b7606. Exact source

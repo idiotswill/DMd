@@ -1,9 +1,10 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
 Status, 2026-10-04: **All six CI checks pass on integrated fcc74a9, including the
-seven expiry controls and original receiving histories. Local canonical, genuine
-native deadline play, accepted-main reconciliation and final receiving-head
-verification remain pending.** Earlier parent/unrun checkpoints below retain their
+seven expiry controls and original receiving histories. Accepted-main dbf1d633
+reconciliation is complete. Local canonical, genuine native deadline play and
+final receiving-head verification remain pending; reconcile again if main advances.**
+Earlier parent/unrun checkpoints below retain their
 historical qualification; they do not describe the latest completed CI.
 
 ## Objective, ownership and baseline

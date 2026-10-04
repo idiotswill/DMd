@@ -4,6 +4,12 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
+Current integration note, 2026-10-04: PR48 is accepted at main
+`dbf1d633460473183324b4ec519e8d1980884b5c`, with separate successful literal-main
+checks recorded in the [release plan](../exec-plans/active/gate4-encounter-release.md).
+The older release-candidate statements below remain historical evidence. No Gate4
+family status or player-acceptance claim changes.
+
 ## What is accounted for
 
 The ledger has 55 rules/content families. Every family has one numeric `primary_gate`, legal/source citations, explicit scope, status, mechanical test evidence, production integration evidence, player acceptance evidence and final Gate 14 ownership. Empty evidence arrays mean no such evidence is claimed. An inventory entry inherits its owning family's scope and gate accounting; a primitive family's integration status does not declare every source subrule implemented. Listing a spell or creature does not implement it.

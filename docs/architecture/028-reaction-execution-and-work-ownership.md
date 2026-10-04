@@ -205,7 +205,12 @@ separate required Gate4 work with their own source and ownership acceptance.
 
 ## Compatibility and verification obligations
 
-### Authenticated encounter release (candidate verified; merge pending)
+### Authenticated encounter release (accepted through PR48)
+
+PR48 is accepted at `dbf1d633460473183324b4ec519e8d1980884b5c`; the
+[release plan](../exec-plans/active/gate4-encounter-release.md) records separate
+successful literal-main checks. The source8c paragraph below preserves its
+historical candidate evidence and then-pending integration requirements.
 
 `EncounterReleaseV1` owns flow 5. Counterspell requires a later boundary. The
 initial domain/rule checkpoint defined this executor and inherited hit/missile

@@ -5,7 +5,11 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR49 — 2026-09-30
+Current accepted main is `dbf1d633460473183324b4ec519e8d1980884b5c` after PR48.
+The [release plan](gate4-encounter-release.md) records the protected merge and
+separate successful literal-main checks. Remaining Gate4 obligations below stay open.
+
+## Historical checkpoint after PR49 — 2026-09-30
 
 Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`, the protected
 UI49 merge. Its full tree equals reviewed source65b7606. The UI plan records
