@@ -1,6 +1,64 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: corrected `afc40ef` passes formatting, strict domain/rules/app all-target Clippy and all46 focused controls on 2026-10-04. Root is preparing a draft PR for whole-workspace CI against the unchanged development foundation; no public activation or merge is authorized by that publication. Earlier failed and interrupted attempts remain preserved below. Root is sole writer and schedules the heavy slot; Air canonical now owns it. Full canonical/CI, genuine LR positives and temporal/application integration remain unmet. All public guards remain required; this is not runnable or accepted Grapple.
+Status: PR56 receiving-head Linux CI failed one inherited synthetic opportunity-menu control at `5296d06f` on 2026-10-04. Root transfers sole bounded test-correction writing to `gate4_ground_oct4` in `gate4-grapple-resolver-core`; every other checkout remains separately owned/frozen. This plan checkpoint precedes source edits. Only direct formatting/static checks are authorized; no compiler/test/native/DB/publication run. Earlier focused46 success remains attributed to `afc40ef`, not a full receiving-head pass. All public guards and complete Gate4 obligations remain required.
+
+## Receiving-head CI failure and bounded correction plan — 2026-10-04
+
+Fetched `origin/codex/gate4-grapple-resolver-core` still equals clean local
+`5296d06f2619027a9ce554131cb0ecd8c80dc607`, tree
+`7fd8d82ffb7f2412271e821e99d5b93f8f02b0fc`; fetched main remains
+`dbf1d633460473183324b4ec519e8d1980884b5c`. Root confirmed the discovered
+checkout/branch before authoring. No foundation/condition/attack-context branch
+is included in this writer transfer.
+
+Actual Linux run37204758444 attempt1/job111443524789 executes
+`cargo test --locked --workspace` with rustc1.99.0. Its synthetic checkout
+`60b58444d9a1e98e04976a9355fdabbb0bea500f` has parents fa4/5296 and the exact
+5296 tree, verified from saved REST commit objects and literal checkout log.
+Thirty-nine completed result groups contain485 passes/1 failure, zero ignored
+or filtered. The last rules-library group is199/1; all24 private core controls
+passed inside it. Domain Grapple11, original Flow4 eight and table62 groups also
+completed. The workspace exits101; later groups are not execution evidence.
+
+The only failure is
+`tactical::attacks::opportunity::hand_tests::current_two_hand_options_change_without_removing_unarmed_or_rewriting_selected_work`
+at opportunity.rs479:73: `Invalid("Grapple equipment decision/stage differs")`.
+Full decoded UTF-8 log is external
+`tooling/ci-ground-watch-2026-10-04/job-111443524789-20261004171229.log`,
+143526 bytes/SHA256
+`ec19fa02c810f6cc41ce2f820dbbc3fea795bd7e8daebaca5152806d1e761767`.
+The original connector JSON, attempt/head/commit provenance and complete literal
+group audit are preserved there; handoff SHA256
+`c05237b47427567951e927bf7d43ea23a039a928bf01deffde9311b1417cb798`.
+
+Source diagnosis: the pure menu test installs a synthetic provisional Attempt,
+then writes Complete/Withdrawn with neither a before operation nor an after
+decision. `EffectiveHands::current` correctly calls strict domain shape
+validation, which requires exactly one consumed allowance for Complete.
+Actual `grapple::equipment::choose` records the owned Applied/Declined decision
+and work before setting Complete; withdrawal with an unused allowance first
+queues that actual equipment work. No production defect is demonstrated.
+
+After committing this plan, change only this existing test and this plan:
+
+- Retain the original malformed Complete/Withdrawn image as an explicit exact
+  error/no-mutation negative, rather than relaxing the production guard.
+- Supply the positive synthetic completed image's explicit Declined decision,
+  distinct later command, matching GrappleAfterEquipment node/key and causal
+  Begin parent in its synthetic work trace. Keep its non-gameplay status explicit;
+  this is a source/shape menu composition control, not accepted release/replay.
+- Preserve the original provisional blocking, unarmed inclusion, glaive reach,
+  restored exact menu and empty opportunity-refresh assertions. Assert the
+  positive query also leaves the whole state unchanged. Do not change the
+  shared fixture/helper, source profile, physical planner, domain validator,
+  production behavior, public refusal or any other control/capture.
+- Direct rustfmt and diff/static preservation checks only. Return clean exact
+  correction and full diff to root plus a different peer before execution.
+  Root must later run this exact named control (nonzero matching count), relevant
+  hands/core/domain checks and full canonical/receiving-head CI as assigned.
+
+This is not a waiver of the original lifecycle/read-context/LR/replay/app/native
+contract, and no development-base merge or public activation is authorized.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
