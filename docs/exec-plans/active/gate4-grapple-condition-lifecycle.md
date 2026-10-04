@@ -1,6 +1,12 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
-Follow-on status, 2026-10-04: the separate attack read-context branch returns an
+Follow-on status, 2026-10-04: root and peer fully reviewed intermediate `f83e12e`
+and renewed sole source continuation by `gate4_ground_oct4`. The separate
+[attack read-context plan](gate4-grapple-attack-read-context.md) records exact
+review hashes and unchanged full scope. Its ten new owner controls are UNRUN;
+original condition/core tests and PR59 checkout remain unchanged/root-owned.
+
+Historical intermediate handoff: the separate attack read-context branch returns an
 intermediate private owner/core source checkpoint for root architectural review.
 Ten owner controls are authored and UNRUN; only direct formatting and static
 Git checks ran. All four attack families and public activation remain closed.

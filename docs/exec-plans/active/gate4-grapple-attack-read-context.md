@@ -1,6 +1,22 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: INTERMEDIATE OWNER/CORE SOURCE CHECKPOINT, STATIC AND UNRUN, 2026-10-04.
+Status: FOUR-FAMILY SOURCE CONTINUATION AUTHORIZED, 2026-10-04.
+Root renewed sole writing by `gate4_ground_oct4` from clean reviewed
+`f83e12e12c82ddc0f79bf05b72f72948fb918045`, tree
+`6a7c8c8232ce6210d9b79b9c004e9d807819aa04`. Both complete reviews were read
+and rehashed: `tooling/grapple-f83e12e-root-owner-review-2026-10-04.md`, SHA256
+`be4aeea55863c230fd8c337de1a437292a598fe89685a21675b681389927e229`, and
+`tooling/grapple-f83e12e-complete-independent-review-2026-10-04.md`, SHA256
+`776bfcb31cb1353c685e766cd1c459956917f399f6770300cf02b1d3a6ee4f2b`.
+Both are CLEAR for the intermediate architecture only. This writer/status commit
+precedes continuation source and fixes the stale final status noted as P3.
+Implement the full accepted contract below, keeping historical pure calculation
+separate from current physical completion. Return clean coherent source for full
+review. Direct rustfmt/static Git only; no compiler/test/build/native/database or
+publication is assigned. All other branch ownership and the sole root heavy slot
+remain unchanged. All new controls remain uncompiled and UNRUN.
+
+Historical intermediate handoff, superseded by the transfer above:
 Sole writer is returning this clean checkpoint to root for architectural review;
 source writing pauses until root transfers it back. This is not the complete
 four-family checkpoint, a runtime correctness claim, or public activation.
@@ -646,13 +662,12 @@ Accepted retry still precedes changed admission. A record walker is not replay.
    claims; exact-head native/canonical CI and receiving-head verification remain
    required. Prior or pending CI is not evidence for a new source head.
 
-Current validation is file/Git/source inspection and plan-only static checks;
-the proposal and full independent design review were read and rehashed. No
-follow-on source or new controls exist. Risks for exact-plan review include owned
-candidate lifetimes, explicit shared validator recursion, all inherited authority
-and producer observations, pending withdrawal, cancellation-only baselines,
-complete cut membership/issue causality, direct-choice ancestry, descendant
-retention and current physical completion. Exact next action is complete root
-and independent peer review of this clean amended plan commit/tree. Source remains
-paused until root's explicit resumption; do not lift authority, merge dependencies
-or begin another gate on this amendment's strength.
+Current evidence is the reviewed intermediate owner/core source at `f83e12e` and
+ten authored, uncompiled and UNRUN controls. Direct formatting and Git/static
+inspection passed; no runtime, replay, application or native acceptance is claimed.
+Exact next action is the renewed authorized four-family implementation above,
+including complete cut membership/issue causality, direct-choice ancestry,
+descendant retention and current physical completion. Preserve the reviewed
+owner/ordered-observation contract and return clean source for independent review
+before any root-assigned execution. Do not lift public authority, merge dependencies
+or begin another gate on the intermediate review's strength.
