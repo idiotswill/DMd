@@ -525,3 +525,12 @@ this plan may change. No source/content/fixture/public-admission/profile/workflo
 change, compiler/test/native/DB execution or publication is part of this correction.
 Root Air87840 retains the heavy slot. Freeze the fix for independent delta review;
 all previously recorded production integration and Gate4 obligations remain open.
+
+Correction authored after plan5b0393f: one shared private completion-node check
+requires a unique relevant kind at pause, resume validation, completion and retained
+after validation. The after validator now inventories every trace node of its kind
+as well as live work. Two new controls use actual producer pauses/selections and
+generic-valid DAG counterfeits; old21 controls remain unchanged. All23 rules controls
+and the app preflight control remain UNRUN. Direct rustfmt/check and Git whitespace
+checks pass; these are static checks only. Exact fix awaits independent delta review
+before publication or actual compiler/test allocation.

@@ -79,6 +79,29 @@ fn entered(state: &CampaignState) -> Result<TacticalWorkKey, RulesError> {
     node(state, key)?;
     Ok(key)
 }
+/// This private scope admits one own-turn physical attack. A matching kind and
+/// attack-roll ancestor alone cannot distinguish its real completion from an
+/// extra retired sibling. Other consequence kinds (including Shield) are distinct.
+fn completion_node(
+    state: &CampaignState,
+    key: TacticalWorkKey,
+) -> Result<&TacticalWorkNode, RulesError> {
+    let node = node(state, key)?;
+    let trace = resolution(state)?.work_trace.as_ref().unwrap();
+    if !matches!(
+        node.work.kind,
+        TacticalWorkKind::AttackDamage | TacticalWorkKind::FinishAttack
+    ) || trace
+        .nodes
+        .iter()
+        .filter(|other| other.work.kind == node.work.kind)
+        .count()
+        != 1
+    {
+        return Err(invalid("equipment completion ancestry is ambiguous"));
+    }
+    Ok(node)
+}
 fn declaration(state: &CampaignState, attack: &TacticalAttack) -> Result<(), RulesError> {
     current_version(state)?;
     let w = attack
@@ -131,7 +154,7 @@ pub(super) fn pause(
         AttackEquipmentPause::Knockout => (TacticalWorkKind::AttackDamage, attack.damage_roll),
         AttackEquipmentPause::Graze => (TacticalWorkKind::FinishAttack, attack.attack_roll),
     };
-    if node(state, work)?.work.kind != kind
+    if completion_node(state, work)?.work.kind != kind
         || attack.weapon().unwrap().after_equipment_parent.is_some()
         || pause == AttackEquipmentPause::Graze && (attack.automatic_miss || accepted_raw.is_none())
     {
@@ -198,7 +221,7 @@ pub(super) fn validate_pause(state: &CampaignState) -> Result<(), RulesError> {
     validate_equipment_change_origin(state, &parent.paused_by, attack.actor)
         .map_err(|e| invalid(&e))?;
     if parent.pause != pause
-        || node(state, parent.work)?.work.kind != kind
+        || completion_node(state, parent.work)?.work.kind != kind
         || parent.accepted_raw != raw
         || Some(parent.suspended_outcome) != attack.outcome
         || parent.paused_by.session_id != attack.origin.session_id
@@ -309,11 +332,8 @@ pub(super) fn completed(
     declaration(state, attack)?;
     let w = attack.weapon().unwrap();
     let completed_work = entered(state)?;
-    if !matches!(
-        node(state, completed_work)?.work.kind,
-        TacticalWorkKind::AttackDamage | TacticalWorkKind::FinishAttack
-    ) || w
-        .after_equipment_parent
+    completion_node(state, completed_work)?;
+    if w.after_equipment_parent
         .as_ref()
         .is_some_and(|p| p.work != completed_work)
         || resolution(state)?.attack_after_equipment.is_some()
@@ -491,8 +511,14 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         .chain(r.failed_save.iter().map(|p| &p.pending.work))
         .filter(|w| w.kind == TacticalWorkKind::AttackAfterEquipment)
         .collect::<Vec<_>>();
+    let traced = r
+        .work_trace
+        .iter()
+        .flat_map(|trace| &trace.nodes)
+        .filter(|node| node.work.kind == TacticalWorkKind::AttackAfterEquipment)
+        .collect::<Vec<_>>();
     let Some(record) = &r.attack_after_equipment else {
-        return if live.is_empty() {
+        return if live.is_empty() && traced.is_empty() {
             Ok(())
         } else {
             Err(invalid("unowned equipment work"))
@@ -500,9 +526,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     };
     let receipt = matching_receipt(state, &record.cause)?;
     let n = node(state, key(state, record.work.occurrence)?)?;
-    let parent = node(state, record.cause.completed_work)?;
+    let parent = completion_node(state, record.cause.completed_work)?;
     if receipt.after_equipment.is_some()
         || r.attack.is_some()
+        || traced.len() != 1
         || record.work.kind != TacticalWorkKind::AttackAfterEquipment
         || n.work != record.work
         || n.parent != Some(parent.work.occurrence)

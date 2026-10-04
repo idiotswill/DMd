@@ -1352,6 +1352,95 @@ fn private_selected_cause_rejects_changed_outcome_choice_parent_and_resolution()
 }
 
 #[test]
+fn private_graze_rejects_same_kind_retired_sibling_without_entering_or_mutating_it() {
+    let mut f = Fixture::new("greatsword", true);
+    f.begin();
+    f.raw(1);
+    let r = resolution_mut(&mut f.state).unwrap();
+    let actual = r
+        .attack
+        .as_ref()
+        .unwrap()
+        .weapon()
+        .unwrap()
+        .after_equipment_parent
+        .as_ref()
+        .unwrap()
+        .work;
+    let trace = r.work_trace.as_mut().unwrap();
+    let mut sibling = trace
+        .nodes
+        .iter()
+        .find(|n| n.work.occurrence == actual.occurrence)
+        .unwrap()
+        .clone();
+    assert_eq!(sibling.work.kind, TacticalWorkKind::FinishAttack);
+    sibling.work.occurrence = r.next_occurrence;
+    r.next_occurrence += 1;
+    let counterfeit = TacticalWorkKey {
+        resolution: actual.resolution,
+        occurrence: sibling.work.occurrence,
+    };
+    trace.nodes.push(sibling);
+    r.attack
+        .as_mut()
+        .unwrap()
+        .weapon_mut()
+        .unwrap()
+        .after_equipment_parent
+        .as_mut()
+        .unwrap()
+        .work = counterfeit;
+    // This is a same-kind, same-ancestor, allocation-ordered DAG counterfeit,
+    // not the existing wrong-kind or malformed-trace negative.
+    work_trace::validate(&f.state).unwrap();
+    let before = f.state.clone();
+    let meta = f.meta(f.actor);
+    assert!(validate_pause(&f.state).is_err());
+    assert!(attacks::choose_mastery(&mut f.state, &meta, &WeaponMasteryChoice::Graze).is_err());
+    assert_eq!(f.state, before);
+    assert!(
+        resolution(&f.state)
+            .unwrap()
+            .work_trace
+            .as_ref()
+            .unwrap()
+            .active
+            .is_none()
+    );
+}
+
+#[test]
+fn private_after_trace_inventory_rejects_retired_extra_and_orphan_nodes_atomically() {
+    let mut f = Fixture::new("javelin", false);
+    f.begin();
+    f.raw(1);
+    let work = key(&f.state, f.selected().work.occurrence).unwrap();
+    let good = f.state.clone();
+    for orphan in [false, true] {
+        f.state = good.clone();
+        let r = resolution_mut(&mut f.state).unwrap();
+        if orphan {
+            r.attack_after_equipment = None;
+        } else {
+            let trace = r.work_trace.as_mut().unwrap();
+            let mut extra = trace
+                .nodes
+                .iter()
+                .find(|n| n.work.occurrence == work.occurrence)
+                .unwrap()
+                .clone();
+            extra.work.occurrence = r.next_occurrence;
+            r.next_occurrence += 1;
+            trace.nodes.push(extra);
+        }
+        work_trace::validate(&f.state).unwrap();
+        assert!(validate(&f.state).is_err());
+        f.reject(f.meta(f.actor), work, AttackEquipmentChoice::Decline);
+    }
+}
+
+#[test]
 fn private_printed_physical_source_propagates_intent_and_retains_exact_pin_and_feature() {
     use crate::tactical_creature_equipment::{
         creature_equipment_plan, materialize_creature_equipment,
