@@ -1,19 +1,30 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **Implementation authored; static checkpoint awaiting independent review and execution.**
-Sole writer: `gate4_ci_oct4`, explicitly assigned by root on 2026-10-04.
-Review amendment: root and independent peer requested workspace-preserving
-selection and native combined-output capture; incorporated below on 2026-10-04.
-Root reviewed the complete amended plan at `fdb106f5d830203e2ca2f4b9fec2431014366d99`
-and explicitly authorized this writer's helper/parser/tests/workflow work.
-External root review: `tooling/mr-fdb106f-root-plan-review-2026-10-04.md`, SHA256
-`3cd51872eceebe3a7317dcf5072ac4bd00264b3b45419412d370f2cc96111477`.
-Return a clean static checkpoint before any helper-test or native execution.
+Status: **Plan amendment only after the first real isolated job failed its
+coverage guard.** The exact named test passed; the partition did not receive a
+successful evidence manifest. The command-selection correction below is proposed
+and has not been implemented or executed.
+Sole PLAN-ONLY writer: `gate4_ci_oct4`, transferred by root on 2026-10-04 after
+root read the complete failure diagnosis and exact Cargo source trace. Source,
+helper tests, native work and publication require the next explicit root transfer.
 Branch: `codex/gate4-magic-resistance-source`; checkout `gate4-shield-missile-runtime`.
-PR: draft [53](https://github.com/idiotswill/DMd/pull/53), published source
-`486ce8ba6ba8fb24f9d9f247f18c07370e8f6c4f`, tree
-`5dde4b72324a0911512ee38ddfc337becdd28cab`. Fresh fetch confirms the same remote
-head and clean checkout before this plan. This is not an accepted main branch.
+Draft [PR53](https://github.com/idiotswill/DMd/pull/53) and freshly fetched branch
+head: `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
+`f6ed6762420e92332435eeb6843529a981dd0cd6`. This is unaccepted development work.
+
+Root approved the bounded diagnosis/proposal, external
+`tooling/mr-ad3-isolated-diagnosis-2026-10-04/diagnosis-and-plan-proposal.md`,
+SHA256 `10bde088845ab4c89a8ebe0d15086199e1e2ff732b3ec6605fbf5fe9898de1bd`.
+This amendment must return as a clean docs-only checkpoint for root review before
+source editing. It preserves the parser, doctest inventory and package topology.
+
+Historical plan review: root and peer required full workspace selection and a
+native combined output pipe, incorporated in `fdb106f5d830203e2ca2f4b9fec2431014366d99`.
+Root review `tooling/mr-fdb106f-root-plan-review-2026-10-04.md` has SHA256
+`3cd51872eceebe3a7317dcf5072ac4bd00264b3b45419412d370f2cc96111477`.
+The subsequent source review and 29 pure helper passes remain attributed to their
+old head. Actual CI disproved the original positional-filter target-selection
+assumption; neither earlier review nor the synthetic controls certify this fix.
 
 ## Objective, authority and boundaries
 
@@ -39,7 +50,8 @@ six-hour cap or third unchanged retry. Existing failed attempts stay preserved.
 
 Root owns heavy/local execution, publication, prerequisite reconciliation,
 protected merge and final acceptance. Until further transfer, this writer may
-perform only implementation/static work: no Cargo/npm/build/test, DB/native operation,
+edit only this plan and directly related MR status: no source/helper implementation,
+Cargo/npm/build/test, DB/native operation,
 push, merge, CI retry or cancellation. Do not edit another checkout.
 
 ## Observed failure and evidence
@@ -82,6 +94,61 @@ literal486; it did not execute newer synthetic7803f73. New checks must identify
 their literal/synthetic execution separately. PR53 must never merge into Air;
 accepted-main reconciliation and any retarget remain root-owned.
 
+## First actual partition failure at ad3, 2026-10-04
+
+Windows workflow `37206167960`, attempt1, isolated job `111447686335`
+checked out literal `ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, tree
+`f6ed6762420e92332435eeb6843529a981dd0cd6`. The saved API records failure,
+13:35:38Z start and 14:50:40Z completion. This was not the PR synthetic merge head.
+All six native subprocess receipts exit 0 and match their literal raw log hashes.
+
+Discovery found 793 named tests in 56 harnesses: 50 compiled executable harnesses
+and six empty doctest crate groups. The isolated invocation completed the same
+50 executable harnesses, with one named actual pass and 792 filtered tests.
+Every executable pass/filter count reconciles with discovery. The unique
+partition key in table_loop passed in 4116.01s with 61 peers filtered; its literal
+pass appears 14:49:45.140Z. This qualifies the old target test only.
+
+The execution omitted exactly Doc-tests dmd_app, dmd_conversation, dmd_core,
+dmd_domain, dmd_persistence and dmd_rules. The helper rejected the incomplete
+harness set at 14:49:45.508Z with `missing/extra runtime harness or docs`.
+It produced failure.json and no successful manifest. Empty doctest discovery
+is not evidence that those targets completed. The original eight remain one
+unmodified remainder suite and are all filtered in isolated execution, as
+intended; this failure supplies none of their required remainder passes.
+
+Actual toolchain: rustc 1.99.0, commit b940084d7eb6a299eb4bfeb8e34901bc051e7ac4;
+Cargo 1.99.0, commit 5f94df4789f005f9a352888e8355ffc645b7ed0e; native MSVC target.
+The exact [Cargo command dispatcher](https://raw.githubusercontent.com/rust-lang/cargo/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/bin/cargo/commands/test.rs)
+places the positional TESTNAME into test_args but also changes otherwise-default
+target selection to all_test_targets. Arguments after -- reach the same test_args
+without that switch. The [filter definition](https://raw.githubusercontent.com/rust-lang/cargo/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/ops/cargo_compile/compile_filter.rs)
+uses an Only filter; the [unit generator](https://raw.githubusercontent.com/rust-lang/cargo/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/ops/cargo_compile/unit_generator.rs)
+adds default library doctests in its Default/Test branch. The [test runner](https://raw.githubusercontent.com/rust-lang/cargo/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/ops/cargo_test.rs)
+forwards test_args to executables and through rustdoc test-args. This source trace
+explains the actual omission and supports moving KEY after --; it is not a
+success result for the proposed command.
+
+Preserved original evidence in `tooling/ci-independent-four-heads-2026-10-04/`:
+
+- `mr-ad3b82b-isolated-failed-11306751432.zip`, artifact 11306751432,
+  SHA256 `303187c741f885cb67184b824ac96b5da3aa7755a2db01c77c732c8ab54c23c9`;
+- `job-111447686335.log`, complete GitHub job log,
+  SHA256 `c01402676398b17a5a88e52b3a42cafbd969318d1ca7152e55f83d8daeb50722`;
+- original API snapshots, core artifact audit and both previous six-hour attempts.
+
+Independent diagnosis directory `tooling/mr-ad3-isolated-diagnosis-2026-10-04/`
+contains 13 inert decoded log/JSON entries and exact upstream source text. Its
+`independent-audit.json` SHA256 is
+`5b6c12aca772f93c6c19e9e0b631418d2be5384429545045e02cd63a65307ff6`.
+It records all entry hashes, six receipts, exact identity, all 50 executable
+reconciliations and the missing doc set. The literal execution.log SHA256 is
+`7857a052c17b469a1012786e9421219b8fcbd96533e1dee6569da336254c4afe`;
+discovery.log SHA256 is
+`ca0cee11dc076a35bb6e84540a8371ec2dd7280ccca364642ac38391da06f26e`.
+No artifact is repaired or promoted to successful evidence. The saved passing
+test cannot be combined with another head/run/attempt to authorize packaging.
+
 ## Concrete partition and discovery contract
 
 Define one exact partition key: the full test name above, in package `dmd-app`,
@@ -114,13 +181,19 @@ The remainder job executes:
 
 The isolated job executes:
 
-`cargo test --locked --workspace --target x86_64-pc-windows-msvc <exact-key> -- --exact`
+`cargo test --locked --workspace --target x86_64-pc-windows-msvc -- <exact-key> --exact`
 
-Both execution commands retain the canonical workspace package selection and
-feature resolution. Prior full-workspace discovery alone would not preserve the
-feature graph of a subsequent package-only command. The isolated invocation
-therefore visits every selected workspace harness, including doc-tests, while
-the globally unique exact key permits just one real test to run.
+Both commands must retain default workspace target selection and feature
+resolution. Define BASE as the identical argument list through the native target;
+use BASE + ["--", KEY, "--exact"] for isolated execution and
+BASE + ["--", "--skip", KEY] for the remainder. Every filter is on libtest's
+side of the separator. Prior discovery alone cannot preserve a later command's
+selection. A Cargo-level positional TESTNAME changes default selection even with
+--workspace; the failed ad3 attempt omitted all six doctest harnesses for that
+reason. The old command's claimed doctest coverage was false. The corrected
+command is required to visit every discovered harness, including doc-tests,
+while the unique exact key permits just one real test to pass. This amended
+behavior remains to be verified on an actual successor head.
 
 Use structured argument arrays and native exit-code checks. Neither command
 changes test concurrency or profile. No ignore/retry/capture switch is introduced.
@@ -178,8 +251,10 @@ summaries so an extra summary cannot impersonate a new group. A second summary
 without its own run start, duplicate named outcome, incomplete subgroup or
 unexplained subgroup-count change fails. Do not reject a valid crate merely for
 having multiple summaries, and do not flatten away subgroup completion checks.
-Current successful Windows evidence contains six empty doc-test crate groups;
-each still requires its explicit empty discovery and completed runtime summary.
+Prior successful unfiltered Windows evidence contains six empty doc-test crate
+groups. The ad3 default discovery also lists all six; its positional-key execution
+omits them and is rejected. Each still requires its explicit empty discovery and
+completed runtime summary. Do not relax this requirement for the failed command.
 Do not add `--show-output` merely to flatten docs: it changes rustdoc's merging.
 
 These semantics were checked against actual saved Windows/Cargo output and
@@ -240,7 +315,7 @@ Linux workflow remains independently required for merge; cross-workflow status
 is not invented as a `needs` dependency. Do not publish a package before the
 Windows partition coverage proof and all listed Windows checks pass.
 
-## Planned slices and validation
+## Original implementation slices and validation
 
 1. Commit this plan and refreshed MR current status. Return the clean head/tree
    for root review; no helper/workflow implementation before that review.
@@ -275,10 +350,10 @@ configuration is reported, not bypassed. GitHub's job limit remains unchanged.
 
 ## Risks, unresolved obligations and next action
 
-The single case could still exceed its own job limit; the successful Linux full
-table duration and repeated Windows progress support the partition but do not
-prove success. If a new exact run fails, read the actual failure and collect
-bounded diagnostic evidence before changing production behavior or CI strategy.
+At ad3 the isolated case actually completed in 4116.01s, but the missing doctest
+harnesses prevented partition success. This result does not verify the amended
+command or a future source head. If a new exact run fails, read its actual failure
+and collect bounded evidence before changing production behavior or CI strategy.
 Cargo/doc-test discovery and parsing must fail closed without discarding tests.
 Future renamed tests, new harness kinds or output changes must require explicit
 reconciliation rather than silent green checks. Additional compilation/discovery
@@ -288,7 +363,7 @@ Actual positive Counterspell/repeated-save Magic Resistance gameplay, remaining
 canonical/native evidence, accepted-main integration and the wider Gate4 finish
 line remain open under the MR plan. No obligation moves to Gate5.
 
-## Implementation checkpoint, 2026-10-04
+## Historical implementation checkpoint, 2026-10-04
 
 Authored `scripts/windows_test_partition.py`, its pure adversarial tests in
 `scripts/tests/test_windows_test_partition.py`, and the bounded desktop workflow
@@ -328,13 +403,15 @@ workflow, `scripts/verify` or `scripts/verify-fast` change is included. Existing
 failed Windows evidence remains unchanged. The artifact-download version and
 current-run behavior were checked against the [official download-artifact documentation](https://github.com/actions/download-artifact#usage).
 
-Next action: independently review the complete clean static checkpoint, then
-root schedules `python -B -m unittest discover -s scripts/tests -p
-test_windows_test_partition.py` and any additional bounded guard checks. After
+Historical next action at that implementation checkpoint: independently review
+the complete clean static checkpoint, then root schedules
+`python -B -m unittest discover -s scripts/tests -p test_windows_test_partition.py`
+and any additional bounded guard checks. After
 fixing actual findings, root schedules fresh exact-head native CI and the
-unchanged canonical acceptance obligations. This writer retains sole branch
-ownership until explicitly transferred back; publication and final acceptance
-remain root-owned.
+unchanged canonical acceptance obligations. That implementation writer then
+returned ownership to root; the current
+plan-only assignment at the top supersedes this historical next action. Publication
+and final acceptance remain root-owned.
 
 ## Root review and pure guard execution — October 4
 
@@ -349,7 +426,7 @@ Writer ownership returned to root; the source remains frozen for peer review.
 Root explicitly allocated the lightweight stdlib Python suite while Air kept
 the sole heavy/native slot. At clean exact aae8d47, the actual command was
 `C:/Users/jadra/AppData/Local/Programs/Python/Python311/python.exe -I -B -m unittest discover -v -s scripts/tests -p test_windows_test_partition.py`.
-All29 tests passed in0.983 seconds with process exit0. Head and clean status
+All29 tests passed in0.983 seconds with process exit 0. Head and clean status
 were unchanged afterward. Full log SHA256:
 `9ff99a5292013727d6ac7c45e5cab37711b34333fb380ee9082589efc796180d`.
 Its printed14-case proof is synthetic test output, not actual native regression
@@ -363,6 +440,66 @@ Root read that memo in full. The peer independently checked all changed files,
 actual workspace manifests, original-eight names, native transcript semantics,
 raw proof and packaging dependencies; it ran no executable checks. Root freshly
 fetched the published MR branch and confirmed it remains486ce8b with no unexpected
-movement. Publish the reviewed implementation plus these result-only documents
-by normal push to draft PR53 for first exact-head CI of the new topology.
+movement. Root published the reviewed implementation plus result-only documents
+at ad3
+to draft PR53. Its first real isolated attempt is the failure recorded above.
 Its development Air base stays unaccepted and must never receive a merge.
+
+## Current bounded correction plan — argument placement only
+
+Root read the complete external proposal and independent audit, then checked
+exact Cargo argument/target/rustdoc forwarding sources. It approved this smallest
+correction for a PLAN-ONLY handback first. Source editing has not started.
+
+1. Commit these directly related plan/status changes and return the exact clean
+   head/tree for root review. Preserve every old failure and qualified result.
+2. Only after root reviews this amendment, change commands() isolated execution
+   from BASE + [KEY, "--", "--exact"] to BASE + ["--", KEY, "--exact"]. Retain
+   metadata/artifact/full-discovery commands and remainder argv exactly. Add a
+   concise comment explaining Cargo's positional TESTNAME target-selection effect.
+3. Strengthen the existing command-selection control: split discovery and both
+   execution argv at their literal --, require the Cargo prefix to equal BASE,
+   and require the exact discovery/remainder/isolated suffixes. Presence of
+   --workspace alone is insufficient. Cargo-level positional names, -p, --tests,
+   --all-targets or --doc cannot replace this default-selection contract.
+4. Add a representative transcript with complete discovery, one named isolated
+   pass and all executable summaries correct, but every doc runtime section absent.
+   It must reject the same missing-harness failure. Also remove only an empty
+   doc runtime group and require rejection; empty completion remains mandatory.
+5. Add an otherwise valid isolated bundle with the old positional argv in both
+   its manifest and separate execution receipt. It must fail exact command
+   validation even with matching raw hashes and internally consistent metadata.
+6. Add an orchestration negative whose six mocked subprocesses all exit 0 and
+   hash-match but whose execution lacks doc sections. Require failure.json and
+   the absence of manifest.json. No synthetic result substitutes for native CI.
+7. Preserve all 29 existing pure controls. No parser, schema, inventory or union
+   relaxation is authorized. Remainder must actually pass every discovered test
+   except KEY; isolated must actually pass exactly KEY, and both must complete
+   every executable/doc harness with exact named-pass/filter/subgroup checks.
+   Both matching inventories, original eight unfiltered passes, native combined
+   logs, exact receipts and source/tree/run/attempt/toolchain checks remain.
+8. Source scope is commands(), meaningful pure controls and directly related
+   result notes. Workflow/package dependencies, Linux, local canonical scripts,
+   Rust/gameplay tests/fixtures/content, profiles and concurrency remain intact.
+   A broader change requires evidence and another root plan review.
+9. Return the coherent static source checkpoint for independent review. Root
+   may then allocate the stdlib suite and a bounded list-only diagnostic using
+   corrected argv before expensive fresh CI. Such a probe would only establish
+   selection/boundaries and cannot replace actual named test passes. No probe,
+   helper suite, Rust/native/DB or CI operation is authorized in this amendment.
+10. Root preserves current remaining-job evidence and schedules publication.
+    Acceptance still needs a fresh exact successor-head pair, complete coverage
+    proof and package job plus all existing required checks. Never manufacture
+    a success manifest for ad3 or mix its pass with a new head or attempt.
+
+Separate executable/doc partition inventories are not justified: correcting
+argument placement restores the approved complete-default-workspace contract.
+The failed command's six absent doc summaries cannot be invented or ignored.
+The present evidence schema already pins exact argv; this correction needs no
+schema change solely to move an argument. Actual new output incompatibility
+would be a fresh finding requiring explicit reconciliation.
+
+Exact next action: root reviews the clean docs-only amendment and transfers
+bounded source writing separately. Until then gate4_ci_oct4 owns only the two
+plan files; Air87840 keeps root's sole heavy slot. Canonical/native/source
+acceptance, accepted dependencies and full Gate4 closure remain outstanding.

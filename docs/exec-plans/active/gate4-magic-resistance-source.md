@@ -1,8 +1,26 @@
 # Gate 4 corrected Night Hag source and Magic Resistance prerequisite
 
-Status: `486ce8b` passed Linux CI, including actual old/current Hag coexistence, but both native Windows attempts reached the six-hour limit with the same table case unfinished. A reviewed exhaustive Windows CI partition is now authored at `aae8d47`; root ran all29 pure guard tests successfully and will publish fresh exact-head CI. Actual native partition/coverage/package execution, canonical/native evidence, accepted dependency reconciliation and prerequisite acceptance remain incomplete. The [Windows CI recovery plan](gate4-windows-ci-recovery.md) records exact reviews and evidence; historical checkpoints retain their original status.
-Branch: `codex/gate4-magic-resistance-source`; draft PR53 at `486ce8ba6ba8fb24f9d9f247f18c07370e8f6c4f`, confirmed by a fresh branch fetch on 2026-10-04. The local checkout is named `gate4-shield-missile-runtime`.
-Writer: root, returned by `gate4_ci_oct4` after the clean CI implementation checkpoint and full static handback. Root and independent peer reviewed the complete implementation; root owns result documentation, fresh publication, heavy-slot scheduling, dependency reconciliation and acceptance. No MR gameplay production or test-body change is included in the CI repair.
+Status: `486ce8b` passed Linux CI, including old/current Hag coexistence, but both
+original native Windows attempts reached the six-hour limit. The reviewed CI
+partition was published at `ad3b82b`. Its first actual isolated target reported
+1 passed/61 filtered in 4116.01s, but the coverage guard correctly rejected six
+missing doctest harnesses and produced no successful manifest. A plan-only argument-placement
+correction now preserves the full default workspace inventory and strict proof.
+No corrected command has run. Canonical/native evidence, accepted dependencies,
+fresh complete partition/package verification and prerequisite acceptance remain
+incomplete. The [Windows CI recovery plan](gate4-windows-ci-recovery.md) records
+exact old/new results, failure evidence, proposed argv and unchanged obligations.
+Branch: `codex/gate4-magic-resistance-source`; draft PR53 at
+`ad3b82b7ba5741381ec6314b80c591f0d2f6251a`, freshly fetched on 2026-10-04;
+tree `f6ed6762420e92332435eeb6843529a981dd0cd6`. The checkout is named
+`gate4-shield-missile-runtime`.
+Writer: `gate4_ci_oct4` owns only the two directly related plans after root's
+explicit PLAN-ONLY transfer. Root approved the read-only diagnosis/proposal
+SHA256 `10bde088845ab4c89a8ebe0d15086199e1e2ff732b3ec6605fbf5fe9898de1bd`
+and must review the clean amendment before source writing. Root owns heavy-slot
+scheduling, publication, dependency reconciliation and acceptance. Earlier source
+reviews and 29 passing pure controls belong to aae8d47; they did not prove actual
+Cargo target selection. No MR gameplay production or test-body change is proposed.
 Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority
