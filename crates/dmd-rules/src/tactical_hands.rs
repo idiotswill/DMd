@@ -23,7 +23,16 @@ impl EffectiveHands {
         rules: &RulesState,
         actor: EntityId,
     ) -> Result<Self, RulesError> {
-        Self::current_inner(state, rules, actor, true)
+        Self::current_inner(state, rules, actor, true, None)
+    }
+
+    pub(crate) fn current_with_read(
+        read: &crate::tactical::grapple::execution::ReadContext<'_>,
+        actor: EntityId,
+    ) -> Result<Self, RulesError> {
+        let state = read.state();
+        let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+        Self::current_inner(state, rules, actor, true, Some(read))
     }
 
     fn current_inner(
@@ -31,6 +40,7 @@ impl EffectiveHands {
         rules: &RulesState,
         actor: EntityId,
         durable: bool,
+        read: Option<&crate::tactical::grapple::execution::ReadContext<'_>>,
     ) -> Result<Self, RulesError> {
         let mut result = Self {
             actor,
@@ -54,6 +64,12 @@ impl EffectiveHands {
             ));
         }
         if !has_tactical_grapple_attachments(state) {
+            if let Some(read) = read {
+                read.require_guarded("orphaned Grapple roll authority has no hand context")?;
+                // Only the actual owner supplies this read. Completed history
+                // reserves no current hand; a standalone raw image still fails.
+                return Ok(result);
+            }
             return Err(invalid(
                 "orphaned Grapple roll authority has no hand context",
             ));
@@ -132,7 +148,7 @@ impl EffectiveHands {
         }
         let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
         let d = &attempt.declaration;
-        let mut hands = Self::current_inner(state, rules, d.grappler, false)?;
+        let mut hands = Self::current_inner(state, rules, d.grappler, false, None)?;
         if hands.reserved[d.hand.index()] != Some(d.id) {
             return Err(invalid("own-Attempt hand reservation differs"));
         }

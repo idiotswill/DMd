@@ -41,13 +41,30 @@ pub(super) fn expected_save(
     }))
 }
 
+#[cfg(test)]
 pub(in crate::tactical) fn choose_save(
     state: &mut CampaignState,
     meta: &CommandMeta,
     grip: GrappleId,
     ability: GrappleSaveAbility,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
+    choose_save_with_context(
+        state,
+        meta,
+        grip,
+        ability,
+        &mut ExecutionContext::ordinary(),
+    )
+}
+
+pub(in crate::tactical) fn choose_save_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    grip: GrappleId,
+    ability: GrappleSaveAbility,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    transaction(state, meta, execution, |next, execution| {
         validate(next)?;
         let a = attempt(next)?;
         if a.declaration.id != grip || a.stage != TacticalGrappleAttemptStage::SaveChoice {
@@ -66,19 +83,23 @@ pub(in crate::tactical) fn choose_save(
         };
         let request = expected_save(next, &a.declaration, ability, key)?;
         let previous = super::super::work_trace::enter(next, &selected)?;
-        let a = attempt_mut(next)?;
-        a.selected = None;
-        a.stage = TacticalGrappleAttemptStage::Saving;
-        a.save = Some(TacticalGrappleSave {
-            ability,
-            chosen_by: meta.clone(),
-            key,
-            request,
-            proof: None,
-        });
-        push_frame(next, vec![TacticalWorkKind::GrappleSave { grip }])?;
-        super::super::work_trace::leave(next, previous)?;
-        pump(next, meta)
+        let result = (|| {
+            let a = attempt_mut(next)?;
+            a.selected = None;
+            a.stage = TacticalGrappleAttemptStage::Saving;
+            a.save = Some(TacticalGrappleSave {
+                ability,
+                chosen_by: meta.clone(),
+                key,
+                request,
+                proof: None,
+            });
+            push_frame(next, vec![TacticalWorkKind::GrappleSave { grip }])
+        })();
+        let reset = super::super::work_trace::leave(next, previous);
+        result?;
+        reset?;
+        super::super::turns::pump_with_context(next, meta, execution)
     })
 }
 

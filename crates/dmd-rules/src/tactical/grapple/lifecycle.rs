@@ -45,9 +45,22 @@ pub(super) fn end_grip(
 
 /// Retire only a matching *unfinished* request. A prior voluntary failure may
 /// already have canceled this ID; accepted dice must never acquire cancellation.
+#[cfg(test)]
 fn cancel_pending(
     state: &mut CampaignState,
     key: TacticalRollKey,
+) -> Result<Option<RollRequestId>, RulesError> {
+    // Legacy private controls have no continuity authority to mint. The actual
+    // typed dispatcher always supplies its real lifecycle command below.
+    let meta = resolution(state)?.origin.clone();
+    cancel_pending_with_context(state, &meta, key, &mut ExecutionContext::ordinary())
+}
+
+fn cancel_pending_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    key: TacticalRollKey,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<Option<RollRequestId>, RulesError> {
     let Some(p) = resolution(state)?.pending.clone() else {
         return Ok(None);
@@ -55,7 +68,7 @@ fn cancel_pending(
     if p.key != key {
         return Err(invalid("Withdrawal names another pending work"));
     }
-    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let raw = rules
         .pending
         .as_ref()
@@ -68,18 +81,30 @@ fn cancel_pending(
         return Err(invalid("Grapple cancellation identity differs"));
     }
     let id = raw.request.id;
+    execution.observe_cancellation(state, meta, &p)?;
+    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     rules.pending = None;
     rules.cancelled_roll_ids.push(id);
     resolution_mut(state)?.pending = None;
     Ok(Some(id))
 }
 
+#[cfg(test)]
 pub(in crate::tactical) fn withdraw(
     state: &mut CampaignState,
     meta: &CommandMeta,
     id: GrappleId,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
+    withdraw_with_context(state, meta, id, &mut ExecutionContext::ordinary())
+}
+
+pub(in crate::tactical) fn withdraw_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    id: GrappleId,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    transaction(state, meta, execution, |next, execution| {
         validate(next)?;
         let a = attempt(next)?.clone();
         if a.declaration.id != id || a.reservation().is_none() {
@@ -107,33 +132,47 @@ pub(in crate::tactical) fn withdraw(
             })
             .ok_or_else(|| invalid("Withdrawal lacks its actual work"))?;
         let previous = super::super::work_trace::enter(next, &selected)?;
-        let cancelled = if let Some(save) = &a.save {
-            cancel_pending(next, save.key)?
-        } else {
-            None
-        };
-        if let Some(failed) = &resolution(next)?.failed_save {
-            if a.save.as_ref().is_none_or(|s| s.key != failed.pending.key) {
-                return Err(invalid("Withdrawal names another failed save"));
+        let result = (|| {
+            let cancelled = if let Some(save) = &a.save {
+                cancel_pending_with_context(next, meta, save.key, execution)?
+            } else {
+                None
+            };
+            if let Some(failed) = &resolution(next)?.failed_save {
+                if a.save.as_ref().is_none_or(|s| s.key != failed.pending.key) {
+                    return Err(invalid("Withdrawal names another failed save"));
+                }
+                resolution_mut(next)?.failed_save = None;
             }
-            resolution_mut(next)?.failed_save = None;
-        }
-        attempt_mut(next)?.outcome = Some(GrappleAttemptOutcome::Withdrawn {
-            withdrawn_by: meta.clone(),
-            cancelled,
-        });
-        saves::complete_attempt(next)?;
-        super::super::work_trace::leave(next, previous)?;
-        pump(next, meta)
+            attempt_mut(next)?.outcome = Some(GrappleAttemptOutcome::Withdrawn {
+                withdrawn_by: meta.clone(),
+                cancelled,
+            });
+            saves::complete_attempt(next)
+        })();
+        let reset = super::super::work_trace::leave(next, previous);
+        result?;
+        reset?;
+        super::super::turns::pump_with_context(next, meta, execution)
     })
 }
 
+#[cfg(test)]
 pub(in crate::tactical) fn release(
     state: &mut CampaignState,
     meta: &CommandMeta,
     id: GrappleId,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
+    release_with_context(state, meta, id, &mut ExecutionContext::ordinary())
+}
+
+pub(in crate::tactical) fn release_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    id: GrappleId,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    transaction(state, meta, execution, |next, execution| {
         validate(next)?;
         let holder = live_grip(next, id)?.declaration.grappler;
         super::super::shove::authorize_owner(next, meta, holder)?;
@@ -153,7 +192,7 @@ pub(in crate::tactical) fn release(
         }
         let obsolete = escape(next).ok().cloned();
         let cancelled = if let Some(e) = &obsolete {
-            cancel_pending(next, e.key)?
+            cancel_pending_with_context(next, meta, e.key, execution)?
         } else {
             None
         };
@@ -166,7 +205,7 @@ pub(in crate::tactical) fn release(
             });
             e.stage = TacticalGrappleEscapeStage::Complete;
             e.selected = None;
-            pump(next, meta)?;
+            super::super::turns::pump_with_context(next, meta, execution)?;
         }
         // Preserve a selected after-equipment choice and its proof/end. An idle
         // release creates no invented resolution or work node.
@@ -174,13 +213,24 @@ pub(in crate::tactical) fn release(
     })
 }
 
+#[cfg(test)]
 pub(in crate::tactical) fn begin_escape(
     state: &mut CampaignState,
     meta: &CommandMeta,
     id: GrappleId,
     choice: GrappleEscapeChoice,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
+    begin_escape_with_context(state, meta, id, choice, &mut ExecutionContext::ordinary())
+}
+
+pub(in crate::tactical) fn begin_escape_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    id: GrappleId,
+    choice: GrappleEscapeChoice,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    transaction(state, meta, execution, |next, execution| {
         admission::supported_context(next)?;
         if flow(next)?.phase != TacticalPhase::Active || flow(next)?.resolution.is_some() {
             return Err(RulesError::Pending);
@@ -227,7 +277,7 @@ pub(in crate::tactical) fn begin_escape(
             next,
             vec![TacticalWorkKind::GrappleEscapeCheck { grip: id }],
         )?;
-        pump(next, meta)
+        super::super::turns::pump_with_context(next, meta, execution)
     })
 }
 

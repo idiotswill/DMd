@@ -1,6 +1,16 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
-Follow-on status, 2026-10-04: root reviewed exact amended plan `40593b2` with an
+Follow-on status, 2026-10-04: the separate attack read-context branch returns an
+intermediate private owner/core source checkpoint for root architectural review.
+Ten owner controls are authored and UNRUN; only direct formatting and static
+Git checks ran. All four attack families and public activation remain closed.
+The complete accepted follow-on contract remains mandatory. Writer is paused
+pending root's review and explicit continuation transfer. Read the current
+[attack read-context plan](gate4-grapple-attack-read-context.md) for exact authored
+scope, incomplete work and authority boundaries. Original condition/core tests,
+fixtures and the original PR59 checkout remain unchanged/root-owned.
+
+Historical transfer: root reviewed exact amended plan `40593b2` with an
 independent peer and explicitly resumed sole bounded source writing by
 `gate4_ground_oct4`. The renewed writer/status commit precedes source. Follow the
 complete owner/shared-dispatch/four-family contract in the

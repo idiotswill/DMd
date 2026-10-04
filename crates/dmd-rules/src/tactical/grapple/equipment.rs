@@ -14,6 +14,7 @@ pub(super) fn write_loadout(
     Ok(())
 }
 
+#[cfg(test)]
 pub(in crate::tactical) fn apply_after_equipment(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -21,24 +22,40 @@ pub(in crate::tactical) fn apply_after_equipment(
     work: TacticalWorkKey,
     operation: AttackEquipmentOperation,
 ) -> Result<(), RulesError> {
-    choose(state, meta, grip, work, Some(operation))
+    choose_with_context(
+        state,
+        meta,
+        grip,
+        work,
+        Some(operation),
+        &mut ExecutionContext::ordinary(),
+    )
 }
+#[cfg(test)]
 pub(in crate::tactical) fn decline_after_equipment(
     state: &mut CampaignState,
     meta: &CommandMeta,
     grip: GrappleId,
     work: TacticalWorkKey,
 ) -> Result<(), RulesError> {
-    choose(state, meta, grip, work, None)
+    choose_with_context(
+        state,
+        meta,
+        grip,
+        work,
+        None,
+        &mut ExecutionContext::ordinary(),
+    )
 }
-fn choose(
+pub(in crate::tactical) fn choose_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     grip: GrappleId,
     expected: TacticalWorkKey,
     operation: Option<AttackEquipmentOperation>,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
+    transaction(state, meta, execution, |next, execution| {
         validate(next)?;
         let a = attempt(next)?;
         if a.declaration.id != grip
@@ -91,13 +108,16 @@ fn choose(
             }
         };
         let previous = super::super::work_trace::enter(next, &selected)?;
-        let a = attempt_mut(next)?;
-        a.equipment.after = Some(decision);
-        a.selected = None;
-        a.stage = TacticalGrappleAttemptStage::Complete;
-        super::super::work_trace::leave(next, previous)?;
+        let result = attempt_mut(next).map(|a| {
+            a.equipment.after = Some(decision);
+            a.selected = None;
+            a.stage = TacticalGrappleAttemptStage::Complete;
+        });
+        let reset = super::super::work_trace::leave(next, previous);
+        result?;
+        reset?;
         // Core-owned proof/end records remain until this final owned choice.
         // No unrelated consumer can reach this temporary internal boundary.
-        pump(next, meta)
+        super::super::turns::pump_with_context(next, meta, execution)
     })
 }

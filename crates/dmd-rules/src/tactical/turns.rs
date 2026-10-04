@@ -193,7 +193,20 @@ pub(super) fn begin_boundary(
     meta: &CommandMeta,
     boundary: TurnBoundary,
 ) -> Result<(), RulesError> {
-    begin_boundary_from(state, meta, boundary, 0)
+    begin_boundary_with_context(
+        state,
+        meta,
+        boundary,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn begin_boundary_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    boundary: TurnBoundary,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    begin_boundary_from(state, meta, boundary, 0, execution)
 }
 
 fn begin_boundary_from(
@@ -201,6 +214,7 @@ fn begin_boundary_from(
     meta: &CommandMeta,
     boundary: TurnBoundary,
     first_occurrence: u16,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let actor = active(state)?;
     let number = state
@@ -288,11 +302,23 @@ fn begin_boundary_from(
     }
     super::creature_bridge::boundary(state, meta, &mut work)?;
     push_frame(state, work)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+    pump_with_context(
+        state,
+        meta,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn pump_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     for _ in 0..32_768 {
+        execution.check_live_constraints(state)?;
         if super::grapple::waiting(state)
             || super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
@@ -373,7 +399,13 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
                         .ok_or_else(|| invalid("world clock overflow"))?;
                 }
                 flow_mut(state)?.budget = next_budget;
-                return begin_boundary_from(state, meta, TurnBoundary::Start, next_occurrence);
+                return begin_boundary_from(
+                    state,
+                    meta,
+                    TurnBoundary::Start,
+                    next_occurrence,
+                    execution,
+                );
             }
             return Ok(());
         };
@@ -385,7 +417,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             .last_mut()
             .and_then(Vec::pop)
             .ok_or_else(|| invalid("work disappeared"))?;
-        super::continuations::start(state, meta, work)?;
+        super::continuations::start_with_context(state, meta, work, execution)?;
     }
     Err(invalid("consequence execution capacity exceeded"))
 }
@@ -511,10 +543,24 @@ pub(super) fn refresh_dodges(state: &mut CampaignState) -> Result<(), RulesError
         .retain(|d| !expired.contains(&d.actor));
     Ok(())
 }
+#[cfg(test)]
 pub(super) fn core_action(
     state: &mut CampaignState,
     meta: &CommandMeta,
     action: &TacticalAction,
+) -> Result<(), RulesError> {
+    core_action_with_context(
+        state,
+        meta,
+        action,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn core_action_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &TacticalAction,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -522,7 +568,7 @@ pub(super) fn core_action(
     let actor = active(state)?;
     authorize(state, meta, actor)?;
     if matches!(action, TacticalAction::EndTurn) {
-        return begin_boundary(state, meta, TurnBoundary::End);
+        return begin_boundary_with_context(state, meta, TurnBoundary::End, execution);
     }
     let current_speeds = speeds(state, actor)?;
     if matches!(action, TacticalAction::StandProne) {

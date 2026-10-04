@@ -2,15 +2,26 @@
 //! entire family until temporal consumers and original replay are implemented.
 pub(crate) mod admission;
 mod equipment;
+pub(crate) mod execution;
 mod lifecycle;
 mod saves;
 mod validation;
 use super::turns::*;
 use super::*;
+use execution::ExecutionContext;
 
+pub(super) use equipment::choose_with_context as choose_equipment_with_context;
+#[cfg(test)]
 pub(super) use equipment::{apply_after_equipment, decline_after_equipment};
+#[cfg(test)]
 pub(super) use lifecycle::{begin_escape, release, withdraw};
-pub(super) use saves::{choose_save, finish, request, save_failed};
+pub(super) use lifecycle::{
+    begin_escape_with_context, release_with_context, withdraw_with_context,
+};
+#[cfg(test)]
+pub(super) use saves::choose_save;
+pub(super) use saves::choose_save_with_context;
+pub(super) use saves::{finish, request, save_failed};
 pub(super) use validation::{validate, validate_work};
 
 fn require_execution(state: &CampaignState) -> Result<(), RulesError> {
@@ -134,10 +145,11 @@ fn install_resolution(
 
 /// Private entry points also validate on a clone: their unsupported-context
 /// refusal must not leave a partly paid private result in guarded tests.
-fn transaction(
+fn transaction<'a>(
     state: &mut CampaignState,
     meta: &CommandMeta,
-    apply: impl FnOnce(&mut CampaignState) -> Result<(), RulesError>,
+    execution: &mut ExecutionContext<'a>,
+    apply: impl FnOnce(&mut CampaignState, &mut ExecutionContext<'a>) -> Result<(), RulesError>,
 ) -> Result<(), RulesError> {
     require_execution(state)?;
     if meta.campaign_id != state.campaign_id() {
@@ -146,13 +158,10 @@ fn transaction(
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    let mut next = state.clone();
-    apply(&mut next)?;
-    validate(&next)?;
-    *state = next;
-    Ok(())
+    execution.transaction(state, apply)
 }
 
+#[cfg(test)]
 pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -161,8 +170,35 @@ pub(super) fn begin(
     before_change: Option<AttackEquipmentOperation>,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
-    transaction(state, meta, |next| {
-        let plan = admission::plan_attempt(next, meta, target, hand, before_change, pack)?;
+    begin_with_context(
+        state,
+        meta,
+        target,
+        hand,
+        before_change,
+        pack,
+        &mut ExecutionContext::ordinary(),
+    )
+}
+
+pub(super) fn begin_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    target: EntityId,
+    hand: Hand,
+    before_change: Option<AttackEquipmentOperation>,
+    pack: &RulesPack,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    transaction(state, meta, execution, |next, execution| {
+        let plan = admission::plan_attempt_with_read(
+            &execution.read(next)?,
+            meta,
+            target,
+            hand,
+            before_change,
+            pack,
+        )?;
         let actor = plan.attempt.declaration.grappler;
         let id = plan.attempt.declaration.id;
         let now = next.clock.now;
@@ -186,7 +222,7 @@ pub(super) fn begin(
             new_context(GrappleActivity::Attempt(Box::new(plan.attempt))),
         )?;
         push_frame(next, vec![TacticalWorkKind::BeginGrapple { grip: id }])?;
-        pump(next, meta)
+        super::turns::pump_with_context(next, meta, execution)
     })
 }
 

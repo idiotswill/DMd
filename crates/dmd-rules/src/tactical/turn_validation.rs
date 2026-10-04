@@ -10,6 +10,16 @@ fn provenance(
     validate_equipment_change_origin(state, meta, subject).map_err(|e| invalid(&e))
 }
 pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<(), RulesError> {
+    pending_with_read(
+        &super::grapple::execution::ReadContext::ordinary(state),
+        pending,
+    )
+}
+pub(super) fn pending_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+    pending: &PendingRoll,
+) -> Result<(), RulesError> {
+    let state = read.state();
     let PendingPurpose::TacticalResolution { encounter: id, key } = pending.purpose else {
         return Err(invalid("not a tactical resolution request"));
     };
@@ -22,7 +32,7 @@ pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<()
         || p.key != key
         || key != super::continuations::key(state, &p.work)?
         || pending.request
-            != super::continuations::request(state, &p.work, key)?
+            != super::continuations::request_with_read(read, &p.work, key)?
                 .ok_or_else(|| invalid("automatic failure has no request"))?
         || pending.ruling
             != super::continuations::ruling(
@@ -216,7 +226,10 @@ fn validate_work(
     Ok(())
 }
 
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+) -> Result<(), RulesError> {
+    let state = read.state();
     let f = flow(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     // Historical reached-place receipts survive combat completion, but never
@@ -349,8 +362,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 return Err(invalid("hit response has competing raw dice"));
             }
         } else if r.pending.is_some() {
-            pending(
-                state,
+            pending_with_read(
+                read,
                 rules
                     .pending
                     .as_ref()

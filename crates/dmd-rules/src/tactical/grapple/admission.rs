@@ -62,6 +62,12 @@ pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError>
             "This guarded Grapple core does not yet support the retained temporal consumer.",
         ));
     }
+    live_constraints(state)
+}
+
+/// May run between actual queue steps, before the bounded retained-context
+/// classifier can run on the completed command. No temporal permission is added.
+pub(super) fn live_constraints(state: &CampaignState) -> Result<(), RulesError> {
     if let Some(live) = state
         .rules
         .as_ref()
@@ -120,14 +126,15 @@ pub(super) fn deferred_flight_loss(
     Ok(())
 }
 
-pub(super) fn plan_attempt(
-    state: &CampaignState,
+pub(super) fn plan_attempt_with_read(
+    read: &execution::ReadContext<'_>,
     meta: &CommandMeta,
     target: EntityId,
     hand: Hand,
     before_change: Option<AttackEquipmentOperation>,
     pack: &RulesPack,
 ) -> Result<AttemptPlan, RulesError> {
+    let state = read.state();
     supported_context(state)?;
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -198,7 +205,7 @@ pub(super) fn plan_attempt(
     let before = loadout(state, actor)?.clone();
     crate::tactical_inventory::validate_loadout(state, &before)
         .map_err(|e| invalid(&e.to_string()))?;
-    let hands = EffectiveHands::current(state, rules, actor)?;
+    let hands = EffectiveHands::current_with_read(read, actor)?;
     hands.validate_loadout(&before.hands)?;
     let mut after = before.clone();
     if let Some(operation) = before_change {

@@ -1,6 +1,65 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: GUARDED SOURCE AUTHORING RESUMED, 2026-10-04.
+Status: INTERMEDIATE OWNER/CORE SOURCE CHECKPOINT, STATIC AND UNRUN, 2026-10-04.
+Sole writer is returning this clean checkpoint to root for architectural review;
+source writing pauses until root transfers it back. This is not the complete
+four-family checkpoint, a runtime correctness claim, or public activation.
+
+The renewed writer/status commit was
+`fedc789461673d1e29b35fd6bf081b9dc96212b8`, before any source. Authored here:
+
+- An opaque private `GuardedGrappleExecution` owns an ordinarily validated active
+  flow-5 baseline and immutable rules pack. It exposes immutable observation,
+  consuming export and typed commands only, with no clone/deserialization,
+  mutable state accessor, import or accepted-state replacement operation.
+- Public and private paths call the same extracted tactical dispatcher and full
+  common kernel/tactical validators. Only the owner constructs a command-local
+  context for its boxed candidate; pointer identity is compared without unsafe
+  dereferencing. Each read borrows both that context and the actual candidate,
+  so a foreign clone cannot use it or a view survive mutable access.
+- Actual automatic, submitted-raw, voluntary-pair and lifecycle-cancellation
+  producers record observations. Final validation preserves exact ordered
+  inherited raw, decisions and cancellation lists and requires the new suffix
+  to equal those observations. No serialized field was added. Ordinary paths
+  use an empty context and retain the original public/raw/import refusals.
+- The intermediate private classifier admits core Grapple commands, their raw
+  and resistance responses, and real EndTurn traversal that settles without an
+  unsupported retained context. Exact pending Withdrawal/Release remain subject
+  to the existing ownership and identity checks. All four attack families are
+  still refused here. Existing holder/range/flight refusals also run before and
+  after queue work, before loss scheduling and on each pump iteration.
+- Ten new owner controls are authored: ordinary export, exact pending withdrawal
+  and cancellation-only reentry, rolled save/release/new Attempt, voluntary
+  evidence retirement, Escape cancellation, rolled Escape completion/new
+  Attempt, both public policy refusals, invalid/stale/foreign atomic rejection,
+  imported pending/live refusal, and foreign candidate/unobserved ordered
+  evidence rejection. Positive transitions after owner construction use the
+  typed shared dispatcher. Baseline preparation uses the unchanged pre-Grapple
+  image, actual public upgrade/turn commands and actual Host source scheduling;
+  it is explicitly private setup, not replay evidence or a source-profile edit.
+
+Verification at this handoff: direct `rustfmt --edition 2024` and Git whitespace
+checks only. All ten new controls are UNRUN; compiler, tests, canonical checks,
+CI, application/replay and native acceptance are UNRUN for this head. All old
+core/condition/hands test files, replay/application controls and fixture/raw
+bytes are unchanged. Ordinary source dispatch behavior is intended preserved,
+but that claim still requires the unchanged controls and exact-head execution.
+
+Remaining work is the full accepted contract below, not a smaller deliverable:
+the four-family admission/issue cuts and complete relation selection; Goblin
+mode-dependent reads; retained read propagation into all relevant validators;
+release through accepted-hit/actual Shield windows; current-hand physical
+completion and descendant retention; closed supported-context/turn-work
+classification; exact newly-produced Savage metadata finalization; actual
+automatic/Inspiration and complete attack/adversarial producer controls. The
+automatic producer hook is authored but has no new positive owner control yet.
+The existing broader direct core/condition controls remain meaningful and
+unchanged; this checkpoint does not replace or certify them. No public, source,
+spell/OA/movement/fall/holder-break, Ground/Ogre or original replay obligation
+is lifted. Root must arrange full static review before assigning continuation;
+any concrete schema need still requires separate design review.
+
+Historical source transfer underlying this intermediate checkpoint:
 Root transferred sole source writing to `gate4_ground_oct4` from clean reviewed
 `40593b2a4398a957fb3a35cf09e01ad4f8cb2950`, tree
 `298a4d9d01ce1941d1aae5d7744b2be368704d1c`, after full root and independent peer
@@ -8,8 +67,8 @@ review. Root review SHA256 is
 `179e4713c13cded1ed192a2e74577de595c1b410158d28c06bdcae3a150ca2f1`;
 peer review is `tooling/grapple-40593b2-amendment-independent-review-2026-10-04.md`,
 SHA256 `a3a991a6bdd640739368897454884c65cea30e789f8025892f6420f4dacf3412`.
-Both full reviews and the complete amended plan were read before this status
-commit. The assigned exact clean head/tree was rechecked; no source changed yet.
+Both full reviews and the complete amended plan were read before that status
+commit. The assigned exact clean head/tree was rechecked before source changed.
 Implement the complete amended owner/shared-dispatch/producer/read contract and
 original four-family controls below. An intermediate owner checkpoint may be
 reviewed but does not reduce the deliverable. Return a clean full source checkpoint
@@ -56,8 +115,9 @@ source writing requires a separate explicit transfer after findings are resolved
 
 This development branch depends on unaccepted
 [PR59](https://github.com/idiotswill/DMd/pull/59) and its Grapple/core/source
-parents. The old PR59 checkout is frozen and root-owned. Changes since source
-`192ce4a730b06324bad7a17bc493a5e50f5fe43b` are documentation only.
+parents. The old PR59 checkout is frozen and root-owned. At the original plan
+handoff, changes since source `192ce4a730b06324bad7a17bc493a5e50f5fe43b`
+were documentation only; the intermediate source scope above is new.
 At the original plan handoff, all ten condition-lifecycle tests were pending
 exact-head CI evidence; no later dependency result is claimed by this amendment.
 Neither that dependency nor this plan establishes follow-on runtime correctness.

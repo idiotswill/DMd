@@ -173,11 +173,12 @@ pub fn validate_failed_save(
     ))
 }
 
-pub(super) fn stage_or_finish(
+pub(super) fn stage_or_finish_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pending: TacticalPendingWork,
     result: Option<&RollResult>,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if is_failure(state, &pending, result)? && available(state, pending.key.subject)? {
         let issued_by = if result.is_some() {
@@ -207,13 +208,14 @@ pub(super) fn stage_or_finish(
         });
         return Ok(());
     }
-    super::continuations::finish(state, meta, pending, result, false)
+    super::continuations::finish_with_context(state, meta, pending, result, false, execution)
 }
 
-pub(super) fn choose(
+pub(super) fn choose_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     use_resistance: bool,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let failed = resolution(state)?
         .failed_save
@@ -245,12 +247,13 @@ pub(super) fn choose(
     if failed.pending.key.role != TacticalRollRole::GrappleSave {
         resolution_mut(state)?.failed_save = None;
     }
-    super::continuations::finish(
+    super::continuations::finish_with_context(
         state,
         meta,
         failed.pending,
         failed.result.as_ref(),
         use_resistance,
+        execution,
     )?;
-    pump(state, meta)
+    super::turns::pump_with_context(state, meta, execution)
 }
