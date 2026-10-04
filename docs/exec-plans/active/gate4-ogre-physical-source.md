@@ -3,7 +3,8 @@
 Status: checkpoint1 source/package/closed-policy controls authored, 2026-10-01;
 root static review CLEAR after the distribution correction; UNCOMPILED / UNRUN.
 Checkpoint2 adapters and eight controls passed root's independent static review
-at `1bf6c0d`; all new verification remains UNCOMPILED / UNRUN. Root is sole writer of
+at `1bf6c0d`; all new verification remains UNCOMPILED / UNRUN. The assigned
+checkpoint3 application/UI implementation agent is sole writer of
 `codex/gate4-ogre-physical-source`, reusing clean checkout `gate4-equipment-table`.
 The previous equipment branch and commit remain preserved. Ogre creation and
 attack execution remain closed. No PR or runtime acceptance is claimed.
@@ -565,6 +566,19 @@ closed through the remaining ground/UI integration; actual finite gear, own-turn
 OA, pickup, cold/retry/forgery/native and lawful Grapple/LR positives remain UNMET.
 
 ## Checkpoint3 application/UI plan — 2026-10-04
+
+Writer authorization: root assigned `gate4_core_oct4` this sole writable checkout
+from clean reviewed `f024092255486d68bfbd43a8ccfa46ef33b46c1a`, tree
+`bc544487a0105b6922819c4180a573f9b2fda8dd`. Independent plan review is CLEAR;
+memo `tooling/ogre-f024092-ground-author-independent-plan-review-2026-10-04.md`,
+SHA256 `a02f89c145cdfb25c2495d176bf1886d95a8769843f30bd14c3ab540d00e04bd`.
+This status commit precedes application/UI edits. Only the bounded checkpoint3
+scope below is authorized; all source/profile admission guards stay CLOSED,
+ground recovery stays separately owned, and no gameplay positive is fabricated.
+Root owns the sole heavy slot for core continuation and then Air verification.
+No Cargo/compiler/npm/test/build, database/native action or publication is
+allocated here. Return a clean reviewed-source candidate and authored, UNRUN
+controls with the full static diff/byte audit for independent root review.
 
 Root resumed from clean `1bf6c0d09d466734c9f646b393e9fa0f9ce031ef`, tree
 `ff5e07e9daba5b55bafcc3fc0fdd8d333c5afd3c`. The complete independent checkpoint2
