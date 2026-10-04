@@ -1,10 +1,10 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status: corrected source6adbd3c is frozen after complete root review and
-independent full-source plus correction review. Both private validator findings
-are resolved by static review. Root is sole writer for this verification/publication
-checkpoint, 2026-10-04. All23 rules controls and the app preflight remain UNRUN;
-compilation, CI and production acceptance are not established.
+Current status: draft PR60 at aff47ba failed its first actual CI compile. The
+private validator findings are resolved by static review; a moved receipt and
+missing test import need the narrow correction recorded below. Root is sole
+writer, 2026-10-04. All23 rules controls and the app preflight remain UNRUN;
+runtime and production acceptance are not established.
 
 Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
@@ -573,3 +573,24 @@ close ground recovery or Gate4.
 Exact next action: independently review this docs-only delta, publish the draft
 against codex/gate4-ground-weapon-recovery at8ec12c3, inspect actual exact-head CI
 output and fix concrete failures. Do not merge into the development parent.
+
+
+## First CI compiler correction plan — 2026-10-04
+
+Draft PR60 published aff47bae20679192463d341caa629d6353500353 against8ec12c3;
+Linux run37213005279 / Windows37213005216 are the first actual compiler runs.
+Root read actual Linux job111467794097 output, SHA256
+bb0d93f31b862001d285633b343144ccd743beb8cec4b7a7ebc622ab57a028ac.
+It reports E0382: assignment evaluates its receipt-moving RHS before the LHS
+closure reads receipt.cause.origin.id. Copy that CommandId into a local before
+assignment and use it for lookup; do not clone the entire receipt or alter choice
+semantics. E0425/E0433 identify the missing SessionId import in the new test module;
+add the explicit domain type import. MSRV jobs111467794204 and111467793908 agree.
+No Rust test harness ran in these failed compile jobs; Windows frontend evidence
+is separate. Preserve every failed log and all assertions/fixtures.
+
+This plan precedes the two source edits. Root will make only those compile fixes,
+run direct rustfmt/Git checks, obtain independent delta review and publish a new
+exact head for full CI. Air87840 keeps the local heavy slot; no local Rust/compiler
+or native/DB execution is authorized alongside it. All runtime/production and
+accepted-main integration obligations above remain required.
