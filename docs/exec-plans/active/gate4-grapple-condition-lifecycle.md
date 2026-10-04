@@ -5,10 +5,16 @@ Follow-on status, 2026-10-04: this separate checkout is now
 `9ef15eb92ab96414bb38e6807ba81bc42ae2f8c8`. Root assigned `gate4_ground_oct4`
 sole PLAN-ONLY writing for the
 [own-turn attack read-context checkpoint](gate4-grapple-attack-read-context.md).
-It requires root and independent core-peer review before source transfer, keeps
+Its writer/status-only source transfer at `4f9cd0e` was paused before any code:
+retired raw authority exposed the need for a concrete opaque private execution
+owner. The amended plan incorporates the independently reviewed shared-dispatch
+design plus pending withdrawal, ordered producer evidence and cancellation-only
+baseline corrections. It awaits exact root and independent peer review followed
+by explicit source resumption. It keeps
 all public authority closed, and preserves the full six-family/lifecycle/Gate4
-contract. PR59 and its original checkout remain frozen and root-owned; its ten
-condition tests still require actual exact-head CI evidence at this handoff.
+contract. PR59 and its original checkout remain frozen and root-owned. Its ten
+condition tests were pending exact-head CI at the original follow-on handoff;
+this amendment makes no new dependency test or acceptance claim.
 The source/author history below describes that dependency, not current source
 permission or a verified follow-on implementation.
 

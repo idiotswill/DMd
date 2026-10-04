@@ -1,20 +1,30 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: SOURCE AUTHORING, 2026-10-04. Root transferred sole source writing to
+Status: PLAN AMENDMENT AWAITING EXACT ROOT AND PEER REVIEW, 2026-10-04.
+Root assigned `gate4_ground_oct4` sole PLAN-ONLY writing from clean
+`4f9cd0e501a5fb6e1f24753fa4e2650985c61d6b`, tree
+`966efa3ee341c7aeb8fff67a6eb844437be29cf3`. That checkpoint contains only the
+writer/status update; no follow-on source or new controls were written. Source
+was paused when actual retirement exposed a missing private continuity boundary.
+This amendment makes the opaque execution owner and shared dispatcher/validation
+contract concrete, including all three independent review corrections. Return
+the clean amended plan for complete root and peer review, then relinquish writing.
+Source requires root's separate explicit resumption. No compiler/test/helper,
+build, native/database or publication operation is authorized by this amendment.
+All other checkouts remain with their assigned owners; root owns the heavy slot.
+
+Prior source transfer, now paused: on 2026-10-04 root transferred sole writing to
 `gate4_ground_oct4` at clean reviewed `cd7cecfdd7eb0a594a6fd121746a76fb1784d447`,
 tree `e26043c615376c11ba05524cb97eba163bbc6998`. Root's complete plan review is
 `tooling/grapple-cd7cecf-root-plan-review-2026-10-04.md`, SHA256
 `73257ba461d16696998596f743392f2c52d3971e22e53f2858a389ed787ba03c`; independent
 core-peer review is `tooling/grapple-cd7cecf-plan-independent-review-2026-10-04.md`,
 SHA256 `cb371ca69f119bd8837759b09d660592c5291a62fe9fe7aa0399bbae9c39baad`.
-Both are CLEAR for this bounded plan, not runtime correctness. This status is
-committed before source changes. Implement the complete below contract and real
-producer controls, then return a clean static checkpoint for independent review.
-Direct rustfmt and static Git inspection are authorized. Compiler, Cargo, tests,
-npm, build, database, native, push, PR and CI execution remain unassigned; root
-retains the Air heavy slot. Public guards and all protected original bytes stay
-closed/exact. Any concrete need for a serialized field requires design review
-before adding it. The old condition-lifecycle checkout remains root-owned.
+Both were CLEAR for that bounded plan, not runtime correctness. The writer/status
+was committed before any source. That earlier transfer does not authorize source
+under this amended contract. Public guards and all protected original bytes stay
+closed/exact. Any concrete need for a serialized field still requires separate
+design review. The old condition-lifecycle checkout remains root-owned.
 
 Original plan handoff: PLAN ONLY, 2026-10-04. Root assigned `gate4_ground_oct4` sole plan
 writing in `gate4-grapple-attack-read-context`, branch
@@ -29,9 +39,10 @@ source writing requires a separate explicit transfer after findings are resolved
 This development branch depends on unaccepted
 [PR59](https://github.com/idiotswill/DMd/pull/59) and its Grapple/core/source
 parents. The old PR59 checkout is frozen and root-owned. Changes since source
-`192ce4a730b06324bad7a17bc493a5e50f5fe43b` are condition-plan documentation only.
-All ten condition-lifecycle tests are pending exact-head CI evidence at this
-handoff; neither that dependency nor this plan establishes runtime correctness.
+`192ce4a730b06324bad7a17bc493a5e50f5fe43b` are documentation only.
+At the original plan handoff, all ten condition-lifecycle tests were pending
+exact-head CI evidence; no later dependency result is claimed by this amendment.
+Neither that dependency nor this plan establishes follow-on runtime correctness.
 Reconcile accepted main and dependencies normally before eventual acceptance;
 merging into an unaccepted development parent cannot substitute for that.
 
@@ -307,6 +318,161 @@ guard assertion explicitly to the correct public/retained boundary with stronger
 real-retirement coverage, preserving its hostile input and original assertions
 where still applicable.
 
+## Private continuity owner and shared execution boundary
+
+The concrete source gap is retirement: `grapple::transaction` returns only
+`Result<()>` over a freely mutable `CampaignState`; `end_grip` removes live
+authority and `turns::pump` discards the completed resolution after validation.
+Recorded role19/20 dice or non-rolled save decisions can remain without the
+declaration/end context. A later state-only reader cannot distinguish genuine
+retirement from deleted attachments. Neither a raw scan nor a caller flag proves
+that history. Keep the public orphan-raw refusal; do not invent a serialized
+completion ledger to fill this private continuity gap.
+
+This amendment incorporates the full external proposal
+`tooling/grapple-4f9cd0e-private-transition-authority-proposal-2026-10-04.md`,
+SHA256 `28cf9c5d41f321e7516d5a86df4f60e319c06af965d6c80272c17900bf72fe66`,
+and the independent source/design review
+`tooling/grapple-4f9cd0e-private-authority-independent-review-2026-10-04.md`,
+SHA256 `7d8d32ec6136ddd0d100481643c0f23651df65e160aef9fb2c7f93224d9a17cf`.
+Root read both and authorized this plan drafting with all three corrections
+below. The proposal is preserved as history; this corrected checked-in contract
+governs implementation after exact-plan review and renewed source transfer.
+
+### Construction, lifetime and export
+
+Add a private, nonserialized, non-Clone `GuardedGrappleExecution` owner with one
+owned `CampaignState` and immutable rules-pack access. Initialize it only by
+consuming a supported flow5 active encounter baseline that passes the unchanged
+ordinary kernel and tactical validators and has no authority detected by the
+complete `has_unimplemented_grapple_records` predicate. Baseline eligibility is
+ordinary validation, not an original-anchor replay claim. Constructing the owner
+grants no invented new raw, relation or historical source fact.
+
+Expose only immutable state inspection and typed `apply(meta, TacticalAction)`.
+There is no mutable getter, caller closure, state replacement/import/resume,
+accepted-state setter, Deserialize, owner/capability cloning, generic enabled
+boolean, global registry or thread-local authorization. A command clones only
+the owner's actual predecessor into its privately owned candidate. A scoped
+execution context binds that candidate and predecessor; read views borrow its
+exact state and cannot escape or be paired with a foreign/changed copied state.
+End each immutable read borrow before mutating the candidate, then construct a
+fresh view only after the applicable source/post-transition checks. Purpose-built
+physical/ammunition reconstruction may derive its bounded before-image from an
+authenticated read; an arbitrary clone cannot inherit a capability.
+
+The only way new authority enters this chain is through the actual permitted
+source producers and complete candidate validation. Genuine retirement may
+remove serialized contexts while this owned execution chain remains continuous.
+Consuming export discards the private capability. An exported/deserialized state
+still retaining a live/provisional/cut/proof/new raw or new save-decision authority
+cannot construct another owner or pass the existing public/restore guards;
+future original-anchor replay is required for that authority restoration.
+
+Do not overstate that refusal: `has_unimplemented_grapple_records` does not assign
+a role to a bare `cancelled_roll_ids` UUID. A genuinely withdrawn never-rolled
+Attempt can leave only such an untyped cancellation after completion. If no new
+Grapple authority remains and unchanged ordinary validation accepts that image,
+it remains an eligible baseline, including after export. Public current hands
+retain their existing behavior in that case. Do not add cancellation metadata or
+change public semantics merely to reject every snapshot ever touched by Grapple.
+Tests distinguish cancellation-only eligibility from orphaned raw/decision input.
+
+### One dispatcher and the full shared validator graph
+
+Extract the existing `resolve_with_policy` action-match body into one internal
+production dispatcher. Public Live/Historical wrappers retain their current
+metadata, early Grapple command refusal, pending policy, validation ordering and
+outcome construction. The private owner calls the same dispatcher with its
+opaque candidate context and a closed permission/profile check for exactly the
+reviewed core/four-family/turn/descendant contract. Do not copy the action match,
+construct a second reducer, or substitute test-only accepted-state execution.
+Ordinary no-new-authority behavior and source/error ordering remain unchanged.
+
+The private pending policy preserves all ordinary permitted dice operations and
+additionally admits only the checked lifecycle operations supported by this plan:
+actual holder ReleaseGrapple, and actual holder WithdrawGrapple of the exact
+unfinished owned Attempt while its save request is pending. `withdraw` still
+checks its provisional reservation, selected work and actual controller;
+`cancel_pending` still binds the exact key/raw request and refuses accepted or
+already-cancelled dice. Release may cancel only its own obsolete pending Escape.
+Neither exception admits another action against arbitrary pending work. Public
+pending policy and seven-family command refusals remain unchanged.
+
+Factor common validation bodies behind unchanged public wrappers. A distinct
+internal entry requires the candidate-bound opaque context and executes the same
+kernel/tactical/source validation, with permission at the actual existing guard
+sites: kernel `validate_state` entry, its role19/20 recorded-roll branch, its
+recursive call to tactical validation, and tactical `validate_tactical_state`
+entry. Preserve generic dice/arithmetic/chronology/issuer/uniqueness/cancellation
+checks when the private branch replaces the role hard refusal. Never validate a
+stripped clone, skip unrelated checks, swallow an error or replace source proof
+with the owner type. `request_integrity::pending` -> tactical pending validation
+-> `turn_validation::{pending,selected_applicable}` and attack reconstruction must
+receive the same explicit private read context when needed.
+
+Propagate that scoped context through the actual dispatcher, core/attack/turn/
+hit-response handlers, pump/start/finish and read/validation consumers. Public
+signatures remain current-only. Private current EffectiveHands can ignore retired
+raw as occupancy only under this owned chain, and still derives current live or
+provisional reservations with exact anatomy and physical collision checks.
+Sealed attack reads independently authenticate their complete AttackAdmission/
+RequestIssue proof sets; ownership cannot supply chosen masks, grip IDs or modes.
+Actual Shield retains the original BoundSpell, components/focus and payment.
+
+### Ordered authority deltas and four actual producer observations
+
+Compare the candidate to its actual owned predecessor. Preserve **all inherited
+entries and their order** in `rules.rolls`, `flow.save_decisions` and
+`rules.cancelled_roll_ids`; no removal, rewrite, reordering or retroactive
+cancellation is allowed. New entries require exact bounded command-local
+producer observations, not a scan of the resulting vectors. Observe each new
+entry at its actual source site, before subsequent completion can erase context:
+
+| Actual producer | Required observation and binding |
+| --- | --- |
+| `continuations::start` / `start_inner` automatic branch | After actual entered work derives automatic failure and forms its TacticalSaveDecision, record that exact decision, work/key/subject, issuing command and source derivation before `failed_save::stage_or_finish`. No fabricated raw/request or cancellation. |
+| `continuations::submit` | After selected pending/source/controller/dice/Inspiration checks form the actual RecordedRoll, bind that record, accepted faces and `original_result`, work/key/subject and current accepted command before `stage_or_finish` / pump. Existing generic raw validation remains mandatory. |
+| `continuations::voluntarily_fail` | Bind the exact cancellation and Voluntary decision as one actual pair to the selected request/work, source subject, issued/actual resolved command and checked owner, before `stage_or_finish` / pump. No raw is created. |
+| `grapple/lifecycle::cancel_pending` | Bind an actual no-new-raw cancellation to its exact selected pending work/request/key/subject and checked lifecycle command/cause: owned pending withdrawal or holder release of its own obsolete pending Escape. Pass the real calling command/cause into the private observation path; the current helper takes only state/key. No observation is minted when it returns None; never cancel accepted/already-cancelled dice. |
+
+The scoped observations authorize only the exact new suffixes in those collections
+for this one command. They are bounded, consumed by final delta validation and
+dropped after commit/error; they are not a serialized or retained second history
+ledger. A single command may produce real descendant automatic decisions; record
+them in actual insertion order without inventing a one-result assumption.
+An actual source-owned Savage submission may finish metadata on its **newly**
+appended ordinary AttackDamage record after `continuations::submit`; preserve
+that existing source check and final generic Savage validation. This is not an
+inherited-record rewrite or permission for Savage metadata on role19/20 raws.
+Inspiration's accepted faces and original result remain those of its real producer.
+
+Full Grapple proof/outcome validation runs before discarding a complete Attempt,
+Escape or ends context. Preserve pump's actual validation immediately before
+`resolution = None`, idle release's authenticated live predecessor before removal,
+and equivalent checks on every newly shared path. Do not certify completion by
+finding plausible raw after retirement. Existing failed-save request/source
+validation remains required; the unavailable genuine LR positive source is not
+manufactured by this owner.
+
+### Atomic commit and sequence
+
+Authenticate the real campaign/head/controller, then run payment, raw acceptance,
+work allocation, source mutations and observations only on the private candidate.
+Apply the above post-mutation holder/range/flight/profile/collision refusals before
+later readers or loss queueing, and the full common/source/family validators at
+the final boundary. Work-trace enter/leave cleanup runs on success and error.
+Only complete success replaces the owner's state; rejection drops the candidate
+and observations without changing predecessor sequence, raw, decisions,
+cancellations, resources, pending tuple, cuts, frames or owners. Errors expose no
+candidate or read capability. There is no arbitrary-snapshot commit operation.
+
+Advance the private successful command sequence using checked
+`meta.expected_event_sequence + 1`, matching the application convention at
+`tactical_runtime::execute_tactical`, not a caller-supplied replacement head.
+Keep the ordinary transition/outcome semantics. This in-memory progression is
+not a journal commit, accepted retry, SQLite or restore proof.
+
 ## Meaningful controls before any source-complete claim
 
 All new controls start UNWRITTEN/UNRUN. Constructed source-valid baseline maps and
@@ -315,6 +481,11 @@ Prone/grip, turn transitions, source attack, cuts, requests, release, decisions
 and completion; no selected-state setters or edited source profiles. Negative
 private tests use the same production atomic candidate boundary and compare full
 input state. Preserve the prior ten condition and complete core/hands controls.
+Existing mutable `Fixture::run` handler controls remain labeled local controls
+and cannot mint the new owner after the fact. New continuity positives start
+through ordinary baseline validation and typed shared dispatch. If a historical
+fixture scaffold fails that full baseline validation, build a valid initial
+source image through actual operations; do not loosen validators or old negatives.
 
 | Control | Required observations |
 | --- | --- |
@@ -324,6 +495,8 @@ input state. Preserve the prior ten condition and complete core/hands controls.
 | Real waits and no-die paths | Actual hit-review collection/order/decline and genuine source Shield where reachable; actual Inspiration/Savage ownership; fixed damage without fake raw/cut; real rolled Graze/Decline and Knockout binding. Preserve blanket retained automatic-miss rejection and separate actual non-Graze automatic miss. Unavailable genuine source combinations are explicit gaps, not patched profiles. |
 | Completion and child lifetime | Current-hands same-Item AfterAttack/Thrown completion once, no ammo/cost refund. Actual concentration/effect child after attack clearing retains ancestor cut/proof and correct pending tuple; later release cannot strand it. Verify exact direct-choice parent, transient marker reset and no re-equip after a caused drop. |
 | Unrelated wait and finished raw | Release not read by a supported attack/child leaves that wait byte-identical and creates no gratuitous cut. Actual last release/completed Attempt/Escape then real later ordinary action has no historical hand occupation; preserve public raw-only refusals. |
+| Private owner boundary | Normally validated no-new-authority baseline accepted; live/pending/proof/raw/decision imports rejected. Real save/Escape retirement then later attack uses shared source dispatch and validators. Changed/foreign-state read reuse, stale/foreign/controller commands and failed candidate reuse reject. Exported actual new authority still fails public/restore/reconstruction; real cancellation-only export remains eligible when ordinary validators accept it. No mutable-state setter or capability cloning. |
+| Ordered authority and pending lifecycle | Actual automatic failure, submitted faces/Inspiration, voluntary decision/cancellation pair, pending owned withdrawal and obsolete Escape release create only their exact observed suffixes. Preserve every inherited raw/decision/cancellation and order; reject rewriting, reordering, omission, retroactive cancellation and invented source observations with whole-owner equality. Verify no-new-raw cancellation, actual completion before retirement and sequence rollback. Retain Savage's actual new-record completion. |
 | Forgery/atomic refusal | Missing/extra/duplicate grip/cut, actor/hand/source mismatch, future own-grip, wrong work/role/campaign/head, sibling ancestry, recursive/cross-attack inheritance, copied older raw cause as issue time, altered Goblin damage despite plausible mode, stale/foreign release and changed custody reject with full input equality. Fully coherent historical forgeries remain denied publicly and require future original replay negatives. |
 | Closed profile/post-transition | Real unsupported spell/OA/movement/area/missile/fall or source routine stays refused. Actual admitted damage/effect causing holder incapacity/death, range loss or non-Hover flight requirement rolls back the whole transition. Do not suppress the source consequence to pass. Turn-boundary nonconsumer changes obey the same rule. |
 | Compatibility and guards | Both Live/Historical deny every Grapple command including immediate no-effect/release/decline, all new retained/cut/ended/raw/anchor authority, unsupported flows and old schemas. Preserve absent-field JSON, old generic Grappled effects, all frozen capture bytes and five original receiving suites. No public planner read-context parameter or UI offer. |
@@ -377,11 +550,15 @@ Accepted retry still precedes changed admission. A record walker is not replay.
 
 ## Planned sequence, verification and handoff
 
-1. Root and an independent peer review this exact clean plan and concrete source
-   matrix. Resolve findings, then explicitly transfer sole source writing.
-2. Commit writer/status before source. Implement the bounded classifier,
-   actual admission/request producers and read consumers, release/completion and
-   descendant/raw-occupancy integration together with the controls above.
+1. Root and an independent peer review this exact amended clean plan, including
+   private owner/shared dispatch, ordered producer authority and cancellation-only
+   semantics. Resolve findings, then explicitly resume sole source writing.
+2. Commit renewed writer/status before source. Implement the opaque owner and
+   shared dispatcher/validation contexts, bounded classifier, actual admission/
+   request producers and read consumers, release/completion and descendant/raw
+   integration together with all controls above. An intermediate owner/core
+   checkpoint may support static review; it is not attack admission, feature
+   completion or a reduced four-family deliverable.
 3. Freeze a clean source checkpoint for full independent review before root
    allocates compiler/test work. Preserve all prior authored controls/fixtures.
 4. Under root's later exclusive allocation, run fmt, strict changed-crate
@@ -391,10 +568,13 @@ Accepted retry still precedes changed admission. A record walker is not replay.
    claims; exact-head native/canonical CI and receiving-head verification remain
    required. Prior or pending CI is not evidence for a new source head.
 
-Current validation is file/Git/source inspection and plan-only static checks.
-No source or new controls exist. Risks for review: complete category membership,
-actual allocation versus issue cause, cut-only/mixed trace validation, direct
-choice unique-parent binding, completed descendant retention, current physical
-completion and raw-history/occupancy separation. Exact next action is root plus
-independent core-peer review of this clean plan commit/tree. Do not begin source,
-lift authority, merge dependencies or start another gate on this plan's strength.
+Current validation is file/Git/source inspection and plan-only static checks;
+the proposal and full independent design review were read and rehashed. No
+follow-on source or new controls exist. Risks for exact-plan review include owned
+candidate lifetimes, explicit shared validator recursion, all inherited authority
+and producer observations, pending withdrawal, cancellation-only baselines,
+complete cut membership/issue causality, direct-choice ancestry, descendant
+retention and current physical completion. Exact next action is complete root
+and independent peer review of this clean amended plan commit/tree. Source remains
+paused until root's explicit resumption; do not lift authority, merge dependencies
+or begin another gate on this amendment's strength.
