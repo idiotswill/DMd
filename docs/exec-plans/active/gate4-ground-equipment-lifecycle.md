@@ -1,6 +1,48 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status, 2026-10-04 17:00 UTC: actual local verification of clean
+Current correction/writer status, 2026-10-04: root transferred sole source writing
+to `gate4_ci_oct4` from clean `10df3c19958352632d76f47c4773553ad8a164ce`,
+tree `98a37c409be97e51f306cc70ae31ec960326627f`. The second exact-head
+focused attempt ended at17:28:16 UTC: fmt and strict three-package all-target
+Clippy passed; all23 new continuation controls ran, with21 passes/two failures.
+The runner stopped before the remaining40 controls. The complete actual group
+log is `tooling/ground-10df3c1-focused-2026-10-04/03-new-after-continuation.log`,
+5230 bytes/SHA256
+`4f708f5c418e9cfb2748a2df58122405e8ebfcff187531f7bd9a21869c0b5ec7`.
+Both failed Chimera controls now reach weapon admission and report
+`target is beyond weapon reach`. Earlier failed logs remain preserved; neither
+attempt is full focused/canonical success.
+
+Plan before this correction's source edits: the captured Medium attacker's x10
+footprint ends at20; source_flyer's Large Chimera starts at30. The actual
+participant_distance uses occupied-cell-center insets: nearest x centers15 and35
+are20 half-foot units apart, exceeding both genuine melee weapons' reach10.
+Move only the constructed Chimera's x position from30 to20. Its nearest occupied
+cell center then lies at25, exactly10 units from the attacker. It still only
+touches the supporting ledge's x20 edge: the actual fall geometry requires strict
+positive footprint overlap, so that edge does not support it. Keep z40, real
+Large footprint/height20, ceiling60, the ledge, actual non-Hover source flight,
+wounded1HP and all existing fall/parent/selection assertions unchanged.
+
+Add explicit setup assertions before either attack: exact participant distance10
+and actual attacker reach10; attacker already supported on its ledge; Chimera's
+potential fall is fromz40 to floorz0 with the same x/y; genuine source Fly Speed
+is present and Hover false; flight_loss_fall is absent while the source is living
+and able to fly. These checks distinguish valid reachable geometry from the
+actual later Knockout/Graze-caused flight loss. Preserve the existing geometry
+and precisely-located assertions, and every prior test assertion. The unchanged
+shared hit review deliberately asks every hit target to respond even without
+Shield, so the real Chimera needs no invented spell grant or timing shortcut.
+
+Scope is only this new test module and this plan. No production, source profile,
+protected receiving suite, capture/raw artifact, workflow, assertion, public
+admission or acceptance reduction. Direct rustfmt/static Git checks only; no
+compiler/Cargo/test/native/database/push/CI execution. Commit this plan first,
+then the minimal fixture correction and return a clean exact head for root and
+independent review. Root assigns any later fresh-head run; all63 focused controls
+and broader public/app/history/SQLite/cold/native obligations remain required.
+
+Historical preceding attempt/correction, 2026-10-04 17:00 UTC: actual local verification of clean
 d55519e27c92ad17b7278a0bbb87454820642996 passed fmt and strict three-package
 all-target Clippy. The first focused group ran all23 new continuation controls:
 20 passed and3 failed in fixture preparation/admission. The runner stopped there;
