@@ -1,8 +1,8 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
-Status: **reviewed plan; bounded source authoring authorized and in progress.**
-No implementation, executable verification or public Grapple acceptance is
-claimed by this writer/status checkpoint.
+Status: **guarded source and controls authored; static handback awaiting full
+root/independent review and root-scheduled executable verification.** All new
+controls are UNRUN. No public Grapple acceptance is claimed.
 
 Writer: `gate4_ground_oct4`, transferred by root for bounded source authoring on
 2026-10-04 after plan review, at clean `6c8a108de19ecb4e478dc68258e706c54eaa2ed4`,
@@ -218,8 +218,9 @@ validation without recursion through the new iterator.
 
 ## Meaningful authored controls after source authorization
 
-These are planned, **UNAUTHORED and UNRUN**. Extend the existing private producer
-fixture and real immutable definitions; retain its explicit synthetic executor/
+The bounded controls are now authored and **UNRUN**, as recorded below. They
+extend the existing private producer fixture and real immutable definitions;
+retain its explicit synthetic executor/
 fresh-turn scaffolding label. Private handler calls are not accepted application
 journal, cold SQLite, portable replay or native play evidence.
 
@@ -316,8 +317,73 @@ mislabeling synthetic control topology as accepted play. A concrete unsupported
 gap is surfaced for plan review before its dependent code changes; scope is not
 silently widened or acceptance reduced.
 
-Exact next action: implement the reviewed pending/final evidence split, live-only
-condition view, and permanent real Dodge consequence with meaningful authored
-controls and the two explicit old-control migrations. Return one clean coherent
-static checkpoint for root and independent review before executable verification.
-Leave PR56 and every other branch untouched.
+## Authored condition checkpoint — 2026-10-04
+
+Writer/status was committed before source at
+`817a55ab4e7ffc1a981c1a5caa7e2ec5455ae32a`, tree
+`dc8c9b5224e30ca92a823d36665284eb48b1c192`. Four production files now implement
+the reviewed bounded change:
+
+- `grapple/validation.rs` rederives only unfinished save requests. Final records
+  still consume shape, actual raw/decision evidence, arithmetic, ownership,
+  chronology, outcome and the unchanged restricted current-LR checks.
+- `tactical_effect_adapter.rs` appends deterministic source-preserving views from
+  only live `active` grips. It persists no effect, allocates no work or raw role,
+  and does not invoke source validation. Absence retains the exact old sequence.
+- `grapple/saves.rs` installs the final outcome before refreshing actual Dodges
+  on failed nonimmune establishment, before the next pause/retirement.
+- `grapple/admission.rs` removes only the obsolete Dodge refusal and renames the
+  retained non-Hover flight guard, preserving its admission, live-state and
+  immediate pre-establishment checks. All other guards remain unchanged.
+
+Ten new tests in `grapple/tests/conditions.rs` are authored, not executed. They
+cover actual private EndTurn/Dodge/EndTurn then original two-face DEX Advantage
+save; release during AfterEquipment with apply/decline; before-used immediate
+retirement and real Escape; resistance, source Air immunity, and withdrawals
+before selection/during physical wait preserving Dodge; exact unfinished-source
+refusal; sixteen final proof/raw/shape/ownership/stage/outcome corruptions with
+unchanged-state release refusals; a labeled synthetic pre-finalization non-Hover
+flight image refused through the private command transaction; holder-death,
+incapacity and range-break denials; source-built grounded Chimera walk/Fly zero
+and prior Dash grants without a generic fall; labeled synthetic distinct-holder
+and all-mode query controls; and exact absent/legacy projection compatibility.
+The actual two-grip/selected-Escape control additionally checks that projection
+and current hand occupancy lose only the selected relation. Public kernel,
+tactical, Live/Historical and old-flow guards are exercised for retained and
+raw/decision-only images, including both migrated coherent final images.
+
+The two reviewed migrations are explicit: the genuine oversized Dragon refusal
+remains and the copied Dodge-refusal half is replaced by actual Dodge producers;
+coherent final modifier/raw/proof copies and removed post-final Paralyzed state
+are no longer rejected merely by private current-state rederivation, but their
+actual public retained/raw/restore admission remains denied. Missing decisions,
+bare unfinished no-die pauses and all unrelated original assertions remain.
+Original semantic replay is still required before authority activation.
+
+Read-only consumer audit confirmed the shared condition, source-sensitive attack,
+Speed, Dodge, falling, Shove, fear/Charm, perception and legacy effect-removal
+paths. The delegated `gate4_ci_oct4` audit of the four-file production delta found
+no concrete gap; this was an in-progress static consumer check, not independent
+review of the complete committed checkpoint. Legacy removal searches stored
+legacy effects and cannot independently remove the grip view. No new public or
+historical permission was introduced to consume the projection.
+
+Direct `rustfmt --edition 2024` and its `--check` over the changed Rust roots,
+including the new child test module, and `git diff --check` succeeded. The first
+attempt found no `rustfmt` on PATH; root supplied `tooling/activate.ps1`, after
+which the direct formatter succeeded. No Cargo/compiler, tests, npm/build,
+database, native, CI, push or PR action was run by this writer. Protected domain,
+application/receiving suites, fixture/raw/content files, Linux CI and verification
+scripts have no diff from the assigned dependency source. No runtime behavior is
+claimed verified by formatting or static review.
+
+The accepted-evidence withdrawal seam requiring an actual LR pause remains under
+the explicit genuine-source dependency above; no synthetic LR-positive source is
+introduced here. Full original-issue authority and all remaining map/Gate4
+obligations are unchanged.
+
+Exact next action: root and an independent reviewer inspect the complete clean
+source checkpoint, then root schedules focused and canonical verification when
+the sole heavy slot is available. Keep public/source admission closed, leave
+PR56 and other branches untouched, and record actual new-head results before
+any completion or acceptance claim.
