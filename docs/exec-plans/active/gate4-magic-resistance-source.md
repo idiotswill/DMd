@@ -25,7 +25,7 @@ remain unchanged. Root read the complete correction and independent review, then
 ran all32 pure controls successfully; the adjacent CI recovery plan records the
 exact log and qualifications. Root owns execution, publication, dependency
 reconciliation and acceptance. The prior29 passes did not verify this correction.
-Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
+Original development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. Later reconciliation through3f is recorded below; the next accepted-main union is planned in the final section. Air remains an **unaccepted development dependency**. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority
 
@@ -277,3 +277,31 @@ the first local correction alone is insufficient. Share the original-envelope
 retry between the three chronology cuts and final independent restored runtime,
 retaining per-operation whole-export checks and the existing all-bindings cold
 retry loop. This is the same bounded test-only protocol correction.
+
+
+## Accepted-main reconciliation before corrected CI — 2026-10-04 plan
+
+Root is sole writer. Fresh remote main is dbf1d633460473183324b4ec519e8d1980884b5c;
+Air is f932c73bf1f79cd0c5600431839a6ecece7877f7, tree
+b654f37272f42b5115ee2c0ebdcc550f191f091e. MR aa8c36b is clean, fully reviewed
+through the helper correction and documentation checkpoint. Its merge base with
+Air is3f3e359; the incoming Air side changes exactly six documentation files,
+370 additions/57 deletions. No production, test, content or canonical script
+change is expected from that incoming history.
+
+Before the next corrected-head CI, normally merge exact f932 into this branch.
+Preserve both the accepted release/dbf evidence and MR-specific ledger disclosures.
+Inspect any conflict; require every non-doc blob, all protected fixtures and raw
+captures to remain exactly aa8. Unexpected source movement requires reconciliation
+before proceeding. Record full tree/head and actual source parity, independently
+review the complete receiving diff, then publish one corrected/reconciled head.
+This brings accepted main into the ancestry; it does not accept Air or permit a
+merge into its development branch. Later final-main verification remains required.
+
+At15:29UTC old ad3 Linux and Windows remainder were still executing. Snapshot
+8b5f72baec07ff645ed1271c27a08d34e13763b5044de0564904d0b85bf642da records their
+state and the two unavailable partial-log responses. The isolated failure and
+all six actual receipts/logs remain preserved. A new push may supersede unfinished
+old jobs under existing workflow concurrency; such cancellation is not success.
+All required fresh corrected-head partitions/union/package checks remain mandatory.
+No local Cargo/native/DB work is part of this docs-only ancestry reconciliation.
