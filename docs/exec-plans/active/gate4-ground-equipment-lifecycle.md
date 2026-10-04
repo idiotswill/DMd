@@ -1,5 +1,20 @@
 # Gate 4 — Guarded attack equipment continuation
 
+Current status: bounded source authoring authorized, 2026-10-04. Root explicitly
+transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
+`caded2228bb841bec6bf056f0d0e7a7202b95b49`, tree
+`e32451a35397054ecf95d3620a7b77796e8d5190`. Root's complete plan review is CLEAR:
+`tooling/ground-caded22-root-plan-review-2026-10-04.md`, SHA256
+`368a28f1017c5db42bcdfdf5cff4b783dca7e9a11c986fbff281137750357dec`.
+Independent amendment rereview is CLEAR:
+`tooling/ground-caded22-plan-amendment-independent-review-2026-10-04.md`, SHA256
+`a75778e24764e750960d422515961b7a1be93d6cb5a10e065700637ecb02bb33`.
+Both complete reviews were read. This status is committed before source edits.
+Direct rustfmt and Git/static inspection are authorized; Cargo/compiler/tests,
+npm/build, database/native, publication and CI operations are not. Root Air87840
+retains the sole heavy slot. All new controls remain UNWRITTEN/UNRUN. No other
+checkout is writable, and every new public/restore authority stays closed.
+
 Status: PLAN ONLY, 2026-10-04. Root transferred sole plan writing to
 `gate4_ci_oct4` in `gate4-ground-equipment-lifecycle`, branch
 `codex/gate4-ground-equipment-lifecycle`, from clean
