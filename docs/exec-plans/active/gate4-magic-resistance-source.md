@@ -305,3 +305,28 @@ all six actual receipts/logs remain preserved. A new push may supersede unfinish
 old jobs under existing workflow concurrency; such cancellation is not success.
 All required fresh corrected-head partitions/union/package checks remain mandatory.
 No local Cargo/native/DB work is part of this docs-only ancestry reconciliation.
+
+
+## Accepted-main union checkpoint — 2026-10-04
+
+Plan f3ed93f preceded the normal conflict-free merge
+`d51886e8a6fed70a769100cc87707c0a202593c9`, tree
+`b867eb9d5693b3c390b5bc9c19d7f522b91e49e8`, with exact second parent Airf932.
+Accepted dbf is now an ancestor. The six incoming files are documentation only;
+the ledger retains both MR paragraphs alongside the incoming Air/release evidence.
+Root inspected the incoming ledger and retained MR delta. All other incoming docs
+match the already reviewed Air head before the status clarification below.
+
+All418 files outside docs/ remain byte-identical by Git blobs to aa8c36b and
+therefore the reviewed correction1cea684; the pure suite result stays attributed
+to that source head. This checkpoint adds no production behavior or passing
+runtime result. The accepted release statuses are clarified using the same five
+reviewed documentation corrections as expiry c9bbcb5: literal dbf's six checks
+passed, while source8c retains its own canonical/native attribution. Historical
+MR authored-only ledger paragraphs are labeled as historical; the MR plans retain
+the actual Linux evidence, failed Windows attempts and new coverage repair.
+
+Exact next action: independent complete receiving-head/documentation review,
+then normal publication to PR53 with a fresh exact-head Linux/native partition
+and package proof. Air remains unaccepted; no merge into its branch. Original
+canonical/native/source acceptance and every remaining Gate4 family stay open.

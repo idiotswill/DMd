@@ -102,6 +102,13 @@ Gate4 obligations; source data and explicit unavailable boundaries do not close
 slice still owes its genuine paid Prone-immunity continuation and recovery.
 
 The bounded [Magic Resistance source prerequisite](../exec-plans/active/gate4-magic-resistance-source.md)
+now records Linux source verification and the remaining Windows coverage repair.
+The reviewed helper correction passes32 synthetic controls at1cea684; this is not
+actual corrected Cargo coverage or positive MR gameplay. The historical authored
+checkpoints below retain their original status; current evidence and exact failed
+Windows attempts are qualified in the MR plan. No family or evidence array advances.
+
+Historical MR source checkpoint: the bounded prerequisite
 adds a separate selected Night Hag revision with its printed trait, exact same-ID
 revision lookup and current-admission separation. Private save categories derive
 from canonical spell work, retained source clauses or the audited nonmagical breath
@@ -113,7 +120,7 @@ remain Gate 4 requirements, as does old/new same-ID application coexistence afte
 the separately accepted encounter-release integration or an original pre-encounter
 capture. Historical source payloads, picker bytes and accepted fixtures stay frozen.
 
-The locally integrated release/source candidate now includes an independently
+Historical coexistence checkpoint: the locally integrated release/source candidate includes an independently
 reviewed genuine old/new Hag coexistence child of the frozen Shield-Hit replay
 suite. It completes original pending work, explicitly upgrades/releases, creates
 the current revision and authors both revisions' later real spell execution and
