@@ -1,9 +1,30 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
-Status, 2026-10-04: **PLAN ONLY. No implementation or execution is authorized by
-this checkpoint. Root and a separate reviewer must clear this complete plan
-before source writing.** The bounded objective is an actual rules/application/UI
-path, not a schema or private reducer milestone. Gate 4 remains active.
+Status, 2026-10-04: **GUARDED SOURCE AUTHORING.** Root explicitly transferred sole
+source writing to /root/gate4_ci_oct4 from clean corrected plan
+`0f87dae259bc2d899a7dc1189337035f76b5b39b`, tree
+`463f156d6eb7af9cf55ac413fd8aa244ae30ceec`, after full root and independent
+review. Both complete reviews and this corrected plan were read before this
+writer/status commit, which precedes source changes. Root review
+`tooling/offstage-0f87dae-root-plan-review-2026-10-04.md` SHA256
+`df7b197898c7e255e251ce5f45da290e6e2ec929ea8ddf5f2a8e306daf5a6576`; peer review
+`tooling/offstage-0f87dae-complete-independent-review-2026-10-04.md` SHA256
+`0d0219560d230e03a80833b73c94ef00ca2512c34a4d44ddd947e5fce720f871`.
+
+Implement the coherent domain/rules/compatibility/validation and actual producer
+controls checkpoint below, inventorying every mandatory turn-context consumer.
+Keep public admission closed until the complete app/UI/restore path is coherent.
+Return clean source for full independent review before broadening. The entire
+production vertical slice, original history, application/recovery and native
+acceptance remain the objective; this guarded checkpoint cannot replace them.
+Direct rustfmt and static Git checks only are authorized. No compiler/Cargo/tests,
+npm/build/native/database, push/PR/CI operation is allocated. Air session87840
+retains root's sole heavy slot. No other checkout, source profile, protected capture
+or raw artifact may be changed. A concrete caller contradiction requires a plan
+amendment before scope expands. Gate 4 remains active.
+
+Historical initial plan status: PLAN ONLY; no implementation was authorized by
+that checkpoint before the explicit reviewed transfer above.
 
 Root's review correction after initial plan `37bdd97`: retain the existing
 automatic singleton dispatch. The two-Mage native recovery cut is the original
@@ -19,7 +40,7 @@ Branch `codex/gate4-offstage-deadlines`, checkout `gate4-offstage-deadlines`.
 Root created this fresh branch from remote-confirmed expiry candidate
 `c9bbcb5f31a4b296bd88ce96464fda9d9ceffc27`, tree
 `9a127388f5d6878412975371724c77465137d5f9`. Both identities and clean status were
-read locally before planning. Sole plan writer is `/root/gate4_ci_oct4`; root
+read locally before planning. Sole source writer is `/root/gate4_ci_oct4`; root
 retains publication, acceptance, dependency integration and the sole heavy slot.
 No other checkout is writable under this assignment.
 
@@ -497,9 +518,9 @@ rebasing/continuing cadence for changed initiative; source-safe pickup/revisit a
 arbitrary later encounter replacement. Broad world simulation remains a later gate,
 but these tactical obligations stay in Gate4 and remain acceptance blockers there.
 
-Current verification status: only read-only source/document analysis and Git
+Historical plan verification status: only read-only source/document analysis and Git
 identity/status checks. No code, new tests, compiler, Cargo, npm, native process,
 database, push, PR or CI operation ran for this plan. Air session87840 remains
-root's sole heavy slot. Exact next action: root and a separate reviewer inspect
-this clean committed plan, resolve any concrete findings, then explicitly transfer
-source ownership. Until that handoff, do not implement or execute it.
+root's sole heavy slot. That plan-review handoff is now complete as recorded above.
+Exact next action is the guarded domain/rules checkpoint and full independent source
+review, with every new control unrun until root separately allocates execution.
