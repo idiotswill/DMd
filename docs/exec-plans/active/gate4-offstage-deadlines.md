@@ -5,6 +5,14 @@ this checkpoint. Root and a separate reviewer must clear this complete plan
 before source writing.** The bounded objective is an actual rules/application/UI
 path, not a schema or private reducer milestone. Gate 4 remains active.
 
+Root's review correction after initial plan `37bdd97`: retain the existing
+automatic singleton dispatch. The two-Mage native recovery cut is the original
+simultaneous choice, before either expiry is selected; after selection the second
+expiry may drain automatically. A post-first-choice pending recovery control
+requires three genuine independent equal-deadline producers. The new elapsed
+ruling separately rejects control characters; old aftermath ruling semantics stay
+exact. Both corrections require the final complete-plan review before source.
+
 ## Ownership and exact development dependency
 
 Branch `codex/gate4-offstage-deadlines`, checkout `gate4-offstage-deadlines`.
@@ -162,9 +170,11 @@ Add `TacticalAction::AdvanceReleasedTime { seconds: u32, ordering:
 ReleasedTimeOrdering::HostSelect, ruling: String }`. The ordering enum has no
 default. The bounded ruling explains elapsed-time adjudication; it does not grant
 rest, healing, loot, consent, source admission or a particular consequence order.
-Require positive seconds, checked i64 target addition, and the same bounded/no-
-control-character ruling shape as aftermath. Root command metadata retains exact
-campaign/session/issuer and `actor=None`.
+Require positive seconds and checked i64 target addition. The new ruling must be
+trimmed, nonempty and at most2000 bytes, matching the existing aftermath bounds,
+and additionally reject control characters. The latter is new-action validation;
+do not change aftermath's historical ruling rules or accepted bytes. Root command
+metadata retains exact campaign/session/issuer and `actor=None`.
 
 `ReleasedElapsedContext` contains the last release command ID, `started_at`,
 `target_at`, `progress_at`, explicit ordering/ruling, and the optional prior
@@ -392,7 +402,11 @@ All following controls are planned, not authored/passing evidence:
    These test shared mechanics; they do not claim an actual released Hold Person
    or Shield of Faith producer. No new spell/grant/profile is admitted for tests.
 6. Real file SQLite and independent portable mirror at admission, before deadline,
-   simultaneous choice, after first choice and completed target. Close/reopen and
+   simultaneous choice, after first choice and completed target. With exactly two
+   independent expiries, the post-first-choice cut may already be completed;
+   never invent a second pause or suppress automatic singleton dispatch. If a
+   post-first-choice pending recovery cut is tested, produce three genuine
+   independent equal-deadline expiries. Close/reopen and
    replay the same accepted inputs; assert exact target/clock/receipts/operations/
    tickets/resources and accepted retry bytes. Box async phases and retain default
    Windows stack/profile/thread settings. Only request-time export timestamp may
@@ -432,9 +446,11 @@ stack/profiles, preserve failed attempts and inspect actual logs/counts/identiti
 Run a fresh verified **combined implementation package** in a separate normal
 campaign. Create two actual Mages, self-cast in one real round, conclude and
 legitimately release at the unchanged clock. Advance to before their deadline,
-close/reopen, request beyond it, observe the actual earliest pause, choose one
-host expiry, close/reopen during the remaining choice and complete to the original
-target. Check exact armor/effects and unrelated HP/resources/items, then enter a
+close/reopen, request beyond it, observe the actual earliest two-way pause and
+close/reopen at that original choice. Choose one host expiry and allow the
+remaining singleton to resolve automatically to the original target; close/reopen
+the completed result. Check exact armor/effects and unrelated HP/resources/items,
+then enter a
 genuine next encounter. Repeat later-turn recast/suppressed expiry and the real
 stable-d4 waking route separately. Use ordinary controls and real submitted dice;
 label any QA faces accurately. No injected clock/effect/JSON/SQLite or constructed
