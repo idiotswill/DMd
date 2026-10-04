@@ -230,7 +230,7 @@ pub enum GrappleEquipmentDecision {
         chosen_by: CommandMeta,
         work: TacticalWorkKey,
         operation: AttackEquipmentOperation,
-        equipment_before: ActorEquipmentLoadout,
+        equipment_before: Box<ActorEquipmentLoadout>,
     },
 }
 

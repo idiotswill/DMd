@@ -82,7 +82,7 @@ fn choose(
                 chosen_by: meta.clone(),
                 work: expected,
                 operation,
-                equipment_before: before,
+                equipment_before: Box::new(before),
             }
         } else {
             GrappleEquipmentDecision::Declined {

@@ -293,7 +293,7 @@ fn validate_equipment(state: &CampaignState, a: &TacticalGrappleAttempt) -> Resu
                 operation,
                 equipment_before,
             } => {
-                if *equipment_before != expected {
+                if equipment_before.as_ref() != &expected {
                     return Err(invalid("After equipment before-image differs"));
                 }
                 let hands = crate::tactical_hands::EffectiveHands::current(
