@@ -1,8 +1,8 @@
 # Gate 4 corrected Night Hag source and Magic Resistance prerequisite
 
-Status: reviewed development dependencies locally integrated, 2026-09-30; coexistence test imported and statically inspected, UNCOMPILED/UNRUN and not accepted.
-Branch: `codex/gate4-magic-resistance-source`; published PR53 remains at `acf61abf188eda1f91a8007e799c43c410453cd8` while its separate checks finish.
-Writer: root, following the integration author's handback; root owns final review, publication and acceptance.
+Status: published `486ce8b` passes Linux CI, including actual old/current Hag coexistence. Both native Windows attempts reached the six-hour job limit with the same one table case unfinished. Windows verification, canonical/native evidence, accepted dependency reconciliation and prerequisite acceptance remain incomplete. The [Windows CI recovery plan](gate4-windows-ci-recovery.md) records the bounded next action; historical checkpoints below retain their original evidence status.
+Branch: `codex/gate4-magic-resistance-source`; draft PR53 at `486ce8ba6ba8fb24f9d9f247f18c07370e8f6c4f`, confirmed by a fresh branch fetch on 2026-10-04. The local checkout is named `gate4-shield-missile-runtime`.
+Writer: `gate4_ci_oct4`, explicitly assigned by root on 2026-10-04 for CI recovery PLAN ONLY. Root must independently review this plan before implementation; root retains heavy-slot scheduling, publication, dependency reconciliation and acceptance. No MR production or test-body edits are authorized by this handoff.
 Development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. That parent is an **unaccepted development dependency**, not verified main. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
 
 ## Objective and authority
