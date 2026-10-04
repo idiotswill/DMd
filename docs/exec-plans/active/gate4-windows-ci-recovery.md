@@ -1,6 +1,6 @@
 # Gate 4 — Exhaustive Windows CI partition for slow recovery coverage
 
-Status: **Bounded implementation authorized; verification not yet run.**
+Status: **Implementation authored; static checkpoint awaiting independent review and execution.**
 Sole writer: `gate4_ci_oct4`, explicitly assigned by root on 2026-10-04.
 Review amendment: root and independent peer requested workspace-preserving
 selection and native combined-output capture; incorporated below on 2026-10-04.
@@ -288,7 +288,50 @@ Actual positive Counterspell/repeated-save Magic Resistance gameplay, remaining
 canonical/native evidence, accepted-main integration and the wider Gate4 finish
 line remain open under the MR plan. No obligation moves to Gate5.
 
-Next action: implement only the approved CI helpers, their pure tests and workflow
-topology; return the complete clean static checkpoint for independent review.
-Root schedules helper tests and native evidence afterward. The writer retains
-sole branch ownership until explicitly transferred back.
+## Implementation checkpoint, 2026-10-04
+
+Authored `scripts/windows_test_partition.py`, its pure adversarial tests in
+`scripts/tests/test_windows_test_partition.py`, and the bounded desktop workflow
+change. The implementation first records Rust/Cargo versions and version1 Cargo
+metadata, then uses the same locked workspace `cargo test` selection with
+`--no-run --message-format json-render-diagnostics` solely to map compiled test
+executables to package/target identities. This extra compile-only phase does
+not replace either full discovery or actual execution. It reuses ordinary Cargo
+outputs; profiles, features, concurrency and assertions are unchanged.
+
+Both jobs write exclusive raw native combined-stream logs and separate command
+receipts outside the checkout. A successful manifest appears only after every
+command exits0, the source remains clean at the expected head/tree, discovery
+is complete and every expected literal named pass is reconciled. Failure evidence
+does not supply a successful manifest. The package job downloads evidence named
+for both partitions and the current run/attempt, verifies hashes/receipts,
+reparses the raw logs, compares toolchains and proves the disjoint actual-pass
+union before invoking the existing preparation/package scripts. Its normal
+`needs: [windows, isolated]` requires both Windows matrix entries and the isolated
+job; it has no unconditional packaging condition.
+
+The pure tests exercise synthetic transcripts shaped from the actual stable
+Cargo/libtest protocol, including genuine original-eight names, variable totals,
+empty binary/docs, multiple doctest subgroups, terminal formatting, serial and
+concurrent progress, missing/extra/ignored/failed results, substring collisions,
+incomplete/duplicate summaries, bad artifact identities, altered raw logs,
+false manifest claims, command failures and cross-job provenance mismatches.
+Subprocess calls are mocked in capture tests; these tests never invoke Cargo or
+Rust gameplay. Workflow Python invocations use `-B` to avoid untracked bytecode
+making the subsequent clean-source guards fail.
+
+Static author checks: both Python files parsed with `ast.parse`; `git diff
+--check` passed. The pure test suite has **29 authored test methods and has not
+been executed** at this checkpoint. Neither actual discovery nor the native
+partitions have run. No Rust source, gameplay test, fixture, content, Linux
+workflow, `scripts/verify` or `scripts/verify-fast` change is included. Existing
+failed Windows evidence remains unchanged. The artifact-download version and
+current-run behavior were checked against the [official download-artifact documentation](https://github.com/actions/download-artifact#usage).
+
+Next action: independently review the complete clean static checkpoint, then
+root schedules `python -B -m unittest discover -s scripts/tests -p
+test_windows_test_partition.py` and any additional bounded guard checks. After
+fixing actual findings, root schedules fresh exact-head native CI and the
+unchanged canonical acceptance obligations. This writer retains sole branch
+ownership until explicitly transferred back; publication and final acceptance
+remain root-owned.
