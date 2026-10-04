@@ -409,3 +409,32 @@ Air canonical. Native and canonical execution await explicit slot allocation;
 the local canonical uses the actual frozen receiving head and original full
 suites. Accepted dependency reconciliation, final checks, protected merge and
 separate literal-main verification remain required. No family/gate status advances.
+
+Plan `2098e6cb76115529a7267343536737e68d1f0467` preceded normal merge
+`b04a6ec96f81a37ab439c350f6bd2a28c7204548`, tree
+`4bf88dbf4ddcdac90423a60480eee3a9b25217dd`, with accepted dbf as second parent.
+Squash ancestry produced six textual conflicts. Root inspected them: the sole
+test conflict was the already reviewed timed-expiry module registration, whose
+exact fcc blob was preserved. Each of the five conflicted docs equaled release8c
+before merging, so the accepted-main blob preserves all newer release evidence
+without losing expiry-specific content. The expiry plan remains separate.
+
+Root's complete union audit verifies all413 non-document blobs equal fcc,
+all29 fixture Git blobs and21 independently rehashed raw files match the prior
+protected inventory, and original receiving suites are unchanged. Accepted dbf
+is now a literal ancestor. External
+`tooling/expiry-b04a6ec-accepted-main-union-audit-2026-10-04.json`, SHA256
+`79748a51939e597b82a149d26865676888ef688d974b37ba826b1a9a9c34eee0`, also
+records root's independent rehash/recount of all six actual fcc logs. No source,
+test assertion or fixture changed; the full fcc-to-union delta is six docs.
+
+The actual fcc package has now passed root's archive/manifest/extraction audit:
+1070 payloads,1071 files, all six installed content files exact to fcc source,
+and README/LICENSE exact apart from permitted CRLF. Portable executable SHA256
+`1e23f5fe2c615accd1be1aa4357ca17dca6c90d476f262807f3f2af3617f16c7`;
+report `tooling/expiry-fcc74a9-package-verification-2026-10-04.json`, SHA256
+`5d9931f7d6e282a63e2a59481b1e04d065fb8bc72546c722f1f770310db3b78f`.
+The metadata-adapted verifier itself was read before execution. No payload,
+installer, app or database operation ran; independent package review is pending.
+Current next action is independent receiving-head review before publication;
+canonical, native deadline, final CI and acceptance remain open as stated above.
