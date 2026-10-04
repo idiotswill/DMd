@@ -1,6 +1,6 @@
 # Gate 4 — Guarded ordinary-Grapple resolver core
 
-Status: corrected `afc40ef` passes formatting, strict domain/rules/app all-target Clippy and all46 focused controls on 2026-10-04. Earlier failed and interrupted attempts remain preserved below. Root is sole writer and schedules the heavy slot; Air canonical now owns it. Full canonical/CI, genuine LR positives and temporal/application integration remain unmet. All public guards remain required; this is not runnable or accepted Grapple.
+Status: corrected `afc40ef` passes formatting, strict domain/rules/app all-target Clippy and all46 focused controls on 2026-10-04. Root is preparing a draft PR for whole-workspace CI against the unchanged development foundation; no public activation or merge is authorized by that publication. Earlier failed and interrupted attempts remain preserved below. Root is sole writer and schedules the heavy slot; Air canonical now owns it. Full canonical/CI, genuine LR positives and temporal/application integration remain unmet. All public guards remain required; this is not runnable or accepted Grapple.
 
 Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
 
@@ -322,3 +322,22 @@ portable/native behavior or public activation. Root returned the sole heavy
 slot to the previously queued Air canonical run. Keep this core guarded while
 the next temporal checkpoint and its genuine-source dependencies are reviewed;
 do not silently remove deferred projection/flight/release restrictions.
+
+### Draft publication for receiving-head CI
+
+Root freshly fetched main and the foundation branch on October4: main is still
+`dbf1d633460473183324b4ec519e8d1980884b5c`; development foundation remains
+`fa4ea903dfe44333c2cefb1b1b1acc91ba160f8f`. The core branch has no existing remote
+head or PR. Publish the reviewed guarded checkpoint as a draft against
+`codex/gate4-grapple-lifecycle` solely to isolate the core delta and run exact-head
+Linux/Windows CI while Air uses the local slot. The foundation is an unaccepted
+dependency. Never merge into that development base: reconcile accepted main and
+retarget only after prerequisite and slice acceptance, exact-head review and
+required checks. Root retains publication and merge ownership.
+
+The complete core review and F1–F5 corrections, app compile correction, provenance
+test repair, enum representation and style corrections each have independently
+reviewed deltas recorded above. The latest result documentation adds no source
+change. Draft CI is broader verification, not a claim of runnable Grapple,
+actual LR-positive coverage, full temporal behavior or completed Gate4 work.
+Keep every public/kernel/history/restore guard and all immutable captures intact.
