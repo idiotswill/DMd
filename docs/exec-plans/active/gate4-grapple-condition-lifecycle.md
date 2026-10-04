@@ -1,8 +1,8 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
-Status: **guarded source and controls authored; static handback awaiting full
-root/independent review and root-scheduled executable verification.** All new
-controls are UNRUN. No public Grapple acceptance is claimed.
+Status: **guarded source and controls independently reviewed; preparing draft
+publication for exact receiving-head CI.** All new controls remain UNRUN locally.
+Root now owns this branch. No public Grapple acceptance is claimed.
 
 Writer: `gate4_ground_oct4`, transferred by root for bounded source authoring on
 2026-10-04 after plan review, at clean `6c8a108de19ecb4e478dc68258e706c54eaa2ed4`,
@@ -356,7 +356,8 @@ The two reviewed migrations are explicit: the genuine oversized Dragon refusal
 remains and the copied Dodge-refusal half is replaced by actual Dodge producers;
 coherent final modifier/raw/proof copies and removed post-final Paralyzed state
 are no longer rejected merely by private current-state rederivation, but their
-actual public retained/raw/restore admission remains denied. Missing decisions,
+actual public retained/raw admission remains denied by the authored controls;
+unchanged restore protection was inspected statically. Missing decisions,
 bare unfinished no-die pauses and all unrelated original assertions remain.
 Original semantic replay is still required before authority activation.
 
@@ -382,8 +383,41 @@ the explicit genuine-source dependency above; no synthetic LR-positive source is
 introduced here. Full original-issue authority and all remaining map/Gate4
 obligations are unchanged.
 
-Exact next action: root and an independent reviewer inspect the complete clean
-source checkpoint, then root schedules focused and canonical verification when
-the sole heavy slot is available. Keep public/source admission closed, leave
-PR56 and other branches untouched, and record actual new-head results before
-any completion or acceptance claim.
+## Complete source review and draft publication — 2026-10-04
+
+The author returned clean source `192ce4a730b06324bad7a17bc493a5e50f5fe43b`,
+tree `2532dcd310d5527796fb76d9f94b2216a38c7a45`, and sole writer ownership
+to root. Root and a separate reviewer read the full seven-path delta against
+`5296d06f2619027a9ce554131cb0ecd8c80dc607`, the complete plan and all new
+controls, both documented migrations and the actual shared consumers. Neither
+identified an actionable defect in this bounded static review.
+
+Root review: `tooling/grapple-192ce4a-root-static-review-2026-10-04.md`, SHA256
+`674a273cfa756d4cdba2227539544f888de301e21835738539d03934e0c3071c`.
+Independent complete review:
+`tooling/grapple-192ce4a-independent-full-review-2026-10-04.md`, SHA256
+`4f08b596a2f5db10b8f7e7e26edd0341d056dbfd4fd67306a1b067fdee0e07db`.
+Its binary/full-index patch is 70,553 bytes, SHA256
+`91ec9508aadaf9fdf5432276dff261c59eb0dd917b198b58056fa0a109adf127`;
+machine audit SHA256
+`592b91a70a901fd817cf006ff8fff5e7cf3706c876ef695a97dc7778f008ebe8`.
+Root read both complete review evidence and audit before publication. Exact
+protected domain/app/content/fixture/receiving-suite/script/workflow inventories
+and public/raw/history guard blobs match the assigned base. Preservation is not
+a successful rerun. Freshly fetched PR56 still resolves to the same base.
+
+The new helper directly calls kernel/tactical validators and both policy
+dispatchers. It does not call application export preflight or replay a store.
+The unchanged restore path validates current and snapshot tables and retains
+its earliest-anchor guard; that is static composition evidence only. Genuine
+original-history authentication and full recovery remain future activation
+requirements. No tests or compiler were run for this source by either reviewer.
+
+Root is publishing a draft against development PR56 only to run and review the
+candidate's CI. No merge into that unaccepted parent is permitted. This update
+changes only this plan; production and tests remain the reviewed source above.
+Exact next action: inspect actual new-head CI output and fix any concrete failure;
+schedule remaining focused/canonical verification in the single local heavy
+slot after Air. Keep all public/source/restore authority closed, preserve prior
+failures and obtain final accepted-main integration and receiving-head checks
+before any acceptance claim. Gate4 and all parent obligations remain active.
