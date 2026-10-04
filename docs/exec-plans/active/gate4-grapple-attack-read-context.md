@@ -1,6 +1,22 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
-Status: PLAN ONLY, 2026-10-04. Root assigned `gate4_ground_oct4` sole plan
+Status: SOURCE AUTHORING, 2026-10-04. Root transferred sole source writing to
+`gate4_ground_oct4` at clean reviewed `cd7cecfdd7eb0a594a6fd121746a76fb1784d447`,
+tree `e26043c615376c11ba05524cb97eba163bbc6998`. Root's complete plan review is
+`tooling/grapple-cd7cecf-root-plan-review-2026-10-04.md`, SHA256
+`73257ba461d16696998596f743392f2c52d3971e22e53f2858a389ed787ba03c`; independent
+core-peer review is `tooling/grapple-cd7cecf-plan-independent-review-2026-10-04.md`,
+SHA256 `cb371ca69f119bd8837759b09d660592c5291a62fe9fe7aa0399bbae9c39baad`.
+Both are CLEAR for this bounded plan, not runtime correctness. This status is
+committed before source changes. Implement the complete below contract and real
+producer controls, then return a clean static checkpoint for independent review.
+Direct rustfmt and static Git inspection are authorized. Compiler, Cargo, tests,
+npm, build, database, native, push, PR and CI execution remain unassigned; root
+retains the Air heavy slot. Public guards and all protected original bytes stay
+closed/exact. Any concrete need for a serialized field requires design review
+before adding it. The old condition-lifecycle checkout remains root-owned.
+
+Original plan handoff: PLAN ONLY, 2026-10-04. Root assigned `gate4_ground_oct4` sole plan
 writing in `gate4-grapple-attack-read-context`, branch
 `codex/gate4-grapple-attack-read-context`, from freshly fetched, clean
 `9ef15eb92ab96414bb38e6807ba81bc42ae2f8c8`, tree
