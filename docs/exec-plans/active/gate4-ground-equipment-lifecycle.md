@@ -1,10 +1,10 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current status: draft PR60 at aff47ba failed its first actual CI compile. The
-private validator findings are resolved by static review; a moved receipt and
-incorrect test session type need the narrow correction recorded below. Root is sole
-writer, 2026-10-04. All23 rules controls and the app preflight remain UNRUN;
-runtime and production acceptance are not established.
+Current status: draft PR60 at aff47ba failed its first actual CI compile. Source
+43bb7f5 corrects the moved receipt and test session type; independent bounded
+review is CLEAR. Root is sole writer, 2026-10-04. Fresh exact-head compilation
+is pending; all23 rules controls and the app preflight remain UNRUN.
+Runtime and production acceptance are not established.
 
 Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
@@ -604,3 +604,16 @@ published. Independent review caught the real domain name. Root inspected both
 domain declarations and amends the test references to PlaySessionId, already
 available through the existing domain glob import. Preserve the intermediate
 checkpoint as unverified history; only the corrected final head receives CI.
+
+Correction source43bb7f5c725b45c486c565054fe1547cb9528742, tree
+0116f246a242b8c867a14e67ae1d937b409280a7, passed independent bounded review.
+Root read the whole memo and effective4-addition/3-deletion source diff:
+`tooling/ground-43bb7f5-compile-fix-independent-review-2026-10-04.md`, SHA256
+`22b32deed24d4cde5c934171cc245a5e2e456e34531d3be3e197e072501ac980`.
+All assertions,42 protected blobs and21 actual raw payloads are unchanged.
+Direct rustfmt and Git whitespace checks passed; no corrected compilation or
+runtime result is claimed. All six original aff47 logs are preserved in the
+complete first-CI audit, SHA256
+`4a617e5c2f132ad1168c2e84e142f09e1abdfb197e77873b5a6a347d4a3688e4`.
+Next: review this final documentation delta, publish the corrected head to PR60,
+then inspect actual fresh CI. All production and gate obligations remain open.
