@@ -37,8 +37,8 @@ pub(super) fn loadout(
 
 pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError> {
     require_execution(state)?;
-    if let Some(r) = &flow(state)?.resolution {
-        if r.grapple.is_none()
+    if let Some(r) = &flow(state)?.resolution
+        && (r.grapple.is_none()
             || r.attack.is_some()
             || r.shove.is_some()
             || r.hit_review.is_some()
@@ -56,12 +56,11 @@ pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError>
                 .is_some_and(|p| !is_work(&p.pending.work.kind))
             || r.grapple
                 .as_ref()
-                .is_some_and(|g| !g.cuts.is_empty() || !g.opportunity_refreshes.is_empty())
-        {
-            return Err(prerequisite(
-                "This guarded Grapple core does not yet support the retained temporal consumer.",
-            ));
-        }
+                .is_some_and(|g| !g.cuts.is_empty() || !g.opportunity_refreshes.is_empty()))
+    {
+        return Err(prerequisite(
+            "This guarded Grapple core does not yet support the retained temporal consumer.",
+        ));
     }
     if let Some(live) = state
         .rules
@@ -316,17 +315,17 @@ pub(super) fn validate_attempt_source(state: &CampaignState) -> Result<(), Rules
             "Grapple admission has no exact original Begin work",
         ));
     }
-    if let Some(save) = &a.save {
-        if !trace.nodes.iter().any(|n| {
+    if let Some(save) = &a.save
+        && !trace.nodes.iter().any(|n| {
             n.parent == Some(0)
                 && n.work
                     == (TacticalWorkItem {
                         occurrence: save.key.occurrence,
                         kind: TacticalWorkKind::GrappleSave { grip: d.id },
                     })
-        }) {
-            return Err(invalid("Grapple admission has no exact save child"));
-        }
+        })
+    {
+        return Err(invalid("Grapple admission has no exact save child"));
     }
     validate_equipment_change_origin(state, &d.origin, d.grappler).map_err(|e| invalid(&e))?;
     super::super::shove::authorize_owner(state, &d.origin, d.grappler)?;

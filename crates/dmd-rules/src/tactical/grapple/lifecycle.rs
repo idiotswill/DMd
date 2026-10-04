@@ -142,10 +142,7 @@ pub(in crate::tactical) fn release(
             match c.activity.as_ref() {
                 Some(GrappleActivity::Attempt(a))
                     if a.declaration.id == id
-                        && a.stage == TacticalGrappleAttemptStage::AfterEquipment =>
-                {
-                    ()
-                }
+                        && a.stage == TacticalGrappleAttemptStage::AfterEquipment => {}
                 Some(GrappleActivity::Escape(e)) if e.grip == id => (),
                 _ => {
                     return Err(prerequisite(

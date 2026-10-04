@@ -725,9 +725,8 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                     proof.declaration.grappler,
                 )?;
             }
-            GrappleEndCause::Escaped { .. } if matches!(c.activity.as_ref(), Some(GrappleActivity::Escape(e)) if e.grip == end.grip) => {
-                ()
-            }
+            GrappleEndCause::Escaped { .. } if matches!(c.activity.as_ref(), Some(GrappleActivity::Escape(e)) if e.grip == end.grip) =>
+                {}
             _ => return Err(invalid("Unsupported core end cause")),
         }
     }
@@ -745,24 +744,15 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             .and_then(|p| trace.nodes.iter().find(|n| n.work.occurrence == p));
         match node.work.kind {
             TacticalWorkKind::BeginGrapple { .. } | TacticalWorkKind::GrappleEscapeCheck { .. }
-                if node.parent.is_none() =>
-            {
-                ()
-            }
+                if node.parent.is_none() => {}
             TacticalWorkKind::GrappleSave { grip }
                 if parent
-                    .is_some_and(|p| p.work.kind == TacticalWorkKind::BeginGrapple { grip }) =>
-            {
-                ()
-            }
+                    .is_some_and(|p| p.work.kind == TacticalWorkKind::BeginGrapple { grip }) => {}
             TacticalWorkKind::GrappleAfterEquipment { grip }
                 if parent.is_some_and(|p| {
                     p.work.kind == TacticalWorkKind::BeginGrapple { grip }
                         || p.work.kind == TacticalWorkKind::GrappleSave { grip }
-                }) =>
-            {
-                ()
-            }
+                }) => {}
             _ => return Err(invalid("Core Grapple work ancestry differs")),
         }
     }
