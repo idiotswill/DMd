@@ -1,5 +1,76 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Current allocation — final additive controls, plan before source
+
+Root reviewed and approved the concrete remaining-consequences plan at
+`tooling/ground-e583-remaining-consequences-readonly-plan-2026-10-05.md`, SHA256
+`9dc8db08bc4487610766d3e0a94436db8fc385f49a5db7610f2958eed70430f0`.
+The sole writer now owns only `codex/gate4-ground-final-controls`, in its own
+checkout, starting at fetched frozen PR64 `e5830dbc12cbe35a4059df924a0d9dc8cee2b81c`,
+tree `269c4ddb909db7087dda3dad439134c19460576f`. The parent Shield/concentration/fall
+source has completed root's full source/preservation review; runtime acceptance
+is still outstanding. PR64/e583, PR61/055 and all other branches stay frozen and
+root-owned. Earlier checkpoint sections below are retained historical progress.
+
+This allocation adds four application functions and bounded helpers only:
+
+1. `consequences::remaining::accepted_unequip_becomes_unavailable_after_real_throw_completion_but_decline_and_old_retry_remain`:
+   genuinely equip a Dagger, then obtain and accept its real selected Unequip
+   operation. Advance real turns and throw that same carried Item with after
+   Choose. Its actual drawn/held pending raw cut precedes FinishAttack's real
+   custody/ground/loadout change. Submit the retained previously accepted
+   Unequip operation with the fresh current after handle; require atomic refusal
+   and current omission, exact old accepted-request retry without reapplication,
+   and owned cold/portable/retryable Decline. The same source Item, paid cause,
+   actual completion work, hands, rolls and timing remain explicit assertions.
+2. `consequences::privacy::owned_and_source_after_choices_preserve_complete_unrelated_presentations`:
+   real PC and controlled Goblin source equipment, Apply/Decline, complete
+   unrelated DTO/revision/transcript/handle equality at private choices.
+3. `consequences::privacy::unavailable_ground_probes_are_equivalent_before_attack_and_at_selected_after`:
+   actual distant/hidden/physically blocked ground from accepted throws, foreign
+   custody and foreign-campaign Items versus unknown identity, on the same
+   authorized prefix. Compare exact public error class/text only within the same
+   denial class. Keep an independent legal visible attack target so unrelated
+   target admission does not mask the intended pickup rejection.
+4. `consequences::privacy::wrong_audience_kind_revision_and_changed_envelopes_leave_every_saved_row_unchanged`:
+   actual issued handles, wrong audience/owner/Host, wrong kind/raw canonical
+   work, stale revision and changed envelopes. Compare full state/export and
+   every typed persistent row, with request/view bootstrap completed before the
+   baseline. Hostile imported records are checked against a genuinely populated
+   unrelated destination, never used as positive setup.
+
+The protocol carries no operation in `AfterAttackEquipmentIntent::Choose`;
+predeclared AfterAttack changes reject the thrown Item. A previously accepted
+operation value becoming unavailable is therefore distinguished from an already
+issued Apply card changing underneath its owner. Selected work excludes unrelated
+intervening actions. Preserve that real invariant and do not invent a new field,
+caller authority, fixture bypass or mutation to obtain the desired test state.
+
+Source applicability is explicit: only the bundled Adult Red Dragon has
+Legendary Resistance, and its granted Command/Scorching Ray/Fireball are not
+concentration spells. Cultist's actual Hold Person is concentration without LR.
+Current ordinary attacks refuse masteries other than Nick/Graze before cost;
+Topple is not an existing Ground child producer. Liquid landing is a check, not
+a save eligible for resistance. Independent Shove/area resistance coverage does
+not claim after-weapon ancestry. Retain existing isolated controls and do not
+invent a source trait/group to force a nonexistent continuation.
+
+No Physical e75 intake or Graze authoring is allocated here. Its later full
+normal receiving merge, source review and dedicated Graze controls remain due.
+All existing function bodies, production files and29/5/21 protected historical
+assets stay unchanged. Add child registrations and new modules only. Any observed
+production defect requires concrete evidence and root's design review before a
+source fix; no such defect is currently established.
+
+The same product privacy, recovery, authoritative physical dice and real
+application requirements and ADR/checkpoint links below apply. Verification is
+root-owned: independent full diff/preservation review, exact-head focused cases,
+strict fmt/Clippy, canonical/frontend/CI and applicable native evidence. No Cargo,
+npm, compiler, database, native or publication is authorized to this writer.
+Request a brief exclusive direct-rustfmt window after authoring. Next action:
+commit this reconciled plan, then implement the four additive controls; all four
+are currently UNAUTHORED/UNRUN and no gate acceptance is claimed.
+
 ## First source checkpoint — Shield, authored and unrun
 
 The first added integration function contains six genuine Mage cases: before
