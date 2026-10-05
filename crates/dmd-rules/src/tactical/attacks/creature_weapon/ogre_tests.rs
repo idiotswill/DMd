@@ -1,6 +1,6 @@
 //! Pure printed/ordinary composition and rejection controls. The plan images below
 //! are synthetic inputs to a private policy, not materialized Ogre profiles or
-//! accepted attacks. Genuine Ogre gameplay stays blocked by profile admission.
+//! accepted attacks. Genuine Ogre gameplay is covered by application scenarios.
 use super::*;
 use crate::tactical_creatures::{creature_source_pin, ogre_weapon_program};
 use crate::tactical_definitions::bundled_ogre;

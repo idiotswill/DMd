@@ -4,6 +4,9 @@ use super::*;
 use dmd_persistence::CampaignExport;
 use dmd_rules::tactical::TacticalAction;
 
+#[path = "table_ogre_equipment_cases.rs"]
+mod ogre;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -262,17 +265,62 @@ async fn setup_at(f: &mut Fixture, path: &Path, point: SpatialPoint) -> EntityId
 }
 async fn forged_refused(export: &CampaignExport) {
     let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let before = all_destination_rows(&pool).await;
     assert!(
         Box::pin(runtime(pool.clone()).restore_campaign(export))
             .await
             .is_err()
     );
-    let count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM campaign_state_current")
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-    assert_eq!(count, 0, "preflight must fail before destination writes");
+    assert_eq!(
+        all_destination_rows(&pool).await,
+        before,
+        "preflight changed a destination row"
+    );
     pool.close().await;
+}
+
+async fn all_destination_rows(
+    pool: &sqlx::SqlitePool,
+) -> std::collections::BTreeMap<String, Vec<Vec<String>>> {
+    use sqlx::Row;
+    let names: Vec<String> =
+        sqlx::query_scalar("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            .fetch_all(pool)
+            .await
+            .unwrap();
+    let mut result = std::collections::BTreeMap::new();
+    for name in names {
+        let columns: Vec<String> =
+            sqlx::query_scalar("SELECT name FROM pragma_table_info(?) ORDER BY cid")
+                .bind(&name)
+                .fetch_all(pool)
+                .await
+                .unwrap();
+        let quote = |value: &str| format!("\"{}\"", value.replace('"', "\"\""));
+        let statement = format!(
+            "SELECT {} FROM {}",
+            columns
+                .iter()
+                .map(|c| format!("quote({})", quote(c)))
+                .collect::<Vec<_>>()
+                .join(","),
+            quote(&name)
+        );
+        let mut rows = sqlx::query(&statement)
+            .fetch_all(pool)
+            .await
+            .unwrap()
+            .into_iter()
+            .map(|row| {
+                (0..columns.len())
+                    .map(|i| row.get::<String, _>(i))
+                    .collect::<Vec<_>>()
+            })
+            .collect::<Vec<_>>();
+        rows.sort();
+        result.insert(name, rows);
+    }
+    result
 }
 async fn hostile_images(f: &Fixture) {
     let original = export_campaign(&f.pool, f.campaign).await.unwrap();
@@ -806,18 +854,61 @@ async fn next_source_turn(f: &mut Fixture, path: &Path) {
     Box::pin(player_step(f, path, action(TacticalAction::EndTurn))).await;
 }
 
-async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
+async fn printed_after(
+    f: &mut Fixture,
+    path: &Path,
+    bow: bool,
+    hit: bool,
+    player_controlled: bool,
+) {
     let source = Box::pin(setup(f, path)).await;
+    if player_controlled {
+        Box::pin(step(
+            f,
+            path,
+            TableTransportChannel::Host,
+            TableTransportInput::Action(Box::new(TableAction::EnableSourceActorAccess {
+                adopted: vec![],
+            })),
+        ))
+        .await;
+        let controller = CreatureController::Player(f.players[0]);
+        Box::pin(step(
+            f,
+            path,
+            TableTransportChannel::Host,
+            TableTransportInput::Action(Box::new(TableAction::SetSourceCreatureController {
+                actor: source,
+                controller,
+            })),
+        ))
+        .await;
+    }
+    let source_channel = if player_controlled {
+        TableTransportChannel::SourceCreature {
+            player_id: f.players[0],
+            actor: source,
+        }
+    } else {
+        TableTransportChannel::Host
+    };
     Box::pin(player_step(f, path, action(TacticalAction::EndTurn))).await;
     if bow {
         Box::pin(step(
             f,
             path,
-            TableTransportChannel::Host,
+            source_channel.clone(),
             action(TacticalAction::DoffShield),
         ))
         .await;
-        Box::pin(next_source_turn(f, path)).await;
+        Box::pin(step(
+            f,
+            path,
+            source_channel.clone(),
+            action(TacticalAction::EndTurn),
+        ))
+        .await;
+        Box::pin(player_step(f, path, action(TacticalAction::EndTurn))).await;
     }
     let initial = state(f).await;
     let definition = if bow { "shortbow" } else { "scimitar" };
@@ -867,22 +958,29 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
     Box::pin(step(
         f,
         path,
-        TableTransportChannel::Host,
+        source_channel.clone(),
         action(TacticalAction::CreatureWeaponAttack {
             feature_id: definition.into(),
             choice: choice.clone(),
         }),
     ))
     .await;
-    Box::pin(raw(f, path, TableTransportChannel::Host, 1)).await;
-    Box::pin(next_source_turn(f, path)).await;
+    Box::pin(raw(f, path, source_channel.clone(), 1)).await;
+    Box::pin(step(
+        f,
+        path,
+        source_channel.clone(),
+        action(TacticalAction::EndTurn),
+    ))
+    .await;
+    Box::pin(player_step(f, path, action(TacticalAction::EndTurn))).await;
     choice.equipment_change = None;
     choice.after_equipment = Some(AfterAttackEquipmentIntent::Choose);
     let before = state(f).await;
     let attack = Box::pin(step(
         f,
         path,
-        TableTransportChannel::Host,
+        source_channel.clone(),
         action(TacticalAction::CreatureWeaponAttack {
             feature_id: definition.into(),
             choice,
@@ -913,17 +1011,17 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
     Box::pin(raw(
         f,
         path,
-        TableTransportChannel::Host,
+        source_channel.clone(),
         if hit { 20 } else { 1 },
     ))
     .await;
     if hit {
         Box::pin(table_hit_driver::decline_hit_responses(f)).await;
         // cold_step below imports and reopens the actual DamageRoll cut.
-        Box::pin(raw(f, path, TableTransportChannel::Host, 1)).await;
+        Box::pin(raw(f, path, source_channel.clone(), 1)).await;
     }
     let completed = state(f).await;
-    let offered = view(f, &TableTransportChannel::Host)
+    let offered = view(f, &source_channel)
         .await
         .tactical
         .unwrap()
@@ -944,7 +1042,14 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
             .attack
             .is_none()
     );
-    let unrelated = view(f, &player(f)).await;
+    let unrelated = view(
+        f,
+        &TableTransportChannel::Player {
+            player_id: f.players[1],
+            character_id: f.characters[1],
+        },
+    )
+    .await;
     assert!(
         unrelated
             .tactical
@@ -963,7 +1068,7 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
     let final_request = Box::pin(step(
         f,
         path,
-        TableTransportChannel::Host,
+        source_channel.clone(),
         TableTransportInput::AttackEquipment {
             handle: offered.key,
             choice: if hit {
@@ -1011,16 +1116,22 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
     let original_response = Box::pin(f.runtime.submit_presented_table(final_request.clone()))
         .await
         .unwrap();
-    Box::pin(step(
-        f,
-        path,
-        TableTransportChannel::Host,
-        TableTransportInput::Action(Box::new(TableAction::EnableSourceActorAccess {
-            adopted: vec![],
-        })),
-    ))
-    .await;
-    let controller = CreatureController::Player(f.players[0]);
+    if !player_controlled {
+        Box::pin(step(
+            f,
+            path,
+            TableTransportChannel::Host,
+            TableTransportInput::Action(Box::new(TableAction::EnableSourceActorAccess {
+                adopted: vec![],
+            })),
+        ))
+        .await;
+    }
+    let controller = if player_controlled {
+        CreatureController::Host
+    } else {
+        CreatureController::Player(f.players[0])
+    };
     Box::pin(step(
         f,
         path,
@@ -1042,6 +1153,10 @@ async fn printed_after(f: &mut Fixture, path: &Path, bow: bool, hit: bool) {
     let mut after_retry = export_campaign(&f.pool, f.campaign).await.unwrap();
     after_retry.exported_at_utc = before_retry.exported_at_utc.clone();
     assert_eq!(after_retry, before_retry);
+    if player_controlled {
+        let forbidden = request(f, source_channel, action(TacticalAction::EndTurn)).await;
+        Box::pin(rejected(f, forbidden)).await;
+    }
 }
 
 async fn printed_before_after_real_knockout(f: &mut Fixture, path: &Path, bow: bool) {
@@ -1362,14 +1477,21 @@ async fn selected_and_different_before_pickup_preserve_real_item_identity_and_at
 #[tokio::test]
 async fn pinned_parent_goblin_scimitar_shortbow_after_miss_and_critical_keep_paid_source_through_cold_damage()
  {
-    for (bow, hit) in [(false, false), (false, true), (true, false), (true, true)] {
+    for (bow, hit, player_controlled) in [
+        (false, false, false),
+        (false, true, false),
+        (true, false, false),
+        (true, true, false),
+        (false, false, true),
+        (true, true, true),
+    ] {
         let directory =
             std::env::temp_dir().join(format!("dmd-ground-source-{}", CampaignId::new().0));
         std::fs::create_dir_all(&directory).unwrap();
         let path = directory.join("campaign.sqlite");
         let pool = dmd_persistence::open_sqlite_path(&path).await.unwrap();
         let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
-        Box::pin(printed_after(&mut f, &path, bow, hit)).await;
+        Box::pin(printed_after(&mut f, &path, bow, hit, player_controlled)).await;
         f.pool.close().await;
         drop(f);
         sqlite_test_cleanup::remove_closed_directory(&directory)

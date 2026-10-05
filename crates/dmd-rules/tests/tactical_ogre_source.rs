@@ -1,4 +1,4 @@
-//! Immutable source/policy controls only. No Ogre is created, admitted or played.
+//! Immutable source/policy controls. Real accepted play is tested in the application.
 use dmd_domain::*;
 use dmd_rules::{tactical_creature_equipment::*, tactical_creatures::*, tactical_definitions::*};
 
@@ -81,15 +81,20 @@ fn immutable_ogre_retains_every_printed_stat_and_the_reviewed_annotation() {
 }
 
 #[test]
-fn full_pin_lookup_does_not_enable_current_or_id_only_admission() {
+fn current_ogre_uses_its_full_pin_without_enabling_id_only_admission() {
     let s = bundled_ogre().unwrap();
     let pin = creature_source_pin(s).unwrap();
     assert!(std::ptr::eq(creature_source(&pin).unwrap(), s));
     assert_eq!(immutable_creature_sources().unwrap().len(), 13);
     assert!(creature_definition("ogre").is_err());
     let current = current_creature_sources().unwrap();
-    assert_eq!(current.len(), 11);
-    assert!(current.iter().all(|s| s.id != "ogre"));
+    assert_eq!(current.len(), 12);
+    assert_eq!(current.iter().filter(|s| s.id == "ogre").count(), 1);
+    assert!(
+        current
+            .iter()
+            .any(|s| creature_source_pin(s).unwrap() == pin)
+    );
     for field in 0..4 {
         let mut wrong = pin.clone();
         match field {
@@ -110,9 +115,9 @@ fn full_pin_lookup_does_not_enable_current_or_id_only_admission() {
 }
 
 #[test]
-fn an_invented_retained_ogre_profile_cannot_bypass_closed_creation() {
+fn a_malformed_retained_ogre_profile_cannot_invent_size_or_source() {
     // A hostile typed record, never an accepted profile or historical producer.
-    let profile = CreatureProfile {
+    let mut profile = CreatureProfile {
         actor: EntityId::new(),
         origin: CommandMeta {
             id: CommandId::new(),
@@ -123,7 +128,7 @@ fn an_invented_retained_ogre_profile_cannot_bypass_closed_creation() {
             expected_event_sequence: 0,
         },
         source: creature_source_pin(bundled_ogre().unwrap()).unwrap(),
-        size: CreatureSize::Large,
+        size: CreatureSize::Medium,
         additional_languages: vec![],
         hit_points: CreatureHitPointOrigin::Average,
     };
@@ -131,8 +136,11 @@ fn an_invented_retained_ogre_profile_cannot_bypass_closed_creation() {
         initial_creature_mechanics(&profile)
             .unwrap_err()
             .to_string()
-            .contains("Ogre creation is not admitted")
+            .contains("creature size/language choices differ from source")
     );
+    profile.size = CreatureSize::Large;
+    profile.source.definition_fingerprint.push('x');
+    assert!(initial_creature_mechanics(&profile).is_err());
 }
 
 #[test]
@@ -196,7 +204,7 @@ fn closed_program_preserves_printed_damage_without_changing_ordinary_weapons() {
 }
 
 #[test]
-fn registered_ogre_allocation_is_four_individuals_without_ammunition_or_admission() {
+fn current_ogre_allocation_is_four_individuals_without_ammunition_or_id_only_admission() {
     let pin = creature_source_pin(bundled_ogre().unwrap()).unwrap();
     let plan = creature_equipment_plan_from_source(&pin, 0).unwrap();
     assert_eq!(
@@ -217,7 +225,7 @@ fn registered_ogre_allocation_is_four_individuals_without_ammunition_or_admissio
         current_creature_sources()
             .unwrap()
             .iter()
-            .all(|s| s.id != "ogre")
+            .any(|s| creature_source_pin(s).unwrap() == pin)
     );
 }
 

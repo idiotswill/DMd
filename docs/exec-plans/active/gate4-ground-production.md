@@ -1,5 +1,59 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Combined Ogre source authored for review — 2026-10-05
+
+Normal receiving merge `2bb7b0580ec430fcd79a09b9f66f23d49dc2bc4b` has parents
+`f5608dd` and exact3387. Its eight overlapping source paths were inspected, all
+76 unshared Ground blobs matched53e5, all26 unshared Ogre blobs matched3387,
+and all21 original raw files retained their exact SHA-256. The two deliberate
+constructor/receipt adaptations and retained OA exclusion are recorded below.
+
+The planned production admission now removes the temporary exact-Ogre current
+catalog exclusion and common profile refusal. Immutable full-pin lookup and the
+ID-only V1 registry remain unchanged; no missing pin is filled in and both-policy
+flow5 source/OA guards remain. Only the four named staging controls were migrated.
+The rule tests retain exact immutable source, allocation, missing/wrong pin and
+old-lookup boundaries; malformed retained source/size stays negative. The table
+control now resolves an actual creation, checks68HP/AC11/four distinct quantity1
+Items and replays the original returned event. Missing/forged pin, wrong count,
+duplicate/nil Item IDs and fabricated ammunition remain atomic negatives. Its
+old Wolf positive/replay assertions are preserved.
+
+A new child application module authors four file-SQLite functions with thirteen
+genuine scenarios: three printed forms times miss/hit/critical; all three finite
+Javelins and fourth refusal followed by another actor's same-Item1d6 attack;
+Greatclub and held Javelin melee OA with one Reaction and no equipment operation;
+and Greatclub drop from real seven-crit Dagger Knock Out, physical First Aid and another
+actor's same-Item1d8 attack. Normal catalog creation provides all source pins and
+gear. Source printed2d8/2d6 and doubled critical requests remain distinct from
+ordinary recovered damage. Every shared step cold-reopens the actual file and
+restores an independent portable mirror before the same request. Hostile current
+plus snapshot source/quantity/damage/owner changes are refused before any write.
+No positive injects HP, profile, custody, condition, event or SQL state.
+
+Root's complete53e5 review identified missing controller-loss and destination
+write evidence. Keep all four existing Host Goblin variants, add two actual
+player SourceCreature variants whose accepted after request is retried after
+control transfers away, and separately refuse a new former-controller request
+with complete export equality. Hostile restore now snapshots every destination
+application table's quoted row values, not only a current-state row count.
+These are authored fixes to evidence gaps, not results. Ground now has thirteen
+scenarios; the combined two modules have eight test functions and26 scenarios.
+
+Direct rustfmt and static diff inspection only. All new admission, rules/app/UI,
+cold/portable/retry and hostile-record cases remain UNCOMPILED/UNRUN. Independent
+complete combined review is next, followed by root-allocated execution. No
+feature, canonical, native, main or Gate4 acceptance is claimed. Shield/Graze,
+concentration/fall descendants, the complete audience equality matrix, combined
+native play and exact-head/final-main checks remain mandatory.
+
+Root's source review noted that Graze still lacks a genuine admitted acquisition
+producer: the current creation catalog offers neither Greatsword nor Glaive.
+The authored, unrun Greatclub-drop test initially assumed a Greatsword purchase;
+it was corrected before execution to the already supported Dagger and seven real
+critical attacks. No catalog/mastery/profile is injected or changed. Graze needs
+a separately reviewed genuine acquisition plan preserving old creation/replay.
+
 ## Exact Ogre receiving and admission preparation — 2026-10-05
 
 Before receiving source, root authorized the complete normal merge of reviewed

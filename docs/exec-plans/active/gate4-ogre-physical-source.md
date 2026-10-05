@@ -1,5 +1,28 @@
 # Gate 4 — Complete Ogre physical source actions
 
+## Combined production admission authored — 2026-10-05
+
+The plan-first full normal Ground receive completed at `2bb7b05`. The sole Ground
+writer then authored the explicit staging-closure migration recorded in
+`gate4-ground-production.md`: current exact-pin Ogre creation and common profile
+validation join the already complete physical/source/OA/UI/Ground route. ID-only
+V1 and immutable source identities stay unchanged; new source/OA execution remains
+exact-flow5 under both policies. The four temporary-closure tests retain their
+old-source/full-pin/allocation/adversarial responsibilities while gaining actual
+accepted creation and original-event replay. No other source or history guard is
+removed. This is source awaiting review and verification, not accepted play.
+
+The new real application module authors all three forms with miss/hit/critical,
+finite three Javelins/fourth refusal, both held physical OA forms, original source
+versus another actor's actual same-Item1d6/1d8 damage, physical knockout drop and
+First Aid, cold file resume, independent portable continuation and hostile-image
+prewrite refusal. Four functions contain thirteen real scenarios, all UNRUN.
+Existing synthetic composition/component controls remain clearly labeled and are
+not used as acceptance substitutes. Root must review the entire combined tree
+and allocate focused/canonical/frontend/CI/native execution before acceptance.
+The current uncompiled source status supersedes only the historical closed-source
+status below; every original failure and outstanding obligation remains recorded.
+
 ## Ground receiving status — 2026-10-05
 
 The Ground production writer received this complete dependency at exact

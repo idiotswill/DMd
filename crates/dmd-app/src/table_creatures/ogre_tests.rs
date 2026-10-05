@@ -1,4 +1,4 @@
-//! Negative admission controls, not a created Ogre or accepted Ogre history.
+//! Current full-pin creation and original-event replay, with malformed input controls.
 use super::*;
 use crate::{TableAction, TableEvent, TableOutcome, table_engine};
 
@@ -66,7 +66,7 @@ fn fixture() -> (CampaignState, CommandMeta, RulesPack) {
 }
 
 #[test]
-fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
+fn current_ogre_creation_replays_exact_gear_and_refuses_missing_or_forged_pins() {
     let (state, meta, pack) = fixture();
     let original = serde_json::to_value(&state).unwrap();
     let source = dmd_rules::tactical_definitions::bundled_ogre().unwrap();
@@ -75,13 +75,18 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
         current_catalog()
             .unwrap()
             .iter()
-            .all(|option| option.definition_id != "ogre")
+            .any(|option| option.definition_id == "ogre"
+                && option.source == Some(pin.clone())
+                && option.item_count == 4
+                && !option.ammunition_required)
     );
-    for supplied in [None, Some(pin)] {
+    let mut wrong_pin = pin.clone();
+    wrong_pin.definition_fingerprint.push('x');
+    for supplied in [None, Some(wrong_pin)] {
         let action = TableAction::CreateCreature {
             creation: Box::new(crate::TableCreatureCreation {
                 entity_id: EntityId::new(),
-                name: "Unadmitted Ogre".into(),
+                name: "Unverified Ogre".into(),
                 definition_id: "ogre".into(),
                 source: supplied.clone(),
                 size: CreatureSize::Large,
@@ -91,7 +96,7 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
             }),
         };
         let live = match table_engine::resolve_table(&state, &meta, &action, &pack) {
-            Ok(_) => panic!("unadmitted Ogre reached live creation"),
+            Ok(_) => panic!("missing or forged pin reached live creation"),
             Err(error) => error,
         };
         assert!(
@@ -114,12 +119,12 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
             tactical_event: None,
         };
         let replay = match table_engine::replay_table(&state, &event, &pack) {
-            Ok(_) => panic!("unadmitted Ogre reached historical creation"),
+            Ok(_) => panic!("missing or forged pin reached historical creation"),
             Err(error) => error,
         };
         assert!(
             replay.contains(if supplied.is_some() {
-                "Ogre creation is not admitted"
+                "creature source pin or definition fingerprint differs"
             } else {
                 "unknown source creature"
             }),
@@ -127,7 +132,86 @@ fn registry_only_ogre_refuses_live_and_historical_creation_without_mutation() {
         );
         assert_eq!(serde_json::to_value(&state).unwrap(), original);
     }
-    // The same valid table still admits a real old source; refusal is Ogre-specific.
+    let actor = EntityId::new();
+    let ids = (0..4).map(|_| ItemId::new()).collect::<Vec<_>>();
+    let create = crate::TableCreatureCreation {
+        entity_id: actor,
+        name: "Physical Ogre".into(),
+        definition_id: "ogre".into(),
+        source: Some(pin.clone()),
+        size: CreatureSize::Large,
+        additional_languages: vec![],
+        ammunition_units: 0,
+        item_ids: ids.clone(),
+    };
+    for mutation in 0..4 {
+        let mut invalid = create.clone();
+        match mutation {
+            0 => {
+                invalid.item_ids.pop();
+            }
+            1 => invalid.item_ids[1] = invalid.item_ids[0],
+            2 => invalid.item_ids[0] = ItemId(uuid::Uuid::nil()),
+            3 => invalid.ammunition_units = 1,
+            _ => unreachable!(),
+        }
+        assert!(
+            table_engine::resolve_table(
+                &state,
+                &meta,
+                &TableAction::CreateCreature {
+                    creation: Box::new(invalid)
+                },
+                &pack
+            )
+            .is_err()
+        );
+        assert_eq!(serde_json::to_value(&state).unwrap(), original);
+    }
+    let created = table_engine::resolve_table(
+        &state,
+        &meta,
+        &TableAction::CreateCreature {
+            creation: Box::new(create),
+        },
+        &pack,
+    )
+    .unwrap();
+    assert_eq!(
+        table_engine::replay_table(&state, &created.event, &pack)
+            .unwrap()
+            .state,
+        created.state
+    );
+    let rules = created.state.rules.as_ref().unwrap();
+    assert_eq!(
+        rules
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .profile(actor)
+            .unwrap()
+            .source,
+        pin
+    );
+    assert_eq!(rules.entities[&actor].hp, 68);
+    assert_eq!(dmd_rules::armor_class(&rules.entities[&actor]), 11);
+    assert_eq!(
+        ids.iter()
+            .filter(|id| created.state.items[*id].definition_id == "greatclub")
+            .count(),
+        1
+    );
+    assert_eq!(
+        ids.iter()
+            .filter(|id| created.state.items[*id].definition_id == "javelin")
+            .count(),
+        3
+    );
+    assert!(ids.iter().all(|id| created.state.items[id].quantity == 1
+        && created.state.items[id].custody == Custody::Entity(actor)));
+    assert_eq!(serde_json::to_value(&state).unwrap(), original);
+    // The original old-source positive and its replay equality remain unchanged.
     let wolf = creature_definition("wolf").unwrap();
     let action = TableAction::CreateCreature {
         creation: Box::new(crate::TableCreatureCreation {

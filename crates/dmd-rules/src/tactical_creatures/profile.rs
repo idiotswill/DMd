@@ -87,7 +87,6 @@ pub fn build_creature_from_source(
         Some(_) => return Err(invalid("creation and pinned source identities differ")),
         None => creature_definition(&choice.definition_id)?,
     };
-    require_profile_admission(source)?;
     let hit_points = match &choice.hit_points {
         CreatureHitPointChoice::Average => CreatureHitPointOrigin::Average,
         CreatureHitPointChoice::Rolled { request_id, result } => {
@@ -166,22 +165,10 @@ pub fn creature_hit_point_request(
     Ok(request)
 }
 
-/// Immutable registry presence is not creation or historical profile authority.
-/// No accepted Ogre history exists before its complete physical adapters ship.
-fn require_profile_admission(source: &CreatureDefinition) -> Result<(), CreatureError> {
-    if source.id == "ogre" {
-        return Err(CreatureError::Unavailable(
-            "Ogre creation is not admitted until physical attacks and recovery are complete".into(),
-        ));
-    }
-    Ok(())
-}
-
 fn validate_profile_choices(
     profile: &CreatureProfile,
     source: &CreatureDefinition,
 ) -> Result<(), CreatureError> {
-    require_profile_admission(source)?;
     if !source
         .statistics
         .allowed_sizes
