@@ -32,7 +32,7 @@ remain unchanged. Root read the complete correction and independent review, then
 ran all32 pure controls successfully; the adjacent CI recovery plan records the
 exact log and qualifications. Root owns execution, publication, dependency
 reconciliation and acceptance. The prior29 passes did not verify this correction.
-Original development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. Later reconciliation through3f is recorded below; the accepted-main union is recorded in the final section. Air remains an **unaccepted development dependency**. Root owns its separate Air branch/PR and all integration, publication and heavy verification.
+Original development parent: exact Air source checkpoint `1a0a5e75bfbde98c7621c421fbdc9d5b4750ab92`, inspected clean in the reused `gate4-shield-missile-runtime` checkout after root fetched it. Later reconciliation through3f is recorded below; the accepted-main union is recorded in the final section. Air was an unaccepted development dependency at that checkpoint; PR50 is now accepted at main32. Root owns all integration, publication and heavy verification.
 
 ## Objective and authority
 
@@ -376,3 +376,10 @@ verification. The shared native campaign store can auto-open remembered later
 campaigns; do not launch an older package into an unsupported save. All prior
 failed/cancelled attempts remain evidence. This documentation receipt is not
 native acceptance, completion of broader monster actions, or Gate4 completion.
+
+The plan-first normal merge completed as `b01f9455e83d023613bdd598fb065d65c94f3e66`,
+with parents plan d0986f9 and exact main32. Both incoming documentation changes
+merged without conflict. Root read the full incoming delta and both-parent ledger
+composition. This subsequent status clarification identifies accepted Air/main32
+while retaining all prior MR failures, repaired CI attribution and open native/
+canonical obligations. No source or fixture changes are part of this receipt.

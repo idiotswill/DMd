@@ -8,6 +8,10 @@ all six checks successfully (776 Linux / 778 Windows Rust tests). Native and loc
 canonical evidence below remains attributed to source8c; no new native execution
 of the main package is claimed. Gate4 and its other slices remain unaccepted.
 
+October5 dependency update: Air PR50 is accepted at main32c0c68. The successful
+literal-dbf checks above retain their exact attribution; separate literal32
+runtime checks are pending. The release's source/native evidence is unchanged.
+
 Historical receiving status: integrated source `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` passes
 canonical verification, all six CI jobs and the actual packaged two-encounter
 continuation with Finished and pending-attack cold restarts. Original-source flow 4

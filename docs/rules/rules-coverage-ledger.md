@@ -4,11 +4,11 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
-Current integration note, 2026-10-04: PR48 is accepted at main
-`dbf1d633460473183324b4ec519e8d1980884b5c`, with separate successful literal-main
-checks recorded in the [release plan](../exec-plans/active/gate4-encounter-release.md).
-Older release-candidate statements below remain historical evidence. No Gate4
-family status or player-acceptance claim changes.
+Current integration note, 2026-10-05: PR50 is accepted at main
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`. The [release plan](../exec-plans/active/gate4-encounter-release.md)
+retains successful literal-dbf checks. Separate literal32 runtime verification
+is pending. Older candidate statements below remain historical evidence. No
+Gate4 family status or player-acceptance claim changes.
 
 ## What is accounted for
 
@@ -103,17 +103,17 @@ inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled wi
 all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
 canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
 (783 Linux /785 MSVC); the plan records exact logs and independent review.
-Final documentation-head checks/review, protected merge and literal main proof
-remain outstanding. No evidence array or family status
+PR50 subsequently passed its final checks/review and merged at main32c0c68;
+separate literal-main32 runtime proof remains pending. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
 slice still owes its genuine paid Prone-immunity continuation and recovery.
 
 The bounded [Magic Resistance source prerequisite](../exec-plans/active/gate4-magic-resistance-source.md)
-now records Linux source verification and the remaining Windows coverage repair.
-The reviewed helper correction passes32 synthetic controls at1cea684; this is not
-actual corrected Cargo coverage or positive MR gameplay. The historical authored
+now records complete corrected d4bb42c CI:791 Linux/793 MSVC Rust tests, including
+the independently audited Windows partition union and verified unopened package.
+Local canonical and real native MR play/recovery remain pending. The historical authored
 checkpoints below retain their original status; current evidence and exact failed
 Windows attempts are qualified in the MR plan. No family or evidence array advances.
 
