@@ -1,5 +1,31 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 5 actual pending-withdrawal test failure
+
+Exact `ade8e93b450d6e02027afc7615a555db16b2915d` passed formatting,
+strict domain/rules/app all-target Clippy and the corrected opportunity test.
+The ten owner controls then ran: nine passed; the pending-withdrawal control
+failed at execution/tests.rs195 because it expected immediate resolution
+retirement. The run stopped at 13:14:54 UTC; the remaining71 controls did not
+run. Full failed log SHA256:
+046e3991499e04b7953a54ed46b30092f495efab04f1f9c59d6c746f771a9229.
+
+Root and an independent reader traced the actual no-before-equipment producer:
+withdraw_with_context cancels the unfinished request and complete_attempt
+preserves the owed AfterEquipment choice. The original core control
+withdrawal_before_or_during_raw_preserves_one_equipment_allowance explicitly
+requires this distinction. Preserve that production behavior and every original
+core test. Commit this plan before changing only the new owner control.
+
+Assert the genuine withdrawal outcome, paid Action, freed reservation, absent
+raw pending request and exact inherited cancellation/raw history while the
+AfterEquipment choice remains. Resolve it with the existing typed decline
+helper, then retain the original completed-resolution, eligible export and
+reentry controls. No manual state repair or production change is authorized.
+Review the complete correction independently, then rerun all82 selected controls
+from a frozen head with formatting and strict linting first. Preserve every
+earlier failure; this focused run does not establish public or native acceptance.
+
 ## October 5 actual test-call compilation failure
 
 Exact58b6a9051b5696e78842cde8d8ed115d361bc2b4 passed formatting but strict
