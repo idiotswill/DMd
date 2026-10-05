@@ -2,6 +2,7 @@
 //! attack, raw and equipment producers. These are NOT accepted app histories,
 //! original export replay, portable restore, native play or Ogre admission.
 use super::*;
+use crate::tactical::turns::{active, resolution, resolution_mut};
 use crate::tactical_weapons::ground::RetainedPhysicalRead;
 
 struct Fixture {
