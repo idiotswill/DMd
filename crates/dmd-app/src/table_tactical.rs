@@ -24,21 +24,24 @@ mod shields;
 pub(crate) fn view(
     state: &CampaignState,
     viewer: &crate::TableViewer,
+    pack: &RulesPack,
 ) -> Result<Option<crate::TableTacticalView>, String> {
-    view_with_source_access(state, viewer, false)
+    view_with_source_access(state, viewer, false, pack)
 }
 
 pub(crate) fn view_v2(
     state: &CampaignState,
     viewer: &crate::TableViewer,
+    pack: &RulesPack,
 ) -> Result<Option<crate::TableTacticalView>, String> {
-    view_with_source_access(state, viewer, true)
+    view_with_source_access(state, viewer, true, pack)
 }
 
 fn view_with_source_access(
     state: &CampaignState,
     viewer: &crate::TableViewer,
     source_access: bool,
+    pack: &RulesPack,
 ) -> Result<Option<crate::TableTacticalView>, String> {
     let Some(encounter) = &state.encounter else {
         return Ok(None);
@@ -132,6 +135,47 @@ fn view_with_source_access(
         vec![]
     };
     Ok(Some(crate::TableTacticalView {
+        equipment_enabled: (host && attack_equipment_enabled(state)).then_some(true),
+        attack_equipment: attack_equipment_options(state, pack)
+            .map_err(|e| e.to_string())?
+            .filter(|offer| host || own.contains(&offer.actor))
+            .map(|offer| crate::TableAttackEquipmentView {
+                key: offer.work,
+                actor: offer.actor,
+                operations: offer
+                    .operations
+                    .into_iter()
+                    .map(|operation| {
+                        let (item, verb, hand) = match operation {
+                            AttackEquipmentOperation::Equip { item, hand } => {
+                                (item, "Ready", Some(hand))
+                            }
+                            AttackEquipmentOperation::Pickup { item, hand } => {
+                                (item, "Pick up", Some(hand))
+                            }
+                            AttackEquipmentOperation::Unequip { item } => (item, "Put away", None),
+                        };
+                        let name = state
+                            .items
+                            .get(&item)
+                            .and_then(|i| {
+                                dmd_rules::tactical_inventory::equipment_definition(
+                                    &i.definition_id,
+                                )
+                                .ok()
+                            })
+                            .map(|d| d.display_name.clone())
+                            .unwrap_or_else(|| "Weapon".into());
+                        let label = match hand {
+                            Some(Hand::Left) => format!("{verb} {name} · left hand"),
+                            Some(Hand::Right) => format!("{verb} {name} · right hand"),
+                            None => format!("{verb} {name}"),
+                        };
+                        crate::TableEquipmentOperation { operation, label }
+                    })
+                    .collect(),
+                may_decline: true,
+            }),
         shove: flow.and_then(|f| f.resolution.as_deref()).and_then(|r| {
             let shove = r.shove.as_deref()?;
             let selected = shove.selected.as_ref()?;
@@ -322,7 +366,7 @@ fn view_with_source_access(
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
-                attacks::options(state, actor)?
+                attacks::options_with_ground(state, actor, pack)?
             }
             _ => None,
         },

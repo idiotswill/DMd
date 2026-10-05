@@ -52,6 +52,60 @@ pub(crate) fn validate_paid_equipment_read(
 pub(crate) fn validate_attack_equipment_state(state: &CampaignState) -> Result<(), RulesError> {
     attack_equipment_access::validate_records(state)
 }
+
+/// Encounter-local opt-in, never inferred from renderer or executable version.
+/// Full state validation authenticates the marker's lineage; restore replays it.
+pub fn attack_equipment_enabled(state: &CampaignState) -> bool {
+    state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .is_some_and(|f| {
+            f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                && f.attack_equipment_access.is_some()
+        })
+}
+
+/// Data-only offers for the actual selected cause, including an empty Apply set.
+pub struct AttackEquipmentOptions {
+    pub work: TacticalWorkKey,
+    pub actor: EntityId,
+    pub operations: Vec<AttackEquipmentOperation>,
+}
+
+pub fn attack_equipment_options(
+    state: &CampaignState,
+    pack: &RulesPack,
+) -> Result<Option<AttackEquipmentOptions>, RulesError> {
+    if !attack_equipment_enabled(state) {
+        return Ok(None);
+    }
+    attack_equipment_access::validate_records(state)?;
+    let Some(record) = flow(state)?
+        .resolution
+        .as_ref()
+        .and_then(|r| r.attack_after_equipment.as_ref())
+        .filter(|r| r.selected_by.is_some())
+    else {
+        return Ok(None);
+    };
+    let work = TacticalWorkKey {
+        resolution: flow(state)?.resolution.as_ref().unwrap().origin.id,
+        occurrence: record.work.occurrence,
+    };
+    let operations = crate::tactical_weapons::ground::after_options(
+        state,
+        record.cause.actor,
+        record.cause.window,
+        pack,
+    )
+    .map_err(|e| invalid(&e.to_string()))?;
+    Ok(Some(AttackEquipmentOptions {
+        work,
+        actor: record.cause.actor,
+        operations,
+    }))
+}
 pub(crate) fn validate_equipment_completion_read<'a>(
     state: &'a CampaignState,
     meta: &CommandMeta,
@@ -377,9 +431,12 @@ fn resolve_with_policy(
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    // All policies refuse new pickup authority until the complete owned after
-    // lifecycle and table path are integrated. Do not put this in Live-only checks.
-    if action_uses_ground_pickup(action) {
+    // Missing activation retains the historical refusal under both policies.
+    // Activation itself has a separate quiescent host-only producer below.
+    if action_uses_ground_pickup(action)
+        && !matches!(action, TacticalAction::ActivateAttackEquipment)
+        && !attack_equipment_enabled(state)
+    {
         return Err(prerequisite("ground pickup execution is not enabled"));
     }
     crate::validate_state(state, pack)?;

@@ -245,7 +245,7 @@ fn validate_ties(
 }
 
 pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> {
-    if has_unimplemented_ground_records(state) {
+    if has_unimplemented_ground_records(state) && !super::attack_equipment_enabled(state) {
         return Err(invalid("ground pickup execution is not enabled"));
     }
     super::validate_attack_equipment_state(state)?;

@@ -19,6 +19,8 @@ mod table_creature_cases;
 mod table_dead_target_cases;
 #[path = "support/table_falling_cases.rs"]
 mod table_falling_cases;
+#[path = "support/table_ground_equipment_cases.rs"]
+mod table_ground_equipment_cases;
 #[path = "support/table_hit_cases.rs"]
 mod table_hit_cases;
 #[path = "support/table_hit_driver.rs"]

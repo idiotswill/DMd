@@ -662,42 +662,103 @@ fn private_activation_rejects_nonhost_wrong_session_paid_pending_and_old_executo
 }
 
 #[test]
-fn activated_checkpoint_still_refuses_public_live_historical_and_kernel_admission() {
+fn activated_public_command_kernel_planner_and_replay_share_actual_pickup_transition() {
     let mut f = Fixture::new();
-    f.activate();
-    for policy in [ExecutionPolicy::Live, ExecutionPolicy::Historical] {
+    f.pickup(f.choice.weapon, Hand::Right);
+    let before = f.state.clone();
+    let activation = resolve_tactical(
+        &before,
+        &f.host(),
+        &TacticalAction::ActivateAttackEquipment,
+        &f.pack,
+    )
+    .unwrap();
+    assert_eq!(
+        replay_tactical(&before, &activation.event, &f.pack)
+            .unwrap()
+            .next_state,
+        activation.next_state
+    );
+    f.state = activation.next_state;
+    f.state.applied_event_sequence += 1;
+    crate::validate_state(&f.state, &f.pack).unwrap();
+    validate_tactical_state(&f.state).unwrap();
+    crate::tactical_weapons::prepare_weapon_attack(&f.physical_input(&f.meta(f.actor))).unwrap();
+    let action = TacticalAction::Attack {
+        choice: f.choice.clone(),
+    };
+    let meta = f.meta(f.actor);
+    let accepted = resolve_tactical(&f.state, &meta, &action, &f.pack).unwrap();
+    let historical = resolve_with_policy(
+        &f.state,
+        &meta,
+        &action,
+        &f.pack,
+        ExecutionPolicy::Historical,
+    )
+    .unwrap();
+    assert_eq!(accepted.next_state, historical.next_state);
+    assert_eq!(
+        replay_tactical(&f.state, &accepted.event, &f.pack)
+            .unwrap()
+            .next_state,
+        accepted.next_state
+    );
+    assert_eq!(
+        accepted.next_state.items[&f.choice.weapon].custody,
+        Custody::Entity(f.actor)
+    );
+    assert!(
+        accepted
+            .next_state
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .action_spent
+    );
+    crate::validate_state(&accepted.next_state, &f.pack).unwrap();
+    validate_tactical_state(&accepted.next_state).unwrap();
+}
+
+#[test]
+fn activated_public_admission_refuses_missing_malformed_and_foreign_marker_atomically() {
+    for case in 0..4 {
+        let mut f = Fixture::new();
+        f.pickup(f.choice.weapon, Hand::Right);
+        f.activate();
+        let marker = &mut flow_mut(&mut f.state).unwrap().attack_equipment_access;
+        match case {
+            0 => *marker = None,
+            1 => marker.as_mut().unwrap().origin.campaign_id = CampaignId::new(),
+            2 => marker.as_mut().unwrap().origin.actor = Some(AgentRef::Entity(f.actor)),
+            3 => marker.as_mut().unwrap().origin.expected_event_sequence = 0,
+            _ => unreachable!(),
+        }
+        let original = f.state.clone();
+        for policy in [ExecutionPolicy::Live, ExecutionPolicy::Historical] {
+            assert!(
+                resolve_with_policy(
+                    &f.state,
+                    &f.meta(f.actor),
+                    &TacticalAction::Attack {
+                        choice: f.choice.clone(),
+                    },
+                    &f.pack,
+                    policy
+                )
+                .is_err(),
+                "case {case}"
+            );
+        }
         assert!(
-            resolve_with_policy(
-                &f.state,
-                &f.meta(f.actor),
-                &TacticalAction::Attack {
-                    choice: f.choice.clone()
-                },
-                &f.pack,
-                policy
-            )
-            .is_err()
+            crate::tactical_weapons::prepare_weapon_attack(&f.physical_input(&f.meta(f.actor)))
+                .is_err()
         );
+        assert_eq!(f.state, original);
     }
-    assert!(
-        crate::validate_state(&f.state, &f.pack)
-            .unwrap_err()
-            .to_string()
-            .contains("ground pickup execution is not enabled")
-    );
-    assert!(
-        validate_tactical_state(&f.state)
-            .unwrap_err()
-            .to_string()
-            .contains("ground pickup execution is not enabled")
-    );
-    assert!(
-        crate::tactical_weapons::prepare_weapon_attack(&f.physical_input(&f.meta(f.actor)))
-            .unwrap_err()
-            .to_string()
-            .contains("ground pickup execution is not enabled")
-    );
-    // The application has no enable DTO, capability or transport at checkpoint2.
 }
 
 #[test]

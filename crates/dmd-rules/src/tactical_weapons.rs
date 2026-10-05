@@ -9,6 +9,7 @@ mod tests;
 use crate::tactical_definitions::*;
 use crate::{RulesPack, ability_modifier, proficiency_bonus, validate_character_intrinsics};
 use dmd_domain::*;
+pub use ground::{GroundPickupOption, ground_pickup_options};
 pub use mastery::*;
 use serde::Serialize;
 use thiserror::Error;
@@ -150,16 +151,28 @@ pub fn recoverable_ammunition(expended: u32) -> u32 {
 pub fn prepare_weapon_attack(
     input: &WeaponAttackInput<'_>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
-    require(
-        !is_ground_pickup(input.choice.equipment_change)
-            && input.choice.after_equipment.is_none()
-            && !has_unimplemented_ground_records(input.state)
-            && input
-                .history
-                .iter()
-                .all(|r| r.ground_pickup_before.is_none() && r.after_equipment.is_none()),
-        "ground pickup execution is not enabled",
-    )?;
+    let ground = is_ground_pickup(input.choice.equipment_change)
+        || input.choice.after_equipment.is_some()
+        || has_unimplemented_ground_records(input.state)
+        || input
+            .history
+            .iter()
+            .any(|r| r.ground_pickup_before.is_some() || r.after_equipment.is_some());
+    if ground && crate::tactical::attack_equipment_enabled(input.state) {
+        crate::tactical::validate_attack_equipment_state(input.state)
+            .map_err(|e| invalid(e.to_string()))?;
+    } else {
+        require(
+            !is_ground_pickup(input.choice.equipment_change)
+                && input.choice.after_equipment.is_none()
+                && !has_unimplemented_ground_records(input.state)
+                && input
+                    .history
+                    .iter()
+                    .all(|r| r.ground_pickup_before.is_none() && r.after_equipment.is_none()),
+            "ground pickup execution is not enabled",
+        )?;
+    }
     prepare_tactical_weapon_attack(input)
 }
 

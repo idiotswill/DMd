@@ -401,9 +401,10 @@ pub(crate) fn authorize_tactical(
                 TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
                 _ => None,
             }),
-        A::ActivateAttackEquipment | A::ChooseAttackEquipment { .. } => {
-            return Err("Attack equipment continuation is not admitted.".into());
-        }
+        A::ActivateAttackEquipment => None,
+        A::ChooseAttackEquipment { .. } => resolution
+            .and_then(|r| r.attack_after_equipment.as_ref())
+            .map(|r| r.cause.actor),
         A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
             .and_then(|resolution| resolution.attack.as_ref())
             .map(|attack| attack.actor),

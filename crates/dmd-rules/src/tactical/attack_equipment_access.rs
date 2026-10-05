@@ -1,13 +1,13 @@
-//! Encounter-local production opt-in. Public rollout remains guarded until the
-//! application can authenticate its original command and presentation history.
+//! Encounter-local production opt-in, authenticated through original command
+//! and presentation history by the application restore boundary.
 use super::*;
 
 #[cfg(test)]
 #[path = "attack_equipment_access_tests.rs"]
 mod tests;
 
-/// Complete consistency inventory, independent of rollout permission. The public
-/// kernel/tactical wrappers still reject the marker and every new record first.
+/// Complete consistency inventory. Public kernel/tactical admission requires the
+/// exact encounter activation as well as every persisted record's lineage.
 pub(super) fn validate_records(state: &CampaignState) -> Result<(), RulesError> {
     validate(state)?;
     let Some(flow) = state.encounter.as_ref().and_then(|e| e.flow.as_ref()) else {

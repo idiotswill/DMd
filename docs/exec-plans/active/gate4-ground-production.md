@@ -1,5 +1,77 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Coherent application source handback — 2026-10-05
+
+Checkpoint 3 now has a complete authored production route across rules queries,
+public activation/admission, table projection, owned opaque decisions, durable
+transport and historical restore, and the desktop controls. This is uncompiled,
+unrun source awaiting independent review and root-allocated verification; it is
+not feature acceptance or a gate completion claim. Plan `564ac50` preceded source.
+Normal merge `68a0556` received exact lifecycle `432ffeb` through both merge bases;
+its only incoming non-document correction is the reviewed 52+/3- lifecycle test.
+
+Read-only offers share actual physical pickup eligibility without fabricated
+command metadata or a consuming preparation. Before/different-item pickup and
+selected after Apply/Decline use the existing sealed producer. Selection stays
+owned by the retained attacker after its attack record retires. Existing queued
+concentration/fall ordering remains visible under activation; the selected
+equipment work has a distinct opaque capability. The transport derives the
+canonical work only from the audience's current capability, rejects raw work,
+and retains the original transaction and saved-response-before-current-checks
+retry path. Restore authenticates activation and completed choice against exact
+accepted actions and inventories all ground/cause/selection origins before the
+existing original-event and presentation replay. The pre-tactical anchor is
+unchanged; no imported descriptor grants authority.
+
+Desktop controls expose explicit host enable, before pickup by stable Item/hand,
+and an independent after-intent mode. The later card keeps Decline available with
+zero legal Apply, binds Apply to operation identity, resets on a new owned work,
+and respects the existing uncertain-request lock. Opportunity attacks receive
+none of these offers. Optional fields serialize absent before activation so old
+projection bytes and capabilities remain subject to the unchanged capture tests.
+
+The single planned activated staging-closure control became two public controls:
+accepted activation/Live/Historical/kernel/planner/original-event replay, plus
+missing/malformed/foreign-marker atomic refusal. The other 24 bodies remain byte
+exact. The module now has 26 controls, all UNRUN on this source.
+
+Four new real application test functions author eleven scenarios using accepted
+commands, physical dice, normal pinned Goblin creation and actual file SQLite.
+They cover selected/different before pickup; same-attack throw and Apply/Decline;
+zero legal Apply; old response retries across actual session/controller changes;
+opaque kind/raw/foreign/stale/mutated requests; marker/audit/current/snapshot and
+capability/envelope hostile exports; genuine Goblin Scimitar and finite Shortbow
+miss/critical after choices; and before pickup following actual knockout drop
+and physical First Aid. Each new cold-step cut reopens its real file and restores
+an independent portable mirror before the same next original request. No
+positive scenario edits initial paid state or SQL. Four new widget tests and two
+transport retry variants are authored. All these tests remain UNCOMPILED/UNRUN.
+
+Direct rustfmt parsed/formatted the changed Rust sources; Git whitespace checks
+pass. The author static audit in
+`tooling/ground-checkpoint3-static-audit-2026-10-05.json` rechecks 46 protected
+blobs (only the explicit lifecycle receiving correction uses its exact 432ffeb
+blob), all 21 original raw file SHA-256 values, and all 24 unchanged mechanism
+test bodies. This is source preservation evidence, not runtime acceptance.
+
+Still due without waiver: independent full source review; actual Shield/Graze,
+concentration/fall descendant and unconscious-drop application cuts, complete
+audience/refusal equality matrix, combined Ogre acceptance, focused/canonical
+frontend/backend and exact-head CI, native combined-package play, and final
+accepted-main gate review. Root retains every executable/build/database/native
+slot and publication authority. No compiler, Cargo, npm, database or native app
+has run for this authored source.
+
+Root has now separately cleared full exact Ogre
+`3387a53898558838bfb7e25dfdd81b4dc1c1d228` as a receiving dependency after reading
+all three complete source reviews and six actual exact-head CI logs. This is
+not Ogre feature acceptance. After this clean Ground handback, amend the plan
+before normally merging that complete dependency, preserve its stable source
+form/grip desktop behavior, and explicitly migrate only its temporary source
+admission closure controls. Three real printed forms, finite three Javelins,
+same-Item other-actor ordinary damage, held-melee OA with one Reaction/no pickup,
+and native acceptance remain mandatory. Gate 4 stays open; Gate 5 is untouched.
+
 ## Checkpoint 3 source ownership and receiving plan — 2026-10-05
 
 Root transferred sole SOURCE-WRITER ownership of this existing branch to

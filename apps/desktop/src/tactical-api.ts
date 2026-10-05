@@ -1,6 +1,9 @@
 import type { Ability, Id } from './table-api';
 
 export type Hand = 'Left' | 'Right';
+export type AttackEquipmentOperation = { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } | { Pickup: { item: Id; hand: Hand } };
+export type AttackEquipmentChoice = 'Decline' | { Apply: AttackEquipmentOperation };
+export interface AttackEquipmentView { key: Id; actor: Id; operations: { operation: AttackEquipmentOperation; label: string }[]; may_decline: boolean }
 export type WeaponGrip = 'TwoHands' | { OneHand: Hand };
 export type WeaponDelivery = 'Melee' | 'Thrown' | 'Shot';
 export type WeaponAttackPurpose = 'Normal' | { LightBonus: { trigger: Id } } | { Nick: { trigger: Id } } | { Cleave: { trigger: Id } };
@@ -8,9 +11,11 @@ export interface WeaponUseChoice {
   weapon: Id; target: Id; delivery: WeaponDelivery; ability: Ability; grip: WeaponGrip;
   purpose: WeaponAttackPurpose;
   ammunition: Id | null;
-  equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } } | null;
+  equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: AttackEquipmentOperation } | null;
+  after_equipment?: 'Choose' | null;
 }
 export interface AttackOptions {
+  equipment?: { pickups: { item: Id; name: string; hands: Hand[] }[] } | null;
   actor: Id; hands: { hands: ('Free' | { Item: Id })[] };
   weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[]; source_features?: { feature_id: Id; label: string; weapon: Id|null }[] }[];
   targets: { actor: Id; label: string }[];
@@ -81,6 +86,8 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | 'ActivateAttackEquipment'
+  | { AttackEquipment: { handle: Id; choice: AttackEquipmentChoice } }
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
   | 'FinishEncounter'
@@ -112,6 +119,8 @@ export type TacticalAction =
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
+  equipment_enabled?: boolean;
+  attack_equipment?: AttackEquipmentView | null;
   shove?: ShoveView|null;
   execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | null;
   release?: { may_finish: boolean; blocker: string | null; required_actors: Id[] } | null;
