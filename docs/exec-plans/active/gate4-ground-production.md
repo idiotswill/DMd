@@ -1,5 +1,18 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Narrow package notice correction plan — 2026-10-05
+
+Root restored sole writing only for this documentation/package correction from
+clean `f2737075151fcf486145fbc97343f30ad1a74777`. The inherited Ogre NOTICE
+still says source-only creation and attacks are closed, contradicting authored
+full-pin admission662. After this plan commit, replace only that stale status
+with the actual authored guarded creation/physical/OA/Ground/desktop route and
+explicit UNCOMPILED/UNRUN combined acceptance, including pending recovery/native
+evidence. Keep attribution, license, source interpretation and all immutable
+source payloads/identities unchanged. Recalculate only NOTICE's byte length and
+FNV1a64 manifest entry, inspecting that all other package entries remain exact.
+No source logic, test body, runtime or feature-acceptance claim changes. Return
+a clean narrow checkpoint and freeze for independent review and root execution.
 ## Reviewed lifecycle cleanup receiving plan — 2026-10-05
 
 From clean coherent source `662e8315b26e0e4ca2fabcfa720fc1f87c9f8411`,
