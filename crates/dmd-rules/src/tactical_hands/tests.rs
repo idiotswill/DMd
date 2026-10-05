@@ -101,7 +101,7 @@ pub(crate) fn install_attempt(
         state.encounter = source_state().encounter;
     }
     let flow = state.encounter.as_mut().unwrap().flow.as_mut().unwrap();
-    flow.version = 4;
+    flow.version = 5;
     flow.resolution = Some(Box::new(TacticalResolution {
         origin,
         turn_actor: actor,
@@ -123,6 +123,17 @@ pub(crate) fn install_attempt(
         next_occurrence: 0,
         grapple: Some(Box::new(TacticalGrappleResolution {
             activity: Some(GrappleActivity::Attempt(Box::new(TacticalGrappleAttempt {
+                equipment: GrappleEquipmentAdmission {
+                    equipment_before: ActorEquipmentLoadout {
+                        actor,
+                        hands: WeaponLoadout::default(),
+                        worn_armor: None,
+                        shield: None,
+                        command: declaration.origin.clone(),
+                    },
+                    before_change: None,
+                    after: None,
+                },
                 declaration: declaration.clone(),
                 stage: TacticalGrappleAttemptStage::SaveChoice,
                 selected: None,

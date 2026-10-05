@@ -207,9 +207,37 @@ pub enum GrappleAttemptOutcome {
     },
 }
 
+/// The one Attack-action equipment allowance; the before operation is owned by
+/// the paid declaration. An after decision retains its actual selected work.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GrappleEquipmentAdmission {
+    pub equipment_before: ActorEquipmentLoadout,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub before_change: Option<AttackEquipmentOperation>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<GrappleEquipmentDecision>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub enum GrappleEquipmentDecision {
+    Declined {
+        chosen_by: CommandMeta,
+        work: TacticalWorkKey,
+    },
+    Applied {
+        chosen_by: CommandMeta,
+        work: TacticalWorkKey,
+        operation: AttackEquipmentOperation,
+        equipment_before: Box<ActorEquipmentLoadout>,
+    },
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalGrappleAttempt {
+    pub equipment: GrappleEquipmentAdmission,
     pub declaration: TacticalGrappleDeclaration,
     pub stage: TacticalGrappleAttemptStage,
     pub selected: Option<TacticalWorkItem>,
@@ -446,7 +474,7 @@ pub fn validate_tactical_grapple_shapes(state: &CampaignState) -> Result<(), Str
         .as_ref()
         .and_then(|e| e.flow.as_ref())
         .ok_or("grapple attachment requires its tactical executor")?;
-    if state.schema_version != CURRENT_STATE_SCHEMA_VERSION || flow.version != 4 {
+    if state.schema_version != CURRENT_STATE_SCHEMA_VERSION || flow.version != 5 {
         return Err("grapple authority is not defined for this schema/executor".into());
     }
     let live = state

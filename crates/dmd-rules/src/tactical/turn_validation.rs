@@ -48,6 +48,9 @@ pub(super) fn selected_applicable(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::grapple::is_work(&work.kind) {
+        super::grapple::validate_work(state, work)?;
+    }
     if let TacticalWorkKind::Effect { ticket } = work.kind {
         let t = super::continuations::ticket(state, ticket)?;
         if !crate::tactical_effects::trigger_is_applicable(effects(state)?, t)
@@ -78,6 +81,12 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => {
+            super::grapple::validate_work(state, work)?
+        }
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ShoveSave
         | TacticalWorkKind::ChooseShoveOutcome
@@ -250,6 +259,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
             + usize::from(super::shove::waiting(state))
+            + usize::from(super::grapple::waiting(state))
             + usize::from(super::hit_reactions::waiting(state))
             + usize::from(super::missiles::waiting(state))
             + usize::from(super::falling::selected(state)?.is_some())
@@ -286,6 +296,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             .chain(r.failed_save.iter().map(|f| &f.pending.work))
             .chain(r.legendary_window.iter().map(|w| &w.work))
             .chain(r.shove.iter().filter_map(|s| s.selected.as_ref()))
+            .chain(r.grapple.iter().filter_map(|g| match g.activity.as_ref() {
+                Some(GrappleActivity::Attempt(a)) => a.selected.as_ref(),
+                _ => None,
+            }))
         {
             if !occurrences.insert(work.occurrence) {
                 return Err(invalid("duplicate consequence occurrence"));
@@ -326,7 +340,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
             super::failed_save::validate_failed_save(state, failed)?;
-        } else if super::shove::waiting(state)
+        } else if super::grapple::waiting(state)
+            || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
         {
@@ -374,6 +389,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     super::creature_bridge::validate(state)?;
     super::attacks::validate(state)?;
     super::shove::validate(state)?;
+    if has_tactical_grapple_attachments(state) {
+        super::grapple::validate(state)?;
+    }
     super::hit_reactions::validate(state)?;
     super::movement::validate(state)?;
     super::casting::validate(state)?;
@@ -431,6 +449,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     | TacticalRollRole::SpellSave
                     | TacticalRollRole::AreaSave
                     | TacticalRollRole::ShoveSave
+                    | TacticalRollRole::GrappleSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence

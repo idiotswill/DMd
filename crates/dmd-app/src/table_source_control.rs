@@ -307,6 +307,15 @@ pub(crate) fn authorize_tactical(
         .and_then(|timing| timing.order.get(timing.index))
         .map(|entry| entry.actor);
     let actor = match action {
+        A::Grapple { .. }
+        | A::ChooseGrappleSave { .. }
+        | A::ApplyGrappleAfterEquipment { .. }
+        | A::DeclineGrappleAfterEquipment { .. }
+        | A::WithdrawGrapple { .. }
+        | A::EscapeGrapple { .. }
+        | A::ReleaseGrapple { .. } => {
+            return Err("Grapple commands are not enabled.".into());
+        }
         // These retain source monster/mixed-tie and explicitly delegated ordering.
         A::Establish { .. }
         | A::Begin { .. }
@@ -498,6 +507,114 @@ pub(crate) fn visible_actors(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn guarded_grapple_commands_refuse_enabled_privileged_source_authorization() {
+        use dmd_rules::tactical::TacticalAction as A;
+        // Synthetic compile/guard fixture: reuse captured state and the real
+        // activation helper, but these new command/work/item identities are not
+        // admitted actions or an accepted Grapple journal. No database is opened.
+        let export = dmd_persistence::CampaignExport::from_json(include_str!(
+            "../tests/fixtures/reactions-v1-upgrade-100c7da.json"
+        ))
+        .unwrap();
+        let baseline = CampaignState::decode_json(&export.current_state.state_json).unwrap();
+        let session = baseline
+            .table
+            .as_ref()
+            .unwrap()
+            .active_session
+            .as_ref()
+            .unwrap();
+        let player = session
+            .participants
+            .iter()
+            .find(|participant| participant.attendance == AttendanceStatus::Present)
+            .unwrap()
+            .player_id;
+        let holder = baseline
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .profiles[0]
+            .actor;
+        let target = baseline
+            .encounter
+            .as_ref()
+            .unwrap()
+            .participants
+            .iter()
+            .find(|participant| participant.entity_id != holder)
+            .unwrap()
+            .entity_id;
+        let meta = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: baseline.campaign_id(),
+            session_id: Some(session.session_id),
+            issuer: CommandIssuer::Admin,
+            actor: None,
+            expected_event_sequence: baseline.applied_event_sequence,
+        };
+        assert!(!enabled(&baseline));
+        let state = activate(&baseline, &meta, &adoptions(&baseline).unwrap()).unwrap();
+        assert!(enabled(&state));
+        assert!(state.rules.is_some());
+        let before = state.clone();
+        let grip = GrappleId::from_declaration(meta.id, holder, target, Hand::Left);
+        let work = TacticalWorkKey {
+            resolution: CommandId::new(),
+            occurrence: 0,
+        };
+        let actions = [
+            A::Grapple {
+                target,
+                hand: Hand::Left,
+                before_change: None,
+            },
+            A::ChooseGrappleSave {
+                grip,
+                ability: GrappleSaveAbility::Strength,
+            },
+            A::ApplyGrappleAfterEquipment {
+                grip,
+                work,
+                operation: AttackEquipmentOperation::Unequip {
+                    item: ItemId::new(),
+                },
+            },
+            A::DeclineGrappleAfterEquipment { grip, work },
+            A::WithdrawGrapple { grip },
+            A::EscapeGrapple {
+                grip,
+                choice: GrappleEscapeChoice::Athletics,
+            },
+            A::ReleaseGrapple { grip },
+        ];
+        for action in &actions {
+            for issuer in [CommandIssuer::Admin, CommandIssuer::System] {
+                let privileged = CommandMeta {
+                    issuer,
+                    ..meta.clone()
+                };
+                assert_eq!(
+                    authorize_tactical(&state, &privileged, action).unwrap_err(),
+                    "Grapple commands are not enabled."
+                );
+                assert!(authorize_tactical(&baseline, &privileged, action).is_ok());
+            }
+            let player_meta = CommandMeta {
+                issuer: CommandIssuer::Player(player),
+                ..meta.clone()
+            };
+            assert!(authorize_tactical(&state, &player_meta, action).is_ok());
+        }
+        // Those legacy/nonprivileged early returns preserve routing only;
+        // the unchanged rules gate still refuses every public Grapple action.
+        assert_eq!(state, before);
+    }
 
     #[test]
     fn new_hit_executor_requires_source_access_without_reinterpreting_old_admission() {

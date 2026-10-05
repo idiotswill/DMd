@@ -475,10 +475,63 @@ mod hand_tests {
             withdrawn_by: attempt.declaration.origin.clone(),
             cancelled: None,
         });
+        // Complete without either equipment allowance decision is malformed.
+        // Keep that original fixture defect as a fail-closed read-only control.
+        let incomplete = state.clone();
+        assert!(matches!(
+            opportunity_options_for_crossing(&state, actor, target, 30),
+            Err(RulesError::Invalid(message))
+                if message == "Grapple equipment decision/stage differs"
+        ));
+        assert_eq!(state, incomplete);
+
+        // Synthetic shape evidence only: no accepted withdrawal, equipment
+        // command or OA refresh is manufactured by this pure menu query.
+        let resolution = resolution_mut(&mut state).unwrap();
+        let Some(GrappleActivity::Attempt(attempt)) =
+            resolution.grapple.as_mut().unwrap().activity.as_mut()
+        else {
+            unreachable!()
+        };
+        let grip = attempt.declaration.id;
+        attempt.equipment.after = Some(GrappleEquipmentDecision::Declined {
+            chosen_by: CommandMeta {
+                id: CommandId::new(),
+                expected_event_sequence: attempt.declaration.origin.expected_event_sequence + 1,
+                ..attempt.declaration.origin.clone()
+            },
+            work: TacticalWorkKey {
+                resolution: resolution.origin.id,
+                occurrence: 1,
+            },
+        });
+        resolution.work_trace = Some(TacticalWorkTrace {
+            nodes: vec![
+                TacticalWorkNode {
+                    work: TacticalWorkItem {
+                        occurrence: 0,
+                        kind: TacticalWorkKind::BeginGrapple { grip },
+                    },
+                    parent: None,
+                },
+                TacticalWorkNode {
+                    work: TacticalWorkItem {
+                        occurrence: 1,
+                        kind: TacticalWorkKind::GrappleAfterEquipment { grip },
+                    },
+                    parent: Some(0),
+                },
+            ],
+            active: None,
+        });
+        resolution.next_occurrence = 2;
+        validate_tactical_grapple_shapes(&state).unwrap();
+        let completed = state.clone();
         assert_eq!(
             opportunity_options_for_crossing(&state, actor, target, 30).unwrap(),
             original
         );
+        assert_eq!(state, completed);
         assert!(
             state
                 .encounter

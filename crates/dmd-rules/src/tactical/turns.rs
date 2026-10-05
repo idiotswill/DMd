@@ -293,7 +293,8 @@ fn begin_boundary_from(
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if super::shove::waiting(state)
+        if super::grapple::waiting(state)
+            || super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
             || resolution(state)?
                 .movement
@@ -311,7 +312,8 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             }
         }
         super::movement::prune(state, meta)?;
-        if super::shove::waiting(state)
+        if super::grapple::waiting(state)
+            || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
             || resolution(state)?.pending.is_some()
@@ -349,6 +351,9 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         let Some(frame) = r.frames.last() else {
             let boundary = r.boundary;
             let next_occurrence = r.next_occurrence;
+            if r.grapple.is_some() {
+                super::grapple::validate(state)?;
+            }
             flow_mut(state)?.resolution = None;
             if boundary == TurnBoundary::End {
                 let mut next_budget = TacticalTurnBudget::default();
@@ -390,7 +395,8 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    if super::shove::waiting(state)
+    if super::grapple::waiting(state)
+        || super::shove::waiting(state)
         || super::hit_reactions::waiting(state)
         || super::missiles::waiting(state)
     {
