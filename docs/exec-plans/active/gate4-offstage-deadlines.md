@@ -1,5 +1,157 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Production application completion transfer — 2026-10-05
+
+Current status: root's exact guarded checkpoint verification completed normally
+at `87488ae1ba7b3b4fe13175a1563e41256d170a4f`, tree
+`bc0942e51df053c80e9b7571addabce14bc380c8`, from09:08:48 to09:23:08 UTC.
+Formatting, strict all-target Clippy for domain/rules/app/persistence and all28
+selected controls passed:19 released rules,4 strict domain wire,1 old-schema
+codec and4 original release controls. The initial, every post-command and final
+head/tree were identical and clean. Root read/recounted the literal logs and
+all28 exact arguments; this writer also read the four result logs and complete
+run result. The independent CI peer audit is separately being completed.
+These results qualify the private guarded874 tree only. Full public/application,
+original journal/SQLite/privacy, canonical/native and gate acceptance remain open.
+
+Evidence is preserved outside the repository in
+`tooling/offstage-87488ae-focused-2026-10-05/`. The six log SHA256 values are:
+
+| Log | SHA256 |
+| --- | --- |
+| 01-fmt | `e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855` |
+| 02-clippy | `21bd563b1c804226e73ab3e8ec5058c5c1a179f9cb15b5d2d82074c2e99b248c` |
+| 03-released-private | `398df39169fd45ec1d1973f514fbe26f41487fe7f260179a9851f232a86e6f53` |
+| 04-domain-wire | `e58754761c08b347ffa8e9cb3696c8a08e8e6612e5f7e4c8a3e8a1ac8cd596b2` |
+| 05-old-schema-codec | `1f977644398227849de607126b06535f3321d22431fdba0202551c8dee6b8948` |
+| 06-old-release-controls | `3f7e88f6c789626a71498de6c5adff794106ffb2668a3dc230ef9a4f70b06b87` |
+
+The original b7085f0 derivable-Default and3c5272e collapsible-if strict-Clippy
+failures remain preserved; neither ran its selected tests. Plan-first exact
+corrections and independent reviews preceded874. No retry erases those failures.
+The final run used a fresh private target, GNU1.98.1, jobs1/incremental0 and default
+profiles, stack and test threads; no lowered acceptance or shared target is implied.
+
+Root read and approved the full concrete completion map
+`tooling/offstage-87488ae-next-application-completion-map-2026-10-05.md`, SHA256
+`a2b55ddc709f9e0faa2a34b125163fb1d5dfc12e762085108fb06a896d8d04a7`, then explicitly
+transferred sole source writing on this branch to `/root/core_recovery_oct5`.
+This plan commit precedes receiving and application source changes. Root retains
+publication, runtime/native slots and final independent review. No Cargo/compiler,
+npm/database/native or project-runner execution is authorized to this writer;
+direct rustfmt must be coordinated with root. No other checkout is writable.
+
+### Receive actual accepted main before source
+
+Fresh `git fetch origin main` still resolves accepted main to
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`, tree
+`c189a2fc618569b270fa8f87f7cb0577ff1fc32e`. Receive that exact head through a normal
+merge and preserve both histories. Its two actual merge bases with874 are
+`dbf1d633460473183324b4ec519e8d1980884b5c` and
+`8c03f9fb0058610fd37c0cfe7762e8b96d658f38`. Inspect every base and both parent
+trees, the full receiving delta and all source overlaps. A single selected merge
+base's58-path comparison cannot establish dropped changes. No force reset or
+unrelated feature import is permitted. Return the clean receiving checkpoint
+and preservation evidence to root for independent review before application edits.
+If authoritative main changes before receiving, report the new head first.
+
+### Concrete complete application scope
+
+Use the existing deadline engine and normal `TableAction::Tactical` atomic
+transition/event/replay route. Integrate actual upgrade, begin and choice producers
+into the normal resolver; the private transition wrapper is not a second public
+engine. Fresh Begin explicitly uses7; preserve historical1–5 behavior, unit1→2,
+the live older-flow→5 bridge and only explicit settled5→7. Reserved6 stays refused.
+Ensure ordinary active7 actions, Conclude and Finish also use the normal route.
+
+Public kernel/tactical, release preflight/history and aftermath validators derive
+the existing exact-candidate proof where the current live flow7 needs it. Do not
+replace the proof with a caller flag. Completed elapsed history also survives
+later encounter replacement; historical receipts must not require a current7
+proof when no interval remains. Keep quiescent Finished checks separate from a
+new exact paused-interval session boundary. Preserve the complete source/dependency,
+physical support, condition-payload, legacy-time, stable-d4 and capacity checks.
+A pure shared readiness query may expose Host eligibility without executing an
+invented command or creating a second set of weaker admission rules.
+
+Extend original-history audit with Finished upgrade origin, elapsed receipt root/
+completion, live batch Time command, every completed/cancelled work command, Effect
+source and establishment commands, Group source and Stable origin. Authenticate
+exact upgrade/release and Advance duration/policy/ruling/start/target, selection
+origin/occurrence and replayed Time/work stamps. Removed sources are reconstructed
+from original accepted history, never authenticated by their own final receipt.
+Keep mandatory pre-tactical anchors, strict old-schema/duplicate-safe codec,
+original raw request envelopes and pre-write rules-enabled restore validation.
+
+Add an omitted-None Host-only `released_time` DTO alongside the unchanged mandatory
+actor Turn continuation. It presents eligible/blocker or actual retained interval
+start/progress/target and current sibling choices. Reuse existing Work capabilities
+and opaque SelectWork transport mapping, bound to audience/revision/origin/
+occurrence; raw ChooseTurnWork stays refused. Add explicit ReleasedInterval Host
+ownership in source-control routing without borrowing a Turn/area actor. Include7
+in the correct source-access Begin/Upgrade gates while preserving old semantics.
+
+Private interval ordering events are Host-only at acceptance, including transcript
+visibility. The generic shared encounter-action message must not leak hidden
+expiry counts. An Advance announcement may contain only admitted public intent.
+Actual permitted visible HP/AC/time changes still update their audiences. Test
+equal-visible-state/time zero/one/two hidden source sets for identical unrelated
+DTOs, revisions/handles and transcripts, with only genuinely public changes allowed.
+
+Preserve accepted-before-stale lookup and exact original response/envelope retry
+through clock/selection/completion, process reopen and changed sessions. Add the
+separate validated Host paused-interval EndSession capability; StartSession binds
+genuine current attendance without altering interval origin or clock. New choices
+need the active session, while original accepted retries retain their old request.
+Keep old closed-session release/target5 exceptions exact. No preparation or new
+battlefield can escape unresolved deadlines.
+
+Update explicit desktop execution types, fresh Begin/current-executor controls
+and proper old→5→7 bridges. Add the Host duration/ruling/HostSelect form, actual
+progress/target, stable opaque choices, focus and disabled/in-flight behavior.
+Retain session pause while blocking ordinary preparation during a pending interval.
+Do not frame elapsed time as a PC turn, rest, cancellation, retargeting or free heal.
+
+### Controls, review and acceptance still required
+
+The only temporary staging assertions to migrate are the two public-validator
+errors at `released_time/tests.rs:541–542` in
+`guarded_interval_rejects_public_authority_and_candidate_splicing_atomically`.
+Change them to acceptance of the genuine produced interval, or split that positive
+into a clearly named public control. Its following Advance-on-already-paused error
+is a real invariant and stays. Preserve pointer-bound clone refusal, all eight
+candidate forgeries, actor/session negatives and whole-state equality. All other
+rules/wire/codec and original release controls remain intact. Add normal public,
+Historical and event-equality/replay controls, not just private transition calls.
+
+Author accepted application play with actual catalog Mages and physical components,
+same-round equal Mage Armor deadlines, both host orders and later-round recast.
+Use three actual equal producers for a still-pending post-first-choice cut; two
+correctly auto-drain their remaining singleton. Stable waking must start with an
+accepted damaging attack, accepted Medicine and the actual owner's physical d4,
+then valid release and before/exact/beyond wake with exactly1HP and no reroll/rest.
+No fabricated spell/profile/paid state or injected clock/effect supplies positives.
+Keep isolated legacy/group fixtures labeled and genuine old prefixes unchanged.
+
+At admission, pre-deadline, original simultaneous choice, genuine post-first choice
+and completed target, use real file SQLite plus independent portable mirror and
+original exact request retries. Compare whole persisted exports (only export time
+normalized), source/resource/raw/target/stamp/receipt invariants and actual next
+encounter. Add current/earlier hostile snapshots, removed source/Time/receipt,
+upgrade/release/audit/envelope corruptions and assert no writes across the whole
+destination. Include old-schema SQL rollback, real session rollover and unauthorized
+channel/stale/foreign/wrong-kind choice cases. Preserve all29 original fixtures,
+five legacy receiver blobs and21 raw captures. Async phases stay boxed at default
+stack/profiles/threads; do not weaken Windows or physical assertions.
+
+Return the entire coherent source diff and all new test bodies for independent
+review before root allocates focused/fast/canonical, frontend, exact-head CI and
+the defined combined-package native two-Mage/recast/stable recovery acceptance.
+No older package, private28 result or accepted-main run verifies the new union.
+Full broader Gate4 offstage requirements and final literal merged-main verification
+remain required. Exact next action: commit this plan, normally receive exact32,
+audit all parents/bases and return its clean checkpoint for root review.
+
 Status, 2026-10-04: **BOUNDED CORRECTION AUTHORED — INDEPENDENT REVIEW PENDING.**
 The correction source and eight additional controls are authored. The original
 16 controls remain unchanged; all 24 remain **UNCOMPILED/UNRUN**. Direct rustfmt
