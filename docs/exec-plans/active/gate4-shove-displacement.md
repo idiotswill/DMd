@@ -1,10 +1,10 @@
 # Gate 4 — Source-bound Shove and displacement
 
-Status, 2026-10-04: integrated f9c0f3d has passed all six remote checks, including
-full Linux/Windows runtime and actual file-SQLite Shove scenarios. Local canonical,
-native desktop, final accepted-dependency/main reconciliation and protected merge
-remain pending. Root is the sole writer and retains the heavy verification slot;
-Air canonical currently occupies it. Earlier failed/unrun checkpoints below are
+Status, 2026-10-05: receiving acbcf74 passed all six remote checks. Actual f9c0f3d
+native play and pending/completed cold reopening are complete for the bounded
+route below. Air PR50 is accepted on main32c0c68. Local canonical, final main
+reconciliation, final-head checks and protected merge remain pending. Root is the
+sole writer and allocates one local heavy verification slot. Earlier checkpoints are
 historical and are superseded only by the precisely attributed evidence below.
 Branch:
 `codex/gate4-shove-displacement`; root-created clean base and freshly fetched main
@@ -609,3 +609,56 @@ the binary. Local canonical must use the frozen receiving head, a private fresh
 target and the standard full original suites when the Air heavy slot returns.
 Air acceptance, any later main reconciliation, final-head CI and protected merge
 are still required. No gate or public-family status advances at this checkpoint.
+
+### Actual native completion and accepted-Air receiving plan — 2026-10-05
+
+All six checks on exact acbcf746ce8afbc1fa8554da5c1c028d9224f840 completed:
+Linux run37210717757/job111461173353 and Windows
+run37210717806/job111461173461 report801/803 Rust passes in56 complete groups,
+zero failed/ignored/measured/filtered. Both include all18 Shove-specific cases
+and21 original receiving cases. Both MSRV checks and guards passed. Linux checked
+out synthetic aac870125c53a123f3b472f22a7bf1d0c8e51d57, with Airf932/acbc parents
+and the exact acbc tree; Windows checked out literal acbc. Independent complete
+log audit SHA25650074245e0d2b7c5bfd1dfd7a042fd2e8babdeb51170570ada907c1b021930b7
+and root's separate six-log rehash/recount agree. These are acbc results, not
+checks on a future receiving head.
+
+On October4 root operated the actual verified f9 portable executable identified
+above. In the existing selected QA campaign, commands76–91 exercised a Strength
+save, paid immune Prone, normal turn advancement, a second Dexterity save, player
+East/Keep elevation Push proposal, private host review, Return to a blank player
+choice, reproposal and host Commit. Physical-mode faces were entered as QA value1,
+not claimed as witnessed physical throws. The first total3 and second total6
+were retained with their original cause, request and accepted-face records.
+
+Normal close/reopen preserved the pending first save at78, paid immune outcome80,
+host review88 and completed Push91. The final Push moved the actual Air from
+10east/5south to15east/5south, retaining its five-foot elevation, Hover, HP and
+source. Action remained spent, no extra dice or movement payment appeared, and
+the pending continuation cleared. At final completion/closed/reopened cuts,
+state SHA256cda9bf3a1b9b36dc9556be0a4fe5d303f472d2069c245bca7e1517f8f1e26357
+and all27 selected-campaign tables/397 rows were identical. The independent
+23-cut audit checks journal prefixes1–91, previous command/event causes and old
+raw records; audit SHA256c81a2b8a1f7acb4a7cd899d91e3b4b2de26235c91126c0b6ad459e3f2639e422.
+The early file named returned-choice-89 actually captured88 before submission
+settled; it remains preserved and qualified, with a separate settled89 capture.
+Final normal app exit was18:17:44UTC. Normal exit is not forced-crash evidence,
+selected-table comparison is not a full-store backup, and this clear-map route
+does not prove blocked Air Form passage. Package/native attribution remains f9.
+
+Air PR50 subsequently merged with expected-head protection as accepted main
+32c0c682c4dbb235e1f9a119643c5d8626d5cb71, whose complete tree equals reviewed
+ee51fbdab5a57c56d46aca6245f58ad595ec4fc2. Root freshly fetched that main and
+unchanged acbc. Compared with the already received Airf932, main changes only
+the Air plan and coverage-ledger narrative,69 additions/9 deletions; production,
+tests and content are identical. Commit this plan before normally merging exact
+32c0c68. Preserve both qualified evidence histories in any documentation conflict.
+Audit all422 non-document blobs and protected fixtures/raws against actual f9;
+any unexpected difference requires fresh semantic review.
+
+After independent review, retarget PR51 to accepted main and publish the frozen
+union for all six exact-head checks. Root must run canonical ./scripts/verify
+with a fresh private target and default stack/profile/harness settings once the
+single heavy slot is free. Record actual results before final acceptance and
+expected-head merge; verify literal merged main separately. Wider Air Form,
+Multiattack, Whirlwind and the remaining Gate4 obligations remain separate.
