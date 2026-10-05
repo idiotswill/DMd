@@ -360,7 +360,7 @@ async fn genuine_original_mage_shield_and_current_mage_revisions_coexist_with_co
         },
     ))
     .await;
-    dmd_rules::tactical::encounter_release_preflight(&f.state().await).unwrap();
+    dmd_rules::tactical::encounter_release_preflight(&*f.state().await).unwrap();
     Box::pin(host(
         &mut f,
         TableAction::Tactical {
@@ -368,7 +368,7 @@ async fn genuine_original_mage_shield_and_current_mage_revisions_coexist_with_co
         },
     ))
     .await;
-    assert_eq!(flow(&f.state().await).phase, TacticalPhase::Finished);
+    assert_eq!(flow(&*f.state().await).phase, TacticalPhase::Finished);
     let historical_items = f.state().await.items.clone();
     let mut created = Vec::new();
     for size in [CreatureSize::Small, CreatureSize::Medium] {
@@ -456,7 +456,7 @@ async fn genuine_original_mage_shield_and_current_mage_revisions_coexist_with_co
         ))
         .await;
         f.reopen().await;
-        assert_pair(&f.state().await, &old, &new);
+        assert_pair(&*f.state().await, &old, &new);
         Box::pin(reject_profile_swaps_in_populated_destination(
             &f, &old, &new,
         ))

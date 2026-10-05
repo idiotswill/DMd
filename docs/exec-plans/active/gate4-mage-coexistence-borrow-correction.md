@@ -39,3 +39,15 @@ requirements continue to apply without amendment.
 
 Next action: commit this plan, make the three-expression correction, and review.
 Gate4 remains open; no native, canonical or integrated acceptance is claimed.
+
+## Authored correction checkpoint
+
+Plan commit9e661e6 preceded the source change. The complete source delta is the
+three specified dereferences. Root read all three diagnostic blocks on both
+toolchains, the complete affected new child file, original fixture return type
+and typed callers. Direct configured rustfmt and git diff --check passed.
+The original implementation remains unchanged outside this new test child.
+Independent review and current-head compilation/runtime evidence remain due.
+Root now owns this branch after the original author handback; the original
+plan's author allocation is historical. Next action: freeze, audit and publish
+the correction; retain every failure and the unrun provisional cae preparation.
