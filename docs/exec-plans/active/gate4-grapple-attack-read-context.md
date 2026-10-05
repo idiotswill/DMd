@@ -71,6 +71,15 @@ window and a fresh frozen-head82 preparation/review/run. Keep all previously
 required public six-family, original replay, persistence/native and receiving
 acceptance obligations below; no older runtime result proves this correction.
 
+The bounded correction is authored and frozen for root's full source review,
+explicitly UNFORMATTED/UNCOMPILED/UNRUN. The new helper uses the second Host
+Cultist design from the separate pre-code consent amendment; it adds no test
+names and changes none of the existing helper bodies. Source author inspected
+the complete delta and ordinary source, opposition, initiative, condition,
+concentration and knockout paths. Only a static Git diff check was executed.
+Next action: root reviews the entire helper and two test bodies, then allocates
+the direct formatter window before any final-head verification preparation.
+
 ## October 5 actual pending-withdrawal test failure
 
 Exact `ade8e93b450d6e02027afc7615a555db16b2915d` passed formatting,
