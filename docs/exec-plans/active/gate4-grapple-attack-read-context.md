@@ -1,5 +1,67 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 5 actual attack-producer failures and bounded correction
+
+Frozen `418eeb770404e8c93de3407b839704caa3fc303d`, tree
+`6786662a96bc3a3337488406cc8af013b8efa327`, passed formatting, strict
+domain/rules/app all-target Clippy, opportunity1 and owner10. The attack15 group
+then passed13 and failed2 at 13:46:42 UTC; remaining56 did not run. Preserve the
+full attack log, SHA256
+`3888686e850ee4a5280f51f18f2a8f168b4f478459f5144d8592d7c81162acf5`, and all
+earlier failures. No correction has been compiled or executed.
+
+Root and the independent reader traced both failures to the two new test
+producers/expectations. Hold Person targets only source Humanoids, but the
+concentration test targeted the immutable Fey Goblin. The real spell correctly
+spends its source use and produces no target save, so the first pending helper
+unwrap fails before any guarded attack. Preserve paid no-effect source typing;
+do not edit the Goblin profile, insert a concentration group or add fake dice.
+The actual KnockOut reducer sets HP1, default DeathState and an owned knockout
+recovery/rest cause. Its new test incorrectly expected zero-HP stabilization.
+Preserve that production behavior and the original one-HP knockout controls.
+
+Commit this amendment before source changes. Sole writer may change only this
+plan and `grapple/execution/attack_tests.rs`: one additive private setup helper
+and the two failed bodies. Preserve all13 passing attack bodies, all existing
+helpers, every owner/core/opportunity control, source pin and capture byte.
+No production change is authorized. This is the same private four-family
+verification scope, not public/application/native acceptance.
+
+The concentration helper must retain the captured Human holder, Goblin and
+canonical Cultist and add the distinct existing source Human as the held target.
+Its identity/profile/mechanics come from the untouched campaign capture; its
+starting gear comes only from starting_equipment_plan/materialize_starting_equipment.
+Conclude and Finish the preceding private encounter through reducers, then
+Establish/Begin a fresh four-actor encounter with actual initiative rolls and
+source declarations. Place the second Human at (20,0,0), distinct from holder
+(10,10,0), Goblin (20,10,0) and Cultist (20,20,0), inside the original bounds.
+Use the actual actor-group initiative order and faces20/10/5/1, then actual
+EndTurn commands to reach the caster. This is source-valid private setup, not
+a replayed accepted application history or a new fabricated character.
+
+Cast Hold Person on that distinct Human and submit its real failed Wisdom save.
+Assert actual paralysis/concentration; after the caster's EndTurn, create the
+owner and grapple that Human. Preserve automatic Strength-save coverage with
+exact target/role and unchanged raw history. Traverse real turns and the target's
+failed repeat save, then retain the actual dagger attack on the concentrating
+Cultist. Preserve complete attack evidence, direct child ancestry, exact pending
+tuple across release, successful concentration submission and export refusal.
+No generic loop may skip a required selected work choice or substitute an effect.
+
+For KnockOut, capture the actual pre-choice next occurrence and clock, and use
+the returned accepted KnockOut command to construct the entire expected owned
+recovery/rest authorization independently. Assert HP1, Prone, default DeathState,
+derived Unconscious, full recovery, actual rest entry and equipment command.
+Retain original raw request, trace, retirement, physical custody/equipment and
+one-completion history controls. Do not merely remove the failing assertion.
+
+Freeze the complete unformatted source for independent root review first.
+Formatting, compiler/tests, DB/native, npm, push and CI remain unallocated;
+root owns the single heavy slot. Later use a separately allocated formatter
+window and a fresh frozen-head82 preparation/review/run. Keep all previously
+required public six-family, original replay, persistence/native and receiving
+acceptance obligations below; no older runtime result proves this correction.
+
 ## October 5 actual pending-withdrawal test failure
 
 Exact `ade8e93b450d6e02027afc7615a555db16b2915d` passed formatting,
