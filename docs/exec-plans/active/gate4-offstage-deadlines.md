@@ -598,3 +598,20 @@ Exact next action is root's independent review of the complete bounded correctio
 and its added controls. All controls remain uncompiled/unrun until root separately
 allocates execution; no further source work or public activation is authorized by
 this frozen handback.
+# October 5 strict-lint correction plan
+
+The first focused attempt at b7085f010c1fef98297e2676d3f4a176f2ab0a7f passed
+formatting, then failed strict Clippy before any of the 28 selected tests ran.
+The actual diagnostic is clippy::derivable_impls for Present<T>'s manual Default
+implementation in tactical_resolution_wire.rs. The existing implementation
+returns the unit variant Missing; derive(Default) with #[default] on Missing
+expresses that same behavior without imposing a default value on T. No wire
+fields, omission, null rejection, serializer or decoder logic should change.
+
+Commit this plan before that narrow source correction. Preserve every test body
+and the failed attempt's logs. Independently review the delta, then rerun fmt,
+strict four-package all-target Clippy and the same 28 exact controls on the new
+frozen head. Any further diagnostics must be inspected and corrected without
+lint suppression or acceptance reduction. App/restore/public/native integration
+remains open; this is a compile/lint correction, not feature completion.
+
