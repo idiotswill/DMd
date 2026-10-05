@@ -254,7 +254,8 @@ pub(crate) fn authorize_tactical(
                 execution:
                     TacticalExecutionVersion::ShieldHitV1
                     | TacticalExecutionVersion::ShieldMissileV1
-                    | TacticalExecutionVersion::EncounterReleaseV1,
+                    | TacticalExecutionVersion::EncounterReleaseV1
+                    | TacticalExecutionVersion::ReleasedTimeV1,
                 combatants,
                 ..
             } => combatants.iter().any(|combatant| owned(combatant.actor)),
@@ -262,7 +263,8 @@ pub(crate) fn authorize_tactical(
                 execution:
                     TacticalExecutionVersion::ShieldHitV1
                     | TacticalExecutionVersion::ShieldMissileV1
-                    | TacticalExecutionVersion::EncounterReleaseV1,
+                    | TacticalExecutionVersion::EncounterReleaseV1
+                    | TacticalExecutionVersion::ReleasedTimeV1,
             } => state.encounter.as_ref().is_some_and(|encounter| {
                 encounter
                     .participants
@@ -377,6 +379,7 @@ pub(crate) fn authorize_tactical(
                 .then_some(resolution.turn_context().ok()?.actor)
             }),
             A::ChooseTurnWork { .. } => match resolution {
+                Some(resolution) if resolution.released_interval().is_some() => None,
                 Some(resolution)
                     if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
                         .map_err(|error| error.to_string())? =>

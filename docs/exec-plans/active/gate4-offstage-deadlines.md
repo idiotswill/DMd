@@ -1,6 +1,87 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Application source authored; execution outstanding — 2026-10-05
+
+The normal tactical/TableAction route now dispatches released intervals and derives
+candidate-bound validation; the old private wrapper is test-only. Host-only no-turn
+presentation uses existing opaque Work capabilities. Replay inventories all nested
+origins, requires exact accepted elapsed/upgrade commands and retains mandatory
+original-anchor semantic replay for removed sources. Session pause preserves the
+fixed pending interval; preparation still requires a quiescent Finished encounter.
+Private ordering has Host-only transcript visibility. Desktop controls submit the
+normal typed requests, retain the original uncertain request and hide preparation
+while the interval is pending. Existing live5 continuation stays supported as below.
+
+Authored current coverage in `table_released_time_cases.rs` uses real queried source
+Mage creation/materials/casts, normal initiative, real physical critical damage,
+Medicine and recorded d4. Four async scenarios cover three equal deadlines in both
+orders with partial progress/session rollover, 0/1/2 hidden deadline privacy at the
+same clock, exact stable wake and once-only recovery, and genuine captured old source
+armor through5 release and7 upgrade. Important accepted steps independently restore
+to a file mirror, reopen/retry the original file and verify changed-body refusal.
+Current/earlier-image forgeries cover roots, removed source/time, completion/partition,
+ruling and audit/envelope metadata; refusal compares all destination table row values
+with an unrelated real campaign already present. Positive state is never patched.
+
+The additional public rule test verifies actual returned event/replay equality and
+rejects changed outcomes. Four new component tests cover Host-only input, opaque
+selection, explicit upgrade and ordinary5 compatibility; a TableApp test preserves
+the exact pending ordering request across restart/session change. Existing current
+desktop fixtures deliberately select7. Original28 controls remain in the verification
+inventory:19 private controls (only two staging validator errors become successes),
+four original release bodies preserved byte-exact under internal Historical policy,
+four unchanged wire tests and one unchanged codec test. The corresponding current
+release integration scenarios also remain, using explicit7 Begin. All35 current
+Begin expression changes are recorded in the external migration inventory.
+
+This source is **uncompiled and unrun**. Direct GNU rustfmt with edition2024 and
+skip_children plus whitespace checks are the only local tool verification permitted
+to this writer. The original874 private28 pass is not transferred. Root retains the
+sole heavy slot and publication ownership. Next action: independently review the
+frozen full diff/preservation audit, run the original28 with their explicit inventory
+moves, new rule/app cases, protected legacy receivers/current integrations, frontend
+and canonical checks, then genuine native app evidence before acceptance. No Gate4
+completion, public behavior pass, CI pass, PR or merge is claimed by this source work.
+
+The independent Ground writer performed a read-only static pass over the new app
+test types, module ancestry and producer sequencing. It found an audit-row field
+typo (`id`, not `command_id`) and insufficient count-only hostile destination
+comparison; both are corrected. The new comparison retains full typed cell bytes
+and an unrelated genuine campaign. The peer found no further definite issue in
+three-Mage timing, physical Medicine/d4 timing, session continuity or the original
+source-capture bridge. This is static review only, not a compiler or behavior pass.
+
+## Compatibility amendment — 2026-10-05
+
+Source inspection found a real protected receiver contract: the genuine source
+aftermath scenario in `legacy_reactions_v1_replay.rs` accepts2→5, proves exact5
+state preservation, then accepts a new owner EndTurn on5. Root reviewed the actual
+803–854 continuation and approved preserving the existing live ordinary5 behavior
+as intentional public backward compatibility. Fresh Begin remains strictly7;
+flow1–4 retain their exact pending/upgrade restrictions. AdvanceReleasedTime and
+all new released records still require the explicit authorized5→7 upgrade and
+full accepted-command provenance. No version-only authority or test bypass is added.
+
+This supersedes the planned blanket ordinary5 closure and the two isolated-session
+helper adaptations below: those helpers and extra upgrades are unnecessary and
+are not part of the resulting patch. The protected receiver remains byte-exact.
+Internal original5 release bodies remain meaningful producer/replay controls,
+while contemporary integrations explicitly begin7. The original19 helper needs
+Historical policy only for its old Begin5; its ordinary continuations and explicit
+upgrades use the normal public producer. New controls cover denied
+fresh Begin5, denied elapsed5, a genuine old5 release followed by session-bound7
+upgrade, exact source timing, original journal bytes and literal old response retry.
+The existing protected source-owner continuation remains the genuine ordinary5
+positive control; it is neither copied nor relabeled as a new capture.
+
 ## Original-flow control migration plan — 2026-10-05
+
+The two isolated legacy-upgrade mechanism scenarios in `tactical_turns/ready.rs`
+and `tactical_turns/aftermath.rs` retain their exact2–4→5 comparisons, then explicitly
+install a declared table/session fixture and accept the separate5→7 upgrade before
+their final new action. This is isolated rule-fixture session setup, not application
+history. The shared meta helper reads that session only when present; all other
+original `None` metadata remains unchanged. No historical assertion is removed.
 
 Before test-support edits, root approved explicit internal Historical producers
 instead of widening live5 admission or exposing a public testing bypass. The

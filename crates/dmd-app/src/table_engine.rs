@@ -263,6 +263,22 @@ fn resolve_table_internal(
                 "Hostilities concluded. Ongoing saves and durations continue in the existing turn order.".into()
             } else if matches!(action, dmd_rules::tactical::TacticalAction::FinishEncounter) {
                 "Encounter finished. Lasting consequences and equipment remain saved.".into()
+            } else if matches!(
+                action,
+                dmd_rules::tactical::TacticalAction::AdvanceReleasedTime { .. }
+            ) {
+                "The Host began an elapsed interval after the encounter.".into()
+            } else if matches!(
+                action,
+                dmd_rules::tactical::TacticalAction::ChooseTurnWork { .. }
+            ) && state
+                .encounter
+                .as_ref()
+                .and_then(|e| e.flow.as_ref())
+                .and_then(|f| f.resolution.as_ref())
+                .is_some_and(|r| r.released_interval().is_some())
+            {
+                "Elapsed deadline ordering recorded.".into()
             } else {
                 "Encounter action recorded.".into()
             }
@@ -349,6 +365,7 @@ fn resolve_table_internal(
                 .as_ref()
                 .is_some_and(|encounter| encounter.flow.is_some())
                 && dmd_rules::tactical::require_finished_encounter(&next).is_err()
+                && dmd_rules::tactical::require_released_session_boundary(&next).is_err()
             {
                 dmd_rules::tactical::require_aftermath_session_boundary(&next)
                     .map_err(|error| error.to_string())?;

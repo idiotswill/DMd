@@ -1,5 +1,4 @@
-//! Guarded released-time producer. Public/restore admission stays closed until
-//! the complete app/session/portable vertical slice is reviewed.
+//! Released intervals use the normal tactical command/event/replay boundary.
 mod deadlines;
 mod validation;
 use super::turns::*;
@@ -7,30 +6,20 @@ use super::*;
 use crate::tactical_effects::*;
 pub(crate) use validation::ReleasedValidation;
 
-pub(crate) fn deny_public(state: &CampaignState) -> Result<(), RulesError> {
+pub(crate) fn validation_for(
+    state: &CampaignState,
+) -> Result<Option<ReleasedValidation<'_>>, RulesError> {
     if state
         .encounter
         .as_ref()
         .and_then(|e| e.flow.as_ref())
-        .is_some_and(|f| {
-            f.version == TacticalExecutionVersion::ReleasedTimeV1.flow_version()
-                || f.released_time_upgrade.is_some()
-                || f.resolution
-                    .as_ref()
-                    .is_some_and(|r| r.released_interval().is_some())
-        })
-        || state.encounter_history.as_ref().is_some_and(|h| {
-            !h.elapsed_intervals.is_empty()
-                || h.completions
-                    .iter()
-                    .any(|c| c.execution.supports_released_time())
-        })
+        .is_some_and(|f| f.version == TacticalExecutionVersion::ReleasedTimeV1.flow_version())
     {
-        return Err(prerequisite(
-            "released time awaits complete application and restore admission",
-        ));
+        return ReleasedValidation::derive(state).map(Some);
     }
-    Ok(())
+    // Historical elapsed receipts remain valid after replacement by another
+    // encounter. Their independent history validation requires no current proof.
+    Ok(None)
 }
 
 fn authority(state: &CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
@@ -53,9 +42,9 @@ fn authority(state: &CampaignState, meta: &CommandMeta) -> Result<(), RulesError
     Ok(())
 }
 
-// Deliberately crate-private and unused by the public reducer at this checkpoint.
-// Controls invoke the actual producer; serialized receipts never authorize it.
-#[allow(dead_code)]
+// Original isolated producer controls remain available without becoming a
+// parallel public command path. Production dispatches the operations below.
+#[cfg(test)]
 pub(super) fn transition(
     state: &CampaignState,
     meta: &CommandMeta,
@@ -115,12 +104,14 @@ pub(super) fn release_preflight(
     super::release::encounter_release_preflight_with_released(state, Some(&proof))
 }
 
+#[cfg(test)]
 fn validate(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
     let proof = ReleasedValidation::derive(state)?;
     crate::kernel::validate_released_state(state, pack, &proof)
 }
 
-fn upgrade(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+pub(super) fn upgrade(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+    authority(state, meta)?;
     let f = flow(state)?;
     if f.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
         || f.resolution.is_some()
@@ -155,13 +146,50 @@ fn upgrade(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErr
     Ok(())
 }
 
-fn begin(
+/// Pure admission shared by the Host affordance and the actual producer. The
+/// selected duration's overflow and bounded inventory are additionally checked
+/// by begin, before any time or lifecycle operation is accepted.
+pub fn released_time_readiness(state: &CampaignState) -> Result<(), RulesError> {
+    if flow(state)?.version != TacticalExecutionVersion::ReleasedTimeV1.flow_version() {
+        return Err(prerequisite(
+            "explicitly upgrade this encounter before advancing elapsed time",
+        ));
+    }
+    super::release::require_finished_encounter(state)?;
+    let required = super::release::retained_encounter_dependencies(state)?;
+    super::release::require_retained_participants(state, &required)?;
+    deadlines::preflight(state)
+}
+
+/// Pausing a session preserves an authenticated interval. This deliberately does
+/// not authorize preparation or battlefield replacement at that pending boundary.
+pub fn require_released_session_boundary(state: &CampaignState) -> Result<(), RulesError> {
+    let proof = ReleasedValidation::derive(state)?;
+    proof.require_interval(state)?;
+    super::release::validate_history_with_released(state, Some(&proof))?;
+    let r = resolution(state)?;
+    if state
+        .rules
+        .as_ref()
+        .is_none_or(|rules| rules.pending.is_some())
+        || r.pending.is_some()
+        || r.frames.last().is_none_or(|frame| frame.len() < 2)
+    {
+        return Err(prerequisite(
+            "settle the pending roll before pausing elapsed time",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
     seconds: u32,
     ordering: ReleasedTimeOrdering,
     ruling: &str,
 ) -> Result<(), RulesError> {
+    authority(state, meta)?;
     if seconds == 0 || !valid_released_time_ruling(ruling) {
         return Err(invalid(
             "elapsed time requires positive seconds and a bounded single-line ruling",
@@ -173,9 +201,7 @@ fn begin(
     {
         return Err(RulesError::Pending);
     }
-    let required = super::release::retained_encounter_dependencies(state)?;
-    super::release::require_retained_participants(state, &required)?;
-    deadlines::preflight(state)?;
+    released_time_readiness(state)?;
     let target_at = WorldInstant(
         state
             .clock

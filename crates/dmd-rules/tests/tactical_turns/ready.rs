@@ -196,7 +196,7 @@ fn ready_trigger_text_is_bounded_and_named_hidden_subject_does_not_probe_positio
 fn legacy_begin_replays_exactly_but_cannot_be_selected_live_and_upgrades_only_when_idle() {
     let mut f = Fixture::new();
     let action = TacticalAction::Begin {
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution: TacticalExecutionVersion::ReleasedTimeV1,
         combatants: f
             .actors
             .into_iter()

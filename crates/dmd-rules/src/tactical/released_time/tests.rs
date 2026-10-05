@@ -211,7 +211,27 @@ impl Fixture {
     }
     fn run(&mut self, actor: Option<usize>, action: TacticalAction) -> TacticalEvent {
         let meta = self.meta(actor);
-        let result = resolve_tactical(&self.state, &meta, &action, &self.pack).unwrap();
+        // Preserve the original flow-5 Begin of these isolated controls. Every
+        // continuation and explicit upgrade uses the normal public producer.
+        let historical = matches!(
+            action,
+            TacticalAction::Begin {
+                execution: TacticalExecutionVersion::EncounterReleaseV1,
+                ..
+            }
+        );
+        let result = if historical {
+            super::super::resolve_with_policy(
+                &self.state,
+                &meta,
+                &action,
+                &self.pack,
+                super::super::ExecutionPolicy::Historical,
+            )
+        } else {
+            resolve_tactical(&self.state, &meta, &action, &self.pack)
+        }
+        .unwrap();
         assert_eq!(
             replay_tactical(&self.state, &result.event, &self.pack).unwrap(),
             result
@@ -486,6 +506,62 @@ fn advance(seconds: u32) -> TacticalAction {
 }
 
 #[test]
+fn public_released_commands_replay_exact_events_and_reject_changed_outcomes() {
+    let mut f = Fixture::new();
+    f.human();
+    f.mage(1);
+    f.mage(2);
+    f.begin(); // Original isolated5 prefix; current commands explicitly upgrade.
+    f.run(
+        None,
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
+        },
+    );
+    f.end(0);
+    f.armor(1);
+    f.end(1);
+    f.armor(2);
+    f.run(
+        None,
+        TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "Retain real source effects after the last turn.".into(),
+        },
+    );
+    f.run(None, TacticalAction::FinishEncounter);
+    let before = f.state.clone();
+    let event = f.run(None, advance(28_860));
+    assert!(event.outcome.awaiting_turn_work);
+    assert!(event.outcome.active_actor.is_none());
+    crate::validate_state(&f.state, &f.pack).unwrap();
+    validate_tactical_state(&f.state).unwrap();
+    let mut forged = event.clone();
+    forged.outcome.awaiting_turn_work = false;
+    assert!(replay_tactical(&before, &forged, &f.pack).is_err());
+    let occurrence = resolution(&f.state).unwrap().frames.last().unwrap()[1].occurrence;
+    let paused = f.state.clone();
+    let completed = f.run(None, TacticalAction::ChooseTurnWork { occurrence });
+    assert!(!completed.outcome.awaiting_turn_work);
+    assert!(completed.outcome.active_actor.is_none());
+    assert_eq!(f.state.clock.now, WorldInstant(28_860));
+    assert_eq!(
+        f.state
+            .encounter_history
+            .as_ref()
+            .unwrap()
+            .elapsed_intervals
+            .last()
+            .unwrap()
+            .origin,
+        event.meta
+    );
+    let mut forged = completed;
+    forged.outcome.active_actor = Some(f.actors[0]);
+    assert!(replay_tactical(&paused, &forged, &f.pack).is_err());
+}
+
+#[test]
 fn real_mage_equal_deadlines_pause_then_resume_original_target_in_either_order() {
     for select in [0, 1] {
         let mut f = Fixture::two_mages();
@@ -538,8 +614,8 @@ fn guarded_interval_rejects_public_authority_and_candidate_splicing_atomically()
     let mut f = Fixture::two_mages();
     f.guarded(advance(28_860));
     let original = f.state.clone();
-    assert!(crate::validate_state(&original, &f.pack).is_err());
-    assert!(validate_tactical_state(&original).is_err());
+    crate::validate_state(&original, &f.pack).unwrap();
+    validate_tactical_state(&original).unwrap();
     assert!(resolve_tactical(&original, &f.meta(None), &advance(1), &f.pack).is_err());
     let proof = ReleasedValidation::derive(&original).unwrap();
     let cloned = original.clone();

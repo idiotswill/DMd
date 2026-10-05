@@ -12,7 +12,7 @@ fn casting_fixture(target_ends_round: bool) -> (Fixture, SpellCastChoice) {
     f.run(
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: f.actors[0],

@@ -183,7 +183,7 @@ async fn prepare(f: &mut Fixture, cultist: EntityId, dragon: EntityId, hidden: E
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: dmd_domain::TacticalExecutionVersion::EncounterReleaseV1,
+                execution: dmd_domain::TacticalExecutionVersion::ReleasedTimeV1,
                 combatants,
                 groups,
             },

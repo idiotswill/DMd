@@ -133,6 +133,7 @@ fn view_with_source_access(
     };
     Ok(Some(crate::TableTacticalView {
         encounter_id: encounter.id,
+        released_time: choices::released_time(state, host),
         aftermath: flow
             .and_then(|flow| flow.aftermath.as_ref())
             .map(|aftermath| crate::TableAftermathView {
@@ -142,7 +143,8 @@ fn view_with_source_access(
             }),
         release: if host
             && flow.is_some_and(|flow| {
-                flow.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                TacticalExecutionVersion::from_flow_version(flow.version)
+                    .is_some_and(TacticalExecutionVersion::supports_release)
             }) {
             if flow.is_some_and(|flow| flow.phase == TacticalPhase::Finished) {
                 Some(crate::TableEncounterReleaseView {

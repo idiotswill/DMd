@@ -426,9 +426,10 @@ pub(super) fn validate_entity(
     Ok(())
 }
 pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
-    crate::tactical::released_time::deny_public(state)?;
-    validate_state_inner(state, pack, None)
+    let proof = crate::tactical::released_time::validation_for(state)?;
+    validate_state_inner(state, pack, proof.as_ref())
 }
+#[cfg(test)]
 pub(crate) fn validate_released_state(
     state: &CampaignState,
     pack: &RulesPack,

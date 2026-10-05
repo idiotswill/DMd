@@ -230,7 +230,7 @@ async fn second_initiative(f: &mut Fixture, url: &str, directory: &Path, first: 
         "savage-initiative",
         None,
         action(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: first.goblin,

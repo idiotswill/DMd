@@ -29,7 +29,8 @@ fn expiry(expiry: &TacticalEffectExpiry, now: WorldInstant) -> Result<(), RulesE
 /// effects and defense-only spells, own timing; projected conditions do not.
 /// Reuse this scan at Finished/session/replacement boundaries, with no mutation.
 pub fn retained_encounter_dependencies(state: &CampaignState) -> Result<Vec<EntityId>, RulesError> {
-    retained_dependencies(state, false, None)
+    let proof = super::released_time::validation_for(state)?;
+    retained_dependencies(state, false, proof.as_ref())
 }
 
 fn retained_dependencies(
@@ -312,8 +313,8 @@ fn require_future_placement(state: &CampaignState, actor: EntityId) -> Result<()
 pub fn encounter_release_preflight(
     state: &CampaignState,
 ) -> Result<EncounterReleaseReadiness, RulesError> {
-    super::released_time::deny_public(state)?;
-    encounter_release_preflight_with_released(state, None)
+    let proof = super::released_time::validation_for(state)?;
+    encounter_release_preflight_with_released(state, proof.as_ref())
 }
 pub(super) fn encounter_release_preflight_with_released(
     state: &CampaignState,
@@ -377,10 +378,10 @@ pub(super) fn encounter_release_preflight_with_released(
 /// never opens a session, preparation or replacement exception.
 pub fn require_finished_encounter(state: &CampaignState) -> Result<(), RulesError> {
     let current = flow(state)?;
-    super::released_time::deny_public(state)?;
     if !TacticalExecutionVersion::from_flow_version(current.version)
         .is_some_and(TacticalExecutionVersion::supports_release)
         || current.phase != TacticalPhase::Finished
+        || current.resolution.is_some()
     {
         return Err(prerequisite(
             "finish the existing encounter before preparing another",
@@ -525,8 +526,8 @@ pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
 /// New completion attachments remain checked before the inactive/no-flow early
 /// returns. No historical flow without such an attachment gains an exception.
 pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
-    super::released_time::deny_public(state)?;
-    validate_history_with_released(state, None)
+    let proof = super::released_time::validation_for(state)?;
+    validate_history_with_released(state, proof.as_ref())
 }
 pub(super) fn validate_history_with_released(
     state: &CampaignState,

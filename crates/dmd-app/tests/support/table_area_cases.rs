@@ -310,7 +310,7 @@ async fn prepare(f: &mut Fixture) -> [EntityId; 3] {
     host(
         f,
         TacticalAction::Begin {
-            execution: dmd_domain::TacticalExecutionVersion::EncounterReleaseV1,
+            execution: dmd_domain::TacticalExecutionVersion::ReleasedTimeV1,
             combatants,
             groups,
         },

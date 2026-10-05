@@ -245,8 +245,8 @@ fn validate_ties(
 }
 
 pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> {
-    super::released_time::deny_public(state)?;
-    validate_tactical_state_with_released(state, None)
+    let proof = super::released_time::validation_for(state)?;
+    validate_tactical_state_with_released(state, proof.as_ref())
 }
 pub(crate) fn validate_tactical_state_with_released(
     state: &CampaignState,

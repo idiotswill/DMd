@@ -598,7 +598,7 @@ fn missiles_two_source_mages_resolve_in_controller_order_for_both_intent_arrival
             f.run(
                 None,
                 TacticalAction::Begin {
-                    execution: TacticalExecutionVersion::EncounterReleaseV1,
+                    execution: TacticalExecutionVersion::ReleasedTimeV1,
                     combatants: actors
                         .iter()
                         .map(|actor| TacticalCombatant {

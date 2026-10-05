@@ -73,8 +73,8 @@ pub(super) fn conclude(
 }
 
 pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
-    super::released_time::deny_public(state)?;
-    validate_with_released(state, None)
+    let proof = super::released_time::validation_for(state)?;
+    validate_with_released(state, proof.as_ref())
 }
 pub(super) fn validate_with_released(
     state: &CampaignState,

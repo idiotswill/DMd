@@ -3,6 +3,56 @@ use std::collections::HashSet;
 
 use dmd_domain::*;
 
+pub(super) fn released_time(
+    state: &CampaignState,
+    host: bool,
+) -> Option<crate::TableReleasedTimeView> {
+    let flow = state.encounter.as_ref()?.flow.as_ref()?;
+    if !host
+        || flow.version != TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+        || flow.phase != TacticalPhase::Finished
+    {
+        return None;
+    }
+    let interval = flow.resolution.as_ref().and_then(|r| {
+        r.released_interval()
+            .map(|context| crate::TableReleasedIntervalView {
+                started_at: context.started_at,
+                progress_at: context.progress_at,
+                target_at: context.target_at,
+                ruling: context.ruling.clone(),
+                choices: r
+                    .frames
+                    .last()
+                    .filter(|frame| frame.len() > 1)
+                    .map(|frame| {
+                        frame
+                            .iter()
+                            .map(|work| crate::TableTacticalWorkChoice {
+                                occurrence: work.occurrence,
+                                label: format!(
+                                    "Resolve simultaneous deadline {}",
+                                    u32::from(work.occurrence) + 1
+                                ),
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+            })
+    });
+    let readiness = dmd_rules::tactical::released_time_readiness(state);
+    Some(crate::TableReleasedTimeView {
+        may_advance: readiness.is_ok(),
+        blocker: if interval.is_some() {
+            None
+        } else {
+            readiness.err().map(|e| e.to_string())
+        },
+        may_pause_session: dmd_rules::tactical::require_released_session_boundary(state).is_ok(),
+        interval,
+    })
+}
+
 pub(super) fn continuation(
     resolution: &TacticalResolution,
     own: &HashSet<EntityId>,

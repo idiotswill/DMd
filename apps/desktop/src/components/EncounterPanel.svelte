@@ -22,9 +22,11 @@
   const administrationLocked=$derived(administrativeDisabled??disabled);
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
+  let elapsedSeconds=$state(60);
+  let elapsedRuling=$state('');
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
-  const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='EncounterReleaseV1');
-  const pendingDecision=$derived(!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
+  const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='EncounterReleaseV1'&&tactical.execution!=='ReleasedTimeV1');
+  const pendingDecision=$derived(!!tactical.released_time?.interval||!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
   const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   const firstAidTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Unseen creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
@@ -41,13 +43,13 @@
       const key=combatant.source==='Character'?combatant.actor:`${combatant.source.Creature.definition_id}:${combatant.surprised}:${preview.initiative_modifier}:${combatant.surprised?preview.surprised_mode:preview.normal_mode}`;
       grouped.set(key,[...(grouped.get(key)??[]),combatant.actor]);
     }
-    onAction({Begin:{execution:'EncounterReleaseV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
+    onAction({Begin:{execution:'ReleasedTimeV1',combatants,groups:[...grouped.values()].map(actors=>({actors,request_id:newId()}))}});
   }
 </script>
 <section class="panel" data-tactical-focus="encounter" tabindex="-1"><h2>Encounter{tactical.round ? ` · round ${tactical.round}` : ''}</h2>
   {#if tactical.phase==='finished'}
     <p>This encounter is finished. Lasting consequences and equipment remain saved. Items left on this battlefield stay at their recorded positions.</p>
-    {#if host}<p>Open Host setup to start a session or prepare the next battlefield. No healing, rest or travel time has been added.</p>{/if}
+    {#if host && !tactical.released_time?.interval}<p>Open Host setup to start a session or prepare the next battlefield. Elapsed time advances only when you explicitly request it below.</p>{/if}
   {:else if tactical.aftermath}
     <p>Hostilities concluded. Ongoing saves, durations and readied actions continue in the existing turn order. Renewed activity uses this same cadence.</p>
     {#if host}<p>To resume another session on this cadence, include every retained player controller and their existing character or source creature, including dead characters.</p>{/if}
@@ -60,8 +62,31 @@
     {#if tactical.release.blocker}<p>{tactical.release.blocker}</p>{/if}
     <button disabled={administrationLocked||!tactical.release.may_finish} onclick={()=>onAction('FinishEncounter')}>Finish encounter</button>
   {/if}
-  {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
-    {#if host}<button disabled={administrationLocked||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'EncounterReleaseV1'}})}>Continue saved encounter</button>{/if}
+  {#if legacy||(tactical.phase==='finished'&&tactical.execution==='EncounterReleaseV1')}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
+    {#if host}<button disabled={(tactical.execution==='EncounterReleaseV1'?disabled:administrationLocked)||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:tactical.execution==='EncounterReleaseV1'?'ReleasedTimeV1':'EncounterReleaseV1'}})}>Continue saved encounter</button>{/if}
+  {/if}
+  {#if host && tactical.released_time}
+    {#if tactical.released_time.interval}
+      {@const interval=tactical.released_time.interval}
+      <fieldset data-tactical-focus="consequences" data-tactical-focus-id={`released:${interval.started_at}:${interval.target_at}`} tabindex="-1" disabled={disabled||pendingRoll}>
+        <legend>Elapsed interval</legend>
+        <p>World time {interval.progress_at} of {interval.target_at}; started at {interval.started_at}. The saved target stays fixed while you resolve simultaneous deadlines.</p>
+        <p>Private Host ruling: {interval.ruling}</p>
+        <p>Choose the next simultaneous deadline. Each remaining deadline stays saved when you pause the session or close the app.</p>
+        {#each interval.choices as choice (choice.handle)}<button onclick={()=>onAction({ChooseTurnWork:{handle:choice.handle}})}>{choice.label}</button>{/each}
+      </fieldset>
+    {:else}
+      <form onsubmit={(event)=>{event.preventDefault();onAction({AdvanceReleasedTime:{seconds:elapsedSeconds,ordering:'HostSelect',ruling:elapsedRuling.trim()}});}}>
+        <fieldset disabled={disabled||pendingRoll||!tactical.released_time.may_advance}>
+          <legend>Advance elapsed time</legend>
+          <p>Resolve retained absolute deadlines after this encounter. This does not begin a rest or a new turn.</p>
+          <label>Elapsed seconds<input type="number" min="1" max="4294967295" step="1" required bind:value={elapsedSeconds}/></label>
+          <label>Private Host timing ruling<input required maxlength="2000" bind:value={elapsedRuling}/></label>
+          <button type="submit" disabled={!elapsedRuling.trim()}>Advance elapsed time</button>
+        </fieldset>
+      </form>
+      {#if tactical.released_time.blocker}<p>{tactical.released_time.blocker}</p>{/if}
+    {/if}
   {/if}
   <TacticalMap {tactical} {characters} {actor}/>
   {#if tactical.missile}

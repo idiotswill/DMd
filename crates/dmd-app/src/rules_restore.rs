@@ -825,6 +825,9 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                 &receipt.released_by,
             ]);
         }
+        for receipt in &history.elapsed_intervals {
+            origins.extend([&receipt.origin, &receipt.completed_by]);
+        }
         origins.extend(
             history
                 .spaces
@@ -846,6 +849,9 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(upgrade) = &flow.released_time_upgrade {
+                origins.push(&upgrade.origin);
+            }
             if let Some(aftermath) = &flow.aftermath {
                 origins.push(&aftermath.origin);
             }
@@ -863,6 +869,30 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(interval) = resolution.released_interval() {
+                    for batch in &interval.batches {
+                        origins.push(&batch.observed.command);
+                        origins.extend(batch.completions.iter().map(|c| &c.completed_by));
+                        for binding in &batch.bindings {
+                            match &binding.source {
+                                dmd_domain::ReleasedDeadlineSource::Effect {
+                                    source,
+                                    established_at,
+                                    ..
+                                } => {
+                                    origins.extend([&source.command, &established_at.command]);
+                                }
+                                dmd_domain::ReleasedDeadlineSource::Group { source, .. } => {
+                                    origins.push(&source.command)
+                                }
+                                dmd_domain::ReleasedDeadlineSource::Stable { origin, .. } => {
+                                    origins.push(&origin.command)
+                                }
+                                dmd_domain::ReleasedDeadlineSource::Legacy { .. } => {}
+                            }
+                        }
+                    }
+                }
                 for fall in &resolution.falls {
                     origins.push(&fall.origin);
                     if let dmd_domain::TacticalFallCause::MovementEnd { movement, .. } = &fall.cause
@@ -1129,7 +1159,86 @@ fn validate_origins(
     audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
     commands: &HashMap<CommandId, &RecoveryEvent>,
 ) -> Result<(), String> {
+    let accepted_tactical = |origin: &CommandMeta| {
+        commands
+            .get(&origin.id)
+            .and_then(|event| match event {
+                RecoveryEvent::Tactical(event) => Some(event.as_ref()),
+                RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
+                RecoveryEvent::Rules(_) => None,
+            })
+            .filter(|event| event.meta == *origin)
+    };
+    let elapsed_origin = |origin: &CommandMeta,
+                          started: dmd_domain::WorldInstant,
+                          target: dmd_domain::WorldInstant,
+                          ordering: dmd_domain::ReleasedTimeOrdering,
+                          ruling: &str| {
+        accepted_tactical(origin).is_some_and(|event| matches!(&event.action,
+            TacticalAction::AdvanceReleasedTime { seconds, ordering: accepted_order, ruling: accepted_ruling }
+            if target.0.checked_sub(started.0) == Some(i64::from(*seconds))
+                && *seconds > 0 && *accepted_order == ordering && accepted_ruling == ruling))
+    };
+    if let Some(flow) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+    {
+        if let Some(upgrade) = &flow.released_time_upgrade
+            && (!accepted_tactical(&upgrade.origin).is_some_and(|event| {
+                matches!(
+                    event.action,
+                    TacticalAction::UpgradeExecutionTo {
+                        execution: dmd_domain::TacticalExecutionVersion::ReleasedTimeV1
+                    }
+                )
+            }) || !state.encounter_history.as_ref().is_some_and(|history| {
+                history.completions.iter().any(|receipt| {
+                    receipt.released_by.id == upgrade.release
+                        && receipt.execution
+                            == dmd_domain::TacticalExecutionVersion::EncounterReleaseV1
+                })
+            }))
+        {
+            return Err(
+                "released upgrade lacks its exact accepted command and flow5 release".into(),
+            );
+        }
+        if let Some(resolution) = &flow.resolution
+            && let Some(interval) = resolution.released_interval()
+            && !elapsed_origin(
+                &resolution.origin,
+                interval.started_at,
+                interval.target_at,
+                interval.ordering,
+                &interval.ruling,
+            )
+        {
+            return Err(
+                "released interval lacks its exact accepted duration and Host ruling".into(),
+            );
+        }
+    }
     if let Some(history) = &state.encounter_history {
+        for receipt in &history.elapsed_intervals {
+            if !elapsed_origin(
+                &receipt.origin,
+                receipt.started_at,
+                receipt.target_at,
+                receipt.ordering,
+                &receipt.ruling,
+            ) || !accepted_tactical(&receipt.completed_by).is_some_and(|event| {
+                match event.action {
+                    TacticalAction::AdvanceReleasedTime { .. } => event.meta == receipt.origin,
+                    TacticalAction::ChooseTurnWork { .. } => true,
+                    _ => false,
+                }
+            }) {
+                return Err(
+                    "elapsed completion lacks its accepted interval and completion command".into(),
+                );
+            }
+        }
         for receipt in &history.completions {
             let accepted = |origin: &CommandMeta| {
                 commands.get(&origin.id).and_then(|event| match event {

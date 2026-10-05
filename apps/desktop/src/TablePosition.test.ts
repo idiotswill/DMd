@@ -22,7 +22,7 @@ afterEach(()=>vi.unstubAllGlobals());
 function consequenceView() {
   const view=emptyView();
   view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-  view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'hag',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,
+  view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'hag',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,
     continuation:{actor:'hag',host_adjudication:false,choices:[{handle:'first',label:'Dart 1'},{handle:'second',label:'Dart 2'}]},
     may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
   return view;

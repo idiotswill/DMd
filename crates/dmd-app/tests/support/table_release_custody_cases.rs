@@ -411,7 +411,7 @@ async fn replace_and_roll(
         "unconscious-source-initiative",
         None,
         action(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![
                 TacticalCombatant {
                     actor,

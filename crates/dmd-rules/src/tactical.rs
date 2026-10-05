@@ -8,6 +8,8 @@ mod continuations;
 mod creature_bridge;
 mod failed_save;
 mod falling;
+#[cfg(test)]
+mod historical_release_tests;
 mod hit_reactions;
 mod initiative;
 mod medicine;
@@ -35,6 +37,7 @@ pub use release::{
     EncounterReleaseReadiness, MAX_RELEASE_DEPENDENCIES, encounter_release_preflight,
     require_finished_encounter, retained_encounter_dependencies,
 };
+pub use released_time::{released_time_readiness, require_released_session_boundary};
 use serde::{Deserialize, Serialize};
 pub(crate) use validation::validate_tactical_state_with_released;
 pub use validation::{validate_tactical_pending, validate_tactical_state};
@@ -46,7 +49,7 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
-    /// Retire only fully settled, explicitly concluded flow 5 timing.
+    /// Retire only fully settled, explicitly concluded release-capable timing.
     FinishEncounter,
     AdvanceReleasedTime {
         seconds: u32,
@@ -320,22 +323,6 @@ fn resolve_with_policy(
     pack: &RulesPack,
     policy: ExecutionPolicy,
 ) -> Result<TacticalTransition, RulesError> {
-    released_time::deny_public(state)?;
-    if matches!(
-        action,
-        TacticalAction::AdvanceReleasedTime { .. }
-            | TacticalAction::Begin {
-                execution: TacticalExecutionVersion::ReleasedTimeV1,
-                ..
-            }
-            | TacticalAction::UpgradeExecutionTo {
-                execution: TacticalExecutionVersion::ReleasedTimeV1
-            }
-    ) {
-        return Err(prerequisite(
-            "released time awaits application and restore admission",
-        ));
-    }
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
@@ -405,8 +392,12 @@ fn resolve_with_policy(
             aftermath::conclude(&mut next, meta, *cadence, ruling)?;
         }
         TacticalAction::FinishEncounter => release::finish(&mut next, meta)?,
-        TacticalAction::AdvanceReleasedTime { .. } => {
-            return Err(prerequisite("released time is not publicly admitted"));
+        TacticalAction::AdvanceReleasedTime {
+            seconds,
+            ordering,
+            ruling,
+        } => {
+            released_time::begin(&mut next, meta, *seconds, *ordering, ruling)?;
         }
         TacticalAction::UpgradeExecution => {
             privileged(meta)?;
@@ -422,6 +413,9 @@ fn resolve_with_policy(
             }
             flow_mut(&mut next)?.version = TacticalExecutionVersion::ReactionsV1.flow_version();
         }
+        TacticalAction::UpgradeExecutionTo {
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
+        } => released_time::upgrade(&mut next, meta)?,
         TacticalAction::UpgradeExecutionTo { execution } => {
             privileged(meta)?;
             let current = flow(&next)?;
@@ -660,7 +654,17 @@ fn resolve_with_policy(
             initiative::accept_tie(&mut next, meta, *total)?
         }
         TacticalAction::ChooseTurnWork { occurrence } => {
-            turns::choose(&mut next, meta, *occurrence)?
+            if next
+                .encounter
+                .as_ref()
+                .and_then(|e| e.flow.as_ref())
+                .and_then(|f| f.resolution.as_ref())
+                .is_some_and(|r| r.released_interval().is_some())
+            {
+                released_time::choose(&mut next, meta, *occurrence)?;
+            } else {
+                turns::choose(&mut next, meta, *occurrence)?;
+            }
         }
         TacticalAction::VoluntarilyFailSave => continuations::voluntarily_fail(&mut next, meta)?,
         TacticalAction::UseLegendaryResistance => failed_save::choose(&mut next, meta, true)?,
@@ -732,14 +736,14 @@ fn validate_live_execution(
     action: &TacticalAction,
 ) -> Result<(), RulesError> {
     if matches!(action, TacticalAction::UpgradeExecutionTo { execution }
-        if *execution != TacticalExecutionVersion::EncounterReleaseV1)
+        if !matches!(execution, TacticalExecutionVersion::EncounterReleaseV1 | TacticalExecutionVersion::ReleasedTimeV1))
     {
         return Err(prerequisite(
             "a new targeted upgrade requires the current tactical executor",
         ));
     }
     if matches!(action, TacticalAction::Begin { execution, .. }
-        if *execution != TacticalExecutionVersion::EncounterReleaseV1)
+        if *execution != TacticalExecutionVersion::ReleasedTimeV1)
     {
         return Err(prerequisite(
             "new initiative requires the current tactical executor",
@@ -752,7 +756,15 @@ fn validate_live_execution(
     else {
         return Ok(());
     };
-    if current.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
+    // Existing flow5 ordinary continuation is an accepted public compatibility
+    // contract. New elapsed commands independently require exact flow7 authority;
+    // fresh Begin is checked above and cannot select flow5.
+    if matches!(
+        TacticalExecutionVersion::from_flow_version(current.version),
+        Some(
+            TacticalExecutionVersion::EncounterReleaseV1 | TacticalExecutionVersion::ReleasedTimeV1
+        )
+    ) {
         return Ok(());
     }
     // A saved old pause remains completable under its original semantics. Fresh

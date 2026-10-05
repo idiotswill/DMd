@@ -14,6 +14,9 @@ mod death;
 #[path = "table_release_recharge_cases.rs"]
 mod recharge;
 
+#[path = "table_released_time_cases.rs"]
+mod elapsed;
+
 async fn closed_request(f: &Fixture, action: TableAction) -> TableTransportRequest {
     let mut request = request(f, None, action).await;
     request.session_id = None;
@@ -413,7 +416,7 @@ async fn scenario(f: &mut Fixture, url: &str, directory: &Path) {
         f,
         None,
         action(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: mage,

@@ -283,7 +283,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants,
             groups,
         },
