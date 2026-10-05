@@ -37,6 +37,10 @@ source-positive, LR, Ground/Ogre, replay, application and native obligations bel
 remain mandatory; the merge and focused preparation imply no public activation
 or Gate4 acceptance.
 
+The planned normal merge was conflict-free. Static staged-tree checks confirm
+exact d910 opportunity bytes, unchanged production prefix and every other
+non-document blob identical to dc1. The receiving head remains UNCOMPILED/UNRUN.
+
 ## Historical narrow source correction — 2026-10-04
 
 Status: TWO NARROW CORRECTIONS AUTHORED; RETURNED FOR DELTA REVIEW, 2026-10-04.
