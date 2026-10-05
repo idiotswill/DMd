@@ -13,6 +13,9 @@ mod privacy;
 #[path = "table_ground_remaining_cases.rs"]
 mod remaining;
 
+#[path = "table_ground_graze_cases.rs"]
+mod graze;
+
 fn owner(f: &Fixture, mage: EntityId) -> TableTransportChannel {
     TableTransportChannel::SourceCreature {
         player_id: f.players[1],

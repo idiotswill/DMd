@@ -1,6 +1,6 @@
 # Gate 4 — Genuine Graze before owned Ground equipment
 
-Status: plan before source, 2026-10-05. Sole source writer is
+Status: additive source authored; compiler/runtime UNRUN, 2026-10-05. Sole source writer is
 `core_recovery_oct5` on `codex/gate4-ground-graze`, in its separate checkout.
 Exact starting head is `33570d1f307c3f9ce99367e7c1614673b030af24`, tree
 `5cd96cef7dbea201d80adbfdff83b7f52ab24a47`. Its normal parents are corrected
@@ -69,8 +69,8 @@ complete Ground, native acceptance or the whole game and does not begin Gate5.
    damage→KnockOut→living fall-damage control.
 
 These are three Rust functions containing17 authored scenarios; individual
-negative probes do not increase that function/scenario count. All are initially
-UNAUTHORED/UNCOMPILED/UNRUN.
+negative probes do not increase that function/scenario count. All three are now
+AUTHORED but UNCOMPILED/UNRUN. This status does not claim a passing assertion.
 
 ## Accepted producers and authority boundaries
 
@@ -140,9 +140,58 @@ desktop checks, verify-fast, canonical verify, exact-head CI and genuine combine
 packaged native evidence. No altered stack/profile/test-thread settings or waived
 checks. Only actual logs can establish results.
 
+## Implementation record
+
+The standalone plan was committed first at
+`b7df1bf67255b947558f8d0524a111f9c2790662`, before any Rust edit. Source is five
+new child files (three test wrappers, current setup, shared checks, concentration,
+fall) plus one additive three-line registration in the existing consequence module.
+All other existing files, including prior helpers and whole Physical bodies, are
+intentionally unchanged. The final preservation audit will compare every baseline
+tracked blob, not just a selected fixture list.
+
+Source review confirmed ordinary Graze uses the existing tactical `authorize`
+policy: privileged Host may choose a PC's ordinary mastery. The new test denies
+the unrelated player for both Graze/Decline and compares that denial text. It
+does not invent a Host mastery prohibition. Owned Ground equipment is a distinct
+continuation: both Host and unrelated Player are denied its actual opaque handle.
+
+The setup selects the current offered creation pin, creates both real characters,
+checks price/profile/receipt, materializes each equipment grant once, starts both
+participants present, and uses actual map/initiative/Host Ground activation. Each
+accepted setup or gameplay command follows the original Ground cold/portable/retry
+helper. Prior-equipping misses explicitly decline their actual Graze offers;
+the Chimera's first real critical instead owns before Equip. No current source,
+grant, creature HP, group or paid attack is inserted or changed directly.
+
+At the genuine Graze wait there is no queued after record. Negative probes use
+the retained FinishAttack key or the previous actual physical request. Once the
+after choice is selected, tests probe wrong owner/kind/raw work/stale revision and
+changed accepted envelopes against the existing complete typed-row helper. Actual
+Graze damage and concentration changes precede unrelated-view equality checks.
+One representative case in each family also checks hostile capability/retained
+response restores into an unrelated populated campaign, and the basic family
+checks forged activation provenance. These copies are negative-only.
+
+Root reported another parent staging assertion: the Ground Goblin source test's
+old blanket no-hands expectation conflicts with actual current OgreTwoHandsV1.
+It is not changed here. Root owns its separate correction and subsequent normal
+receipt; this immutable baseline and its old test bodies remain preserved.
+
+At root's allocated formatter window, direct standalone GNU rustfmt completed
+successfully at2026-10-05 12:22:45UTC with `--edition 2024 --config
+skip_children=true`, followed by the same six-file `--check` and `git diff
+--check`. Binary SHA256 is
+`a6816f65891c7c839ddc942f35c36fd3d0bd1449b3ba1a563ccbbfe246bd504f`.
+This parsed/formatted only the five new Rust files and registration parent.
+It is not workspace fmt, type checking, strict Clippy or test evidence. No Cargo,
+compiler, project runner, npm, database, native package, push or CI was executed.
+All17 authored scenarios and their exact receiving parent remain unverified.
+
 Risks: reusing the old creator accidentally; consuming before/after allowance
 twice; confusing FinishAttack's mastery pause with queued equipment; missing real
 hit acknowledgment; wrong source/target roll owner; asserting hidden changes on a
 public damage event; and treating death/fall as a living damage-roll producer.
-Next action: commit this plan alone, inspect the actual mastery/concentration/fall
-continuations, and implement all three bounded controls. Keep Gate4 open.
+Next action: record the exact preservation/inventory audit for the frozen coherent
+source checkpoint and hand back for independent review. Root must run all required
+checks and normally receive its separate parent assertion correction. Keep Gate4 open.
