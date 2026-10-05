@@ -1,5 +1,39 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Corrected source-registry receipt — planned 2026-10-05
+
+Root resumes sole ownership of this branch at
+`bbe63cde919a8c0048e48802e06e8f43459a103b`, tree
+`a516455e11f5870461426731eb86487c4df18d16`. A subsequent independent static review
+found that the inherited Goblin source test still expected every current
+non-Goblin source to have no ordinary-hand anatomy, contradicting the explicitly
+admitted Ogre. No runtime failure on bbe or819 is asserted for that finding.
+
+Reviewed Ground correction `a7d40848c8b8588261444bdb5af19f13389b5336`, tree
+`91914f6cdf78a955bff6fc64eb83aabd771945bb`, changes only that precise expectation
+and its plan. Only exact current Goblin/Ogre full pins receive TwoHandsV1;
+every other current source retains the absence check and the Ogre pin is unique.
+The complete original file is retained outside the named replacement block,
+all four function names remain, and610 other parent entries are exact.
+Independent review is clear, audit
+`b63b0b9ae42df81bc6f9b9b883f9ebdf98e888af190aad40c19716a570f34ca5`.
+
+Commit this receiving plan before a normal whole-history merge of a7. Preserve
+all Shield/concentration/fall bodies, original fixtures and the earlier
+CoverDegree/package corrections. Confirm the two incoming files equal a7 and
+all other bbe entries except this plan are unchanged. This is an unverified
+development receipt, not dependency acceptance. Root owns source review,
+publication and the still-pending exact receiving checks; no compiler/runtime
+slot is available while Shove canonical83971 runs. The separate active Graze
+writer does not receive this change implicitly. Gate4 remains open.
+
+The corrected focused selection retains all137 earlier tests and their exact
+arguments, then adds the complete four-test tactical_grapple_sources suite.
+The earlier137 selection did not execute the stale anatomy assertion. All137
+selected bodies remain exact819; the new141 selection adds meaningful execution
+of the changed source test and its three original sibling controls. No runner
+has executed this preparation, and old manifests remain preserved.
+
 ## Current allocation — final additive controls, plan before source
 
 Root reviewed and approved the concrete remaining-consequences plan at
