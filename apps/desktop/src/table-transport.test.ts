@@ -1,11 +1,28 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
 import { loadRequest, REQUEST_KEY, saveRequest, tableApi, type RequestContext, type UnconfirmedRequest } from './table-api';
+import type { CharacterInput } from './table-api';
+import { options } from './components/table-fixtures.test-support';
 vi.mock('@tauri-apps/api/core',()=>({invoke:vi.fn()}));
 const context:RequestContext={version:1,command_id:'same-command',campaign_id:'campaign',session_id:'session',channel:{Player:{player_id:'player',character_id:'character'}},revision:'original-visible-token'};
 beforeEach(()=>{vi.mocked(invoke).mockReset();localStorage.clear();});
 
 describe('durable opaque desktop transport',()=>{
+  it.each([false,true])('retains the original source revision and identities for current=%s character retries',async(current)=>{
+    const input:CharacterInput={name:'River',pronouns:'',description:'',alignment:'Neutral Good',backstory:'',ability_scores:[15,14,13,12,10,8],background_boosts:[2,1,0,0,0,0],fighter_skills:['Perception','Survival'],human_skill:'Insight',skilled_skills:['Acrobatics','Stealth','Investigation'],size:'Medium',languages:['dwarvish','elvish'],fighting_style:'Defense',gaming_set:'Dice',purchases:[],worn_armor:null,shield:false,masteries:['greatsword','glaive','dagger']};
+    const creation={character_id:'retained-character',entity_id:'retained-entity',player_id:'player',input};
+    const action=current?{CreateCharacterFromSource:{...creation,source:options.source}}:{CreateCharacter:creation};
+    const host={...context,session_id:null,channel:'Host' as const};
+    const saved:UnconfirmedRequest={kind:'action',request:{...host,action}};
+    saveRequest(saved);
+    vi.mocked(invoke).mockRejectedValueOnce(new Error('lost acknowledgement')).mockResolvedValueOnce({Accepted:{command_id:context.command_id,revision:'accepted',outcome:{message:'Created.'}}});
+    await expect(tableApi.action(saved.request)).rejects.toThrow('lost acknowledgement');
+    const retained=loadRequest();if(retained?.kind!=='action')throw new Error('missing original creation');
+    expect(retained).toEqual(saved);
+    await tableApi.action(retained.request);
+    expect(vi.mocked(invoke).mock.calls[0]).toEqual(vi.mocked(invoke).mock.calls[1]);
+    expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...host,input:{Action:action}}});
+  });
   it.each(['Decline','Apply'] as const)('retries the original equipment %s operation and opaque work after restart',async(kind)=>{
     const choice=kind==='Decline'?'Decline' as const:{Apply:{Pickup:{item:'same-item',hand:'Right' as const}}};
     const action={Tactical:{action:{AttackEquipment:{handle:'original-equipment-work',choice}}}};

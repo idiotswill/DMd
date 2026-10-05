@@ -1,6 +1,9 @@
 use dmd_domain::*;
 use dmd_rules::*;
 
+#[path = "support/physical_creation.rs"]
+mod physical_creation;
+
 fn pack() -> RulesPack {
     RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json")).unwrap()
 }

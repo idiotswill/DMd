@@ -32,6 +32,11 @@ impl CampaignState {
         if let Err(message) = crate::validate_tactical_grapple_shapes(self) {
             violations.push(StateInvariantViolation::InvalidEncounterState(message));
         }
+        if self.schema_version < 4 && crate::has_current_character_creation(self) {
+            violations.push(StateInvariantViolation::InvalidEncounterState(
+                "legacy state contains future character creation authority".into(),
+            ));
+        }
         if self.encounter_history.is_none()
             && self
                 .encounter

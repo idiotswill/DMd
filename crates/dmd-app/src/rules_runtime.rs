@@ -224,6 +224,21 @@ pub(crate) fn load_rules_pack(
     {
         return Err(RunnableCampaignError::RulesContent("installed character creation catalog does not match this exact supported rules version".into()));
     }
+    let physical_creation = installed.manifest.files.iter()
+        .find(|file| file.path == "character-creation-physical-v1.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent(
+            "Physical character creation source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let physical_creation_bytes = fs::read(base.join("character-creation-physical-v1.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent(
+            "Physical character creation source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if physical_creation_bytes.len() as u64 != physical_creation.byte_len
+        || fnv1a64_hex(&physical_creation_bytes) != physical_creation.checksum.value
+        || physical_creation_bytes
+            != include_bytes!("../../../content/srd-5.2.1/character-creation-physical-v1.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Physical character creation source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
+    }
     let tactical = installed
         .manifest
         .files

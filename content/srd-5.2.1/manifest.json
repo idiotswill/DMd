@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 4590,
+      "byte_len": 5207,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "a7065700c94789c5"
+        "value": "62bd7cc0559e9a04"
       }
     },
     {
@@ -37,6 +37,14 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "e4a3734cf07c43a9"
+      }
+    },
+    {
+      "path": "character-creation-physical-v1.json",
+      "byte_len": 3736,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "7b8490dd8bb8fc0a"
       }
     },
     {

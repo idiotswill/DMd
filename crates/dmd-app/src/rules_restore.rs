@@ -103,6 +103,9 @@ pub(crate) fn visit_rules_history(
     // New tactical authority has always been event-sourced. Unlike pre-journal legacy
     // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
     // Keep the original pre-tactical anchor so every source-derived payload is replayed.
+    if dmd_domain::has_current_character_creation(anchor) {
+        return Err("current character creation requires its original pre-creation anchor".into());
+    }
     if dmd_domain::has_unimplemented_ground_records(anchor)
         || dmd_domain::has_unimplemented_grapple_records(anchor)
         || anchor.encounter_history.is_some()
@@ -179,6 +182,12 @@ pub(crate) fn visit_rules_history(
                     .map_err(|error| format!("table event {sequence}: {error}"))?,
             )
         };
+        if matches!(&event, RecoveryEvent::Rules(event) if matches!(event.action, RulesAction::CreateCharacterFromSource { .. }))
+        {
+            return Err(
+                "current character creation requires its original outer table event".into(),
+            );
+        }
         let (audit, meta) = audits
             .get(&event.meta().id)
             .ok_or_else(|| "rules event has no matching command audit".to_owned())?;
@@ -613,6 +622,7 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
     let mechanical = matches!(
         event.action,
         TableAction::CreateCharacter { .. }
+            | TableAction::CreateCharacterFromSource { .. }
             | TableAction::Adjudicate { .. }
             | TableAction::SubmitPhysical { .. }
     );
@@ -626,6 +636,19 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
         return Err("nested rules authority/outcome disagrees with table envelope".into());
     }
     let matched = match (&event.action, &nested.action) {
+        (
+            TableAction::CreateCharacterFromSource {
+                entity_id,
+                source,
+                input,
+                ..
+            },
+            RulesAction::CreateCharacterFromSource {
+                entity_id: nested_id,
+                source: nested_source,
+                input: nested_input,
+            },
+        ) => entity_id == nested_id && source == nested_source && input == nested_input,
         (
             TableAction::CreateCharacter {
                 entity_id, input, ..
@@ -805,6 +828,7 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
         | RulesAction::EndTurn { .. }
         | RulesAction::EndConcentration { .. }
         | RulesAction::CreateCharacter { .. }
+        | RulesAction::CreateCharacterFromSource { .. }
         | RulesAction::SecondWind { .. }
         | RulesAction::ResolveInspirationTransfer { .. }
         | RulesAction::SubmitSavageAttacker { .. } => None,
