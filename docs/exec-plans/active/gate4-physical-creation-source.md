@@ -1,5 +1,21 @@
 # Gate 4 — Pinned physical character creation
 
+## Approved implementation assignment — 2026-10-05
+
+Root independently read the complete334-line plan and actual creation, inventory,
+legacy registration and restore seams, rehashed the pinned PDF and visually checked
+page91. Review `tooling/physical-creation-c05c18c-root-design-review-2026-10-05.md`
+approves this complete design. Root explicitly transfers sole SOURCE WRITER to
+`ground_next_oct5` on this branch from clean `c05c18c18d7c181eac88ad393b602c6e42073c7b`.
+This status commit precedes implementation. Complete the coherent normal acquisition,
+materialization, current UI, Graze/Glaive OA and file-SQLite/portable route below,
+without routine checkpoint permissions. All old source/input/action/history
+boundaries remain required. Return the entire source and new tests for independent
+review. No Cargo/compiler/npm/database/native/publication is allocated here; direct
+rustfmt is coordinated with root. All authored acceptance remains UNCOMPILED/UNRUN.
+Ground remains separately frozen and must not be imported or edited.
+
+Historical plan-only status and reviewed contract follow.
 Status: PLAN ONLY, 2026-10-05. Root assigned `ground_next_oct5` sole plan writer
 on `codex/gate4-physical-creation-source`, checkout `gate4-physical-creation-source`,
 from authoritative main `32c0c682c4dbb235e1f9a119643c5d8626d5cb71`, tree
