@@ -44,3 +44,16 @@ The failed complete log is preserved externally in
 `tooling/ci-oct5/job-111720292708-1225-response.json`. It is old-head failure
 evidence, not a result for the correction. Exact next action: commit this plan,
 implement the narrow test correction, and obtain independent review before push.
+
+## Source checkpoint
+
+Plan95578a9 preceded the one-file source correction. The reaction expectation
+independently names the original pending sequence and actual reaction request,
+and also checks the retained attack origin. The final physical1d10 face1 command
+is now retained directly through the unchanged cold-step helper; its before-state
+sequence and request identity define the completing provenance. Both complete
+loadout assertions remain. All other test cases, production and helper are unchanged.
+Direct configured Rust formatting/check and `git diff --check` passed. No Rust
+compilation or execution occurred locally; independent review and new CI remain.
+The original186 focused runner is preserved and must be reprepared for this head
+with all original tests and command selection retained, before its eventual run.
