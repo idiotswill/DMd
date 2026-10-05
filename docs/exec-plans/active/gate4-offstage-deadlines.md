@@ -1,5 +1,46 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Normal receipt of the current Expiry base — 2026-10-05
+
+Root allocates this branch's sole writer for a bounded normal merge of freshly
+fetched Expiry3fa8e6c17f625098159d70689f9394bcc24050e3 into corrected Offstage
+5a1650352fabb9796c689e17e525631311da76b5. The Git remote has advanced beyond
+an older PR base snapshot; the actual current base is authoritative. Commit this
+plan before the merge. The independent Expiry receiving memo and complete plan
+were read, together with both documentary deltas and the prospective merge.
+
+The actual merge base is accepted main32c0c682c4dbb235e1f9a119643c5d8626d5cb71.
+The prospective merge changes no non-document entry relative to Offstage5a.
+Four textual conflicts concern ADR028, the main Gate4 tactical plan, production
+closure and the coverage ledger. Reconcile the equivalent successful PR48
+literal-main evidence, retain both branches' bounded Air admission qualifications,
+and keep candidate/checkpoint claims explicitly historical. The incoming Expiry
+plan's accepted-Air receipt and exact c9 CI/package attribution must be retained
+in full. Do not drop either parent's failure, verification, dependency or native
+limitations. The encounter-release plan auto-union must preserve its existing
+successful literal-dbf record.
+
+This branch's source checkpoint contains accepted main32; later accepted main
+movement is separate and is not silently imported by this receipt. Describe that
+checkpoint accurately rather than calling main32 the latest global main. Keep all
+remaining Gate4 scope and statuses unchanged; no pass on either older parent is
+execution evidence for the new head. This merge neither accepts Expiry/Offstage
+nor brings Shove or other development source into this branch.
+
+Preserve every production/test/content entry exactly to5a, including the legal
+third attendee, all three Host Mages, both unrelated observers,77 original
+assertion snippets and all28 original controls. Recheck all29 fixture/five legacy
+suite blobs and21 raw captures. A source delta or unexpected conflict requires
+reporting and separate review before continuation. No source correction, formatter,
+Cargo, build, test, database, native action or publication is allocated here.
+
+Freeze the clean normal merge with full parent/tree and byte-preservation evidence
+for root's independent review and normal push. The saved5a426 preparation is
+UNRUN and becomes obsolete on a new head; preserve it and prepare a fresh exact
+426 inventory/runner afterward. Root still owns the single heavy execution slot,
+currently the separate Grapple418 run. New-head runtime and native outcomes remain
+unknown. Root coordinates subsequent CI, canonical verification and acceptance.
+
 ## Actual application setup failure and fixture correction plan — 2026-10-05
 
 Windows stable run37297998875/job111723733666 on exact b5af47e completed
