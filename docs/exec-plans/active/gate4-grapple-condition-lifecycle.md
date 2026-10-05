@@ -30,6 +30,10 @@ Return the clean normal merge and source-equivalence audit for independent root
 review. Root then owns receiving-head verification/publication and further normal
 integration. The correction does not activate Grapple or establish Gate4 acceptance.
 
+The planned normal merge was conflict-free. Static staged-tree comparison found
+exact d910 opportunity bytes and unchanged production prefix; every other
+non-document blob matches9ef. No receiving-head runtime was run or claimed.
+
 ## Historical condition checkpoint status — 2026-10-04
 
 Status: **guarded source and controls independently reviewed; preparing draft
