@@ -2,6 +2,7 @@
 //! all accepted inputs and raw dice are retained for deterministic semantic replay.
 mod aftermath;
 mod areas;
+pub(crate) mod attack_equipment;
 mod attacks;
 mod casting;
 mod continuations;
@@ -162,6 +163,10 @@ pub enum TacticalAction {
     },
     Attack {
         choice: WeaponUseChoice,
+    },
+    ChooseAttackEquipment {
+        work: TacticalWorkKey,
+        choice: AttackEquipmentChoice,
     },
     ChooseAttackKnockout {
         choice: KnockoutChoice,
@@ -504,6 +509,9 @@ fn resolve_with_policy(
         TacticalAction::ChooseAttackKnockout { choice } => {
             attacks::choose_knockout(&mut next, meta, *choice)?
         }
+        TacticalAction::ChooseAttackEquipment { work, choice } => {
+            attack_equipment::choose(&mut next, meta, *work, *choice, pack)?;
+        }
         TacticalAction::ChooseAttackMastery { choice } => {
             attacks::choose_mastery(&mut next, meta, choice)?
         }
@@ -733,18 +741,20 @@ pub fn replay_tactical(
 }
 
 fn action_uses_ground_pickup(action: &TacticalAction) -> bool {
-    let change = match action {
+    match action {
+        TacticalAction::ChooseAttackEquipment { .. } => true,
         TacticalAction::Attack { choice }
         | TacticalAction::OpportunityAttack {
             choice: TacticalMeleeChoice::Weapon(choice),
-        } => choice.equipment_change,
-        TacticalAction::CreatureWeaponAttack { choice, .. } => choice.equipment_change,
+        } => choice.after_equipment.is_some() || is_ground_pickup(choice.equipment_change),
+        TacticalAction::CreatureWeaponAttack { choice, .. } => {
+            choice.after_equipment.is_some() || is_ground_pickup(choice.equipment_change)
+        }
         TacticalAction::ChooseAttackMastery {
             choice: WeaponMasteryChoice::Cleave { attack },
-        } => attack.equipment_change,
-        _ => None,
-    };
-    is_ground_pickup(change)
+        } => attack.after_equipment.is_some() || is_ground_pickup(attack.equipment_change),
+        _ => false,
+    }
 }
 
 fn validate_live_execution(

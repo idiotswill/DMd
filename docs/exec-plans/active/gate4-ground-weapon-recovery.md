@@ -69,6 +69,26 @@ propagate it to receiving candidates and execute focused checks at their exact
 reviewed heads. Windows and receiving PR60 runtime checks remain pending; no
 runtime success or new compilation is claimed for the correction.
 
+Historical follow-on assignment, 2026-10-04: that checkout became
+`codex/gate4-ground-equipment-lifecycle`, based on guarded foundation
+`8ec12c3b1b24fe0d1ab28abd17bad99c37be4492`. Root assigned `gate4_ci_oct4`
+sole PLAN-ONLY writing for the concrete
+[attack equipment continuation checkpoint](gate4-ground-equipment-lifecycle.md).
+That plan requires root/peer review before source authoring and keeps every new
+public/restore authority closed. PR57 and its separate checkout remain frozen.
+The complete contract and foundation history below are retained; their older
+writer/publication statements describe that foundation checkpoint, not a current
+assignment or verified follow-on implementation.
+
+Plan review amendment: root transferred sole PLAN-ONLY writing to
+`gate4_ground_oct4` at `0c3ac0028d916aec5c5b14dded2af2c1baee6bd7` to resolve
+the independent review findings. The continuation plan now requires flight-loss
+queueing before leaving the actual direct completion parent and preserves the
+blanket retained automatic-miss guard, with separate genuine automatic-miss and
+rolled-Graze producer controls. This changes no source or admission. Root and a
+different peer must rereview the exact amendment before any source transfer;
+the full before/after contract and frozen PR57 dependency remain unchanged.
+
 Historical publication status: guarded foundation source and 15 controls independently reviewed CLEAR,
 2026-10-04; UNCOMPILED / UNRUN. Root has received sole writer ownership back from
 `gate4_ground_oct4` and is preparing draft publication for receiving-head CI on

@@ -45,6 +45,7 @@ pub(super) async fn prepare(f: &mut Fixture) -> EntityId {
         .item;
     let action = TacticalAction::Attack {
         choice: WeaponUseChoice {
+            after_equipment: None,
             weapon,
             target,
             delivery: WeaponDelivery::Melee,

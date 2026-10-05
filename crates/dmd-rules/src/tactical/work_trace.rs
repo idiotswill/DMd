@@ -133,7 +133,8 @@ fn scopes(resolution: &TacticalResolution) -> Result<WorkScopes<'_>, RulesError>
         };
         let area = if matches!(
             node.work.kind,
-            TacticalWorkKind::CommitShield { .. }
+            TacticalWorkKind::AttackAfterEquipment
+                | TacticalWorkKind::CommitShield { .. }
                 | TacticalWorkKind::CommitMissileShield { .. }
                 | TacticalWorkKind::BeginMissile { .. }
         ) {
@@ -367,6 +368,13 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 .map(|window| &window.work),
         )
         .chain(resolution.shove.iter().filter_map(|s| s.selected.as_ref()))
+        .chain(
+            resolution
+                .attack_after_equipment
+                .iter()
+                .filter(|a| a.selected_by.is_some())
+                .map(|a| &a.work),
+        )
     {
         if scopes
             .get(&work.occurrence)

@@ -1,9 +1,245 @@
 //! Guarded physical foundation. The public planner/commands deny every Pickup.
-//! This module derives private candidates; it exposes no commit or accepted state.
+//! Private selection owns after-operation execution. No public commit or imported
+//! accepted-state constructor can manufacture this physical preparation.
 use super::*;
 use crate::tactical_hands::EffectiveHands;
 
 const UNAVAILABLE: &str = "ground equipment is unavailable";
+
+/// Borrowed, internally derived operation. Only the selected-work token can
+/// create one for execution; receipt inversion below rederives physical data.
+pub(crate) struct PreparedAfter<'a> {
+    original: &'a CampaignState,
+    candidate: CampaignState,
+    image: AttackEquipmentApplied,
+}
+
+impl PreparedAfter<'_> {
+    pub(crate) fn consume(
+        self,
+        state: &CampaignState,
+    ) -> Result<(CampaignState, AttackEquipmentApplied), WeaponError> {
+        require(std::ptr::eq(self.original, state), UNAVAILABLE)?;
+        Ok((self.candidate, self.image))
+    }
+}
+
+pub(crate) fn prepare_after<'a>(
+    selected: &crate::tactical::attack_equipment::SelectedEquipment<'a>,
+    operation: AttackEquipmentOperation,
+    pack: &RulesPack,
+) -> Result<PreparedAfter<'a>, WeaponError> {
+    derive_after(
+        selected.state(),
+        selected.origin(),
+        selected.actor(),
+        selected.window(),
+        operation,
+        pack,
+    )
+    .map_err(|_| illegal(UNAVAILABLE))
+}
+
+fn derive_after<'a>(
+    state: &'a CampaignState,
+    origin: &CommandMeta,
+    actor: EntityId,
+    window: WeaponActionWindow,
+    operation: AttackEquipmentOperation,
+    pack: &RulesPack,
+) -> Result<PreparedAfter<'a>, WeaponError> {
+    let definitions = bundled_tactical_definitions().map_err(|e| invalid(e.to_string()))?;
+    require(
+        origin.campaign_id == state.campaign_id()
+            && origin.expected_event_sequence == state.applied_event_sequence
+            && !origin.id.0.is_nil()
+            && window.kind == WeaponActionKind::AttackAction,
+        UNAVAILABLE,
+    )?;
+    crate::tactical::authorize(state, origin, actor).map_err(|_| illegal(UNAVAILABLE))?;
+    let encounter = state
+        .encounter
+        .as_ref()
+        .ok_or_else(|| illegal(UNAVAILABLE))?;
+    let flow = encounter
+        .flow
+        .as_ref()
+        .ok_or_else(|| illegal(UNAVAILABLE))?;
+    require(
+        flow.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+            && flow.phase == TacticalPhase::Active
+            && state
+                .scenes
+                .get(&encounter.scene_id)
+                .is_some_and(|s| s.status == SceneStatus::Active),
+        UNAVAILABLE,
+    )?;
+    let rules = state.rules.as_ref().ok_or_else(|| illegal(UNAVAILABLE))?;
+    require(
+        crate::tactical_conditions::can_act(rules, actor).map_err(|_| illegal(UNAVAILABLE))?
+            && crate::tactical_grapple_sources::ordinary_grapple_anatomy(state, actor, pack)
+                .map_err(|_| illegal(UNAVAILABLE))?
+                .is_some(),
+        UNAVAILABLE,
+    )?;
+    let before = rules
+        .tactical_inventory
+        .as_ref()
+        .and_then(|i| i.loadout(actor))
+        .ok_or_else(|| illegal(UNAVAILABLE))?
+        .clone();
+    let (mut candidate, ground_before) = if let AttackEquipmentOperation::Pickup { item, hand } =
+        operation
+    {
+        // Same physical derivation as before Pickup, with a different sealed
+        // admission owner. No fresh-attack budget or caller bypass flag enters.
+        let prepared =
+            PreparedPickup::derive(state, origin, actor, window, item, hand, pack, definitions)?;
+        (prepared.candidate, Some(prepared.before))
+    } else {
+        let hands =
+            EffectiveHands::current(state, rules, actor).map_err(|_| illegal(UNAVAILABLE))?;
+        crate::tactical_inventory::validate_loadout(state, &before)
+            .map_err(|_| illegal(UNAVAILABLE))?;
+        hands
+            .validate_loadout(&before.hands)
+            .map_err(|_| illegal(UNAVAILABLE))?;
+        let mut loadout = before.hands.clone();
+        equipment::apply_operation(
+            state,
+            actor,
+            window,
+            definitions,
+            &mut loadout,
+            operation,
+            &hands,
+        )?;
+        let mut candidate = state.clone();
+        candidate
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts
+            .iter_mut()
+            .find(|l| l.actor == actor)
+            .unwrap()
+            .hands = loadout;
+        (candidate, None)
+    };
+    candidate
+        .rules
+        .as_mut()
+        .unwrap()
+        .tactical_inventory
+        .as_mut()
+        .unwrap()
+        .loadouts
+        .iter_mut()
+        .find(|l| l.actor == actor)
+        .unwrap()
+        .command = origin.clone();
+    Ok(PreparedAfter {
+        original: state,
+        candidate,
+        image: AttackEquipmentApplied {
+            operation,
+            equipment_before: before,
+            ground_before,
+        },
+    })
+}
+
+/// Immediate decision-cut inverse only. This is physical consistency evidence,
+/// not command authority or a means to reconstruct today's state from old history.
+pub(crate) fn restore_after_image(
+    current: &CampaignState,
+    receipt: &AttackAfterEquipmentReceipt,
+    pack: &RulesPack,
+) -> Result<CampaignState, WeaponError> {
+    crate::tactical::attack_equipment::validate_inverse_context(current, receipt)
+        .map_err(|_| illegal(UNAVAILABLE))?;
+    let Some(image) = receipt.applied.as_deref() else {
+        return Ok(current.clone());
+    };
+    let actor = receipt.cause.actor;
+    require(
+        image.equipment_before.actor == actor
+            && receipt.chosen_by.campaign_id == current.campaign_id()
+            && receipt.chosen_by.expected_event_sequence == current.applied_event_sequence,
+        UNAVAILABLE,
+    )?;
+    let mut before = current.clone();
+    let loadout = before
+        .rules
+        .as_mut()
+        .and_then(|r| r.tactical_inventory.as_mut())
+        .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == actor))
+        .ok_or_else(|| illegal(UNAVAILABLE))?;
+    *loadout = image.equipment_before.clone();
+    match (image.operation, &image.ground_before) {
+        (AttackEquipmentOperation::Pickup { item, .. }, Some(ground)) => {
+            require(
+                ground.item.id == item
+                    && ground.ground.item == item
+                    && ground.equipment == image.equipment_before,
+                UNAVAILABLE,
+            )?;
+            if item == receipt.cause.choice.weapon
+                && receipt.cause.choice.delivery == WeaponDelivery::Thrown
+            {
+                require(
+                    ground.ground.origin == receipt.cause.completed_by,
+                    UNAVAILABLE,
+                )?;
+            }
+            let encounter = before
+                .encounter
+                .as_mut()
+                .ok_or_else(|| illegal(UNAVAILABLE))?;
+            require(
+                encounter.id == ground.encounter
+                    && encounter.scene_id == ground.scene
+                    && before
+                        .scenes
+                        .get(&ground.scene)
+                        .is_some_and(|s| s.location_id == ground.location),
+                UNAVAILABLE,
+            )?;
+            let flow = encounter
+                .flow
+                .as_mut()
+                .ok_or_else(|| illegal(UNAVAILABLE))?;
+            let index = usize::try_from(ground.ground_index).map_err(|_| illegal(UNAVAILABLE))?;
+            require(
+                index <= flow.ground_items.len()
+                    && !flow.ground_items.iter().any(|g| g.item == item),
+                UNAVAILABLE,
+            )?;
+            flow.ground_items.insert(index, ground.ground.clone());
+            before.items.insert(item, ground.item.clone());
+        }
+        (AttackEquipmentOperation::Pickup { .. }, None) | (_, Some(_)) => {
+            return Err(illegal(UNAVAILABLE));
+        }
+        (_, None) => {}
+    }
+    let prepared = derive_after(
+        &before,
+        &receipt.chosen_by,
+        actor,
+        receipt.cause.window,
+        image.operation,
+        pack,
+    )?;
+    require(
+        prepared.image == *image && prepared.candidate == *current,
+        UNAVAILABLE,
+    )?;
+    Ok(before)
+}
 
 #[cfg(test)]
 #[path = "ground_tests.rs"]

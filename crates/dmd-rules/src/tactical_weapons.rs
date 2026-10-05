@@ -152,13 +152,39 @@ pub fn prepare_weapon_attack(
 ) -> Result<WeaponAttackPlan, WeaponError> {
     require(
         !is_ground_pickup(input.choice.equipment_change)
+            && input.choice.after_equipment.is_none()
             && !has_unimplemented_ground_records(input.state)
             && input
                 .history
                 .iter()
-                .all(|r| r.ground_pickup_before.is_none()),
+                .all(|r| r.ground_pickup_before.is_none() && r.after_equipment.is_none()),
         "ground pickup execution is not enabled",
     )?;
+    prepare_tactical_weapon_attack(input)
+}
+
+/// Private production calculation behind the unchanged public admission guard.
+/// This grants no command/state authority and returns only a derived plan.
+pub(crate) fn prepare_tactical_weapon_attack(
+    input: &WeaponAttackInput<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    if input.choice.after_equipment.is_some() {
+        require(
+            input.choice.equipment_change.is_none()
+                && input.choice.purpose == WeaponAttackPurpose::Normal
+                && input.context.on_actor_turn
+                && input.context.window.kind == WeaponActionKind::AttackAction
+                && input
+                    .state
+                    .encounter
+                    .as_ref()
+                    .and_then(|e| e.flow.as_ref())
+                    .is_some_and(|f| {
+                        f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                    }),
+            "later equipment needs an unused ordinary Attack allowance",
+        )?;
+    }
     ground::prepare(input)
 }
 
@@ -375,6 +401,7 @@ fn prepare_weapon_attack_inner(
             modifier
         };
     let receipt = WeaponAttackReceipt {
+        after_equipment: None,
         ground_pickup_before: None,
         origin: context.origin.clone(),
         actor: context.actor,

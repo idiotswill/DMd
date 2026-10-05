@@ -145,6 +145,7 @@ fn begin_with_source(
             quantity_before: state.items[&spend.stack].quantity,
         });
     let weapon = Box::new(TacticalWeaponAttack {
+        after_equipment_parent: None,
         ground_pickup_before: None,
         choice: choice.clone(),
         window,
@@ -237,6 +238,7 @@ fn begin_with_source(
     flow_mut(state)?.budget = budget;
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
         grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
@@ -520,6 +522,7 @@ fn apply_damage(
     .map_err(|e| invalid(&e.to_string()))?;
     if preview.awaiting_choice {
         current_mut(state)?.stage = TacticalAttackStage::KnockoutChoice;
+        super::attack_equipment::pause(state, meta, AttackEquipmentPause::Knockout)?;
         return Ok(());
     }
     let outcome = WeaponAttackOutcome::Hit {
@@ -565,7 +568,9 @@ pub(super) fn choose_knockout(
         return Err(invalid("attack occurrence capacity"));
     }
     resolution_mut(state)?.next_occurrence += 1;
-    apply_damage(state, meta, occurrence, Some(choice))?;
+    super::attack_equipment::resume(state, meta, |state| {
+        apply_damage(state, meta, occurrence, Some(choice))
+    })?;
     pump(state, meta)
 }
 fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
@@ -583,6 +588,7 @@ fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesErro
         && outcome == WeaponAttackOutcome::Miss
     {
         current_mut(state)?.stage = TacticalAttackStage::MasteryChoice;
+        super::attack_equipment::pause(state, meta, AttackEquipmentPause::Graze)?;
         return Ok(());
     }
     complete(state, meta, &attack, plan.as_ref(), outcome)
@@ -640,11 +646,22 @@ fn complete(
     } else {
         intrinsic::complete(state, attack, outcome)?;
     }
+    super::attack_equipment::completed(state, meta, attack, outcome)?;
     resolution_mut(state)?.attack = None;
     resolution_mut(state)?.hit_review = None;
     Ok(())
 }
 pub(super) fn choose_mastery(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: &WeaponMasteryChoice,
+) -> Result<(), RulesError> {
+    super::attack_equipment::resume(state, meta, |state| {
+        choose_mastery_inner(state, meta, choice)
+    })?;
+    pump(state, meta)
+}
+fn choose_mastery_inner(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: &WeaponMasteryChoice,
@@ -711,5 +728,5 @@ pub(super) fn choose_mastery(
             Some(source),
         )?;
     }
-    pump(state, meta)
+    Ok(())
 }
