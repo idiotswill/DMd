@@ -500,9 +500,12 @@ fn final_flight_refusal_preserves_the_entire_private_command_input() {
     let meta = f.meta(Some(f.target));
     // Same clone/validate transaction as guarded commands; submit itself is an
     // internal mutation owned by the outer resolver transaction.
-    let error = transaction(&mut f.state, &meta, |next| {
-        super::super::super::continuations::submit(next, &meta, &result, None)
-    })
+    let error = transaction(
+        &mut f.state,
+        &meta,
+        &mut ExecutionContext::ordinary(),
+        |next, _execution| super::super::super::continuations::submit(next, &meta, &result, None),
+    )
     .unwrap_err();
     assert!(error.to_string().contains("flight loss"), "{error}");
     assert_eq!(serde_json::to_vec(&f.state).unwrap(), before);
