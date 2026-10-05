@@ -1,5 +1,52 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Actual application setup failure and fixture correction plan — 2026-10-05
+
+Windows stable run37297998875/job111723733666 on exact b5af47e completed
+with130 Rust passes and2 failures across the9 reached harnesses. The table suite
+reported63 passes/2 failures; both new Mage interval scenarios stopped in the
+shared prepare_mages helper at PrepareBattlefield, before any elapsed command.
+The actual refusal is "Choose a new encounter and scene with at least one character."
+The original complete log is retained externally, SHA256
+6105da891c58cc17b5caa2456758945eb42ad45597f4775ee687da46a23c6554.
+
+The helper supplies no character and three Host-controlled Mages. Existing
+application admission permits source-only setup only with enabled source access
+and an attending player's genuinely owned source. This fixture has neither.
+Production admission is correct and must remain unchanged. Root transferred sole
+writing of this plan and the new elapsed fixture to the independent diagnosing
+reviewer; all other source and protected history remain frozen.
+
+Before changing source, commit this plan. Repair only the new fixture by normally
+ending its initial session, adding a distinct third player and ordinary Fighter
+through existing table creation, preparing queried starting equipment and starting
+a new session with the original observer entries plus that attending character.
+Place that character beside the three unchanged Host Mages. Begin must include
+all four participants: retain the original identical-Mage group and raw12; add
+one character group and a genuine owner-channel physical raw1. Mage initiative14
+precedes Fighter3, and the original Mage-only tie proposal retains their order.
+All three Mage turns/casts therefore occur before any round wrap; existing clock0
+and exact28800 deadlines remain assertions. No turn, clock, effect, owner, source
+or accepted history is patched or invented.
+
+The two original players keep their original characters outside the encounter and
+remain unrelated observers. Preserve all their existing full-view/privacy and
+hostile-input assertions. Return the third session participant from the setup
+helper and retain it during the existing pending-interval EndSession/StartSession
+route, in addition to its existing observer attendance. Preserve every current
+scenario body assertion, old live5 behavior, strict fresh7 Begin, explicit5→7
+upgrade, all28 original controls and protected29/five/21 fixture/receiver/raw bytes.
+Add explicit setup checks for genuine four-actor order and unchanged clock; the
+setup correction does not weaken any runtime expectation.
+
+No production fix or source-access activation is justified. The previously passing
+Medicine/d4 and genuine old-source scenarios remain byte-exact. Direct formatting
+will use only a separately allocated edited-file window; no compiler, Cargo, tests,
+npm, database, native execution or publication is allocated to this author. Freeze
+the coherent corrected head for root's full review and fresh focused/CI execution;
+both original failures and all later outcomes must retain their exact attribution.
+
+
 ## Application source authored; execution outstanding — 2026-10-05
 
 The normal tactical/TableAction route now dispatches released intervals and derives
