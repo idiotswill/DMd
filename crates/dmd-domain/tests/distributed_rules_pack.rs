@@ -35,7 +35,8 @@ fn distributed_srd_manifest_verifies_kernel_source_and_license_bytes() {
             "character-creation.json",
             "tactical.json",
             "air-elemental-v1.json",
-            "goblin-warrior-v2.json"
+            "goblin-warrior-v2.json",
+            "ogre-v1.json"
         ])
     );
 }

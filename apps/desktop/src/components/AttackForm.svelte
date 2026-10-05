@@ -6,25 +6,32 @@
   }=$props();
   let item=$state(''); let target=$state(''); let ammunition=$state('');
   let delivery=$state<WeaponDelivery>('Melee'); let ability=$state<Ability>('Strength');
-  let gripIndex=$state(0); let equipment=$state('held'); let purposeKey=$state('');
-  let feature=$state('');
+  let gripKey=$state(''); let equipment=$state('held'); let purposeKey=$state('');
+  let feature=$state<string|null>('');
   let pickupItem=$state(''); let pickupHand=$state<Hand|''>('');
   const pickup=$derived(options.equipment?.pickups.find(option=>option.item===pickupItem));
   const mayChooseEquipment=$derived(!opportunity && !!options.equipment && (!!feature || purposeKey===JSON.stringify('Normal')));
+  let initialized=$state(false);
+  const itemNumbers=new Map<string,number>();
+  function itemNumber(id:string) { if(!itemNumbers.has(id))itemNumbers.set(id,itemNumbers.size+1);return itemNumbers.get(id); }
   const available=$derived(options.weapons.filter(weapon=>weapon.purposes.length>0));
   const selected=$derived(available.find(weapon=>weapon.item===item));
+  const grip=$derived(selected?.grips.find(candidate=>JSON.stringify(candidate)===gripKey));
+  const validSource=$derived(feature!==null&&(!feature || !!selected?.source_features?.some(candidate=>candidate.feature_id===feature&&candidate.weapon===item)));
   function chooseWeapon(id:string) {
     item=id; const weapon=options.weapons.find(candidate=>candidate.item===id);
     delivery=weapon?.deliveries[0]??'Melee'; ability=weapon?.abilities[0]??'Strength';
-    gripIndex=0; ammunition=''; equipment='held'; purposeKey=JSON.stringify(weapon?.purposes[0]??null);
+    gripKey=weapon?.grips[0]?JSON.stringify(weapon.grips[0]):''; ammunition=''; equipment='held'; purposeKey=JSON.stringify(weapon?.purposes[0]??null);
     feature=opportunity?'':weapon?.source_features?.[0]?.feature_id??'';
   }
   $effect(()=>{
-    if(!available.some(weapon=>weapon.item===item)) chooseWeapon(available[0]?.item??'');
+    if(!initialized) { initialized=true;chooseWeapon(available[0]?.item??''); }
+    else if(item&&!available.some(weapon=>weapon.item===item)) chooseWeapon('');
     if(!options.targets.some(candidate=>candidate.actor===target)) target='';
     if(ammunition && !selected?.ammunition.some(stack=>stack.id===ammunition)) ammunition='';
+    if(gripKey&&!grip)gripKey='';
+    if(feature&&!validSource)feature=null;
     if(!selected?.purposes.some(purpose=>JSON.stringify(purpose)===purposeKey)) purposeKey=JSON.stringify(selected?.purposes[0]??null);
-    if(feature&&!selected?.source_features?.some(candidate=>candidate.feature_id===feature)) feature='';
     if(!pickup) { pickupItem=''; pickupHand=''; }
     if(pickupHand && !pickup?.hands.includes(pickupHand)) pickupHand='';
     if(!mayChooseEquipment && (equipment==='pickup'||equipment==='choose-after')) equipment='held';
@@ -35,7 +42,8 @@
   function submit(event:SubmitEvent) {
     event.preventDefault();
     const purpose=selected?.purposes.find(choice=>JSON.stringify(choice)===purposeKey);
-    if(!selected || !purpose || !target || !selected.grips[gripIndex] || (selected.ammunition_required&&!ammunition)) return;
+    if(disabled || !selected || !purpose || !options.targets.some(candidate=>candidate.actor===target) || !grip || !validSource || (selected.ammunition_required&&!selected.ammunition.some(stack=>stack.id===ammunition))) return;
+    if(!feature&&(!selected.deliveries.includes(delivery)||!selected.abilities.includes(ability))) return;
     let change:WeaponUseChoice['equipment_change']=null;
     if(!opportunity&&(equipment==='draw-left'||equipment==='draw-right')) change={timing:'BeforeAttack',operation:{Equip:{item,hand:equipment==='draw-left'?'Left':'Right'}}};
     if(!opportunity&&equipment==='stow-after') change={timing:'AfterAttack',operation:{Unequip:{item}}};
@@ -45,10 +53,10 @@
     }
     const after=mayChooseEquipment&&equipment==='choose-after'?{after_equipment:'Choose' as const}:{};
     if(!opportunity && feature && selected.source_features?.some(candidate=>candidate.feature_id===feature)) {
-      onAction({CreatureWeaponAttack:{feature_id:feature,choice:{weapon:item,target,grip:selected.grips[gripIndex],ammunition:selected.ammunition_required?ammunition:null,equipment_change:change,...after}}});
+      onAction({CreatureWeaponAttack:{feature_id:feature,choice:{weapon:item,target,grip,ammunition:selected.ammunition_required?ammunition:null,equipment_change:change,...after}}});
       return;
     }
-    onAction({Attack:{choice:{weapon:item,target,delivery,ability,grip:selected.grips[gripIndex],purpose,ammunition:selected.ammunition_required?ammunition:null,equipment_change:change,...after}}});
+    onAction({Attack:{choice:{weapon:item,target,delivery,ability,grip,purpose,ammunition:selected.ammunition_required?ammunition:null,equipment_change:change,...after}}});
   }
 </script>
 <form onsubmit={submit}>
@@ -56,18 +64,18 @@
     <p>Left hand: {handLabel(options.hands.hands[0])}. Right hand: {handLabel(options.hands.hands[1])}.</p>
     {#if available.length && options.targets.length}
       <div class="form-grid">
-        <label>Weapon<select value={item} onchange={(event)=>chooseWeapon(event.currentTarget.value)} required>{#each available as weapon,index}<option value={weapon.item}>{weapon.name} · {index+1}</option>{/each}</select></label>
+        <label>Weapon<select value={item} onchange={(event)=>chooseWeapon(event.currentTarget.value)} required><option value="" disabled>Choose a weapon</option>{#each available as weapon (weapon.item)}<option value={weapon.item}>{weapon.name} · {itemNumber(weapon.item)}</option>{/each}</select></label>
         <label>Target<select bind:value={target} required><option value="" disabled>Choose a located creature</option>{#each options.targets as candidate}<option value={candidate.actor}>{candidate.label}</option>{/each}</select></label>
         {#if selected}
-          {#if !opportunity && selected.source_features?.length}
-            <label>Source action<select bind:value={feature}><option value="">Ordinary weapon attack</option>{#each selected.source_features as source}<option value={source.feature_id}>{source.label} · source action</option>{/each}</select></label>
+          {#if !opportunity && (selected.source_features?.length || feature!=='' )}
+            <label>Source action<select bind:value={feature}>{#if !validSource}<option value={feature} disabled>Choose an available action</option>{/if}<option value="">Ordinary weapon attack</option>{#each selected.source_features??[] as source (source.feature_id)}<option value={source.feature_id}>{source.label} · source action</option>{/each}</select></label>
           {/if}
           {#if !feature}
           <label>Attack opportunity<select bind:value={purposeKey}>{#each selected.purposes as purpose}<option value={JSON.stringify(purpose)}>{purposeLabel(purpose)}</option>{/each}</select></label>
           <label>Attack method<select bind:value={delivery}>{#each selected.deliveries as method}<option value={method}>{method==='Shot'?'Shoot':method==='Thrown'?'Throw':'Melee'}</option>{/each}</select></label>
           <label>Attack ability<select bind:value={ability}>{#each selected.abilities as choice}<option value={choice}>{choice}</option>{/each}</select></label>
           {/if}
-          <label>Weapon grip<select bind:value={gripIndex}>{#each selected.grips as grip,index}<option value={index}>{gripLabel(grip)}</option>{/each}</select></label>
+          <label>Weapon grip<select bind:value={gripKey}>{#if !grip}<option value={gripKey} disabled>Choose an available grip</option>{/if}{#each selected.grips as choice (JSON.stringify(choice))}<option value={JSON.stringify(choice)}>{gripLabel(choice)}</option>{/each}</select></label>
           {#if !opportunity}<label>Ready or put away weapon<select bind:value={equipment}><option value="held">Use the weapon as held</option><option value="draw-left">Ready in left hand before attacking</option><option value="draw-right">Ready in right hand before attacking</option><option value="stow-after">Put away after attacking</option>{#if mayChooseEquipment}<option value="pickup">Pick up a weapon before attacking</option><option value="choose-after">Choose equipment after the attack</option>{/if}</select></label>{/if}
           {#if mayChooseEquipment && equipment==='pickup'}
             <label>Weapon to pick up<select bind:value={pickupItem}><option value="" disabled>Choose a reachable weapon</option>{#each options.equipment?.pickups??[] as candidate}<option value={candidate.item}>{candidate.name}</option>{/each}</select></label>
@@ -77,7 +85,7 @@
         {/if}
       </div>
       <p>The rules check hands, range and current circumstances before requesting dice.</p>
-      <button disabled={!selected || !selected.purposes.length || !target || (selected.ammunition_required&&!ammunition) || (equipment==='pickup'&&(!pickup||!pickupHand))}>Attack</button>
+      <button disabled={!selected || !selected.purposes.length || !target || !grip || !validSource || (selected.ammunition_required&&!ammunition) || (equipment==='pickup'&&(!pickup||!pickupHand))}>Attack</button>
     {:else if !available.length}<p>No physical weapon attack is currently available.</p>
     {:else}<p>This creature has no currently located target.</p>{/if}
   </fieldset>

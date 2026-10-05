@@ -4,6 +4,66 @@ use crate::tactical_definitions::{
     AttackDelivery, MonsterFeature, WeaponHands, WeaponKind, WeaponProperty,
 };
 
+fn ogre_grips(
+    program: &crate::tactical_creatures::OgreWeaponProgram,
+    hands: &crate::tactical_hands::EffectiveHands,
+    loadout: &WeaponLoadout,
+    item: ItemId,
+) -> Vec<WeaponGrip> {
+    if program.delivery() != WeaponDelivery::Melee {
+        return vec![];
+    }
+    match program.weapon().hands {
+        WeaponHands::Two if hands.can_use_two_hands(loadout, item) => vec![WeaponGrip::TwoHands],
+        WeaponHands::One => [Hand::Left, Hand::Right]
+            .into_iter()
+            .filter(|hand| hands.holds(loadout, *hand, item))
+            .map(WeaponGrip::OneHand)
+            .collect(),
+        _ => vec![],
+    }
+}
+
+fn held_source_grips(
+    state: &CampaignState,
+    actor: EntityId,
+    program: &crate::tactical_creatures::OgreWeaponProgram,
+    item: ItemId,
+) -> Result<Vec<WeaponGrip>, RulesError> {
+    if !intrinsic::held(state, actor, item)
+        || state.items[&item].definition_id != program.weapon().id
+    {
+        return Ok(vec![]);
+    }
+    let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+    let loadout = rules
+        .tactical_inventory
+        .as_ref()
+        .and_then(|inventory| inventory.loadout(actor))
+        .ok_or_else(|| invalid("physical source loadout absent"))?;
+    let hands = crate::tactical_hands::EffectiveHands::current(state, rules, actor)?;
+    hands.validate_loadout(&loadout.hands)?;
+    Ok(ogre_grips(program, &hands, &loadout.hands, item))
+}
+
+/// Current physical source candidates, not permission to answer a crossing.
+/// The caller must retain the selected window's feature/Item identity; response
+/// admission independently checks the crossing, owner, source and physical plan.
+pub fn physical_source_opportunity_grips(
+    state: &CampaignState,
+    actor: EntityId,
+    feature_id: &str,
+    item: ItemId,
+) -> Result<Vec<WeaponGrip>, RulesError> {
+    creature_weapon::require_ogre_execution(state)?;
+    let profile = intrinsic::profile(state, actor)?;
+    crate::tactical_creatures::source_for_profile(profile)
+        .map_err(|error| invalid(&error.to_string()))?;
+    let program = crate::tactical_creatures::ogre_weapon_program(&profile.source, feature_id)
+        .map_err(|error| invalid(&error.to_string()))?;
+    held_source_grips(state, actor, &program, item)
+}
+
 /// Departure distance is derived by the movement evaluator, never a controller
 /// modifier. Irrelevant reach options must not consult uncertain cover at all.
 pub(in crate::tactical) fn opportunity_options_for_crossing(
@@ -96,6 +156,30 @@ pub(in crate::tactical) fn opportunity_options_for_crossing(
             }
             let required =
                 crate::tactical_creature_equipment::creature_attack_gear(profile, &feature.id)?;
+            if source.id == "ogre" {
+                creature_weapon::require_ogre_execution(state)?;
+                let program =
+                    crate::tactical_creatures::ogre_weapon_program(&profile.source, &feature.id)
+                        .map_err(|error| invalid(&error.to_string()))?;
+                if loadout.is_some() {
+                    let mut items = vec![];
+                    for item in state.items.values() {
+                        if !held_source_grips(state, actor, &program, item.id)?.is_empty() {
+                            items.push(item.id);
+                        }
+                    }
+                    items.sort_by_key(|item| item.0);
+                    result.extend(items.into_iter().map(|item| TacticalMeleeOption {
+                        source: TacticalMeleeSource::CreatureWeapon {
+                            feature_id: feature.id.clone(),
+                            item,
+                        },
+                        reach: u32::from(reach_feet) * 2,
+                    }));
+                }
+                // Never emit the gripless historical source option for this program.
+                continue;
+            }
             let items = match required {
                 None => vec![None],
                 Some(definition) => {
@@ -155,6 +239,9 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     choice: &TacticalMeleeChoice,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
+    if matches!(choice, TacticalMeleeChoice::CreatureWeapon { .. }) {
+        creature_weapon::require_ogre_execution(state)?;
+    }
     authorize(state, meta, actor)?;
     planning::admit_target(state, actor, target)?;
     let window = super::super::movement::validate_opportunity(state, actor, target)?.clone();
@@ -180,6 +267,12 @@ pub(in crate::tactical) fn begin_opportunity_attack(
                 weapon: *weapon,
             }
         }
+        TacticalMeleeChoice::CreatureWeapon {
+            feature_id, weapon, ..
+        } => TacticalMeleeSource::CreatureWeapon {
+            feature_id: feature_id.clone(),
+            item: *weapon,
+        },
     };
     if !window.options.iter().any(|o| o.source == selected) {
         return Err(prerequisite(
@@ -216,6 +309,13 @@ pub(in crate::tactical) fn begin_opportunity_attack(
                 weapon: *weapon,
             }
         }
+        TacticalMeleeChoice::CreatureWeapon {
+            feature_id,
+            weapon,
+            grip,
+        } => creature_weapon::opportunity_source(
+            state, actor, target, meta, feature_id, *weapon, *grip,
+        )?,
     };
     let mut attack = TacticalAttack {
         origin: meta.clone(),
@@ -258,11 +358,15 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         attack.mode = mode;
         attack.armor_class = armor;
         attack.critical_on_hit = critical;
-        attack.damage = vec![AttackDamageComponent {
-            damage_type: plan.damage.damage_type,
-            dice: plan.damage.dice.clone(),
-            modifier: plan.damage.modifier,
-        }];
+        attack.damage = if matches!(attack.source, TacticalAttackSource::CreatureWeapon { .. }) {
+            creature_weapon::validate_source(state, &attack, &plan)?
+        } else {
+            vec![AttackDamageComponent {
+                damage_type: plan.damage.damage_type,
+                dice: plan.damage.dice.clone(),
+                modifier: plan.damage.modifier,
+            }]
+        };
         Some(plan)
     } else {
         let plan = intrinsic::plan(state, &attack)?;
@@ -374,8 +478,22 @@ pub(super) fn validate_admission(
                 TacticalAttackSource::Weapon(w) => TacticalMeleeSource::Weapon {
                     item: w.choice.weapon,
                 },
-                TacticalAttackSource::CreatureWeapon { .. } => {
-                    return Err(invalid("source Action is not this opportunity attack"));
+                TacticalAttackSource::CreatureWeapon {
+                    source,
+                    feature_id,
+                    weapon,
+                } => {
+                    creature_weapon::require_ogre_execution(state)?;
+                    let program =
+                        crate::tactical_creatures::ogre_weapon_program(source, feature_id)
+                            .map_err(|error| invalid(&error.to_string()))?;
+                    if program.delivery() != WeaponDelivery::Melee {
+                        return Err(invalid("physical source opportunity is not a melee form"));
+                    }
+                    TacticalMeleeSource::CreatureWeapon {
+                        feature_id: feature_id.clone(),
+                        item: weapon.choice.weapon,
+                    }
                 }
                 TacticalAttackSource::Unarmed { .. } => TacticalMeleeSource::Unarmed,
                 TacticalAttackSource::CreatureFeature {
@@ -400,6 +518,193 @@ pub(super) fn validate_admission(
 #[cfg(test)]
 mod hand_tests {
     use super::*;
+
+    #[test]
+    fn closed_source_grip_candidates_use_held_and_supporting_hands() {
+        // Pure grip composition using actual Human hand context and hypothetical
+        // physical assignments, not Ogre materialization or accepted OA/Grapple play.
+        let mut state = crate::tactical_hands::tests::source_state();
+        let actor = crate::tactical_hands::tests::human(&state);
+        let pin = crate::tactical_creatures::creature_source_pin(
+            crate::tactical_definitions::bundled_ogre().unwrap(),
+        )
+        .unwrap();
+        let greatclub = crate::tactical_creatures::ogre_weapon_program(&pin, "greatclub").unwrap();
+        let javelin =
+            crate::tactical_creatures::ogre_weapon_program(&pin, "javelin-melee").unwrap();
+        let thrown =
+            crate::tactical_creatures::ogre_weapon_program(&pin, "javelin-thrown").unwrap();
+        let item = ItemId::new();
+        let mut held = WeaponLoadout {
+            hands: [HandAssignment::Item(item), HandAssignment::Free],
+        };
+        let hands = crate::tactical_hands::EffectiveHands::current(
+            &state,
+            state.rules.as_ref().unwrap(),
+            actor,
+        )
+        .unwrap();
+        assert_eq!(
+            ogre_grips(&greatclub, &hands, &held, item),
+            [WeaponGrip::TwoHands]
+        );
+        assert_eq!(
+            ogre_grips(&javelin, &hands, &held, item),
+            [WeaponGrip::OneHand(Hand::Left)]
+        );
+        assert!(ogre_grips(&thrown, &hands, &held, item).is_empty());
+        assert!(ogre_grips(&greatclub, &hands, &WeaponLoadout::default(), item).is_empty());
+        held.hands[1] = HandAssignment::Item(ItemId::new());
+        assert!(ogre_grips(&greatclub, &hands, &held, item).is_empty());
+        assert_eq!(
+            ogre_grips(&javelin, &hands, &held, item),
+            [WeaponGrip::OneHand(Hand::Left)]
+        );
+        held.hands[1] = HandAssignment::Free;
+        crate::tactical_hands::tests::install_attempt(&mut state, actor, Hand::Right);
+        let reserved = crate::tactical_hands::EffectiveHands::current(
+            &state,
+            state.rules.as_ref().unwrap(),
+            actor,
+        )
+        .unwrap();
+        assert!(ogre_grips(&greatclub, &reserved, &held, item).is_empty());
+        assert_eq!(
+            ogre_grips(&javelin, &reserved, &held, item),
+            [WeaponGrip::OneHand(Hand::Left)]
+        );
+    }
+
+    #[test]
+    fn shared_physical_source_candidates_recheck_actual_item_and_loadout() {
+        // Isolated candidate composition: genuine Human context, hypothetical
+        // weapon assignment and immutable Ogre descriptor. No Ogre profile or
+        // accepted acquisition/reaction/Grapple history is manufactured.
+        let mut state = crate::tactical_hands::tests::source_state();
+        let actor = crate::tactical_hands::tests::human(&state);
+        let pin = crate::tactical_creatures::creature_source_pin(
+            crate::tactical_definitions::bundled_ogre().unwrap(),
+        )
+        .unwrap();
+        let program = crate::tactical_creatures::ogre_weapon_program(&pin, "greatclub").unwrap();
+        let loadout = state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts
+            .iter_mut()
+            .find(|loadout| loadout.actor == actor)
+            .unwrap();
+        let item = loadout
+            .hands
+            .hands
+            .iter()
+            .find_map(|hand| match hand {
+                HandAssignment::Item(item) => Some(*item),
+                _ => None,
+            })
+            .unwrap();
+        loadout.hands.hands = [HandAssignment::Item(item), HandAssignment::Free];
+        state.items.get_mut(&item).unwrap().definition_id = "greatclub".into();
+        assert_eq!(
+            held_source_grips(&state, actor, &program, item).unwrap(),
+            [WeaponGrip::TwoHands]
+        );
+        let before = state.clone();
+        for corruption in 0..7 {
+            let mut altered = before.clone();
+            let weapon = altered.items.get_mut(&item).unwrap();
+            match corruption {
+                0 => weapon.quantity = 2,
+                1 => weapon.state = ItemState::Damaged,
+                2 => weapon.custody = Custody::Entity(EntityId::new()),
+                3 => weapon.definition_id = "javelin".into(),
+                4 => weapon.campaign_id = CampaignId::new(),
+                5 => weapon.id = ItemId::new(),
+                6 => {
+                    altered
+                        .rules
+                        .as_mut()
+                        .unwrap()
+                        .tactical_inventory
+                        .as_mut()
+                        .unwrap()
+                        .loadouts
+                        .iter_mut()
+                        .find(|loadout| loadout.actor == actor)
+                        .unwrap()
+                        .hands = WeaponLoadout::default()
+                }
+                _ => unreachable!(),
+            }
+            let expected = altered.clone();
+            assert!(
+                held_source_grips(&altered, actor, &program, item)
+                    .unwrap()
+                    .is_empty()
+            );
+            assert_eq!(altered, expected);
+        }
+        assert_eq!(state, before);
+        assert!(
+            held_source_grips(&state, actor, &program, ItemId::new())
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    #[test]
+    fn physical_source_query_requires_current_execution_and_the_actual_full_source_pin() {
+        let mut state = crate::tactical_hands::tests::source_state();
+        let actor = crate::tactical_hands::tests::human(&state);
+        let item = ItemId::new();
+        let before = state.clone();
+        assert!(
+            physical_source_opportunity_grips(&state, actor, "greatclub", item)
+                .unwrap_err()
+                .to_string()
+                .contains("current executor")
+        );
+        assert_eq!(state, before);
+        // Explicitly synthetic negative version image, not a journaled upgrade.
+        // Keep the genuine Human and old creature profiles/pins unchanged.
+        state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .version = 5;
+        let before = state.clone();
+        assert!(
+            physical_source_opportunity_grips(&state, actor, "greatclub", item)
+                .unwrap_err()
+                .to_string()
+                .contains("pinned creature profile")
+        );
+        let profiles = &state
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .profiles;
+        assert!(!profiles.is_empty());
+        for profile in profiles {
+            assert!(
+                physical_source_opportunity_grips(&state, profile.actor, "greatclub", item)
+                    .unwrap_err()
+                    .to_string()
+                    .contains("exact immutable Ogre pin")
+            );
+        }
+        assert_eq!(state, before);
+    }
 
     #[test]
     fn current_two_hand_options_change_without_removing_unarmed_or_rewriting_selected_work() {

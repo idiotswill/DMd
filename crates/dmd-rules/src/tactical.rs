@@ -29,7 +29,7 @@ mod validation;
 mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
 pub use aftermath::require_aftermath_session_boundary;
-pub use attacks::savage_attacker_dice;
+pub use attacks::{physical_source_opportunity_grips, savage_attacker_dice};
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use hit_reactions::shield_choices;
@@ -589,6 +589,11 @@ fn resolve_with_policy(
         TacticalAction::Move { path } => movement::begin(&mut next, meta, path)?,
         TacticalAction::DeclineOpportunity => movement::decline(&mut next, meta)?,
         TacticalAction::OpportunityAttack { choice } => {
+            if matches!(choice, TacticalMeleeChoice::CreatureWeapon { .. }) {
+                // New wire producers are gated for Historical as well as Live,
+                // before selecting any retained parent or reaching payment.
+                attacks::require_ogre_execution(&next)?;
+            }
             let window = movement::selected_opportunity(&next)?.clone();
             attacks::begin_opportunity_attack(
                 &mut next,

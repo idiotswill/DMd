@@ -135,6 +135,11 @@ pub(super) fn plan(
             }
             let definition = crate::tactical_creatures::source_for_profile(profile)
                 .map_err(|e| invalid(&e.to_string()))?;
+            if definition.id == "ogre" {
+                return Err(prerequisite(
+                    "Ogre attacks require their typed physical source and grip",
+                ));
+            }
             let feature = definition
                 .features
                 .iter()

@@ -45,6 +45,13 @@ Root retains all runtime and publication slots. No admission or acceptance is
 claimed by this plan or its receiving merge; all outstanding Ground child-order,
 privacy, native, canonical/CI and accepted-main obligations remain required.
 
+Receiving reconciliation: the sole textual conflict is AttackForm. It retains
+Ogre stable Item/form/grip invalidation and Ground pickup/after modes together.
+Semantic review adds absent Ground fields to the incoming physical OA source
+constructor and its numeric receipt fixture, and explicitly excludes those fields
+in retained OA admission. The normal merge keeps Ogre creation closed; no source
+facts or old capture bytes change. The receiving union remains UNCOMPILED/UNRUN.
+
 ## Coherent application source handback — 2026-10-05
 
 Checkpoint 3 now has a complete authored production route across rules queries,
