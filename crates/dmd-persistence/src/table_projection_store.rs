@@ -45,6 +45,11 @@ pub struct TranscriptVisibility {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum ProjectionCapability {
+    ShoveDecision {
+        origin: CommandId,
+        occurrence: u16,
+        stage: dmd_domain::TacticalShoveStage,
+    },
     /// No canonical request UUID is sent to the player. Its deterministic internal
     /// occurrence may otherwise expose secret intervening work by enumeration.
     Roll {

@@ -24,6 +24,7 @@ pub enum TacticalRollRole {
     AreaDamage,
     SecondWind,
     Medicine,
+    ShoveSave,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -57,6 +58,7 @@ impl TacticalRollKey {
             TacticalRollRole::AreaDamage => 14,
             TacticalRollRole::SecondWind => 16,
             TacticalRollRole::Medicine => 17,
+            TacticalRollRole::ShoveSave => 18,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -69,6 +71,10 @@ impl TacticalRollKey {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalWorkKind {
+    BeginShove,
+    ShoveSave,
+    ChooseShoveOutcome,
+    FinishShove,
     Medicine {
         actor: EntityId,
         target: EntityId,
@@ -228,6 +234,9 @@ pub struct TacticalResolution {
     pub legendary_window: Option<TacticalLegendaryWindow>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attack: Option<crate::TacticalAttack>,
+    /// Additive current-executor body action; absence preserves historical JSON.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shove: Option<Box<crate::TacticalShove>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hit_review: Option<Box<crate::TacticalHitReview>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

@@ -92,6 +92,7 @@ pub(super) fn begin(
         legendary_window: None,
         hit_review: None,
         attack: None,
+        shove: None,
         movement: None,
         casts: vec![],
         missiles: vec![],
