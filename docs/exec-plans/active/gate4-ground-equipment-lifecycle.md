@@ -1,5 +1,24 @@
 # Gate 4 — Guarded attack equipment continuation
 
+## October 5 verified cleanup dependency intake
+
+The exact 432ffeb focused run completed formatting, strict domain/rules/app
+all-target Clippy and all63 controls on October5; root and independent log/name/
+hash audits passed. Run-result SHA256:
+b1458275609f90b64ad07fab3e3af8c05ff6f14032dbc3a7036f5adb226b221f.
+That focused result does not replace whole-workspace or production acceptance.
+
+Receive published 9ebfedf22adc9d1dbf45c7a02a6f9590ffcbecba by normal merge
+after committing this plan. Its only new non-document work is the reviewed
+persistence test-local OS32/33 cleanup helper and final removal call. Existing
+restore assertions and pool scopes remain unchanged. Exact9eb formatting,
+strict persistence Clippy, restart1 and whole lifecycle6 passed; independent
+audit6e102d8caa2ce64773f66f319b8b092bd87764a9a4899f459c691357f8c2ad23.
+Fresh fetch confirms both heads. Preserve all432 source and controls outside
+the exact incoming persistence-test files; review the whole union before
+publication or production receiving. Current-head CI and canonical verification
+remain required. This intake grants no public admission or gate acceptance.
+
 Current correction/writer status, 2026-10-04: root transferred sole source writing
 to `gate4_ci_oct4` from clean `10df3c19958352632d76f47c4773553ad8a164ce`,
 tree `98a37c409be97e51f306cc70ae31ec960326627f`. The second exact-head
