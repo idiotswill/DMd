@@ -1,5 +1,65 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Checkpoint 3 source ownership and receiving plan — 2026-10-05
+
+Root transferred sole SOURCE-WRITER ownership of this existing branch to
+`ground_next_oct5`, starting clean `19ac67ba45d8170426618edac489b3a743bdccba`,
+tree `349f7227e069311768864a22a67f1326ea679f57`. Root read the complete initial
+15-path/18-control source and narrow seven-control pending correction; static
+review is clear. The25 controls at that frozen source were never executed. No
+test result from a prerequisite is a result for those controls or this app slice.
+
+Root accepted the concrete checkpoint3 map in
+`tooling/ground-checkpoint3-engineering-preparation-2026-10-05.md`, SHA256
+`525f8dba9b8df85c5032a249d88aad165016d351dac0c88065f275f92281ea65`.
+Implement the coherent production rules/offers, application, opaque transport,
+original-event/presentation replay and desktop route below with real file-SQLite
+tests. Do not stop at another private producer checkpoint. Root retains all
+Cargo/compiler/npm/database/native execution, publication and CI allocation.
+Direct rustfmt and static inspection are allowed. All newly authored runtime
+acceptance remains UNRUN until root allocates verification. Do not receive Ogre
+until root separately clears its whole evidence; its full acceptance remains due.
+
+Before source, explicitly migrate only
+`activated_checkpoint_still_refuses_public_live_historical_and_kernel_admission`
+in `attack_equipment_access_tests.rs`: its temporary activated-rollout negative
+becomes actual accepted activation/Live/Historical/kernel/public-planner/replay
+positives with missing, malformed and foreign activation negatives. Preserve the
+other24 control bodies and all older no-activation guards/error ordering. This
+is removal of planned staging, never a waiver of acceptance or a test deletion.
+
+Read-side offer derivation must factor the existing physical eligibility without
+forging CommandMeta or a consuming SelectedEquipment/preparation. Queries return
+data only. Activated queued after-work must no longer blanket-hide concentration,
+fall or effect continuation choices in `table_tactical_choices`; actual selected
+after-work owns its separate opaque card, including zero-Apply Decline. Before
+activation all old projection bytes, capability order/digest, transport meanings,
+accepted responses and retry bindings remain exact.
+
+Independent completion audit confirms lifecycle432 at exact
+`432ffeb56ff5d574373379eda4826da0f3943d08`, tree
+`0cc7bbf7ff2957c89f657e62994d2bd3a449086e`, completed2026-10-05
+08:06:26.855780UTC with exit0: fmt, strict domain/rules/app all-target Clippy and
+all63 exact controls (23+8+4+2+2+19+1+4) passed, zero failed/ignored. Complete
+actual logs, exact name sets/argv, source21 hashes, runner hashes and unchanged
+clean head were independently checked. Result SHA256
+`b1458275609f90b64ad07fab3e3af8c05ff6f14032dbc3a7036f5adb226b221f`;
+manifest `4f20bb7fe7d8e0f58da82051b18ba476f90d309908e3cd3f2a8a643e1529b1ec`;
+audit `tooling/ground-432ffeb-focused-independent-audit-2026-10-05.json`.
+These are GNU focused results, not canonical, public activation or native play.
+The earlier d55520/23 and10df21/23 failures remain recorded and preserved.
+
+Normally merge exact432 after this plan commit. Both ae3906e and f701b3f are
+merge bases. Reconcile both prerequisite plans; verify all19ac production blobs
+and other controls stay exact. Incoming source must be only the52+/3- lifecycle
+test correction (height60, genuine flyer reachable atx20, support prerequisites,
+finite20-arrow Goblin). Keep the already received f701 control unchanged. Review
+the complete receiving result before checkpoint3 source. The combined branch
+needs fresh execution even though the prerequisite has focused evidence.
+
+Historical checkpoint2 status follows; checkpoint3 ownership supersedes its
+writer and no-app authorization limits, not its outstanding acceptance evidence.
+
 Current correction status, 2026-10-04: root transferred sole SOURCE-WRITER
 ownership to `gate4_core_oct4` from clean
 `e62f7b8e06763abf1ff5c63916e725a79e7dc191`, tree
