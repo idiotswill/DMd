@@ -47,6 +47,18 @@ the coherent corrected head for root's full review and fresh focused/CI executio
 both original failures and all later outcomes must retain their exact attribution.
 
 
+
+The fixture correction is now authored after plan e3dcec8. The genuine third
+participant receives its own one-d20 Physical initiative request on its owner
+channel; the test asserts Mage/Mage/Mage/Fighter order with totals14/14/14/3,
+clock0 and absence of both measured observer actors from the encounter. The
+third attendee is retained through the existing pending-interval session rollover.
+No assertion was removed or relaxed. The complete two other application scenarios
+(Medicine/d4 and genuine original armor) and all other repository source are
+unchanged. Direct configured rustfmt on this one file and git diff --check passed;
+no compiler or runtime was invoked. Root must independently review this frozen
+correction and run fresh verification; actual later outcomes remain unknown.
+
 ## Application source authored; execution outstanding — 2026-10-05
 
 The normal tactical/TableAction route now dispatches released intervals and derives

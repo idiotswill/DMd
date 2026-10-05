@@ -32,7 +32,72 @@ async fn refuse(f: &Fixture, request: TableTransportRequest) {
     assert_eq!(after, before, "refusal changes no persisted row");
 }
 
-async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
+async fn prepare_mages(f: &mut Fixture) -> ([EntityId; 3], SessionParticipant) {
+    // Keep both measured players outside the encounter. A separate, normally
+    // created attending character supplies the existing setup prerequisite.
+    let mut attendees = state(f)
+        .await
+        .table
+        .unwrap()
+        .active_session
+        .unwrap()
+        .participants;
+    f.host(TableAction::EndSession, Some(f.session)).await;
+    let player = PlayerId::new();
+    let character = CharacterId::new();
+    let actor = EntityId::new();
+    f.host(
+        TableAction::AddPlayer {
+            id: player,
+            name: "Courtyard participant".into(),
+        },
+        None,
+    )
+    .await;
+    f.host(
+        TableAction::CreateCharacter {
+            character_id: character,
+            entity_id: actor,
+            player_id: player,
+            input: input("Courtyard fighter"),
+        },
+        None,
+    )
+    .await;
+    let count = view(f, None)
+        .await
+        .characters
+        .iter()
+        .find(|entry| entry.character_id == character)
+        .unwrap()
+        .equipment
+        .as_ref()
+        .unwrap()
+        .initial_item_count;
+    f.host(
+        TableAction::PrepareEquipment {
+            character_id: character,
+            item_ids: (0..count).map(|_| ItemId::new()).collect(),
+        },
+        None,
+    )
+    .await;
+    let attendee = SessionParticipant {
+        player_id: player,
+        character_id: Some(character),
+        attendance: AttendanceStatus::Present,
+    };
+    attendees.push(attendee.clone());
+    f.session = PlaySessionId::new();
+    f.host(
+        TableAction::StartSession {
+            id: f.session,
+            name: "Courtyard session".into(),
+            participants: attendees,
+        },
+        Some(f.session),
+    )
+    .await;
     let mut actors = Vec::new();
     for _ in 0..3 {
         let (actor, _, _) =
@@ -46,7 +111,7 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
                 encounter_id: EncounterId::new(),
                 scene_id: SceneId::new(),
                 location_id: LocationId::new(),
-                name: "A source-only closed courtyard".into(),
+                name: "A closed courtyard with one attending character".into(),
                 battlefield: Battlefield {
                     bounds: SpatialBox {
                         min: point(0, 0, 0),
@@ -59,7 +124,13 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
                     obstacles: vec![],
                     lights: vec![],
                 },
-                characters: vec![],
+                characters: vec![TableCharacterPlacement {
+                    character_id: character,
+                    position: point(80, 80, 0),
+                    height: 12,
+                    allies: vec![],
+                    enemies: vec![],
+                }],
                 creatures: actors
                     .iter()
                     .enumerate()
@@ -75,7 +146,7 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
                 area_grid_policy: None,
                 geometry_ruling: Ruling {
                     basis: RulingBasis::GmAdjudication,
-                    reason: "Three separate source spaces; no player observer is present.".into(),
+                    reason: "Three separate source spaces and one attending character; both measured observers are absent from the scene.".into(),
                 },
             }),
         },
@@ -96,11 +167,22 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
                     },
                     surprised: false,
                 })
+                .chain(std::iter::once(TacticalCombatant {
+                    actor,
+                    source: TacticalSource::Character,
+                    surprised: false,
+                }))
                 .collect(),
-            groups: vec![InitiativeGroup {
-                actors: actors.clone(),
-                request_id: RollRequestId::new(),
-            }],
+            groups: vec![
+                InitiativeGroup {
+                    actors: actors.clone(),
+                    request_id: RollRequestId::new(),
+                },
+                InitiativeGroup {
+                    actors: vec![actor],
+                    request_id: RollRequestId::new(),
+                },
+            ],
         }),
     )
     .await;
@@ -124,6 +206,44 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
         TableTransportResult::Accepted(_)
     ));
     Box::pin(setup_raw(f, None, &[12])).await;
+    let owner = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Player(player))
+        .await
+        .unwrap();
+    let roll = owner.roll.unwrap();
+    assert_eq!(roll.mode, RollMode::Normal);
+    assert_eq!(
+        roll.dice,
+        vec![DieSpec {
+            count: 1,
+            sides: 20
+        }]
+    );
+    let owner_roll = channel_request(
+        f,
+        TableTransportChannel::Player {
+            player_id: player,
+            character_id: character,
+        },
+        action(TacticalAction::SubmitRoll {
+            result: RollResult {
+                request_id: roll.id,
+                source: RollSource::Physical,
+                dice: vec![DieResult {
+                    sides: 20,
+                    value: 1,
+                }],
+            },
+        }),
+    )
+    .await;
+    assert!(matches!(
+        Box::pin(f.runtime.submit_presented_table(owner_roll))
+            .await
+            .unwrap(),
+        TableTransportResult::Accepted(_)
+    ));
     let tie = request(
         f,
         None,
@@ -138,7 +258,38 @@ async fn prepare_mages(f: &mut Fixture) -> [EntityId; 3] {
             .unwrap(),
         TableTransportResult::Accepted(_)
     ));
-    actors.try_into().unwrap()
+    let started = state(f).await;
+    assert_eq!(started.clock.now, WorldInstant(0));
+    let timing = started.rules.as_ref().unwrap().timing.as_ref().unwrap();
+    assert_eq!(
+        timing
+            .order
+            .iter()
+            .map(|entry| entry.actor)
+            .collect::<Vec<_>>(),
+        actors
+            .iter()
+            .copied()
+            .chain(std::iter::once(actor))
+            .collect::<Vec<_>>()
+    );
+    assert_eq!(
+        timing
+            .order
+            .iter()
+            .map(|entry| entry.total)
+            .collect::<Vec<_>>(),
+        vec![14, 14, 14, 3]
+    );
+    assert!(f.actors.iter().all(|observer| {
+        started
+            .encounter
+            .as_ref()
+            .unwrap()
+            .participant(*observer)
+            .is_none()
+    }));
+    (actors.try_into().unwrap(), attendee)
 }
 
 async fn armor(f: &mut Fixture, url: &str, directory: &Path, actor: EntityId) {
@@ -196,7 +347,7 @@ async fn choose(f: &Fixture, index: usize) -> TableTransportRequest {
 }
 
 async fn mage_interval(f: &mut Fixture, url: &str, directory: &Path, index: usize) {
-    let mages = Box::pin(prepare_mages(f)).await;
+    let (mages, attendee) = Box::pin(prepare_mages(f)).await;
     for (i, actor) in mages.into_iter().enumerate() {
         Box::pin(armor(f, url, directory, actor)).await;
         if i != 2 {
@@ -405,10 +556,12 @@ async fn mage_interval(f: &mut Fixture, url: &str, directory: &Path, index: usiz
     let closed = request(f, None, advance(1)).await;
     Box::pin(refuse(f, closed)).await;
     f.session = PlaySessionId::new();
+    let mut attendees = participants(f);
+    attendees.push(attendee);
     let start = TableAction::StartSession {
         id: f.session,
         name: "Continue the same elapsed interval".into(),
-        participants: participants(f),
+        participants: attendees,
     };
     Box::pin(step(f, url, directory, start)).await;
     assert_eq!(
@@ -728,7 +881,7 @@ async fn zero_one_two_hidden_deadlines_have_equal_unrelated_views_at_equal_world
         .await
         .unwrap();
     let mut prefix = Box::pin(Fixture::with_pool(TableContract::default(), prefix_pool)).await;
-    let mages = Box::pin(prepare_mages(&mut prefix)).await;
+    let (mages, _attendee) = Box::pin(prepare_mages(&mut prefix)).await;
     let saved = Box::new(
         export_campaign(&prefix.pool, prefix.campaign)
             .await
