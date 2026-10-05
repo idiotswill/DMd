@@ -338,6 +338,20 @@ async fn glaive_case() {
             .action_spent,
         "the mover retains its Action"
     );
+    // Using a held weapon keeps its equipment but records this accepted command.
+    let mut expected_loadout = held;
+    expected_loadout.command = CommandMeta {
+        id: reaction.command_id,
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        issuer: CommandIssuer::Player(f.players[0]),
+        actor: Some(AgentRef::Entity(f.actors[0])),
+        expected_event_sequence: pending.applied_event_sequence,
+    };
+    assert_eq!(
+        resolution.attack.as_ref().unwrap().origin,
+        expected_loadout.command
+    );
     assert_eq!(
         admitted
             .rules
@@ -348,18 +362,41 @@ async fn glaive_case() {
             .unwrap()
             .loadout(f.actors[0])
             .unwrap(),
-        &held
+        &expected_loadout
     );
     Box::pin(roll(&mut f, &path, 0, &[12])).await;
     Box::pin(decline_hit(&mut f, &path, 1)).await;
+    let damage_request = view(&f, &owner).await.roll.unwrap();
+    assert_eq!(damage_request.mode, RollMode::Normal);
     assert_eq!(
-        view(&f, &owner).await.roll.unwrap().dice,
+        damage_request.dice,
         vec![DieSpec {
             count: 1,
             sides: 10
         }]
     );
-    Box::pin(roll(&mut f, &path, 0, &[1])).await;
+    let before_damage = state(&f).await;
+    let damage = Box::pin(step(
+        &mut f,
+        &path,
+        owner,
+        tactical(TacticalAction::SubmitRoll {
+            result: RollResult {
+                request_id: damage_request.id,
+                source: RollSource::Physical,
+                dice: vec![DieResult {
+                    sides: 10,
+                    value: 1,
+                }],
+            },
+        }),
+    ))
+    .await;
+    expected_loadout.command = CommandMeta {
+        id: damage.command_id,
+        expected_event_sequence: before_damage.applied_event_sequence,
+        ..expected_loadout.command.clone()
+    };
     let finished = state(&f).await;
     let flow = finished.encounter.as_ref().unwrap().flow.as_ref().unwrap();
     assert!(flow.resolution.is_none());
@@ -409,7 +446,7 @@ async fn glaive_case() {
             .unwrap()
             .loadout(f.actors[0])
             .unwrap(),
-        &held
+        &expected_loadout
     );
     assert_eq!(finished.items, before.items);
     assert_eq!(f.runtime.replay_rules(f.campaign).await.unwrap(), finished);
