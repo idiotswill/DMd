@@ -1,5 +1,12 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
+Current receiving status, 2026-10-05: Ground production normally receives exact432
+after its independently audited focused63 PASS (fmt and strict three-package
+all-target Clippy also PASS). Earlier failed attempts below remain historical
+evidence. Checkpoint3 source ownership and full app/replay/UI acceptance are in
+[the production plan](gate4-ground-production.md); no new production runtime
+result is claimed. Both merge bases and all19ac production are preserved.
+
 Current status, 2026-10-04: PR57 at `8ec12c3` has an actual Linux test failure.
 Run37204883315/job111443894733 completed with exit101 after39 reported groups,
 478 passes and one failure; the full workspace did not complete. The failing

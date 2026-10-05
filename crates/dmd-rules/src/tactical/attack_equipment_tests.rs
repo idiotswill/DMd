@@ -326,6 +326,9 @@ impl Fixture {
             }
         }
         let e = self.state.encounter.as_mut().unwrap();
+        // Keep the real elevated bodies inside the constructed battlefield.
+        // The ledge and the flyer's fall distance remain twenty feet.
+        e.battlefield.bounds.max.z = 60;
         let target = e
             .participants
             .iter_mut()
@@ -336,8 +339,10 @@ impl Fixture {
         target.height = 20;
         target.movement = built.movement;
         target.senses = built.senses;
+        // Adjacent occupied cells are within five-foot melee reach. Mere
+        // edge contact with the ledge at x20 does not support the flyer.
         target.position = SpatialPoint {
-            x: 30,
+            x: 20,
             y: 10,
             z: 40,
         };
@@ -394,6 +399,40 @@ impl Fixture {
         self.target = actor;
         self.choice.target = actor;
         self.advance();
+        let encounter = self.state.encounter.as_ref().unwrap();
+        crate::spatial::validate_encounter(encounter, &self.state).unwrap();
+        assert!(
+            crate::spatial::perceive(encounter, &self.state, self.actor, self.target)
+                .unwrap()
+                .precisely_located
+        );
+        let attacker = encounter.participant(self.actor).unwrap();
+        let target = encounter.participant(self.target).unwrap();
+        assert_eq!(
+            crate::spatial::participant_distance(attacker, target).unwrap(),
+            10
+        );
+        assert_eq!(attacker.reach, 10);
+        assert!(
+            crate::spatial::fall_destination(encounter, self.actor)
+                .unwrap()
+                .is_none()
+        );
+        let fall = crate::spatial::fall_destination(encounter, self.target)
+            .unwrap()
+            .unwrap();
+        assert_eq!(fall.from, target.position);
+        assert_eq!(fall.from.z, 40);
+        assert_eq!(fall.to, SpatialPoint { z: 0, ..fall.from });
+        assert_eq!(fall.surface, FallSurface::Floor);
+        assert!(target.movement.fly.is_some());
+        assert!(!target.movement.hover);
+        assert!(
+            crate::spatial::flight_loss_fall(encounter, &self.state, self.target)
+                .unwrap()
+                .is_none(),
+            "real flight must remain available before the attack causes its loss"
+        );
     }
 }
 
@@ -1487,12 +1526,21 @@ fn private_printed_physical_source_propagates_intent_and_retains_exact_pin_and_f
         .as_mut()
         .unwrap()
         .actor = actor;
-    let ids = creature_equipment_plan("goblin-warrior", 0)
+    let ids = creature_equipment_plan("goblin-warrior", 20)
         .unwrap()
         .iter()
         .map(|_| ItemId::new())
         .collect::<Vec<_>>();
-    f.state = materialize_creature_equipment(&f.state, &origin, actor, 0, &ids, &f.pack).unwrap();
+    f.state = materialize_creature_equipment(&f.state, &origin, actor, 20, &ids, &f.pack).unwrap();
+    let arrows = f
+        .state
+        .items
+        .values()
+        .filter(|i| i.custody == Custody::Entity(actor) && i.definition_id == "arrows")
+        .collect::<Vec<_>>();
+    assert_eq!(arrows.len(), 1);
+    let arrows_before = arrows[0].clone();
+    assert_eq!(arrows_before.quantity, 20);
     let weapon = f
         .state
         .items
@@ -1621,4 +1669,5 @@ fn private_printed_physical_source_propagates_intent_and_retains_exact_pin_and_f
     );
     assert_eq!(f.selected().cause.origin, meta);
     f.decision(AttackEquipmentChoice::Decline);
+    assert_eq!(f.state.items[&arrows_before.id], arrows_before);
 }

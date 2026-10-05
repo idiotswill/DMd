@@ -1,5 +1,13 @@
 # Gate 4 — Guarded attack equipment continuation
 
+Current receiving status, 2026-10-05: Ground production normally receives exact432
+after its independently audited focused63 PASS (fmt and strict three-package
+all-target Clippy also PASS). Earlier failed attempts below remain historical
+evidence. Checkpoint3 source ownership and full app/replay/UI acceptance are in
+[the production plan](gate4-ground-production.md); no new production runtime
+result is claimed. Both merge bases and all19ac production are preserved.
+
+Historical production-follow-on status (superseded by checkpoint3 below):
 Separate production follow-on, 2026-10-04: root created
 `codex/gate4-ground-production` from clean published `ae3906e`. The complete
 [production activation plan](gate4-ground-production.md) awaits independent review;
@@ -13,6 +21,104 @@ Current status: draft PR60 at aff47ba failed its first actual CI compile. Source
 review is CLEAR. Root is sole writer, 2026-10-04. Fresh exact-head compilation
 is pending; all23 rules controls and the app preflight remain UNRUN.
 Runtime and production acceptance are not established.
+
+Historical prerequisite correction and execution record:
+Current correction/writer status, 2026-10-04: root transferred sole source writing
+to `gate4_ci_oct4` from clean `10df3c19958352632d76f47c4773553ad8a164ce`,
+tree `98a37c409be97e51f306cc70ae31ec960326627f`. The second exact-head
+focused attempt ended at17:28:16 UTC: fmt and strict three-package all-target
+Clippy passed; all23 new continuation controls ran, with21 passes/two failures.
+The runner stopped before the remaining40 controls. The complete actual group
+log is `tooling/ground-10df3c1-focused-2026-10-04/03-new-after-continuation.log`,
+5230 bytes/SHA256
+`4f708f5c418e9cfb2748a2df58122405e8ebfcff187531f7bd9a21869c0b5ec7`.
+Both failed Chimera controls now reach weapon admission and report
+`target is beyond weapon reach`. Earlier failed logs remain preserved; neither
+attempt is full focused/canonical success.
+
+Plan before this correction's source edits: the captured Medium attacker's x10
+footprint ends at20; source_flyer's Large Chimera starts at30. The actual
+participant_distance uses occupied-cell-center insets: nearest x centers15 and35
+are20 half-foot units apart, exceeding both genuine melee weapons' reach10.
+Move only the constructed Chimera's x position from30 to20. Its nearest occupied
+cell center then lies at25, exactly10 units from the attacker. It still only
+touches the supporting ledge's x20 edge: the actual fall geometry requires strict
+positive footprint overlap, so that edge does not support it. Keep z40, real
+Large footprint/height20, ceiling60, the ledge, actual non-Hover source flight,
+wounded1HP and all existing fall/parent/selection assertions unchanged.
+
+Add explicit setup assertions before either attack: exact participant distance10
+and actual attacker reach10; attacker already supported on its ledge; Chimera's
+potential fall is fromz40 to floorz0 with the same x/y; genuine source Fly Speed
+is present and Hover false; flight_loss_fall is absent while the source is living
+and able to fly. These checks distinguish valid reachable geometry from the
+actual later Knockout/Graze-caused flight loss. Preserve the existing geometry
+and precisely-located assertions, and every prior test assertion. The unchanged
+shared hit review deliberately asks every hit target to respond even without
+Shield, so the real Chimera needs no invented spell grant or timing shortcut.
+
+Scope is only this new test module and this plan. No production, source profile,
+protected receiving suite, capture/raw artifact, workflow, assertion, public
+admission or acceptance reduction. Direct rustfmt/static Git checks only; no
+compiler/Cargo/test/native/database/push/CI execution. Commit this plan first,
+then the minimal fixture correction and return a clean exact head for root and
+independent review. Root assigns any later fresh-head run; all63 focused controls
+and broader public/app/history/SQLite/cold/native obligations remain required.
+
+Authored checkpoint: plan-before-source is
+`db3cc7c0ecb70608abe7893a9a8706e654651aeb`. The Chimera now starts atx20;
+all planned reach/support/real-flight setup assertions are authored. Every old
+assertion remains, and no production or other source/test path changed. Direct
+configured rustfmt and Git diff checks pass; the correction is UNCOMPILED/UNRUN.
+Writing returns to root after this clean checkpoint. Root and a different peer
+must inspect the full exact delta before any new focused run; no10df success
+transfers to the corrected head.
+
+Historical preceding attempt/correction, 2026-10-04 17:00 UTC: actual local verification of clean
+d55519e27c92ad17b7278a0bbb87454820642996 passed fmt and strict three-package
+all-target Clippy. The first focused group ran all23 new continuation controls:
+20 passed and3 failed in fixture preparation/admission. The runner stopped there;
+the remaining40 controls, including the f701b3f reservation correction, did not run.
+The actual failure log SHA256 is
+`0713c3094e2a32e80480696f37436e3d7ae59278270f19f3e8fe08a64ed67ec5`.
+No full canonical, public integration or gate acceptance is implied.
+
+Correction plan before source edits: the two real Chimera fall controls place
+participants at z40 but retain the old battlefield's maxz40. Their occupied
+volumes extend beyond that bound, so encounter validation prevents perception
+and attack admission. Extend this constructed battlefield ceiling to60, retaining
+the actual actor positions, heights, ledge, flight source and fall distance. Assert
+valid geometry and precise target location before beginning either attack.
+The printed Goblin control requests zero ammunition despite its genuine carried
+Shortbow. Plan and materialize the same finite20 arrows, preserving every source
+weapon and the real Scimitar attack; assert the exact ammunition item remains
+unchanged through that melee attack and after-equipment decline.
+Change only this new test module and this plan. Preserve all original assertions,
+production guards, accepted histories and raw captures. Obtain independent delta
+review, then rerun all63 focused controls at the new frozen head with the reviewed
+GNU-host runner and a fresh target/evidence directory. Corrected success remains
+unverified until that actual run completes. The full production obligations below
+remain open, and this branch must not merge into its unaccepted development parent.
+
+Historical status before receiving the foundation fix: draft PR60 at ae3906e passes four quick CI jobs,
+including Linux/Windows MSRV all-target compilation. This verifies the prior
+43bb7f5 compiler correction; the first aff47ba failure remains preserved. Both
+runtime jobs are pending; no completed run of the23 new rules controls or app
+control is yet recorded. Runtime and production acceptance are not established.
+
+Before further execution, normally merge the independently reviewed foundation
+correction f701b3f: one test now keeps the helper's supported flow4 to compare the
+same actual physical derivation for reserved Right versus free Left. Full candidate
+and input equality prove the physical change; fresh/public flow4 and unsupported
+flow5 refusals are separate. PR57's actual8ec Linux failure (run37204883315,
+job111443894733) demonstrated this fixture error. Production guards stay exact.
+Plan eb52ff9 preceded correction f701b3f, whose independent review SHA256 is
+`2817220994b0eda9166f12b0a5f4530fa77c6e5c8dd6107165989971f5db76fe`.
+Root read the complete correction and review. Reconcile the focused63 manifest to
+the new clean receiving head/tree/source hashes and use a fresh evidence/target
+directory; the old ae390 runner must not execute a changed source. Air canonical
+has now completed, so root may allocate the sole heavy slot after this reconciliation.
+No new compile/test success is implied by this plan or the source-only merge.
 
 Historical source transfer: root explicitly
 transferred sole SOURCE-WRITER ownership to `gate4_ci_oct4` at clean amended plan
