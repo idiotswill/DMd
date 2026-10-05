@@ -1,5 +1,37 @@
 # Gate 4 — Guarded Grapple condition lifecycle
 
+## Receive the verified core fixture correction — 2026-10-05
+
+Root transfers this branch for a bounded normal merge of published core
+`d9108c6e9fcff5b81600c2253b9422644a138db8`, tree
+`5877058f7b9329dd061a05ef824b09309f1d9a42`, into the clean condition candidate
+`9ef15eb92ab96414bb38e6807ba81bc42ae2f8c8`, tree
+`ef08c0fc782a9fa37285bffd998af192b7f2ae5b`. Fresh branch fetches confirm these
+identities. Preserve both histories; do not squash, rebase or import unrelated
+Ground/Shove/main changes.
+
+The incoming delta is only the reviewed53-line additive synthetic opportunity
+fixture correction and its core plan. Its complete independent source review is
+`tooling/grapple-core-d9108c6-correction-independent-review-2026-10-04.md`.
+The exact core passed formatting, strict three-package all-target Clippy and47
+focused controls on October5; independent completion review SHA256
+`0455229e2f76a166ad53ec52fbc7b1b12b0eac9d029d25c498784254576d4f52`
+records the explicitly reused target and default profiles/stack/test threads.
+That is dependency evidence, not verification of this receiving branch.
+
+Commit this plan before merging. Inspect the full merge result and require the
+opportunity fixture to equal exact d910 while all other non-document blobs retain
+their9ef bytes, including the condition implementation, original test migrations,
+public/raw/history guards, fixtures and receiving suites. Stop for any unexpected
+semantic union. Keep all existing condition/Grapple acceptance requirements.
+No compiler/test, database/native, npm, push or CI execution is allocated here.
+
+Return the clean normal merge and source-equivalence audit for independent root
+review. Root then owns receiving-head verification/publication and further normal
+integration. The correction does not activate Grapple or establish Gate4 acceptance.
+
+## Historical condition checkpoint status — 2026-10-04
+
 Status: **guarded source and controls independently reviewed; preparing draft
 publication for exact receiving-head CI.** All new controls remain UNRUN locally.
 Root now owns this branch. No public Grapple acceptance is claimed.
