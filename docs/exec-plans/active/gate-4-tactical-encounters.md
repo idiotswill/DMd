@@ -2,13 +2,30 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-Current accepted main is `dbf1d633460473183324b4ec519e8d1980884b5c` after PR48.
-The [release plan](gate4-encounter-release.md) records the protected merge and
-separate successful literal-main checks. The candidate statuses below are historical.
+Current accepted main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50.
+The Air source is accepted; separate literal32 runtime checks remain pending.
+The [release plan](gate4-encounter-release.md) records PR48's separate successful
+literal-main checks. The checkpoints below retain their historical statuses;
+the complete Gate4 remains active.
 
-## Historical integration checkpoint — 2026-09-30
+## Historical integration checkpoint — 2026-10-01
 
-Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
+Fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
+PR48 merge. Final reviewed head d4 passed all six checks and has exactly the same
+full tree as dbf. Separate literal dbf runtime checks remain pending. The detailed
+source, canonical, native and final-head evidence is in the release plan.
+
+Air3f passes all six checks and its actual verified package completed creation,
+overlap refusal, pending-initiative cold recovery and airborne cold recovery in
+the same campaign. Its local canonical and final receiving-head checks remain
+unmet. Shove, expiry, MR, guarded Grapple, source gear counts, complete Ogre and
+ground-weapon recovery remain separately owned unaccepted work; none reduces the
+full tactical gate. The Air plan records current-main reconciliation and exact
+next verification. No Gate5 work is authorized.
+
+### Historical integration checkpoint — 2026-09-30
+
+At this checkpoint, fetched main was `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` after UI PR49's
 protected merge. The complete tree equals reviewed source65b7606. Exact source
 canonical verification and all six CI checks pass, and corrected native package728
 was played with verified non-documentation source parity. Separate literal-main

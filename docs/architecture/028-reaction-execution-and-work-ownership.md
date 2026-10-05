@@ -218,7 +218,9 @@ predicates. The subsequent application checkpoint enables current admission only
 alongside authenticated finish, closed-session upgrade, replay, replacement and
 desktop controls. Integrated8c03f9f passes canonical/CI historical continuations and
 actual packaged two-encounter recovery; the encounter-release plan records precise
-scope and remaining merge/main proof. Flows1–4 keep their accepted meanings and
+scope. Final d4 passed all six checks and merged in PR48 as dbf1d63 with exact tree
+equality; separate literal-main checks subsequently passed as recorded in the
+release plan. Flows1–4 keep their accepted meanings and
 the historical unit upgrade remains 1→2.
 
 Explicit conclusion is narrative evidence that fighting stopped. A separate host

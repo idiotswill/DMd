@@ -230,6 +230,13 @@ async fn prepare_sources(f: &mut Fixture, url: &str, directory: &Path) -> Source
                     entity_id: actor,
                     name: format!("Private {definition_id}"),
                     definition_id: definition_id.into(),
+                    source: Some(
+                        dmd_rules::tactical_creatures::creature_source_pin(
+                            dmd_rules::tactical_creatures::creature_definition(definition_id)
+                                .unwrap(),
+                        )
+                        .unwrap(),
+                    ),
                     size,
                     additional_languages,
                     ammunition_units: 0,

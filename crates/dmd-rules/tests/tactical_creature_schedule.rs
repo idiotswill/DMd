@@ -12,6 +12,9 @@ struct Fixture {
 }
 impl Fixture {
     fn new(id: &str) -> Self {
+        Self::with_source(id, None)
+    }
+    fn with_source(id: &str, pin: Option<&CreatureSourcePin>) -> Self {
         let actor = EntityId::new();
         let other = EntityId::new();
         let mut state = CampaignState::empty(
@@ -53,8 +56,10 @@ impl Fixture {
             actor: None,
             expected_event_sequence: 10,
         };
-        let definition = creature_definition(id).unwrap();
-        let built = build_creature(
+        let definition = pin
+            .map_or_else(|| creature_definition(id), creature_source)
+            .unwrap();
+        let built = build_creature_from_source(
             &state,
             &meta,
             actor,
@@ -66,6 +71,7 @@ impl Fixture {
                 controller: CreatureController::Autonomous,
                 in_lair: false,
             },
+            pin,
         )
         .unwrap();
         state.rules = Some(RulesState {
@@ -938,4 +944,54 @@ fn declined_legendary_window_closes_without_spending_and_next_window_rechecks_ef
         .unwrap()
         .hp = 0;
     assert!(!creature_legendary_action_available(&f.state, &f.creatures, f.actor).unwrap());
+}
+
+#[test]
+fn air_unsupported_actions_refuse_before_action_or_recharge_payment() {
+    let air = dmd_rules::tactical_definitions::bundled_air_elemental().unwrap();
+    let pin = creature_source_pin(air).unwrap();
+    let mut f = Fixture::with_source("air-elemental", Some(&pin));
+    f.turn(f.actor, 1, TurnBoundary::Start);
+    for (feature_id, steps) in [
+        ("whirlwind", vec![]),
+        (
+            "multiattack",
+            vec![
+                step(0, "thunderous-slam", None),
+                step(1, "thunderous-slam", None),
+            ],
+        ),
+    ] {
+        let before_state = f.state.clone();
+        let before = f.creatures.clone();
+        assert!(matches!(
+            apply_creature_schedule(
+                &f.state,
+                &f.creatures,
+                &f.meta(),
+                &CreatureScheduleOperation::BeginFeature {
+                    actor: f.actor,
+                    selection: selection(feature_id, None),
+                    steps
+                }
+            ),
+            Err(CreatureError::Unavailable(_))
+        ));
+        assert_eq!(f.state, before_state);
+        assert_eq!(f.creatures, before);
+        assert!(f.creatures.runtime[0].recharge[0].available);
+        assert!(
+            !f.state
+                .rules
+                .as_ref()
+                .unwrap()
+                .timing
+                .as_ref()
+                .unwrap()
+                .action_spent
+        );
+    }
+    let slam = f.begin("thunderous-slam", None, vec![]);
+    assert_eq!(slam.cost, CreatureActionCost::Action);
+    assert_eq!(slam.feature.unwrap().source, pin);
 }

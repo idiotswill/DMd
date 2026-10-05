@@ -5,9 +5,28 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-Current accepted main is `dbf1d633460473183324b4ec519e8d1980884b5c` after PR48.
-The [release plan](gate4-encounter-release.md) records the protected merge and
-separate successful literal-main checks. Remaining Gate4 obligations below stay open.
+Current accepted main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50.
+The Air source is accepted; separate literal32 runtime checks remain pending.
+The [release plan](gate4-encounter-release.md) records PR48's separate successful
+literal-main checks. All remaining Gate4 obligations below stay open.
+
+## Historical checkpoint after PR48 — 2026-10-01
+
+At that checkpoint, fetched main was dbf1d633460473183324b4ec519e8d1980884b5c.
+Release PR48 merged with expected-head protection after complete exact d4 review
+and six successful checks; main's full tree equaled that candidate. The separate
+literal dbf runtime checks were then pending and subsequently passed as recorded
+in the release plan, which preserves source8c's canonical and native attribution.
+
+Air3f's six checks and actual verified package covered source creation, overlap
+refusal, corrected placement, owned initiative cold continuation and airborne cold
+continuation with the previous campaign resources/history preserved. Local
+canonical and final receiving-head proof were then open and were subsequently
+completed before PR50 acceptance, as recorded in the Air plan. This is bounded
+source admission, not complete Air actions or full monster running. Shove, expiry,
+MR, guarded Grapple, finite source gear, complete Ogre and ground recovery remain
+unaccepted dependent work. All twelve families/eighteen spell mechanisms and the
+other obligations below retain their full scope. No Gate5 or gate completion.
 
 ## Historical checkpoint after PR49 — 2026-09-30
 

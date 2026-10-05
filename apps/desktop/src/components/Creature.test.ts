@@ -7,7 +7,7 @@ import { loadRequest, saveRequest, type CharacterView, type CreatureCreation } f
 
 it('retains the selected source, finite ammunition and physical identities for retry', async () => {
   const user=userEvent.setup(); const onCreate=vi.fn();
-  render(CreatureForm,{setup:{catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,omitted_features:[],abilities:['Scimitar','Shortbow']}],creatures:[]},onCreate});
+  render(CreatureForm,{setup:{catalog:[{definition_id:'goblin-warrior',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'goblin-warrior',definition_fingerprint:'fixture-goblin-warrior'},name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,omitted_features:[],abilities:['Scimitar','Shortbow']}],creatures:[]},onCreate});
   await user.type(screen.getByLabelText('Creature name'),'The secret captain');
   await user.clear(screen.getByLabelText('Starting ammunition per type'));
   await user.type(screen.getByLabelText('Starting ammunition per type'),'7');
@@ -45,12 +45,29 @@ it('uses an explicit visible descriptor without copying the private creature nam
 
 it('changing source resets size and removes an inapplicable ammunition grant', async () => {
   const user=userEvent.setup();const onCreate=vi.fn();
-  render(CreatureForm,{setup:{catalog:[{definition_id:'goblin-warrior',name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,omitted_features:[],abilities:[]},{definition_id:'wolf',name:'Wolf',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,omitted_features:[],abilities:['Bite']}],creatures:[]},onCreate});
+  render(CreatureForm,{setup:{catalog:[{definition_id:'goblin-warrior',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'goblin-warrior',definition_fingerprint:'fixture-goblin-warrior'},name:'Goblin Warrior',sizes:['Small'],additional_languages:0,ammunition_required:true,item_count:5,omitted_features:[],abilities:[]},{definition_id:'wolf',source:{ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'wolf',definition_fingerprint:'fixture-wolf'},name:'Wolf',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,omitted_features:[],abilities:['Bite']}],creatures:[]},onCreate});
   await user.selectOptions(screen.getByLabelText('Creature source'),'wolf');
   expect((screen.getByLabelText('Creature size') as HTMLSelectElement).value).toBe('Medium');
   expect(screen.queryByLabelText('Starting ammunition per type')).toBeNull();
   await user.click(screen.getByRole('button',{name:'Prepare creature'}));
   expect(onCreate.mock.calls[0][0]).toMatchObject({definition_id:'wolf',size:'Medium',ammunition_units:0,item_ids:[]});
+});
+
+it('shows source execution limits and submits the exact queried pin', async () => {
+  const user=userEvent.setup();const onCreate=vi.fn();
+  const source={ruleset_id:'srd-5.2',ruleset_version:'5.2.1',definition_id:'air-elemental',definition_fingerprint:'exact-server-pin'};
+  render(CreatureForm,{setup:{catalog:[{definition_id:'air-elemental',source,name:'Air Elemental',sizes:['Large'],additional_languages:0,ammunition_required:false,item_count:0,omitted_features:[],abilities:['Thunderous Slam','Whirlwind'],execution_limits:['Whirlwind is not yet executable.']}],creatures:[]},onCreate});
+  expect(screen.getByText(/Not yet available: Whirlwind/)).toBeTruthy();
+  await user.click(screen.getByRole('button',{name:'Prepare creature'}));
+  expect(onCreate.mock.calls[0][0]).toMatchObject({source,definition_id:'air-elemental',size:'Large',item_ids:[]});
+});
+
+it('does not silently fill a historical picker pin for new creation', async () => {
+  const user=userEvent.setup();const onCreate=vi.fn();
+  render(CreatureForm,{setup:{catalog:[{definition_id:'wolf',name:'Wolf',sizes:['Medium'],additional_languages:0,ammunition_required:false,item_count:0,omitted_features:[],abilities:['Bite']}],creatures:[]},onCreate});
+  await user.click(screen.getByRole('button',{name:'Prepare creature'}));
+  expect(onCreate).not.toHaveBeenCalled();
+  expect(screen.getByRole('alert').textContent).toContain('Refresh the creature sources');
 });
 
 it('requires retained timing actors in the next battlefield and keeps their identities',async()=>{
