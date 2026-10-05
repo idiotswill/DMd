@@ -39,6 +39,14 @@ restart test, the whole campaign_lifecycle harness and strict persistence lintin
 followed by required receiving/canonical/exact-head CI checks under root scheduling.
 No runtime pass or overall Gate4 acceptance is claimed from this plan or correction.
 
+Plan-first commit `5e55662` preceded the correction. The persistence-local helper
+and final cleanup call are now authored; the previous five tests and the entire
+restart test through both pool scopes retain their original operations/assertions.
+Direct configured rustfmt on the two changed Rust files and `git diff --check`
+passed after root confirmed the prior heavy run had finished. The correction is
+UNCOMPILED / UNRUN. Root's next action is independent complete-diff review, then
+the exact restart test and all six lifecycle tests under its serialized test slot.
+
 ## Historical reserved-hand correction — 2026-10-04
 
 PR57 at `8ec12c3` has an actual Linux test failure.
