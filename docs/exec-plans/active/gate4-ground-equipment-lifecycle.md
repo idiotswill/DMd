@@ -1,11 +1,31 @@
 # Gate 4 — Guarded attack equipment continuation
 
-Current receiving status, 2026-10-05: Ground production normally receives exact432
-after its independently audited focused63 PASS (fmt and strict three-package
-all-target Clippy also PASS). Earlier failed attempts below remain historical
-evidence. Checkpoint3 source ownership and full app/replay/UI acceptance are in
-[the production plan](gate4-ground-production.md); no new production runtime
-result is claimed. Both merge bases and all19ac production are preserved.
+Current receiving status, 2026-10-05: coherent Ground/Ogre source662 normally
+receives reviewed lifecycle1702 and its exact9eb persistence-test cleanup. The
+previous432 focused63 and9eb focused lifecycle6 results are dependency evidence.
+The current production source remains UNCOMPILED/UNRUN; independent union review
+and fresh root-allocated checks are next. Full app/replay/UI/native acceptance
+remains in [the production plan](gate4-ground-production.md). The complete
+historical corrections and failed attempts below remain preserved.
+
+## October 5 verified cleanup dependency intake
+
+The exact 432ffeb focused run completed formatting, strict domain/rules/app
+all-target Clippy and all63 controls on October5; root and independent log/name/
+hash audits passed. Run-result SHA256:
+b1458275609f90b64ad07fab3e3af8c05ff6f14032dbc3a7036f5adb226b221f.
+That focused result does not replace whole-workspace or production acceptance.
+
+Receive published 9ebfedf22adc9d1dbf45c7a02a6f9590ffcbecba by normal merge
+after committing this plan. Its only new non-document work is the reviewed
+persistence test-local OS32/33 cleanup helper and final removal call. Existing
+restore assertions and pool scopes remain unchanged. Exact9eb formatting,
+strict persistence Clippy, restart1 and whole lifecycle6 passed; independent
+audit6e102d8caa2ce64773f66f319b8b092bd87764a9a4899f459c691357f8c2ad23.
+Fresh fetch confirms both heads. Preserve all432 source and controls outside
+the exact incoming persistence-test files; review the whole union before
+publication or production receiving. Current-head CI and canonical verification
+remain required. This intake grants no public admission or gate acceptance.
 
 Historical production-follow-on status (superseded by checkpoint3 below):
 Separate production follow-on, 2026-10-04: root created
