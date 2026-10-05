@@ -1,5 +1,50 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Exact Ogre receiving and admission preparation — 2026-10-05
+
+Before receiving source, root authorized the complete normal merge of reviewed
+`3387a53898558838bfb7e25dfdd81b4dc1c1d228` into clean Ground
+`53e5ade1927184a704c9fc0fef73b8e055ae0ab6`. The common base is exact
+`2559bfe7404e642b11ea36a1323de7a35e0cb56c`. Root's complete source reviews at
+859aa06, 1bf6c0d and 9c1f332 and independent ccd383c constructor correction were
+read in full by this writer, together with the full 806-line Ogre plan. Root
+independently read, rehashed and recounted all six exact3387 actual CI logs:
+856 Linux and 858 MSVC cases across 59 groups, all 20 new and 21 original selected
+names, matching synthetic merge tree/parents, no failures. This permits receiving
+the dependency; it does not prove this combined Ground source or feature play.
+
+Preserve all Ground production changes and the full Ogre dependency, including
+its source/count/package definitions, physical Action/OA and retained validation,
+stable Item/form/grip selectors and omitted legacy DTO fields. Resolve semantic
+overlap in tactical dispatch, creature physical preparation and typed desktop
+choices deliberately. Do not replace sealed Ground preparation with ordinary
+planning on a caller-patched image. Keep full original fixture/raw/replay bytes
+and old source guards, count vectors, outcome/payment logic and retry order.
+
+After receiving, the deliberate admission change may remove only the temporary
+exact-Ogre catalog/common-profile staging closure once coherent source seams are
+reviewed. Preserve ID-only V1 unknown behavior, exact full-pin authentication,
+all old source fingerprints and both-policy exact-flow5 attack/OA guards. The
+four staging controls in `tactical_ogre_source.rs` named full-pin lookup,
+invented-retained-profile, allocation-without-admission and the application
+`registry_only_ogre_refuses_live_and_historical_creation_without_mutation` must
+be explicitly migrated: retain full-pin corruption, ID-only denial, allocation,
+old-source positive and malformed/no-pin refusal assertions; replace solely the
+temporary closed-current expectation with genuine current catalog/creation,
+original accepted-event replay and valid source-profile mechanics. A fabricated
+profile is never production acceptance. All remaining Ogre tests stay intact.
+
+Author accepted file-SQLite integration for normal creation of exactly four
+distinct quantity-one Items, Greatclub/Javelin melee/Javelin Thrown physical
+miss/hit/critical, three actual throws and fourth refusal, printed2d8/2d6 versus
+same-Item other-actor ordinary1d8/1d6, real held melee crossing/OA spending one
+Reaction with no Action/equipment/pickup, cold pending attack/damage/retry,
+portable mirror and hostile records. Preserve the Ground control and desktop
+intent suites; add coherent union coverage rather than another private checkpoint.
+Root retains all runtime and publication slots. No admission or acceptance is
+claimed by this plan or its receiving merge; all outstanding Ground child-order,
+privacy, native, canonical/CI and accepted-main obligations remain required.
+
 ## Coherent application source handback — 2026-10-05
 
 Checkpoint 3 now has a complete authored production route across rules queries,
