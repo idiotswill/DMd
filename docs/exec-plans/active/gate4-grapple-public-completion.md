@@ -8,6 +8,15 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+Root approved the complete independent-review correction plan on 2026-10-05
+and transferred sole source ownership back to this writer from clean71673d7.
+The [five-finding correction plan](gate4-grapple-public-corrections.md) is
+committed before source changes. Source/tests/docs only are allocated; no
+formatter, runtime, dependency receipt or publication is allocated. The source
+handback will remain uncompiled/unrun for full independent review. Ordinary
+dragging/carrying remains an open Gate4 obligation; explicit self-only movement
+is an intermediate boundary, never an acceptance waiver. No private418 receipt.
+
 Implementation progress (2026-10-05, source only): the single typed reducer,
 owned prepared/applied images, fixed complete-history verifier, authenticated
 live/query/replay/open/restore/observation paths, occurrence-bound ray/OA reads,
