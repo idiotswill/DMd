@@ -1,6 +1,7 @@
 //! Pure source-backed weapon plans. These are not player-authorized commands.
 //! The encounter resolver supplies validated truth and commits resources/receipts atomically.
 mod equipment;
+pub(crate) mod ground;
 mod history;
 mod mastery;
 #[cfg(test)]
@@ -34,6 +35,7 @@ fn require(condition: bool, message: &str) -> Result<(), WeaponError> {
 }
 
 /// Source identity is established by the encounter resolver, never a player flag.
+#[derive(Clone, Copy)]
 pub enum WeaponActorSource<'a> {
     Character(&'a CharacterProfile),
     /// Ordinary use of equipment. Stat-block features must use their explicit attack
@@ -41,6 +43,7 @@ pub enum WeaponActorSource<'a> {
     CreatureOrdinaryWeapon(&'a CreatureDefinition),
 }
 /// Runtime-derived geometry/timing facts. Intentionally not Deserialize.
+#[derive(Clone, Copy)]
 pub struct WeaponAttackContext<'a> {
     pub origin: &'a CommandMeta,
     pub actor: EntityId,
@@ -145,6 +148,21 @@ pub fn recoverable_ammunition(expended: u32) -> u32 {
 }
 
 pub fn prepare_weapon_attack(
+    input: &WeaponAttackInput<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    require(
+        !is_ground_pickup(input.choice.equipment_change)
+            && !has_unimplemented_ground_records(input.state)
+            && input
+                .history
+                .iter()
+                .all(|r| r.ground_pickup_before.is_none()),
+        "ground pickup execution is not enabled",
+    )?;
+    ground::prepare(input)
+}
+
+fn prepare_weapon_attack_inner(
     input: &WeaponAttackInput<'_>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
     let WeaponAttackInput {
@@ -357,6 +375,7 @@ pub fn prepare_weapon_attack(
             modifier
         };
     let receipt = WeaponAttackReceipt {
+        ground_pickup_before: None,
         origin: context.origin.clone(),
         actor: context.actor,
         turn_number: context.turn_number,

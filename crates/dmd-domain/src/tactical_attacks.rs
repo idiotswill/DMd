@@ -58,6 +58,8 @@ pub enum TacticalAttackDelivery {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalWeaponAttack {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground_pickup_before: Option<crate::AttackGroundPickupBefore>,
     pub choice: WeaponUseChoice,
     pub window: WeaponActionWindow,
     pub equipment_before: ActorEquipmentLoadout,

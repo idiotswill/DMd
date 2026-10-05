@@ -8,6 +8,8 @@ mod continuations;
 mod creature_bridge;
 mod failed_save;
 mod falling;
+#[cfg(test)]
+mod ground_guard_tests;
 mod hit_reactions;
 mod initiative;
 mod medicine;
@@ -264,7 +266,11 @@ fn controller(state: &CampaignState, actor: EntityId) -> Option<PlayerId> {
                 })
         })
 }
-fn authorize(state: &CampaignState, meta: &CommandMeta, actor: EntityId) -> Result<(), RulesError> {
+pub(crate) fn authorize(
+    state: &CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+) -> Result<(), RulesError> {
     let accepted = match meta.issuer {
         CommandIssuer::Admin | CommandIssuer::System => {
             meta.actor.is_none() || meta.actor == Some(AgentRef::Entity(actor))
@@ -331,6 +337,11 @@ fn resolve_with_policy(
     }
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
+    }
+    // All policies refuse new pickup authority until the complete owned after
+    // lifecycle and table path are integrated. Do not put this in Live-only checks.
+    if action_uses_ground_pickup(action) {
+        return Err(prerequisite("ground pickup execution is not enabled"));
     }
     crate::validate_state(state, pack)?;
     validate_tactical_state(state)?;
@@ -719,6 +730,21 @@ pub fn replay_tactical(
         return Err(RulesError::ReplayMismatch);
     }
     Ok(transition)
+}
+
+fn action_uses_ground_pickup(action: &TacticalAction) -> bool {
+    let change = match action {
+        TacticalAction::Attack { choice }
+        | TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::Weapon(choice),
+        } => choice.equipment_change,
+        TacticalAction::CreatureWeaponAttack { choice, .. } => choice.equipment_change,
+        TacticalAction::ChooseAttackMastery {
+            choice: WeaponMasteryChoice::Cleave { attack },
+        } => attack.equipment_change,
+        _ => None,
+    };
+    is_ground_pickup(change)
 }
 
 fn validate_live_execution(

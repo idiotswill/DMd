@@ -42,6 +42,9 @@ fn apply_change(
         "free equip/unequip belongs to an Attack action",
     )?;
     let id = match change {
+        AttackEquipmentOperation::Pickup { .. } => {
+            return Err(illegal("ground pickup requires sealed preparation"));
+        }
         AttackEquipmentOperation::Equip { item, .. }
         | AttackEquipmentOperation::Unequip { item } => item,
     };
@@ -51,6 +54,9 @@ fn apply_change(
         "Attack-action equipment change is for one physical weapon",
     )?;
     match change {
+        AttackEquipmentOperation::Pickup { .. } => {
+            return Err(illegal("ground pickup requires sealed preparation"));
+        }
         AttackEquipmentOperation::Equip { hand, .. } => {
             require(
                 !loadout.hands.contains(&HandAssignment::Item(id)),
@@ -88,18 +94,36 @@ pub(super) fn before_attack(
     {
         apply_change(input, &mut loadout, change.operation, hands)?;
     }
-    let assignment = HandAssignment::Item(input.choice.weapon);
-    match input.choice.grip {
+    apply_grip(
+        input.choice,
+        weapon,
+        input.context.mounted,
+        hands,
+        &mut loadout,
+    )?;
+    Ok(loadout)
+}
+
+/// Shared physical grip derivation for the ordinary planner and bounded inverse.
+pub(super) fn apply_grip(
+    choice: &WeaponUseChoice,
+    weapon: &WeaponDefinition,
+    mounted: bool,
+    hands: &EffectiveHands,
+    loadout: &mut WeaponLoadout,
+) -> Result<(), WeaponError> {
+    let assignment = HandAssignment::Item(choice.weapon);
+    match choice.grip {
         WeaponGrip::OneHand(hand) => {
             require(
                 weapon.hands == WeaponHands::One
-                    || (weapon.hands == WeaponHands::TwoUnlessMounted && input.context.mounted),
+                    || (weapon.hands == WeaponHands::TwoUnlessMounted && mounted),
                 "this weapon requires two hands to attack",
             )?;
             if loadout.hands[hand.index()] != assignment {
                 require(
-                    input.choice.delivery == WeaponDelivery::Thrown
-                        && hands.is_free(&loadout, hand)
+                    choice.delivery == WeaponDelivery::Thrown
+                        && hands.is_free(loadout, hand)
                         && !loadout.hands.contains(&assignment),
                     "weapon is not held in the chosen hand",
                 )?;
@@ -114,7 +138,7 @@ pub(super) fn before_attack(
         }
         WeaponGrip::TwoHands => {
             require(
-                hands.can_use_two_hands(&loadout, input.choice.weapon),
+                hands.can_use_two_hands(loadout, choice.weapon),
                 "two-handed attack requires holding the weapon and both hands available",
             )?;
             // Two hands do not grant a larger die unless the source has Versatile
@@ -122,7 +146,7 @@ pub(super) fn before_attack(
             loadout.hands = [assignment; 2];
         }
     }
-    Ok(loadout)
+    Ok(())
 }
 pub(super) fn ammunition(
     input: &WeaponAttackInput<'_>,
@@ -181,6 +205,11 @@ pub(super) fn after_attack(
         && change.timing == EquipmentChangeTiming::AfterAttack
     {
         let changed_item = match change.operation {
+            AttackEquipmentOperation::Pickup { .. } => {
+                return Err(illegal(
+                    "ground pickup after an attack requires owned later work",
+                ));
+            }
             AttackEquipmentOperation::Equip { item, .. }
             | AttackEquipmentOperation::Unequip { item } => item,
         };

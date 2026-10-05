@@ -188,6 +188,7 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     let source = match choice {
         TacticalMeleeChoice::Weapon(c) => {
             TacticalAttackSource::Weapon(Box::new(TacticalWeaponAttack {
+                ground_pickup_before: None,
                 choice: c.clone(),
                 window: WeaponActionWindow {
                     id: meta.id,

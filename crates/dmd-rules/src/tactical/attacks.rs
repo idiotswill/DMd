@@ -145,6 +145,7 @@ fn begin_with_source(
             quantity_before: state.items[&spend.stack].quantity,
         });
     let weapon = Box::new(TacticalWeaponAttack {
+        ground_pickup_before: None,
         choice: choice.clone(),
         window,
         equipment_before: equipment,
