@@ -2,11 +2,15 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-Current accepted main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50,
-received by the Offstage branch on 2026-10-05. PR50 admits the bounded Air Elemental
-source; its complete gameplay remains open. PR48 remains accepted at `dbf1d63`.
-The [release plan](gate4-encounter-release.md) records the protected merge and
-separate successful literal-main checks. The candidate statuses below are historical.
+The accepted-main source checkpoint received by this branch is
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50, received by Offstage
+on 2026-10-05. PR50 admits the bounded Air Elemental source; complete Air gameplay
+and the remaining Gate4 obligations remain open. At that receiving checkpoint,
+separate literal32 runtime checks remained pending. This identifies the received
+source, not the latest global main or fresh execution of this branch.
+PR48 remains accepted at `dbf1d63`; the [release plan](gate4-encounter-release.md)
+records its protected merge and separate successful literal-main checks.
+The candidate statuses below are historical; the complete Gate4 remains active.
 
 ## Historical integration checkpoint — 2026-10-01
 

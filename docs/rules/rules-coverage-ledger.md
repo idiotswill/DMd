@@ -4,9 +4,11 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
-Current integration note, 2026-10-04: PR48 is accepted at main
-`dbf1d633460473183324b4ec519e8d1980884b5c`, with separate successful literal-main
-checks recorded in the [release plan](../exec-plans/active/gate4-encounter-release.md).
+Received integration checkpoint, 2026-10-05: PR50 is accepted at main
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`; separate literal32 runtime checks
+were pending at that checkpoint. This names this branch's accepted source baseline,
+not the latest global main or new-head execution. PR48's separate successful
+literal-main checks are recorded in the [release plan](../exec-plans/active/gate4-encounter-release.md).
 The older release-candidate statements below remain historical evidence. No Gate4
 family status or player-acceptance claim changes.
 
@@ -104,13 +106,16 @@ all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now pa
 canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
 (783 Linux /785 MSVC); the plan records exact logs and independent review.
 At that pre-merge checkpoint, final documentation-head checks/review, protected
-merge and literal main proof remained outstanding. The later bounded source
-admission is accepted through PR50 at `32c0c682c4dbb235e1f9a119643c5d8626d5cb71`;
-its source/native evidence remains attributed to the exact heads above. No evidence array or family status
+merge and literal main proof remained outstanding. Final Air head ee51 later
+passed review and checks before protected PR50 merge as
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`; separate literal32 runtime proof
+was still outstanding at that receiving checkpoint. The source/native evidence
+remains attributed to the exact heads above. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
-`monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
-slice still owes its genuine paid Prone-immunity continuation and recovery.
+`monster-running`, `combat-actions` or Gate6 `monster-content`. At that Air
+checkpoint, the later Shove slice still owed its genuine paid Prone-immunity
+continuation and recovery.
 
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Integrated

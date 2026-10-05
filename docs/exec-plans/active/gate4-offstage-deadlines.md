@@ -41,6 +41,14 @@ UNRUN and becomes obsolete on a new head; preserve it and prepare a fresh exact
 currently the separate Grapple418 run. New-head runtime and native outcomes remain
 unknown. Root coordinates subsequent CI, canonical verification and acceptance.
 
+Receipt outcome before root review: the four conflicts are documentation only.
+Their resolution retains successful literal-dbf evidence, bounded Air admission,
+explicit historical pending32 qualification and exact source/native attribution;
+it removes a duplicated PR48 paragraph produced by the automatic merge. The
+incoming full Expiry plan is retained exactly, and the release plan remains the
+Offstage5a blob. All non-document entries are required to remain exactly5a in the
+external full-tree audit. No new runtime/native pass or family status is asserted.
+
 ## Actual application setup failure and fixture correction plan — 2026-10-05
 
 Windows stable run37297998875/job111723733666 on exact b5af47e completed

@@ -439,3 +439,40 @@ The metadata-adapted verifier itself was read before execution. No payload,
 installer, app or database operation ran; independent package review is pending.
 Current next action is independent receiving-head review before publication;
 canonical, native deadline, final CI and acceptance remain open as stated above.
+
+### Accepted Air source receiving plan — 2026-10-05
+
+Root now owns this branch, clean at c9bbcb5f31a4b296bd88ce96464fda9d9ceffc27.
+Current authoritative main32c0c682c4dbb235e1f9a119643c5d8626d5cb71 adds the
+accepted Air source and explicit creature admission. The earlier bounded
+dbf-only reconciliation is complete; this new plan authorizes normally receiving
+that exact accepted main before final canonical/native acceptance. No Shove,
+MR, Ground, Ogre, Grapple, Offstage or physical-creation development branch is
+included. Git reports both dbf1d633 and8c03f9fb as merge bases; a three-dot diff
+alone does not prove this union. Root will compare the resulting complete tree
+against both parents and inspect each overlapping or conflicted source body.
+
+Preserve the exact corrected expiry turns.rs logic, six rules expiry tests,
+genuine file-SQLite Hold Person application test, prepared source-caster helper,
+module registrations, all historical fixture/receiver bytes and existing raw
+evidence. Receive accepted Air source definitions, explicit current creation
+pins and original historical admission behavior. The shared Missile parent must
+retain both the real timed-expiry child and accepted source creation pin. Record
+any necessary receiving adaptation separately from historical protected bodies.
+
+The exact c9 CI Windows run37211471347/job111463369624 passed785 Rust tests in56
+groups; Linux37211471383 passed783. The current package11311383598 was fully
+verified but never launched. Archive SHA256
+b38bbf8ac71fbe0e36313f8e1c797bfc775c35b221b205f3ae40b6256ad6619b,
+portable EXE2e47f031cdd1c9c0c2a388c4e66b9b985a517cde4aa644a88f4522602bbe3c62;
+all1070 payloads checked. Independent package audit66865ae11108e12ca8730dae77629c4c9646eefe519bf10909883a0691491a9f
+agrees. These results do not verify the future receiving head.
+
+After complete independent union review, normally publish and rerun exact-head
+CI, local canonical and real packaged deadline acceptance. Root retains the
+serial local heavy slot, currently Shove verification; no compilation/native
+execution is allocated by this source merge. Native preparation must account for
+remembered campaign auto-open and the shared app-data store: use a compatible
+verified integrated package and genuine fresh QA campaign, never downgrade a
+later saved campaign. Pending/completed cold recovery and owned expiry selection
+at the actual60second source deadline remain required. Keep Gate4 open.
