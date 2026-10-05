@@ -116,6 +116,19 @@ becoming invalid proof. Those remaining obligations and native acceptance stay
 open. Existing parent test bodies and all production/historical bytes remain
 immutable. No Cargo, database, npm or native execution is allocated here.
 
+### Concrete concentration review correction before source
+
+While implementing the fall hit protocol, source inspection found that the
+concentration case at2d2642 submitted physical19 and immediately unwrapped a
+damage roll. `hit_reactions::open` requires every target's acknowledgment in
+EncounterReleaseV1 even without an eligible Shield. That accepted hit therefore
+waits in Collecting, so the damage roll is not yet available. The earlier clear
+concentration review is superseded for this concrete omission. Root expanded
+the sole-writer allocation to insert the genuine cold order and Host-owned
+Cultist decline before damage, sharing the helper with the fall family. Preserve
+all existing dice, inputs and assertions, and review the full corrected body.
+This is a static finding, not a reported runtime failure; all cases remain unrun.
+
 ## Planned implementation
 
 1. Add a child of the existing Ground table integration module. Reuse its actual
