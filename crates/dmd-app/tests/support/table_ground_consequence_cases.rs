@@ -2,6 +2,9 @@
 //! Every positive state follows accepted application commands and physical dice.
 use super::*;
 
+#[path = "table_ground_concentration_cases.rs"]
+mod concentration;
+
 fn owner(f: &Fixture, mage: EntityId) -> TableTransportChannel {
     TableTransportChannel::SourceCreature {
         player_id: f.players[1],
@@ -235,6 +238,45 @@ async fn no_after_card(f: &Fixture) {
             "equipment cannot be selected before the real response or damage child"
         );
     }
+}
+
+async fn premature_after(f: &Fixture) {
+    Box::pin(no_after_card(f)).await;
+    let before = state(f).await;
+    let resolution = before
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap()
+        .resolution
+        .as_ref()
+        .unwrap();
+    let queued = resolution.attack_after_equipment.as_ref().unwrap();
+    assert!(queued.selected_by.is_none());
+    let work = TacticalWorkKey {
+        resolution: resolution.origin.id,
+        occurrence: queued.work.occurrence,
+    };
+    for input in [
+        action(TacticalAction::ChooseAttackEquipment {
+            work,
+            choice: AttackEquipmentChoice::Decline,
+        }),
+        TableTransportInput::AttackEquipment {
+            handle: work.resolution,
+            choice: AttackEquipmentChoice::Decline,
+        },
+        TableTransportInput::SelectWork {
+            handle: work.resolution,
+        },
+    ] {
+        let wrong = request(f, player(f), input).await;
+        Box::pin(rejected(f, wrong)).await;
+        assert_eq!(state(f).await, before);
+    }
+    Box::pin(hostile_populated_destination(f)).await;
 }
 
 async fn shield(f: &mut Fixture, path: &Path, mage: EntityId) -> CommandId {
@@ -524,7 +566,10 @@ async fn shield_case(
                 .is_none()
         );
         assert_eq!(completed_damage.items[&item.id].owner, item.owner);
-        assert_eq!(completed_damage.items[&item.id].custody, Custody::Entity(f.actors[0]));
+        assert_eq!(
+            completed_damage.items[&item.id].custody,
+            Custody::Entity(f.actors[0])
+        );
         assert_eq!(completed_damage.items.len(), initial.items.len());
         return;
     }

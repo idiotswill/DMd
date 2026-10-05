@@ -6,8 +6,11 @@ The first added integration function contains six genuine Mage cases: before
 same-Item pickup with ordinary hit and natural20, and separately held Dagger
 after intent with both hit outcomes crossed with Apply/Decline. Its setup follows
 the existing source-owned Shield application route without changing that suite.
-Each new transition uses the Ground cold-file/independent-portable/exact-retry
-helper. Current-source pin, player ownership, original cause, Reaction/use cost,
+Scenario transitions after initial setup use the Ground
+cold-file/independent-portable/exact-retry helper. Initial accepted session,
+creation, equipment and map commands use the existing Fixture host route; the
+first mirror restore replays that real prefix, without an individual cold cut
+after each setup command. Current-source pin, player ownership, original cause, Reaction/use cost,
 17AC miss versus2d4+3 critical, no early card, wrong-kind refusal, unrelated
 complete DTO stability and final hands/item/payment are asserted. Hostile
 activation images are also refused against a populated unrelated destination,
@@ -25,6 +28,31 @@ last obligation. Concentration/fall families, Graze and native remain due.
 
 Direct configured rustfmt and Git diff checks only have run. This checkpoint
 requests full independent source review while root authors the next family.
+
+## Concentration source checkpoint — authored and unrun
+
+Shield d358875 full independent source review is clear; memo
+`ground-shield-d358875-independent-review-2026-10-05.md` SHA256
+`75400c180e2e488e2bd464c00407e21d52bed12cbb2ddfd7d60959da22dd0314`.
+Its setup-versus-cold-step precision is incorporated above. No runtime claim.
+
+The second function has two cases. A genuine source-created Cultist uses its
+real material-bearing Hold Person against the second PC. Physical initial and
+end-turn saves fail before the first PC's next turn. That PC's normally held
+Dagger hits for actual1d4+3 damage with after intent. Tests assert the pending
+Concentration work's actual damage ancestry, original attack/damage metadata,
+hidden Host roll, queued equipment and rejection of premature raw/opaque work
+with complete export/state equality. Physical success preserves the real group
+and Paralyzed; physical failure ends both before the after choice. This source
+has no Legendary Resistance, so there is no invented failed-save decision.
+Then real Apply/Decline finishes through cold/portable/exact retry boundaries.
+Hostile imports also preserve an unrelated destination campaign and every row.
+
+The changes preserve all old receiving tests and positive setup is entirely
+accepted application commands. Direct formatting/static review only; both new
+functions and all eight authored scenarios remain UNCOMPILED/UNRUN. Actual
+failed-save-decision coverage requires a genuine supporting source; fall target
+death/Decline, wider privacy, Graze acquisition and native acceptance remain open.
 
 ## Ownership and baseline
 
