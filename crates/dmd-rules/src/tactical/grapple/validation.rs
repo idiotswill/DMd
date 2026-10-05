@@ -150,7 +150,15 @@ fn validate_evidence(
     declaration: &TacticalGrappleDeclaration,
 ) -> Result<(), RulesError> {
     admission::validate_declaration_source(state, declaration)?;
-    if saves::expected_save(state, declaration, save.ability, save.key)? != save.request {
+    // Pending work still derives its request from the actual current source.
+    // Final evidence must retain the issued request: establishing this grip can
+    // end Dodge, and release must not rewrite that completed Advantage save.
+    // Shape, raw/decision, arithmetic, ownership and chronology below remain
+    // necessary; matching retained copies alone do not prove original history.
+    // Public retained/raw/restore admission therefore remains closed.
+    if save.proof.is_none()
+        && saves::expected_save(state, declaration, save.ability, save.key)? != save.request
+    {
         return Err(invalid(
             "Retained Grapple request differs from its actual source",
         ));

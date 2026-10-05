@@ -322,7 +322,7 @@ pub(in crate::tactical) fn finish(
                 .condition_immunities
                 .contains(&Condition::Grappled);
             if !succeeded && !immune {
-                admission::deferred_projection(state, old.declaration.target)?;
+                admission::deferred_flight_loss(state, old.declaration.target)?;
             }
             let proof = GrappleSaveProof {
                 evidence,
@@ -368,6 +368,12 @@ pub(in crate::tactical) fn finish(
                 GrappleAttemptOutcome::Established { grip: id }
             };
             attempt_mut(state)?.outcome = Some(outcome);
+            if !succeeded && !immune {
+                // The live relation and its final outcome already exist. Their
+                // derived Speed zero ends the actual Dodge permanently before
+                // the next owned equipment pause or creating-work retirement.
+                super::super::turns::refresh_dodges(state)?;
+            }
             complete_attempt(state)
         }
         TacticalWorkKind::GrappleEscapeCheck { .. } => {

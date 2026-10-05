@@ -79,7 +79,7 @@ pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError>
                     "Holder breaks require the guarded lifecycle follow-up.",
                 ));
             }
-            deferred_projection(state, grip.declaration.target)?;
+            deferred_flight_loss(state, grip.declaration.target)?;
             let e = encounter(state)?;
             let a = e
                 .participant(grip.declaration.grappler)
@@ -99,15 +99,10 @@ pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError>
     Ok(())
 }
 
-pub(super) fn deferred_projection(
+pub(super) fn deferred_flight_loss(
     state: &CampaignState,
     target: EntityId,
 ) -> Result<(), RulesError> {
-    if flow(state)?.dodges.iter().any(|d| d.actor == target) {
-        return Err(prerequisite(
-            "Grapple ending Dodge requires the guarded condition lifecycle.",
-        ));
-    }
     let e = encounter(state)?;
     let target = e
         .participant(target)
@@ -178,7 +173,7 @@ pub(super) fn plan_attempt(
         ));
     }
     super::super::shove::cover_bonus(state, actor, target)?;
-    deferred_projection(state, target)?;
+    deferred_flight_loss(state, target)?;
     let anatomy = crate::tactical_grapple_sources::ordinary_grapple_anatomy(state, actor, pack)?
         .ok_or_else(|| prerequisite("This source has no supported ordinary hand anatomy."))?;
     let target_source = super::super::shove::source_pin(state, target)?;
