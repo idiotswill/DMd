@@ -1,5 +1,51 @@
 # Gate 4 — Pinned physical character creation
 
+## Authored coherent source handback — 2026-10-05
+
+Implementation now follows the approved design below on this independent branch;
+no Ground, Ogre, Grapple or Offstage changes were imported. Production changes
+cover the immutable physical creation catalog and installed-byte validation,
+strict full-pin domain/builder path, explicit outer/nested creation actions,
+profile-derived equipment materialization, pre-creation anchor and exact nested
+history checks, schema1–3 raw compatibility preflight, and current desktop creation.
+The typed catalog fingerprint is `e2d57011783b3fae`; the original sixteen entries,
+kernel/source/tactical/creature payloads and old input/actions remain unchanged.
+
+Authored acceptance tests use actual table creation and purchases, real ItemIds,
+controller-owned opaque transport, per-command file reopen and independent portable
+restore. They cover both weapons' natural1 Graze, ordinary-miss Graze, decline, hit and
+critical dice, held Glaive10ft opportunity with one Reaction/no equipment change,
+pending movement continuation, exact accepted retries including the original
+pre-session creator, original outer/nested/audit correspondence, rejected hostile
+anchors/profiles/imports, schema1–3 future authority/null shadows, legacy schema3
+absent/null controls, and full database row equality after rejected import/migration.
+Desktop tests cover actual current catalog prices/purchases/masteries/full source
+submission and uncertain exact retry, while retaining original creation retries.
+Installed missing/undeclared/rehashed current source refusal is also authored.
+No positive test edits a purchased Item, mastery, character profile, paid state,
+HP, or SQL projection to manufacture acquisition or attack eligibility. Negative
+import/migration inputs are explicitly cloned/poisoned only to prove refusal.
+
+Validation so far: direct rustfmt parsed/formatted changed Rust files successfully
+and `git diff --check` passed. Static audit
+`tooling/physical-creation-authored-static-audit-2026-10-05.md` records the five
+original installed payloads plus their manifest entries, all36 raw/test/capture
+fixture paths and all42 pre-existing Rust test/helper blocks in modified test
+roots preserved verbatim. Original CharacterCreationInput and both original
+CreateCharacter variant bodies also remain verbatim. Its SHA256 is
+`0bfe29a1c8913733d30d86cdc476fd001cc9e339a9296df6b773e2609e12db9c`.
+All production acceptance tests remain UNCOMPILED/UNRUN.
+No Cargo, compiler, npm, database, native application, CI, publication or merge was
+executed by this source owner. Root retains the sole serial verification slot and
+must independently review the complete source/test bodies before allocating runs.
+
+Next action: root/peer full exact-head review, then root-owned focused Rust and
+desktop checks, correction review and full verify-fast/verify/exact-head CI. Native
+current creation→sheet purchases→prepare→Graze→Glaive opportunity and restart
+evidence remains required; it is not waived by these authored tests. Later receiving
+into Ground and other Gate4 work requires an explicit plan-first normal merge and
+union review. Keep Gate4 open until its integrated acceptance is demonstrated.
+
 ## Approved implementation assignment — 2026-10-05
 
 Root independently read the complete334-line plan and actual creation, inventory,

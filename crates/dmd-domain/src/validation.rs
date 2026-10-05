@@ -29,6 +29,11 @@ impl CampaignState {
     #[must_use]
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = self.validate_references();
+        if self.schema_version < 4 && crate::has_current_character_creation(self) {
+            violations.push(StateInvariantViolation::InvalidEncounterState(
+                "legacy state contains future character creation authority".into(),
+            ));
+        }
         if self.encounter_history.is_none()
             && self
                 .encounter
