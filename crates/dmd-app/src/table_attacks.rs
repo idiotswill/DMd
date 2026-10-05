@@ -6,9 +6,10 @@ use dmd_rules::tactical_definitions::{
 };
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableAttackOptions>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -21,9 +22,7 @@ pub(super) fn options(
         return Ok(None);
     };
     let definitions = bundled_tactical_definitions().map_err(|error| error.to_string())?;
-    let rules = state.rules.as_ref().ok_or("Attack rules are absent.")?;
-    let hands = dmd_rules::tactical_hands::EffectiveHands::current(state, rules, actor)
-        .map_err(|error| error.to_string())?;
+    let hands = read.hands(actor).map_err(|error| error.to_string())?;
     hands
         .validate_loadout(&loadout.hands)
         .map_err(|error| error.to_string())?;

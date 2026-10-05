@@ -169,7 +169,9 @@ fn validate_evidence(
         &declaration.origin,
         declaration.target,
     )?;
-    super::super::shove::authorize_owner(state, &save.chosen_by, declaration.target)?;
+    if !crate::table::grapple_enabled(state) || save.proof.is_none() {
+        super::super::shove::authorize_owner(state, &save.chosen_by, declaration.target)?;
+    }
     if let Some(proof) = &save.proof {
         save.validate_shape(declaration).map_err(|e| invalid(&e))?;
         if saves::evidence(state, save)? != proof.evidence {
@@ -187,7 +189,9 @@ fn validate_evidence(
             proof.evidence.resolved_by(),
             declaration.target,
         )?;
-        super::super::shove::authorize_owner(state, &proof.finalized_by, declaration.target)?;
+        if !crate::table::grapple_enabled(state) {
+            super::super::shove::authorize_owner(state, &proof.finalized_by, declaration.target)?;
+        }
         let raw = state
             .rules
             .as_ref()
@@ -234,6 +238,7 @@ fn validate_evidence(
         // Exact-key expenditure above also covers the last available use.
         if !base_success
             && proof.legendary.is_none()
+            && !crate::table::grapple_enabled(state)
             && super::super::failed_save::available(state, declaration.target)?
         {
             return Err(invalid("Grapple failure omitted its required LR decision"));
@@ -246,6 +251,7 @@ fn validate_evidence(
                 declaration.target,
             )?;
             if !legendary.use_resistance
+                && !crate::table::grapple_enabled(state)
                 && !super::super::failed_save::available(state, declaration.target)?
             {
                 return Err(invalid("Grapple decline had no source LR allowance"));
@@ -381,6 +387,29 @@ fn validate_attempt(state: &CampaignState, a: &TacticalGrappleAttempt) -> Result
         TacticalGrappleAttemptStage::SaveChoice => Some(TacticalWorkKind::BeginGrapple {
             grip: a.declaration.id,
         }),
+        TacticalGrappleAttemptStage::AfterEquipment
+            if crate::table::grapple_enabled(state)
+                && a.selected.is_none()
+                && r.frames
+                    .iter()
+                    .flatten()
+                    .filter(|work| {
+                        work.kind
+                            == (TacticalWorkKind::GrappleAfterEquipment {
+                                grip: a.declaration.id,
+                            })
+                    })
+                    .count()
+                    == 1
+                && (r
+                    .pending
+                    .as_ref()
+                    .is_some_and(|pending| !is_work(&pending.work.kind))
+                    || super::super::falling::selected(state)?.is_some()
+                    || r.frames.last().is_some_and(|frame| frame.len() > 1)) =>
+        {
+            None
+        }
         TacticalGrappleAttemptStage::AfterEquipment => {
             Some(TacticalWorkKind::GrappleAfterEquipment {
                 grip: a.declaration.id,
@@ -706,7 +735,12 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             .validate_loadout(&loadout.hands)?;
         }
     }
-    let Some(r) = &flow(state)?.resolution else {
+    let Some(r) = state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .and_then(|f| f.resolution.as_ref())
+    else {
         return Ok(());
     };
     let Some(c) = r.grapple.as_deref() else {
@@ -737,10 +771,20 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             }
             GrappleEndCause::Escaped { .. } if matches!(c.activity.as_ref(), Some(GrappleActivity::Escape(e)) if e.grip == end.grip) =>
                 {}
+            GrappleEndCause::Dead { .. }
+            | GrappleEndCause::Incapacitated { .. }
+            | GrappleEndCause::OutOfRange { .. }
+                if crate::table::grapple_enabled(state) =>
+            {
+                modern_lifecycle::validate_end(state, proof, end)?;
+            }
             _ => return Err(invalid("Unsupported core end cause")),
         }
     }
     super::super::work_trace::validate(state)?;
+    if crate::table::grapple_enabled(state) {
+        reads::validate_cuts(state)?;
+    }
     if c.activity.is_none() {
         return reads::validate_cuts(state);
     }
@@ -766,6 +810,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                     p.work.kind == TacticalWorkKind::BeginGrapple { grip }
                         || p.work.kind == TacticalWorkKind::GrappleSave { grip }
                 }) => {}
+            _ if crate::table::grapple_enabled(state) && !is_work(&node.work.kind) => {}
             _ => return Err(invalid("Core Grapple work ancestry differs")),
         }
     }

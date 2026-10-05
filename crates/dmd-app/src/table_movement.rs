@@ -89,10 +89,19 @@ pub(super) fn options(
     }))
 }
 
+#[cfg(test)]
 pub(super) fn opportunity(
     state: &CampaignState,
     window: &TacticalOpportunityWindow,
 ) -> Result<crate::TableOpportunityView, String> {
+    opportunity_read(super::TacticalRead::Ordinary(state), window)
+}
+
+pub(super) fn opportunity_read(
+    read: super::TacticalRead<'_>,
+    window: &TacticalOpportunityWindow,
+) -> Result<crate::TableOpportunityView, String> {
+    let state = read.state();
     let encounter = state
         .encounter
         .as_ref()
@@ -111,15 +120,11 @@ pub(super) fn opportunity(
             .and_then(|contact| contact.label.clone())
             .unwrap_or_else(|| "Located creature".into()),
     };
-    let mut weapons = super::attacks::options(state, window.reactor)?;
+    let mut weapons = super::attacks::options(read, window.reactor)?;
     if let Some(options) = &mut weapons {
-        let rules = state
-            .rules
-            .as_ref()
-            .ok_or("Opportunity rules are absent.")?;
-        let hands =
-            dmd_rules::tactical_hands::EffectiveHands::current(state, rules, window.reactor)
-                .map_err(|error| error.to_string())?;
+        let hands = read
+            .hands(window.reactor)
+            .map_err(|error| error.to_string())?;
         hands
             .validate_loadout(&options.hands)
             .map_err(|error| error.to_string())?;

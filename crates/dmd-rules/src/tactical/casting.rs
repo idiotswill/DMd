@@ -63,6 +63,7 @@ pub(super) fn begin(
     meta: &CommandMeta,
     choice: &SpellCastChoice,
     targets: &SpellTargetChoice,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -136,7 +137,7 @@ pub(super) fn begin(
             "a reaction spell requires its actual retained trigger window",
         ));
     }
-    let bound = bind_spell(state, &plan, targets)?;
+    let bound = bind_spell_with_read(&execution.read(state)?, &plan, targets)?;
     if bound.consumed_material().is_some() {
         return Err(prerequisite(
             "consumed spell materials require their physical expenditure path",
@@ -215,25 +216,12 @@ pub(super) fn begin(
         next_occurrence: 1,
     }));
     commit(state, meta, occurrence)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 /// Read-only source admission shared by the private offer and selected execution.
 /// A successful preview is not a paid permission; the selected command calls this
 /// again at its actual head and retains only that command's source receipt.
-pub(super) fn shield_admission(
-    state: &CampaignState,
-    meta: &CommandMeta,
-    choice: &SpellCastChoice,
-    occurrence: u16,
-) -> Result<(TacticalCasting, Option<TacticalCreatures>), RulesError> {
-    shield_admission_with_read(
-        &super::grapple::execution::ReadContext::ordinary(state),
-        meta,
-        choice,
-        occurrence,
-    )
-}
 pub(super) fn shield_admission_with_read(
     read: &super::grapple::execution::ReadContext<'_>,
     meta: &CommandMeta,
@@ -502,6 +490,7 @@ pub(super) fn start(
     meta: &CommandMeta,
     cast: u16,
     at: SpellProgramOccurrence,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<bool, RulesError> {
     // Committed missile faces are retained even for a subsequently dead or
     // Shield-protected target. Impact work evaluates prevention separately.
@@ -558,7 +547,7 @@ pub(super) fn start(
     if executable_spell_kind(&record.cast.plan)? == ExecutableSpellKind::AttackDamage {
         let bound = retained_spell_binding(record)?;
         let proof = spell_attack_occurrence(&record.cast, &bound, at.node, at.target)?;
-        super::attacks::begin_spell_attack(state, meta, &proof)?;
+        super::attacks::begin_spell_attack(state, meta, &proof, execution)?;
         return Ok(true);
     }
     Ok(false)

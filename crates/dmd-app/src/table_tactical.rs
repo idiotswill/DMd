@@ -1,8 +1,8 @@
 //! Session-bound encounter setup and viewer-specific presentation.
 use dmd_domain::*;
-use dmd_rules::{RulesPack, tactical::*};
+use dmd_rules::tactical::*;
 
-use crate::{TableBattlefieldSetup, table_engine::table};
+use crate::table_engine::table;
 
 #[path = "table_areas.rs"]
 mod areas;
@@ -21,25 +21,19 @@ mod movement;
 #[path = "table_shields.rs"]
 mod shields;
 
-pub(crate) fn view(
-    state: &CampaignState,
-    viewer: &crate::TableViewer,
-) -> Result<Option<crate::TableTacticalView>, String> {
-    view_with_source_access(state, viewer, false)
-}
+#[path = "table_tactical_read.rs"]
+mod read;
+pub(crate) use read::TacticalRead;
+#[path = "table_grapple.rs"]
+mod grapple;
+pub(crate) use grapple::view as grapple_view;
 
-pub(crate) fn view_v2(
-    state: &CampaignState,
-    viewer: &crate::TableViewer,
-) -> Result<Option<crate::TableTacticalView>, String> {
-    view_with_source_access(state, viewer, true)
-}
-
-fn view_with_source_access(
-    state: &CampaignState,
+pub(crate) fn view_read(
+    read: TacticalRead<'_>,
     viewer: &crate::TableViewer,
     source_access: bool,
 ) -> Result<Option<crate::TableTacticalView>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -205,8 +199,8 @@ fn view_with_source_access(
             .as_ref()
             .and_then(|flow| TacticalExecutionVersion::from_flow_version(flow.version))
             .filter(|execution| !execution.is_legacy()),
-        hit: hit_reactions::view(state, &own, host)?,
-        missile: missile_reactions::view(state, &own, host)?,
+        hit: hit_reactions::view(read, &own, host)?,
+        missile: missile_reactions::view(read, &own, host)?,
         ready: flow
             .into_iter()
             .flat_map(|flow| &flow.ready)
@@ -294,7 +288,9 @@ fn view_with_source_access(
         ties,
         continuation: flow
             .and_then(|flow| flow.resolution.as_ref())
-            .and_then(|resolution| choices::continuation(resolution, &own, host, Some(encounter))),
+            .and_then(|resolution| {
+                choices::continuation_read(read, resolution, &own, host, Some(encounter))
+            }),
         may_fail_save: state
             .rules
             .as_ref()
@@ -322,7 +318,7 @@ fn view_with_source_access(
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
-                attacks::options(state, actor)?
+                attacks::options(read, actor)?
             }
             _ => None,
         },
@@ -335,7 +331,7 @@ fn view_with_source_access(
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
-                shields::options(state, actor)?
+                shields::options(read, actor)?
             }
             _ => None,
         },
@@ -362,9 +358,9 @@ fn view_with_source_access(
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
                 if source_access {
-                    casting::options_v2(state, actor)?
+                    casting::options_v2(read, actor)?
                 } else {
-                    casting::options(state, actor)?
+                    casting::options(read, actor)?
                 }
             }
             _ => None,
@@ -387,7 +383,7 @@ fn view_with_source_access(
             .and_then(|resolution| resolution.movement.as_ref())
             .and_then(|movement| movement.opportunity.as_ref())
             .filter(|window| host || own.contains(&window.reactor))
-            .map(|window| movement::opportunity(state, window))
+            .map(|window| movement::opportunity_read(read, window))
             .transpose()?,
         liquid_landing: flow
             .and_then(|flow| flow.resolution.as_ref())
@@ -427,238 +423,4 @@ fn view_with_source_access(
                 })
             }),
     }))
-}
-
-pub(crate) fn prepare(
-    state: &CampaignState,
-    meta: &CommandMeta,
-    setup: &TableBattlefieldSetup,
-    pack: &RulesPack,
-) -> Result<TacticalTransition, String> {
-    bounded_text(&setup.name, 200)?;
-    let replacement = state.encounter.is_some();
-    if replacement {
-        require_finished_encounter(state).map_err(|error| error.to_string())?;
-    }
-    if state.scenes.contains_key(&setup.scene_id)
-        || setup.location_id.0.is_nil()
-        || setup.scene_id.0.is_nil()
-        || setup.encounter_id.0.is_nil()
-        || setup.characters.is_empty()
-            && !(crate::table_source_control::enabled(state)
-                && setup.creatures.iter().any(|placement| {
-                    table(state)
-                        .ok()
-                        .and_then(|table| table.active_session.as_ref())
-                        .is_some_and(|session| {
-                            session.participants.iter().any(|participant| {
-                                participant.attendance == AttendanceStatus::Present
-                                    && crate::table_source_control::owns_source(
-                                        state,
-                                        participant.player_id,
-                                        placement.actor,
-                                    )
-                            })
-                        })
-                }))
-        || setup.characters.len().saturating_add(setup.creatures.len()) > 100
-    {
-        return Err("Choose a new encounter and scene with at least one character.".into());
-    }
-    if replacement
-        && state
-            .encounter_history
-            .as_ref()
-            .is_some_and(|history| history.contains_encounter(setup.encounter_id))
-    {
-        return Err("Choose a new encounter identity; completed encounters remain saved.".into());
-    }
-    let mut next = state.clone();
-    if let Some(location) = next.locations.get(&setup.location_id) {
-        if location.campaign_id != meta.campaign_id {
-            return Err("The location belongs to another campaign.".into());
-        }
-    } else {
-        next.locations.insert(
-            setup.location_id,
-            Location {
-                id: setup.location_id,
-                campaign_id: meta.campaign_id,
-                display_name: setup.name.clone(),
-                parent_location_id: None,
-            },
-        );
-    }
-    let mut participants = Vec::new();
-    for placement in &setup.characters {
-        let character = state
-            .characters
-            .get(&placement.character_id)
-            .ok_or("Unknown encounter character.")?;
-        let player = character
-            .controlling_player_id
-            .ok_or("An encounter character requires a controller.")?;
-        if replacement
-            && (character.status != CharacterStatus::Active
-                || state
-                    .rules
-                    .as_ref()
-                    .and_then(|rules| rules.entities.get(&character.entity_id))
-                    .is_none_or(|entity| entity.death.dead))
-        {
-            return Err("A dead character cannot enter a new encounter.".into());
-        }
-        let session = meta
-            .session_id
-            .ok_or("Encounter setup requires an active session.")?;
-        table(state)?.validate_attendance(session, player, placement.character_id)?;
-        let profile = table(state)?
-            .character_profiles
-            .get(&placement.character_id)
-            .ok_or("The character has no source creation profile.")?;
-        if state
-            .rules
-            .as_ref()
-            .and_then(|r| r.tactical_inventory.as_ref())
-            .and_then(|inventory| inventory.receipt(placement.character_id))
-            .is_none()
-        {
-            return Err(
-                "Prepare each character's starting equipment before encounter setup.".into(),
-            );
-        }
-        participants.push(TacticalParticipant {
-            entity_id: character.entity_id,
-            public_label: character.display_name.clone(),
-            position: placement.position,
-            size: match profile.size {
-                CharacterSize::Small => CreatureSize::Small,
-                CharacterSize::Medium => CreatureSize::Medium,
-            },
-            height: placement.height,
-            reach: 10,
-            movement: MovementProfile {
-                walk: u32::from(profile.speed_feet) * 2,
-                climb: None,
-                swim: None,
-                fly: None,
-                burrow: None,
-                hover: false,
-            },
-            senses: Senses::default(),
-            allies: placement.allies.clone(),
-            enemies: placement.enemies.clone(),
-        });
-        if !replacement {
-            next.entities
-                .get_mut(&character.entity_id)
-                .ok_or("Character entity is absent.")?
-                .location_id = Some(setup.location_id);
-        }
-    }
-    for placement in &setup.creatures {
-        bounded_text(&placement.public_label, 200)?;
-        let world = state
-            .entities
-            .get(&placement.actor)
-            .ok_or("Unknown source creature.")?;
-        let profile = state
-            .rules
-            .as_ref()
-            .and_then(|r| r.tactical_creatures.as_ref())
-            .and_then(|creatures| creatures.profile(placement.actor))
-            .ok_or("Creature source profile is absent.")?;
-        if world.existence != EntityExistence::Present
-            || replacement
-                && state
-                    .rules
-                    .as_ref()
-                    .and_then(|rules| rules.entities.get(&placement.actor))
-                    .is_none_or(|entity| entity.death.dead)
-            || state
-                .rules
-                .as_ref()
-                .and_then(|r| r.tactical_inventory.as_ref())
-                .and_then(|i| i.loadout(placement.actor))
-                .is_none()
-        {
-            return Err("Place a living source creature with its prepared equipment.".into());
-        }
-        let source = dmd_rules::tactical_creatures::source_for_profile(profile)
-            .map_err(|e| e.to_string())?;
-        let reach = source
-            .features
-            .iter()
-            .filter_map(|feature| match &feature.feature {
-                dmd_rules::tactical_definitions::MonsterFeature::Attack {
-                    delivery: dmd_rules::tactical_definitions::AttackDelivery::Melee { reach_feet },
-                    ..
-                } => Some(u32::from(*reach_feet) * 2),
-                _ => None,
-            })
-            .max()
-            .unwrap_or(10);
-        participants.push(TacticalParticipant {
-            entity_id: placement.actor,
-            public_label: placement.public_label.clone(),
-            position: placement.position,
-            size: profile.size,
-            height: placement.height,
-            reach,
-            movement: dmd_rules::tactical_creatures::creature_movement(source),
-            senses: dmd_rules::tactical_creatures::creature_senses(source),
-            allies: placement.allies.clone(),
-            enemies: placement.enemies.clone(),
-        });
-        if !replacement {
-            next.entities
-                .get_mut(&placement.actor)
-                .ok_or("Creature entity is absent.")?
-                .location_id = Some(setup.location_id);
-        }
-    }
-    next.scenes.insert(
-        setup.scene_id,
-        Scene {
-            id: setup.scene_id,
-            campaign_id: meta.campaign_id,
-            location_id: setup.location_id,
-            mode: SceneMode::Combat,
-            // A replacement is staged closed until the rules transition installs
-            // it atomically. The retained old scene stays closed throughout.
-            status: if replacement {
-                SceneStatus::Closed
-            } else {
-                SceneStatus::Active
-            },
-            started_at: state.clock.now,
-            presences: participants
-                .iter()
-                .map(|p| ScenePresence {
-                    entity_id: p.entity_id,
-                    role: PresenceRole::Participant,
-                })
-                .collect(),
-        },
-    );
-    let encounter = TacticalEncounter {
-        id: setup.encounter_id,
-        scene_id: setup.scene_id,
-        battlefield: setup.battlefield.clone(),
-        participants,
-        knowledge: vec![],
-        origin: meta.clone(),
-        area_grid_policy: setup.area_grid_policy,
-        geometry_ruling: setup.geometry_ruling.clone(),
-        flow: None,
-    };
-    resolve_tactical(
-        &next,
-        meta,
-        &TacticalAction::Establish {
-            encounter: Box::new(encounter),
-        },
-        pack,
-    )
-    .map_err(|error| error.to_string())
 }

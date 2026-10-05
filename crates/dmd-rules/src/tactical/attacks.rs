@@ -16,9 +16,10 @@ use crate::tactical_definitions::WeaponMastery;
 use crate::tactical_weapons::*;
 pub(super) use creature::begin_creature_attack_with_context;
 pub(super) use creature_weapon::begin_creature_weapon_with_context;
-pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_for_crossing};
+pub(super) use opportunity::{begin_opportunity_attack, opportunity_options_with_hands};
 pub(super) use planning::admit_target as admit_body_target;
 pub use savage::savage_attacker_dice;
+pub(crate) use savage::savage_attacker_dice_with_read;
 pub(super) use savage::submit_with_context as submit_savage_with_context;
 pub(super) use spell::begin_spell_attack;
 pub(super) use unarmed::begin_with_context as begin_unarmed_with_context;
@@ -613,6 +614,7 @@ fn choice_scope<'a>(
     if let Some(parent) = parent {
         let previous = super::work_trace::enter(state, &parent)?;
         let result = action(state, execution).and_then(|()| {
+            execution.settle_work(state, meta)?;
             execution.check_live_constraints(state)?;
             super::falling::queue_losses(state, meta)
         });

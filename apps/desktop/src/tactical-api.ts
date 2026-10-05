@@ -83,6 +83,7 @@ export interface SavageAttackerRoll {
 export type TacticalAction =
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
+  | { GrappleChoice: { handle: Id } }
   | 'FinishEncounter'
   | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'

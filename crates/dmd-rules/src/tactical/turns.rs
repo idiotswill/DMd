@@ -188,18 +188,6 @@ fn expire_legacy(
 
 /// Called once after initiative is committed and once after each completed End frame.
 /// The cursor is installed before any request is emitted, never refunded on resume.
-pub(super) fn begin_boundary(
-    state: &mut CampaignState,
-    meta: &CommandMeta,
-    boundary: TurnBoundary,
-) -> Result<(), RulesError> {
-    begin_boundary_with_context(
-        state,
-        meta,
-        boundary,
-        &mut super::grapple::execution::ExecutionContext::ordinary(),
-    )
-}
 pub(super) fn begin_boundary_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -305,13 +293,6 @@ fn begin_boundary_from(
     pump_with_context(state, meta, execution)
 }
 
-pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
-    pump_with_context(
-        state,
-        meta,
-        &mut super::grapple::execution::ExecutionContext::ordinary(),
-    )
-}
 pub(super) fn pump_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -337,7 +318,7 @@ pub(super) fn pump_with_context(
                 resolution_mut(state)?.frames.pop();
             }
         }
-        super::movement::prune(state, meta)?;
+        super::movement::prune(state, meta, execution)?;
         if super::grapple::waiting(state)
             || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)

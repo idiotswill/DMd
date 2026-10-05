@@ -6,11 +6,32 @@ use crate::tactical_definitions::{
 
 /// Departure distance is derived by the movement evaluator, never a controller
 /// modifier. Irrelevant reach options must not consult uncertain cover at all.
-pub(in crate::tactical) fn opportunity_options_for_crossing(
+#[cfg(test)]
+fn opportunity_options_for_crossing(
     state: &CampaignState,
     actor: EntityId,
     mover: EntityId,
     after_distance: u32,
+) -> Result<Vec<TacticalMeleeOption>, RulesError> {
+    opportunity_options_inner(state, actor, mover, after_distance, None)
+}
+
+pub(in crate::tactical) fn opportunity_options_with_hands(
+    state: &CampaignState,
+    actor: EntityId,
+    mover: EntityId,
+    after_distance: u32,
+    hands: &crate::tactical_hands::EffectiveHands,
+) -> Result<Vec<TacticalMeleeOption>, RulesError> {
+    opportunity_options_inner(state, actor, mover, after_distance, Some(hands))
+}
+
+fn opportunity_options_inner(
+    state: &CampaignState,
+    actor: EntityId,
+    mover: EntityId,
+    after_distance: u32,
+    hands: Option<&crate::tactical_hands::EffectiveHands>,
 ) -> Result<Vec<TacticalMeleeOption>, RulesError> {
     // A capability query must not reveal geometry behind an unknown truth ID.
     if planning::require_located_target(state, actor, mover).is_err() {
@@ -38,7 +59,16 @@ pub(in crate::tactical) fn opportunity_options_for_crossing(
         reach: 10,
     }];
     if let Some(loadout) = loadout {
-        let hands = crate::tactical_hands::EffectiveHands::current(state, rules, actor)?;
+        // Legacy callers retain their original visibility/eligibility ordering
+        // and do not derive hands at all for an actor without a loadout.
+        let current;
+        let hands = match hands {
+            Some(hands) => hands,
+            None => {
+                current = crate::tactical_hands::EffectiveHands::current(state, rules, actor)?;
+                &current
+            }
+        };
         hands.validate_loadout(&loadout.hands)?;
         let mut held = loadout
             .hands
@@ -154,10 +184,16 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     target: EntityId,
     choice: &TacticalMeleeChoice,
     pack: &RulesPack,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     authorize(state, meta, actor)?;
     planning::admit_target(state, actor, target)?;
-    let window = super::super::movement::validate_opportunity(state, actor, target)?.clone();
+    let window = super::super::movement::validate_opportunity_with_read(
+        &execution.read(state)?,
+        actor,
+        target,
+    )?
+    .clone();
     let selected = match choice {
         TacticalMeleeChoice::Weapon(c) => {
             if c.target != target
@@ -232,15 +268,28 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         damage_roll: None,
         outcome: None,
     };
+    let context = execution.read(state)?;
+    let read = context.attack_current(
+        actor,
+        target,
+        attack.weapon().is_some()
+            || matches!(
+                attack.source,
+                TacticalAttackSource::CreatureFeature {
+                    weapon: Some(_),
+                    ..
+                }
+            ),
+    )?;
     let plan = if let Some(weapon) = attack.weapon() {
-        let plan = planning::weapon_plan(
+        let plan = planning::weapon_plan_with_read(
             state,
             meta,
             actor,
             &weapon.choice,
             weapon.window,
             &weapon.equipment_before.hands,
-            pack,
+            (pack, read.as_ref()),
         )?;
         if plan
             .mastery
@@ -250,7 +299,8 @@ pub(in crate::tactical) fn begin_opportunity_attack(
                 "this mastery requires its typed continuation before any attack cost",
             ));
         }
-        let (mode, armor, critical) = planning::hit_facts(state, actor, &weapon.choice, &plan)?;
+        let (mode, armor, critical) =
+            planning::hit_facts_with_read(state, actor, &weapon.choice, &plan, read.as_ref())?;
         attack.attack_modifier = plan.attack_modifier;
         attack.mode = mode;
         attack.armor_class = armor;
@@ -262,7 +312,7 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         }];
         Some(plan)
     } else {
-        let plan = intrinsic::plan(state, &attack)?;
+        let plan = intrinsic::plan_with_read(state, &attack, read.as_ref())?;
         attack.attack_modifier = plan.modifier;
         attack.mode = plan.mode;
         attack.armor_class = plan.armor;
@@ -270,6 +320,11 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         attack.damage = plan.damage;
         None
     };
+    let proofs = read
+        .as_ref()
+        .map(|read| read.captured())
+        .unwrap_or_default();
+    drop(read);
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     crate::tactical_budget::spend_cost(
         rules,
@@ -290,13 +345,15 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     super::super::movement::record_attack(state, meta, actor)?;
     resolution_mut(state)?.attack = Some(attack);
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
-    pump(state, meta)
+    super::super::grapple::reads::capture_admission(state, meta, proofs)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_admission(
-    state: &CampaignState,
+    read: &ReadContext<'_>,
     attack: &TacticalAttack,
 ) -> Result<(), RulesError> {
+    let state = read.state();
     let resolution = resolution(state)?;
     match &attack.admission {
         TacticalAttackAdmission::UnarmedAction { window } => {
@@ -366,7 +423,21 @@ pub(super) fn validate_admission(
                     .ok_or_else(|| invalid("reaction before-equipment absent"))?;
                 *loadout = weapon.equipment_before.clone();
             }
-            super::super::movement::validate_opportunity(&before, attack.actor, attack.target)?;
+            let retained = read.attack_retained(attack)?;
+            let hands = match retained.as_ref() {
+                Some(retained) => crate::tactical_hands::EffectiveHands::attack(retained)?,
+                None => crate::tactical_hands::EffectiveHands::current(
+                    &before,
+                    before.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+                    attack.actor,
+                )?,
+            };
+            super::super::movement::validate_opportunity_with_hands(
+                &before,
+                attack.actor,
+                attack.target,
+                &hands,
+            )?;
             let source = match &attack.source {
                 TacticalAttackSource::Weapon(w) => TacticalMeleeSource::Weapon {
                     item: w.choice.weapon,

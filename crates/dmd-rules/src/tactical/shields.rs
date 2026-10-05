@@ -3,11 +3,28 @@ use super::*;
 use crate::tactical_budget::{TacticalCost, spend_cost};
 use crate::tactical_inventory::{EquipmentKind, equipment_definition, validate_loadout};
 
+#[cfg(test)]
 pub(super) fn change(
     state: &mut CampaignState,
     meta: &CommandMeta,
     don: Option<(ItemId, Hand)>,
     pack: &RulesPack,
+) -> Result<(), RulesError> {
+    change_with_context(
+        state,
+        meta,
+        don,
+        pack,
+        &mut grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+
+pub(super) fn change_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    don: Option<(ItemId, Hand)>,
+    pack: &RulesPack,
+    execution: &mut grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -43,9 +60,8 @@ pub(super) fn change(
                 "select one intact source shield in actor custody",
             ));
         }
-        let hands = crate::tactical_hands::EffectiveHands::current(
-            state,
-            state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+        let hands = crate::tactical_hands::EffectiveHands::current_with_read(
+            &execution.read(state)?,
             actor,
         )?;
         hands.validate_loadout(&loadout.hands)?;
@@ -74,12 +90,8 @@ pub(super) fn change(
     }
     loadout.command = meta.clone();
     validate_loadout(state, &loadout).map_err(|error| prerequisite(&error.to_string()))?;
-    crate::tactical_hands::EffectiveHands::current(
-        state,
-        state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
-        actor,
-    )?
-    .validate_loadout(&loadout.hands)?;
+    crate::tactical_hands::EffectiveHands::current_with_read(&execution.read(state)?, actor)?
+        .validate_loadout(&loadout.hands)?;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
     spend_cost(rules, actor, TacticalCost::Action)?;
     let current = rules

@@ -199,7 +199,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
         }
         match &fall.cause {
             TacticalFallCause::GrappleFlightLost { .. } => {
-                return Err(invalid("Grapple flight-loss execution is not enabled."));
+                super::super::grapple::validate_flight(state, fall)?;
             }
             TacticalFallCause::Shove {
                 shove,

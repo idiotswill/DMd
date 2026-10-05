@@ -67,10 +67,9 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
     if dmd_domain::has_unimplemented_grapple_records(legacy)
-        || legacy
-            .table
-            .as_ref()
-            .is_some_and(|table| table.source_actor_access.is_some())
+        || legacy.table.as_ref().is_some_and(|table| {
+            table.source_actor_access.is_some() || table.grapple_access.is_some()
+        })
         || legacy.encounter.is_some()
         || legacy.rules.as_ref().is_some_and(|rules| {
             rules.tactical_effects.is_some()
@@ -126,11 +125,12 @@ pub(crate) fn contains_source_actor_access(json: &str) -> Result<bool, String> {
     #[derive(serde::Deserialize)]
     struct TableProbe {
         source_actor_access: Option<serde_json::Value>,
+        grapple_access: Option<serde_json::Value>,
     }
     let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
     Ok(probe
         .table
-        .is_some_and(|table| table.source_actor_access.is_some()))
+        .is_some_and(|table| table.source_actor_access.is_some() || table.grapple_access.is_some()))
 }
 
 impl SnapshotMigration for StateSchemaTwoToThree {

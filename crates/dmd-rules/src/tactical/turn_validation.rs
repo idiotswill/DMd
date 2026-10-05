@@ -406,7 +406,7 @@ pub(super) fn validate_with_read(
         super::grapple::validate(state)?;
     }
     super::hit_reactions::validate_with_read(read)?;
-    super::movement::validate(state)?;
+    super::movement::validate_with_read(read)?;
     super::casting::validate(state)?;
     super::missiles::validate(state)?;
     super::areas::validate(state)?;

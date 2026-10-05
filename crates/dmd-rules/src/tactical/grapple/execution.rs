@@ -89,6 +89,16 @@ struct ProducedEvidence {
     rolls: Vec<RecordedRoll>,
     decisions: Vec<TacticalSaveDecision>,
     cancelled: Vec<RollRequestId>,
+    retired_flow: Option<RetiredFlow>,
+}
+
+/// Observed only at the shared Establish producer after the released encounter
+/// has passed its existing replacement checks. Original replay keeps the old
+/// decisions in their exact prior image; they are not copied into a new fight.
+struct RetiredFlow {
+    encounter: EncounterId,
+    replacement: EncounterId,
+    release: CommandId,
 }
 
 struct GuardedCommand<'a> {
@@ -109,13 +119,23 @@ pub(crate) struct ExecutionContext<'a> {
 pub(crate) struct ReadContext<'a> {
     state: &'a CampaignState,
     guarded: Option<&'a GuardedCommand<'a>>,
+    closed: Option<&'a crate::table::execution::ClosedImage>,
 }
 
 impl<'a> ReadContext<'a> {
+    pub(crate) fn closed(image: &'a crate::table::execution::ClosedImage) -> Self {
+        Self {
+            state: image.state(),
+            guarded: None,
+            closed: Some(image),
+        }
+    }
+
     pub(crate) fn ordinary(state: &'a CampaignState) -> Self {
         Self {
             state,
             guarded: None,
+            closed: None,
         }
     }
 
@@ -124,7 +144,11 @@ impl<'a> ReadContext<'a> {
     }
 
     pub(crate) fn require_guarded(&self, message: &str) -> Result<(), RulesError> {
-        self.guarded.ok_or_else(|| invalid(message)).map(|_| ())
+        if self.guarded.is_some() || self.closed.is_some() {
+            Ok(())
+        } else {
+            Err(invalid(message))
+        }
     }
 
     pub(in crate::tactical) fn attack_current(
@@ -133,21 +157,39 @@ impl<'a> ReadContext<'a> {
         target: EntityId,
         physical: bool,
     ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {
-        self.guarded
-            .map(|_| reads::AttackRead::current(self, actor, target, physical))
-            .transpose()
+        if self.guarded.is_some() || self.closed.is_some() {
+            reads::AttackRead::current(self, actor, target, physical).map(Some)
+        } else {
+            Ok(None)
+        }
     }
 
     pub(in crate::tactical) fn attack_retained(
         &self,
         attack: &TacticalAttack,
     ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {
-        self.guarded
-            .map(|_| reads::AttackRead::retained(self, attack))
-            .transpose()
+        if self.guarded.is_some() || self.closed.is_some() {
+            reads::AttackRead::retained(self, attack).map(Some)
+        } else {
+            Ok(None)
+        }
     }
 
     pub(crate) fn validate_recorded_grapple(&self, roll: &RecordedRoll) -> Result<(), RulesError> {
+        if let Some(closed) = self.closed {
+            return if closed
+                .state()
+                .rules
+                .as_ref()
+                .is_some_and(|rules| rules.rolls.contains(roll))
+            {
+                Ok(())
+            } else {
+                Err(invalid(
+                    "Grapple raw is absent from its exact certified image",
+                ))
+            };
+        }
         let owned = self
             .guarded
             .ok_or_else(|| invalid("Grapple raw history has no enabled producer"))?;
@@ -166,9 +208,185 @@ impl<'a> ReadContext<'a> {
     }
 }
 
-impl ExecutionContext<'_> {
+impl<'owner> ExecutionContext<'owner> {
+    pub(crate) fn for_table(
+        predecessor: &'owner crate::table::execution::ClosedImage,
+        candidate: &CampaignState,
+        command: &'owner CommandMeta,
+    ) -> Self {
+        Self {
+            guarded: Some(GuardedCommand {
+                predecessor: predecessor.state(),
+                candidate: std::ptr::from_ref(candidate),
+                command,
+                produced: ProducedEvidence::default(),
+            }),
+        }
+    }
+
+    pub(crate) fn is_owned(&self) -> bool {
+        self.guarded.is_some()
+    }
+    pub(in crate::tactical) fn settle_work(
+        &self,
+        state: &mut CampaignState,
+        meta: &CommandMeta,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        if self.guarded.is_some() && crate::table::grapple_enabled(state) {
+            modern_lifecycle::settle(state, meta)?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn admit_table(
+        &self,
+        state: &CampaignState,
+        action: &TacticalAction,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        if self.guarded.is_none() || !crate::table::grapple_enabled(state) {
+            super::guard_action(state, action)?;
+        } else if matches!(
+            action,
+            TacticalAction::Grapple { .. }
+                | TacticalAction::ChooseGrappleSave { .. }
+                | TacticalAction::ApplyGrappleAfterEquipment { .. }
+                | TacticalAction::DeclineGrappleAfterEquipment { .. }
+                | TacticalAction::WithdrawGrapple { .. }
+                | TacticalAction::EscapeGrapple { .. }
+                | TacticalAction::ReleaseGrapple { .. }
+        ) {
+            require_execution(state)?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn ordinary() -> Self {
         Self { guarded: None }
+    }
+
+    pub(in crate::tactical) fn observe_encounter_replacement(
+        &mut self,
+        state: &CampaignState,
+        meta: &CommandMeta,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        let Some(owned) = self.guarded.as_mut() else {
+            return Ok(());
+        };
+        let old = encounter(owned.predecessor)?;
+        let new = encounter(state)?;
+        let receipt = owned
+            .predecessor
+            .encounter_history
+            .as_ref()
+            .and_then(TacticalEncounterHistory::last)
+            .ok_or_else(|| invalid("replacement has no original completion"))?;
+        if owned.command != meta
+            || owned.produced.retired_flow.is_some()
+            || old
+                .flow
+                .as_ref()
+                .is_none_or(|flow| flow.phase != TacticalPhase::Finished)
+            || receipt.encounter_id != old.id
+            || receipt.encounter_origin != old.origin
+            || new.id == old.id
+            || new.origin != *meta
+            || new.flow.is_some()
+            || state.encounter_history != owned.predecessor.encounter_history
+        {
+            return Err(invalid("replacement differs from its released predecessor"));
+        }
+        owned.produced.retired_flow = Some(RetiredFlow {
+            encounter: old.id,
+            replacement: new.id,
+            release: receipt.released_by.id,
+        });
+        Ok(())
+    }
+
+    /// Called only after the shared kernel reducer produced its fixed candidate.
+    /// A table envelope cannot submit evidence or replace this observed source.
+    pub(crate) fn observe_kernel_result(
+        &mut self,
+        state: &CampaignState,
+        meta: &CommandMeta,
+        action: &crate::RulesAction,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        let Some(owned) = self.guarded.as_mut() else {
+            return Ok(());
+        };
+        if owned.command != meta {
+            return Err(invalid("kernel producer belongs to another command"));
+        }
+        let before = owned
+            .predecessor
+            .rules
+            .as_ref()
+            .ok_or(RulesError::Uninitialized)?;
+        let after = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+        if let crate::RulesAction::SubmitRoll { result } = action {
+            let pending = before.pending.as_ref().ok_or(RulesError::NoPending)?;
+            if matches!(
+                pending.purpose,
+                PendingPurpose::TacticalInitiative { .. }
+                    | PendingPurpose::TacticalResolution { .. }
+            ) {
+                return Err(invalid(
+                    "kernel observation cannot attest tactical evidence",
+                ));
+            }
+            let raw = after
+                .rolls
+                .last()
+                .ok_or_else(|| invalid("kernel accepted raw absent"))?;
+            if after.rolls.len() != before.rolls.len() + 1
+                || !after.rolls.starts_with(&before.rolls)
+                || raw.request != pending.request
+                || raw.purpose != pending.purpose
+                || raw.result != *result
+                || raw.accepted_by != *meta
+            {
+                return Err(invalid(
+                    "kernel evidence differs from its selected producer",
+                ));
+            }
+            owned.produced.rolls.push(raw.clone());
+        }
+        Ok(())
+    }
+
+    pub(in crate::tactical) fn observe_initiative(
+        &mut self,
+        state: &CampaignState,
+        meta: &CommandMeta,
+        pending: &PendingRoll,
+        roll: &RecordedRoll,
+    ) -> Result<(), RulesError> {
+        self.check_state(state)?;
+        let Some(owned) = self.guarded.as_mut() else {
+            return Ok(());
+        };
+        if owned.command != meta
+            || state
+                .rules
+                .as_ref()
+                .and_then(|rules| rules.pending.as_ref())
+                != Some(pending)
+            || !matches!(pending.purpose, PendingPurpose::TacticalInitiative { encounter: id, .. } if id == encounter(state)?.id)
+            || roll.accepted_by != *meta
+            || roll.issued_by != pending.issued_by
+            || roll.request != pending.request
+            || roll.purpose != pending.purpose
+        {
+            return Err(invalid(
+                "initiative evidence differs from its selected producer",
+            ));
+        }
+        owned.produced.rolls.push(roll.clone());
+        Ok(())
     }
 
     pub(crate) fn read<'a>(
@@ -179,6 +397,7 @@ impl ExecutionContext<'_> {
         Ok(ReadContext {
             state,
             guarded: self.guarded.as_ref(),
+            closed: None,
         })
     }
 
@@ -427,7 +646,7 @@ impl ExecutionContext<'_> {
         Ok(())
     }
 
-    fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
+    pub(crate) fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
         self.check_state(state)?;
         let Some(owned) = &self.guarded else {
             return Ok(());
@@ -438,9 +657,15 @@ impl ExecutionContext<'_> {
             .as_ref()
             .ok_or(RulesError::Uninitialized)?;
         let after = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
+        let before_flow = owned
+            .predecessor
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref());
+        let after_flow = state.encounter.as_ref().and_then(|e| e.flow.as_ref());
         if let (Some(before_resolution), Some(after_resolution)) = (
-            &flow(owned.predecessor)?.resolution,
-            &flow(state)?.resolution,
+            before_flow.and_then(|f| f.resolution.as_ref()),
+            after_flow.and_then(|f| f.resolution.as_ref()),
         ) && before_resolution.origin == after_resolution.origin
         {
             if let Some(old) = &before_resolution.grapple {
@@ -471,23 +696,50 @@ impl ExecutionContext<'_> {
                 && after.starts_with(before)
                 && &after[before.len()..] == produced
         }
+        let decisions_match = if let Some(retired) = &owned.produced.retired_flow {
+            owned
+                .predecessor
+                .encounter
+                .as_ref()
+                .is_some_and(|old| old.id == retired.encounter)
+                && state.encounter.as_ref().is_some_and(|new| {
+                    new.id == retired.replacement && new.origin == *owned.command
+                })
+                && before_flow.is_some_and(|flow| flow.phase == TacticalPhase::Finished)
+                && after_flow.is_none()
+                && owned.produced.decisions.is_empty()
+                && state.encounter_history == owned.predecessor.encounter_history
+                && state
+                    .encounter_history
+                    .as_ref()
+                    .and_then(TacticalEncounterHistory::last)
+                    .is_some_and(|receipt| {
+                        receipt.encounter_id == retired.encounter
+                            && receipt.released_by.id == retired.release
+                    })
+        } else {
+            exact_suffix(
+                before_flow.map_or(&[], |f| f.save_decisions.as_slice()),
+                after_flow.map_or(&[], |f| f.save_decisions.as_slice()),
+                &owned.produced.decisions,
+            )
+        };
         if !exact_suffix(&before.rolls, &after.rolls, &owned.produced.rolls)
             || !exact_suffix(
                 &before.cancelled_roll_ids,
                 &after.cancelled_roll_ids,
                 &owned.produced.cancelled,
             )
-            || !exact_suffix(
-                &flow(owned.predecessor)?.save_decisions,
-                &flow(state)?.save_decisions,
-                &owned.produced.decisions,
-            )
+            || !decisions_match
         {
             return Err(invalid(
                 "private execution changed inherited or unobserved evidence",
             ));
         }
-        validate(state)
+        if has_unimplemented_grapple_records(state) {
+            validate(state)?;
+        }
+        Ok(())
     }
 }
 

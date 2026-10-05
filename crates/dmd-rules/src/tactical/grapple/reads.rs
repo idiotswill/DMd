@@ -2,6 +2,7 @@
 //! reconstruction copy never receives execution authority.
 use super::*;
 use execution::ReadContext;
+mod modern;
 
 pub(crate) struct AttackRead<'a> {
     state: &'a CampaignState,
@@ -80,7 +81,7 @@ impl<'a> AttackRead<'a> {
             ));
         }
         if let Some(c) = &resolution(state)?.grapple
-            && let Some(cut) = c.cuts.iter().find(|cut| {
+            && let Some(cut) = c.cuts.iter().rev().find(|cut| {
                 matches!(cut.key.reader,
                 GrappleReader::AttackAdmission { attack: id } if id == attack.origin.id)
             })
@@ -141,6 +142,9 @@ pub(in crate::tactical) fn capture_admission(
     meta: &CommandMeta,
     proofs: Vec<TacticalGrip>,
 ) -> Result<(), RulesError> {
+    if crate::table::grapple_enabled(state) {
+        return modern::capture_admission(state, meta, proofs);
+    }
     if proofs.is_empty() {
         return Ok(());
     }
@@ -190,6 +194,9 @@ pub(in crate::tactical) fn capture_issue(
     work: &TacticalWorkItem,
     roll: TacticalRollKey,
 ) -> Result<(), RulesError> {
+    if crate::table::grapple_enabled(state) {
+        return modern::capture_issue(state, meta, work, roll);
+    }
     if !matches!(
         roll.role,
         TacticalRollRole::Attack | TacticalRollRole::AttackDamage
@@ -226,6 +233,9 @@ pub(in crate::tactical) fn capture_issue(
 pub(in crate::tactical) fn attack_root(
     state: &CampaignState,
 ) -> Result<&TacticalWorkNode, RulesError> {
+    if crate::table::grapple_enabled(state) {
+        return modern::attack_root(state);
+    }
     let trace = resolution(state)?
         .work_trace
         .as_ref()
@@ -275,6 +285,9 @@ pub(in crate::tactical) fn in_lineage(
 }
 
 pub(in crate::tactical) fn validate_cuts(state: &CampaignState) -> Result<(), RulesError> {
+    if crate::table::grapple_enabled(state) {
+        return modern::validate_cuts(state);
+    }
     let r = resolution(state)?;
     let Some(c) = r.grapple.as_ref().filter(|c| c.activity.is_none()) else {
         return Ok(());
@@ -432,11 +445,14 @@ pub(in crate::tactical) fn paused_parent(
         .work_trace
         .as_ref()
         .ok_or_else(|| invalid("paused trace absent"))?;
-    let nodes = trace
-        .nodes
-        .iter()
-        .filter(|n| n.work.kind == kind)
-        .collect::<Vec<_>>();
+    let mut nodes = Vec::new();
+    for node in trace.nodes.iter().filter(|n| n.work.kind == kind) {
+        if !crate::table::grapple_enabled(state)
+            || in_lineage(state, node.work.occurrence, root.work.occurrence)?
+        {
+            nodes.push(node);
+        }
+    }
     if nodes.len() != 1
         || !in_lineage(state, nodes[0].work.occurrence, root.work.occurrence)?
         || r.frames.iter().flatten().any(|w| w == &nodes[0].work)

@@ -47,6 +47,12 @@ impl CampaignRuntime {
     ) -> Result<CampaignState, RunnableCampaignError> {
         let runnable = self.open_campaign(campaign_id).await?;
         let pack = load_rules_pack(runnable.content())?;
+        if runnable.state().table.is_some() {
+            let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+            let authenticated = crate::rules_restore::authenticate_history(&export, pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+            return Ok(authenticated.into_parts().0.into_state());
+        }
         let applier = RulesReplayApplier::new(pack.clone());
         let state = dmd_persistence::replay_campaign_to_head(&self.pool, campaign_id, &applier)
             .await
@@ -127,6 +133,12 @@ impl CampaignRuntime {
     ) -> Result<RulesAnswer, RunnableCampaignError> {
         let runnable = self.open_campaign(campaign_id).await?;
         let pack = load_rules_pack(runnable.content())?;
+        if runnable.state().table.is_some() {
+            let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+            let authenticated = crate::rules_restore::authenticate_history(&export, pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+            return Ok(authenticated.read().query(viewer, &query)?);
+        }
         Ok(dmd_rules::query(runnable.state(), viewer, &query, &pack)?)
     }
 

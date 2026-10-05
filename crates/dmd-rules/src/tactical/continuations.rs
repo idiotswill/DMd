@@ -403,6 +403,7 @@ pub(super) fn start_with_context(
     execution.check_live_constraints(state)?;
     let previous = super::work_trace::enter(state, &work)?;
     let result = start_inner(state, meta, work, execution).and_then(|()| {
+        execution.settle_work(state, meta)?;
         execution.check_live_constraints(state)?;
         if resolution(state)?.work_trace.is_some() {
             super::falling::queue_losses(state, meta)?;
@@ -432,7 +433,7 @@ fn start_inner(
     if super::falling::start(state, meta, &work)? {
         return Ok(());
     }
-    if super::movement::start(state, meta, &work)? {
+    if super::movement::start(state, meta, &work, execution)? {
         return Ok(());
     }
     if super::attacks::start(state, meta, &work, execution)? {
@@ -493,7 +494,7 @@ fn start_inner(
             return Ok(());
         }
         TacticalWorkKind::SpellProgram { cast, at } => {
-            if super::casting::start(state, meta, *cast, *at)? {
+            if super::casting::start(state, meta, *cast, *at, execution)? {
                 return Ok(());
             }
         }
@@ -792,6 +793,7 @@ pub(super) fn finish_with_context(
     let previous = super::work_trace::enter(state, &pending.work)?;
     let result =
         finish_inner(state, meta, pending, result, forced_success, execution).and_then(|()| {
+            execution.settle_work(state, meta)?;
             execution.check_live_constraints(state)?;
             if resolution(state)?.work_trace.is_some() {
                 super::falling::queue_losses(state, meta)?;

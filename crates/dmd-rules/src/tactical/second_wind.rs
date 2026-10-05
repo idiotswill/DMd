@@ -52,6 +52,7 @@ pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -106,7 +107,7 @@ pub(super) fn begin(
         state,
         vec![TacticalWorkKind::SecondWind { actor, uses_before }],
     )?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_work(

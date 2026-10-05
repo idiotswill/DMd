@@ -68,6 +68,7 @@ pub(super) fn begin(
     meta: &CommandMeta,
     target: EntityId,
     purpose: MedicinePurpose,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -113,7 +114,7 @@ pub(super) fn begin(
             purpose,
         }],
     )?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_work(

@@ -4,10 +4,11 @@ use dmd_domain::*;
 use std::collections::HashSet;
 
 pub(super) fn view(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     own: &HashSet<EntityId>,
     host: bool,
 ) -> Result<Option<Box<TableMissileView>>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -125,7 +126,8 @@ pub(super) fn view(
                 key,
                 actor: target.response.actor,
                 selected,
-                shield: dmd_rules::tactical::shield_choices(state, target.response.actor)
+                shield: read
+                    .shield_choices(target.response.actor)
                     .map_err(|error| error.to_string())?,
             })
         })

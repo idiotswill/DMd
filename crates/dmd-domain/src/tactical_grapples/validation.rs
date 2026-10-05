@@ -267,6 +267,12 @@ fn descendant(
     Ok(false)
 }
 
+#[derive(Clone, Copy)]
+enum ReadShape {
+    Legacy,
+    Activated,
+}
+
 impl TacticalGrappleResolution {
     /// Local shape only. Live source readers and original accepted replay must
     /// also prove membership completeness, source program, authority and causes.
@@ -274,6 +280,25 @@ impl TacticalGrappleResolution {
         &self,
         resolution: &TacticalResolution,
         live: Option<&TacticalGrapples>,
+    ) -> Result<(), String> {
+        self.validate_read_shape(resolution, live, ReadShape::Legacy)
+    }
+
+    /// The full-state caller has validated the explicit table marker. This
+    /// permits a recorded empty mechanical read, never execution authority.
+    pub(crate) fn validate_activated_shape(
+        &self,
+        resolution: &TacticalResolution,
+        live: Option<&TacticalGrapples>,
+    ) -> Result<(), String> {
+        self.validate_read_shape(resolution, live, ReadShape::Activated)
+    }
+
+    fn validate_read_shape(
+        &self,
+        resolution: &TacticalResolution,
+        live: Option<&TacticalGrapples>,
+        reads: ReadShape,
     ) -> Result<(), String> {
         require(!self.is_empty(), "empty grapple resolution attachment")?;
         let mut proof_ids = HashSet::new();
@@ -304,7 +329,12 @@ impl TacticalGrappleResolution {
                 !self.cuts[..index].iter().any(|c| c.key == cut.key),
                 "duplicate grapple read cut",
             )?;
-            ids(&cut.grips)?;
+            if !matches!(reads, ReadShape::Activated)
+                || !cut.grips.is_empty()
+                || matches!(cut.key.reader, GrappleReader::FlightLoss { .. })
+            {
+                ids(&cut.grips)?;
+            }
             for id in &cut.grips {
                 not_before(&cut.issued_by, &proof(*id)?.established_by)?;
             }

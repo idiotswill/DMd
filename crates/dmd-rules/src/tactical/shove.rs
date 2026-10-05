@@ -199,6 +199,7 @@ pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
     target: EntityId,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_execution(state)?;
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
@@ -312,7 +313,7 @@ pub(super) fn begin(
         })),
     }));
     push_frame(state, vec![TacticalWorkKind::BeginShove])?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn waiting(state: &CampaignState) -> bool {
@@ -431,6 +432,7 @@ pub(super) fn choose_save(
     state: &mut CampaignState,
     meta: &CommandMeta,
     ability: ShoveSaveAbility,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_execution(state)?;
     let s = current(state)?;
@@ -463,7 +465,7 @@ pub(super) fn choose_save(
     });
     push_frame(state, vec![TacticalWorkKind::ShoveSave])?;
     super::work_trace::leave(state, previous)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn request(

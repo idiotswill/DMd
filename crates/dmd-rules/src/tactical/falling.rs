@@ -160,6 +160,11 @@ pub(super) fn queue_losses(
             continue;
         }
         if let Some((cause, path)) = loss(state, actor)? {
+            let cause = if cause == TacticalFallCause::FlightLost {
+                super::grapple::flight_cause(state, meta, actor)?.unwrap_or(cause)
+            } else {
+                cause
+            };
             let fall = register(
                 state,
                 TacticalFall {
@@ -320,6 +325,7 @@ pub(super) fn choose(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: Option<LiquidLandingChoice>,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let index = selected(state)?.ok_or_else(|| prerequisite("No liquid landing choice is due."))?;
     let actor = current(state, index)?.actor;
@@ -364,7 +370,7 @@ pub(super) fn choose(
     let reset = super::work_trace::leave(state, previous);
     queued?;
     reset?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn finish(

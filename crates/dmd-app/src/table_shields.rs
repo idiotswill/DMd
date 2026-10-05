@@ -3,9 +3,10 @@ use dmd_domain::*;
 use dmd_rules::tactical_inventory::{EquipmentKind, equipment_definition};
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableShieldOptions>, String> {
+    let state = read.state();
     let Some(rules) = &state.rules else {
         return Ok(None);
     };
@@ -24,8 +25,7 @@ pub(super) fn options(
     else {
         return Ok(None);
     };
-    let available = dmd_rules::tactical_hands::EffectiveHands::current(state, rules, actor)
-        .map_err(|error| error.to_string())?;
+    let available = read.hands(actor).map_err(|error| error.to_string())?;
     available
         .validate_loadout(&loadout.hands)
         .map_err(|error| error.to_string())?;

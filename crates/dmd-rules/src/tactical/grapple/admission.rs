@@ -36,6 +36,26 @@ pub(super) fn loadout(
 }
 
 pub(super) fn supported_context(state: &CampaignState) -> Result<(), RulesError> {
+    if crate::table::grapple_enabled(state) {
+        if state
+            .encounter
+            .as_ref()
+            .and_then(|e| e.flow.as_ref())
+            .is_some()
+        {
+            require_execution(state)?;
+            return live_constraints(state);
+        }
+        if state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.tactical_grapples.as_ref())
+            .is_some()
+        {
+            return Err(invalid("live grips require their active encounter"));
+        }
+        return Ok(());
+    }
     require_execution(state)?;
     if let Some(r) = &flow(state)?.resolution
         && r.grapple.as_ref().is_some_and(|g| g.activity.is_some())
@@ -100,7 +120,9 @@ pub(super) fn live_constraints(state: &CampaignState) -> Result<(), RulesError> 
                     "Holder breaks require the guarded lifecycle follow-up.",
                 ));
             }
-            deferred_flight_loss(state, grip.declaration.target)?;
+            if !crate::table::grapple_enabled(state) {
+                deferred_flight_loss(state, grip.declaration.target)?;
+            }
             let e = encounter(state)?;
             let a = e
                 .participant(grip.declaration.grappler)
@@ -195,7 +217,9 @@ pub(super) fn plan_attempt_with_read(
         ));
     }
     super::super::shove::cover_bonus(state, actor, target)?;
-    deferred_flight_loss(state, target)?;
+    if !crate::table::grapple_enabled(state) {
+        deferred_flight_loss(state, target)?;
+    }
     let anatomy = crate::tactical_grapple_sources::ordinary_grapple_anatomy(state, actor, pack)?
         .ok_or_else(|| prerequisite("This source has no supported ordinary hand anatomy."))?;
     let target_source = super::super::shove::source_pin(state, target)?;
@@ -354,11 +378,13 @@ pub(super) fn validate_attempt_source(state: &CampaignState) -> Result<(), Rules
     let to = e
         .participant(d.target)
         .ok_or_else(|| invalid("Grapple target absent"))?;
-    if from.position != d.grappler_from
-        || to.position != d.target_from
-        || to.size.rank() > from.size.rank() + 1
-        || crate::spatial::participant_distance(from, to).map_err(|e| invalid(&e.to_string()))?
-            > d.range
+    if (!crate::table::grapple_enabled(state) || a.outcome.is_none())
+        && (from.position != d.grappler_from
+            || to.position != d.target_from
+            || to.size.rank() > from.size.rank() + 1
+            || crate::spatial::participant_distance(from, to)
+                .map_err(|e| invalid(&e.to_string()))?
+                > d.range)
     {
         return Err(invalid("Core Grapple retained geometry differs"));
     }

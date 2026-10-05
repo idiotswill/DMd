@@ -16,11 +16,18 @@ pub(super) fn end_grip(
     cause: GrappleEndCause,
 ) -> Result<(), RulesError> {
     let grip = live_grip(state, id)?.clone();
+    if crate::table::grapple_enabled(state) && flow(state)?.resolution.is_some() {
+        modern_lifecycle::retain(state, &grip)?;
+    }
     if flow(state)?
         .resolution
         .as_ref()
         .and_then(|r| r.grapple.as_ref())
-        .is_some_and(|c| c.activity.is_some() || c.cuts.iter().any(|cut| cut.grips.contains(&id)))
+        .is_some_and(|c| {
+            crate::table::grapple_enabled(state)
+                || c.activity.is_some()
+                || c.cuts.iter().any(|cut| cut.grips.contains(&id))
+        })
     {
         let c = context_mut(state)?;
         if !c.proofs.iter().any(|g| g.declaration.id == id) {
@@ -44,6 +51,9 @@ pub(super) fn end_grip(
     live.active.retain(|g| g.declaration.id != id);
     if live.active.is_empty() {
         rules.tactical_grapples = None;
+    }
+    if crate::table::grapple_enabled(state) && flow(state)?.resolution.is_some() {
+        super::super::movement::refresh_after_grip_end(state, meta, id)?;
     }
     Ok(())
 }
@@ -182,7 +192,9 @@ pub(in crate::tactical) fn release_with_context(
         let holder = live_grip(next, id)?.declaration.grappler;
         super::super::shove::authorize_owner(next, meta, holder)?;
         // An unrelated Grapple activity is also outside this core's consumer set.
-        if let Ok(c) = context(next) {
+        if crate::table::grapple_enabled(next) {
+            admission::supported_context(next)?;
+        } else if let Ok(c) = context(next) {
             match c.activity.as_ref() {
                 None => admission::supported_context(next)?,
                 Some(GrappleActivity::Attempt(a))
@@ -196,7 +208,10 @@ pub(in crate::tactical) fn release_with_context(
                 }
             }
         }
-        let obsolete = escape(next).ok().cloned();
+        let obsolete = escape(next)
+            .ok()
+            .filter(|escape| escape.grip == id)
+            .cloned();
         let cancelled = if let Some(e) = &obsolete {
             cancel_pending_with_context(next, meta, e.key, execution)?
         } else {

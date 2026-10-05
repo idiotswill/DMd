@@ -27,9 +27,11 @@ mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
 pub use aftermath::require_aftermath_session_boundary;
 pub use attacks::savage_attacker_dice;
+pub(crate) use attacks::savage_attacker_dice_with_read;
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use hit_reactions::shield_choices;
+pub(crate) use hit_reactions::shield_choices_with_read;
 pub use initiative::preview_initiative_circumstances;
 pub use reaction_order::order_reaction_respondents;
 pub use release::{
@@ -355,16 +357,41 @@ fn resolve_with_policy(
     pack: &RulesPack,
     policy: ExecutionPolicy,
 ) -> Result<TacticalTransition, RulesError> {
+    let mut next = state.clone();
+    let event = apply_table_with_context(
+        state,
+        &mut next,
+        meta,
+        action,
+        pack,
+        policy == ExecutionPolicy::Historical,
+        &mut grapple::execution::ExecutionContext::ordinary(),
+    )?;
+    Ok(TacticalTransition {
+        next_state: next,
+        event,
+    })
+}
+
+pub(crate) fn apply_table_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &TacticalAction,
+    pack: &RulesPack,
+    historical: bool,
+    execution: &mut grapple::execution::ExecutionContext<'_>,
+) -> Result<TacticalEvent, RulesError> {
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    grapple::guard_action(state, action)?;
-    crate::validate_state(state, pack)?;
-    validate_tactical_state(state)?;
-    if policy == ExecutionPolicy::Live {
+    execution.admit_table(next, action)?;
+    crate::kernel::validate_state_with_read(&execution.read(next)?, pack)?;
+    validation::validate_tactical_state_with_read(&execution.read(next)?)?;
+    if !historical {
         validate_live_execution(state, action)?;
     }
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
@@ -376,28 +403,21 @@ fn resolve_with_policy(
                 | TacticalAction::SubmitRollWithInspiration { .. }
                 | TacticalAction::VoluntarilyFailSave
         )
+        && !(execution.is_owned()
+            && matches!(
+                action,
+                TacticalAction::ReleaseGrapple { .. } | TacticalAction::WithdrawGrapple { .. }
+            ))
     {
         return Err(RulesError::Pending);
     }
-    let mut next = state.clone();
-    dispatch(
-        state,
-        &mut next,
-        meta,
-        action,
-        pack,
-        &mut grapple::execution::ExecutionContext::ordinary(),
-    )?;
-    crate::validate_state(&next, pack)?;
-    validate_tactical_state(&next)?;
-    let outcome = outcome(&next)?;
-    Ok(TacticalTransition {
-        next_state: next,
-        event: TacticalEvent {
-            meta: meta.clone(),
-            action: action.clone(),
-            outcome,
-        },
+    dispatch(state, next, meta, action, pack, execution)?;
+    crate::kernel::validate_state_with_read(&execution.read(next)?, pack)?;
+    validation::validate_tactical_state_with_read(&execution.read(next)?)?;
+    Ok(TacticalEvent {
+        meta: meta.clone(),
+        action: action.clone(),
+        outcome: outcome(next)?,
     })
 }
 
@@ -456,22 +476,22 @@ fn dispatch(
             actor,
             accept,
         } => {
-            missiles::respond(next, meta, *window, *actor, *accept)?;
+            missiles::respond(next, meta, *window, *actor, *accept, execution)?;
         }
         TacticalAction::OrderMissileResponses {
             window,
             instruction,
         } => {
-            missiles::order(next, meta, *window, instruction)?;
+            missiles::order(next, meta, *window, instruction, execution)?;
         }
         TacticalAction::DelegateMissileResponses { window } => {
             missiles::delegate(next, meta, *window)?;
         }
         TacticalAction::CastMissileShield { window, choice } => {
-            missiles::cast(next, meta, *window, choice)?;
+            missiles::cast(next, meta, *window, choice, execution)?;
         }
         TacticalAction::DeclineSelectedMissileShield { window } => {
-            missiles::decline(next, meta, *window)?;
+            missiles::decline(next, meta, *window, execution)?;
         }
         TacticalAction::RespondToHit { window, accept } => {
             hit_reactions::respond_with_context(next, meta, *window, *accept, execution)?;
@@ -538,17 +558,25 @@ fn dispatch(
         TacticalAction::UnarmedStrike { target } => {
             attacks::begin_unarmed_with_context(next, meta, *target, execution)?;
         }
-        TacticalAction::Shove { target } => shove::begin(next, meta, *target)?,
-        TacticalAction::ChooseShoveSave { ability } => shove::choose_save(next, meta, *ability)?,
-        TacticalAction::ChooseShoveOutcome { choice } => shove::choose_outcome(next, meta, choice)?,
-        TacticalAction::RuleShovePush { ruling } => shove::rule_push(next, meta, *ruling)?,
+        TacticalAction::Shove { target } => shove::begin(next, meta, *target, execution)?,
+        TacticalAction::ChooseShoveSave { ability } => {
+            shove::choose_save(next, meta, *ability, execution)?
+        }
+        TacticalAction::ChooseShoveOutcome { choice } => {
+            shove::choose_outcome(next, meta, choice, execution)?
+        }
+        TacticalAction::RuleShovePush { ruling } => {
+            shove::rule_push(next, meta, *ruling, execution)?
+        }
         TacticalAction::SubmitSavageAttacker { roll } => {
             attacks::submit_savage_with_context(next, meta, roll, pack, execution)?;
         }
         TacticalAction::DonShield { shield, hand } => {
-            shields::change(next, meta, Some((*shield, *hand)), pack)?
+            shields::change_with_context(next, meta, Some((*shield, *hand)), pack, execution)?
         }
-        TacticalAction::DoffShield => shields::change(next, meta, None, pack)?,
+        TacticalAction::DoffShield => {
+            shields::change_with_context(next, meta, None, pack, execution)?
+        }
         TacticalAction::CreatureWeaponAttack { feature_id, choice } => {
             attacks::begin_creature_weapon_with_context(
                 next, meta, feature_id, choice, pack, execution,
@@ -559,7 +587,7 @@ fn dispatch(
             aim,
             ordering,
         } => {
-            areas::begin(next, meta, feature_id, *aim, *ordering)?;
+            areas::begin(next, meta, feature_id, *aim, *ordering, execution)?;
         }
         TacticalAction::CreatureAttack {
             target,
@@ -570,12 +598,14 @@ fn dispatch(
                 next, meta, *target, feature_id, *weapon, execution,
             )?;
         }
-        TacticalAction::ChooseLiquidLanding { choice } => falling::choose(next, meta, *choice)?,
-        TacticalAction::CastSpell { choice, targets } => {
-            casting::begin(next, meta, choice, targets)?;
+        TacticalAction::ChooseLiquidLanding { choice } => {
+            falling::choose(next, meta, *choice, execution)?
         }
-        TacticalAction::Move { path } => movement::begin(next, meta, path)?,
-        TacticalAction::DeclineOpportunity => movement::decline(next, meta)?,
+        TacticalAction::CastSpell { choice, targets } => {
+            casting::begin(next, meta, choice, targets, execution)?;
+        }
+        TacticalAction::Move { path } => movement::begin(next, meta, path, execution)?,
+        TacticalAction::DeclineOpportunity => movement::decline(next, meta, execution)?,
         TacticalAction::OpportunityAttack { choice } => {
             let window = movement::selected_opportunity(next)?.clone();
             attacks::begin_opportunity_attack(
@@ -585,6 +615,7 @@ fn dispatch(
                 window.mover,
                 choice,
                 pack,
+                execution,
             )?;
         }
         TacticalAction::Attack { choice } => {
@@ -658,6 +689,7 @@ fn dispatch(
                     .get_mut(&scene_id)
                     .ok_or_else(|| invalid("replacement scene is absent"))?
                     .status = SceneStatus::Active;
+                execution.observe_encounter_replacement(next, meta)?;
             }
         }
         TacticalAction::Begin {
@@ -727,7 +759,7 @@ fn dispatch(
             if flow(state)?.resolution.is_some() {
                 continuations::submit_with_context(next, meta, result, None, execution)?;
             } else {
-                initiative::submit(next, meta, result)?;
+                initiative::submit(next, meta, result, execution)?;
             }
         }
         TacticalAction::SubmitRollWithInspiration {
@@ -744,14 +776,21 @@ fn dispatch(
                     execution,
                 )?;
             } else {
-                initiative::submit_with_inspiration(next, meta, result, *die_index, *replacement)?;
+                initiative::submit_with_inspiration(
+                    next,
+                    meta,
+                    result,
+                    *die_index,
+                    *replacement,
+                    execution,
+                )?;
             }
         }
         TacticalAction::ProposeInitiativeTie { order } => {
-            initiative::propose_tie(next, meta, order)?
+            initiative::propose_tie(next, meta, order, execution)?
         }
         TacticalAction::AcceptInitiativeTie { total } => {
-            initiative::accept_tie(next, meta, *total)?
+            initiative::accept_tie(next, meta, *total, execution)?
         }
         TacticalAction::ChooseTurnWork { occurrence } => {
             turns::choose_with_context(next, meta, *occurrence, execution)?
@@ -765,10 +804,10 @@ fn dispatch(
         TacticalAction::DeclineLegendaryResistance => {
             failed_save::choose_with_context(next, meta, false, execution)?
         }
-        TacticalAction::DeclineLegendaryAction => creature_bridge::decline(next, meta)?,
-        TacticalAction::SecondWind => second_wind::begin(next, meta, pack)?,
+        TacticalAction::DeclineLegendaryAction => creature_bridge::decline(next, meta, execution)?,
+        TacticalAction::SecondWind => second_wind::begin(next, meta, pack, execution)?,
         TacticalAction::FirstAid { target, purpose } => {
-            medicine::begin(next, meta, *target, *purpose)?;
+            medicine::begin(next, meta, *target, *purpose, execution)?;
         }
         TacticalAction::EndTurn
         | TacticalAction::Dash { .. }

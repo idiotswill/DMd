@@ -6,7 +6,7 @@ use super::*;
 pub fn savage_attacker_dice(state: &CampaignState, pack: &RulesPack) -> Result<usize, RulesError> {
     savage_attacker_dice_with_read(&ReadContext::ordinary(state), pack)
 }
-fn savage_attacker_dice_with_read(
+pub(crate) fn savage_attacker_dice_with_read(
     read: &ReadContext<'_>,
     pack: &RulesPack,
 ) -> Result<usize, RulesError> {

@@ -78,8 +78,7 @@ pub(in crate::tactical) fn choose_with_context(
         let decision = if let Some(operation) = operation {
             let before = admission::loadout(next, actor)?.clone();
             let mut after = before.clone();
-            let rules = next.rules.as_ref().ok_or(RulesError::Uninitialized)?;
-            let hands = EffectiveHands::current(next, rules, actor)?;
+            let hands = EffectiveHands::current_with_read(&execution.read(next)?, actor)?;
             hands.validate_loadout(&before.hands)?;
             crate::tactical_inventory::validate_loadout(next, &before)
                 .map_err(|e| invalid(&e.to_string()))?;

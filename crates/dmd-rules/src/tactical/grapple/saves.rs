@@ -342,7 +342,7 @@ pub(in crate::tactical) fn finish(
                 .ok_or_else(|| invalid("Grapple target mechanics absent"))?
                 .condition_immunities
                 .contains(&Condition::Grappled);
-            if !succeeded && !immune {
+            if !succeeded && !immune && !crate::table::grapple_enabled(state) {
                 admission::deferred_flight_loss(state, old.declaration.target)?;
             }
             let proof = GrappleSaveProof {

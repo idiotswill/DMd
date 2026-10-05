@@ -206,6 +206,9 @@ pub struct TableState {
     /// Absent keeps the original PC-only table presentation and transport semantics.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_actor_access: Option<Box<crate::TableSourceActorAccess>>,
+    /// Absence preserves all original table protocol and source-only behavior.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple_access: Option<Box<crate::TableGrappleAccess>>,
 }
 
 impl TableState {
@@ -219,11 +222,15 @@ impl TableState {
             roll_context: None,
             situation: TableSituation::default(),
             source_actor_access: None,
+            grapple_access: None,
         }
     }
 
     pub fn validate(&self, state: &CampaignState) -> Result<(), String> {
         self.contract.validate()?;
+        if let Some(access) = &self.grapple_access {
+            access.validate(state)?;
+        }
         if let Some(access) = &self.source_actor_access {
             access.validate(state)?;
         }

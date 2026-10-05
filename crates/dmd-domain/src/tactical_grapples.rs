@@ -463,8 +463,8 @@ pub fn has_unimplemented_grapple_records(state: &CampaignState) -> bool {
             })
 }
 
-/// This validates only retained shape. Runnable saves still require the rules
-/// validator, which refuses all new records until the resolver checkpoint.
+/// This validates only retained shape. An explicit table marker permits empty
+/// occurrence reads, while runnable saves still require original rules replay.
 pub fn validate_tactical_grapple_shapes(state: &CampaignState) -> Result<(), String> {
     if !has_tactical_grapple_attachments(state) {
         return Ok(());
@@ -493,7 +493,16 @@ pub fn validate_tactical_grapple_shapes(state: &CampaignState) -> Result<(), Str
     }
     if let Some(resolution) = &flow.resolution {
         if let Some(context) = &resolution.grapple {
-            context.validate_shape(resolution, live)?;
+            if let Some(access) = state
+                .table
+                .as_ref()
+                .and_then(|table| table.grapple_access.as_ref())
+            {
+                access.validate(state)?;
+                context.validate_activated_shape(resolution, live)?;
+            } else {
+                context.validate_shape(resolution, live)?;
+            }
         } else if resolution
             .movement
             .as_ref()

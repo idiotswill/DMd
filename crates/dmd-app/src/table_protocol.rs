@@ -9,6 +9,7 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    EnableGrappleAccess,
     UpdateContract {
         contract: TableContract,
     },
@@ -101,58 +102,9 @@ pub enum TableViewer {
     Player(PlayerId),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCreatureCreation {
-    pub entity_id: EntityId,
-    pub name: String,
-    pub definition_id: String,
-    /// Absence is frozen V1 replay, never a current-catalog default.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub source: Option<CreatureSourcePin>,
-    pub size: CreatureSize,
-    pub additional_languages: Vec<String>,
-    pub ammunition_units: u16,
-    pub item_ids: Vec<ItemId>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableBattlefieldSetup {
-    pub encounter_id: EncounterId,
-    pub scene_id: SceneId,
-    pub location_id: LocationId,
-    pub name: String,
-    pub battlefield: Battlefield,
-    pub characters: Vec<TableCharacterPlacement>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub creatures: Vec<TableCreaturePlacement>,
-    pub geometry_ruling: Ruling,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub area_grid_policy: Option<TacticalAreaGridPolicy>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCreaturePlacement {
-    pub actor: EntityId,
-    pub public_label: String,
-    pub position: SpatialPoint,
-    pub height: u32,
-    pub allies: Vec<EntityId>,
-    pub enemies: Vec<EntityId>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCharacterPlacement {
-    pub character_id: CharacterId,
-    pub position: SpatialPoint,
-    /// Explicit physical geometry, measured in half-feet; not a mechanical bonus.
-    pub height: u32,
-    pub allies: Vec<EntityId>,
-    pub enemies: Vec<EntityId>,
-}
+pub use dmd_rules::table::{
+    TableBattlefieldSetup, TableCharacterPlacement, TableCreatureCreation, TableCreaturePlacement,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableCampaignSummary {
@@ -234,6 +186,8 @@ pub enum TableRollChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<TableGrappleView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub campaign_id: CampaignId,
     pub name: String,
@@ -252,6 +206,18 @@ pub struct TableView {
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableGrappleView<K = TableGrappleOffer> {
+    pub version: u32,
+    pub choices: Vec<TableGrappleOption<K>>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableGrappleOption<K = TableGrappleOffer> {
+    pub key: K,
+    pub actor: EntityId,
+    pub label: String,
 }
 
 /// No command metadata or private actors belonging to another audience appear here.

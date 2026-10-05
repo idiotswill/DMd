@@ -1,4 +1,4 @@
-# Gate 4 — Complete public Grapple application path
+# Gate 4 â€” Complete public Grapple application path
 
 Status: **PLAN COMMITTED BEFORE IMPLEMENTATION; SOURCE ALLOCATED; ALL NEW WORK UNCOMPILED/UNRUN**.
 Date: 2026-10-05. Sole writer: ground_next_oct5, explicitly allocated by root.
@@ -8,11 +8,37 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+Implementation progress (2026-10-05, source only): the single typed reducer,
+owned prepared/applied images, fixed complete-history verifier, authenticated
+live/query/replay/open/restore/observation paths, occurrence-bound ray/OA reads,
+lifecycle hooks, explicit activation/version3 and desktop opaque choices are
+authored. Nested kernel and battlefield mutations use the same fixed candidate.
+Twenty-one additive genuine creation/equipment/source file-SQLite application
+cases and six desktop cases are authored. They have not been compiled or run;
+the complete acceptance matrix and every group3 dependency remain outstanding.
+Nothing here is a compilation or feature-acceptance result.
+
+Five root-authorized direct rustfmt passes finished with exit0 on edited files
+only (26,34,73,78,78 Rust paths, edition2024, skip_children=true). The first two caught
+authoring syntax issues corrected before their successful reruns. The most
+recent broader static audit found all154 original test/fixture/frontend control
+files, all28 original inline cfg(test) modules, all894 original Rust test bodies
+and all8 original content files exact against ade8e93 after line-ending
+normalization. Final formatting also completed with exit0 and `git diff --check`
+was clear; its repeated protection audit accompanies the frozen source handback.
+No Cargo, compiler, project runtime, SQLite or native run occurred.
+
 Root fully reviewed and approved the complete 387-line proposal and 446-line
 resolved ownership design, reproduced as repository appendices below/in the
 linked design. This allocation supersedes their historical request for source
-permission. Root explicitly permits implementation groups 1–2 on this sibling
-before the frozen ade baseline82 result; baseline82 is still QUEUED/UNRUN.
+permission. Root explicitly permits implementation groups 1â€“2 on this sibling
+before the frozen ade baseline82 result. Root reports that separate run stopped:
+fmt and strict Clippy passed, the corrected-opportunity case passed, and the
+owner-ten group had nine passes and one failure at
+`typed_pending_withdrawal_preserves_exact_cancel_and_eligible_export`
+(`grapple/execution/tests.rs:195`, expected `resolution.is_none()`). Root is
+investigating the actual lifecycle; no descendant correction, acceptance waiver
+or original test-body change is made here. The full82 did not complete.
 Prior lint/compile failures remain recorded in the inherited attack-read plan.
 No prior result is a pass for this new branch. Frozen original checkout is untouched.
 
@@ -75,6 +101,121 @@ staged-export revalidation before every SQL commit and preflight before restore.
 Every consumer listed in the design must use the owned read path. Existing
 RunnableCampaign remains a read DTO, never a cache of write authority.
 
+## Implementation details recorded during source work
+
+### Open and resume must select history from the full export
+
+Independent review found `open_campaign` chose original replay only when the
+mutable current state still contained a Grapple marker or grip records. A
+genuine just-activated journal with its current marker removed could therefore
+return an ordinary Runnable DTO without checking the retained activation event.
+Command, presented-query and restore consumers already authenticate full history;
+this finding is a read-path defect, not an observed write-authority bypass.
+Root approved this correction before source: open a consistent portable export,
+use the existing `has_rules_history` detector across its current state, original
+snapshots, audits, events and observations, and authenticate that original history
+before returning a table/rules campaign. Construct the returned lifecycle/state
+from that same export. Preserve ordinary non-rules catalog/validation behavior.
+Add genuine accepted activation then hostile SQL current-marker and matching
+snapshot removal controls. Rejected open/resume must preserve every typed cell
+in every table; hostile portable restore retains its independent destination
+control. These negative mutations are never positive gameplay setup.
+
+### Preserved TableView transcript privacy correction
+
+Independent preliminary review found that `CampaignRuntime::table_view`
+authenticated complete original history but then discarded its historical
+visibility and passed `visible_events=None` to the preserved DTO projection.
+That suppresses the Player transcript filter and becomes reachable with enabled
+Grapple through the new owned read. Root approved this narrow correction before
+source: retain the authenticated PresentationHistory and call its existing
+`raw_view` projection helper (made crate-visible), which uses accepted historical
+event and observation audiences. Do not recompute visibility from current sight,
+alter Host transcript content, change saved projections or amend old test bodies.
+Add a genuine private attempt/save/live/release test comparing the unrelated
+Player DTO transcript/recap with its pre-action value and the presented route;
+the Host must still retain the accepted events. This is an unrun privacy repair,
+not proof of full boundary acceptance.
+
+### Approved marker-specific empty read shape boundary
+
+Before the following source change, root read the full-state caller, `ids()`,
+the full cut/inheritance/end validator and actual modern producers and approved
+this bounded amendment. The legacy public
+`TacticalGrappleResolution::validate_shape(resolution, live)` and `ids()` retain
+their nonempty behavior and every original body/control. One private validator
+implementation receives a closed enum selecting legacy or modern local shape;
+the crate-internal modern entry is called only by
+`validate_tactical_grapple_shapes(CampaignState)` after explicitly validating
+that state's `TableGrappleAccess`. There is no externally supplied permission
+boolean and no new rules authority constructor.
+
+The modern entry permits an empty `AttackAdmission` or `RequestIssue` list:
+these are real occurrence-bound reads proving there was no relevant grip at
+admission/issuance. `FlightLoss` still requires a nonempty list with a retained
+proof supporting that target. Nonempty lists always use unchanged `ids()`.
+Every duplicate/key/ancestry/source/chronology/retained-proof check remains shared.
+This validates shape only; the nonserializable rules owner still reconstructs
+the original producers, exact complete cuts, all requests and every snapshot.
+Missing/forged marker or cut cannot create accepted authority, and raw ordinary
+execution remains closed even with a structurally valid marker.
+
+Caller inventory: domain full-state validation reaches this function through
+`CampaignState` validation/codec; rules validation and the complete app restore
+walk validate that same state but additionally require their owned original
+history. The legacy direct resolution validator remains available to all old
+tests/consumers with its original stricter behavior. No ordinary consumer may
+directly select the crate-internal modern entry. In continuations, the actual
+pending work is installed first, the exact raw `PendingRoll` is installed next,
+and only then does `capture_issue` record/validate its occurrence read. This
+ordering is required by modern cut validation and is retained.
+
+Additive acceptance cases must use actual activated no-grip attacks, same-cast
+multiple rays and a real OA; negative controls cover markerless empty reads,
+empty FlightLoss, omitted/forged cut/marker imports and raw execution. Existing
+synthetic/private validator controls and their test bodies remain untouched.
+
+### Actual completed encounter retirement
+
+The existing Establish transition can retire an already finished flow. The
+owned execution observer records the exact prior finished encounter/completion,
+replacement origin and unchanged accepted raw history at that actual reducer
+site. Its delta check permits only that observed old-flow decision retirement;
+no generic state reset or serialized evidence grants permission. Original
+accepted journal replay still proves the retired decisions after the new flow
+is established. New live grips and raw/cancellation suffixes remain independently
+checked. This source is uncompiled and requires the full original-history tests.
+
+### Paused Knockout and Graze completion settlement finding
+
+Static review of `attacks::choice_scope` found that its actual re-entered
+AttackDamage/FinishAttack parent ran the paid consequence, then checked live
+grip constraints before ending a holder incapacitated by that consequence.
+This would reject the legitimate accepted Knockout/Graze transition. The ordinary
+continuation start/finish sites already settle that same effect before checking
+constraints and queuing falls. Add the same owned `settle_work` call inside this
+existing exact-parent scope, before `check_live_constraints` and `queue_losses`.
+Do not create a work node, a replacement state, a callback authority or permission
+for an unowned context. The hook is a no-op for all legacy ordinary/private paths.
+The real Goblin critical-hit and damage-choice app case must prove holder
+incapacity ends the grip while preserving issued/accepted dice. Genuine Graze
+acquisition remains a required later whole-dependency positive. Preserve every
+original attack/private test body. No execution result is claimed.
+
+The writer initially added this one hook under the already approved lifecycle
+scope before this specific finding note. On root's explicit reminder it was
+withdrawn, this note recorded, and only then reapplied; no runtime occurred in
+between. Future concrete boundary amendments remain plan-first.
+
+The nonserializable TableOperation owns its ordinary input values and is borrowed
+as `&TableOperation` for execution, rather than borrowing every individual field.
+This keeps the relocated mutation match mechanically identical and ensures a
+parsed declaration proposal cannot borrow the owner across its mutable step.
+It is a typed proposal only: no state, capability, derived mechanical total or
+serde implementation is added. Command/event payloads remain the original app
+owned types. Historical mode is represented by `Some(ExpectedNested)` even when
+both child events are absent, preserving old source-creation replay semantics.
+
 ## Original control and migration inventory before code
 
 Preserve the exact original bodies in grapple/execution/tests.rs (10 owner) and
@@ -99,14 +240,71 @@ Never remove unrelated assertions or weaken old import/raw/history guards.
 ## Durable progress and immediate next action
 
 - Root design approved; exact sibling parent/tree and clean status verified.
-- Original frozen baseline82: QUEUED/UNRUN. New groups1–2: NOT YET IMPLEMENTED.
+- Original frozen baseline82: root reported a stopped owner-group failure above. New
+  groups1-2 source/UI and additive tests are authored but UNCOMPILED/UNRUN.
 - No runtime, database or compiler execution allocated or performed here.
-- Next: commit this plan and the complete approved design first. Then implement
-  the single mutation reducer/owner and exact original-history consumers before
-  opening the explicit v3 route; record source-only progress and material findings.
+- Initial plan/design committed as `c096f31` before implementation. Preliminary
+  independent bridge review found two read-routing gaps, both corrected as
+  documented above and independently re-read as statically clear. Scoped final
+  rustfmt completed. Next: commit the coherent source, repeat the exact-head
+  byte/body audit and hand it to root as unrun for full independent review.
+  Root must review the complete frozen diff and actual test bodies before any
+  execution/publication. No result from another head verifies this source.
 - Risks: every retained-history reader must keep its proof; finished/replaced
   encounter history cannot require an active flow; source control changes cannot
   rewrite historical source identity; read ownership must not alter old digests.
+
+## Authored application and desktop evidence inventory (all UNRUN)
+
+`crates/dmd-app/tests/table_grapple_public.rs` is a new target; no original test
+file or body is edited. It creates genuine characters, purchased physical items,
+source creatures from the current full-pin catalog, sessions, host-authored
+battlefields and physical initiative. `cold` exports, independently restores,
+closes/reopens the file and executes the same original next request on both;
+it compares complete canonical state/outcome, exact local retries and full rules
+replay. Independent random audience handles/revisions are compared within their
+own stores. Hostile restore compares every table, row and typed cell (including
+hex bytes for text/BLOB) against an unrelated genuine destination campaign.
+
+The 21 authored test names are:
+
+- `activation_uses_original_history_and_refuses_legacy_raw_foreign_and_unsettled_input`
+- `real_grapple_save_release_and_after_equipment_cold_replay_keep_exact_raw_and_private_handles`
+- `withdraw_cancels_only_its_pending_request_and_never_refunds_the_paid_attack`
+- `forged_activation_snapshot_audit_and_original_anchor_leave_every_destination_row_unchanged`
+- `activated_no_grip_attack_records_real_empty_reads_and_refuses_markerless_or_flight_substitution`
+- `activation_rejects_an_actual_pending_attack_then_accepts_the_settled_same_encounter`
+- `activated_unarmed_opportunity_keeps_empty_occurrence_read_and_spends_one_reaction`
+- `activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_ids_across_cold_replay`
+- `real_goblin_escape_checks_use_current_source_skills_and_off_turn_release_cancels_only_escape`
+- `player_owned_goblin_genuine_save_and_after_equipment_retry_survive_controller_transfer`
+- `current_old_mage_accepts_incoming_pc_grip_but_never_gains_a_grappling_anatomy_grant`
+- `actual_escape_success_and_failure_keep_paid_action_and_physical_evidence`
+- `self_only_move_retains_grip_until_actual_range_crossing_and_never_moves_the_target`
+- `actual_source_critical_knockout_ends_the_incapacitated_holders_grip_after_damage_choice`
+- `actual_chimera_flight_loss_keeps_its_fall_and_issued_dice_after_owner_release`
+- `unrelated_audience_whole_projection_stays_exact_through_private_attempt_save_and_release`
+- `pc_physical_attack_keeps_admitted_hand_read_after_release_before_the_reported_attack`
+- `genuine_intrinsic_attack_retains_the_target_relation_after_off_turn_owner_release`
+- `activation_codec_preserves_omission_and_null_but_rejects_old_future_duplicate_and_unknown_authority`
+- `actual_after_equip_then_before_stow_support_two_private_hands_without_fabricated_items`
+- `open_and_resume_replay_original_activation_when_current_and_latest_marker_are_removed`
+
+The six new frontend cases in `grapple-transport.test.ts` and
+`components/GrapplePanel.test.ts` cover opaque source retries after lost reply,
+v3 Host activation plus old v1/v2 retries, source administration remaining v3,
+selected-actor controls/opaque identity, pending/expired controls and Host-only
+settled-encounter activation. UI wiring uses the ordinary saved-request workflow.
+None is native or runtime evidence.
+
+Remaining acceptance is explicit: root's full source review and exact-head
+runtime/strict lint/old-history/frontend checks; actual finite all-form Ogre,
+genuine physical Graze/Glaive OA and source caster-hands dependency receipt;
+full retained Shield/concentration/Savage/LR/Inspiration, target-only break,
+refreshed unselected OA and all broader matrix intersections from the retained
+contract; artifact/native physical dice and save/exit/reopen. Authored common
+hooks or a passing subset may not be substituted for these required positives.
+The original 82 private controls retain their original meaning and exact bodies.
 
 ## Approved full completion contract (historical proposal)
 
@@ -331,9 +529,9 @@ encoding as an opaque capability.
 | --- | --- |
 | Standard PC/Goblin | Accepted Human creation, PrepareEquipment, current GoblinV2 full-pin creation, exact finite gear, source-access activation and actual controller assignment. Use empty hands by lawful before/after actions, never loadout setters. Preserve original GoblinV1 capture and new/old coexistence. |
 | Inspiration | Add a legitimate explicit Host award with a bounded source ruling and actual intended recipient, before the pending Attempt/Escape. Reuse/extract the existing source grant rules without relaxing the kernel tactical-inventory guard. The table/tactical command records provenance and enforces no stacking/eligible recipient. No synthetic flags, GrantInspiration raw API into a table, or rest state injection. Validate actual accepted original_result, reroll faces and once-only consumption. |
-| Graze/Glaive reach | Normally receive root-verified Physical creation PR62 (currently authored e75/tree0169, unrun at preparation), including source pin, complete creation/restore/UI changes, not selected catalog files. Actual current purchase→one-time materialization supplies Greatsword/Glaive; no purchased-definition/mastery/paid-state injection. Parent sourcecatalog's original16 and old actions remain exact. |
+| Graze/Glaive reach | Normally receive root-verified Physical creation PR62 (currently authored e75/tree0169, unrun at preparation), including source pin, complete creation/restore/UI changes, not selected catalog files. Actual current purchaseâ†’one-time materialization supplies Greatsword/Glaive; no purchased-definition/mastery/paid-state injection. Parent sourcecatalog's original16 and old actions remain exact. |
 | Size-legal LR | Normally receive root-verified Ground/Ogre production union (PR61 lineage includes exact3387 Ogre source). The earlier registry-only dependency by itself is not real creation admission. Actual Large Ogre creation and ordinary_hands can attempt the actual Huge Adult Red Dragon within the one-size bound. Unequip lawful gear for the chosen hand; use true source resistance counter/owner, accept/decline/exhaustion; Escape must never receive LR. Keep Human/Goblin oversized refusal. |
-| Caster maintaining an outgoing grip | Existing Mage source page305 lacks ordinary_hands. Plan a narrowly reviewed immutable Mage revision with current exact source/gear/spells unchanged apart from accepted typed anatomy normalization; preserve old Mage pin/captures and installed manifest identity. Do not infer two hands from Humanoid, a staff slot or spell label. Root/source review must approve the original pinned-SRD evidence and interpretation before that asset is authored/admitted. Actual caster create/control/materialization→grip→S/M spell/Shield sequence is required. Incoming Grappled on old Mage already supplies spell attack coverage but does not prove outgoing-hand components. |
+| Caster maintaining an outgoing grip | Existing Mage source page305 lacks ordinary_hands. Plan a narrowly reviewed immutable Mage revision with current exact source/gear/spells unchanged apart from accepted typed anatomy normalization; preserve old Mage pin/captures and installed manifest identity. Do not infer two hands from Humanoid, a staff slot or spell label. Root/source review must approve the original pinned-SRD evidence and interpretation before that asset is authored/admitted. Actual caster create/control/materializationâ†’gripâ†’S/M spell/Shield sequence is required. Incoming Grappled on old Mage already supplies spell attack coverage but does not prove outgoing-hand components. |
 | Fall | Supported Human on real platform beside actual Large Chimera (source p273), legal airborne placement accepted by PrepareBattlefield. Establish by actual failed save; preserve Air's actual paid immune no-effect. No size/immunity/HP/condition changes in fixture setup. |
 
 Dependency receipt is plan-first, whole-history normal merge after root separately
@@ -422,7 +620,7 @@ Required integrated matrices:
   spell/damage, target-only death/incapacity preservation, exact range boundary,
   one-body clear/blocked Push, route leave/reenter, explicit self-only suspended
   through OA and last release; no second body movement or prefix refund.
-- Actual grip→Chimera flight loss→release before landing→real landing/damage and
+- Actual gripâ†’Chimera flight lossâ†’release before landingâ†’real landing/damage and
   any reached concentration children. Keep exact geometry/ancestry/issued dice;
   zero duplicate fall and old FlightLost controls unchanged.
 - Cold close/reopen and independent portable restore before save choice/raw,
@@ -484,7 +682,7 @@ One active completion objective, with four reviewable implementation groups:
    reopen must use that package. Automated widgets/SQLite tests do not substitute
    for native evidence. Merge only after root's exact-head requirements are met.
 
-For a first allocation, authorize groups1–2 as one coherent writer assignment with
+For a first allocation, authorize groups1â€“2 as one coherent writer assignment with
 the full contract above retained and group3 dependencies explicitly waiting on
 root verification; do not publish/accept until all required positive cases and
 native evidence are complete. If the replay bridge or v3 boundary needs a broader

@@ -1,0 +1,48 @@
+//! Read-only mechanical affordances borrow their exact image, never a state/proof pair.
+use dmd_domain::*;
+use dmd_rules::{
+    RulesError, table::TableRead, tactical_hands::EffectiveHands, tactical_spells::BoundSpell,
+};
+
+#[derive(Clone, Copy)]
+pub(crate) enum TacticalRead<'a> {
+    Ordinary(&'a CampaignState),
+    Owned(&'a TableRead<'a>),
+}
+impl<'a> TacticalRead<'a> {
+    pub(crate) fn state(self) -> &'a CampaignState {
+        match self {
+            Self::Ordinary(state) => state,
+            Self::Owned(read) => read.state(),
+        }
+    }
+    pub(crate) fn hands(self, actor: EntityId) -> Result<EffectiveHands, RulesError> {
+        match self {
+            Self::Ordinary(state) => EffectiveHands::current(
+                state,
+                state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+                actor,
+            ),
+            Self::Owned(read) => read.effective_hands(actor),
+        }
+    }
+    pub(crate) fn bind_spell(
+        self,
+        plan: &SpellCastPlan,
+        choice: &SpellTargetChoice,
+    ) -> Result<BoundSpell, RulesError> {
+        match self {
+            Self::Ordinary(state) => dmd_rules::tactical_spells::bind_spell(state, plan, choice),
+            Self::Owned(read) => read.bind_spell(plan, choice),
+        }
+    }
+    pub(crate) fn shield_choices(
+        self,
+        actor: EntityId,
+    ) -> Result<Vec<SpellCastChoice>, RulesError> {
+        match self {
+            Self::Ordinary(state) => dmd_rules::tactical::shield_choices(state, actor),
+            Self::Owned(read) => read.shield_choices(actor),
+        }
+    }
+}

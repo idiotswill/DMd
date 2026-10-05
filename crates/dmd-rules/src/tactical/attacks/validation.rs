@@ -33,7 +33,7 @@ pub(super) fn validate_with_read(read: &ReadContext<'_>) -> Result<(), RulesErro
         validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
         authorize(state, &attack.origin, attack.actor)?;
     }
-    opportunity::validate_admission(state, attack)?;
+    opportunity::validate_admission(read, attack)?;
     if attack.automatic_miss {
         return Err(invalid(
             "an automatic miss must finish without accepting an attack roll",
@@ -288,7 +288,7 @@ fn validate_source(
     read: Option<&super::super::grapple::reads::AttackRead<'_>>,
 ) -> Result<(), RulesError> {
     if matches!(attack.source, TacticalAttackSource::Spell { .. }) {
-        return spell::validate_source(state, attack);
+        return spell::validate_source(state, attack, read);
     }
     let Some(weapon) = attack.weapon() else {
         let plan = intrinsic::plan_with_read(state, attack, read)?;

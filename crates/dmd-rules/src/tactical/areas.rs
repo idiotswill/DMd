@@ -77,6 +77,7 @@ pub(super) fn begin(
     feature_id: &str,
     aim: TacticalAreaAim,
     ordering: TacticalAreaOrdering,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -192,7 +193,7 @@ pub(super) fn begin(
     }));
     push_frame(state, vec![TacticalWorkKind::FinishArea { area: 0 }])?;
     push_frame(state, vec![TacticalWorkKind::AreaDamageRoll { area: 0 }])?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_ordering(

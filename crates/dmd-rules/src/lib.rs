@@ -6,6 +6,7 @@ use thiserror::Error;
 pub mod kernel;
 pub use kernel::*;
 pub mod character_creation;
+pub mod table;
 pub use character_creation::*;
 pub mod spatial;
 pub mod tactical_areas;

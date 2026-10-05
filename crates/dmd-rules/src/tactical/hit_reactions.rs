@@ -41,7 +41,7 @@ pub fn shield_choices(
 ) -> Result<Vec<SpellCastChoice>, RulesError> {
     shield_choices_with_read(&ReadContext::ordinary(state), actor)
 }
-pub(super) fn shield_choices_with_read(
+pub(crate) fn shield_choices_with_read(
     read: &ReadContext<'_>,
     actor: EntityId,
 ) -> Result<Vec<SpellCastChoice>, RulesError> {

@@ -4,6 +4,9 @@ pub(crate) mod admission;
 mod equipment;
 pub(crate) mod execution;
 mod lifecycle;
+mod modern_lifecycle;
+mod offers;
+pub(crate) use offers::{action as table_action, choices as table_choices};
 mod profile;
 pub(crate) mod reads;
 mod saves;
@@ -25,6 +28,70 @@ pub(super) use saves::choose_save;
 pub(super) use saves::choose_save_with_context;
 pub(super) use saves::{finish, request, save_failed};
 pub(super) use validation::{validate, validate_work};
+pub(super) fn flight_cause(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+) -> Result<Option<TacticalFallCause>, RulesError> {
+    if crate::table::grapple_enabled(state) {
+        modern_lifecycle::flight_cause(state, meta, actor)
+    } else {
+        Ok(None)
+    }
+}
+pub(super) fn validate_flight(
+    state: &CampaignState,
+    fall: &TacticalFall,
+) -> Result<(), RulesError> {
+    if !crate::table::grapple_enabled(state) {
+        return Err(invalid("Grapple flight-loss execution is not enabled."));
+    }
+    modern_lifecycle::validate_flight(state, fall)
+}
+pub(super) fn capture_self_only_movement(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+) -> Result<(), RulesError> {
+    if !crate::table::grapple_enabled(state) {
+        return Ok(());
+    }
+    let movement = resolution(state)?
+        .movement
+        .as_ref()
+        .ok_or_else(|| invalid("self-only movement absent"))?;
+    if movement.origin != *meta || !movement.traversed.is_empty() {
+        return Err(invalid(
+            "self-only admission is not its actual move producer",
+        ));
+    }
+    let proofs = state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_grapples.as_ref())
+        .map(|live| {
+            live.active
+                .iter()
+                .filter(|g| g.declaration.grappler == movement.actor)
+                .cloned()
+                .collect::<Vec<_>>()
+        })
+        .unwrap_or_default();
+    if proofs.is_empty() {
+        return Ok(());
+    }
+    for proof in &proofs {
+        modern_lifecycle::retain(state, proof)?;
+    }
+    resolution_mut(state)?
+        .movement
+        .as_mut()
+        .ok_or_else(|| invalid("movement absent"))?
+        .grapple_self_only = Some(GrappleSelfOnlyAdmission {
+        origin: meta.clone(),
+        grips: proofs.iter().map(|g| g.declaration.id).collect(),
+    });
+    Ok(())
+}
 
 fn require_execution(state: &CampaignState) -> Result<(), RulesError> {
     if flow(state)?.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version() {

@@ -3,29 +3,53 @@ use std::collections::HashSet;
 
 use dmd_domain::*;
 
+#[cfg(test)]
 pub(super) fn continuation(
     resolution: &TacticalResolution,
     own: &HashSet<EntityId>,
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    continuation_inner(resolution, own, host, encounter, false)
+}
+
+pub(super) fn continuation_read(
+    read: super::TacticalRead<'_>,
+    resolution: &TacticalResolution,
+    own: &HashSet<EntityId>,
+    host: bool,
+    encounter: Option<&TacticalEncounter>,
+) -> Option<crate::TableTacticalContinuation> {
+    let enabled = matches!(read, super::TacticalRead::Owned(_))
+        && dmd_rules::table::grapple_enabled(read.state());
+    continuation_inner(resolution, own, host, encounter, enabled)
+}
+
+fn continuation_inner(
+    resolution: &TacticalResolution,
+    own: &HashSet<EntityId>,
+    host: bool,
+    encounter: Option<&TacticalEncounter>,
+    grapple: bool,
+) -> Option<crate::TableTacticalContinuation> {
     // Guarded private core work has no application presentation yet.
-    if resolution.grapple.is_some()
-        || resolution
-            .frames
-            .iter()
-            .flatten()
-            .chain(resolution.pending.iter().map(|p| &p.work))
-            .chain(resolution.failed_save.iter().map(|f| &f.pending.work))
-            .any(|w| {
-                matches!(
-                    w.kind,
-                    TacticalWorkKind::BeginGrapple { .. }
-                        | TacticalWorkKind::GrappleSave { .. }
-                        | TacticalWorkKind::GrappleAfterEquipment { .. }
-                        | TacticalWorkKind::GrappleEscapeCheck { .. }
-                )
-            })
+    if !grapple
+        && (resolution.grapple.is_some()
+            || resolution
+                .frames
+                .iter()
+                .flatten()
+                .chain(resolution.pending.iter().map(|p| &p.work))
+                .chain(resolution.failed_save.iter().map(|f| &f.pending.work))
+                .any(|w| {
+                    matches!(
+                        w.kind,
+                        TacticalWorkKind::BeginGrapple { .. }
+                            | TacticalWorkKind::GrappleSave { .. }
+                            | TacticalWorkKind::GrappleAfterEquipment { .. }
+                            | TacticalWorkKind::GrappleEscapeCheck { .. }
+                    )
+                }))
     {
         return None;
     }
@@ -101,7 +125,7 @@ pub(super) fn continuation(
                             | TacticalWorkKind::GrappleSave { .. }
                             | TacticalWorkKind::GrappleAfterEquipment { .. }
                             | TacticalWorkKind::GrappleEscapeCheck { .. } => {
-                                unreachable!("guarded work is omitted above")
+                                (None, "Grapple consequence")
                             }
                             TacticalWorkKind::BeginShove
                             | TacticalWorkKind::ShoveSave

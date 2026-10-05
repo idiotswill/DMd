@@ -439,7 +439,7 @@ pub(crate) fn validate_state_with_read(
     let state = read.state();
     // Source/domain-only checkpoint: structural records cannot authorize play.
     // Replace with full source/causal validation only in the reviewed resolver slice.
-    if has_unimplemented_grapple_records(state) {
+    if has_unimplemented_grapple_records(state) || crate::table::grapple_enabled(state) {
         read.require_guarded("Grapple execution is not enabled by this source/domain checkpoint")?;
     }
     if let Some(history) = &state.encounter_history {
