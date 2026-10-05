@@ -68,8 +68,46 @@ root-owned: independent full diff/preservation review, exact-head focused cases,
 strict fmt/Clippy, canonical/frontend/CI and applicable native evidence. No Cargo,
 npm, compiler, database, native or publication is authorized to this writer.
 Request a brief exclusive direct-rustfmt window after authoring. Next action:
-commit this reconciled plan, then implement the four additive controls; all four
-are currently UNAUTHORED/UNRUN and no gate acceptance is claimed.
+commit this reconciled plan, then implement the four additive controls. The source
+checkpoint below now supersedes the initial UNAUTHORED status; all remain UNRUN.
+
+### Final controls source checkpoint — authored, no runtime acceptance
+
+Plan311858a preceded four new application functions containing12 scenarios:
+one retained operation, four PC/source Apply/Decline privacy cases, three genuine
+unavailable-ground map cases, and four PC/source miss/critical-hit envelope cases.
+The only existing Rust-file change is six additive child-registration lines;
+all earlier function bodies and production files remain unchanged.
+
+The inaccessible Items now come from an actual current controlled Ogre throwing
+one of its three real Javelins to a same-side Goblin. A separate nearby Goblin
+is the PC's visible legal target. Accepted bright maps distinguish a distant
+ground point, an opaque full-height partition, and a transparent movement-blocking
+partition whose object is exactly within five-foot point reach. The public
+perception query records the far target's visibility; real before/after Pickup
+probes establish equipment refusal. This uses source-derived darkvision-capable
+Ogre without needing darkness or a fabricated ground record. An independent
+genuine campaign supplies the foreign Item probe.
+
+Refusal/retry baselines follow presentation bootstrap and compare complete state,
+normalized full export, all three audience DTOs and every typed persistent row.
+The new row reader retains embedded-NUL text/blob bytes and round-trippable REAL
+values; the older helper stays unchanged. Hostile activation, capability and
+retained envelope copies are negative-only imports into genuinely populated
+destinations. Error equality is asserted only within each same-prefix semantic
+unavailable class; audience/envelope failures independently retain atomicity.
+Actual owned hit ordering and target decline precede the two damage-cut probes,
+including a source-turn channel distinct from its same-player target character.
+The retained Unequip control uses current handle/revision for semantic refusal,
+then exact old accepted-response retry and current owned Decline. Current-card
+EndTurn/Dodge probes preserve the absence of an intervening legal mutation.
+
+Direct configured rustfmt and read-only diff/preservation review are the only
+author checks. All four functions, their12 scenarios and every received control
+are UNCOMPILED/UNRUN on this head. Root owns independent source review, focused
+execution and all CI/native/publication decisions. No Physical intake, Graze,
+invented source Legendary Resistance, production edit or acceptance claim is
+included in this checkpoint.
 
 ## First source checkpoint — Shield, authored and unrun
 
