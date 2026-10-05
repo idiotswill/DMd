@@ -1,5 +1,44 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## Receive verified core correction and prepare82 controls — 2026-10-05
+
+Root now authorizes a bounded normal merge of published core
+`d9108c6e9fcff5b81600c2253b9422644a138db8`, tree
+`5877058f7b9329dd061a05ef824b09309f1d9a42`, into clean
+`dc1f9cc47c90f2f878521b012825a88137b4407e`, tree
+`0c4f81b8acce7d8c86b3e7b5190e756ed5d169d6`. Fresh fetch confirms the core head;
+the assigned local source is unchanged. This supersedes only the historical
+instruction below to await d910 verification. Root has since verified its exact47
+focused controls, formatting and strict three-package all-target Clippy, with
+independent completion review SHA256
+`0455229e2f76a166ad53ec52fbc7b1b12b0eac9d029d25c498784254576d4f52`.
+The source-correction independent review was read in full. That dependency run
+explicitly reused its target; no result transfers to this receiving head.
+
+Commit this plan before merging. Preserve both histories and limit the incoming
+non-document delta to the exact53-line additive synthetic opportunity fixture
+correction, plus its core plan. Compare all other source/test/fixture/receiving
+suite bytes with dc1. The entire opportunity file must equal d910 with no change
+to its production prefix. Stop for any unexpected semantic union; import no
+unrelated Ground/Shove/main work and keep every public/history/raw guard closed.
+
+After the conflict-reviewed merge, prepare only a new external UNRUN wrapper and
+manifest using unchanged reviewed v2 engine. Preserve all81 original exact names,
+arguments and source mappings from the dc1 preparation, then add the exact
+corrected opportunity control for82. Use the new frozen head/tree and new absent
+evidence/target directories; preserve prior preparations and evidence. Formatting
+and strict all-target domain/rules/app Clippy remain first, with default profiles,
+stack and test threads, GNU1.98.1, jobs1/incremental0 and no explicit --target.
+
+No Cargo/compiler/test, DB/native, npm, push or CI is allocated to this merge and
+preparation task. Return clean source-equivalence audits and the complete proposed
+runner for independent root review before execution. All existing six-family,
+source-positive, LR, Ground/Ogre, replay, application and native obligations below
+remain mandatory; the merge and focused preparation imply no public activation
+or Gate4 acceptance.
+
+## Historical narrow source correction — 2026-10-04
+
 Status: TWO NARROW CORRECTIONS AUTHORED; RETURNED FOR DELTA REVIEW, 2026-10-04.
 Root transferred sole SOURCE-WRITER ownership to `gate4_core_oct4` from clean
 `9ceb54cea6b7ceaf201249a78c74dd55efa77965`, tree
