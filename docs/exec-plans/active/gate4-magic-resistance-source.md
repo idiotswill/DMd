@@ -358,7 +358,8 @@ must not deny the actual accepted dependency. Literal main32's separate runtime
 verification is pending and must not borrow candidate Air execution evidence.
 
 Completed d4 CI has 791 Linux Rust passes and 793 MSVC passes. The Windows union
-is 792 remainder tests plus one separately executed coexistence test, with all56
+is 792 remainder tests plus one separately executed Missile privacy test
+(`table_missile_cases::missile_zero_one_two_eligible_sources_keep_uniform_ordering_and_private_acknowledgments`), with all56
 harnesses and six doctest groups accounted for. Independent union audit SHA256
 `f499708afa0618896363b6f681d8a18bac355fad3ec6a28467802597252a5474`
 was reconstructed by root from actual receipt/log/metadata/name evidence.
