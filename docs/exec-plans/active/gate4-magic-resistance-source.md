@@ -1,6 +1,13 @@
 # Gate 4 corrected Night Hag source and Magic Resistance prerequisite
 
-Status: `486ce8b` passed Linux CI, including old/current Hag coexistence, but both
+Current status, 2026-10-05: corrected `d4bb42c` has complete passing Linux and
+Windows CI, including the independently audited Windows workspace partition
+union and verified package. Default-profile local canonical verification and
+real packaged Magic Resistance play/recovery remain outstanding. Root is
+reconciling accepted main32 before fresh receiving-head checks; details and exact
+evidence follow in the October5 receiving plan below. Gate4 remains open.
+
+Historical status before corrected CI: `486ce8b` passed Linux CI, including old/current Hag coexistence, but both
 original native Windows attempts reached the six-hour limit. The reviewed CI
 partition was published at `ad3b82b`. Its first actual isolated target reported
 1 passed/61 filtered in 4116.01s, but the coverage guard correctly rejected six
@@ -331,3 +338,41 @@ Exact next action: independent complete receiving-head/documentation review,
 then normal publication to PR53 with a fresh exact-head Linux/native partition
 and package proof. Air remains unaccepted; no merge into its branch. Original
 canonical/native/source acceptance and every remaining Gate4 family stay open.
+
+## Accepted main32 receipt — 2026-10-05 plan
+
+Root owns the sole source writer and publication role. Freshly fetched accepted
+main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71`. The frozen reviewed MR head
+is `d4bb42c1f6542a46883f03daed2f0c4555433963`, tree
+`515d3ec347dfb5ba7b4d9e64a2efdfebee42702f`. Their actual merge base is
+`f932c73bf1f79cd0c5600431839a6ecece7877f7`; the complete incoming main delta
+is two documentation paths, 69 additions/9 deletions. No gameplay, content,
+test, raw fixture, receiving suite or verification script change is expected.
+
+Normally merge exact main32 after this plan commit. Retain the accepted Air
+canonical/CI/native history and every MR-specific ledger qualification. Reconcile
+any documentation conflict explicitly and compare both parents. Every non-doc
+entry must remain exact d4bb42c, including all protected capture bytes. Label
+prior Air-unaccepted statements as historical in the current checkpoint; they
+must not deny the actual accepted dependency. Literal main32's separate runtime
+verification is pending and must not borrow candidate Air execution evidence.
+
+Completed d4 CI has 791 Linux Rust passes and 793 MSVC passes. The Windows union
+is 792 remainder tests plus one separately executed coexistence test, with all56
+harnesses and six doctest groups accounted for. Independent union audit SHA256
+`f499708afa0618896363b6f681d8a18bac355fad3ec6a28467802597252a5474`
+was reconstructed by root from actual receipt/log/metadata/name evidence.
+The package archive11312954851 SHA256 is
+`55e7ffa1daee1ff3dfe416f9b44f4b9a1743c3c852d2fb6277f646d7c3921895`;
+all1072 manifest payloads and1073 safe archive members were verified. Its EXE
+SHA256 is `22af37d2283b4470434d662cddd62a18e399106e9e987255ad64fc813e74fcc5`.
+It remains unopened. These are d4 results, not future receiving-head results.
+
+After complete root and independent receiving review, normally publish the new
+head to draft PR53 and target accepted main. Require new exact-head CI, local
+canonical execution, compatible real packaged pending/completed Magic Resistance
+play and recovery, final review, expected-head merge and separate literal-main
+verification. The shared native campaign store can auto-open remembered later
+campaigns; do not launch an older package into an unsupported save. All prior
+failed/cancelled attempts remain evidence. This documentation receipt is not
+native acceptance, completion of broader monster actions, or Gate4 completion.
