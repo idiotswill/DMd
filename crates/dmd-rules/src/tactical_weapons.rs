@@ -268,7 +268,13 @@ pub fn prepare_weapon_attack(
         }
         WeaponActorSource::CreatureOrdinaryWeapon(creature) => {
             require(
-                definitions.creature(&creature.id) == Some(*creature),
+                crate::tactical_creatures::source_for_actor(
+                    input.state,
+                    context.actor,
+                    &creature.id,
+                )
+                .map_err(|e| invalid(e.to_string()))?
+                    == *creature,
                 "creature source differs from pinned catalog",
             )?;
             require(

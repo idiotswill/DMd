@@ -242,6 +242,19 @@ pub(crate) fn load_rules_pack(
             "installed tactical catalog does not match this exact supported rules version".into(),
         ));
     }
+    let air = installed.manifest.files.iter().find(|file| file.path == "air-elemental-v1.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent(
+            "Air Elemental source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let air_bytes = fs::read(base.join("air-elemental-v1.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent(
+            "Air Elemental source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if air_bytes.len() as u64 != air.byte_len
+        || fnv1a64_hex(&air_bytes) != air.checksum.value
+        || air_bytes != include_bytes!("../../../content/srd-5.2.1/air-elemental-v1.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Air Elemental source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {

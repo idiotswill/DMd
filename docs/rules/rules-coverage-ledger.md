@@ -85,6 +85,25 @@ integrated canonical/CI/review and missile merge/main proof remain pending;
 Counterspell, Ready release and the other required mechanisms remain open.
 This is technical evidence, not human acceptance.
 
+The bounded [Air Elemental source admission](../exec-plans/active/gate4-air-elemental-source-admission.md)
+adds a separate complete immutable SRD pages258–259 source and exact current
+creation pins while retaining V1 definitions and historical picker bytes. Integrated
+3f3e359 passes all six CI jobs (783Linux/785Windows,60table,all8originalFlow4).
+Its verified Windows package completed actual source creation, atomic overlap
+refusal, corrected placement, owned initiative with pending-request cold restart,
+and five-foot flight with airborne cold restart in the existing campaign. Prior
+resources, identities and histories survive. The plan qualifies labeled QA dice
+inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled with
+all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
+canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
+(783 Linux /785 MSVC); the plan records exact logs and independent review.
+Final documentation-head checks/review, protected merge and literal main proof
+remain outstanding. No evidence array or family status
+advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
+Gate4 obligations; source data and explicit unavailable boundaries do not close
+`monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
+slice still owes its genuine paid Prone-immunity continuation and recovery.
+
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Integrated
 8c03f9f connects authenticated release/replacement/session handling, recovery and
@@ -95,8 +114,10 @@ The verified8c Windows package exercises two actual encounters, closed/active-se
 Finish and cold Finished/pending-attack recovery with the same actors, paid resources,
 items and absolute Mage Armor deadline. The plan distinguishes native evidence from
 the separate real file-SQLite ammunition/drop-custody, replay and refusal families.
-Final evidence-head checks/review, protected merge and separate merged-main proof
-remain required; complete Gate4 families remain implementing. These checkpoints add
+Final evidence head d4 passed independent review and all six checks, then PR48
+merged with expected-head protection as dbf1d63, whose full tree equals d4.
+Separate literal dbf main runtime checks remain pending; complete Gate4 families
+remain implementing. These checkpoints add
 no passing evidence to the machine-readable ledger and advances no family status.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.

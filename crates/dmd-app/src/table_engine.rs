@@ -188,6 +188,23 @@ fn resolve_table_internal(
         }
         TableAction::CreateCreature { creation } => {
             host(meta)?;
+            if historical.is_none() {
+                let pin = creation
+                    .source
+                    .as_ref()
+                    .ok_or("Choose an exact current creature source before creating a creature.")?;
+                let admitted = dmd_rules::tactical_creatures::current_creature_sources()
+                    .map_err(|e| e.to_string())?
+                    .into_iter()
+                    .any(|source| {
+                        source.id == creation.definition_id
+                            && dmd_rules::tactical_creatures::creature_source_pin(source).as_ref()
+                                == Ok(pin)
+                    });
+                if !admitted {
+                    return Err("Creature source is not an exact current admission.".into());
+                }
+            }
             if table(state)?.active_session.is_some() {
                 active(state, meta)?;
             } else if meta.session_id.is_some() {

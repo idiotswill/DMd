@@ -11,7 +11,7 @@ use std::collections::HashSet;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct NpcCapabilities {
     actor: EntityId,
-    definition: String,
+    source: CreatureSourcePin,
     hp: u32,
     max_hp: u32,
     footprint: u32,
@@ -116,7 +116,7 @@ pub fn npc_capabilities(
     }
     Ok(NpcCapabilities {
         actor,
-        definition: source.id.clone(),
+        source: profile.source.clone(),
         hp: mechanics.hp,
         max_hp: mechanics.max_hp,
         footprint: profile.size.footprint_units() as u32,
@@ -229,7 +229,7 @@ pub fn propose_npc_intents(
             reason: NpcReason::CannotAct,
         }]);
     }
-    let source = creature_definition(&capabilities.definition)?;
+    let source = creature_source(&capabilities.source)?;
     let mut threats = view
         .contacts
         .iter()

@@ -5,7 +5,24 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR49 — 2026-09-30
+## Current checkpoint after PR48 — 2026-10-01
+
+Fetched main is dbf1d633460473183324b4ec519e8d1980884b5c. Release PR48 merged
+with expected-head protection after complete exact d4 review and six successful
+checks; main's full tree equals that candidate. Separate literal dbf runtime jobs
+remain pending. The release plan preserves the8c implementation's canonical and
+actual native evidence without calling it execution on a different head.
+
+Air3f's six checks and actual verified package now cover source creation, overlap
+refusal, corrected placement, owned initiative cold continuation and airborne cold
+continuation with the previous campaign resources/history preserved. Local
+canonical and final receiving-head proof remain open. This is bounded source
+admission, not complete Air actions or full monster running. Shove, expiry, MR,
+guarded Grapple, finite source gear, complete Ogre and ground recovery remain
+unaccepted dependent work. All twelve families/eighteen spell mechanisms and the
+other obligations below retain their full scope. No Gate5 or gate completion.
+
+## Historical checkpoint after PR49 — 2026-09-30
 
 Fetched main is `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7`, the protected
 UI49 merge. Its full tree equals reviewed source65b7606. The UI plan records

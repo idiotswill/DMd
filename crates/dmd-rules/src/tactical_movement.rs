@@ -319,6 +319,7 @@ fn evaluate(
     )
     .map_err(|error| match error {
         SpatialError::Illegal(message) => prerequisite(message),
+        SpatialError::Unsupported => prerequisite("spatial operation is not yet supported"),
         // The cumulative runtime work/movement bound is reached only at this real
         // segment; it must not undo a prefix already accepted in the same attempt.
         SpatialError::Capacity => prerequisite("Movement reached its bounded execution capacity."),

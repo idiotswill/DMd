@@ -155,6 +155,13 @@ async fn prepare(f: &mut Fixture) -> EntityId {
                 entity_id: cultist,
                 name: "Private concentration source".into(),
                 definition_id: "cultist-fanatic".into(),
+                source: Some(
+                    dmd_rules::tactical_creatures::creature_source_pin(
+                        dmd_rules::tactical_creatures::creature_definition("cultist-fanatic")
+                            .unwrap(),
+                    )
+                    .unwrap(),
+                ),
                 size: CreatureSize::Medium,
                 additional_languages: vec![],
                 ammunition_units: 0,

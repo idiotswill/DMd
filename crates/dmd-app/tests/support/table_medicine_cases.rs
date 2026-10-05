@@ -124,6 +124,13 @@ pub(super) async fn prepare(f: &mut Fixture, knockout: bool) {
                 entity_id: npc,
                 name: "Private sentry".into(),
                 definition_id: "goblin-warrior".into(),
+                source: Some(
+                    dmd_rules::tactical_creatures::creature_source_pin(
+                        dmd_rules::tactical_creatures::creature_definition("goblin-warrior")
+                            .unwrap(),
+                    )
+                    .unwrap(),
+                ),
                 size: CreatureSize::Small,
                 additional_languages: vec![],
                 ammunition_units: 20,

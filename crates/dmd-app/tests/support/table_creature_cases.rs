@@ -2,6 +2,15 @@ use super::*;
 
 #[tokio::test]
 async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore() {
+    current_catalog_creates_pinned_source("mage").await;
+}
+
+#[tokio::test]
+async fn current_catalog_creates_air_through_owned_transport_and_cold_restore() {
+    current_catalog_creates_pinned_source("air-elemental").await;
+}
+
+async fn current_catalog_creates_pinned_source(definition_id: &str) {
     let directory =
         std::env::temp_dir().join(format!("dmd-current-catalog-{}", CampaignId::new().0));
     std::fs::create_dir_all(&directory).unwrap();
@@ -9,6 +18,34 @@ async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore()
     let url = format!("sqlite://{}", database.display());
     let pool = open_sqlite(&url).await.unwrap();
     let mut f = Fixture::with_pool(TableContract::default(), pool).await;
+    // This is a new live command using an unchanged V1 definition, not a
+    // replacement for the genuine historical missing-pin replay fixtures.
+    let existing_v1 = if definition_id == "air-elemental" {
+        let actor = EntityId::new();
+        let source = dmd_rules::tactical_creatures::creature_source_pin(
+            dmd_rules::tactical_creatures::creature_definition("wolf").unwrap(),
+        )
+        .unwrap();
+        Box::pin(f.host(
+            TableAction::CreateCreature {
+                creation: Box::new(TableCreatureCreation {
+                    entity_id: actor,
+                    name: "Existing source creature".into(),
+                    definition_id: "wolf".into(),
+                    source: Some(source.clone()),
+                    size: CreatureSize::Medium,
+                    additional_languages: vec![],
+                    ammunition_units: 0,
+                    item_ids: vec![],
+                }),
+            },
+            Some(f.session),
+        ))
+        .await;
+        Some((actor, source))
+    } else {
+        None
+    };
     let view = f
         .runtime
         .presented_table_view(f.campaign, TableViewer::Host)
@@ -69,7 +106,7 @@ async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore()
         .unwrap();
     let mage = catalog
         .iter()
-        .find(|source| source.definition_id == "mage")
+        .find(|source| source.definition_id == definition_id)
         .unwrap();
     let actor = EntityId::new();
     let request = TableTransportRequest {
@@ -84,13 +121,50 @@ async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore()
                 entity_id: actor,
                 name: "Prepared spellcaster".into(),
                 definition_id: mage.definition_id.clone(),
+                source: mage.source.clone(),
                 size: mage.sizes[0],
-                additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
+                additional_languages: if definition_id == "mage" {
+                    vec!["dwarvish".into(), "elvish".into(), "draconic".into()]
+                } else {
+                    vec![]
+                },
                 ammunition_units: 0,
                 item_ids: (0..mage.item_count).map(|_| ItemId::new()).collect(),
             }),
         })),
     };
+    assert!(mage.source.is_some());
+    if definition_id == "air-elemental" {
+        assert!(!mage.execution_limits.is_empty());
+    }
+    // Refused live commands are not historical producers. Absence is never filled
+    // by normalization and cannot select the newly admitted source.
+    for bad_pin in 0..3 {
+        let before_refusal = export_campaign(&f.pool, f.campaign).await.unwrap();
+        let mut rejected = request.clone();
+        rejected.command_id = CommandId::new();
+        let TableTransportInput::Action(action) = &mut rejected.input else {
+            unreachable!()
+        };
+        let TableAction::CreateCreature { creation } = action.as_mut() else {
+            unreachable!()
+        };
+        match bad_pin {
+            0 => creation.source = None,
+            1 => {
+                creation.source.as_mut().unwrap().definition_fingerprint = "0000000000000000".into()
+            }
+            _ => creation.source.as_mut().unwrap().ruleset_version = "5.2.2".into(),
+        }
+        assert!(
+            Box::pin(f.runtime.submit_presented_table(rejected))
+                .await
+                .is_err()
+        );
+        let mut after_refusal = export_campaign(&f.pool, f.campaign).await.unwrap();
+        after_refusal.exported_at_utc = before_refusal.exported_at_utc.clone();
+        assert_eq!(after_refusal, before_refusal);
+    }
     let accepted = Box::pin(f.runtime.submit_presented_table(request.clone()))
         .await
         .unwrap();
@@ -111,8 +185,67 @@ async fn current_catalog_creates_mage_through_owned_transport_and_cold_restore()
             .unwrap()
             .profiles
             .iter()
-            .any(|profile| profile.actor == actor && profile.source.definition_id == "mage")
+            .any(|profile| profile.actor == actor && profile.source.definition_id == definition_id)
     );
+    if let Some((existing_actor, existing_pin)) = existing_v1 {
+        let rules = created.rules.as_ref().unwrap();
+        let profiles = rules.tactical_creatures.as_ref().unwrap();
+        assert_eq!(profiles.profiles.len(), 2);
+        assert_eq!(
+            &profiles.profile(existing_actor).unwrap().source,
+            &existing_pin
+        );
+        assert_eq!(
+            dmd_rules::tactical_creatures::source_for_actor(&created, existing_actor, "wolf")
+                .unwrap(),
+            dmd_rules::tactical_creatures::creature_definition("wolf").unwrap()
+        );
+    }
+    if definition_id == "air-elemental" {
+        let rules = created.rules.as_ref().unwrap();
+        let profile = rules
+            .tactical_creatures
+            .as_ref()
+            .unwrap()
+            .profile(actor)
+            .unwrap();
+        let mechanics = &rules.entities[&actor];
+        assert_eq!(
+            (mechanics.hp, mechanics.max_hp, mechanics.armor.clone()),
+            (90, 90, ArmorClass::Fixed(15))
+        );
+        assert!(mechanics.condition_immunities.contains(&Condition::Prone));
+        let movement = dmd_rules::tactical_creatures::creature_movement(
+            dmd_rules::tactical_creatures::source_for_profile(profile).unwrap(),
+        );
+        assert_eq!((movement.fly, movement.hover), (Some(180), true));
+        assert_eq!(
+            dmd_rules::tactical_creatures::creature_test_modifier(
+                profile,
+                mechanics,
+                &TestKind::Save {
+                    ability: Ability::Strength
+                }
+            )
+            .unwrap(),
+            2
+        );
+        assert_eq!(
+            dmd_rules::tactical::preview_initiative_circumstances(
+                &created,
+                &TacticalCombatant {
+                    actor,
+                    source: TacticalSource::Creature {
+                        definition_id: definition_id.into()
+                    },
+                    surprised: false
+                }
+            )
+            .unwrap()
+            .0,
+            5
+        );
+    }
     let before = export_campaign(&f.pool, f.campaign).await.unwrap();
     assert!(
         matches!(
@@ -187,6 +320,12 @@ async fn verify_creature_creation(f: &mut Fixture, url: &str) -> (CampaignState,
         entity_id: actor,
         name: "Private sentry".into(),
         definition_id: "goblin-warrior".into(),
+        source: Some(
+            dmd_rules::tactical_creatures::creature_source_pin(
+                dmd_rules::tactical_creatures::creature_definition("goblin-warrior").unwrap(),
+            )
+            .unwrap(),
+        ),
         size: CreatureSize::Small,
         additional_languages: vec![],
         ammunition_units: 20,
