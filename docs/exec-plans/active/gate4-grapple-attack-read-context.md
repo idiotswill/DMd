@@ -1,5 +1,18 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 5 actual strict-lint failure and correction
+
+The exact0df1754 focused82 attempt passed formatting, then strict Clippy failed
+at grapple/profile.rs115 (collapsible_if) before every selected test. The full
+failed log is preserved externally, SHA256
+a4d8fb4a9a7a68e0b93d294d3c29ef5aae1855d2b4ba40b21dab8c9fed3596b1.
+Commit this plan first, then combine only the nested hit-review pattern and
+unchanged attack-origin/absence predicate into a short-circuit let chain. Keep
+the exact refusal text, all validators, test bodies and public guards intact.
+Independently review this narrow delta, then run the same82 exact controls after
+fmt and strict three-package all-target Clippy at the new frozen head. No test
+success, public activation or full Grapple acceptance is claimed from this fix.
+
 ## Receive verified core correction and prepare82 controls — 2026-10-05
 
 Root now authorizes a bounded normal merge of published core
