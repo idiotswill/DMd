@@ -37,9 +37,9 @@ Cargo, build, test, database, native action or publication is allocated here.
 Freeze the clean normal merge with full parent/tree and byte-preservation evidence
 for root's independent review and normal push. The saved5a426 preparation is
 UNRUN and becomes obsolete on a new head; preserve it and prepare a fresh exact
-426 inventory/runner afterward. Root still owns the single heavy execution slot,
-currently the separate Grapple418 run. New-head runtime and native outcomes remain
-unknown. Root coordinates subsequent CI, canonical verification and acceptance.
+426 inventory/runner afterward. Root retains the single heavy execution slot;
+this receipt allocates no local execution. New-head runtime and native outcomes
+remain unknown. Root coordinates CI, canonical verification and acceptance.
 
 Receipt outcome before root review: the four conflicts are documentation only.
 Their resolution retains successful literal-dbf evidence, bounded Air admission,
