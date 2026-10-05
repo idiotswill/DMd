@@ -47,3 +47,22 @@ test filtering change or new product scope. The sole local heavy slot remains
 Shove canonical session83971. Commit this plan first, merge a27, review complete
 receipt, then independently reviewed709 and record the resulting exact head/tree.
 The final receiving candidate needs its own verification inventory and results.
+
+## Receiving source checkpoint
+
+Plan6becbfc preceded normal a27 merge5ac2633. Its sole documentation conflict
+contained two independent prefixes before an identical complete shared suffix;
+the resolution preserves both prefixes and the complete prior text. The incoming
+anatomy test and correction plan are exact a7/a27. No Graze body changed.
+
+The complete independent Physical709 review is clear; initial plan46 lines,
+final plan59, and all563 other original entries exact. Normal mergeb9460f7
+then received only the corrected Physical test and its plan without a conflict.
+Both files are exact709, while the integrated helper keeps its previously reviewed
+`after_equipment: None`. Root read the whole source correction and independent
+memo, including original failure and precise provenance expectations.
+
+The combined branch is still UNCOMPILED/UNRUN. No parent result or exact-body
+comparison substitutes for executing this receiving head. Exact next action:
+independent whole-tree receiving review and preserved new/old inventory, then
+draft publication for receiving CI and root allocation of focused/canonical work.
