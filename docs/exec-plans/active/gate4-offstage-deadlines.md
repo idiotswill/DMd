@@ -8,7 +8,7 @@ reported63 passes/2 failures; both new Mage interval scenarios stopped in the
 shared prepare_mages helper at PrepareBattlefield, before any elapsed command.
 The actual refusal is "Choose a new encounter and scene with at least one character."
 The original complete log is retained externally, SHA256
-6105da891c58cc17b5caa2456758945eb42ad45597f4775ee687da46a23c6554.
+409dfb350c7b613dc3d0efcff12f84984316b054dc2422949b5eae9c38368c2b.
 
 The helper supplies no character and three Host-controlled Mages. Existing
 application admission permits source-only setup only with enabled source access
