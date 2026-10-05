@@ -1,5 +1,33 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## First production CI compilation failure and narrow repair — 2026-10-05
+
+Draft [PR61](https://github.com/idiotswill/DMd/pull/61) publishes coherent
+`d43e079938535218eabf5fde20683614dedda815` on lifecycle1702 for early CI.
+Root and independent complete static review passed, including all new source,
+26 authored scenarios and preservation audits. Actual Linux run37291987967
+then failed both MSRV1.88 and stable1.99 compilation of the rules library tests,
+before any test or Clippy execution. Synthetic checkout3ad90e38 has parents1702
+andd43 with exact full treef5d64e. Each diagnostic set has29 missing helper names
+in attack_equipment_access_tests.rs plus one type error at its line1043.
+
+The retained test module calls `active`, `resolution` and `resolution_mut`, but
+its production parent does not import them. The compiler points to the existing
+tactical::turns functions. Commit this plan first, then add only those explicit
+test-local imports. Keep all test inputs, bodies and assertions, including the
+source-pin match at1043, unchanged. The latter type diagnostic may be downstream
+of the unresolved function; only actual recompilation can establish that. Do not
+alter its assertion speculatively or change production visibility/behavior.
+
+Retained actual logs: Rust job111704291492 SHA256
+57688dc28324ba62cac4d00fa717c619eff491926b86105be298067227302323;
+MSRV job111704291394 SHA256
+db508a8cf98b350eb17ba6c61038931147b683dd024ad52f172262bcee1bdab7.
+Independent failure/provenance audit236fdf1e8bbe710458d1a79638771a05a0b806c51136cce47606d0eeb4ee317f.
+Review the narrow repair, republish normally, then evaluate fresh exact-head CI
+and root-allocated focused/canonical checks. Original failures remain evidence.
+No current runtime or feature/native/Gate4 acceptance is claimed.
+
 ## Narrow package notice correction plan — 2026-10-05
 
 Root restored sole writing only for this documentation/package correction from
