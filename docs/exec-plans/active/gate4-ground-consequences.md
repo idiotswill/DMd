@@ -129,6 +129,31 @@ Cultist decline before damage, sharing the helper with the fall family. Preserve
 all existing dice, inputs and assertions, and review the full corrected body.
 This is a static finding, not a reported runtime failure; all cases remain unrun.
 
+## Fall source checkpoint and corrected concentration — authored, unrun
+
+The fall family now contains one application function/scenario. All eleven
+critical attacks use real ordered hit collection and Host decline, physical
+damage and actual intervening turns. The last real damage pauses for Knock Out;
+its retained work and accepted raw remain parents of the actual queued fall.
+The pending fall has no early equipment or leaked player roll. Premature raw and
+opaque equipment/work inputs preserve the complete export/state, and hostile
+activation images preserve every row of an unrelated populated destination.
+Two physical1s resolve the actual2d6 fall, kill the1HP source creature and leave
+the attacker's original Decline available. Exact final receipt, retained cause,
+hands, items, paid timing, source pin and roll receipts are checked.
+
+The concentration body gains only the required cold order/Host-decline call
+between its existing physical19 and damage request; every prior input and
+assertion remains. Both families share the new explicit two-command helper.
+The earlier independent CLEAR at2d2642 is superseded by this static protocol
+finding and repair, and the corrected full body has been reread. The Shield
+body, all old receiving tests, production source and historical fixtures remain
+unchanged. There are three new application functions containing nine scenarios
+(Shield6, concentration2, fall1), all UNCOMPILED/UNRUN. Direct configured rustfmt
+and Git diff checks establish syntax/format only. A new independent root review
+and frozen-head execution are required; no acceptance transfers from055 or any
+earlier mechanism run.
+
 ## Planned implementation
 
 1. Add a child of the existing Ground table integration module. Reuse its actual
@@ -164,7 +189,7 @@ or a Gate5 feature. Native, Graze and the integrated remaining matrix stay due.
 
 ## Verification and current status
 
-All new work is UNAUTHORED/UNRUN at this plan commit. PR61 has passed its latest
+All three new functions are authored and UNCOMPILED/UNRUN. PR61 has passed its latest
 Linux MSRV compile check, not full runtime acceptance. Earlier d43 compiler
 failures remain recorded in its parent plan. Shove canonical currently owns the
 single local heavy slot; no Cargo, test, database or native execution is allocated
@@ -184,5 +209,8 @@ with original attack/damage provenance surviving source response commands.
 Derived query views cannot supply authority. Existing after intent may consume
 the same equipment allowance needed for initial equip, so first obtain genuinely
 held equipment on an earlier completed turn. Avoid substituting fabricated paid
-state for the necessary setup. First author the Shield family through these
-boundaries, then review it before extending concentration/fall coverage.
+state for the necessary setup. Next: root independently reviews the complete
+frozen fall/helper/concentration correction, then allocates exact-head focused
+and canonical execution. Genuine valid-to-invalid Apply, a supporting-source
+failed-save decision, Graze, wider privacy and combined native acceptance remain
+open; the nine authored scenarios do not substitute for those obligations.

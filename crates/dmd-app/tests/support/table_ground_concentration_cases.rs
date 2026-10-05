@@ -317,6 +317,13 @@ async fn run_case(f: &mut Fixture, path: &Path, succeeds: bool) {
     ))
     .await;
     Box::pin(player_raw(f, path, 19)).await;
+    Box::pin(decline_hit_cold(
+        f,
+        path,
+        cultist,
+        TableTransportChannel::Host,
+    ))
+    .await;
     let pending_damage = view(f, &player(f)).await.roll.unwrap();
     assert_eq!(pending_damage.dice, vec![DieSpec { count: 1, sides: 4 }]);
     Box::pin(no_after_card(f)).await;

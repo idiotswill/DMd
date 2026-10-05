@@ -4,6 +4,8 @@ use super::*;
 
 #[path = "table_ground_concentration_cases.rs"]
 mod concentration;
+#[path = "table_ground_fall_cases.rs"]
+mod falling;
 
 fn owner(f: &Fixture, mage: EntityId) -> TableTransportChannel {
     TableTransportChannel::SourceCreature {
@@ -36,6 +38,106 @@ fn physical_input(view: TablePresentedView, values: &[u16]) -> TableTransportInp
                 .collect(),
         },
     })
+}
+
+// Every actual hit target acknowledges collection, including a source without
+// Shield. Both controller decisions use the same cold/replay boundary as dice.
+async fn decline_hit_cold(
+    f: &mut Fixture,
+    path: &Path,
+    target: EntityId,
+    target_channel: TableTransportChannel,
+) {
+    let before = state(f).await;
+    let resolution = before
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap()
+        .resolution
+        .as_ref()
+        .unwrap();
+    let hit = resolution.hit_review.as_ref().unwrap();
+    assert_eq!(hit.stage, TacticalHitReviewStage::Collecting);
+    assert_eq!(hit.respondent.as_ref().unwrap().actor, target);
+    assert!(hit.respondent.as_ref().unwrap().intent.is_none());
+    assert!(hit.order.is_none());
+    let cause = hit.cause.clone();
+    let order = view(f, &player(f))
+        .await
+        .tactical
+        .unwrap()
+        .hit
+        .unwrap()
+        .order
+        .unwrap();
+    Box::pin(player_step(
+        f,
+        path,
+        TableTransportInput::HitResponse {
+            handle: order.key,
+            decision: Box::new(TableHitInput::Order {
+                instruction: TacticalReactionOrdering {
+                    ranked: vec![],
+                    unlisted: ReactionUnlistedOrder::AfterForward,
+                },
+            }),
+        },
+    ))
+    .await;
+    let response = view(f, &target_channel)
+        .await
+        .tactical
+        .unwrap()
+        .hit
+        .unwrap()
+        .response
+        .unwrap();
+    assert_eq!(response.actor, target);
+    assert!(!response.selected);
+    Box::pin(step(
+        f,
+        path,
+        target_channel,
+        TableTransportInput::HitResponse {
+            handle: response.key,
+            decision: Box::new(TableHitInput::Respond { accept: false }),
+        },
+    ))
+    .await;
+    let after = state(f).await;
+    assert_eq!(
+        after.applied_event_sequence,
+        before.applied_event_sequence + 2
+    );
+    let rules = after.rules.as_ref().unwrap();
+    let prior = before.rules.as_ref().unwrap();
+    assert_eq!(rules.rolls, prior.rolls);
+    assert_eq!(
+        rules.timing.as_ref().unwrap().reactions_spent,
+        prior.timing.as_ref().unwrap().reactions_spent
+    );
+    assert_eq!(rules.pending.as_ref().unwrap().issued_by, cause);
+    assert_eq!(
+        after
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .as_ref()
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap()
+            .key
+            .role,
+        TacticalRollRole::AttackDamage
+    );
 }
 
 async fn prepare(f: &mut Fixture, path: &Path) -> EntityId {
