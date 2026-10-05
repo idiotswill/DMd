@@ -27,21 +27,30 @@ helpers, every owner/core/opportunity control, source pin and capture byte.
 No production change is authorized. This is the same private four-family
 verification scope, not public/application/native acceptance.
 
+Static follow-up before any run found that admission's unchanged
+shove::opposition rejects two player-owned actors even when declared enemies.
+The initial existing-second-Human proposal in plan11f17c7 therefore cannot be
+used. Preserve this consent boundary; no production or controller bypass is
+authorized. The following source-valid producer supersedes only that proposal.
+
 The concentration helper must retain the captured Human holder, Goblin and
-canonical Cultist and add the distinct existing source Human as the held target.
-Its identity/profile/mechanics come from the untouched campaign capture; its
-starting gear comes only from starting_equipment_plan/materialize_starting_equipment.
+canonical Cultist and add a distinct second canonical Host-controlled Cultist
+as the held Humanoid target. Build its complete mechanics/profile/runtime through
+build_creature_from_source with the genuine Cultist source pin, Average HP and
+Host controller, then materialize actual source equipment. Its new world entity
+uses only the existing private scene scaffold; do not edit original actor facts.
 Conclude and Finish the preceding private encounter through reducers, then
 Establish/Begin a fresh four-actor encounter with actual initiative rolls and
-source declarations. Place the second Human at (20,0,0), distinct from holder
+source declarations. Place the held Cultist at (20,0,0), distinct from holder
 (10,10,0), Goblin (20,10,0) and Cultist (20,20,0), inside the original bounds.
 Use the actual actor-group initiative order and faces20/10/5/1, then actual
 EndTurn commands to reach the caster. This is source-valid private setup, not
-a replayed accepted application history or a new fabricated character.
+a replayed accepted application history. Both new source creatures retain
+their genuine Humanoid type, HP, features, counters and physical gear.
 
-Cast Hold Person on that distinct Human and submit its real failed Wisdom save.
+Cast Hold Person on that distinct held Cultist and submit its real failed Wisdom save.
 Assert actual paralysis/concentration; after the caster's EndTurn, create the
-owner and grapple that Human. Preserve automatic Strength-save coverage with
+owner and grapple that held Cultist. Preserve automatic Strength-save coverage with
 exact target/role and unchanged raw history. Traverse real turns and the target's
 failed repeat save, then retain the actual dagger attack on the concentrating
 Cultist. Preserve complete attack evidence, direct child ancestry, exact pending
