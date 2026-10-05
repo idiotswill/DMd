@@ -95,11 +95,21 @@ async fn immutable_ogre_package_is_required_after_cache_warmup_and_repair_recove
         let recovered = runtime.open_campaign(f.state.campaign_id()).await.unwrap();
         assert_eq!(recovered.state().applied_event_sequence, 2);
         assert_eq!(recovered.state().clock.now, WorldInstant(1));
-        assert!(
-            dmd_rules::tactical_creatures::current_creature_sources()
+        let current_ogres = dmd_rules::tactical_creatures::current_creature_sources()
+            .unwrap()
+            .into_iter()
+            .filter(|source| source.id == "ogre")
+            .map(dmd_rules::tactical_creatures::creature_source_pin)
+            .collect::<Result<Vec<_>, _>>()
+            .unwrap();
+        assert_eq!(
+            current_ogres,
+            vec![
+                dmd_rules::tactical_creatures::creature_source_pin(
+                    dmd_rules::tactical_definitions::bundled_ogre().unwrap()
+                )
                 .unwrap()
-                .iter()
-                .all(|source| source.id != "ogre")
+            ]
         );
         drop((recovered, runtime));
         pool.close().await;
