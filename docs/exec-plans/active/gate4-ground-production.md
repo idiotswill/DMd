@@ -1,5 +1,30 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Reviewed lifecycle cleanup receiving plan — 2026-10-05
+
+From clean coherent source `662e8315b26e0e4ca2fabcfa720fc1f87c9f8411`,
+normally receive root-cleared `1702d1cf24dbe58a5c5bf82aeb690ce7c954a6cf`,
+tree `837cf31cec87c6abceb4d6d39b85ee57ce3ebcf5`. The sole merge base is
+`432ffeb56ff5d574373379eda4826da0f3943d08`. Root and independent complete
+union review are CLEAR; peer audit SHA256
+`903a80df5332afa81a269ac23505820dad1ab7af36ce1721ef12a3b454c0d08e`.
+The complete incoming four-path diff and peer review were read before this plan.
+
+Only two persistence-test files change outside documentation, exactly matching
+reviewed PR57 head `9ebfedf22adc9d1dbf45c7a02a6f9590ffcbecba`: final test
+file deletion uses the bounded Windows OS32/33 helper after both closed pool
+scopes. All restoration, restart and archival assertions remain unchanged. No
+production cleanup or persistence behavior changes. Root's exact9eb formatting,
+strict persistence Clippy, restart1 and full lifecycle6 results remain dependency
+evidence; the source union needs its own exact-head verification.
+
+Commit this plan before the normal merge. Preserve every662 source/blob outside
+the two exact incoming persistence-test paths. Reconcile the two historical plans
+without losing either failure record or the current Ground/Ogre application
+status. Inspect every receiving path and audit exact blob identities before
+returning the clean combined head for independent review and root execution.
+Root retains the sole compiler/test/database/native/publication slots. This intake
+claims no runtime result for662 or the union, feature acceptance, or Gate4 closure.
 ## Combined Ogre source authored for review — 2026-10-05
 
 Normal receiving merge `2bb7b0580ec430fcd79a09b9f66f23d49dc2bc4b` has parents
