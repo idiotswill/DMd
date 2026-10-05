@@ -283,15 +283,14 @@ fn validate_interval(state: &CampaignState, r: &TacticalResolution) -> Result<()
                         "unconsumed source is absent, stale or outside current batch",
                     ));
                 }
-                if let TacticalWorkKind::Effect { ticket } = binding.work.kind {
-                    if effects(state)?
+                if let TacticalWorkKind::Effect { ticket } = binding.work.kind
+                    && effects(state)?
                         .pending
                         .iter()
                         .find(|t| t.id == ticket)
                         .is_none_or(|t| t.origin != batch.observed || t.target.0.is_nil())
-                    {
-                        return Err(invalid("expiry ticket differs from exact Time observation"));
-                    }
+                {
+                    return Err(invalid("expiry ticket differs from exact Time observation"));
                 }
             } else if r.frames[0].contains(&binding.work) {
                 return Err(invalid("completed deadline remains executable"));
