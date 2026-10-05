@@ -1,6 +1,47 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
-Current status, 2026-10-04: PR57 at `8ec12c3` has an actual Linux test failure.
+## Windows persistence fixture cleanup correction — 2026-10-05
+
+Current PR57 head `f701b3f1f3200d4d816504e61c6c5788ca114279`, tree
+`086703c94c8bd1464f500067262815d31d1f4033`, has an actual Windows regression
+job failure. Run37218517379/job111484250711 checked out that exact head and
+failed `restored_campaign_reopens_after_database_restart` at
+`crates/dmd-persistence/tests/campaign_lifecycle.rs:381`: the final temporary
+database deletion returned Windows OS32, a file-sharing violation. The campaign
+restore/reopen/state/archive assertions and both awaited pool closures had already
+completed. That harness reports five passes and one failure; the full workspace
+did not complete. Preserve the complete106295-byte log at external
+`tooling/ci-oct5/job-111484250711.log`, SHA256
+`b0ba3e03d073e71edc3f5ddcc58801887dce965b598edbf0c8e52dcdf4b910b3`.
+
+Source inspection found no pool clone retained by this fixture: both pools close
+and leave their own scopes; `OpenCampaign` and the portable export contain data,
+not database handles. SQLx0.8.6's graceful SQLite close awaits worker shutdown
+after dropping its connection references. The exact external/transient handle
+responsible for this Windows failure is not established. Do not infer a production
+pool-lifecycle defect or alter persistence semantics from this cleanup failure.
+
+After this plan commit, add a persistence-test-local file cleanup helper matching
+the established app-test policy in `tests/support/sqlite_test_cleanup.rs`: at most
+20 attempts,100ms only between Windows OS32/33 failures, and immediate propagation
+of every other result/error. Return the final sharing violation if it persists.
+Call it only for the existing final file deletion after both pool scopes. Keep
+every create/archive/export/purge/restore/reopen assertion and explicit closure
+unchanged. Add no delays/retries to gameplay or database operations, no ignored
+deletion error, no broad NotFound catch, no recursive cleanup and no cross-crate
+test or production dependency. Existing Ground code, tests, admission guards,
+immutable histories and app cleanup helper remain unchanged.
+
+Root owns verification/publication and the sole heavy slot. This correction may
+run only direct static formatting and Git/byte checks while authored. Return the
+complete small diff at a clean head for independent review. Then execute the exact
+restart test, the whole campaign_lifecycle harness and strict persistence linting,
+followed by required receiving/canonical/exact-head CI checks under root scheduling.
+No runtime pass or overall Gate4 acceptance is claimed from this plan or correction.
+
+## Historical reserved-hand correction — 2026-10-04
+
+PR57 at `8ec12c3` has an actual Linux test failure.
 Run37204883315/job111443894733 completed with exit101 after39 reported groups,
 478 passes and one failure; the full workspace did not complete. The failing
 reserved-hand test changes the synthetic helper's supported flow4 to5 before
