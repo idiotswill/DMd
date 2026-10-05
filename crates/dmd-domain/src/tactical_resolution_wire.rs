@@ -3,14 +3,11 @@
 use super::*;
 use serde::{Deserializer, Serializer, ser::SerializeStruct};
 
+#[derive(Default)]
 enum Present<T> {
+    #[default]
     Missing,
     Value(T),
-}
-impl<T> Default for Present<T> {
-    fn default() -> Self {
-        Self::Missing
-    }
 }
 impl<'de, T: Deserialize<'de>> Deserialize<'de> for Present<T> {
     fn deserialize<D: Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
