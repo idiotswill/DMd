@@ -615,3 +615,16 @@ frozen head. Any further diagnostics must be inspected and corrected without
 lint suppression or acceptance reduction. App/restore/public/native integration
 remains open; this is a compile/lint correction, not feature completion.
 
+## October 5 second strict-lint correction
+
+The exact 3c5272e focused attempt passed formatting, then strict Clippy failed
+at released_time/validation.rs:286 with collapsible_if. No selected test ran.
+The complete failed log is preserved externally with SHA256
+face6100116a32d433a9f9e1fe9c81493ea506f70afac5174ee886e15bc8c1a5.
+Commit this plan first, then combine only the nested Effect-pattern and pending
+ticket predicate into the equivalent short-circuit let chain. Preserve the
+fallible effects lookup, exact refusal text, every test, and all other source.
+Review the complete small delta independently before rerunning the unchanged
+28 exact controls with fmt and strict all-target Clippy. Earlier failures stay
+recorded; public/application/native acceptance remains outstanding.
+
