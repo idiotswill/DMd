@@ -323,3 +323,27 @@ frozen fall/helper/concentration correction, then allocates exact-head focused
 and canonical execution. Genuine valid-to-invalid Apply, a supporting-source
 failed-save decision, Graze, wider privacy and combined native acceptance remain
 open; the nine authored scenarios do not substitute for those obligations.
+
+## Root exact-head correction plan, 2026-10-05
+
+Frozen e5830dbc12cbe35a4059df924a0d9dc8cee2b81c fails Linux Clippy job111727273888
+and Windows1.88 job111727273328 with E0433 at table_ground_fall_cases.rs:76.
+The fixture spells the obstacle-cover enum `Cover`; the actual domain enum used
+by SpatialObstacle is `CoverDegree`. Replace that one type token with
+`CoverDegree::Total`; preserve the obstacle, geometry, original functions and
+every assertion. This is a test compile correction, not changed fall behavior.
+
+The parent055 runtime also failed on Linux111706973322 and Windows111706973500:
+the inherited package-integrity test still expected Ogre to be registry-only.
+Normally receive the whole parent correction819765bda18ee0dc82c2f5efcacc72a8eff8bfd8
+(preceded by plan7d4493ad908267df33c3d3ae0a646cd5b02339a6). Its sole test change
+compares the current exact singleton Ogre source pin after actual package repair;
+all four package tampering/refusal/recovery paths remain intact. The parent plan
+explicitly records this receiving-state assertion migration.
+
+Root owns this branch and commits this plan before the normal receipt/type edit.
+Review all receiving changes and original-body preservation except these two
+explicit corrections, then reverify the exact receiving head. Neither parent
+nor receiving tests have passed for these fixes yet; the actual failed logs are
+retained. Root's Shove canonical run still owns the only local heavy slot.
+The final-controls child will receive this corrected head normally after freezing.

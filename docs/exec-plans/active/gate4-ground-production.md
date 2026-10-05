@@ -739,3 +739,32 @@ private projection/retry, real SQLite/portable recovery and combined Ogre/native
 acceptance remain mandatory. The author cannot certify independent source review.
 No Cargo/compiler/tests/npm, build, native/live database or publication is
 authorized for this writer; root schedules the single heavy/native/database slot.
+
+## Root correction plan: admitted Ogre package control, 2026-10-05
+
+Exact head055147b02c16111b4582c40b2a9c77e5dbe6bd99 failed the same
+`ogre_package_cases::immutable_ogre_package_is_required_after_cache_warmup_and_repair_recovers`
+assertion on Linux job111706973322 and Windows job111706973500. The literal logs
+report24 other rules-runtime tests passing and the stale line98 assertion that
+the current creature catalog contains no Ogre. Ground's separately reviewed
+production admission intentionally includes the immutable Ogre source; keeping
+the registry-only staging expectation contradicts that behavior.
+
+Root is sole writer for this bounded correction. Replace only that final staging
+assertion with an exact singleton full-source-pin comparison against the bundled
+immutable Ogre. Preserve every missing/undeclared/changed/rehashed package case,
+cached runtime refusal, complete export comparison, repaired-package recovery,
+event sequence and clock assertion. No runtime or source-data behavior changes,
+no deletion/ignore and no relaxation of package checks are authorized. The original
+registry-only branch retains its original closed-admission assertion; this is an
+explicit receiving-state migration, not a claim that its whole test body remains
+identical. Genuine actual Ogre creation and control cases already authored in
+this branch remain required separate evidence.
+
+Commit this plan before the assertion edit, review the complete narrow diff,
+then rerun the failing test and receiving checks on the corrected exact head.
+Earlier focused137 preparation is now superseded and must be regenerated with
+the new source hashes and declared assertion migration before execution. All
+prior runtime failures remain recorded. Shove's canonical run retains the only
+local heavy slot; no local test has run for this correction yet. Root will normally
+merge the corrected parent into consequences/final-controls before verification.
