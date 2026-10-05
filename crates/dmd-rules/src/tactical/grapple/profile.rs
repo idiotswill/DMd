@@ -112,10 +112,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             return Err(prerequisite("attack is outside the four own-turn families"));
         }
     }
-    if let Some(hit) = &r.hit_review {
-        if hit.attack_origin != r.origin.id || r.attack.is_none() {
-            return Err(invalid("hit response belongs to another attack"));
-        }
+    if let Some(hit) = &r.hit_review
+        && (hit.attack_origin != r.origin.id || r.attack.is_none())
+    {
+        return Err(invalid("hit response belongs to another attack"));
     }
     for cast in &r.casts {
         let hit = r
