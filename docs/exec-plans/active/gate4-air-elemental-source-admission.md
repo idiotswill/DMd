@@ -1,11 +1,13 @@
 # Gate 4 Air Elemental immutable source admission
 
-Status: all six CI jobs passed on integrated `3f3e359`; its verified Windows
-package completed the bounded native creation/placement/initiative/flight route
-on 2026-10-01. Release prerequisite PR48 is merged, and accepted main `dbf1d63`
-is reconciled with all 411 non-document files unchanged from verified `3f3e359`.
-Local canonical verification and final exact-head review/CI remain outstanding;
-this is not Air acceptance or complete Air Elemental gameplay.
+Status, 2026-10-04: integrated `f932c73` passes canonical verification (782 GNU
+Rust tests) and all six CI jobs (783 Linux / 785 MSVC tests). Independent full
+review and the completion-log audit are clear. All 411 non-document files match
+`3f3e359`, whose verified Windows package completed the bounded native
+creation/placement/initiative/flight route on 2026-10-01. Release prerequisite
+PR48 and accepted main `dbf1d63` are reconciled. This evidence update still needs
+final documentation review, all six checks on its published head, protected merge
+and literal merged-main verification. This is not complete Air Elemental gameplay.
 Branch: `codex/gate4-air-source-admission`, based on `c4d8c34`.
 Writer: root, sole writer after the reviewed integration handback. Historical
 checkpoints below retain the evidence status at their original source heads.
@@ -417,7 +419,7 @@ head and merge only with expected-head protection. Verify literal merged main
 separately. Prior successful3f CI/package/native evidence remains attributed to3f,
 with byte equivalence established explicitly if only documents change.
 
-Local canonical and final receiving-head CI are still unmet. Air acceptance,
+At this historical checkpoint local canonical and receiving-head CI were unmet. Air acceptance,
 Shove acceptance and Gate4 completion are not implied by this checkpoint.
 
 ### Accepted-main union recorded — 2026-10-01
@@ -442,3 +444,58 @@ and local canonical verification after the guarded-core focused run returns the
 heavy slot. No additional source edits, fixture recapture or parallel native run
 are needed for this reconciliation. Canonical results and final-head CI remain
 to be recorded before protected merge.
+
+### Canonical completion and final publication — 2026-10-04
+
+The exact frozen head `f932c73bf1f79cd0c5600431839a6ecece7877f7`, tree
+`b654f37272f42b5115ee2c0ebdcc550f191f091e`, completed `./scripts/verify`
+normally from 13:05:16 through 16:15:55 UTC. The clean source remained unchanged.
+This used rustc1.98.1 on Windows GNU, one build job, incremental disabled, a fresh
+private target, and default test profile, stack and harness parallelism. Actual
+results are 782 Rust passes in 56 complete result groups (50 executed and six
+empty doctest groups), zero failed/ignored/measured/filtered. All60 table cases,
+all8 original Flow4 continuations, four Magic Missile and five release cases pass.
+Formatting, check, strict Clippy and genericity pass. Architecture tests report
+eight run: seven pass and one Windows symlink-privilege skip. The skip is not
+counted as a pass. The final script exits0 with `Full verification passed.`
+
+The preserved canonical log SHA256 is
+`a43a9604b12494644fff028a0ceef620992126d34d2db93626db1798dc383ef0`;
+metadata SHA256 is
+`e09d7b755814e30d9a6139d13c9caf154f77e4fb4c0136a864619dee5143fd60`.
+The independent completion audit, SHA256
+`e27697778e16733246d16bab40e8746e4c916aaf0cfd1b624741828bf9cfff26`,
+recounts every harness/name and binds the exact source, command, script hashes,
+normal completion, clean before/after state and platform-specific test inventory.
+A separate reviewer read the actual log and metadata and independently confirmed
+the totals and completion marker. These are completed results, not a running-log
+estimate or timeout.
+
+All six checks also pass on this same f932 head: Linux run
+[36840950338](https://github.com/idiotswill/DMd/actions/runs/36840950338), runtime
+job110299669063, and Windows run
+[36840950425](https://github.com/idiotswill/DMd/actions/runs/36840950425), runtime
+job110299669656. Linux runs synthetic merge
+`b69d7ca936a3d9b1b903edc4498e24ec55e4dbfa` with dbf/f932 parents and the exact
+f932 tree; Windows runs literal f932. Actual783 Linux /785 MSVC passes share the
+same56 groups and60 table cases. The count differences are the one Unix symlink
+test and three MSVC host tests, not missing common tests. Frontend118 tests in18
+files, zero Svelte errors/warnings,141 Vite modules; both MSRV jobs and guards pass.
+Completed CI bundle SHA256 is
+`9332687847ed00297c5708b5ccd2137412849664d7db21c408eb85be0acec23d`.
+
+The complete independent acceptance review at f932 covers all58 changed paths
+against accepted dbf, source consumers, compatibility and bounded native evidence;
+memo SHA256 is
+`b7d32e641397b50a2e979fdbf5fd51a25a96608f875699ac6cee208550d5b573`.
+All411 non-document blobs,29 original fixtures, five receiving suites and21 raw
+artifacts retain their audited identities. Native/package evidence remains
+attributed to actual3f execution above, supported by exact source equivalence.
+It is not presented as a second native execution on f932 or this evidence update.
+
+Next: independently review this documentation-only delta and recheck non-document
+identity, publish the final head, inspect all six completed exact-head checks,
+merge PR50 with expected-head protection, fetch main and verify the literal merged
+head separately. Do not silently borrow the f932 checks for a later head. No new
+feature branch enters Air. Shove, Air Form geometry, Multiattack, Whirlwind and
+the rest of Gate4 retain their separate acceptance obligations.
