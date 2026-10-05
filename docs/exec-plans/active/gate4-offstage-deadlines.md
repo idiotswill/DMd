@@ -1,5 +1,19 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Accepted-main receiving review — 2026-10-05
+
+Plan7dce29a preceded normal merge `d093699cb9012db27979194393ac996ac9bc6b3d`,
+tree `66957434ae8bc8dce9a35ef67fd212929bca46b1`, receiving exact accepted main32.
+Root independently reviewed the full plan, all eight source overlaps against both
+parents, five reconciled documents, both actual merge bases and every569 path
+entry. Counts460 equal-parent/45 main-only/51 Offstage-only/13 overlap and protected
+29 fixtures/five legacy suites/21 raw captures/four original control files agree.
+The independent review is clear in external
+`tooling/offstage-d093699-root-receiving-review-2026-10-05.md`. Root authorized the
+already planned complete application implementation without another routine
+permission checkpoint. Source ownership stays with core_recovery_oct5; root owns
+all execution and publication. The receiving tree itself has no runtime evidence.
+
 ## Production application completion transfer — 2026-10-05
 
 Current status: root's exact guarded checkpoint verification completed normally
