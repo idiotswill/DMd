@@ -50,3 +50,14 @@ Graze writer stay frozen to their current parent until a deliberate receiving
 checkpoint. No branch is merged to an unaccepted development base for acceptance.
 Gate4 remains open. Next action: commit this plan, correct the precise assertion,
 then obtain independent source/preservation review before publication.
+
+## Authored correction checkpoint
+
+Plan `64eced1b04f25c7819ce3512485ccac6e14b5f87` preceded the source correction.
+The test now requires one current exact Ogre pin and checks TwoHandsV1 for only
+the exact current Goblin/Ogre pins. Every other current source retains the
+absence assertion. The remaining original function, all three sibling functions,
+production, immutable source definitions and historical artifacts are unchanged.
+Standalone configured rustfmt and whitespace checks pass; no compiler/runtime
+result exists for this correction. Independent review and fresh preparation,
+publication and receiving verification remain next.
