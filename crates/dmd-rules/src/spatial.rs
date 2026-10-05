@@ -26,6 +26,8 @@ pub enum SpatialError {
     Capacity,
     #[error("spatial action is not legal: {0}")]
     Illegal(String),
+    #[error("spatial operation is not yet supported")]
+    Unsupported,
 }
 fn invalid(message: impl Into<String>) -> SpatialError {
     SpatialError::Invalid(message.into())

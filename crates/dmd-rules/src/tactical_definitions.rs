@@ -8,6 +8,28 @@ use thiserror::Error;
 
 pub const TACTICAL_DEFINITIONS_JSON: &str =
     include_str!("../../../content/srd-5.2.1/tactical.json");
+pub const AIR_ELEMENTAL_SOURCE_JSON: &str =
+    include_str!("../../../content/srd-5.2.1/air-elemental-v1.json");
+
+/// Additive immutable entry. It uses V1's spell/weapon vocabulary without changing
+/// the V1 catalog or any definition serialized into a historical fingerprint.
+pub fn bundled_air_elemental() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(AIR_ELEMENTAL_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Air Elemental JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            ensure(
+                source.id == "air-elemental" && legacy.creature(&source.id).is_none(),
+                "additive source identity collides with V1",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Error)]
 #[error("invalid tactical definitions: {0}")]
@@ -448,6 +470,10 @@ pub struct CreatureStatistics {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum MonsterTrait {
+    /// SRD258: enter and stop in a creature's space; pass through a space as
+    /// narrow as this many inches without extra movement for that passage.
+    /// This is neither incorporeality nor a general difficult-terrain waiver.
+    AirForm { minimum_passage_inches: u8 },
     /// The ally must be another creature and must not be Incapacitated (SRD364).
     PackTactics { ally_distance_feet: u16 },
     LegendaryResistance {
@@ -528,6 +554,18 @@ pub enum FeatureUsage {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum MonsterFeature {
+    /// One creature sharing the user's space. On failure, damage, a push up to
+    /// the stated distance straight away, and the condition; success only halves
+    /// damage. Representation does not authorize executing the displacement.
+    SharedSpaceSave {
+        target_size_at_most: SourceSize,
+        ability: Ability,
+        dc: u8,
+        damage: DamageComponent,
+        push_up_to_feet: u16,
+        condition_on_failure: Condition,
+        half_damage_on_success: bool,
+    },
     Attack {
         bonus: i16,
         delivery: AttackDelivery,
@@ -1067,6 +1105,12 @@ impl CreatureDefinition {
         }
         for t in &self.traits {
             match t {
+                MonsterTrait::AirForm {
+                    minimum_passage_inches,
+                } => ensure(
+                    *minimum_passage_inches == 1,
+                    "unsupported Air Form source passage",
+                )?,
                 MonsterTrait::PackTactics { ally_distance_feet } => distance(*ally_distance_feet)?,
                 MonsterTrait::LegendaryResistance {
                     uses_per_long_rest,
@@ -1180,6 +1224,20 @@ impl CreatureDefinition {
                 .any(|a| a.id == id && matches!(a.feature, MonsterFeature::Attack { .. }))
         };
         match &f.feature {
+            MonsterFeature::SharedSpaceSave {
+                dc,
+                damage,
+                push_up_to_feet,
+                ..
+            } => {
+                ensure((1..=30).contains(dc), "invalid save DC")?;
+                formula(&damage.amount)?;
+                distance(*push_up_to_feet)?;
+                ensure(
+                    matches!(f.usage, Some(FeatureUsage::Recharge(_))),
+                    "shared-space save requires its source recharge",
+                )?;
+            }
             MonsterFeature::Attack {
                 bonus,
                 delivery,

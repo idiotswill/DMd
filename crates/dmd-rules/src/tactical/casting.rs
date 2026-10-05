@@ -712,6 +712,7 @@ pub(super) fn validate_actor_source(
             .ok_or_else(|| invalid("retained source caster profile is absent"))?;
         let source = crate::tactical_creatures::source_for_profile(profile)
             .map_err(|error| invalid(&error.to_string()))?;
+        crate::tactical_spells::validate_creature_spell_source(profile, &plan.program.source)?;
         if plan.program.source.creature_definition_id.as_deref() != Some(source.id.as_str())
             || plan.program.source.feature_id.as_ref() != Some(feature_id)
             || !source

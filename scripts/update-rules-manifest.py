@@ -18,7 +18,10 @@ def main():
     ):
         raise ValueError("Review tactical schema/source changes before regenerating this manifest")
     files = []
-    for name in ("NOTICE.md", "source.json", "kernel.json", "character-creation.json", "tactical.json"):
+    for name in (
+        "NOTICE.md", "source.json", "kernel.json", "character-creation.json",
+        "tactical.json", "air-elemental-v1.json",
+    ):
         data = (root / name).read_bytes()
         if b"\r" in data:
             raise ValueError(f"{name} must retain the pinned LF content line endings")

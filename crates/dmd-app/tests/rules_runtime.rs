@@ -1861,3 +1861,52 @@ async fn pending_rules_export_restores_and_content_changes_fail_before_mutation(
     target.close().await;
     empty.close().await;
 }
+
+#[tokio::test]
+async fn missing_undeclared_or_rehashed_air_source_cannot_mutate_a_campaign() {
+    let _ = dmd_rules::tactical_definitions::bundled_air_elemental().unwrap();
+    for mode in ["missing", "undeclared", "rehashed"] {
+        let f = Fixture::new();
+        let (pool, runtime) = f.runtime().await;
+        f.initialize(&runtime).await;
+        let before = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        let manifest_path = f.content.join("manifest.json");
+        let mut manifest: serde_json::Value =
+            serde_json::from_slice(&fs::read(&manifest_path).unwrap()).unwrap();
+        let files = manifest["files"].as_array_mut().unwrap();
+        let path = f.content.join("air-elemental-v1.json");
+        match mode {
+            "missing" => fs::remove_file(&path).unwrap(),
+            "undeclared" => files.retain(|file| file["path"] != "air-elemental-v1.json"),
+            _ => {
+                let mut bytes = fs::read(&path).unwrap();
+                bytes.push(b' ');
+                fs::write(&path, &bytes).unwrap();
+                let file = files
+                    .iter_mut()
+                    .find(|file| file["path"] == "air-elemental-v1.json")
+                    .unwrap();
+                file["byte_len"] = serde_json::json!(bytes.len());
+                file["checksum"]["value"] = serde_json::json!(fnv1a64_hex(&bytes));
+            }
+        }
+        fs::write(manifest_path, serde_json::to_vec_pretty(&manifest).unwrap()).unwrap();
+        assert!(
+            runtime
+                .execute_rules(
+                    f.context(CommandIssuer::System, None, 1),
+                    RulesAction::AdvanceTime {
+                        seconds: 1,
+                        ruling: ruling()
+                    }
+                )
+                .await
+                .is_err()
+        );
+        let mut after = export_campaign(&pool, f.state.campaign_id()).await.unwrap();
+        after.exported_at_utc = before.exported_at_utc.clone();
+        assert_eq!(after, before);
+        drop(runtime);
+        pool.close().await;
+    }
+}

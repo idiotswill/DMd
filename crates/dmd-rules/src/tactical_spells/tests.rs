@@ -1214,3 +1214,49 @@ fn source_multiattack_spell_preserves_step_origin_and_cannot_become_ready() {
     );
     assert_eq!(state, before);
 }
+
+#[test]
+fn exact_spell_tuple_cannot_be_borrowed_by_the_additive_air_profile() {
+    use crate::tactical_creatures::*;
+    let defs = definitions().unwrap();
+    let spell = defs.spell("shield").unwrap();
+    let mage = creature_definition("mage").unwrap();
+    let feature = mage
+        .features
+        .iter()
+        .find(|f| f.id == "protective-magic")
+        .unwrap();
+    let original = source_pin(defs, spell, Some(mage), Some(feature)).unwrap();
+    assert_eq!(
+        creature_for_spell_source(defs, spell, &original).unwrap(),
+        mage
+    );
+    let (mut state, meta, choice) = fixture("shield", SpellResourceChoice::SourceFeature);
+    state.rules.as_mut().unwrap().entities.remove(&choice.actor);
+    state.entities.get_mut(&choice.actor).unwrap().kind = EntityKind::Creature;
+    let pin =
+        creature_source_pin(crate::tactical_definitions::bundled_air_elemental().unwrap()).unwrap();
+    let built = build_creature_from_source(
+        &state,
+        &meta,
+        choice.actor,
+        &CreatureBuildChoice {
+            definition_id: "air-elemental".into(),
+            size: CreatureSize::Large,
+            additional_languages: vec![],
+            hit_points: CreatureHitPointChoice::Average,
+            controller: CreatureController::Autonomous,
+            in_lair: false,
+        },
+        Some(&pin),
+    )
+    .unwrap();
+    assert!(validate_creature_spell_source(&built.profile, &original).is_err());
+    let mut borrowed = original.clone();
+    borrowed.creature_definition_id = Some("air-elemental".into());
+    assert!(creature_for_spell_source(defs, spell, &borrowed).is_err());
+    assert!(source_components(defs, spell, &borrowed).is_err());
+    let mut forged = original;
+    forged.fingerprint.push('0');
+    assert!(creature_for_spell_source(defs, spell, &forged).is_err());
+}

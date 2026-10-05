@@ -232,6 +232,7 @@ async fn prepare(f: &mut Fixture, path: &Path) -> EntityId {
                 entity_id: mage,
                 name: "Private source Mage".into(),
                 definition_id: source.definition_id.clone(),
+                source: source.source.clone(),
                 size: CreatureSize::Medium,
                 additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
                 ammunition_units: 0,

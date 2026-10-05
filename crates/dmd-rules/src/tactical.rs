@@ -551,6 +551,8 @@ fn resolve_with_policy(
                         .location_id = Some(location);
                 }
             }
+            crate::spatial::validate_source_placement(&authored, &next)
+                .map_err(|e| RulesError::Prerequisite(e.to_string()))?;
             authored
                 .validate(&next)
                 .map_err(|e| RulesError::Invalid(e.to_string()))?;

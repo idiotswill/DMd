@@ -30,6 +30,12 @@ async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId, EntityId) {
                     entity_id: actor,
                     name: format!("Private {definition}"),
                     definition_id: definition.into(),
+                    source: Some(
+                        dmd_rules::tactical_creatures::creature_source_pin(
+                            dmd_rules::tactical_creatures::creature_definition(definition).unwrap(),
+                        )
+                        .unwrap(),
+                    ),
                     size,
                     additional_languages: vec![],
                     ammunition_units: ammunition,

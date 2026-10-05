@@ -779,4 +779,3 @@ fallible effects lookup, exact refusal text, every test, and all other source.
 Review the complete small delta independently before rerunning the unchanged
 28 exact controls with fmt and strict all-target Clippy. Earlier failures stay
 recorded; public/application/native acceptance remains outstanding.
-
