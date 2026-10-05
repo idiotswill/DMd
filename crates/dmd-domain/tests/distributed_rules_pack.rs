@@ -36,7 +36,8 @@ fn distributed_srd_manifest_verifies_kernel_source_and_license_bytes() {
             "tactical.json",
             "air-elemental-v1.json",
             "goblin-warrior-v2.json",
-            "ogre-v1.json"
+            "ogre-v1.json",
+            "mage-v2.json"
         ])
     );
 }

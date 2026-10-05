@@ -1,6 +1,6 @@
 # Gate 4 — Immutable Mage ordinary-hand source
 
-Status: plan before source, 2026-10-05. Sole writer ci_oct5 on
+Status: source authored, UNCOMPILED/UNRUN, 2026-10-05. Sole writer ci_oct5 on
 codex/gate4-mage-ordinary-hands, exact development parent
 a7d40848c8b8588261444bdb5af19f13389b5336/tree91914f6cdf78a955bff6fc64eb83aabd771945bb.
 Root owns all other branches, verification, publication and later normal intake.
@@ -94,7 +94,61 @@ Root later requires full independent source review, strict lint, meaningful focu
 controls, canonical/CI exact-head logs, recovery and native integration evidence.
 All new implementation/tests are UNCOMPILED/UNRUN until then. Gate4 remains open.
 
-Next action: commit this plan, author the coherent bounded revision and controls,
-update exact migrations/evidence, then hand back a clean frozen head/tree and
-complete source/hash/test inventory for root review.
+## Authored checkpoint (not runtime evidence)
 
+Plan commit4151945 preceded the implementation. The new immutable payload is a
+JSON-value clone of the original Mage with only ordinary_hands=TwoHandsV1 added.
+The loader independently requires that full equality and validates the candidate
+against the unchanged original vocabulary. Current admission excludes the exact
+original Mage pin, while immutable lookup and the original ID-only resolver keep
+both revisions and original behavior respectively. No hand inference or execution
+semantics were added. The new definition fingerprint is resolved by the actual
+Rust source-pin implementation; it has not been executed or assigned a guessed
+literal. The package file checksum is a separate identity, not that fingerprint.
+
+All seven inventoried existing-control migrations above were implemented. Current
+Mage setup now receives the presented option's full pin; its existing Mage Armor,
+Shield, missile, release/recharge and ledge gameplay assertions remain unchanged.
+The original 12 allocation vectors, 12 omitted-field controls and original 13
+immutable source entries remain explicit subsets, with separate candidate checks.
+Current count remains12: replacing the old Mage creates no duplicate current ID.
+The anatomy allowlist consists only of exact Goblin, Ogre and candidate Mage pins.
+
+Seven additive Rust test functions are authored:
+
+- Four tactical_mage_source integration functions: exact one-field revision and
+  complete original registry preservation; both revisions' ordered two-item
+  allocation/omissions; Small/Medium pure builder and exact anatomy; package row.
+- One tactical_spells unit function covers all three old/new spell-source tuples,
+  exact reconstruction, both cross-revision refusals, malformed tuple refusal and
+  unchanged component requirements. Its cloned profile is explicitly a pure pin
+  relation, not a fabricated positive history or live Counterspell execution.
+- One Mage package function covers missing, undeclared, changed and rehashed
+  payloads on populated stores, query/command refusal, every typed SQL row and
+  complete export equality, then genuine repair in the same runtime.
+- One additive child of the unchanged legacy Shield suite continues the genuine
+  old selected Shield capture through payment, cold retries and actual encounter
+  release. It creates both current Mage sizes from actual Host options, checks
+  exact source/gear/anatomy/unbuffed AC, all-view/full-store malformed admission
+  refusal and changed retry refusal, assigns the genuine player owner, and checks
+  both valid-source profile swaps fail replay into a populated destination. The
+  same genuine complete history then restores into that destination and reopens.
+
+The child reuses the original cold mirror/accepted receipt driver without changing
+any original function. Independent source-history acceptance still depends on
+executing it. Actual outgoing-grip components and live Counterspell remain the
+separately stated future integration boundaries. No additional feature omitted
+from the original Mage source was admitted.
+
+Standalone configured rustfmt completed on all19 touched Rust files in the
+root-allocated window; git diff --check passed. Source JSON/manifest byte/FNV,
+literal include paths, exact old-body and protected-history preservation are
+checked by an external reproducible static audit at handback. These checks do
+not establish compiler, test, CI, native or feature acceptance. No Cargo, test,
+application, database or native execution has been performed for this slice.
+
+Next action: root independently reviews the complete frozen tree and author
+audit, then allocates focused strict lint/source/package/coexistence/current Mage
+controls and canonical exact-head verification. Receive this whole dependency
+normally before the later Grapple spell-component controls. All publication and
+verification remain root-owned; Gate4 remains open.

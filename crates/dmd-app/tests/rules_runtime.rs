@@ -2007,3 +2007,6 @@ async fn goblin_source_is_revalidated_after_cache_warmup_and_package_repair_reco
         pool.close().await;
     }
 }
+
+#[path = "support/mage_package_cases.rs"]
+mod mage_package_cases;

@@ -85,7 +85,22 @@ fn current_ogre_uses_its_full_pin_without_enabling_id_only_admission() {
     let s = bundled_ogre().unwrap();
     let pin = creature_source_pin(s).unwrap();
     assert!(std::ptr::eq(creature_source(&pin).unwrap(), s));
-    assert_eq!(immutable_creature_sources().unwrap().len(), 13);
+    let mage_pin = creature_source_pin(bundled_mage_v2().unwrap()).unwrap();
+    let sources = immutable_creature_sources().unwrap();
+    assert_eq!(
+        sources
+            .iter()
+            .filter(|s| creature_source_pin(s).unwrap() != mage_pin)
+            .count(),
+        13
+    );
+    assert_eq!(
+        sources
+            .iter()
+            .filter(|s| creature_source_pin(s).unwrap() == mage_pin)
+            .count(),
+        1
+    );
     assert!(creature_definition("ogre").is_err());
     let current = current_creature_sources().unwrap();
     assert_eq!(current.len(), 12);
