@@ -1,5 +1,52 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Original-flow control migration plan — 2026-10-05
+
+Before test-support edits, root approved explicit internal Historical producers
+instead of widening live5 admission or exposing a public testing bypass. The
+original19 private controls keep their genuine5 prefix through the existing
+crate-private Historical reducer, retaining actual returned event/replay equality.
+The only public-closure assertions removed remain the two validator errors named
+below. All real authority, already-paused Advance, source, shape and clone-proof
+refusals remain. These isolated mechanisms are not recaptured original app history.
+
+The four original selected release controls move in the verification inventory
+from integration `release::<name>` to unit `tactical::historical_release_tests::<name>`.
+Their full function bodies are copied byte-exact from d093699's
+`crates/dmd-rules/tests/tactical_turns/release.rs` to
+`crates/dmd-rules/src/tactical/historical_release_tests.rs`:
+
+| Function | Original full-function Git-byte SHA256 |
+| --- | --- |
+| accepted_release_preserves_source_resources_and_replacement_advances_global_turn | `72a53c57716686769e79aee52ca7ce8e78cb9dbb101c385b81d4b81df292a22d` |
+| raw_recovery_die_and_due_wake_are_checked_across_the_campaign | `42a42b58c8f0ffb7847c3e38821ae28ffb892455dc5a73fd2c3b8c8dd7bd9123` |
+| dependency_scan_uses_actual_collective_setup_capacity_and_scene_authority | `e29af9dca8139aff908a7fbb3c9968b0742e37c22cf89974061f291831defd90` |
+| replacement_setup_and_pending_initiative_cannot_omit_retained_dependencies | `46e5cf83d6f2c6eab482ecbc1b840a8110ea2e0cb2f784e691dfffe534877a70` |
+
+Only the needed original Fixture methods (`new`, `meta`, `rules`, `creature`,
+`run`, `rejected`, `raw`, `begin`) and release setup helpers are copied. `run` and
+`rejected` use the existing internal Historical policy; Begin stays5. The content
+include path changes for the new file location. No alternate authoritative reducer
+or fabricated accepted outcome is introduced. Corresponding contemporary public
+integration scenarios stay present on7, with deliberate new-producer expectations;
+they are not labeled as original5 verification. Original structural negative
+fixtures that deliberately assemble5 receipt/state records keep that meaning.
+
+Contemporary live Begin producers will explicitly select7 in these support paths:
+`dmd-rules/tests/{tactical_attacks.rs,tactical_movement.rs,tactical_turns.rs}`;
+`tactical_attacks/{areas.rs,missiles.rs,casting_timed_expiry.rs}`;
+`tactical_turns/{release.rs,ready.rs}`; and `dmd-app/tests/support/` files
+`table_{area,aftermath,casting,attack,falling,hit,medicine,night_hag,missile,oa_concentration,release,release_custody,release_death,release_recharge,release_savage,tactical,source_control}_cases.rs`
+and `tactical_runtime_cases.rs`. Historical targeted upgrades2–4→5 and their
+assertions stay explicit; new ordinary actions after that bridge require a separate
+authorized5→7 operation. Current desktop fixtures follow the same explicit current
+version. The final handback must enumerate actual migrated functions and any extra
+helper adaptations, with preserved old bodies and current expectations separately.
+
+All29 protected fixtures, five legacy replay receivers and21 original raw captures
+remain byte-exact. No selected test is dropped from verification, no assertion is
+weakened, and no passing result is claimed for moved or newly authored controls.
+
 ## Accepted-main receiving review — 2026-10-05
 
 Plan7dce29a preceded normal merge `d093699cb9012db27979194393ac996ac9bc6b3d`,
