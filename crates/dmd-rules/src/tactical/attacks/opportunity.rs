@@ -38,6 +38,8 @@ pub(in crate::tactical) fn opportunity_options_for_crossing(
         reach: 10,
     }];
     if let Some(loadout) = loadout {
+        let hands = crate::tactical_hands::EffectiveHands::current(state, rules, actor)?;
+        hands.validate_loadout(&loadout.hands)?;
         let mut held = loadout
             .hands
             .hands
@@ -61,11 +63,7 @@ pub(in crate::tactical) fn opportunity_options_for_crossing(
             };
             if weapon.kind != WeaponKind::Melee
                 || (weapon.hands != WeaponHands::One
-                    && !loadout
-                        .hands
-                        .hands
-                        .iter()
-                        .all(|h| *h == HandAssignment::Item(item) || *h == HandAssignment::Free))
+                    && !hands.can_use_two_hands(&loadout.hands, item))
             {
                 continue;
             }
@@ -394,4 +392,109 @@ pub(super) fn validate_admission(
         TacticalAttackAdmission::Spell { .. } => spell::validate_admission(state, attack)?,
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod hand_tests {
+    use super::*;
+
+    #[test]
+    fn current_two_hand_options_change_without_removing_unarmed_or_rewriting_selected_work() {
+        // Pure current-menu control: the old genuine state supplies source and
+        // perception. Glaive acquisition and the Attempt are synthetic; this is
+        // not an accepted release, menu refresh or long-reach table scenario.
+        let mut state = crate::tactical_hands::tests::source_state();
+        let actor = crate::tactical_hands::tests::human(&state);
+        let target = state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .participants
+            .iter()
+            .find(|p| p.entity_id != actor)
+            .unwrap()
+            .entity_id;
+        let loadout = state
+            .rules
+            .as_mut()
+            .unwrap()
+            .tactical_inventory
+            .as_mut()
+            .unwrap()
+            .loadouts
+            .iter_mut()
+            .find(|l| l.actor == actor)
+            .unwrap();
+        let item = loadout
+            .hands
+            .hands
+            .iter()
+            .find_map(|h| match h {
+                HandAssignment::Item(id) => Some(*id),
+                _ => None,
+            })
+            .unwrap();
+        loadout.hands.hands = [HandAssignment::Item(item), HandAssignment::Free];
+        state.items.get_mut(&item).unwrap().definition_id = "glaive".into();
+        let original = opportunity_options_for_crossing(&state, actor, target, 30).unwrap();
+        assert!(
+            original
+                .iter()
+                .any(|o| o.source == TacticalMeleeSource::Unarmed)
+        );
+        assert!(
+            original
+                .iter()
+                .any(|o| o.source == (TacticalMeleeSource::Weapon { item }) && o.reach == 20)
+        );
+        crate::tactical_hands::tests::install_attempt(&mut state, actor, Hand::Right);
+        let blocked = opportunity_options_for_crossing(&state, actor, target, 30).unwrap();
+        assert_eq!(
+            blocked,
+            vec![TacticalMeleeOption {
+                source: TacticalMeleeSource::Unarmed,
+                reach: 10
+            }]
+        );
+        let resolution = state
+            .encounter
+            .as_mut()
+            .unwrap()
+            .flow
+            .as_mut()
+            .unwrap()
+            .resolution
+            .as_mut()
+            .unwrap();
+        let context = resolution.grapple.as_mut().unwrap();
+        let Some(GrappleActivity::Attempt(attempt)) = context.activity.as_mut() else {
+            unreachable!()
+        };
+        attempt.stage = TacticalGrappleAttemptStage::Complete;
+        attempt.outcome = Some(GrappleAttemptOutcome::Withdrawn {
+            withdrawn_by: attempt.declaration.origin.clone(),
+            cancelled: None,
+        });
+        assert_eq!(
+            opportunity_options_for_crossing(&state, actor, target, 30).unwrap(),
+            original
+        );
+        assert!(
+            state
+                .encounter
+                .as_ref()
+                .unwrap()
+                .flow
+                .as_ref()
+                .unwrap()
+                .resolution
+                .as_ref()
+                .unwrap()
+                .grapple
+                .as_ref()
+                .unwrap()
+                .opportunity_refreshes
+                .is_empty()
+        );
+    }
 }

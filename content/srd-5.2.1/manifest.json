@@ -54,6 +54,14 @@
         "algorithm": "fnv1a64",
         "value": "fb84cb6236c1303f"
       }
+    },
+    {
+      "path": "goblin-warrior-v2.json",
+      "byte_len": 4011,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "3ab5048b144641fc"
+      }
     }
   ]
 }

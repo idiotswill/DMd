@@ -522,6 +522,7 @@ async fn schema_two_database_and_format_one_export_upgrade_preserve_exact_old_an
     let pool = gate_two_pool().await;
     let mut initial = state();
     initial.rules = Some(RulesState {
+        tactical_grapples: None,
         pack_id: "srd-5.2".into(),
         pack_version: "5.2.1".into(),
         entities: Default::default(),

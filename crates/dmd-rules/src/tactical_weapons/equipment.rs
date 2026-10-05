@@ -1,4 +1,5 @@
 use super::*;
+use crate::tactical_hands::EffectiveHands;
 
 pub(super) fn carried_item(
     state: &CampaignState,
@@ -34,6 +35,7 @@ fn apply_change(
     input: &WeaponAttackInput<'_>,
     loadout: &mut WeaponLoadout,
     change: AttackEquipmentOperation,
+    hands: &EffectiveHands,
 ) -> Result<(), WeaponError> {
     require(
         input.context.window.kind == WeaponActionKind::AttackAction,
@@ -54,10 +56,7 @@ fn apply_change(
                 !loadout.hands.contains(&HandAssignment::Item(id)),
                 "weapon is already held",
             )?;
-            require(
-                loadout.hands[hand.index()] == HandAssignment::Free,
-                "equipping hand is occupied",
-            )?;
+            require(hands.is_free(loadout, hand), "equipping hand is occupied")?;
             loadout.hands[hand.index()] = HandAssignment::Item(id);
         }
         AttackEquipmentOperation::Unequip { .. } => {
@@ -77,13 +76,17 @@ fn apply_change(
 pub(super) fn before_attack(
     input: &WeaponAttackInput<'_>,
     weapon: &WeaponDefinition,
+    hands: &EffectiveHands,
 ) -> Result<WeaponLoadout, WeaponError> {
     let mut loadout = input.loadout.clone();
     validate_loadout(input, &loadout)?;
+    hands
+        .validate_loadout(&loadout)
+        .map_err(|error| invalid(error.to_string()))?;
     if let Some(change) = input.choice.equipment_change
         && change.timing == EquipmentChangeTiming::BeforeAttack
     {
-        apply_change(input, &mut loadout, change.operation)?;
+        apply_change(input, &mut loadout, change.operation, hands)?;
     }
     let assignment = HandAssignment::Item(input.choice.weapon);
     match input.choice.grip {
@@ -96,7 +99,7 @@ pub(super) fn before_attack(
             if loadout.hands[hand.index()] != assignment {
                 require(
                     input.choice.delivery == WeaponDelivery::Thrown
-                        && loadout.hands[hand.index()] == HandAssignment::Free
+                        && hands.is_free(&loadout, hand)
                         && !loadout.hands.contains(&assignment),
                     "weapon is not held in the chosen hand",
                 )?;
@@ -111,11 +114,7 @@ pub(super) fn before_attack(
         }
         WeaponGrip::TwoHands => {
             require(
-                loadout.hands.contains(&assignment)
-                    && loadout
-                        .hands
-                        .iter()
-                        .all(|hand| matches!(hand, HandAssignment::Free) || *hand == assignment),
+                hands.can_use_two_hands(&loadout, input.choice.weapon),
                 "two-handed attack requires holding the weapon and both hands available",
             )?;
             // Two hands do not grant a larger die unless the source has Versatile
@@ -129,6 +128,7 @@ pub(super) fn ammunition(
     input: &WeaponAttackInput<'_>,
     weapon: &WeaponDefinition,
     loadout: &WeaponLoadout,
+    hands: &EffectiveHands,
 ) -> Result<Option<AmmunitionExpenditure>, WeaponError> {
     let Some(required) = required_ammunition_definition(weapon) else {
         require(
@@ -148,7 +148,14 @@ pub(super) fn ammunition(
     )?;
     if let WeaponGrip::OneHand(hand) = input.choice.grip {
         require(
-            loadout.hands[1 - hand.index()] == HandAssignment::Free,
+            hands.is_free(
+                loadout,
+                if hand == Hand::Left {
+                    Hand::Right
+                } else {
+                    Hand::Left
+                },
+            ),
             "loading a one-handed ammunition weapon requires a free hand",
         )?;
     }
@@ -160,6 +167,7 @@ pub(super) fn ammunition(
 pub(super) fn after_attack(
     input: &WeaponAttackInput<'_>,
     before: &WeaponLoadout,
+    hands: &EffectiveHands,
 ) -> Result<WeaponLoadout, WeaponError> {
     let mut loadout = before.clone();
     if input.choice.delivery == WeaponDelivery::Thrown {
@@ -181,7 +189,7 @@ pub(super) fn after_attack(
                 && changed_item == input.choice.weapon),
             "the thrown weapon is no longer available to equip or unequip",
         )?;
-        apply_change(input, &mut loadout, change.operation)?;
+        apply_change(input, &mut loadout, change.operation, hands)?;
     }
     Ok(loadout)
 }

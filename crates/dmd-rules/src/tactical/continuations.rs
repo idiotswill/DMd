@@ -208,6 +208,10 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => (
+            182,
+            "Grapple execution is not enabled by this source/domain checkpoint.",
+        ),
         TacticalRollRole::ShoveSave => (
             190,
             "The target chooses Strength or Dexterity against Shove.",
