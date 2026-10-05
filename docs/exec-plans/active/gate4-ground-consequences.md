@@ -56,8 +56,11 @@ death/Decline, wider privacy, Graze acquisition and native acceptance remain ope
 
 ## Ownership and baseline
 
-Root is the sole writer of `codex/gate4-ground-consequences`, in its separate
-checkout. Baseline is fetched PR61 head
+Root transferred sole source ownership to the independent CI/review agent after
+the full concentration review at `2d2642aadc587c56855e37a4fded06890fd5540f`
+was clear. This transfer covers only the following planned Chimera fall family;
+root retains review, execution and publication. The branch is
+`codex/gate4-ground-consequences`, in its separate checkout. Baseline is fetched PR61 head
 `055147b02c16111b4582c40b2a9c77e5dbe6bd99`, tree
 `9512bd820ed0dd660d855082b4a0cadbd96a1455`. The PR61 checkout remains frozen for
 its existing focused137 run and CI. This branch will be received normally after
@@ -80,6 +83,38 @@ atomic journal, ADR012 replay, ADR018 semantic replay, ADR019 application runtim
 and ADR020 portable integrity boundaries. Existing original captures and their
 receiving suites remain immutable. A new successful scenario is not Gate4 or
 native acceptance by itself.
+
+## Fall refinement before source
+
+Use a normally created current full-pin Chimera at its genuine114HP, Fly60 and
+no Hover. The first PC stands at `(10,10,40)` on the solid ledge ending atx20;
+the Large Chimera starts at `(20,10,40)`, only touching the ledge's edge, above
+the floor atz0. Assert the actual spatial queries establish supported PC,
+unsupported but flight-capable target, precise sight and legal five-foot melee
+reach before attacking. The setup uses accepted creation/equipment/map commands;
+all later commands use the existing cold/portable/exact-retry helper.
+
+Eleven actual critical Dagger attacks, each physical20 then two4s, deplete the
+Chimera from114HP to4HP over ten real turns. Each hit's actual ordering and
+Host acknowledgment is an explicit accepted cold command; no queue-drain helper
+or positive state injection is used. Only the eleventh attack requests after
+equipment. Its real knockout decision leaves1HP and Unconscious/Prone, causing
+non-hovering flight loss. Check actual BeginFall ancestry against the retained
+completed damage work, later occurrence than queued equipment and real pending
+FallDamage. While that child is pending, reject premature raw/opaque choices
+and work selection with full state/export equality and populated-destination
+hostile import checks.
+
+Resolve the genuine twenty-foot fall with two physical1s through the Host.
+Assert finalz0 and the actual source target's death, while the attacker's
+original after-equipment cause and Decline remain available. Submit the retained
+Decline through cold restore and exact retry and verify it closes the resolution
+without altering item custody, paid timing or roll receipts. Target death is
+an explicit obligation, not permission to discard an independent actor's work.
+This adds no invented failed-save decision, Graze proof or previously-valid Apply
+becoming invalid proof. Those remaining obligations and native acceptance stay
+open. Existing parent test bodies and all production/historical bytes remain
+immutable. No Cargo, database, npm or native execution is allocated here.
 
 ## Planned implementation
 
