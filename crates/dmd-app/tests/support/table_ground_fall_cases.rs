@@ -73,7 +73,7 @@ async fn prepare(f: &mut Fixture, path: &Path) -> (EntityId, ItemId, CreatureSou
                 },
                 blocks_movement: true,
                 blocks_sight: true,
-                cover: Cover::Total,
+                cover: CoverDegree::Total,
                 observable: true,
             }],
             lights: vec![],
