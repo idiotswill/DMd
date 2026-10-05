@@ -1,5 +1,31 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## First source checkpoint — Shield, authored and unrun
+
+The first added integration function contains six genuine Mage cases: before
+same-Item pickup with ordinary hit and natural20, and separately held Dagger
+after intent with both hit outcomes crossed with Apply/Decline. Its setup follows
+the existing source-owned Shield application route without changing that suite.
+Each new transition uses the Ground cold-file/independent-portable/exact-retry
+helper. Current-source pin, player ownership, original cause, Reaction/use cost,
+17AC miss versus2d4+3 critical, no early card, wrong-kind refusal, unrelated
+complete DTO stability and final hands/item/payment are asserted. Hostile
+activation images are also refused against a populated unrelated destination,
+comparing every table row. All new cases remain UNCOMPILED/UNRUN.
+
+The full plan was independently reviewed at54637fc; memo
+`ground-consequences-54637fc-independent-plan-review-2026-10-05.md`, SHA256
+`b82d1e2fe77273a27cda3e695cdff2d621003d45d3589733ac26617909fdb9e6`.
+Its three concrete details are accepted: attempt premature raw/opaque equipment
+at each real concentration/failed-save/fall wait with complete store equality;
+allow a target killed by the real fall to leave the attacker's Decline available;
+and keep a genuine previously-valid Apply becoming invalid explicitly open until
+a supported consequence establishes it. Forged-image negatives do not close that
+last obligation. Concentration/fall families, Graze and native remain due.
+
+Direct configured rustfmt and Git diff checks only have run. This checkpoint
+requests full independent source review while root authors the next family.
+
 ## Ownership and baseline
 
 Root is the sole writer of `codex/gate4-ground-consequences`, in its separate
