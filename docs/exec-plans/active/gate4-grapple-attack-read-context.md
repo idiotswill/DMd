@@ -1,5 +1,24 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 5 actual test-call compilation failure
+
+Exact58b6a9051b5696e78842cde8d8ed115d361bc2b4 passed formatting but strict
+all-target Clippy failed with E0061 in grapple/tests/conditions.rs503 at
+2026-10-05 09:32:55 UTC. The retained private final-flight-refusal test still
+called the old three-argument transaction signature. No selected test ran.
+Full log SHA256:
+e435031e50a6c8615433a1d7482501bd2e0979f20a7b6d8f8c8a8f9c12157cd2.
+
+Commit this plan before adapting that test call only: pass the same ordinary
+ExecutionContext used by the private wrappers, and accept its second closure
+argument without granting guarded authority. Keep the internal submit call,
+synthetic input, error-text assertion, whole-state equality and empty view/fall
+assertions unchanged. Do not change production transaction or authority checks.
+The new signature preserves the existing clone/validate transaction. Review the
+complete delta independently, then rerun the same82 controls at the new frozen
+head after formatting and strict linting. Preserve both prior failed attempts.
+No runtime success or public/application/native/Gate4 acceptance is claimed.
+
 ## October 5 actual strict-lint failure and correction
 
 The exact0df1754 focused82 attempt passed formatting, then strict Clippy failed
