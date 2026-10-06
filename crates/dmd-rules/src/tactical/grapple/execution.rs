@@ -208,11 +208,14 @@ impl<'a> ReadContext<'a> {
     }
 
     pub(in crate::tactical) fn opportunity_window(
-        &self, attack: &TacticalAttack,
+        &self,
+        attack: &TacticalAttack,
     ) -> Result<Option<reads::OpportunityWindowRead<'a>>, RulesError> {
         if crate::table::grapple_enabled(self.state) {
             reads::OpportunityWindowRead::retained(self, attack).map(Some)
-        } else { Ok(None) }
+        } else {
+            Ok(None)
+        }
     }
 
     pub(in crate::tactical) fn validate_retained_grapple_decision(
@@ -222,23 +225,30 @@ impl<'a> ReadContext<'a> {
         if !crate::table::grapple_enabled(self.state)
             || decision.key.role != TacticalRollRole::GrappleSave
         {
-            return Err(invalid("retained decision is not an activated Grapple save"));
+            return Err(invalid(
+                "retained decision is not an activated Grapple save",
+            ));
         }
         if let Some(closed) = self.closed {
             return if flow(closed.state())?.save_decisions.contains(decision) {
                 Ok(())
             } else {
-                Err(invalid("Grapple decision is absent from its exact certified image"))
+                Err(invalid(
+                    "Grapple decision is absent from its exact certified image",
+                ))
             };
         }
-        let owned = self.guarded
+        let owned = self
+            .guarded
             .ok_or_else(|| invalid("Grapple decision has no owned historical producer"))?;
         if flow(owned.predecessor)?.save_decisions.contains(decision)
             || owned.produced.decisions.contains(decision)
         {
             Ok(())
         } else {
-            Err(invalid("Grapple decision lacks its exact predecessor or observed producer"))
+            Err(invalid(
+                "Grapple decision lacks its exact predecessor or observed producer",
+            ))
         }
     }
 }

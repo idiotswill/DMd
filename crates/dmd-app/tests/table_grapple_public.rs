@@ -134,10 +134,16 @@ impl Fixture {
         Box::pin(Self::with_opponent(definition, size, false)).await
     }
     async fn with_opponent(definition: &str, size: CreatureSize, opponent: bool) -> Self {
-        Box::pin(Self::with_opponent_geometry(definition, size, opponent, false)).await
+        Box::pin(Self::with_opponent_geometry(
+            definition, size, opponent, false,
+        ))
+        .await
     }
     async fn with_opponent_geometry(
-        definition: &str, size: CreatureSize, opponent: bool, pc_opportunity: bool,
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
     ) -> Self {
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
@@ -302,7 +308,8 @@ impl Fixture {
                         height: 12,
                         allies: vec![],
                         enemies: std::iter::once(f.goblin)
-                            .chain(f.opponent.filter(|_| pc_opportunity)).collect(),
+                            .chain(f.opponent.filter(|_| pc_opportunity))
+                            .collect(),
                     }],
                     creatures: std::iter::once(TableCreaturePlacement {
                         actor: f.goblin,
@@ -319,14 +326,16 @@ impl Fixture {
                         },
                         allies: vec![],
                         enemies: std::iter::once(f.actors[0])
-                            .chain(f.opponent.filter(|_| !pc_opportunity)).collect(),
+                            .chain(f.opponent.filter(|_| !pc_opportunity))
+                            .collect(),
                     })
                     .chain(f.opponent.map(|actor| TableCreaturePlacement {
                         actor,
                         public_label: "Other guard".into(),
                         position: SpatialPoint {
                             x: if pc_opportunity { 10 } else { 30 },
-                            y: if pc_opportunity { 20 } else { 10 }, z: 0,
+                            y: if pc_opportunity { 20 } else { 10 },
+                            z: 0,
                         },
                         height: 8,
                         allies: vec![],
@@ -354,10 +363,14 @@ impl Fixture {
             },
         ]
         .into_iter()
-        .chain(f.opponent.filter(|_| shared_opponent.is_none()).map(|actor| InitiativeGroup {
-            actors: vec![actor],
-            request_id: RollRequestId::new(),
-        }))
+        .chain(
+            f.opponent
+                .filter(|_| shared_opponent.is_none())
+                .map(|actor| InitiativeGroup {
+                    actors: vec![actor],
+                    request_id: RollRequestId::new(),
+                }),
+        )
         .collect::<Vec<_>>();
         Box::pin(
             f.host(TableAction::Tactical {
@@ -428,39 +441,71 @@ impl Fixture {
                 assert_eq!(roll.request.id, groups[index].request_id);
                 assert_eq!(roll.request.roller, Some(actor));
                 assert_eq!(roll.request.mode, RollMode::Normal);
-                assert_eq!(roll.request.dice, vec![DieSpec { count: 1, sides: 20 }]);
+                assert_eq!(
+                    roll.request.dice,
+                    vec![DieSpec {
+                        count: 1,
+                        sides: 20
+                    }]
+                );
                 assert_eq!(roll.request.modifier, 2);
                 assert_eq!(roll.result.source, RollSource::Physical);
-                assert_eq!(roll.result.dice, vec![DieResult { sides: 20, value: face }]);
+                assert_eq!(
+                    roll.result.dice,
+                    vec![DieResult {
+                        sides: 20,
+                        value: face
+                    }]
+                );
                 assert_eq!(roll.accepted_by.id, accepted_by);
                 assert_eq!(roll.resolved.total, total);
             }
             let flow = tied.encounter.as_ref().unwrap().flow.as_ref().unwrap();
             assert_eq!(flow.initiative_groups, groups);
-            assert_eq!(flow.phase, TacticalPhase::InitiativeTies { ties: vec![InitiativeTie {
-                total: 4, actors: vec![f.goblin, opponent], proposed_order: None,
-                accepted_by: vec![], host_decided: false,
-            }] });
+            assert_eq!(
+                flow.phase,
+                TacticalPhase::InitiativeTies {
+                    ties: vec![InitiativeTie {
+                        total: 4,
+                        actors: vec![f.goblin, opponent],
+                        proposed_order: None,
+                        accepted_by: vec![],
+                        host_decided: false,
+                    }]
+                }
+            );
             Box::pin(f.host(TableAction::Tactical {
                 action: TacticalAction::ProposeInitiativeTie {
                     order: vec![f.goblin, opponent],
                 },
-            })).await;
+            }))
+            .await;
             let ready = f.state().await;
             let final_rules = ready.rules.as_ref().unwrap();
             assert_eq!(final_rules.rolls, rules.rolls);
             let flow = ready.encounter.as_ref().unwrap().flow.as_ref().unwrap();
             assert_eq!(flow.phase, TacticalPhase::Active);
             assert_eq!(flow.initiative_groups, groups);
-            assert_eq!(flow.initiative_decisions, vec![InitiativeTie {
-                total: 4, actors: vec![f.goblin, opponent],
-                proposed_order: Some(vec![f.goblin, opponent]), accepted_by: vec![],
-                host_decided: true,
-            }]);
+            assert_eq!(
+                flow.initiative_decisions,
+                vec![InitiativeTie {
+                    total: 4,
+                    actors: vec![f.goblin, opponent],
+                    proposed_order: Some(vec![f.goblin, opponent]),
+                    accepted_by: vec![],
+                    host_decided: true,
+                }]
+            );
             let timing = final_rules.timing.as_ref().unwrap();
             assert_eq!(timing.index, 0);
-            assert_eq!(timing.order.iter().map(|entry| (entry.actor, entry.total, entry.tie_break))
-                .collect::<Vec<_>>(), vec![(f.actors[0], 20, 0), (f.goblin, 4, 0), (opponent, 4, 1)]);
+            assert_eq!(
+                timing
+                    .order
+                    .iter()
+                    .map(|entry| (entry.actor, entry.total, entry.tie_break))
+                    .collect::<Vec<_>>(),
+                vec![(f.actors[0], 20, 0), (f.goblin, 4, 0), (opponent, 4, 1)]
+            );
         } else if f.opponent.is_some() {
             Box::pin(f.roll(TableTransportChannel::Host, 1)).await;
         }
@@ -1366,16 +1411,39 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
         let attack = resolution(&issued).attack.as_ref().unwrap();
         let pending = resolution(&issued).pending.as_ref().unwrap();
         assert_ne!(attack.origin.id, casting.command_id);
-        assert_eq!(cut.reader, GrappleReader::AttackAdmission { attack: attack.origin.id });
+        assert_eq!(
+            cut.reader,
+            GrappleReader::AttackAdmission {
+                attack: attack.origin.id
+            }
+        );
         assert_eq!(pending.key.origin, casting.command_id);
         assert_eq!(pending.key.subject, target);
-        assert_eq!(pending.key.request_id(), issued.rules.as_ref().unwrap().pending.as_ref().unwrap().request.id);
+        assert_eq!(
+            pending.key.request_id(),
+            issued
+                .rules
+                .as_ref()
+                .unwrap()
+                .pending
+                .as_ref()
+                .unwrap()
+                .request
+                .id
+        );
         if index == 0 {
             let export = export_campaign(&f.pool, f.campaign).await.unwrap();
-            let selected = export.table_transport_bindings.iter().find(|binding|
-                binding.meta.id == attack.origin.id).unwrap();
-            let selected: TableTransportRequest = serde_json::from_str(&selected.request_json).unwrap();
-            assert!(matches!(selected.input, TableTransportInput::SelectWork { .. }));
+            let selected = export
+                .table_transport_bindings
+                .iter()
+                .find(|binding| binding.meta.id == attack.origin.id)
+                .unwrap();
+            let selected: TableTransportRequest =
+                serde_json::from_str(&selected.request_json).unwrap();
+            assert!(matches!(
+                selected.input,
+                TableTransportInput::SelectWork { .. }
+            ));
         }
         assert!(!admissions.contains(&cut));
         admissions.push(cut);
@@ -1427,19 +1495,39 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
             reads.cuts.last_mut().unwrap().source_attack = Some(first);
             Box::pin(reject_state_image(&f, forged)).await;
         }
-        for mutation in ["advancing-origin", "wrong-cast", "wrong-target", "missing-admission"] {
+        for mutation in [
+            "advancing-origin",
+            "wrong-cast",
+            "wrong-target",
+            "missing-admission",
+        ] {
             let mut forged = issued.clone();
             let r = corrections::resolution_mut(&mut forged);
             match mutation {
                 "advancing-origin" => {
-                    let issue = r.grapple.as_mut().unwrap().cuts.iter_mut().find(|read|
-                        read.key.reader == (GrappleReader::RequestIssue { roll: pending.key })).unwrap();
-                    let GrappleReader::RequestIssue { roll } = &mut issue.key.reader else { unreachable!() };
+                    let issue = r
+                        .grapple
+                        .as_mut()
+                        .unwrap()
+                        .cuts
+                        .iter_mut()
+                        .find(|read| {
+                            read.key.reader == (GrappleReader::RequestIssue { roll: pending.key })
+                        })
+                        .unwrap();
+                    let GrappleReader::RequestIssue { roll } = &mut issue.key.reader else {
+                        unreachable!()
+                    };
                     roll.origin = attack.origin.id;
                 }
                 "wrong-cast" => r.casts[0].cast.plan.origin.id = CommandId::new(),
                 "wrong-target" => r.casts[0].targets[0].actor = f.goblin,
-                "missing-admission" => r.grapple.as_mut().unwrap().cuts.retain(|read| read.key != cut),
+                "missing-admission" => r
+                    .grapple
+                    .as_mut()
+                    .unwrap()
+                    .cuts
+                    .retain(|read| read.key != cut),
                 _ => unreachable!(),
             }
             Box::pin(reject_state_image(&f, forged)).await;
@@ -1769,12 +1857,17 @@ async fn self_only_move_retains_grip_until_actual_range_crossing_and_never_moves
         .participant(target)
         .unwrap()
         .position;
-    let ordinary = f.request(pc.clone(), action(TacticalAction::Move {
-        path: vec![TacticalMoveStep {
-            destination: SpatialPoint { x: 0, y: 10, z: 0 },
-            mode: MovementMode::Walk,
-        }],
-    })).await;
+    let ordinary = f
+        .request(
+            pc.clone(),
+            action(TacticalAction::Move {
+                path: vec![TacticalMoveStep {
+                    destination: SpatialPoint { x: 0, y: 10, z: 0 },
+                    mode: MovementMode::Walk,
+                }],
+            }),
+        )
+        .await;
     Box::pin(f.reject(ordinary)).await;
     let movement = Box::pin(f.cold_action(
         pc,

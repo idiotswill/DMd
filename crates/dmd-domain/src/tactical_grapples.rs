@@ -303,7 +303,9 @@ pub enum GrappleActivity {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum GrappleReader {
-    AttackAdmission { attack: CommandId },
+    AttackAdmission {
+        attack: CommandId,
+    },
     OpportunityWindow {
         attack: CommandId,
         window: CommandId,
@@ -311,8 +313,12 @@ pub enum GrappleReader {
         mover: EntityId,
         step: u16,
     },
-    RequestIssue { roll: TacticalRollKey },
-    FlightLoss { actor: EntityId },
+    RequestIssue {
+        roll: TacticalRollKey,
+    },
+    FlightLoss {
+        actor: EntityId,
+    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]

@@ -22,24 +22,47 @@ pub(crate) struct OpportunityWindowRead<'a> {
 
 impl<'a> OpportunityWindowRead<'a> {
     pub(in crate::tactical) fn retained(
-        read: &ReadContext<'a>, attack: &TacticalAttack,
+        read: &ReadContext<'a>,
+        attack: &TacticalAttack,
     ) -> Result<Self, RulesError> {
         let state = read.state();
         read.require_guarded("window hands require original owned execution")?;
         if !crate::table::grapple_enabled(state)
             || resolution(state)?.attack.as_ref() != Some(attack)
-        { return Err(invalid("window read differs from its attached enabled attack")); }
+        {
+            return Err(invalid(
+                "window read differs from its attached enabled attack",
+            ));
+        }
         modern::validate_cuts(state)?;
         let cut = modern::window_cut(state, attack)?;
         let proofs = &context(state)?.proofs;
-        let grips = cut.grips.iter().map(|id| proofs.iter().find(|proof| proof.declaration.id == *id)
-            .cloned().ok_or_else(|| invalid("window hand proof absent")))
+        let grips = cut
+            .grips
+            .iter()
+            .map(|id| {
+                proofs
+                    .iter()
+                    .find(|proof| proof.declaration.id == *id)
+                    .cloned()
+                    .ok_or_else(|| invalid("window hand proof absent"))
+            })
             .collect::<Result<_, _>>()?;
-        Ok(Self { state, actor: attack.actor, grips })
+        Ok(Self {
+            state,
+            actor: attack.actor,
+            grips,
+        })
     }
-    pub(crate) fn state(&self) -> &'a CampaignState { self.state }
-    pub(crate) fn actor(&self) -> EntityId { self.actor }
-    pub(crate) fn grips(&self) -> &[TacticalGrip] { &self.grips }
+    pub(crate) fn state(&self) -> &'a CampaignState {
+        self.state
+    }
+    pub(crate) fn actor(&self) -> EntityId {
+        self.actor
+    }
+    pub(crate) fn grips(&self) -> &[TacticalGrip] {
+        &self.grips
+    }
 }
 
 fn physical(attack: &TacticalAttack) -> bool {

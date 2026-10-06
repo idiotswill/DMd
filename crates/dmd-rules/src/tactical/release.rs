@@ -196,10 +196,15 @@ fn retained_dependencies(
 }
 
 fn require_no_live_grips(state: &CampaignState) -> Result<(), RulesError> {
-    if state.rules.as_ref().and_then(|rules| rules.tactical_grapples.as_ref())
+    if state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_grapples.as_ref())
         .is_some_and(|grapples| !grapples.active.is_empty())
     {
-        return Err(prerequisite("release or resolve live grips before finishing encounter timing"));
+        return Err(prerequisite(
+            "release or resolve live grips before finishing encounter timing",
+        ));
     }
     Ok(())
 }

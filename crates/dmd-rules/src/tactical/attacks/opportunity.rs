@@ -425,7 +425,9 @@ pub(super) fn validate_admission(
             }
             let retained = read.opportunity_window(attack)?;
             let hands = match retained.as_ref() {
-                Some(retained) => crate::tactical_hands::EffectiveHands::opportunity_window(retained)?,
+                Some(retained) => {
+                    crate::tactical_hands::EffectiveHands::opportunity_window(retained)?
+                }
                 None => crate::tactical_hands::EffectiveHands::current(
                     &before,
                     before.rules.as_ref().ok_or(RulesError::Uninitialized)?,

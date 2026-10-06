@@ -457,7 +457,9 @@ pub struct TableMovementOptions {
     pub self_only_required: bool,
 }
 
-fn movement_self_only_absent(value: &bool) -> bool { !value }
+fn movement_self_only_absent(value: &bool) -> bool {
+    !value
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableAttackDecision {

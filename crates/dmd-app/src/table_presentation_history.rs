@@ -546,7 +546,7 @@ impl<'a> HistoryVerifier<'a> {
                 || !export.table_transport_bindings.is_empty()
                 || marked)
         {
-                return Err("presentation requires a table history".into());
+            return Err("presentation requires a table history".into());
         }
         let bootstrap = export.table_projection_history.first();
         if bootstrap.is_none() && (marked || !export.table_transport_bindings.is_empty()) {

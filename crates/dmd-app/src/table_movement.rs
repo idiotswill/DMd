@@ -89,8 +89,12 @@ pub(super) fn options(
         modes,
         self_only_required: matches!(read, super::TacticalRead::Owned(_))
             && dmd_rules::table::grapple_enabled(state)
-            && rules.tactical_grapples.as_ref().is_some_and(|grapples|
-                grapples.active.iter().any(|grip| grip.declaration.grappler == actor)),
+            && rules.tactical_grapples.as_ref().is_some_and(|grapples| {
+                grapples
+                    .active
+                    .iter()
+                    .any(|grip| grip.declaration.grappler == actor)
+            }),
     }))
 }
 

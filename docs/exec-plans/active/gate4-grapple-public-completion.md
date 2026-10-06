@@ -1,12 +1,40 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **PLAN COMMITTED BEFORE IMPLEMENTATION; SOURCE ALLOCATED; ALL NEW WORK UNCOMPILED/UNRUN**.
-Date: 2026-10-06. Sole writer: public_grapple_oct6, explicitly allocated by root.
+Status: **SOURCE FORMATTED AND STATICALLY REVIEWED; ALL NEW PUBLIC CASES UNCOMPILED/UNRUN**.
+Date: 2026-10-06. Sole writer for this format freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 `a6097d485244a2ed5443765fb4ee40c34625892b`.
 
 ## Allocation, authority and evidence
+
+### Reviewed formatting freeze (2026-10-06)
+
+Root formatted the changed Rust paths and reported direct rustfmt/check PASS,
+then transferred sole writing for a format-only freeze from exact
+`3684a3738276eae8218739b5179753b7afb1575d` (tree
+`5bd90ae00c1ad1841050074ca221c578b7b5a1fe`). This reviewer read all 15 complete
+formatting diffs. Changes are layout, trailing commas, transparent closure/match
+blocks and semicolons on diverging statements; literals, comments and all other
+tokens are exact. No source behavior or imports changed. The formatting-only
+patch SHA256 is `6092fd473b37e061a47060c74278a8b78d156bf2e3cc0c382bfb2a37acde2255`.
+
+The independent stdlib/Git audit preserves all 154 original protected files and
+all 8 content files as exact Git bytes, all 28 original inline modules and all 894
+original Rust test bodies with occurrence counts, and all 25 new public test
+names and meaningful tokens. The complete punctuation changes were also read;
+token comparison alone is not the semantic review. No compiler, test, runtime,
+dependency intake or publication occurred in this formatting continuation.
+
+The proposed first verification inventory contains 426 Rust cases: the full 25
+public app cases, preserved 82 private selection, 22 original replay cases and 297
+ordinary attack/movement/turn/table/recovery cases, followed by the normal full
+frontend check/test/build. The public branch still has three original private
+test bodies superseded on the pending private correction branch; root must
+authorize normal whole-history receipt and review the union before preparing its
+exact-head runner. No wrapper has been prepared here. Full group 3, canonical/CI,
+dragging/carrying and packaged native obligations remain open. Next: root review
+of this clean format freeze, then separately allocated receipt and verification.
 
 ### Approved identical-source initiative fixture correction (2026-10-06)
 

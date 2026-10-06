@@ -282,22 +282,46 @@ fn admitted_raw_origin(
     let GrappleReader::AttackAdmission { attack } = source.reader else {
         return Err("raw source is not an attack admission".into());
     };
-    if matches!(reads, ReadShape::Legacy) { return Ok(attack); }
+    if matches!(reads, ReadShape::Legacy) {
+        return Ok(attack);
+    }
     let root = node(resolution, source.work)?;
-    require(root.work.kind == TacticalWorkKind::AttackRoll, "admission has no AttackRoll")?;
+    require(
+        root.work.kind == TacticalWorkKind::AttackRoll,
+        "admission has no AttackRoll",
+    )?;
     let mut current = root;
     loop {
         if let TacticalWorkKind::SpellProgram { cast, at } = current.work.kind {
-            let mut records = resolution.casts.iter().filter(|record| record.cast.plan.occurrence == cast);
+            let mut records = resolution
+                .casts
+                .iter()
+                .filter(|record| record.cast.plan.occurrence == cast);
             let record = records.next().ok_or("raw source cast absent")?;
             require(records.next().is_none(), "raw source cast ambiguous")?;
-            require(record.targets.get(usize::from(at.target)).is_some_and(|target| target.actor == roll.subject),
-                "raw source target differs from its spell occurrence")?;
+            require(
+                record
+                    .targets
+                    .get(usize::from(at.target))
+                    .is_some_and(|target| target.actor == roll.subject),
+                "raw source target differs from its spell occurrence",
+            )?;
             return Ok(record.cast.plan.origin.id);
         }
-        let Some(parent) = current.parent else { return Ok(attack) };
-        require(parent < current.work.occurrence, "raw source ancestry is not causal")?;
-        current = node(resolution, TacticalWorkKey { resolution: source.work.resolution, occurrence: parent })?;
+        let Some(parent) = current.parent else {
+            return Ok(attack);
+        };
+        require(
+            parent < current.work.occurrence,
+            "raw source ancestry is not causal",
+        )?;
+        current = node(
+            resolution,
+            TacticalWorkKey {
+                resolution: source.work.resolution,
+                occurrence: parent,
+            },
+        )?;
     }
 }
 
@@ -370,14 +394,29 @@ impl TacticalGrappleResolution {
                 GrappleReader::AttackAdmission { attack } => {
                     require(!attack.0.is_nil(), "nil admitted attack cut")?
                 }
-                GrappleReader::OpportunityWindow { attack, window, reactor, mover, .. } => {
-                    require(matches!(reads, ReadShape::Activated)
-                        && !attack.0.is_nil() && !window.0.is_nil()
-                        && !reactor.0.is_nil() && !mover.0.is_nil() && reactor != mover
-                        && cut.issued_by.id == attack && cut.source_attack.is_none()
-                        && node(resolution, cut.key.work)?.work.kind == TacticalWorkKind::AttackRoll
-                        && cut.grips.iter().all(|id| proof(*id).is_ok_and(|grip| grip.declaration.grappler == reactor)),
-                        "opportunity window cut lacks its activated source")?;
+                GrappleReader::OpportunityWindow {
+                    attack,
+                    window,
+                    reactor,
+                    mover,
+                    ..
+                } => {
+                    require(
+                        matches!(reads, ReadShape::Activated)
+                            && !attack.0.is_nil()
+                            && !window.0.is_nil()
+                            && !reactor.0.is_nil()
+                            && !mover.0.is_nil()
+                            && reactor != mover
+                            && cut.issued_by.id == attack
+                            && cut.source_attack.is_none()
+                            && node(resolution, cut.key.work)?.work.kind
+                                == TacticalWorkKind::AttackRoll
+                            && cut.grips.iter().all(|id| {
+                                proof(*id).is_ok_and(|grip| grip.declaration.grappler == reactor)
+                            }),
+                        "opportunity window cut lacks its activated source",
+                    )?;
                 }
                 GrappleReader::RequestIssue { roll } => require(
                     !roll.origin.0.is_nil() && !roll.subject.0.is_nil(),

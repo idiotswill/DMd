@@ -20,7 +20,10 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalMovement, Rules
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub(super) enum Intent { Ordinary, SelfOnly }
+pub(super) enum Intent {
+    Ordinary,
+    SelfOnly,
+}
 
 pub(super) fn begin(
     state: &mut CampaignState,
@@ -31,15 +34,30 @@ pub(super) fn begin(
 ) -> Result<(), RulesError> {
     let actor = active(state)?;
     authorize(state, meta, actor)?;
-    let outgoing = state.rules.as_ref().and_then(|rules| rules.tactical_grapples.as_ref())
-        .is_some_and(|grapples| grapples.active.iter().any(|grip| grip.declaration.grappler == actor));
+    let outgoing = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_grapples.as_ref())
+        .is_some_and(|grapples| {
+            grapples
+                .active
+                .iter()
+                .any(|grip| grip.declaration.grappler == actor)
+        });
     match intent {
-        Intent::Ordinary if outgoing => return Err(prerequisite(
-            "choose explicit self-only movement while holding a creature")),
+        Intent::Ordinary if outgoing => {
+            return Err(prerequisite(
+                "choose explicit self-only movement while holding a creature",
+            ));
+        }
         Intent::SelfOnly => {
-            execution.read(state)?.require_guarded("self-only movement requires owned original history")?;
+            execution
+                .read(state)?
+                .require_guarded("self-only movement requires owned original history")?;
             if !crate::table::grapple_enabled(state) || !outgoing {
-                return Err(prerequisite("self-only movement requires enabled Grapple and a current held creature"));
+                return Err(prerequisite(
+                    "self-only movement requires enabled Grapple and a current held creature",
+                ));
             }
         }
         Intent::Ordinary => (),
