@@ -1,12 +1,69 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **VERIFIED PRIVATE HISTORY RECEIVED; PUBLIC UNION UNCOMPILED/UNRUN**.
+Status: **B6 CI FAILED; NARROW TYPE FIXES AND UNKNOWN-VERSION FIXTURE MIGRATION PLANNED**.
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 `a6097d485244a2ed5443765fb4ee40c34625892b`.
 
 ## Allocation, authority and evidence
+
+### Actual b6 CI failures and approved narrow corrections (2026-10-06)
+
+Root allocated sole writing to private_grapple_oct6 from clean published
+`b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
+`dfc4a0b18e760f661d4f66321fc51fb5fa480849`. A specific fetch of
+`origin/codex/gate4-grapple-public-completion` confirmed that exact remote head.
+Commit this checkpoint before the source changes below.
+
+The actual PR67 Linux jobs `112148663982` (MSRV) and `112148664436` (Rust)
+failed with the same four compiler diagnostics. Both logs identify synthetic
+merge `83e1f68b04cf75122e9c49cbaed774def48426bc` of b6 into main5af, not literal
+b6. The errors are two `Option<&Box<TacticalEncounterHistory>>` callback type
+mismatches in `grapple/execution.rs:330/761`, and two owned `String` arguments
+passed to `invalid(&str)` in `grapple/modern_lifecycle.rs:100/240`.
+
+Windows jobs `112148663642` (stable) and `112148663907` (1.88) checked out
+literal b6. Each completed Svelte check with zero errors and warnings, then
+reported 134 passed / one failed across 22 frontend test files. The sole failure
+is the old unknown-envelope-version specimen at `table-transport.test.ts:81`:
+numeric version 3 is now explicitly supported. Each of the three new Grapple
+frontend files passed its three cases. The failed test stopped normal desktop
+preparation; these runs do not establish its later build/icons/notices or native
+Rust/package steps. The four complete failed logs are preserved externally.
+No local b6 runtime occurred; the frozen afb and b6 426-case preparations remain
+UNRUN and must be preserved unchanged.
+
+Approved scope is exactly:
+
+- Change the two `encounter_history.as_ref()` calls immediately before
+  `.and_then(TacticalEncounterHistory::last)` to `.as_deref()`. Keep the same
+  borrowed last receipt, all chronology/provenance checks and all predicates.
+- Borrow the two temporary diagnostic strings as `invalid(&e.to_string())`.
+  The existing helper immediately owns the same message; change no diagnostic
+  text, error type, geometry comparison or acceptance condition.
+- In the original transport rejection test, replace only numeric `version:3`
+  in the unknown-version specimen with `version:99`. This deliberately distant
+  unsupported integer avoids repeating this fixture migration during planned
+  version-4 dragging work. Keep the string-version, mixed-head and empty-revision
+  specimens, the test name, all assertions and zero-invoke check byte-exact.
+
+This unknown-version specimen migration is the only approved original test-body
+exception in this correction.
+The test still rejects an unsupported version rather than rejecting newly legal
+version 3. Frontend saved-request validation strictly admits numeric 1/2/3;
+TableApp selects 3 after Grapple activation, and the server's version-3 admission
+and PC text dispatch agree. Do not change production frontend validation.
+Preserve every current Rust test body, all nine Grapple frontend cases and every
+other frontend test byte. No new type-only tests or predicate changes are needed.
+
+Freeze a clean correction for independent root review with a complete static
+delta and preservation audit. No formatter, compiler, npm, database, native run,
+push or runtime-preparation retarget is allocated to this author. Root retains
+the heavy slot. Only after root review may fresh exact-head verification be
+prepared and allocated; the previous failed logs and UNRUN preparations remain
+evidence. Group 3, dragging/carrying, canonical/CI, independent-review and
+packaged-native acceptance requirements remain unchanged.
 
 ### Early draft CI and current-main reconciliation (2026-10-06)
 
