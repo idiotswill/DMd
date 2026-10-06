@@ -1,6 +1,6 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **NARROW B6 CI CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
+Status: **TYPE AND STRICT LINT CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
@@ -36,6 +36,15 @@ The complete resulting source diff requires an independent review and fresh
 exact-head CI. No local formatter/runtime is allocated during the active Offstage
 run. Old CI failure logs and unrun preparations stay bound to their original
 heads. All public Grapple and Gate4 acceptance obligations remain unchanged.
+
+The checkpoint was committed at `33a1888` before editing the four source files.
+The authored delta is exactly the six equivalent range patterns, removal of the
+four unused forwarding wrappers, and the equivalent OutOfRange let-chain above.
+Root read the full source delta; `git diff --check` passed. No existing test body
+or live `_with_read` implementation was edited. No formatter or local runtime
+has run for this correction. Next: independent full-diff review, then fresh CI
+on the published correction; do not credit the prior successful compile as
+verification of this head.
 
 ### Actual b6 CI failures and approved narrow corrections (2026-10-06)
 
