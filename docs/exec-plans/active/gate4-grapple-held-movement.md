@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **FORMATTED BASE FROZEN; LIVING-TARGET CORRECTION ADDED UNFORMATTED/UNRUN**.
+Status: **FORMATTED LIVING-TARGET SUCCESSOR FROZEN; ALL23 NEW CASES UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -370,3 +370,17 @@ npm, database or native execution is allocated; all23 new cases remain UNRUN.
 Prepare an external draft PR description against the complete public Grapple
 branch at4d8, accurately preserving the ground-only partial scope and outstanding
 carry/multiple-target and verification requirements. Root owns push/PR creation.
+
+The allocated two-file Rustfmt and bounded check both returned0 with no output.
+Production transport bytes were already formatted and remain exact; only the
+appended test/helper changed layout. Full diff and token review preserve every
+literal, comment, operator and semicolon, with only trailing commas and transparent
+match-expression blocks. The original22 new cases, all919 old Rust test bodies
+and every other source file remain exact relative to the reviewed56ac885 source.
+Command report `tooling/ci-oct6/held-1eb5bdb-two-file-format.json`, SHA256
+`c64b6dc1430d12f310d1f1cb23de1adccb72a33715c00dacfb0d2d64c7ee36ba`;
+preservation report `tooling/ci-oct6/held-1eb5bdb-format-preservation.json`, SHA256
+`fa2b7d864ed474b16ae46257b797f02949467ab70c6355b97c4e860ed1bd6aaf`.
+No compiler, tests, npm, database or native execution occurred. Root must review
+the exact final diff and publish the draft, then schedule compiler/runtime and
+complete the outstanding acceptance matrix before any merge or Gate4 claim.
