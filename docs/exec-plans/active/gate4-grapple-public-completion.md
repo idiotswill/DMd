@@ -1,7 +1,7 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **SOURCE FORMATTED AND STATICALLY REVIEWED; ALL NEW PUBLIC CASES UNCOMPILED/UNRUN**.
-Date: 2026-10-06. Sole writer for this format freeze: private_grapple_oct6, explicitly allocated by root.
+Status: **VERIFIED PRIVATE HISTORY RECEIVED; PUBLIC UNION UNCOMPILED/UNRUN**.
+Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 `a6097d485244a2ed5443765fb4ee40c34625892b`.
@@ -46,6 +46,22 @@ test, database, native run, push, wrapper preparation or group 3 receipt is
 allocated here. Root must separately authorize fresh receiving verification;
 all public, ordinary-replay, group 3, dragging/carrying, canonical/CI and native
 obligations remain open.
+
+The plan was committed at `2dbc48ea32d86883e9e23c1e8eec1ce964499506` before
+normal merge `b0c7e954888e7855cf09c966fdd993bd512cfc6d`, tree
+`6522472e9bab3a955431c69f00365ba22eb34165`. Git merged all four incoming paths
+without conflicts or manual source adaptation. The incoming private test files
+and private plan are exact de6 blobs; the complete public admission file differs
+from 9fcb only by the reserved-hand diagnostic. All other 615 public Git entries
+outside these four paths and this receiving plan are exact 9fcb. The 23 reviewed
+public production paths, 25 public app cases, nine frontend cases, eight content
+files and 28 original inline modules remain exact. Of 894 original Rust bodies,
+891 retain exact bytes/counts and only the three explicitly approved corrections
+are replaced by their exact verified de6 bodies. All 82 selected bodies match
+the private run; this does not transfer that run to the different public source.
+Static source and whitespace audits passed. Next: root reviews this complete
+receiving freeze and separately allocates fresh public verification. No new
+formatter or runtime ran, and no group 3 dependency was received.
 
 ### Reviewed formatting freeze (2026-10-06)
 
