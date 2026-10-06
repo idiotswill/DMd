@@ -46,3 +46,14 @@ and the combined physical Glaive test. Run direct formatting, fresh exact-head
 canonical CI and later focused regressions once the sole local package slot is
 free. Receive the entire published correction normally into dependent branches.
 No runtime/native/Gate 4 acceptance follows from this plan or source edits.
+
+## Authored correction checkpoint
+
+Plan c52cd41 preceded the correction. The owned opportunity response now enters
+the actual retained crossing only during AttackRoll allocation, leaves it before
+capturing/validating the existing reads, and preserves the old non-Grapple path.
+The two original setup sequences gain actual owner responses and assertions;
+their original assertions and all other test bodies remain unchanged.
+Full manual diff review and direct format/whitespace checks passed. External
+whole-file inverse audit b8c169fdb21a9d299383f6532593373aa78626d48ec1f3cd2c7a8ee585f38402
+confirms exactly the planned two-path delta. Corrected runtime remains unverified.
