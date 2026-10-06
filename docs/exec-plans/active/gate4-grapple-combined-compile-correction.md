@@ -69,3 +69,13 @@ the production type import, and import the type directly in the private test.
 No changes to authority, test bodies/assertions, fixtures, content or read
 construction are needed. Review the full three-line diff, format/check and
 publish for another fresh exact-head CI run. Runtime remains unverified.
+
+## Strict lint follow-up (planned before edits)
+
+Exact 10503d1 now passes Linux all-target compilation and MSRV. Its strict Clippy
+job 112218201572 fails three needless_borrow diagnostics: ground.rs:678 passes
+an already borrowed EffectiveHands by another reference, and attacks/validation.rs
+lines 442/493 do the same with the already borrowed physical plan. Remove only
+these three redundant ampersands; preserve the same actual arguments, ownership,
+validation order and all tests. Inspect full diff and direct formatting, then
+publish for fresh checks. The complete actual log is retained externally.
