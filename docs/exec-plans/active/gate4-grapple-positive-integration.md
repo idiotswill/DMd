@@ -1,6 +1,6 @@
 # Grapple Group 3 whole-source integration
 
-Status: **GRAZE SOURCE UNION RECOVERED; MAGE/POSITIVES/VERIFICATION PENDING**, 2026-10-06.
+Status: **GRAZE/MAGE UNION PUBLISHED; COMBINED POSITIVES AND VERIFICATION ACTIVE**, 2026-10-06.
 The original plan preceded source changes; root now owns the recovered union.
 Branch `codex/gate4-grapple-positive-integration`,
 checkout `gate4-grapple-positive-integration`, starts from exact public
@@ -388,3 +388,22 @@ not acceptance of the still-unwritten positive combinations listed above.
 Do not merge until full review, combined runtime/native evidence and all slice
 acceptance are complete. Next: inspect actual combined-head CI output, fix any
 concrete receiving defect without weakening tests, then author those positives.
+
+## First current Mage combined positives
+
+The coherent union is published as draft PR70 at658c87f/tree9664186; full CI is
+queued. Add a separate support module with two named current-Mage scenarios:
+an actual Host-controlled V2 Mage grips a PC with its left hand after the PC's
+physical Dexterity save fails. Finish the paid equipment cut either unchanged
+or by equipping its original Wand in the right hand. Assert exact current
+source/anatomy/accepted-command provenance and refusal of equipment in the
+reserved hand. On the Mage's next turn, cast actual Mage Armor using respectively
+the accessible specified material or the held focus (which shares S/M), while
+the grip remains live. Reject the opposite unavailable material route and a
+wrong player without changing any destination rows. Continue through the
+existing cold/portable/exact-retry helper at every gameplay cut; release the
+actual grip afterward and preserve source and physical item identities.
+
+These two cases are additive. Do not change the old-Mage assertion or an old
+fixture/helper to make them pass. S-only Shield reservation/release, two-grip
+limits, the other physical/source scenarios and native equivalents remain due.
