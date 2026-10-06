@@ -731,10 +731,7 @@ impl<'owner> ExecutionContext<'owner> {
                         && old
                             .stop
                             .as_ref()
-                            .is_none_or(|stop| new.stop.as_ref() == Some(stop)) =>
-                {
-                    ()
-                }
+                            .is_none_or(|stop| new.stop.as_ref() == Some(stop)) => {}
                 _ => {
                     return Err(invalid(
                         "ongoing resolution rewrote ground drag admission or history",

@@ -52,10 +52,11 @@ pub(super) fn end_grip(
     if live.active.is_empty() {
         rules.tactical_grapples = None;
     }
-    if crate::table::grapple_enabled(state) && flow(state)?.resolution.is_some() {
-        if !transport::ended(state, meta, id)? {
-            super::super::movement::refresh_after_grip_end(state, meta, id)?;
-        }
+    if crate::table::grapple_enabled(state)
+        && flow(state)?.resolution.is_some()
+        && !transport::ended(state, meta, id)?
+    {
+        super::super::movement::refresh_after_grip_end(state, meta, id)?;
     }
     Ok(())
 }
