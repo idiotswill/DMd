@@ -26,6 +26,13 @@ runs alongside Offstage. Review any resulting formatting delta separately.
 This supersedes the earlier formatter scheduling hold only. Independent source
 review and fresh exact-head CI remain required; no lint suppression is permitted.
 
+Plan `5cd1ecb` preceded the nine substitutions. Direct Rustfmt and its check on
+the four changed files passed. The only additional formatting reflows the same
+presentation-history iterator closure; its expression and evaluation remain
+unchanged. Root read the full diff and whitespace checks passed. Tests, decoder
+branches and the allowed version set are unchanged. This source is ready for
+independent review; no local compiler or runtime has verified it.
+
 ### Strict lint correction after the first successful compile (2026-10-06)
 
 Root owns the public branch from reviewed/published

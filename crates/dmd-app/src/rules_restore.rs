@@ -399,7 +399,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && matches!(version, 2 | 3 | 4))
+    version == 1 || (kind == "table.action" && matches!(version, 2..=4))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -409,7 +409,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2 | 3 | 4 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2..=4 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)

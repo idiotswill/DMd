@@ -535,7 +535,7 @@ pub(crate) fn validate_event_binding(
         }
         return Ok(());
     }
-    if !matches!(audit.command_schema_version, 2 | 3 | 4) {
+    if !matches!(audit.command_schema_version, 2..=4) {
         return Err("unsupported transport acceptance".into());
     }
     let envelope: TransportedTableAction =
@@ -580,7 +580,7 @@ pub(crate) fn validate_observation_binding(
         }
         return Ok(());
     }
-    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2 | 3 | 4) {
+    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=4) {
         return Err("unsupported protocol observation".into());
     }
     let envelope: TransportedTableObservation =

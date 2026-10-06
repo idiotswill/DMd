@@ -169,7 +169,7 @@ pub(crate) fn validate_table_observation(
     }
     let body: TableObservationBody = match record.payload_schema_version {
         1 => serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?,
-        2 | 3 | 4 => {
+        2..=4 => {
             serde_json::from_str::<crate::table_transport::TransportedTableObservation>(
                 &record.payload_json,
             )

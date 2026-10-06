@@ -534,13 +534,14 @@ impl<'a> HistoryVerifier<'a> {
     ) -> Result<Self, String> {
         let current = CampaignState::decode_json(&export.current_state.state_json)
             .map_err(|e| e.to_string())?;
-        let marked = export.command_audit.iter().any(|a| {
-            a.command_kind == "table.action" && matches!(a.command_schema_version, 2 | 3 | 4)
-        }) || export.observations.iter().any(|o| {
-            o.record.kind == "table.conversation"
-                && matches!(o.record.payload_schema_version, 2 | 3 | 4)
-        }) || crate::table_source_control::enabled(&current)
-            || dmd_rules::table::grapple_enabled(&current);
+        let marked =
+            export.command_audit.iter().any(|a| {
+                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=4)
+            }) || export.observations.iter().any(|o| {
+                o.record.kind == "table.conversation"
+                    && matches!(o.record.payload_schema_version, 2..=4)
+            }) || crate::table_source_control::enabled(&current)
+                || dmd_rules::table::grapple_enabled(&current);
         if current.table.is_none()
             && (!export.table_projection_history.is_empty()
                 || !export.table_transport_bindings.is_empty()
@@ -662,13 +663,13 @@ impl<'a> HistoryVerifier<'a> {
             }
             // A new acceptance can never precede initialization of its protocol.
             if export.command_audit.iter().any(|a| {
-                matches!(a.command_schema_version, 2 | 3 | 4)
+                matches!(a.command_schema_version, 2..=4)
                     && a.command_kind == "table.action"
                     && a.resulting_event_sequence <= self.bootstrap_head as i64
             }) || export.observations.iter().any(|o| {
                 o.ordinal <= self.bootstrap_observation
                     && o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2 | 3 | 4)
+                    && matches!(o.record.payload_schema_version, 2..=4)
             }) {
                 return Err("protocol marker precedes its bootstrap".into());
             }
