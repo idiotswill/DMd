@@ -1,5 +1,19 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 6 formatted correction freeze
+
+Root read and accepted the complete unformatted initiative correction at
+`9768a405c611aae3442eb8a64e7a246b641b6962`, tree
+`425ecb47b9d154dccc3ea0ed25d8614cf6f900cc`, for verification. Root then allocated
+only direct rustfmt on the edited attack test file and preparation of a new
+unchanged82 selection. Direct Rust2024 rustfmt with `skip_children=true` passed;
+the complete formatting delta changes only the new helper and the two corrected
+test bodies. All22 original helpers and13 passing attack bodies remain exact.
+Source is frozen after formatting, still UNCOMPILED/UNRUN. No Cargo, test, DB,
+native, npm, push or CI execution is allocated. Prepare fresh evidence/target
+paths with the unchanged reviewed v2 engine, updated source hashes and locations;
+return the complete preparation for independent root review before any launch.
+
 ## October 6 source-review correction to identical-creature initiative
 
 Root transferred sole source ownership from clean

@@ -858,7 +858,10 @@ fn with_held_cultist_and_caster(
     state.entities.insert(held, world);
     let meta = command(&state, None);
     let source = creature_definition("cultist-fanatic").unwrap();
-    assert_eq!(source.statistics.creature_type, crate::tactical_definitions::CreatureType::Humanoid);
+    assert_eq!(
+        source.statistics.creature_type,
+        crate::tactical_definitions::CreatureType::Humanoid
+    );
     let pin = creature_source_pin(source).unwrap();
     let built = build_creature_from_source(
         &state,
@@ -873,7 +876,8 @@ fn with_held_cultist_and_caster(
             in_lair: false,
         },
         Some(&pin),
-    ).unwrap();
+    )
+    .unwrap();
     let rules = state.rules.as_mut().unwrap();
     rules.entities.insert(held, built.mechanics);
     let creatures = rules.tactical_creatures.as_mut().unwrap();
@@ -881,21 +885,29 @@ fn with_held_cultist_and_caster(
     creatures.profiles.sort_by_key(|p| p.actor.0);
     creatures.runtime.push(built.runtime);
     creatures.runtime.sort_by_key(|r| r.actor.0);
-    let allocations = crate::tactical_creature_equipment::creature_equipment_plan_from_source(&pin, 0).unwrap();
+    let allocations =
+        crate::tactical_creature_equipment::creature_equipment_plan_from_source(&pin, 0).unwrap();
     state = crate::tactical_creature_equipment::materialize_creature_equipment(
         &state,
         &meta,
         held,
         0,
-        &allocations.iter().map(|_| ItemId::new()).collect::<Vec<_>>(),
+        &allocations
+            .iter()
+            .map(|_| ItemId::new())
+            .collect::<Vec<_>>(),
         pack,
-    ).unwrap();
+    )
+    .unwrap();
     state.applied_event_sequence += 1;
     let mut encounter = state.encounter.as_ref().unwrap().clone();
     let mut scene = state.scenes[&encounter.scene_id].clone();
     scene.id = SceneId::new();
     scene.status = SceneStatus::Closed;
-    scene.presences.push(ScenePresence { entity_id: held, role: PresenceRole::Participant });
+    scene.presences.push(ScenePresence {
+        entity_id: held,
+        role: PresenceRole::Participant,
+    });
     encounter.id = EncounterId::new();
     encounter.scene_id = scene.id;
     encounter.flow = None;
@@ -913,29 +925,50 @@ fn with_held_cultist_and_caster(
     });
     let actors = [human, goblin, held, cultist];
     for participant in &mut encounter.participants {
-        participant.enemies = actors.into_iter().filter(|id| *id != participant.entity_id).collect();
+        participant.enemies = actors
+            .into_iter()
+            .filter(|id| *id != participant.entity_id)
+            .collect();
     }
     state.scenes.insert(scene.id, scene);
-    public(&mut state, pack, None, TacticalAction::Establish { encounter: Box::new(encounter) });
+    public(
+        &mut state,
+        pack,
+        None,
+        TacticalAction::Establish {
+            encounter: Box::new(encounter),
+        },
+    );
     public(
         &mut state,
         pack,
         None,
         TacticalAction::Begin {
-            combatants: actors.into_iter().map(|actor| TacticalCombatant {
-                actor,
-                source: if actor == human {
-                    TacticalSource::Character
-                } else if actor == goblin {
-                    TacticalSource::Creature { definition_id: "goblin-warrior".into() }
-                } else {
-                    TacticalSource::Creature { definition_id: "cultist-fanatic".into() }
-                },
-                surprised: false,
-            }).collect(),
-            groups: [vec![human], vec![goblin], vec![held, cultist]].into_iter().map(|actors| InitiativeGroup {
-                actors, request_id: RollRequestId::new(),
-            }).collect(),
+            combatants: actors
+                .into_iter()
+                .map(|actor| TacticalCombatant {
+                    actor,
+                    source: if actor == human {
+                        TacticalSource::Character
+                    } else if actor == goblin {
+                        TacticalSource::Creature {
+                            definition_id: "goblin-warrior".into(),
+                        }
+                    } else {
+                        TacticalSource::Creature {
+                            definition_id: "cultist-fanatic".into(),
+                        }
+                    },
+                    surprised: false,
+                })
+                .collect(),
+            groups: [vec![human], vec![goblin], vec![held, cultist]]
+                .into_iter()
+                .map(|actors| InitiativeGroup {
+                    actors,
+                    request_id: RollRequestId::new(),
+                })
+                .collect(),
             execution: TacticalExecutionVersion::EncounterReleaseV1,
         },
     );
@@ -943,20 +976,46 @@ fn with_held_cultist_and_caster(
         let request = pending(&state);
         assert_eq!(request.roller, Some(actor));
         let result = faces(request, face);
-        public(&mut state, pack, Some(actor), TacticalAction::SubmitRoll { result });
+        public(
+            &mut state,
+            pack,
+            Some(actor),
+            TacticalAction::SubmitRoll { result },
+        );
     }
     public(
         &mut state,
         pack,
         None,
-        TacticalAction::ProposeInitiativeTie { order: vec![held, cultist] },
+        TacticalAction::ProposeInitiativeTie {
+            order: vec![held, cultist],
+        },
     );
-    assert_eq!(state.rules.as_ref().unwrap().timing.as_ref().unwrap().order, vec![
-        InitiativeEntry { actor: human, total: 22, tie_break: 0 },
-        InitiativeEntry { actor: goblin, total: 12, tie_break: 0 },
-        InitiativeEntry { actor: held, total: 7, tie_break: 0 },
-        InitiativeEntry { actor: cultist, total: 7, tie_break: 1 },
-    ]);
+    assert_eq!(
+        state.rules.as_ref().unwrap().timing.as_ref().unwrap().order,
+        vec![
+            InitiativeEntry {
+                actor: human,
+                total: 22,
+                tie_break: 0
+            },
+            InitiativeEntry {
+                actor: goblin,
+                total: 12,
+                tie_break: 0
+            },
+            InitiativeEntry {
+                actor: held,
+                total: 7,
+                tie_break: 0
+            },
+            InitiativeEntry {
+                actor: cultist,
+                total: 7,
+                tie_break: 1
+            },
+        ]
+    );
     assert_eq!(active(&state).unwrap(), human);
     crate::validate_state(&state, pack).unwrap();
     crate::tactical::validate_tactical_state(&state).unwrap();
@@ -992,7 +1051,16 @@ fn actual_concentration_child_retains_completed_attack_evidence_through_release(
         },
     );
     assert_eq!(pending(&state).roller, Some(held));
-    assert_eq!(resolution(&state).unwrap().pending.as_ref().unwrap().key.role, TacticalRollRole::SpellSave);
+    assert_eq!(
+        resolution(&state)
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap()
+            .key
+            .role,
+        TacticalRollRole::SpellSave
+    );
     let result = faces(pending(&state), 1);
     public(
         &mut state,
@@ -1005,8 +1073,13 @@ fn actual_concentration_child_retains_completed_attack_evidence_through_release(
             .concentration
             .is_some()
     );
-    let group = state.rules.as_ref().unwrap().entities[&cultist].concentration.unwrap();
-    assert!(crate::active_conditions(state.rules.as_ref().unwrap(), held).contains(&Condition::Paralyzed));
+    let group = state.rules.as_ref().unwrap().entities[&cultist]
+        .concentration
+        .unwrap();
+    assert!(
+        crate::active_conditions(state.rules.as_ref().unwrap(), held)
+            .contains(&Condition::Paralyzed)
+    );
     public(&mut state, &pack, Some(cultist), TacticalAction::EndTurn);
     let mut owner = GuardedGrappleExecution::new(state, &pack).unwrap();
     let inherited = owner.state().rules.as_ref().unwrap().rolls.clone();
@@ -1025,8 +1098,14 @@ fn actual_concentration_child_retains_completed_attack_evidence_through_release(
     assert_eq!(decision.key.role, TacticalRollRole::GrappleSave);
     assert_eq!(owner.state().rules.as_ref().unwrap().rolls, inherited);
     next_round(&mut owner, human);
-    assert!(crate::active_conditions(owner.state().rules.as_ref().unwrap(), held).contains(&Condition::Paralyzed));
-    assert_eq!(owner.state().rules.as_ref().unwrap().entities[&cultist].concentration, Some(group));
+    assert!(
+        crate::active_conditions(owner.state().rules.as_ref().unwrap(), held)
+            .contains(&Condition::Paralyzed)
+    );
+    assert_eq!(
+        owner.state().rules.as_ref().unwrap().entities[&cultist].concentration,
+        Some(group)
+    );
     let choice = dagger(owner.state(), human, cultist);
     apply(&mut owner, human, TacticalAction::Attack { choice });
     submit(&mut owner, 19);
@@ -1354,24 +1433,42 @@ fn damage_release_and_real_knockout_complete_current_equipment_once() {
     assert!(target.prone);
     assert_eq!(target.death, DeathState::default());
     assert!(crate::active_conditions(rules, goblin).contains(&Condition::Unconscious));
-    let origin = VitalityOrigin { command: knockout.clone(), occurrence };
-    assert_eq!(rules.tactical_recovery.as_ref().unwrap()[&goblin], TacticalRecovery {
-        knockout: Some(KnockoutRecovery {
-            origin: origin.clone(),
-            inflicted_at: now,
-            short_rest_started_at: Some(now),
-        }),
-        stable: None,
-        knockout_rest: Some(KnockoutRestAuthorization {
-            knockout_origin: origin.clone(),
-            started_by: origin,
+    let origin = VitalityOrigin {
+        command: knockout.clone(),
+        occurrence,
+    };
+    assert_eq!(
+        rules.tactical_recovery.as_ref().unwrap()[&goblin],
+        TacticalRecovery {
+            knockout: Some(KnockoutRecovery {
+                origin: origin.clone(),
+                inflicted_at: now,
+                short_rest_started_at: Some(now),
+            }),
+            stable: None,
+            knockout_rest: Some(KnockoutRestAuthorization {
+                knockout_origin: origin.clone(),
+                started_by: origin,
+                started_at: now,
+            }),
+        }
+    );
+    assert_eq!(
+        rules
+            .rests
+            .iter()
+            .filter(|rest| rest.actor == goblin)
+            .collect::<Vec<_>>(),
+        vec![&RestProgress {
+            actor: goblin,
+            kind: RestKind::Short,
             started_at: now,
-        }),
-    });
-    assert_eq!(rules.rests.iter().filter(|rest| rest.actor == goblin).collect::<Vec<_>>(), vec![&RestProgress {
-        actor: goblin, kind: RestKind::Short, started_at: now,
-    }]);
-    assert_eq!(admission::loadout(owner.state(), human).unwrap().command, knockout);
+        }]
+    );
+    assert_eq!(
+        admission::loadout(owner.state(), human).unwrap().command,
+        knockout
+    );
     assert_eq!(flow(owner.state()).unwrap().budget.weapon_history.len(), 1);
 }
 
