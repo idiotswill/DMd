@@ -436,3 +436,18 @@ declaration/accepted-roll provenance, both remaining grip identities, physical
 item identity, no added dice and unrelated private projection are asserted.
 The historical public file gained only a new module registration; no existing
 test body or shared helper changed. These two cases are UNCOMPILED/UNRUN.
+
+## Current Mage Shield reservation matrix
+
+Add three independent application cases using current Mage creation and actual
+left-PC/right-Goblin grips on ordinary paid turns. On the PC's next turn, submit
+a real physical Dagger hit against its grappler, then use the existing uniform
+hit-order and private response envelopes. One grip leaves a free hand and permits
+paid Shield; two grips reject an attempted acceptance and require a decline;
+releasing the left grip during that same unanswered hit window must restore the
+Shield option while preserving the admitted attack and its original dice.
+Assert the exact one-or-two live grip identities, V2 source, hit/miss HP outcome,
+one shared Protective Magic use/Reaction only when cast, and no new damage roll
+for a Shield miss. Every gameplay input uses the existing cold/portable/retry
+driver and blocked acceptance uses complete database-row equality. Preserve the
+separate current Mage material cases and all historical cases unchanged.
