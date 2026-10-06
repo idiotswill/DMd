@@ -195,10 +195,10 @@ async fn prepare(f: &mut Fixture, path: &Path) -> Gear {
             terrain: vec![], obstacles: vec![], lights: vec![],
         }, characters: vec![TableCharacterPlacement { character_id: f.characters[0], position: SpatialPoint { x: 10, y: 10, z: 0 },
             height: 12, allies: vec![], enemies: vec![actor] }],
-        creatures: vec![TableCreaturePlacement { actor, public_label: "Large armed giant".into(), position: SpatialPoint { x: 30, y: 10, z: 0 },
+        creatures: vec![TableCreaturePlacement { actor, public_label: "Large armed giant".into(), position: SpatialPoint { x: 20, y: 10, z: 0 },
             height: 20, allies: vec![], enemies: vec![f.actors[0]] }],
         area_grid_policy: None, geometry_ruling: Ruling { basis: RulingBasis::GmAdjudication,
-            reason: "Visible level stone courtyard and an unobstructed five-foot gap between occupied spaces.".into() },
+            reason: "Visible level stone courtyard with adjacent occupied cells at five-foot reach.".into() },
     }) };
     Box::pin(step(
         f,
@@ -207,6 +207,16 @@ async fn prepare(f: &mut Fixture, path: &Path) -> Gear {
         TableTransportInput::Action(Box::new(battlefield)),
     ))
     .await;
+    let placed = state(f).await;
+    let encounter = placed.encounter.as_ref().unwrap();
+    assert_eq!(
+        dmd_rules::spatial::participant_distance(
+            encounter.participant(f.actors[0]).unwrap(),
+            encounter.participant(actor).unwrap(),
+        )
+        .unwrap(),
+        10
+    );
     let begin = TacticalAction::Begin {
         execution: TacticalExecutionVersion::EncounterReleaseV1,
         combatants: vec![
