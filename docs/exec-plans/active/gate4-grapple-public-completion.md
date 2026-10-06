@@ -8,6 +8,24 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+### Application audit-version lint correction (2026-10-06)
+
+Published `513fd011a930922e2a81eb3f04221a1103761cf8` passes fresh minimum-version,
+architecture, genericity and fast checks. Stable job `112156450474` now reaches
+the application crate and reports nine equivalent numeric-pattern lints across
+rules_restore, table_presentation_history, table_transport_runtime and
+table_runtime. Root read every diagnostic and each surrounding reader. Commit
+this plan before replacing only those nine `2 | 3 | 4` patterns with `2..=4`.
+The accepted historical action/conversation schema set stays exactly 2,3,4;
+no schema5/transportv4 support is added on this public baseline. Preserve every
+original test, validation branch, decoder and audit join.
+
+Root allocates a brief direct formatting pass on only the changed public Rust
+files, followed by its check; no compiler, tests, npm, database or native task
+runs alongside Offstage. Review any resulting formatting delta separately.
+This supersedes the earlier formatter scheduling hold only. Independent source
+review and fresh exact-head CI remain required; no lint suppression is permitted.
+
 ### Strict lint correction after the first successful compile (2026-10-06)
 
 Root owns the public branch from reviewed/published
