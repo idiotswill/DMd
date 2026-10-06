@@ -146,3 +146,58 @@ application/spatial/frontend controls, strict affected lint and full canonical
 verify-fast/verify and exact-head CI. Root separately plans substantive new
 cross-feature interactions. Fresh native/portable/restart acceptance and every
 open product obligation above remain due; no parent pass certifies this union.
+
+## Additive combined controls — allocation after c823160, 2026-10-06
+
+Root independently reviewed the complete receipt checkpoint
+`c8231600cbbb5177d9fc84a86b1a8e248bd13fc3` with no source findings.
+This follow-on allocation adds real combined application controls on this branch
+only; the running26fc original integration and every other checkout remain
+immutable. Commit this amendment before authoring the new tests.
+
+Add a separate support module registered by two appended lines in the existing
+public harness. Preserve every existing body, helper, production path, content
+asset and captured fixture byte. Reuse the actual current pinned physical
+creation fixture, its source equipment and accepted command producers. The new
+module owns v4 request/choice/raw helpers and calls the existing cold helper,
+which reopens SQLite, independently restores and continues the portable prefix,
+checks original replay and exact retry, and refuses changed-payload retry.
+No positive state, item, hand, condition or resource edits are permitted.
+
+1. Equip the current physical PC's purchased Glaive through a real attack,
+   settle its raw miss/Graze decision, then let the mutually hostile Host guards
+   establish a genuine grip. Drag the holder and target across two bounded
+   steps so the first paid pair is retained before crossing actual Glaive reach.
+   Accept the PC's physical opportunity attack while the second pair waits.
+   Assert exact predeparture geometry, both paired receipts, cost, reaction,
+   weapon/source ownership and raw evidence at cold cuts, then settle and prove
+   both final endpoints, the retained movement summary and exact retry.
+2. Explicitly activate Ground and shared transport4 on a current physical PC.
+   Establish a real left-hand grip and obtain a Dagger in the right hand through
+   the actual after-Grapple allowance. A later lawful turn performs a coupled
+   move and an ordinary Dagger attack with earned after-equipment intent. Check
+   both capabilities in the same history, actual owned decision, wrong-channel
+   no-write, complete cause/receipt and exact cold/portable retry.
+3. Reuse that lawful gripping physical PC on a later turn. After displacement,
+   throw the actual Dagger at the hauled target and report a physical miss.
+   The supported ground producer is thrown-weapon placement: Unequip stows and
+   no standalone Drop action is implemented. Prove the real drop uses the new
+   target endpoint, not either original position. The owned after-equipment
+   menu must offer right-hand Pickup but exclude the reserved left hand;
+   left-hand/foreign probes are atomic. Actual right pickup preserves physical
+   identity, owner, quantity, grip and movement evidence through cold recovery.
+4. On the current CreateCharacterFromSource PC path, perform the actual Host
+   award and an owned genuine incoming Grapple save with Inspiration. Retain
+   original and replacement raw dice, issuer, purpose and one consumed resource.
+   A failing replacement creates the real grip; on the later PC turn perform a
+   separately awarded actual Escape reroll and prove successful release and paid
+   action. Host and unrelated-player submissions must preserve all rows.
+
+No original assertion, historical specimen or fixture default changes are
+allocated. If source inspection reveals an actual production incompatibility,
+report it before any production correction. The new scenarios are proposed
+verification, not passing evidence. Direct rustfmt on the new Rust module only
+is allowed; no compiler, Cargo, test, npm, database, native/package or push runs.
+After source review, freeze clean with complete parent-relative diff and exact
+old-body/tree preservation audit. Root owns independent review and the later
+single-slot runtime schedule, including canonical checks and exact-head CI.
