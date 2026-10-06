@@ -322,6 +322,8 @@ pub struct TableCreatureView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub shove: Option<TableShoveView<HitKey>>,
     pub encounter_id: EncounterId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aftermath: Option<TableAftermathView>,
@@ -367,6 +369,17 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = Tact
     /// Only the falling actor's controller or host receives this Reaction choice.
     pub liquid_landing: Option<TableLiquidLandingView>,
     pub shield_options: Option<TableShieldOptions>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableShoveView<Key = TacticalWorkKey> {
+    pub key: Key,
+    pub actor: EntityId,
+    pub stage: TacticalShoveStage,
+    /// The shover already admitted this location. No DC, immunity, secret route
+    /// classification or target controller is exposed by the consequence form.
+    pub from: Option<SpatialPoint>,
+    pub destination: Option<SpatialPoint>,
 }
 
 /// The opaque transport replaces each canonical key separately by its role.

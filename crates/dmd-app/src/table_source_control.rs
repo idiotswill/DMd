@@ -404,6 +404,9 @@ pub(crate) fn authorize_tactical(
         A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
             .and_then(|resolution| resolution.attack.as_ref())
             .map(|attack| attack.actor),
+        A::ChooseShoveSave { .. } => resolution.and_then(|r| r.shove.as_ref()).map(|s| s.target),
+        A::ChooseShoveOutcome { .. } => resolution.and_then(|r| r.shove.as_ref()).map(|s| s.actor),
+        A::RuleShovePush { .. } => None,
         A::DeclineOpportunity | A::OpportunityAttack { .. } => resolution
             .and_then(|resolution| resolution.movement.as_ref())
             .and_then(|movement| movement.opportunity.as_ref())
@@ -420,6 +423,7 @@ pub(crate) fn authorize_tactical(
         A::AbandonReady { actor } => Some(*actor),
         A::Ready { .. }
         | A::UnarmedStrike { .. }
+        | A::Shove { .. }
         | A::FirstAid { .. }
         | A::SecondWind
         | A::DonShield { .. }

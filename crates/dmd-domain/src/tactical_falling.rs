@@ -52,6 +52,13 @@ pub enum TacticalFallStage {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalFallCause {
+    /// A source-bound Shove consequence, retaining both the paid declaration and
+    /// the exact later choice/ruling which changed support or flight.
+    Shove {
+        shove: CommandMeta,
+        consequence: CommandMeta,
+        work: crate::TacticalWorkKey,
+    },
     /// A committed ordinary-movement segment exhausted physical support.
     MovementEnd {
         movement: CommandMeta,

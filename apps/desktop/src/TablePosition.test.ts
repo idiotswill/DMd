@@ -284,3 +284,100 @@ it('skips the previous opportunity prompt while its controls are disabled by the
   expect(document.activeElement).not.toBe(screen.getByRole('region',{name:'Opportunity attack'}));
   expect(vi.mocked(tableApi.action).mock.calls[0][0].action).toEqual({Tactical:{action:{OpportunityAttack:{choice:{UnarmedDamage:{ability:'Strength'}}}}}});
 });
+
+it('keeps Shove save, outcome, returned choice and child dice reachable with fully fresh drafts',async()=>{
+  const user=userEvent.setup();let view=consequenceView();let step=0;
+  view.tactical!.continuation=null;
+  view.tactical!.participants=[participant('hag','Host shover'),participant('mage','Host target')];
+  view.tactical!.shove={key:'save-choice',actor:'mage',stage:'SaveChoice',from:null,destination:null};
+  const outcome=(key:string)=>({key,actor:'hag',stage:'OutcomeChoice' as const,from:{x:20,y:10,z:40},destination:null});
+  const review=(key:string)=>({...outcome(key),stage:'PushReview' as const,destination:{x:30,y:10,z:40}});
+  const raw=(id:string,count:number,sides:number,reason:string)=>({id,roller:'mage',dice:[{count,sides}],modifier:0,mode:'Normal' as const,visibility:'Secret' as const,reason});
+  vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
+  vi.mocked(tableApi.action).mockImplementation(async request=>{
+    step++;
+    view={...view,revision:`shove-step-${step}`,roll:null,tactical:{...view.tactical!,shove:null}};
+    if(step===1) {view.roll_channel='Tactical';view.roll=raw('shove-save',1,20,'Shove saving throw');}
+    else if(step===2) view.tactical!.shove=outcome('outcome-first');
+    else if(step===3) view.tactical!.shove=review('push-review-first');
+    else if(step===4) view.tactical!.shove=outcome('outcome-returned');
+    else if(step===5) view.tactical!.shove=review('push-review-returned');
+    else if(step===6) view.roll=raw('fall-damage',2,6,'Fall damage');
+    else if(step===7) view.roll=raw('fall-concentration',1,20,'Concentration save');
+    return {command_id:request.command_id,revision:view.revision,outcome:{message:'Encounter action recorded.'}};
+  });
+  render(TableApp);
+  await waitFor(()=>expect(screen.getByRole('button',{name:'Strength saving throw'}).closest('fieldset')?.disabled).toBe(false));
+  const save=screen.getByRole('group',{name:'Choose your Shove saving throw'});
+  expect(JSON.parse(save.dataset.tacticalFocusId!)).toEqual(['shove','mage','save-choice','SaveChoice']);
+  vi.stubGlobal('scrollY',1750);
+  await user.click(screen.getByRole('button',{name:'Strength saving throw'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Report physical dice'})));
+  expect((screen.getByLabelText('Die 1 · d20') as HTMLInputElement).value).toBe('');
+  await user.type(screen.getByLabelText('Die 1 · d20'),'1');
+  await user.click(screen.getByRole('button',{name:'Report these faces'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Choose the Shove result'})));
+  const first=screen.getByRole('group',{name:'Choose the Shove result'});
+  expect(first).not.toBe(save);
+  expect(JSON.parse(first.dataset.tacticalFocusId!)).toEqual(['shove','hag','outcome-first','OutcomeChoice']);
+  await user.selectOptions(screen.getByLabelText('Push direction'),'1,0');
+  await user.selectOptions(screen.getByLabelText('Push elevation'),'0');
+  await user.click(screen.getByRole('button',{name:'Propose five-foot push'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Private host push review'})));
+  const firstReview=screen.getByRole('group',{name:'Private host push review'});
+  expect(JSON.parse(firstReview.dataset.tacticalFocusId!)).toEqual(['shove','hag','push-review-first','PushReview']);
+  await user.click(screen.getByRole('button',{name:'Return choice to shover'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Choose the Shove result'})));
+  const returned=screen.getByRole('group',{name:'Choose the Shove result'});
+  expect(returned).not.toBe(first);
+  expect(returned.dataset.tacticalFocusId).not.toBe(first.dataset.tacticalFocusId);
+  expect((screen.getByLabelText('Push direction') as HTMLSelectElement).value).toBe('');
+  expect((screen.getByLabelText('Push elevation') as HTMLSelectElement).value).toBe('');
+  expect((screen.getByRole('button',{name:'Propose five-foot push'}) as HTMLButtonElement).disabled).toBe(true);
+  await user.selectOptions(screen.getByLabelText('Push direction'),'1,0');
+  await user.selectOptions(screen.getByLabelText('Push elevation'),'0');
+  await user.click(screen.getByRole('button',{name:'Propose five-foot push'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Private host push review'})));
+  expect(screen.getByRole('group',{name:'Private host push review'})).not.toBe(firstReview);
+  await user.click(screen.getByRole('button',{name:'Commit exact push'}));
+  await waitFor(()=>expectScrolledTo(screen.getByRole('group',{name:'Report physical dice'})));
+  for(const number of [1,2]) expect((screen.getByLabelText(`Die ${number} · d6`) as HTMLInputElement).value).toBe('');
+  await user.type(screen.getByLabelText('Die 1 · d6'),'3');
+  await user.type(screen.getByLabelText('Die 2 · d6'),'4');
+  await user.click(screen.getByRole('button',{name:'Report these faces'}));
+  await waitFor(()=>expect(screen.getByLabelText('Die 1 · d20').closest('fieldset')?.disabled).toBe(false));
+  expect(document.activeElement).toBe(screen.getByRole('group',{name:'Report physical dice'}));
+  expect((screen.getByLabelText('Die 1 · d20') as HTMLInputElement).value).toBe('');
+  await user.type(screen.getByLabelText('Die 1 · d20'),'12');
+  await user.click(screen.getByRole('button',{name:'Report these faces'}));
+  await waitFor(()=>expect(tableApi.action).toHaveBeenCalledTimes(8));
+  expect(vi.mocked(tableApi.action).mock.calls.map(([request])=>request.action)).toEqual([
+    {Tactical:{action:{ShoveDecision:{handle:'save-choice',decision:{Save:{ability:'Strength'}}}}}},
+    {Tactical:{action:{SubmitRoll:{result:{request_id:'shove-save',source:'Physical',dice:[{sides:20,value:1}]}}}}},
+    {Tactical:{action:{ShoveDecision:{handle:'outcome-first',decision:{Outcome:{choice:{Push:{destination:{x:30,y:10,z:40}}}}}}}}},
+    {Tactical:{action:{ShoveDecision:{handle:'push-review-first',decision:{RulePush:{ruling:'ReturnToShover'}}}}}},
+    {Tactical:{action:{ShoveDecision:{handle:'outcome-returned',decision:{Outcome:{choice:{Push:{destination:{x:30,y:10,z:40}}}}}}}}},
+    {Tactical:{action:{ShoveDecision:{handle:'push-review-returned',decision:{RulePush:{ruling:'CommitExactPush'}}}}}},
+    {Tactical:{action:{SubmitRoll:{result:{request_id:'fall-damage',source:'Physical',dice:[{sides:6,value:3},{sides:6,value:4}]}}}}},
+    {Tactical:{action:{SubmitRoll:{result:{request_id:'fall-concentration',source:'Physical',dice:[{sides:20,value:12}]}}}}},
+  ]);
+  expect(window.scrollTo).toHaveBeenLastCalledWith({left:0,top:1750,behavior:'instant'});
+  expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
+});
+
+it('does not substitute a Host choice when the Shove save passes control to an owned shover',async()=>{
+  const user=userEvent.setup();let view=consequenceView();view.tactical!.continuation=null;
+  view.tactical!.shove={key:'target-save',actor:'mage',stage:'SaveChoice',from:null,destination:null};
+  vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
+  vi.mocked(tableApi.action).mockImplementation(async request=>{
+    view={...view,revision:'owned-outcome',tactical:{...view.tactical!,shove:null}};
+    return {command_id:request.command_id,revision:view.revision,outcome:{message:'Encounter action recorded.'}};
+  });
+  render(TableApp);
+  await waitFor(()=>expect(screen.getByRole('button',{name:'Dexterity saving throw'}).closest('fieldset')?.disabled).toBe(false));
+  await user.click(screen.getByRole('button',{name:'Dexterity saving throw'}));
+  await waitFor(()=>expect(tableApi.action).toHaveBeenCalledOnce());
+  await waitFor(()=>expect(screen.queryByRole('group',{name:'Choose your Shove saving throw'})).toBeNull());
+  expect(screen.queryByRole('button',{name:'Choose Prone'})).toBeNull();
+  expect(document.querySelector('[data-tactical-focus="prompt"]')).toBeNull();
+});

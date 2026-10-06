@@ -23,6 +23,8 @@ mod savage;
 mod second_wind;
 #[path = "tactical_attacks/shields.rs"]
 mod shields;
+#[path = "tactical_attacks/shove.rs"]
+mod shove;
 #[path = "tactical_attacks/spell.rs"]
 mod spell;
 #[path = "tactical_attacks/unarmed.rs"]
