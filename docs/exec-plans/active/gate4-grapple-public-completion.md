@@ -46,6 +46,15 @@ has run for this correction. Next: independent full-diff review, then fresh CI
 on the published correction; do not credit the prior successful compile as
 verification of this head.
 
+The completed exact-2aa Windows stable log `112153838994` additionally reports
+an unused `crate::table_engine::table` import in `table_tactical.rs:5`. Its
+frontend check/build and all135 tests passed before the same strict-lint failure.
+Root read the import's complete module context and confirmed no uses; the next
+narrow correction removes only that import. Commit this evidence amendment
+before removal. Do not change any live table helper or tests. This adds one
+source path to the independent lint review and avoids knowingly carrying the
+compiler's additional warning into the next strict check.
+
 ### Actual b6 CI failures and approved narrow corrections (2026-10-06)
 
 Root allocated sole writing to private_grapple_oct6 from clean published
