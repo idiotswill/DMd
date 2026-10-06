@@ -1,5 +1,46 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Exact-head Ogre application geometry correction — 2026-10-06
+
+Root transferred sole writing for this bounded correction from freshly fetched,
+clean `a7d40848c8b8588261444bdb5af19f13389b5336` to `ci_oct6`. Commit this plan
+before source. Both actual runtime jobs, Linux111755231759 and
+Windows111755232471, failed the same four new Ogre application cases with
+`target is beyond weapon reach`. Each reached nine harnesses: 141 passed and
+four failed overall, including 66 passed/four failed in the table harness.
+The earlier compilation/registry corrections below retain their historical
+evidence; this source has no successful full-workspace verification.
+
+The shared Ogre preparation places the Medium PC at X10 and Large Ogre at X30.
+Those are volume minima in half-feet: their nearest occupied grid-cell centers
+are X15 and X35, so the actual participant distance is20 units, beyond the
+immutable five-foot greatclub/javelin melee reach of10. The physical range guard
+correctly refuses. Three cases first fail on Ogre melee; finite thrown-javelin
+play later fails on the PC's ordinary recovered-javelin melee at the same gap.
+Root independently read the source/reach/geometry evidence and approved this
+narrow fixture correction. The identical helper is inherited by Mage,
+Consequences and Graze; their separate failures remain independently open.
+
+Change only the accepted Ogre placement X30 to X20 and the explanatory ruling
+to adjacent occupied cells. Assert actual accepted-state participant distance10
+after battlefield setup, before Begin. Keep every original scenario body and
+assertion, including source damage, finite gear, cold portable replay, original
+retry, hostile restore, recovery and one-Reaction opportunity checks. The PC's
+existing X10-to-X0 move still crosses from distance10 to20 and leaves reach.
+No production geometry/range, creature source, controller, raw dice, item,
+historical fixture or other test-module change is justified.
+
+This preserves Gate4 source-faithful spatial/mechanical application acceptance
+and the existing product/ADR obligations; it adds no feature or waiver. Freeze
+the unformatted corrected commit for root's complete independent delta review.
+This writer may not run formatters, compilers, tests, databases or native apps,
+push, or edit descendants. Root owns that verification/publication allocation.
+Next run the same four Ogre cases and required affected/full exact-head checks
+on the corrected source; prior results are not new-head evidence. Receive the
+whole corrected Ground branch into descendants through normal reviewed merges,
+never copied hunks or cherry-picked assertions. All Gate4/native obligations and
+the end-of-gate pause remain unchanged.
+
 ## First production CI compilation failure and narrow repair — 2026-10-05
 
 Draft [PR61](https://github.com/idiotswill/DMd/pull/61) publishes coherent
