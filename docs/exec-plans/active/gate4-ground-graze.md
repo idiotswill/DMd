@@ -1,7 +1,8 @@
 # Gate 4 — Genuine Graze before owned Ground equipment
 
-Status: additive source authored; compiler/runtime UNRUN, 2026-10-05. Sole source writer is
-`core_recovery_oct5` on `codex/gate4-ground-graze`, in its separate checkout.
+Status: CI correction source allocated; correction compiler/runtime UNRUN, 2026-10-06.
+Sole source writer is `public_grapple_oct6` on `codex/gate4-ground-graze`, in its
+separate checkout, replacing the earlier additive author `core_recovery_oct5`.
 Exact starting head is `33570d1f307c3f9ce99367e7c1614673b030af24`, tree
 `5cd96cef7dbea201d80adbfdff83b7f52ab24a47`. Its normal parents are corrected
 Ground `a93b416cfcc60df166e0b0e9d596bf91ba644c26` and whole Physical creation
@@ -13,6 +14,61 @@ UNVERIFIED at runtime. Its source equals reviewed tree2646fd9; only the integrat
 checkpoint plan differs. No parent result transfers to this head. Prior compiler
 and staging-assertion failures remain recorded with the corrected parents; all
 Ground/final-control/Physical acceptance still needs exact receiving execution.
+
+## Root-approved CI correction allocation (2026-10-06)
+
+Root allocated source-only correction from clean
+`37c6f768fdba5886ec195a4ecccf5c55730d53e3`, tree
+`db88486baa125374f261ca574a0b3a46dbdcdfa2`, after reading the actual Linux
+job111769201346 and Windows job111769201114 failures and the complete read-only
+proposal `tooling/graze-37c-ci-failures-readonly-proposal-2026-10-06.md`, SHA256
+`8fd1188e85960797f6933667402339849f618b675869fc6fea8aeedb91d50a65`.
+Both jobs ended with73 passed/10 failed in table_loop. This amendment is committed
+before source. It supersedes only the earlier preservation prohibition for the
+three named helpers below; all other bodies, production and parent fixtures stay
+exact. The privacy test body itself remains unchanged.
+
+1. `table_ground_graze_helpers.rs::finish_equipment`: preserve the unrelated
+   player's absent card, assert the actual Host card's actor/options/decline and
+   distinct audience key, preserve stolen-owner-key atomic refusals, and add an
+   actual Host-own-key atomic owner refusal. Host projection does not grant owner
+   authority. Keep every owner outcome, exact retry, private DTO and typed-row
+   comparison and every before-completion no-card control.
+2. `table_ground_graze_fall.rs::deplete`: correct pending raw modifier3 to0,
+   assert the complete authoritative one-component Slashing2d6+3 vector and its
+   original actor/target/attack/selected AttackDamage work, and retain all actual
+   faces, critical/ordinary damage27/5, HP114->87->60->33->6->1, original source,
+   paid history and subsequent Graze death/fall assertions.
+3. `table_ground_privacy_maps.rs::inaccessible_ground`: replace illegal non-Tiny
+   x/y origins with the reviewed legal map. Distant has PC(10,10,0), near
+   Goblin(10,20,0), far Goblin/item(80,10,0), Ogre(110,10,0). Hidden/Transparent
+   use PC(10,10,5), near Goblin(10,20,5), far Goblin/item(20,10,0), Ogre(50,10,0)
+   and a supporting half-open ledge [0,20)x[0,100)x[0,5). Preserve current source
+   profiles, sizes/heights, controllers, surprise and genuine source throws.
+   Prove aligned/nonpenetrating/supporting geometry and exact lower hand-point
+   distance10 with intersected ledge; distinguish sight-blocking Hidden from
+   transparent physical blockage. A ground Item can be hidden while the upper
+   target body remains visible, so replace the old target-visibility assumption
+   with actual Item-point geometry. Keep the actual different-nearby-Item pickup
+   positive and all same-prefix offer/admission/atomic-refusal controls.
+   Use groups[PC],[Ogre],[near,far], actual physical18/12/6, one shared Goblin raw
+   and genuine Host tie order[near,far], preserving PC->Ogre->near->far turns.
+
+`object_point_access` is rules-private. The application tests must not call it
+or expose a new API: use existing public segment/distance/geometry queries and
+the actual public pickup offers/admission paths in the unchanged privacy body.
+No positive state assignment, source/anatomy/HP edit, condition/controller change,
+imported paid image, production change or weakened negative is allocated. Report
+any concrete producer contradiction before changing production.
+
+Only these three helpers and this plan may change. Root separately owns the two
+inherited Consequence damage assertions, four inherited Ogre failures and whole
+Ground/Consequence/Physical receipt; no parent intake is allocated here. No
+formatter/compiler/Cargo/npm/test/database/native/push/merge is allocated. Freeze
+coherent unformatted source with the complete three-file diff, original-body and
+all-other-file preservation audit. Root then reviews and schedules exact receiving
+checks. All original17 scenarios, existing outcomes and negative atomicity remain
+required; source correction is not a pass, and Gate4 remains open.
 
 ## Objective and approved authority
 
