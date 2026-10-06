@@ -1,0 +1,260 @@
+# Grapple Group 3 whole-source integration
+
+Status: plan only, 2026-10-06. No merge, source edit or project execution has
+occurred on this branch. Root allocated this plan commit before reviewing the
+semantic resolution below. Branch `codex/gate4-grapple-positive-integration`,
+checkout `gate4-grapple-positive-integration`, starts from exact public
+`4d8f5bcf029b56443bb67d0b03e93f8ae8560323`, tree
+`21d80363621517a07660c17a95d470ee0e783f2c`. public_grapple_oct6 is the sole writer;
+root retains review, publication and the sole heavy verification slot.
+
+## Objective, authority and remaining product scope
+
+Compose the existing public Grapple execution owner with the complete reviewed
+physical acquisition, Ground equipment, Ogre and Mage source routes. The result
+must let real source producers reach Group 3 scenarios without discarding either
+Grapple original-history authority or Ground physical custody/paid continuations.
+This advances the product's authoritative commands, physical resources, source
+identity, privacy, persistence and recovery requirements on the actual table path.
+The full contract in `gate4-grapple-public-completion.md`, Gate 4 and
+`gate-execution-protocol.md` remains binding, including all positive scenarios,
+canonical/exact-head checks and genuine packaged native acceptance.
+
+Root explicitly permits source-only intake before these dependencies finish CI.
+This is development integration, not dependency or feature acceptance. Acceptance
+remains blocked until each required incoming exact head and the receiving union
+have their appropriate verified evidence. No older green head transfers here.
+Inspiration's missing real Host award/ordinary reroll presentation is being
+designed separately; this intake must not claim it implemented. The separate
+held-movement writer owns ground drag. Ordinary drag/carry, multi-target/carry
+support and every other open Gate 4 obligation remain open. No transport v4 or
+schema5 is introduced by this intake; preserve public v3 and historical readers.
+
+## Exact whole-history intake
+
+After root reviews this plan and allocates the merge, perform only two normal
+whole-history merges, in this order:
+
+1. Graze `436bc766500bbdfc5117457f58fe3bcb6965a65e`, tree
+   `b7ff34755f49a64b889cdfa03866cb3fb7a1d789`.
+2. Mage `db1beaa745c6017562d7e4c82331abf65d5f479e`, tree
+   `baffb6591a56c3f08855d61b1f40a74b39c199a2`.
+
+Graze already contains literal Ground
+`f9e466430cd753a9056054394f71137fd205b5e8`, Consequences
+`04b1fe515fad1e54ab4d0a2d9daecd1c87cc23ff`, Physical creation
+`48f7c92b63bd2f9c586d2622d1875342f004b093` and Ogre
+`3387a53898558838bfb7e25dfdd81b4dc1c1d228`. Mage contains Ground and Ogre.
+Their common ancestor is Ground f9. Do not replay six redundant merges,
+cherry-pick or copy selected catalog/test hunks in lieu of those histories.
+
+The public/Graze pair has two merge bases: accepted main
+`5afc992e62bb967aceec69db53f19b6347b70855` and earlier Grapple
+`fa4ea903dfe44333c2cefb1b1b1acc91ba160f8f`. A single three-dot diff is not a
+union proof. Read-only Git ORT previews used an external object directory, with
+repository refs/index/worktrees untouched. They report 26 conflicted paths and
+56 hunks for public/Graze. Graze/Mage has four additive conflicted paths below.
+These pairwise previews are not an executed/resolved sequential merge. Retain
+the actual merge hunks separately and compare the final complete tree to both
+parents. Preview evidence is outside the repository under
+`tooling/ci-oct6/group3-4d8-union-preview/`.
+
+## Semantic composition before resolving text
+
+The public side moved application execution/source authorization into the rules
+table reducer and added sealed `ExecutionContext`, `ReadContext`, `AttackRead`
+and `OpportunityWindowRead`. Keep those owners. Port the incoming changes to
+their actual new locations; do not restore the old application reducer or its
+unconditional Grapple refusals just because the old function conflicts wholesale.
+
+Ground adds two distinct capabilities that must survive: fresh
+`PreparedPhysicalAttack` consumes its exact borrowed input into one staged custody
+candidate, while `RetainedPhysicalRead` only reconstructs a proven paid attack and
+cannot commit its inverse. Compose these with the existing Grapple reads:
+
+- Fresh admission obtains the original owned `AttackRead` before physical
+  reservation, carries that borrowed read through Ground plan calculation and
+  hit facts, then consumes the physical preparation once. Capture the same
+  original admission proofs; do not create a second paid attack or custody write.
+- The Ground pickup candidate changes physical custody/loadout only. It receives
+  no new execution/read owner. Its calculation may use the already authenticated
+  admission's hand/condition read, with actor/target/origin/input bindings checked.
+  Do not construct a trusted read from the cloned candidate or serialized cut.
+- Paid completion/selected material choice retains Ground's distinct attached
+  work/stage/raw validators and bounded before-image reconstruction, while the
+  Grapple owner supplies the actual retained `AttackRead`. Never call a fresh
+  budget constructor at a paid cut, remove the unconditional ordinary raw-image
+  guards, or make retained state itself mint a fresh consuming capability.
+- Current AfterAttack equipment eligibility uses current owned effective hands;
+  historical attack mode/damage uses its admitted read. A later release may make
+  equipment available but must not recalculate the accepted attack. Preserve
+  Ground's exact original equipment allowance, source ItemId and one-time receipt.
+- Thread the existing execution owner through Ground resume/choose/pump/fall
+  continuations. Enter and leave the genuine retained completion parent, preserving
+  accepted children. Run Grapple lifecycle constraints and Ground pause guards
+  independently; neither wait may hide or retire the other's pending evidence.
+- Unanswered OA candidates use current owned hands; selected whole-menu validation
+  uses `OpportunityWindowRead`; the selected physical attack uses its `AttackRead`.
+  Extend Ogre held-source candidate calculations to those reads, preserving the
+  unarmed no-hands attack cut and the separate full-menu hand proof.
+
+Implement these as private read-bearing overloads or shared inner calculations
+behind the existing public ordinary guards. No bool, raw state/proof pair,
+public privileged constructor or serialized permission replaces either owner.
+If the actual composition needs broader authority, stop at the concrete finding
+for root design review before making that source change.
+
+## All 26 predicted public/Graze conflicts
+
+Paths are repository-relative. Union means preserve both specified semantics,
+not mechanically concatenate incompatible old functions.
+
+| Path | Required resolution |
+| --- | --- |
+| `apps/desktop/src/TableApp.svelte` | Keep GrapplePanel/imports and add Physical CharacterInput/current creation routing. Preserve the one existing outbox. |
+| `apps/desktop/src/table-api.ts` | Route both opaque GrappleChoice and AttackEquipment to their transport inputs; preserve v3 source requests, exact retries and recovery-only v1 endpoint. |
+| `apps/desktop/src/tactical-api.ts` | Keep self_only_required and add CreatureWeapon melee choice/physical_source_weapons DTOs. Do not erase optional historical omission. |
+| `crates/dmd-app/src/rules_restore.rs` | Preserve original pre-tactical/Grapple activation anchor refusal and independently reject imported current creation/Ground authority without original producers. Keep all Ground audit checks and public 2..=4 readers. |
+| `crates/dmd-app/src/table_attacks.rs` | Keep TacticalRead; add RulesPack and Ground candidates through owned/ordinary read dispatch. Compose hand-safe ordinary options and reachable real pickup options without hidden-item previews. |
+| `crates/dmd-app/src/table_engine.rs` | Keep operation mapping/composed event and rules reducer owner. Add CreateCharacterFromSource mapping; move incoming physical creation and activation message behavior to rules table reducer, not an old app reducer. |
+| `crates/dmd-app/src/table_presentation_history.rs` | Enumerate both Grapple and AttackEquipment capabilities in deterministic order. Preserve exact old vectors when either feature is absent, historical v1/v2 and public v3 audit/marker joins. |
+| `crates/dmd-app/src/table_projection.rs` | Continue view_read on actual TacticalRead and pass RulesPack to the composed tactical view; retain private Grapple and Ground audience filtering. |
+| `crates/dmd-app/src/table_protocol.rs` | Include both EnableGrappleAccess and full pinned CreateCharacterFromSource, plus incoming Ground view fields. Keep strict input decoding. |
+| `crates/dmd-app/src/table_source_control.rs` | Keep thin rules delegation. Add Ground ActivateAttackEquipment/ChooseAttackEquipment actor resolution in `dmd-rules/src/table/source_control.rs`, preserving historical voluntary-target ownership proof and current controller checks. |
+| `crates/dmd-app/src/table_tactical.rs` | Keep read/grapple modules and view_read; carry pack and Ground choice/options alongside Grapple affordances. All constructors retain both sets of optional fields. |
+| `crates/dmd-app/src/table_tactical_choices.rs` | Independently gate Grapple work by owned activation and Ground work by encounter activation; selected AttackAfterEquipment blocks generic ordering while its owned input is due. Keep both work inventories. |
+| `crates/dmd-app/src/table_transport.rs` | Retain separate strict opaque GrappleChoice and AttackEquipment variants. Neither exposes raw source/work identifiers. |
+| `crates/dmd-app/src/table_transport_runtime.rs` | Include both tactical inputs/capability matches and both raw-action prohibitions. Ground decision binds current selected origin+occurrence; Grapple keeps exact actor/channel/version ownership. |
+| `crates/dmd-persistence/src/table_projection_store.rs` | Union capability variants; retain public supported-version ranges and persisted audience/nonce bindings. No schema extension beyond current public version is needed. |
+| `crates/dmd-rules/src/kernel/engine.rs` | Add CreateCharacterFromSource to the existing staged execution owner, preserving incoming source validation and one-time materialization. Do not introduce a second outer cloned next state. |
+| `crates/dmd-rules/src/kernel/validation.rs` | Keep validate_state_with_read and guarded Grapple authority; independently apply Ground activation/records checks in that owner-aware path. Ordinary callers remain closed. |
+| `crates/dmd-rules/src/tactical.rs` | Union actions, modules, Ogre gates and Ground activation. Keep execution.admit_table and owner-aware validation/dispatch; wire Ground actions through the same execution owner. |
+| `crates/dmd-rules/src/tactical/attacks.rs` | Compose fresh physical preparation with admitted reads, retained physical reconstruction with retained reads, and Ground completion/resume with lifecycle/child settlement. Keep source Ogre exports without restoring dead ordinary forwarders. |
+| `crates/dmd-rules/src/tactical/attacks/planning.rs` | Add read-bearing PhysicalCalculation/preparation and both entered/direct retained-completion readers. Preserve exact Ground inverse and separate Grapple admission cut; never substitute current hands for historical hands. |
+| `crates/dmd-rules/src/tactical/attacks/validation.rs` | Retain owner-aware declaration/source validation; split structure/raw/work checks as needed by Ground retained readers without recursive source reconstruction. Preserve attack pause and physical plan checks with the same admitted read. |
+| `crates/dmd-rules/src/tactical/turn_validation.rs` | Include both selected-work occurrence sets, both wait predicates, and both validators. Preserve owner-aware failed-save and attack validators. |
+| `crates/dmd-rules/src/tactical/turns.rs` | Keep execution.check_live_constraints and owner-aware prune/pump/choose; add Ground waits at both pump boundaries and selected-work exclusion. Preserve work ordering and entered-parent bookkeeping. |
+| `crates/dmd-rules/src/tactical/validation.rs` | Preserve owner-aware Grapple validation and separately require/validate Ground activation. Do not reinstate blanket Grapple refusal on the owned path. |
+| `crates/dmd-rules/src/tactical/work_trace.rs` | Inventory both selected Grapple and AttackAfterEquipment work, retaining exact occurrence/scope validation for both. |
+| `crates/dmd-rules/src/tactical_weapons.rs` | Keep apply_attack_equipment_operation/current completion and read-bearing pure plans; add Ground admission/custody/intent checks through the composition above. Ordinary API still refuses unauthenticated modern state. |
+
+## Automatically merged paths still needing semantic adaptation
+
+Textual success does not establish source compatibility. Read every new callsite,
+especially Ground `tactical_weapons/ground.rs`, `attack_equipment.rs`,
+`attack_equipment_access.rs`, `attacks/opportunity.rs`, `attacks/creature_weapon.rs`,
+and app `table_movement.rs`. Ground's current constructors explicitly reject
+Grapple reconstruction and call plain EffectiveHands/validators. Replace only
+the actual owned callers with the bounded read composition above; preserve
+ordinary/raw refusal tests and pure synthetic controls unchanged.
+
+The relocated rules `table.rs`, `table/reducer.rs`, `table/source_control.rs`,
+table execution exhaustive matches, and app `table_tactical_read.rs` require
+explicit additions even where Git reports no conflict. Carry the actual full
+CharacterCreationSourcePin in TableOperation and original replay, invoking the
+existing reviewed builder/action; do not fall back to legacy 16-item creation.
+Ground visible offers need owned TableRead methods rather than exposing private
+read constructors to dmd-app. Check each incoming constructor, selection,
+completion, material-choice and original-replay consumer before freezing source.
+
+## Mage additive union and precise existing-fixture migration
+
+The independent Graze/Mage preview has these four conflicts:
+
+| Path | Resolution |
+| --- | --- |
+| `content/srd-5.2.1/NOTICE.md` | Retain both complete Physical creation and Mage interpretation paragraphs and all earlier text, with pinned LF. |
+| `content/srd-5.2.1/manifest.json` | Retain both immutable assets and all earlier entries; regenerate only reviewed union lengths/FNV through the canonical generator after resolving NOTICE. Never pick one parent's NOTICE checksum. |
+| `crates/dmd-app/tests/rules_runtime.rs` | Keep complete Physical hostile-source test and additive mage_package_cases registration; no test body/assertion loss. |
+| `scripts/update-rules-manifest.py` | Keep character-creation-physical-v1.json and mage-v2.json exactly once in the ordered complete set. |
+
+The resulting manifest declares ten payloads: NOTICE, source, kernel, original
+character-creation, physical character-creation, tactical, Air, GoblinV2, Ogre,
+MageV2; the manifest itself is an additional file. Preserve immutable asset bytes
+and old pins. Exact distribution expectation must assert this full union, not
+weaken equality to containment. Preserve incoming registry/current-selector,
+installed-byte validation and all seven already-reviewed Mage control migrations.
+
+One additional public fixture migration is concrete and requires this plan:
+`current_old_mage_accepts_incoming_pc_grip_but_never_gains_a_grappling_anatomy_grant`
+in `crates/dmd-app/tests/table_grapple_public.rs` currently calls
+`Fixture::with_source("mage", CreatureSize::Medium)`, which reads the live current
+Host catalog. After Mage receipt that producer creates V2, so its old-anatomy
+refusal no longer describes its actual source. Do not remove that refusal or
+pretend a forced V1 current create is legal.
+
+Add an explicit historical-Mage fixture helper using the unchanged genuine
+Shield V1 capture and dependency's original continuation/coexistence driver.
+Restore the original journal normally, resolve its actual paid Shield/release
+inputs, and retain the exact old Mage profile/pin. Use ordinary table commands
+for any session ending, source adoption/controller assignment, PC setup, scene,
+initiative and Grapple activation; read resulting IDs into the fixture, never
+write campaign state/SQL or synthesize an accepted event. Migrate only this named
+test's constructor call to that explicit helper; retain its function identity,
+Escape assertion, absent outgoing Grapple assertion and all other gameplay lines.
+Do not silently route every current Mage fixture through old history. Other
+current Mage ray/casting producers continue to select the presented current pin.
+Add a separate genuine V2 outgoing-grip test; it cannot replace the V1 negative.
+If the real original capture cannot reach the required fixture through supported
+commands, report the concrete producer gap before any fixture or assertion edit.
+
+## Positive acceptance still to author on the coherent union
+
+Existing dependency tests supply real acquisition and source history, not combined
+Grapple acceptance. Graze has 3 functions/17 scenarios (12 basic, 4 concentration,
+1 death/fall); Physical supplies current purchase/materialization, actual Graze
+and held Glaive OA; Ogre supplies all three forms, three finite Javelins, same-Item
+recovery and held OA; Mage supplies immutable revision, package/old-history
+coexistence and spell tuple controls. None of these creates an outgoing modern
+Grapple in those incoming application scenarios. Their runtime status is separate.
+
+After the intake source is coherent, the Group 3 positive work must cover:
+
+- Real purchased Greatsword/Glaive with Grapple admission/read preservation,
+  actual Graze apply/decline, incapacity/death grip endings, concentration/fall
+  descendants and selected AfterAttack equipment after the attack record retires.
+  BeforeAttack pickup and selected AfterAttack must keep one allowance, the same
+  physical Item, and both unrelated-body/custody refusal invariants.
+- A held Glaive plus occupied supporting hand: no two-hand reach option; genuine
+  release refreshes an unanswered/previously Unavailable OA before crossing.
+  Selected OA keeps its exact source/menu/hand cut after release, spends one
+  Reaction and grants no pickup/equipment action. Preserve unarmed alternatives.
+- Actual Large Ogre, lawfully freed hand and Huge Adult Red Dragon: legal Grapple,
+  source owner/LR accept/decline/exhaustion and withdrawal after accepted evidence;
+  no LR on Escape. Keep Human/Goblin oversize refusal, all Ogre forms and finite
+  source gear behavior on the combined authority route.
+- Actual current MageV2 creation/control/materialization, outgoing grip, exact
+  source S/M/focus and Shield eligibility/reservation behavior before and after
+  release, plus genuine old Mage V1 negative and existing spell tuple/old retries.
+- Real Host-awarded Inspiration and ordinary save/Escape reroll consumption are
+  separately allocated producer/UI work; keep them in Group 3 acceptance until
+  integrated and actually tested. No synthetic flag or raw inventory bypass.
+
+Every positive needs meaningful cold file reopen, independent portable next-input
+continuation and exact retries at its actual cuts; forged source/hand/physical
+receipt/parent/owner cases must reject with all populated destination rows equal.
+Preserve unrelated audience DTO/history privacy. Native equivalents remain due.
+
+## Preservation, verification and next action
+
+Freeze the original public/dependency trees. Inventory every original test body,
+inline module, fixture/raw capture and installed content blob before merging.
+Only the explicit old-Mage constructor migration and reviewed exact distribution
+union above may change existing assertions/setup on this intake; separately
+enumerate any additional concrete receiving incompatibility before editing it.
+Preserve the corrected Graze three helpers/privacy body, Ground lawful geometry,
+Consequence raw-zero versus authoritative-component-three proof, public paid spell
+origin/full OA window/Finish-pause/controller/self-only fixes and lint equivalents.
+
+Root may inspect coherent implementation groups while the sole writer completes
+the one union; these are not extra feature checkpoints or acceptance claims.
+Retain full actual conflicts, parent-relative patches and whole-tree blob origins.
+Independent review must inspect auto-merges as well as conflict resolutions.
+No formatter, Cargo/compiler/test, npm, database, native, package or push is
+allocated here. Root later assigns strict affected lint, complete relevant
+application/rules/persistence/frontend and protected historical suites, canonical
+verify-fast/verify, exact-head CI and real packaged native verification.
+
+Exact next action: commit this plan only, return its head and source-resolution
+design to root, then wait for the explicit merge/source allocation. No source
+integration or runtime acceptance is established by this plan or preview.
