@@ -1,5 +1,56 @@
 # Gate 4 — Pinned physical character creation
 
+## Receive accepted Shove main before renewed CI — 2026-10-06
+
+Root fetched authoritative main5afc992e62bb967aceec69db53f19b6347b70855,
+treefcac4fae77d31a83efc0667180c2ed40c8731b10. The published Physical correction
+5d9f7eb961078e05d74cfe7eba4ebceb0a7164a9 has no fresh CI because its PR cannot
+merge cleanly with accepted main. A merge-tree preview finds one textual
+conflict: Physical's original/current character retry tests and main's Shove
+retry test were inserted at the same describe-block opening.
+
+Commit this receiving plan first, then normally merge the complete accepted
+main. Preserve both complete test bodies as separate sibling tests, including
+their original inputs, exact retained requests, invocation comparisons and
+assertions. Keep all other source from the automatic three-way union. Review
+the six automatically combined paths (table API/transport tests, restore,
+protocol, runtime and table harness registration), and audit every unchanged
+parent blob and both additions. Do not import any unaccepted development branch.
+
+This integrates two already reviewed Gate4 paths without changing their product
+scope, source pins, controller authority or historical acceptance. Root remains
+sole writer. No local compiler/test/native work is allocated while Offstage
+owns the heavy slot. Publish the reviewed receiving head for fresh CI; all prior
+709/5d9 evidence retains its literal attribution, and required native/canonical
+acceptance remains open.
+
+## October 6 exact-head CI correction
+
+Both canonical platforms on `709ec08f9f847fa7ae958d99c9591b142be69bec`
+failed the unchanged `distributed_srd_manifest_verifies_kernel_source_and_license_bytes`
+control. Linux job111766060948 and Windows job111767169942 report that the
+actual manifest contains the approved `character-creation-physical-v1.json`,
+while the expected exact file set still lists only the six older entries.
+Root read the full test, manifest and regeneration script. The new asset is
+already required by the approved design and installed-content validation.
+
+Commit this correction plan first, then add only that literal path to the
+test's expected BTreeSet. Keep every prior filename and the exact-set equality,
+catalog integrity load and exact campaign ruleset resolution. No production,
+content byte, checksum, old creation input or replay fixture changes are needed.
+This updates the distribution contract for the approved additional asset;
+it does not relax integrity checks or alter any old source definition.
+
+Preserve the actual prior local result: formatting and strict affected-package
+Clippy passed, and 133 tests in eleven complete harnesses passed, including all
+three new table application cases. The following historical missile harness
+was interrupted after seven named successes without a final eight-test summary;
+five later harnesses were not reached. The cause is unknown and no process is
+running on recovery. These results are not a completed focused186 or canonical
+pass. Full original evidence remains outside Git. After correction, review the
+complete exact delta, verify the distribution harness and remaining controls,
+rerun required exact-head CI and retain the outstanding native acceptance.
+
 ## Authored coherent source handback — 2026-10-05
 
 Implementation now follows the approved design below on this independent branch;
