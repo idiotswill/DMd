@@ -402,3 +402,11 @@ receipt comparison, branch and error. Do not add lint allowances or alter tests.
 Allocate only a direct one-file Rustfmt/check after review. Preserve the first
 failed logs, publish the small correction and require new exact-head checks.
 All acceptance and local heavy/native scheduling requirements remain unchanged.
+
+Second exact-head CI1fc cleared the domain guard but reports two rules lints:
+unused explicit unit at grapple/execution.rs:736 and collapsible nested if at
+grapple/lifecycle.rs:55. Root read actual jobs112177927292/112177927253 and saved
+their full logs. Before editing, remove only the explicit unit expression and
+combine the lifecycle predicates in their existing short-circuit order. Preserve
+the transport-ended call, movement refresh and every test. Direct two-file format
+and check only are allocated; new strict checks and runtime evidence remain due.
