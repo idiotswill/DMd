@@ -3,7 +3,10 @@ use super::*;
 
 /// SRD177 applies worn-armor training to this Strength test. A shield alone
 /// never imposes that penalty. This does not change historical OA interpretation.
-pub(super) fn untrained_armor(state: &CampaignState, actor: EntityId) -> Result<bool, RulesError> {
+pub(in crate::tactical) fn untrained_armor(
+    state: &CampaignState,
+    actor: EntityId,
+) -> Result<bool, RulesError> {
     let Some(item) = state
         .rules
         .as_ref()
@@ -144,6 +147,7 @@ pub(in crate::tactical) fn begin(
         legendary_window: None,
         hit_review: None,
         attack: Some(attack),
+        shove: None,
         movement: None,
         casts: vec![],
         missiles: vec![],

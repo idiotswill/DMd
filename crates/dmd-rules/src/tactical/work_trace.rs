@@ -366,6 +366,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 .iter()
                 .map(|window| &window.work),
         )
+        .chain(resolution.shove.iter().filter_map(|s| s.selected.as_ref()))
     {
         if scopes
             .get(&work.occurrence)

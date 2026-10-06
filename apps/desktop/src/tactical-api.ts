@@ -50,6 +50,10 @@ export interface AreaOptions {
   variants: { feature_id: string; label: string; length_feet: number }[]; unavailable: string[];
 }
 export interface Point { x: number; y: number; z: number }
+export type ShoveChoice = 'Prone' | { Push: { destination: Point } };
+export type ShoveDecision = { Save: { ability: 'Strength'|'Dexterity' } } | { Outcome: { choice: ShoveChoice } }
+  | { RulePush: { ruling: 'CommitExactPush'|'ConfirmBlockedNoMovement'|'ReturnToShover' } };
+export interface ShoveView { key: Id; actor: Id; stage: 'SaveChoice'|'OutcomeChoice'|'PushReview'; from: Point|null; destination: Point|null }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
 export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[] }
@@ -77,6 +81,8 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { Shove: { target: Id } }
+  | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
   | 'FinishEncounter'
   | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
@@ -106,6 +112,7 @@ export type TacticalAction =
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
+  shove?: ShoveView|null;
   execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | null;
   release?: { may_finish: boolean; blocker: string | null; required_actors: Id[] } | null;
   hit?: HitView | null;

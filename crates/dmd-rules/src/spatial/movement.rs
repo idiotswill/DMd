@@ -341,6 +341,51 @@ fn physical_blocked(encounter: &TacticalEncounter, volume: SpatialBox, mode: Mov
                 .iter()
                 .any(|t| t.burrowable && t.volume.intersects(volume)))
 }
+/// Positive obstruction proof for a bounded forced step. This query grants no
+/// movement authority and does not turn another rejection into a blocked result.
+pub fn forced_step_physically_blocked(
+    encounter: &TacticalEncounter,
+    actor: EntityId,
+    destination: SpatialPoint,
+) -> Result<bool, SpatialError> {
+    destination.validate().map_err(invalid)?;
+    let from = participant(encounter, actor)?;
+    let mut to = from.clone();
+    to.position = destination;
+    let volume = to.volume().map_err(invalid)?;
+    if !encounter.battlefield.bounds.encloses(volume)
+        || physical_blocked(encounter, volume, MovementMode::Walk)
+        || swept_blocked(encounter, from, &to, MovementMode::Walk)?
+    {
+        return Ok(true);
+    }
+    if from.position.x != to.position.x && from.position.y != to.position.y {
+        for corner in [
+            SpatialPoint {
+                x: from.position.x,
+                y: to.position.y,
+                z: to.position.z,
+            },
+            SpatialPoint {
+                x: to.position.x,
+                y: from.position.y,
+                z: to.position.z,
+            },
+        ] {
+            let mut body = from.clone();
+            body.position = corner;
+            if physical_blocked(
+                encounter,
+                body.volume().map_err(invalid)?,
+                MovementMode::Walk,
+            ) {
+                return Ok(true);
+            }
+        }
+    }
+    Ok(false)
+}
+
 fn air_form(state: &CampaignState, actor: EntityId) -> Result<bool, SpatialError> {
     let Some(profile) = state
         .rules
