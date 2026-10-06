@@ -1,5 +1,29 @@
 # Gate 4 — Pinned physical character creation
 
+## Receive accepted Shove main before renewed CI — 2026-10-06
+
+Root fetched authoritative main5afc992e62bb967aceec69db53f19b6347b70855,
+treefcac4fae77d31a83efc0667180c2ed40c8731b10. The published Physical correction
+5d9f7eb961078e05d74cfe7eba4ebceb0a7164a9 has no fresh CI because its PR cannot
+merge cleanly with accepted main. A merge-tree preview finds one textual
+conflict: Physical's original/current character retry tests and main's Shove
+retry test were inserted at the same describe-block opening.
+
+Commit this receiving plan first, then normally merge the complete accepted
+main. Preserve both complete test bodies as separate sibling tests, including
+their original inputs, exact retained requests, invocation comparisons and
+assertions. Keep all other source from the automatic three-way union. Review
+the six automatically combined paths (table API/transport tests, restore,
+protocol, runtime and table harness registration), and audit every unchanged
+parent blob and both additions. Do not import any unaccepted development branch.
+
+This integrates two already reviewed Gate4 paths without changing their product
+scope, source pins, controller authority or historical acceptance. Root remains
+sole writer. No local compiler/test/native work is allocated while Offstage
+owns the heavy slot. Publish the reviewed receiving head for fresh CI; all prior
+709/5d9 evidence retains its literal attribution, and required native/canonical
+acceptance remains open.
+
 ## October 6 exact-head CI correction
 
 Both canonical platforms on `709ec08f9f847fa7ae958d99c9591b142be69bec`
