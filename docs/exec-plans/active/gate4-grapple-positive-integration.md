@@ -488,3 +488,23 @@ and actual stow/decline. Foreign capability/owner and forged completion-parent
 submissions must leave all populated database rows unchanged. Every gameplay
 cut uses existing cold/portable/exact retry verification. Death/concentration/
 fall, supporting-hand Glaive OA and Ogre/LR combinations remain separate work.
+
+Both named physical weapon cases are now authored, fully read and formatted,
+with apply-and-stow and decline-and-retain scenarios for each weapon. They use
+the actual current creation pin, purchased ItemId, Goblin grip/save, normal
+physical miss, Graze choice and opaque owned equipment decision. Assertions
+retain the admission grip cut, exact completion parent and accepted command,
+unchanged raw dice and physical inventory, private projection, and live grip.
+Wrong owners, a forged completion parent and changed accepted request bodies
+are refused through the existing full-row comparison helpers.
+
+The external final preservation audit has SHA256
+f72d5da982129ff4c855ca75c7c9a4d518f1161ebe502bed14ef2462071881f2.
+It proves that removing the single new module registration produces the exact
+raw helper file already covered by the reviewed whole-file inverse audit
+7ae8f088340713f7880f19e9a9f17885dd5462002144ce59a956269ce6a5d83a.
+That inverse returns the complete prior tracked file at4d24f8f; no old test body
+or assertion changed. These two cases (four scenarios) remain UNCOMPILED/UNRUN,
+as do the five current-Mage cases. Publish the coherent addition for exact-head
+CI. Root has assigned the freed local heavy slot to Microsoft prerequisites
+and then the canonical Expiry391 native package, not combined Rust execution.

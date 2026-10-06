@@ -84,6 +84,9 @@ mod mage_components;
 #[path = "support/grapple_mage_shield.rs"]
 mod mage_shield;
 
+#[path = "support/grapple_physical_graze.rs"]
+mod physical_graze;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -154,6 +157,33 @@ impl Fixture {
         opponent: bool,
         pc_opportunity: bool,
     ) -> Self {
+        Box::pin(Self::with_creation_source(
+            definition,
+            size,
+            opponent,
+            pc_opportunity,
+            None,
+        ))
+        .await
+    }
+    async fn with_physical_weapon(weapon: &str) -> Self {
+        assert!(matches!(weapon, "greatsword" | "glaive"));
+        Box::pin(Self::with_creation_source(
+            "goblin-warrior",
+            CreatureSize::Small,
+            false,
+            false,
+            Some(weapon),
+        ))
+        .await
+    }
+    async fn with_creation_source(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
+        physical_weapon: Option<&str>,
+    ) -> Self {
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
         std::fs::create_dir(&directory).unwrap();
@@ -182,13 +212,37 @@ impl Fixture {
                 name: format!("Player {index}"),
             }))
             .await;
-            Box::pin(f.host(TableAction::CreateCharacter {
-                character_id: f.characters[index],
-                entity_id: f.actors[index],
-                player_id: f.players[index],
-                input: creation(&format!("Character {index}")),
-            }))
-            .await;
+            if let Some(weapon) = physical_weapon {
+                let options = f
+                    .runtime
+                    .character_creation_options(f.campaign)
+                    .await
+                    .unwrap();
+                let mut input = creation(&format!("Character {index}"));
+                if index == 0 {
+                    input.purchases.push(EquipmentChoice {
+                        item_id: weapon.into(),
+                        quantity: 1,
+                    });
+                    input.masteries = ["greatsword".into(), "glaive".into(), "dagger".into()];
+                }
+                Box::pin(f.host(TableAction::CreateCharacterFromSource {
+                    character_id: f.characters[index],
+                    entity_id: f.actors[index],
+                    player_id: f.players[index],
+                    source: options.source,
+                    input,
+                }))
+                .await;
+            } else {
+                Box::pin(f.host(TableAction::CreateCharacter {
+                    character_id: f.characters[index],
+                    entity_id: f.actors[index],
+                    player_id: f.players[index],
+                    input: creation(&format!("Character {index}")),
+                }))
+                .await;
+            }
         }
         let current = f.view(TableTransportChannel::Host).await;
         let catalog = f
