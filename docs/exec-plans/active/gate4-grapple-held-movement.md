@@ -1,5 +1,29 @@
 # Gate 4 — Grounded movement with a held creature
 
+## Root receipt of reviewed public scenario correction — 2026-10-06
+
+Root owns the sole writer from freshly fetched clean `ca6fa4c7651657823a2cd0b380592b98cd51d961`.
+Receive the complete `e219ad69a4b9647f630bef85395490e3c2a103fb` parent by normal merge, after this plan.
+For Held movement this is reviewed Public e219; for Host Inspiration it is the
+complete corrected Held successor, including its existing full source history.
+The receiver's implementation and all original positive/negative expectations
+remain unchanged. The two shared public scenarios correct actual failed setup
+premises: real singleton-ray command provenance and supported legal reach to a
+flying Chimera. Complete failed Linux/Windows logs, independent review and the
+exact scope are retained in the incoming public plan.
+
+The read-only preview is clean. Prove every receiver production/content/migration/
+workflow entry remains exact, every additional receiver test module stays exact,
+and the shared test is precisely corrected Public plus this receiver's existing
+module registrations. Keep complete incoming evidence and this receiving plan.
+No formatter/compiler/tests/database/native work is allocated by this receipt.
+Old current-head CI may still be running; it cannot verify this successor. Fresh
+focused and full exact-head checks, native evidence and all remaining Held movement
+and Gate4 obligations remain mandatory. Root will publish the audited clean
+normal merge and coordinate the single local heavy slot separately.
+
+### Earlier receiver checkpoint (historical)
+
 Status: **FORMATTED LIVING-TARGET SUCCESSOR FROZEN; ALL23 NEW CASES UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
