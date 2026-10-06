@@ -43,6 +43,11 @@ verification after review; canonical/public/application/native and Gate4
 acceptance obligations remain unchanged. This amendment and correction provide
 no new runtime pass or public activation.
 
+The one-message correction is authored under plan-first commit
+`bac0727cc1534c8650844752a1cc64582a39d62e` and returned UNFORMATTED/UNCOMPILED/UNRUN
+for root review. Only static Git whitespace checking and source/log inspection
+ran; exact-head execution remains pending under root's separate allocation.
+
 ## October 6 formatted correction freeze
 
 Root read and accepted the complete unformatted initiative correction at
