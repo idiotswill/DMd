@@ -8,6 +8,45 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+### Approved whole private correction receipt (2026-10-06)
+
+Root allocated sole receiving ownership to private_grapple_oct6 from clean
+`9fcb0bbe610372fc25799c21877129047654c40a`, tree
+`795ee80e60dc947b644533d1ec921b8dbd34bb37`. Commit this checkpoint before a
+normal `git merge --no-ff` of the complete reviewed private history at
+`de6b9c52a6187e2f947e660a9cffbf11615caa3d`, tree
+`ea9359d6ba23fdfab90aa2f937538c2cd16296b1`. The common ancestor is
+`ade8e93b450d6e02027afc7615a555db16b2915d`. No copying or cherry-picking.
+
+The prerequisite private run completed normally at 2026-10-06T06:39:30Z:
+whole formatting check, strict domain/rules/app all-target Clippy and all 82
+selected cases in ten harnesses passed. This receiver independently read all
+12 complete logs and checked exact names, actual log order, summaries, step
+arguments, clean source bindings, runner hashes, all 328 mapped source hashes
+and all 597 Git/working files. The immutable evidence report SHA256 is
+`2ac4a2c138b933059fb1f9084d9add3cd2a6d487fab489bf36f63e8389ca2b73`.
+These passes apply only to private de6; the receiving public union is unrun.
+
+The whole incoming delta has four paths: the private execution plan; one
+unchanged-predicate reserved-hand diagnostic in `grapple/admission.rs`; and
+the two private execution test files. The three explicitly reviewed test-body
+corrections retain the owed AfterEquipment choice after withdrawal, use genuine
+shared initiative for two canonical Host Cultists in the concentration fixture,
+and assert the actual HP1 knockout/recovery/rest outcome. Receive those complete
+files and their complete plan history. Preserve all other original bodies,
+helpers and names; preserve every public production/UI correction, all 25 public
+application cases and nine frontend cases. Only admission.rs overlaps public
+production, with its accepted public behavior retained and the incoming message
+composed without changing its predicate or error type.
+
+Review the actual merge delta and report any semantic conflict before resolving
+it. Audit exact incoming test blobs and all unaffected public/source bytes,
+then freeze the clean receiving head for root review. No formatter, compiler,
+test, database, native run, push, wrapper preparation or group 3 receipt is
+allocated here. Root must separately authorize fresh receiving verification;
+all public, ordinary-replay, group 3, dragging/carrying, canonical/CI and native
+obligations remain open.
+
 ### Reviewed formatting freeze (2026-10-06)
 
 Root formatted the changed Rust paths and reported direct rustfmt/check PASS,
