@@ -445,7 +445,7 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         attack.armor_class = armor;
         attack.critical_on_hit = critical;
         attack.damage = if matches!(attack.source, TacticalAttackSource::CreatureWeapon { .. }) {
-            creature_weapon::validate_source(state, &attack, &plan)?
+            creature_weapon::validate_source_with_read(state, &attack, &plan, read.as_ref())?
         } else {
             vec![AttackDamageComponent {
                 damage_type: plan.damage.damage_type,

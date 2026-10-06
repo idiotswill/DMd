@@ -229,6 +229,11 @@ fn validate_work(
     Ok(())
 }
 
+#[cfg(test)]
+pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+    validate_with_read(&super::grapple::execution::ReadContext::ordinary(state))
+}
+
 pub(super) fn validate_with_read(
     read: &super::grapple::execution::ReadContext<'_>,
 ) -> Result<(), RulesError> {

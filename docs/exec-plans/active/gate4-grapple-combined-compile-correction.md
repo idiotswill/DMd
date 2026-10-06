@@ -38,3 +38,20 @@ No local competing Cargo run while the canonical Expiry391 package holds the
 heavy slot. This is a compile correction; no runtime or Gate 4 acceptance follows
 until the original and combined tests execute successfully. Remaining positive
 scenarios, native acceptance, full canonical and integration checks remain due.
+
+## Authored checkpoint
+
+Plan10ab78b preceded the correction. The actual opportunity call now forwards
+its already-owned admitted read. Twelve cfg(test) adapters preserve the complete
+existing private-test source files; all consuming production calls still use
+the explicit context/hands methods. No guarded constructor was added. The
+Ground plan adapter consumes self, retaining the original one-use test surface.
+
+Root reviewed all six complete diffs and direct formatting/checks passed.
+Audit c4a1483628afbbf7f24632f6ece94a693863df17ce08abbaaf3b038f34ab2342
+checks the complete non-whitespace inverse of every changed file after removing
+only these adapters, reversing the private method renames and restoring the
+single forwarding call. It also checks that every existing test file remains
+unchanged. The inverse ignores formatting; the full visible diff was separately
+read. All compiler/runtime results for this correction remain pending. Preserve
+the dae failure logs and publish for fresh exact-head verification.

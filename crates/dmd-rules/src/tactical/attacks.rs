@@ -378,6 +378,34 @@ fn weapon_error(error: WeaponError) -> RulesError {
     invalid(&error.to_string())
 }
 
+#[cfg(test)]
+pub(super) fn begin(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: &WeaponUseChoice,
+    pack: &RulesPack,
+) -> Result<(), RulesError> {
+    begin_with_context(state, meta, choice, pack, &mut ExecutionContext::ordinary())
+}
+
+#[cfg(test)]
+pub(super) fn begin_creature_weapon(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    feature: &str,
+    choice: &CreatureWeaponUseChoice,
+    pack: &RulesPack,
+) -> Result<(), RulesError> {
+    begin_creature_weapon_with_context(
+        state,
+        meta,
+        feature,
+        choice,
+        pack,
+        &mut ExecutionContext::ordinary(),
+    )
+}
+
 pub(super) fn begin_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -639,6 +667,15 @@ pub(super) fn key(
         occurrence: work.occurrence,
     })
 }
+#[cfg(test)]
+pub(super) fn request(
+    state: &CampaignState,
+    work: &TacticalWorkItem,
+    key: TacticalRollKey,
+) -> Result<Option<RollRequest>, RulesError> {
+    request_with_read(&ReadContext::ordinary(state), work, key)
+}
+
 pub(super) fn request_with_read(
     read: &ReadContext<'_>,
     work: &TacticalWorkItem,
@@ -914,6 +951,24 @@ fn apply_damage(
     )
     .map(|_| ())
 }
+#[cfg(test)]
+pub(super) fn choose_knockout(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: KnockoutChoice,
+) -> Result<(), RulesError> {
+    choose_knockout_with_context(state, meta, choice, &mut ExecutionContext::ordinary())
+}
+
+#[cfg(test)]
+pub(super) fn choose_mastery(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    choice: &WeaponMasteryChoice,
+) -> Result<(), RulesError> {
+    choose_mastery_with_context(state, meta, choice, &mut ExecutionContext::ordinary())
+}
+
 pub(super) fn choose_knockout_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,

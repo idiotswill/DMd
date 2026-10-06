@@ -397,6 +397,20 @@ pub(super) fn request_with_read(
     }
 }
 
+#[cfg(test)]
+pub(super) fn start(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: TacticalWorkItem,
+) -> Result<(), RulesError> {
+    start_with_context(
+        state,
+        meta,
+        work,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+
 pub(super) fn start_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,

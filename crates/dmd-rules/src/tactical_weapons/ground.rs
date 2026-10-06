@@ -258,7 +258,7 @@ impl<'a> PreparedPhysicalAttack<'a> {
                 timing: EquipmentChangeTiming::BeforeAttack,
                 operation: AttackEquipmentOperation::Pickup { item, hand },
             }) => {
-                let pickup = PreparedPickup::new(
+                let pickup = PreparedPickup::new_with_hands(
                     state,
                     input.context.origin,
                     input.context.actor,
@@ -466,7 +466,7 @@ impl<'a> RetainedPhysicalRead<'a> {
         {
             // This is physical rederivation at a proven paid cut. It deliberately
             // does not call the fresh budget constructor or return its capability.
-            PreparedPickup::derive(
+            PreparedPickup::derive_with_hands(
                 &self.before,
                 &self.attack.origin,
                 self.attack.actor,
@@ -642,7 +642,7 @@ fn derive_after<'a>(
         if let AttackEquipmentOperation::Pickup { item, hand } = operation {
             // Same physical derivation as before Pickup, with a different sealed
             // admission owner. No fresh-attack budget or caller bypass flag enters.
-            let prepared = PreparedPickup::derive(
+            let prepared = PreparedPickup::derive_with_hands(
                 state,
                 origin,
                 actor,
@@ -931,8 +931,64 @@ struct PreparedPickup<'a> {
 }
 
 impl<'a> PreparedPickup<'a> {
+    // Prior private mechanism controls keep their ordinary input surface. These
+    // adapters are absent from production and never construct an owned read.
+    #[cfg(test)]
     #[allow(clippy::too_many_arguments)]
     fn new(
+        state: &'a CampaignState,
+        origin: &CommandMeta,
+        actor: EntityId,
+        window: WeaponActionWindow,
+        item_id: ItemId,
+        hand: Hand,
+        pack: &RulesPack,
+        definitions: &TacticalDefinitions,
+    ) -> Result<Self, WeaponError> {
+        Self::new_with_hands(
+            state,
+            origin,
+            actor,
+            window,
+            item_id,
+            hand,
+            pack,
+            definitions,
+            None,
+        )
+    }
+
+    #[cfg(test)]
+    #[allow(clippy::too_many_arguments)]
+    fn derive(
+        state: &'a CampaignState,
+        origin: &CommandMeta,
+        actor: EntityId,
+        window: WeaponActionWindow,
+        item_id: ItemId,
+        hand: Hand,
+        pack: &RulesPack,
+        definitions: &TacticalDefinitions,
+    ) -> Result<Self, WeaponError> {
+        Self::derive_with_hands(
+            state,
+            origin,
+            actor,
+            window,
+            item_id,
+            hand,
+            pack,
+            definitions,
+            None,
+        )
+    }
+
+    #[cfg(test)]
+    fn plan(self, input: &WeaponAttackInput<'_>) -> Result<WeaponAttackPlan, WeaponError> {
+        self.calculate_plan(input, None)
+    }
+    #[allow(clippy::too_many_arguments)]
+    fn new_with_hands(
         state: &'a CampaignState,
         origin: &CommandMeta,
         actor: EntityId,
@@ -970,7 +1026,7 @@ impl<'a> PreparedPickup<'a> {
                 && (flow.attack_equipment_access.is_some() || !has_attack_equipment_records(state)),
             UNAVAILABLE,
         )?;
-        Self::derive(
+        Self::derive_with_hands(
             state,
             origin,
             actor,
@@ -985,7 +1041,7 @@ impl<'a> PreparedPickup<'a> {
     }
 
     #[allow(clippy::too_many_arguments)]
-    fn derive(
+    fn derive_with_hands(
         state: &'a CampaignState,
         origin: &CommandMeta,
         actor: EntityId,
@@ -1115,7 +1171,7 @@ fn prepare_with_read(
             && input.context.on_actor_turn,
         UNAVAILABLE,
     )?;
-    PreparedPickup::new(
+    PreparedPickup::new_with_hands(
         input.state,
         input.context.origin,
         input.context.actor,
@@ -1257,7 +1313,7 @@ fn restore_before_image_with_read(
     // allowance from the already-paid current budget. Original command replay is
     // required for that admission cut. No constructor capable of producing a new
     // plan or mutating current state is exposed by this inverse.
-    let prepared = PreparedPickup::derive(
+    let prepared = PreparedPickup::derive_with_hands(
         &reconstructed,
         &attack.origin,
         attack.actor,
