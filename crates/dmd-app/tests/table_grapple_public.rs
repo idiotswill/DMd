@@ -81,6 +81,9 @@ mod original_mage;
 #[path = "support/grapple_mage_components.rs"]
 mod mage_components;
 
+#[path = "support/grapple_mage_shield.rs"]
+mod mage_shield;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,

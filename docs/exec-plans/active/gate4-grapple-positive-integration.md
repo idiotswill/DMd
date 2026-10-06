@@ -451,3 +451,11 @@ one shared Protective Magic use/Reaction only when cast, and no new damage roll
 for a Shield miss. Every gameplay input uses the existing cold/portable/retry
 driver and blocked acceptance uses complete database-row equality. Preserve the
 separate current Mage material cases and all historical cases unchanged.
+
+The three named Shield cases are authored, fully read and direct formatting/
+check passes. They retain the universal hit acknowledgement even when Shield
+is unavailable, preserving private eligibility. The paid Shield paths assert
+unchanged attack-roll history, no damage die,81HP and one shared use/Reaction;
+the blocked path asserts a real Dagger damage roll,77HP and zero Shield cost.
+All five new current-Mage application cases remain UNCOMPILED/UNRUN. No existing
+material case, historical helper or old test body changed in this addition.
