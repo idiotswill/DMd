@@ -1,6 +1,51 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **TYPE AND STRICT LINT CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
+Status: **TWO NEW APPLICATION SCENARIOS FAILED; ROOT CORRECTING THEIR SETUPS**.
+
+## Actual b4bb application failures and narrow correction — 2026-10-06
+
+Root owns this branch from freshly fetched clean
+`b4bbcc14e0c62d5e138bd2173415c4c0bb008362`. Linux run37449511647,
+job112222370420 and Windows run37449511652, job112222415236 each reached
+nine Rust harnesses: 94 passed, two failed. The public Grapple harness reports
+23 passed/two failed; later workspace harnesses did not run. Both platforms
+passed compilation and strict lint; Windows also passed its frontend checks.
+Linux used synthetic merge af3aa81 of b4bb into accepted main5af; Windows
+used literal b4bb. Complete normalized failure logs are retained externally:
+Linux SHA256 `fb5aae88ce113b27cd3099e5f21a9bbeff01f67b138b53460b6fb7e713ba5a44`,
+Windows `3cc6a1b689d71cee2a21eb52173fff8b95a7c6ff0d7878db8a9c01801511712a`.
+
+The three-ray case fails its first assertion that attack admission differs from
+the casting command. Source inspection confirms casting queues each ray in its
+own singleton frame and immediately pumps the first attack with the cast's meta.
+After a reported miss, the same pump advances the next singleton using that
+report's meta. The existing optional `advance_choice` helper does nothing while
+raw dice are already pending. The test's first-ray SelectWork premise is wrong;
+do not change production scheduling merely to satisfy it. Record each actual
+advancing request, assert its exact command identity and complete persisted
+transport binding, and retain distinct work occurrences, cast-bound raw IDs and
+every hostile restore probe. For the first ray, the substituted-origin probe
+must use an actual unrelated activation command so it changes state; later rays
+still substitute their advancing roll command. Assert that the substituted
+origin differs before submitting each hostile image.
+
+The Chimera case successfully flies to z20 but then requests an out-of-reach
+Grapple. Occupied-cell-center geometry gives distance18 from the z0, height12
+character; ordinary reach is10. Author a solid height10 platform underneath only
+this scenario's PC through the existing Host battlefield setup. Fly the real
+Chimera up through z10/z20/z30 and back to z20: crossing to30 retains the genuine
+declined opportunity, returning to20 permits Grapple from the supported platform,
+and the original z20-to-floor0 fall remains ten feet. Assert actual final range,
+both positions, platform support and unchanged fall/raw/release expectations.
+Keep the real source, size, hands, dice, controllers and creation path unchanged.
+
+Commit this plan before editing. Only the two new scenarios and their opt-in
+geometry setup are allocated; all other scenarios and production source remain
+unchanged. Root will review the complete delta and preservation audit, publish a
+fresh exact head for CI, and run both failures when the current integration run
+releases the sole local heavy slot. No old pass transfers to this correction.
+Preserve all earlier failure evidence and every outstanding native, receiving,
+Grapple and Gate4 acceptance obligation. Offstage integration remains unstarted.
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
