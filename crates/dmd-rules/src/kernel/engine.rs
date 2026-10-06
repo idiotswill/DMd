@@ -27,7 +27,7 @@ pub fn resolve(
 
 pub(crate) fn apply_table_with_context(
     state: &CampaignState,
-    mut next: &mut CampaignState,
+    next: &mut CampaignState,
     meta: &CommandMeta,
     action: &RulesAction,
     pack: &RulesPack,
@@ -182,11 +182,11 @@ pub(crate) fn apply_table_with_context(
     } else {
         let mut rules = next.rules.take().ok_or(RulesError::Uninitialized)?;
         let permission = rules.permission.take();
-        let outcome = apply(&mut next, &mut rules, meta, action, pack, permission)?;
+        let outcome = apply(next, &mut rules, meta, action, pack, permission)?;
         next.rules = Some(rules);
         outcome
     };
-    sync_deaths(&mut next);
+    sync_deaths(next);
     validate_state_with_read(&execution.read(next)?, pack)?;
     execution.observe_kernel_result(next, meta, action)?;
     Ok(RulesEvent {

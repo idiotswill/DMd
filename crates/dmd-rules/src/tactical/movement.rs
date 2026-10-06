@@ -19,14 +19,31 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalMovement, Rules
         .ok_or_else(|| invalid("Movement work is absent."))
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Intent { Ordinary, SelfOnly }
+
 pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
     path: &[TacticalMoveStep],
+    intent: Intent,
     execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let actor = active(state)?;
     authorize(state, meta, actor)?;
+    let outgoing = state.rules.as_ref().and_then(|rules| rules.tactical_grapples.as_ref())
+        .is_some_and(|grapples| grapples.active.iter().any(|grip| grip.declaration.grappler == actor));
+    match intent {
+        Intent::Ordinary if outgoing => return Err(prerequisite(
+            "choose explicit self-only movement while holding a creature")),
+        Intent::SelfOnly => {
+            execution.read(state)?.require_guarded("self-only movement requires owned original history")?;
+            if !crate::table::grapple_enabled(state) || !outgoing {
+                return Err(prerequisite("self-only movement requires enabled Grapple and a current held creature"));
+            }
+        }
+        Intent::Ordinary => (),
+    }
     let movement = crate::tactical_movement::admit(state, meta, actor, path)?;
     let turn_number = state
         .rules
@@ -56,7 +73,9 @@ pub(super) fn begin(
         work_trace,
         next_occurrence: 0,
     }));
-    super::grapple::capture_self_only_movement(state, meta)?;
+    if intent == Intent::SelfOnly {
+        super::grapple::capture_self_only_movement(state, meta)?;
+    }
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
     pump_with_context(state, meta, execution)
 }

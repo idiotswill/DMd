@@ -109,6 +109,7 @@ pub(super) fn guard_action(
     if matches!(
         action,
         TacticalAction::Grapple { .. }
+            | TacticalAction::MoveSelfOnly { .. }
             | TacticalAction::ChooseGrappleSave { .. }
             | TacticalAction::ApplyGrappleAfterEquipment { .. }
             | TacticalAction::DeclineGrappleAfterEquipment { .. }

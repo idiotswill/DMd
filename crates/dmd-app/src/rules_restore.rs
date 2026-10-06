@@ -1462,7 +1462,7 @@ fn validate_origins(
                 },
                 RecoveryEvent::Rules(_) => None,
             });
-        if !matches!(action, Some((TacticalAction::Move { path }, outcome))
+        if !matches!(action, Some((TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path }, outcome))
             if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
         {
             return Err("movement receipt disagrees with its originating Move action".into());

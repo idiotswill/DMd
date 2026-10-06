@@ -66,6 +66,24 @@ impl EffectiveHands {
         Ok(result)
     }
 
+    pub(crate) fn opportunity_window(
+        read: &crate::tactical::grapple::reads::OpportunityWindowRead<'_>,
+    ) -> Result<Self, RulesError> {
+        let actor = read.actor();
+        let mut result = Self { actor, reserved: [None; 2] };
+        if read.grips().is_empty() { return Ok(result); }
+        let pack = RulesPack::from_json(include_str!("../../../content/srd-5.2.1/kernel.json"))?;
+        let anatomy = ordinary_grapple_anatomy(read.state(), actor, &pack)?
+            .ok_or_else(|| invalid("opportunity window has no original hand anatomy"))?;
+        for grip in read.grips() {
+            let declaration = &grip.declaration;
+            if declaration.grappler != actor || declaration.anatomy != anatomy
+                || result.reserved[declaration.hand.index()].replace(declaration.id).is_some()
+            { return Err(invalid("opportunity window reservation differs from its source")); }
+        }
+        Ok(result)
+    }
+
     fn current_inner(
         state: &CampaignState,
         rules: &RulesState,

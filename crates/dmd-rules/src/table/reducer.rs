@@ -65,7 +65,7 @@ pub fn resolve_ordinary(
 
 pub(crate) fn apply_operation(
     state: &CampaignState,
-    mut next: &mut CampaignState,
+    next: &mut CampaignState,
     meta: &CommandMeta,
     action: &TableOperation,
     pack: &RulesPack,
@@ -94,7 +94,7 @@ pub(crate) fn apply_operation(
         TableOperation::UpdateContract { contract } => {
             host(meta)?;
             contract.validate()?;
-            let current = table(&next)?;
+            let current = table(next)?;
             if current.active_session.is_some()
                 || current.pending.is_some()
                 || current.roll_context.is_some()
@@ -111,12 +111,12 @@ pub(crate) fn apply_operation(
                         .into(),
                 );
             }
-            table_mut(&mut next)?.contract = contract.clone();
+            table_mut(next)?.contract = contract.clone();
             "The table contract was updated.".into()
         }
         TableOperation::AddPlayer { id, name } => {
             host(meta)?;
-            setup_only(&next)?;
+            setup_only(next)?;
             bounded_text(name, 200)?;
             if next.players.contains_key(id) {
                 return Err("That player identity already exists.".into());
@@ -138,7 +138,7 @@ pub(crate) fn apply_operation(
             input,
         } => {
             host(meta)?;
-            setup_only(&next)?;
+            setup_only(next)?;
             if !next.players.contains_key(player_id)
                 || next.characters.contains_key(character_id)
                 || next.entities.contains_key(entity_id)
@@ -170,7 +170,7 @@ pub(crate) fn apply_operation(
                 },
             );
             apply_rules(
-                &mut next,
+                next,
                 meta,
                 RulesAction::CreateCharacter {
                     entity_id: *entity_id,
@@ -181,7 +181,7 @@ pub(crate) fn apply_operation(
                 &mut mechanics,
                 execution,
             )?;
-            table_mut(&mut next)?
+            table_mut(next)?
                 .character_profiles
                 .insert(*character_id, built.profile.clone());
             format!(
@@ -312,7 +312,7 @@ pub(crate) fn apply_operation(
             participants,
         } => {
             host(meta)?;
-            setup_only(&next)?;
+            setup_only(next)?;
             bounded_text(name, 200)?;
             if meta.session_id != Some(*id)
                 || participants.is_empty()
@@ -351,12 +351,12 @@ pub(crate) fn apply_operation(
                                 .into(),
                         );
                     }
-                    if !table(&next)?.character_profiles.contains_key(&id) {
+                    if !table(next)?.character_profiles.contains_key(&id) {
                         return Err("This character has no supported creation profile.".into());
                     }
                 }
             }
-            require_aftermath_attendance(&next, participants)?;
+            require_aftermath_attendance(next, participants)?;
             let binding = ActiveTableSession {
                 session_id: *id,
                 display_name: name.trim().into(),
@@ -364,31 +364,31 @@ pub(crate) fn apply_operation(
                 participants: participants.clone(),
             };
             let session = binding.as_session(meta.campaign_id);
-            if !session.validate_against_state(&next).is_empty() {
+            if !session.validate_against_state(next).is_empty() {
                 return Err("The session bindings are inconsistent.".into());
             }
-            table_mut(&mut next)?.active_session = Some(binding);
+            table_mut(next)?.active_session = Some(binding);
             session_change = Some(SessionChange::Start { session });
             format!("Session started: {}.", name.trim())
         }
         TableOperation::EndSession => {
             host(meta)?;
-            idle(&next)?;
+            idle(next)?;
             if next
                 .encounter
                 .as_ref()
                 .is_some_and(|encounter| encounter.flow.is_some())
-                && crate::tactical::require_finished_encounter(&next).is_err()
+                && crate::tactical::require_finished_encounter(next).is_err()
             {
-                crate::tactical::require_aftermath_session_boundary(&next)
+                crate::tactical::require_aftermath_session_boundary(next)
                     .map_err(|error| error.to_string())?;
             }
-            let binding = active(&next, meta)?;
+            let binding = active(next, meta)?;
             let expected = binding.as_session(meta.campaign_id);
             let mut ended = expected.clone();
             ended.status = PlaySessionStatus::Closed;
             ended.ended_at_world = Some(next.clock.now);
-            table_mut(&mut next)?.active_session = None;
+            table_mut(next)?.active_session = None;
             session_change = Some(SessionChange::Replace {
                 expected,
                 next: ended,
@@ -397,7 +397,7 @@ pub(crate) fn apply_operation(
         }
         TableOperation::SetSituation { situation } => {
             host(meta)?;
-            if table(&next)?.roll_context.is_some() {
+            if table(next)?.roll_context.is_some() {
                 return Err("Resolve the pending roll before changing its situation.".into());
             }
             if situation
@@ -407,19 +407,19 @@ pub(crate) fn apply_operation(
             {
                 return Err("A new situation cannot contain invented resolutions.".into());
             }
-            if table(&next)?.active_session.is_some() {
-                active(&next, meta)?;
+            if table(next)?.active_session.is_some() {
+                active(next, meta)?;
             }
-            table_mut(&mut next)?.situation = situation.clone();
+            table_mut(next)?.situation = situation.clone();
             format!("Situation: {}. {}", situation.title, situation.description)
         }
         TableOperation::Declare { text, intent } => {
-            idle(&next)?;
-            let (player_id, character_id, actor, session_id) = player_channel(&next, meta)?;
+            idle(next)?;
+            let (player_id, character_id, actor, session_id) = player_channel(next, meta)?;
             bounded_text(text, 8000)?;
             let intent = intent.clone();
             let response = intent_message(&intent);
-            table_mut(&mut next)?.pending = Some(PendingTableDecision {
+            table_mut(next)?.pending = Some(PendingTableDecision {
                 id: meta.id,
                 session_id,
                 player_id,
@@ -438,11 +438,11 @@ pub(crate) fn apply_operation(
             text,
             intent,
         } => {
-            let pending = owned_pending(&next, meta, *pending_id, *revision)?.clone();
+            let pending = owned_pending(next, meta, *pending_id, *revision)?.clone();
             bounded_text(text, 8000)?;
             let intent = intent.clone();
             let response = intent_message(&intent);
-            table_mut(&mut next)?.pending = Some(PendingTableDecision {
+            table_mut(next)?.pending = Some(PendingTableDecision {
                 text: text.trim().into(),
                 intent,
                 origin: meta.clone(),
@@ -458,8 +458,8 @@ pub(crate) fn apply_operation(
             pending_id,
             revision,
         } => {
-            owned_pending(&next, meta, *pending_id, *revision)?;
-            table_mut(&mut next)?.pending = None;
+            owned_pending(next, meta, *pending_id, *revision)?;
+            table_mut(next)?.pending = None;
             "The uncommitted declaration was withdrawn. No world outcome occurred.".into()
         }
         TableOperation::Adjudicate {
@@ -468,8 +468,8 @@ pub(crate) fn apply_operation(
             request_id,
         } => {
             host(meta)?;
-            active(&next, meta)?;
-            let pending = pending_match(&next, *pending_id, *revision)?.clone();
+            active(next, meta)?;
+            let pending = pending_match(next, *pending_id, *revision)?.clone();
             if pending.intent == TableIntent::SecondWind
                 && next
                     .encounter
@@ -485,7 +485,7 @@ pub(crate) fn apply_operation(
                 if acting != Some(pending.actor) {
                     return Err("Second Wind needs the declaring character's turn.".into());
                 }
-                table_mut(&mut next)?.pending = None;
+                table_mut(next)?.pending = None;
                 let before = next.clone();
                 tactical_event = Some(tactical_transition(
                     &before,
@@ -504,7 +504,7 @@ pub(crate) fn apply_operation(
                         challenge_id: Some(id),
                         ..
                     } => {
-                        let challenge = table(&next)?
+                        let challenge = table(next)?
                             .situation
                             .challenges
                             .iter()
@@ -548,9 +548,9 @@ pub(crate) fn apply_operation(
                         );
                     }
                 };
-                table_mut(&mut next)?.pending = None;
+                table_mut(next)?.pending = None;
                 apply_rules(
-                    &mut next,
+                    next,
                     meta,
                     action,
                     pack,
@@ -560,7 +560,7 @@ pub(crate) fn apply_operation(
                 )?;
                 match &mechanics {
                     Some(RulesOutcome::RollRequested(_)) => {
-                        table_mut(&mut next)?.roll_context = Some(TableRollContext {
+                        table_mut(next)?.roll_context = Some(TableRollContext {
                             request_id: *request_id,
                             session_id: pending.session_id,
                             player_id: pending.player_id,
@@ -583,8 +583,8 @@ pub(crate) fn apply_operation(
             }
         }
         TableOperation::SubmitPhysical { request_id, faces } => {
-            let (player, character, actor, _) = player_channel(&next, meta)?;
-            let context = table(&next)?
+            let (player, character, actor, _) = player_channel(next, meta)?;
+            let context = table(next)?
                 .roll_context
                 .clone()
                 .ok_or("No table roll is pending.")?;
@@ -629,7 +629,7 @@ pub(crate) fn apply_operation(
                 })
                 .collect();
             apply_rules(
-                &mut next,
+                next,
                 meta,
                 RulesAction::SubmitRoll {
                     result: RollResult {
@@ -643,7 +643,7 @@ pub(crate) fn apply_operation(
                 &mut mechanics,
                 execution,
             )?;
-            table_mut(&mut next)?.roll_context = None;
+            table_mut(next)?.roll_context = None;
             match &mechanics {
                 Some(RulesOutcome::RollResolved {
                     roll,
@@ -659,7 +659,7 @@ pub(crate) fn apply_operation(
                         );
                     }
                     if let Some(id) = context.challenge_id {
-                        let challenge = table_mut(&mut next)?
+                        let challenge = table_mut(next)?
                             .situation
                             .challenges
                             .iter_mut()

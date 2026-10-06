@@ -474,7 +474,13 @@ pub(super) fn validate_with_read(
             return Err(invalid("invalid non-rolled saving throw decision"));
         }
         if decision.failure == TacticalSaveFailure::Voluntary {
-            authorize(state, &decision.resolved_by, decision.key.subject)?;
+            if crate::table::grapple_enabled(state)
+                && decision.key.role == TacticalRollRole::GrappleSave
+            {
+                read.validate_retained_grapple_decision(decision)?;
+            } else {
+                authorize(state, &decision.resolved_by, decision.key.subject)?;
+            }
             if !rules
                 .cancelled_roll_ids
                 .contains(&decision.key.request_id())

@@ -157,6 +157,9 @@ pub enum TacticalAction {
     Move {
         path: Vec<TacticalMoveStep>,
     },
+    MoveSelfOnly {
+        path: Vec<TacticalMoveStep>,
+    },
     DeclineOpportunity,
     OpportunityAttack {
         choice: TacticalMeleeChoice,
@@ -604,7 +607,8 @@ fn dispatch(
         TacticalAction::CastSpell { choice, targets } => {
             casting::begin(next, meta, choice, targets, execution)?;
         }
-        TacticalAction::Move { path } => movement::begin(next, meta, path, execution)?,
+        TacticalAction::Move { path } => movement::begin(next, meta, path, movement::Intent::Ordinary, execution)?,
+        TacticalAction::MoveSelfOnly { path } => movement::begin(next, meta, path, movement::Intent::SelfOnly, execution)?,
         TacticalAction::DeclineOpportunity => movement::decline(next, meta, execution)?,
         TacticalAction::OpportunityAttack { choice } => {
             let window = movement::selected_opportunity(next)?.clone();

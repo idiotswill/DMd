@@ -304,6 +304,13 @@ pub enum GrappleActivity {
 #[serde(deny_unknown_fields)]
 pub enum GrappleReader {
     AttackAdmission { attack: CommandId },
+    OpportunityWindow {
+        attack: CommandId,
+        window: CommandId,
+        reactor: EntityId,
+        mover: EntityId,
+        step: u16,
+    },
     RequestIssue { roll: TacticalRollKey },
     FlightLoss { actor: EntityId },
 }

@@ -6,9 +6,10 @@ use dmd_domain::*;
 mod tests;
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableMovementOptions>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -86,6 +87,10 @@ pub(super) fn options(
             10
         },
         modes,
+        self_only_required: matches!(read, super::TacticalRead::Owned(_))
+            && dmd_rules::table::grapple_enabled(state)
+            && rules.tactical_grapples.as_ref().is_some_and(|grapples|
+                grapples.active.iter().any(|grip| grip.declaration.grappler == actor)),
     }))
 }
 

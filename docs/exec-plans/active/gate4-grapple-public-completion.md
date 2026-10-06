@@ -1,12 +1,53 @@
 # Gate 4 â€” Complete public Grapple application path
 
 Status: **PLAN COMMITTED BEFORE IMPLEMENTATION; SOURCE ALLOCATED; ALL NEW WORK UNCOMPILED/UNRUN**.
-Date: 2026-10-05. Sole writer: ground_next_oct5, explicitly allocated by root.
+Date: 2026-10-06. Sole writer: public_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 `a6097d485244a2ed5443765fb4ee40c34625892b`.
 
 ## Allocation, authority and evidence
+
+Root resumed the already approved correction on 2026-10-06 at plan-first
+`10fcc38`, transferring the original writer's complete 23-path production/UI
+draft to public_grapple_oct6. The prior writer was stopped; no concurrent source
+writer remains. The receiving draft and both complete independent 716 reviews
+were read before adding source-only coverage. No private successor or group3
+dependency has been received. This continuation is unformatted, uncompiled and
+unrun; root retains the sole heavy slot and all publication authority.
+
+The five approved production corrections and precise lint fixes are retained.
+The new public test target now has four additional genuine application cases in
+`tests/support/table_grapple_public_corrections.rs`: isolated live-grip Finish
+refusal with actual pause/attendance/resume/release/replacement; historical
+Player-target voluntary save across controller transfer with current-owner new
+input; third-actor unarmed OA with a separate outgoing-hand window proof that
+survives release; explicit in-range movement and suspended last-grip release
+with exact old-request retries. New hostile imports compare every destination
+typed cell, including matching current/latest images. Ray coverage explicitly
+distinguishes the paid cast origin from the first SelectWork admission and
+later advancing commands and adds wrong origin/cast/target/missing-cut cases.
+The previous unrun self-only case now sends the explicit action and preserves
+its original assertions after rejecting ordinary Move without writes.
+
+Three separate frontend tests in `components/GrappleMovement.test.ts` exercise
+the explicit button, absent-field ordinary behavior, and original saved action
+after a lost reply. Existing Movement.test.ts is untouched. The new fixture's
+third-actor geometry variant is selected only by the new OA case; its default
+producer inputs remain unchanged. The common new-fixture rejection helper now
+compares all tables/typed rows in addition to the existing export comparison.
+
+The 2026-10-06 pre-freeze stdlib/Git audit passed: all154 protected files,
+all28 original inline test modules, all894 original Rust test bodies with their
+occurrence counts, and all8 content files are unchanged against ade8e93. The
+inventory is25 application cases and9 frontend cases, all UNRUN. `git diff
+--check` was clear. These are source-preservation results only; no formatter,
+compiler or executable validation ran in this correction continuation.
+
+This is authorship only. The decisive purchased Greatsword menu exclusion,
+Glaive refresh/reach, group3 interactions, full runtime/frontend checks and
+packaged native evidence remain required. Ordinary dragging/carrying remains
+open Gate4 scope. No newly authored scenario is credited as passed.
 
 Root approved the complete independent-review correction plan on 2026-10-05
 and transferred sole source ownership back to this writer from clean71673d7.

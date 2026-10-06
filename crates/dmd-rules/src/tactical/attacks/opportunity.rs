@@ -423,9 +423,9 @@ pub(super) fn validate_admission(
                     .ok_or_else(|| invalid("reaction before-equipment absent"))?;
                 *loadout = weapon.equipment_before.clone();
             }
-            let retained = read.attack_retained(attack)?;
+            let retained = read.opportunity_window(attack)?;
             let hands = match retained.as_ref() {
-                Some(retained) => crate::tactical_hands::EffectiveHands::attack(retained)?,
+                Some(retained) => crate::tactical_hands::EffectiveHands::opportunity_window(retained)?,
                 None => crate::tactical_hands::EffectiveHands::current(
                     &before,
                     before.rules.as_ref().ok_or(RulesError::Uninitialized)?,

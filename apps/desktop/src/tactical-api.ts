@@ -56,7 +56,7 @@ export type ShoveDecision = { Save: { ability: 'Strength'|'Dexterity' } } | { Ou
 export interface ShoveView { key: Id; actor: Id; stage: 'SaveChoice'|'OutcomeChoice'|'PushReview'; from: Point|null; destination: Point|null }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
-export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[] }
+export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[]; self_only_required?: boolean }
 export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } };
 export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[] }
 export interface Volume { min: Point; max: Point }
@@ -103,6 +103,7 @@ export type TacticalAction =
   | { CreatureArea: { feature_id: string; aim: { origin: Point; toward: Point; include_origin: boolean }; ordering: 'Host' | 'DelegateToHost' } }
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
+  | { MoveSelfOnly: { path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }

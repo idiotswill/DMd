@@ -453,7 +453,11 @@ pub struct TableMovementOptions {
     pub position: SpatialPoint,
     pub grid_units: u32,
     pub modes: Vec<MovementMode>,
+    #[serde(default, skip_serializing_if = "movement_self_only_absent")]
+    pub self_only_required: bool,
 }
+
+fn movement_self_only_absent(value: &bool) -> bool { !value }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableAttackDecision {

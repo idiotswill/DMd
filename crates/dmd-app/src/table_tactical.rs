@@ -374,7 +374,7 @@ pub(crate) fn view_read(
                     .as_ref()
                     .is_some_and(|rules| rules.pending.is_none()) =>
             {
-                movement::options(state, actor)?
+                movement::options(read, actor)?
             }
             _ => None,
         },

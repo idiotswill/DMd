@@ -636,10 +636,10 @@ impl CampaignRuntime {
             ));
         }
         let result = TableSourceControlOptions {
-            enabled: crate::table_source_control::enabled(&state),
-            settled: crate::table_source_control::settled(&state).is_ok(),
-            adopted: crate::table_source_control::adoptions(&state).map_err(recovery)?,
-            actors: crate::table_source_control::visible_actors(&state, &TableViewer::Host)
+            enabled: crate::table_source_control::enabled(state),
+            settled: crate::table_source_control::settled(state).is_ok(),
+            adopted: crate::table_source_control::adoptions(state).map_err(recovery)?,
+            actors: crate::table_source_control::visible_actors(state, &TableViewer::Host)
                 .map_err(recovery)?,
         };
         tx.commit().await.map_err(recovery)?;
@@ -729,7 +729,7 @@ impl CampaignRuntime {
             actor: selected,
         } = request.channel
             && (selected != actor
-                || !crate::table_source_control::owns_source(&state, player_id, actor))
+                || !crate::table_source_control::owns_source(state, player_id, actor))
         {
             return Err(rejected("Select the source creature who owns this roll."));
         }
@@ -1193,8 +1193,8 @@ impl CampaignRuntime {
         }
         self.bootstrap_presentation(&mut tx, &mut export, &read, &mut history)
             .await?;
-        let meta = request_meta(&state, &request, &history.latest).map_err(rejected)?;
-        let intent = derive_intent(&state, &request, &history.latest).map_err(rejected)?;
+        let meta = request_meta(state, &request, &history.latest).map_err(rejected)?;
+        let intent = derive_intent(state, &request, &history.latest).map_err(rejected)?;
         let (response, acceptance) = match intent {
             Intent::Action(action) => {
                 let (prepared, table_event, session_change) =
@@ -1288,7 +1288,7 @@ impl CampaignRuntime {
                 .await
                 .map_err(recovery)?;
                 history.observation_ordinal += 1;
-                presentation::accepted_observation_visibility(&state, &observation, &mut history);
+                presentation::accepted_observation_visibility(state, &observation, &mut history);
                 export.observations.push(SessionObservation {
                     ordinal: history.observation_ordinal,
                     record: observation,

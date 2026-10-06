@@ -36,6 +36,7 @@ fn retained_dependencies(
     state: &CampaignState,
     allow_new_initiative: bool,
 ) -> Result<Vec<EntityId>, RulesError> {
+    require_no_live_grips(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let admitted_initiative = allow_new_initiative
         && rules.pending.as_ref().is_some_and(|pending| {
@@ -192,6 +193,15 @@ fn retained_dependencies(
         require_future_placement(state, *actor)?;
     }
     Ok(dependencies)
+}
+
+fn require_no_live_grips(state: &CampaignState) -> Result<(), RulesError> {
+    if state.rules.as_ref().and_then(|rules| rules.tactical_grapples.as_ref())
+        .is_some_and(|grapples| !grapples.active.is_empty())
+    {
+        return Err(prerequisite("release or resolve live grips before finishing encounter timing"));
+    }
+    Ok(())
 }
 
 /// The next supported table placement must be possible before timing is removed.

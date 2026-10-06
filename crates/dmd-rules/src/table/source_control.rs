@@ -470,6 +470,7 @@ pub fn authorize_tactical(
         | A::CreatureArea { .. }
         | A::CreatureAttack { .. }
         | A::Move { .. }
+        | A::MoveSelfOnly { .. }
         | A::Attack { .. }
         | A::EndTurn
         | A::Dash { .. }

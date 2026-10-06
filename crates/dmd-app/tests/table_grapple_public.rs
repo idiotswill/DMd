@@ -134,6 +134,11 @@ impl Fixture {
         Box::pin(Self::with_opponent(definition, size, false)).await
     }
     async fn with_opponent(definition: &str, size: CreatureSize, opponent: bool) -> Self {
+        Box::pin(Self::with_opponent_geometry(definition, size, opponent, false)).await
+    }
+    async fn with_opponent_geometry(
+        definition: &str, size: CreatureSize, opponent: bool, pc_opportunity: bool,
+    ) -> Self {
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
         std::fs::create_dir(&directory).unwrap();
@@ -296,7 +301,8 @@ impl Fixture {
                         position: SpatialPoint { x: 10, y: 10, z: 0 },
                         height: 12,
                         allies: vec![],
-                        enemies: vec![f.goblin],
+                        enemies: std::iter::once(f.goblin)
+                            .chain(f.opponent.filter(|_| pc_opportunity)).collect(),
                     }],
                     creatures: std::iter::once(TableCreaturePlacement {
                         actor: f.goblin,
@@ -312,12 +318,16 @@ impl Fixture {
                             _ => 8,
                         },
                         allies: vec![],
-                        enemies: std::iter::once(f.actors[0]).chain(f.opponent).collect(),
+                        enemies: std::iter::once(f.actors[0])
+                            .chain(f.opponent.filter(|_| !pc_opportunity)).collect(),
                     })
                     .chain(f.opponent.map(|actor| TableCreaturePlacement {
                         actor,
                         public_label: "Other guard".into(),
-                        position: SpatialPoint { x: 30, y: 10, z: 0 },
+                        position: SpatialPoint {
+                            x: if pc_opportunity { 10 } else { 30 },
+                            y: if pc_opportunity { 20 } else { 10 }, z: 0,
+                        },
                         height: 8,
                         allies: vec![],
                         enemies: vec![f.goblin],
@@ -597,6 +607,7 @@ impl Fixture {
     }
     async fn reject(&self, request: TableTransportRequest) {
         let before = export_campaign(&self.pool, self.campaign).await.unwrap();
+        let rows = all_rows(&self.pool).await;
         assert!(
             Box::pin(self.runtime.submit_presented_table(request))
                 .await
@@ -605,6 +616,7 @@ impl Fixture {
         let mut after = export_campaign(&self.pool, self.campaign).await.unwrap();
         after.exported_at_utc = before.exported_at_utc.clone();
         assert_eq!(after, before);
+        assert_eq!(all_rows(&self.pool).await, rows);
     }
     async fn cold_action(
         &mut self,
@@ -1267,7 +1279,7 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
         .find(|v| v.choice.spell_id == "scorching-ray")
         .unwrap()
         .choice;
-    Box::pin(f.cold_action(
+    let casting = Box::pin(f.cold_action(
         TableTransportChannel::Host,
         TacticalAction::CastSpell {
             choice,
@@ -1281,6 +1293,20 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
         Box::pin(f.advance_choice()).await;
         let issued = f.state().await;
         let cut = assert_empty_attack_reads(&issued);
+        let attack = resolution(&issued).attack.as_ref().unwrap();
+        let pending = resolution(&issued).pending.as_ref().unwrap();
+        assert_ne!(attack.origin.id, casting.command_id);
+        assert_eq!(cut.reader, GrappleReader::AttackAdmission { attack: attack.origin.id });
+        assert_eq!(pending.key.origin, casting.command_id);
+        assert_eq!(pending.key.subject, target);
+        assert_eq!(pending.key.request_id(), issued.rules.as_ref().unwrap().pending.as_ref().unwrap().request.id);
+        if index == 0 {
+            let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+            let selected = export.table_transport_bindings.iter().find(|binding|
+                binding.meta.id == attack.origin.id).unwrap();
+            let selected: TableTransportRequest = serde_json::from_str(&selected.request_json).unwrap();
+            assert!(matches!(selected.input, TableTransportInput::SelectWork { .. }));
+        }
         assert!(!admissions.contains(&cut));
         admissions.push(cut);
         assert!(
@@ -1329,6 +1355,23 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
                 .unwrap()
                 .key;
             reads.cuts.last_mut().unwrap().source_attack = Some(first);
+            Box::pin(reject_state_image(&f, forged)).await;
+        }
+        for mutation in ["advancing-origin", "wrong-cast", "wrong-target", "missing-admission"] {
+            let mut forged = issued.clone();
+            let r = corrections::resolution_mut(&mut forged);
+            match mutation {
+                "advancing-origin" => {
+                    let issue = r.grapple.as_mut().unwrap().cuts.iter_mut().find(|read|
+                        read.key.reader == (GrappleReader::RequestIssue { roll: pending.key })).unwrap();
+                    let GrappleReader::RequestIssue { roll } = &mut issue.key.reader else { unreachable!() };
+                    roll.origin = attack.origin.id;
+                }
+                "wrong-cast" => r.casts[0].cast.plan.origin.id = CommandId::new(),
+                "wrong-target" => r.casts[0].targets[0].actor = f.goblin,
+                "missing-admission" => r.grapple.as_mut().unwrap().cuts.retain(|read| read.key != cut),
+                _ => unreachable!(),
+            }
             Box::pin(reject_state_image(&f, forged)).await;
         }
         Box::pin(f.cold_roll(TableTransportChannel::Host, 1)).await;
@@ -1656,9 +1699,16 @@ async fn self_only_move_retains_grip_until_actual_range_crossing_and_never_moves
         .participant(target)
         .unwrap()
         .position;
+    let ordinary = f.request(pc.clone(), action(TacticalAction::Move {
+        path: vec![TacticalMoveStep {
+            destination: SpatialPoint { x: 0, y: 10, z: 0 },
+            mode: MovementMode::Walk,
+        }],
+    })).await;
+    Box::pin(f.reject(ordinary)).await;
     let movement = Box::pin(f.cold_action(
         pc,
-        TacticalAction::Move {
+        TacticalAction::MoveSelfOnly {
             path: vec![TacticalMoveStep {
                 destination: SpatialPoint { x: 0, y: 10, z: 0 },
                 mode: MovementMode::Walk,
@@ -2453,3 +2503,6 @@ async fn open_and_resume_replay_original_activation_when_current_and_latest_mark
     }
     f.close().await;
 }
+
+#[path = "support/table_grapple_public_corrections.rs"]
+mod corrections;
