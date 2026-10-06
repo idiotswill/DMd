@@ -55,3 +55,17 @@ single forwarding call. It also checks that every existing test file remains
 unchanged. The inverse ignores formatting; the full visible diff was separately
 read. All compiler/runtime results for this correction remain pending. Preserve
 the dae failure logs and publish for fresh exact-head verification.
+
+## Application compile follow-up (planned before edits)
+
+Exact 2ffb7c4 CI passes the rules compilation that previously failed, then both
+platforms and both toolchains fail in dmd-app. Actual logs are retained as
+tooling/ci-oct6/pr70-2ff-job-{112215192501,112215193212,112215192698,112215193081}-2026-10-06.log.
+There are three missing references: source-control projection forwards an
+unbound pack variable; tactical presentation lacks the RulesPack type import;
+the existing Ogre private test lacks the RulesPack import formerly supplied by
+its parent module. Forward read.pack() from the same owned projection read, add
+the production type import, and import the type directly in the private test.
+No changes to authority, test bodies/assertions, fixtures, content or read
+construction are needed. Review the full three-line diff, format/check and
+publish for another fresh exact-head CI run. Runtime remains unverified.
