@@ -534,7 +534,10 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
-    if matches!(event.action, TableAction::AwardHeroicInspiration { .. }) {
+    if matches!(
+        event.action,
+        TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. }
+    ) {
         if event.meta.issuer != CommandIssuer::Admin
             || event.meta.actor.is_some()
             || event.meta.session_id.is_none()
@@ -543,6 +546,21 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
             || event.outcome.mechanics.is_some()
         {
             return Err("Inspiration award has incompatible Host or nested authority".into());
+        }
+        return Ok(());
+    }
+    if matches!(
+        event.action,
+        TableAction::ResolveHostInspirationTransfer { .. }
+    ) {
+        if !matches!(event.meta.issuer, CommandIssuer::Player(_))
+            || !matches!(event.meta.actor, Some(AgentRef::Entity(_)))
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration choice has incompatible Player or nested authority".into());
         }
         return Ok(());
     }
@@ -822,7 +840,8 @@ fn validate_rulings(
                 .get(&record.command.id)
                 .ok_or("ruling has no checked typed command")?;
             if let RecoveryEvent::Table(event) = command
-                && let TableAction::AwardHeroicInspiration { reason, .. } = &event.action
+                && let (TableAction::AwardHeroicInspiration { reason, .. }
+                | TableAction::AwardExcessInspiration { reason, .. }) = &event.action
             {
                 if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
                     return Err("ruling disagrees with its originating Inspiration award".into());
@@ -891,6 +910,13 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    origins.extend(
+        state
+            .table
+            .as_ref()
+            .and_then(|table| table.inspiration_transfer.as_ref())
+            .map(|transfer| &transfer.origin),
+    );
     grapple_origins(state, &mut origins);
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
@@ -1412,6 +1438,16 @@ fn validate_origins(
             return Err("aftermath conclusion lacks its exact accepted host decision".into());
         }
     }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+        && !commands.get(&transfer.origin.id).is_some_and(|event| matches!(event,
+            RecoveryEvent::Table(event) if event.meta == transfer.origin
+                && matches!(event.action, TableAction::AwardExcessInspiration { character_id, .. } if character_id == transfer.character_id)))
+    {
+        return Err("Inspiration choice lacks its exact accepted Host excess award".into());
+    }
     let pending = state
         .table
         .as_ref()
@@ -1430,7 +1466,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardExcessInspiration { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))

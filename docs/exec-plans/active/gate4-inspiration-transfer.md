@@ -1,6 +1,6 @@
 # Gate 4 — Owner-controlled excess Heroic Inspiration
 
-Status: **PLAN COMMITTED BEFORE SOURCE; IMPLEMENTATION AND VERIFICATION PENDING**.
+Status: **SOURCE IMPLEMENTED AND FORMATTED; INDEPENDENT REVIEW AND RUNTIME ACCEPTANCE PENDING**.
 Date: 2026-10-06. Branch: `codex/gate4-inspiration-transfer`.
 Sole writer: private_grapple_oct6, allocated by root. No PR/publication allocated.
 Clean starting head and fetched Host parent: `54b674234011da4b8aee800fde74ad92d7df266d`;
@@ -125,3 +125,59 @@ Player agency, confusing Resourceful with Host provenance, resource banking,
 capability/recipient privacy leaks, and a saved-request allowlist omission.
 Next: commit this plan, implement the bounded production path and real tests,
 then hand a clean formatted source freeze and preservation audit to root.
+
+## Source freeze and evidence (2026-10-06)
+
+Plan-first commit `041fd10baa968c9575d5a6e6a181212958eb822b` preceded every source
+edit. The new outer actions are `AwardExcessInspiration` and
+`ResolveHostInspirationTransfer`; desktop input carries only the latter's opaque
+`InspirationTransfer` handle. The optional table companion authenticates the real
+Host origin and existing flag. Strict Player/session/character checks remain
+separate from the shared kernel mutation. The original kernel transfer primitive
+was extracted with copied IDs instead of borrowed match parameters; its complete
+token sequence after that reference substitution, diagnostics and mutation order
+are retained. Original first award, long-rest producer and feature invariant stay
+unchanged. No persistence schema or source-profile revision was introduced.
+
+The owner sees eligible names and opaque choices; Host sees an informational
+notice. The same Host form selects the existing first-award action or new excess
+action from the current private sheet. A source-creature selection cannot expose
+PC choice buttons. The Host and owner UI disable other game controls while their
+choice view exists. Other Players' views remain private; server admission rejects
+fresh mutations independently. Questions, navigation and exact retries remain.
+
+Added 12 application tests in `support/table_inspiration_transfer.rs`, registered
+as a child of the existing Inspiration support module to reuse its unchanged
+real-command helpers. These cover exact producer/ruling/state effects; give and
+decline; no stacking or automatic assignment; copied/stale/raw/foreign/old-version
+authority refusals; pending other-actor/session mutations; genuine absent-owner
+refusal and passive absent-recipient receipt; real gifted Grapple save and Escape
+spending; actual Chimera critical damage excluding a dead PC; forged flags,
+companions, rulings, outer events, snapshots, anchors, capabilities and transport
+bindings. Positive commands use the existing file reopen, independent portable
+restore, deterministic replay and exact-retry checks. Negative requests and hostile
+restores compare every typed destination row. Unrelated presentation is compared
+in full; canonical views normalize only the internal global event sequence.
+
+Added 22 frontend cases: 5 actual TableApp cases and 17 durable-envelope cases.
+They cover the single Host flow, no Host choice, owner/source/channel switching,
+minimum recipient visibility, changed handles, question/session-control behavior,
+give/decline/excess uncertain acknowledgement and exact remount retry, and strict
+incompatible saved-request refusal without deleting the saved request.
+
+Direct GNU Rustfmt write and check on the 17 changed/new Rust files passed with
+`--edition 2024 --config skip_children=true`; `git diff --check` passed. The
+source-only audit found all 947 existing Rust test bodies/attributes, all 27 old
+frontend test/support files, all 39 protected content/fixture/lock files and 617
+other baseline Git entries exact. The original public fixture is byte-identical;
+the old Inspiration support file differs only by a three-line child registration.
+No optional constructor migrations were needed. The final immutable-head audit
+and exact hashes are handed back outside the repository under `tooling`.
+
+All 12 Rust and 22 frontend cases are **UNCOMPILED/UNRUN**. Formatting and byte
+preservation are not runtime acceptance. Required compiler/Clippy, focused and
+legacy replay suites, complete frontend verification, canonical scripts, CI,
+independent source review and packaged native evidence remain mandatory. This
+source freeze neither accepts the slice nor closes Gate4; root decides normal
+whole-history receipt and subsequent verification. No merge or publication was
+performed from this branch.

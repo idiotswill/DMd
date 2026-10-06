@@ -46,7 +46,11 @@ pub enum LegacyRulesEventRef<'a> {
 impl CampaignExecution {
     pub fn from_original_anchor(anchor: CampaignState, pack: RulesPack) -> Result<Self, String> {
         reducer::validate_table(&anchor, &pack)?;
-        if has_unimplemented_grapple_records(&anchor)
+        if anchor
+            .table
+            .as_ref()
+            .is_some_and(|table| table.inspiration_transfer.is_some())
+            || has_unimplemented_grapple_records(&anchor)
             || super::grapple_enabled(&anchor)
             || anchor.encounter_history.is_some()
             || source_control::enabled(&anchor)

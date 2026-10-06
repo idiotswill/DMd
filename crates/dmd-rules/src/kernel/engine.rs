@@ -585,36 +585,7 @@ fn apply(
             )
         }
         RulesAction::ResolveInspirationTransfer { actor, recipient } => {
-            authorize(state, meta, *actor)?;
-            if !entity(rules, *actor)?
-                .character_features
-                .as_ref()
-                .is_some_and(|f| f.inspiration_transfer_pending)
-            {
-                return Err(prerequisite("no Inspiration transfer is pending"));
-            }
-            if let Some(recipient) = recipient {
-                if recipient == actor
-                    || !state.characters.values().any(|c| {
-                        c.entity_id == *recipient
-                            && c.status == CharacterStatus::Active
-                            && c.controlling_player_id.is_some()
-                    })
-                    || entity(rules, *recipient)?.heroic_inspiration
-                    || entity(rules, *recipient)?.death.dead
-                {
-                    return Err(prerequisite(
-                        "recipient must be another eligible group PC lacking Inspiration",
-                    ));
-                }
-                entity_mut(rules, *recipient)?.heroic_inspiration = true;
-            }
-            entity_mut(rules, *actor)?
-                .character_features
-                .as_mut()
-                .unwrap()
-                .inspiration_transfer_pending = false;
-            Ok(RulesOutcome::Changed)
+            resolve_inspiration_transfer(state, rules, meta, *actor, *recipient)
         }
         RulesAction::SubmitSavageAttacker { roll } => {
             if roll.weapon_dice.is_some() {
@@ -1050,6 +1021,72 @@ fn apply(
             Ok(RulesOutcome::Changed)
         }
     }
+}
+
+/// Original Resourceful resolution; table callers additionally require the attending owner.
+pub(crate) fn resolve_inspiration_transfer(
+    state: &CampaignState,
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    recipient: Option<EntityId>,
+) -> Result<RulesOutcome, RulesError> {
+    authorize(state, meta, actor)?;
+    if !entity(rules, actor)?
+        .character_features
+        .as_ref()
+        .is_some_and(|f| f.inspiration_transfer_pending)
+    {
+        return Err(prerequisite("no Inspiration transfer is pending"));
+    }
+    if let Some(recipient) = recipient {
+        if recipient == actor
+            || !state.characters.values().any(|c| {
+                c.entity_id == recipient
+                    && c.status == CharacterStatus::Active
+                    && c.controlling_player_id.is_some()
+            })
+            || entity(rules, recipient)?.heroic_inspiration
+            || entity(rules, recipient)?.death.dead
+        {
+            return Err(prerequisite(
+                "recipient must be another eligible group PC lacking Inspiration",
+            ));
+        }
+        entity_mut(rules, recipient)?.heroic_inspiration = true;
+    }
+    entity_mut(rules, actor)?
+        .character_features
+        .as_mut()
+        .unwrap()
+        .inspiration_transfer_pending = false;
+    Ok(RulesOutcome::Changed)
+}
+
+/// Only the owned table producer may pair this flag with its actual Host ruling.
+pub(crate) fn begin_host_inspiration_transfer(
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    ruling: &Ruling,
+) -> Result<(), RulesError> {
+    adjudicate(rules, meta, ruling)?;
+    let e = entity_mut(rules, actor)?;
+    if !e.heroic_inspiration
+        || !e
+            .character_features
+            .as_ref()
+            .is_some_and(|f| f.human_resourceful && !f.inspiration_transfer_pending)
+    {
+        return Err(prerequisite(
+            "an excess award requires an inspired source-created PC without a pending transfer",
+        ));
+    }
+    e.character_features
+        .as_mut()
+        .unwrap()
+        .inspiration_transfer_pending = true;
+    Ok(())
 }
 
 /// Shared fixed grant; callers retain their own command-path admission guards.

@@ -13,10 +13,18 @@ mod equipment;
 mod grapple_access;
 mod inspiration;
 pub use inspiration::award_ruling as inspiration_award_ruling;
+pub use inspiration::transfer_choices as inspiration_transfer_choices;
 pub mod source_control;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
+    AwardExcessInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
+    ResolveHostInspirationTransfer {
+        choice: TableInspirationTransferChoice,
+    },
     AwardHeroicInspiration {
         character_id: CharacterId,
         reason: String,
