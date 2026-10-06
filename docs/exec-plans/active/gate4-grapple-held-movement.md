@@ -384,3 +384,21 @@ preservation report `tooling/ci-oct6/held-1eb5bdb-format-preservation.json`, SHA
 No compiler, tests, npm, database or native execution occurred. Root must review
 the exact final diff and publish the draft, then schedule compiler/runtime and
 complete the outstanding acceptance matrix before any merge or Gate4 claim.
+
+### First exact-head CI correction — 2026-10-06
+
+Root takes sole write ownership after the author stopped on an account usage
+limit; no other writer remains active. Draft PR68 was opened at
+74a121f533d733148c591f114004e98f1151c73e against public4d8. Both MSRV jobs and
+the architecture/genericity guards pass. Linux fast verification and native
+Windows all-target checking pass, but strict Clippy fails on the nested movement
+receipt condition in `dmd-domain/src/tactical_grapples/transport.rs:195`.
+Root read the actual Linux112172602155 and Windows112172603149 logs. They report
+the same `collapsible_if` error; runtime tests did not execute in either job.
+
+Before source changes: combine the existing Some(movement) pattern with the
+parenthesized complete mismatch predicate in a let-chain. Preserve every field,
+receipt comparison, branch and error. Do not add lint allowances or alter tests.
+Allocate only a direct one-file Rustfmt/check after review. Preserve the first
+failed logs, publish the small correction and require new exact-head checks.
+All acceptance and local heavy/native scheduling requirements remain unchanged.
