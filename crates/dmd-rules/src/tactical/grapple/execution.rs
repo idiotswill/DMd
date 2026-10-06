@@ -326,7 +326,7 @@ impl<'owner> ExecutionContext<'owner> {
         let receipt = owned
             .predecessor
             .encounter_history
-            .as_ref()
+            .as_deref()
             .and_then(TacticalEncounterHistory::last)
             .ok_or_else(|| invalid("replacement has no original completion"))?;
         if owned.command != meta
@@ -757,7 +757,7 @@ impl<'owner> ExecutionContext<'owner> {
                 && state.encounter_history == owned.predecessor.encounter_history
                 && state
                     .encounter_history
-                    .as_ref()
+                    .as_deref()
                     .and_then(TacticalEncounterHistory::last)
                     .is_some_and(|receipt| {
                         receipt.encounter_id == retired.encounter
