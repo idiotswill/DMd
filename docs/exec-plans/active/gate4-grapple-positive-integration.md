@@ -1,12 +1,12 @@
 # Grapple Group 3 whole-source integration
 
-Status: plan only, 2026-10-06. No merge, source edit or project execution has
-occurred on this branch. Root allocated this plan commit before reviewing the
-semantic resolution below. Branch `codex/gate4-grapple-positive-integration`,
+Status: **GRAZE SOURCE UNION RECOVERED; MAGE/POSITIVES/VERIFICATION PENDING**, 2026-10-06.
+The original plan preceded source changes; root now owns the recovered union.
+Branch `codex/gate4-grapple-positive-integration`,
 checkout `gate4-grapple-positive-integration`, starts from exact public
 `4d8f5bcf029b56443bb67d0b03e93f8ae8560323`, tree
-`21d80363621517a07660c17a95d470ee0e783f2c`. public_grapple_oct6 is the sole writer;
-root retains review, publication and the sole heavy verification slot.
+`21d80363621517a07660c17a95d470ee0e783f2c`. Original author public_grapple_oct6
+stopped; root is the sole writer and owns publication and verification allocation.
 
 ## Objective, authority and remaining product scope
 
@@ -258,3 +258,81 @@ verify-fast/verify, exact-head CI and real packaged native verification.
 Exact next action: commit this plan only, return its head and source-resolution
 design to root, then wait for the explicit merge/source allocation. No source
 integration or runtime acceptance is established by this plan or preview.
+
+## Required constructor-field migration discovered during the Graze merge
+
+Before making these additions, root authorized the exact default-only inventory
+below on 2026-10-06. The normal Graze merge is open, so this amendment and its
+later source additions will enter the same coherent merge commit. All fields are
+optional incoming Ground data and remain `None`; this adds no historical wire
+value, new gameplay, authority, assertion or scenario. Preserve every other byte
+of each affected constructor/test body, proving equality after inverse removal.
+
+| Path | Exact existing constructor | Added field |
+| --- | --- | --- |
+| `crates/dmd-app/tests/table_grapple_public.rs` | CreatureWeaponUseChoice at pre-edit line 1978 | `after_equipment: None` |
+| `crates/dmd-app/tests/table_grapple_public.rs` | WeaponUseChoice at pre-edit line 2246 | `after_equipment: None` |
+| `crates/dmd-rules/src/tactical/grapple/execution/attack_tests.rs` | dagger helper WeaponUseChoice, pre-edit line 171 | `after_equipment: None` |
+| `crates/dmd-rules/src/tactical/grapple/execution/attack_tests.rs` | scimitar helper CreatureWeaponUseChoice, pre-edit line 612 | `after_equipment: None` |
+| `crates/dmd-app/src/table_tactical_choices.rs` | guarded_grapple_work_and_attachments_have_no_continuation_projection TacticalResolution, pre-edit line 588 | `attack_after_equipment: None` |
+| `crates/dmd-rules/src/tactical/grapple.rs` | production TacticalResolution, pre-edit line 192 | `attack_after_equipment: None` |
+
+The four `after_equipment` sites and two `attack_after_equipment` sites are the
+complete source-only constructor scan result, retained externally as
+`tooling/ci-oct6/group3-actual-intake/graze-required-constructor-fields.json`.
+The existing-test additions above extend the initial plan's narrow migration
+inventory; no assertion, control, name or ordering is authorized to change.
+Compilation and behavior remain unverified until root allocates execution.
+
+## Root recovery of the open merge — 2026-10-06
+
+The sole integration author stopped on an account usage limit. Root confirmed
+that no agent is still running and now takes sole write ownership. The open
+normal merge remains at plan4f2e992 with incoming Graze436bc766; its 26 unmerged
+index paths already have provisional resolutions without conflict markers.
+These resolutions are not accepted merely because the markers are gone.
+
+First apply the six explicitly approved optional-field additions above, keeping
+raw pre-edit files and an exact inverse-byte audit outside the repository.
+Then inspect the complete owner/custody composition, automatic merges and
+parent-relative preservation before recording a coherent merge. Do not abort,
+reset or substitute one parent's complete conflicted file. Mage receipt and
+the positive scenarios remain later work after the Graze union is coherent.
+Offstage verification continues to own the local heavy slot; this continuation
+is source review and editing only, with no compiler/test/npm/native allocation.
+
+Root read the provisional conflict resolutions and the automatically merged
+owner/custody callsites. One automatic merge combined the public equipment
+function's explicit state/actor/window/definitions signature with the incoming
+wrapper's old `input.*` expressions. Forward the four actual parameters to the
+shared pure operation; this is a compilation repair, without changing either
+side's validation or hand authority. The six constructor additions have a raw
+inverse-byte report SHA25661cabd269a80e83cc3a8135be3596d0bf605fa95955289f79bdfd9aeed1c59b6.
+
+The pre-repair root source audit covers 677 parent-union paths and 1,870 Rust
+test occurrence records. Root read all 16 nonexact body diffs: the inherited
+None constructors, exact package-list extension, existing SQLite cleanup,
+Ogre-source expectation and public Grapple equipment controls, plus the three
+newly approved inline/public None additions. Their other bodies/assertions are
+unchanged; two approved helper constructors are also covered by the raw inverse.
+All content/raw capture files equal their corresponding parent bytes. Frontend
+tests equal a parent, except the complete incoming transport-test file with
+the existing public unknown-version input changed from 3 to 99; root read both
+parent-relative diffs. This is source preservation, not execution evidence.
+
+Before the Graze receipt commit, root allocates a brief direct Rustfmt pass
+with child traversal disabled on the manually composed production Rust files.
+No standalone test/helper file is included. Capture before/after bytes and
+review any non-whitespace token changes; formatting is not compilation or
+runtime verification and does not transfer the Offstage heavy slot.
+
+Direct formatting and its check passed on exactly 37 production Rust paths.
+Root reviewed every token delta: trailing commas, three expression match-arm
+blocks, import ordering and CRLF comment normalization only. Raw preformat
+files and all changes remain in the external formatter report
+SHA25693737dc2b4e7a991edf50eb4941b9853e2c99cb90620fa01251098cf95c87b5f.
+The earlier parent-union preservation audit is SHA256
+68028d85f6528910c697135bce2400dbf1da9930830997482b79e677f6381d9c.
+No compiler or runtime ran. Next: record the complete normal Graze receipt,
+then receive whole Mage db1beaa and inspect the actual additive conflicts and
+genuine historical-Mage fixture migration before publishing a coherent draft.

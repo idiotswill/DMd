@@ -230,6 +230,37 @@ impl<'a> TableRead<'a> {
     ) -> Result<crate::tactical_hands::EffectiveHands, RulesError> {
         crate::tactical_hands::EffectiveHands::current_with_read(&self.context(), actor)
     }
+    pub fn ground_pickup_options(
+        &self,
+        actor: EntityId,
+    ) -> Result<
+        Vec<crate::tactical_weapons::GroundPickupOption>,
+        crate::tactical_weapons::WeaponError,
+    > {
+        crate::tactical_weapons::ground::ground_pickup_options_with_read(
+            &self.context(),
+            actor,
+            self.pack,
+        )
+    }
+    pub fn attack_equipment_options(
+        &self,
+    ) -> Result<Option<crate::tactical::AttackEquipmentOptions>, RulesError> {
+        crate::tactical::attack_equipment_options_with_read(&self.context(), self.pack)
+    }
+    pub fn physical_source_opportunity_grips(
+        &self,
+        actor: EntityId,
+        feature: &str,
+        item: ItemId,
+    ) -> Result<Vec<WeaponGrip>, RulesError> {
+        crate::tactical::physical_source_opportunity_grips_with_read(
+            &self.context(),
+            actor,
+            feature,
+            item,
+        )
+    }
     pub fn bind_spell(
         &self,
         plan: &SpellCastPlan,

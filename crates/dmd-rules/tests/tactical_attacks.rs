@@ -496,6 +496,7 @@ impl Fixture {
         self.state.encounter.as_mut().unwrap().participants[0].enemies = vec![self.actors[1]];
         self.state.encounter.as_mut().unwrap().participants[1].enemies = vec![actor];
         WeaponUseChoice {
+            after_equipment: None,
             weapon: weapon_id,
             target: self.actors[1],
             delivery: if ranged {
@@ -1196,6 +1197,7 @@ fn nick_and_light_share_one_extra_attack_with_source_damage_modifier_and_action_
         );
         f.roll_then_decline_hit_responses(0, &[1]);
         let mut extra = WeaponUseChoice {
+            after_equipment: None,
             weapon: second,
             grip: WeaponGrip::OneHand(Hand::Right),
             purpose: if nick {

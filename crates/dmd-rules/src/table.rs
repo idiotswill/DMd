@@ -16,6 +16,13 @@ pub mod source_control;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
     EnableGrappleAccess,
+    CreateCharacterFromSource {
+        character_id: CharacterId,
+        entity_id: EntityId,
+        player_id: PlayerId,
+        source: CharacterCreationSourcePin,
+        input: CharacterCreationInput,
+    },
     UpdateContract {
         contract: TableContract,
     },

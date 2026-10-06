@@ -1,7 +1,9 @@
 //! Source-faithful creature capabilities and deterministic limited-use execution.
+mod ogre;
 mod policy;
 mod profile;
 mod schedule;
+pub use ogre::*;
 pub use policy::*;
 pub use profile::*;
 pub use schedule::*;
@@ -76,7 +78,8 @@ pub fn creature_source_pin(
     })
 }
 
-/// All immutable revisions, including any that may cease to be current admissions.
+/// All immutable revisions, including registry-only sources not yet admitted.
+/// Presence here never grants creation or historical profile authority.
 pub fn immutable_creature_sources() -> Result<Vec<&'static CreatureDefinition>, CreatureError> {
     let mut sources: Vec<_> = creature_definitions()?.creatures.iter().collect();
     sources.push(
@@ -86,6 +89,7 @@ pub fn immutable_creature_sources() -> Result<Vec<&'static CreatureDefinition>, 
         crate::tactical_definitions::bundled_goblin_warrior_v2()
             .map_err(|e| invalid(e.to_string()))?,
     );
+    sources.push(crate::tactical_definitions::bundled_ogre().map_err(|e| invalid(e.to_string()))?);
     Ok(sources)
 }
 

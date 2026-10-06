@@ -47,6 +47,7 @@ pub(crate) fn apply_table_with_context(
         && !matches!(
             action,
             RulesAction::CreateCharacter { .. }
+                | RulesAction::CreateCharacterFromSource { .. }
                 | RulesAction::RequestTest { .. }
                 | RulesAction::SecondWind { .. }
                 | RulesAction::SubmitRoll { .. }
@@ -91,7 +92,11 @@ pub(crate) fn apply_table_with_context(
             "an Inspiration transfer choice awaits its controller",
         ));
     }
-    let outcome = if let RulesAction::CreateCharacter { entity_id, input } = action {
+    let outcome = if let RulesAction::CreateCharacter { entity_id, input }
+    | RulesAction::CreateCharacterFromSource {
+        entity_id, input, ..
+    } = action
+    {
         authorize(state, meta, *entity_id)?;
         if !state
             .characters
@@ -102,7 +107,18 @@ pub(crate) fn apply_table_with_context(
                 "creation requires an existing active character identity",
             ));
         }
-        let built = crate::build_character(input, *entity_id, pack)?;
+        let built = match action {
+            RulesAction::CreateCharacterFromSource { source, .. } => {
+                // The current profile is persisted with its outer table command.
+                if state.table.is_none() {
+                    return Err(prerequisite(
+                        "current character creation requires the table path",
+                    ));
+                }
+                crate::build_character_from_source(input, *entity_id, source, pack)?
+            }
+            _ => crate::build_character(input, *entity_id, pack)?,
+        };
         if let Some(rules) = &mut next.rules {
             if rules.entities.contains_key(entity_id) {
                 return Err(prerequisite("character mechanics already exist"));
@@ -332,7 +348,7 @@ fn apply(
         rules.completed_short_rests.clear();
     }
     match action {
-        RulesAction::CreateCharacter { .. } => {
+        RulesAction::CreateCharacter { .. } | RulesAction::CreateCharacterFromSource { .. } => {
             Err(prerequisite("creation is handled at the entity boundary"))
         }
         RulesAction::Initialize { .. } => Err(prerequisite("already initialized")),

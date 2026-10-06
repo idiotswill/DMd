@@ -79,6 +79,7 @@ fn live(grip: TacticalGrip) -> TacticalGrapples {
 
 fn resolution() -> TacticalResolution {
     TacticalResolution {
+        attack_after_equipment: None,
         grapple: None,
         origin: meta(5),
         turn_actor: EntityId::new(),

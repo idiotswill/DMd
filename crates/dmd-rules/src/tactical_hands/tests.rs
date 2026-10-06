@@ -103,6 +103,7 @@ pub(crate) fn install_attempt(
     let flow = state.encounter.as_mut().unwrap().flow.as_mut().unwrap();
     flow.version = 5;
     flow.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
         origin,
         turn_actor: actor,
         turn_number: 1,
@@ -476,6 +477,7 @@ fn real_goblin_weapon_definitions_share_the_derived_hand_planner() {
         }
         let bow = weapon_id == "shortbow";
         let choice = WeaponUseChoice {
+            after_equipment: None,
             weapon,
             target,
             delivery: if bow {

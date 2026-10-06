@@ -52,8 +52,7 @@ pub(crate) fn savage_attacker_dice_with_read(
     if !features.savage_attacker || features.savage_attacker_turn == Some(turn) {
         return Err(prerequisite("Savage Attacker is unavailable this turn"));
     }
-    let admitted = read.attack_retained(attack)?;
-    let plan = planning::reconstruct_with_read(state, attack, admitted.as_ref())?;
+    let plan = planning::reconstruct_with_read(state, attack, read)?;
     let critical = matches!(
         attack.outcome,
         Some(WeaponAttackOutcome::Hit { critical: true, .. })

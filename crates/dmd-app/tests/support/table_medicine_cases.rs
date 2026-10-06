@@ -247,6 +247,7 @@ pub(super) async fn prepare(f: &mut Fixture, knockout: bool) {
         TacticalAction::CreatureWeaponAttack {
             feature_id: "scimitar".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target: f.actors[1],
                 grip: WeaponGrip::OneHand(Hand::Right),

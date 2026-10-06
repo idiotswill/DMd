@@ -164,7 +164,7 @@ impl<'a> ReadContext<'a> {
         }
     }
 
-    pub(in crate::tactical) fn attack_retained(
+    pub(crate) fn attack_retained(
         &self,
         attack: &TacticalAttack,
     ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {

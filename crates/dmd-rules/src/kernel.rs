@@ -42,6 +42,11 @@ pub const RULES_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum RulesAction {
+    CreateCharacterFromSource {
+        entity_id: EntityId,
+        source: CharacterCreationSourcePin,
+        input: crate::CharacterCreationInput,
+    },
     CreateCharacter {
         entity_id: EntityId,
         input: crate::CharacterCreationInput,

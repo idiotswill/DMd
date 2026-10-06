@@ -42,6 +42,10 @@ pub enum TableTransportInput {
     GrappleChoice {
         handle: CommandId,
     },
+    AttackEquipment {
+        handle: CommandId,
+        choice: AttackEquipmentChoice,
+    },
     ShoveDecision {
         handle: CommandId,
         decision: Box<TableShoveInput>,
@@ -299,6 +303,8 @@ pub(crate) fn presented_view(
         .tactical
         .map(|tactical| {
             let TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,
@@ -330,6 +336,19 @@ pub(crate) fn presented_view(
                 shield_options,
                 area_options,
             } = tactical;
+            let attack_equipment = attack_equipment
+                .map(|offer| {
+                    Ok::<_, &str>(TableAttackEquipmentView {
+                        key: CommandId(handle(&ProjectionCapability::AttackEquipment {
+                            origin: offer.key.resolution,
+                            occurrence: offer.key.occurrence,
+                        })?),
+                        actor: offer.actor,
+                        operations: offer.operations,
+                        may_decline: offer.may_decline,
+                    })
+                })
+                .transpose()?;
             let shove = shove
                 .map(|s| {
                     Ok::<_, &str>(TableShoveView {
@@ -467,6 +486,8 @@ pub(crate) fn presented_view(
                 })
                 .transpose()?;
             Ok::<_, &str>(TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,

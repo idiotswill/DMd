@@ -245,6 +245,12 @@ impl TableState {
             return Err("table contract and applied house rules disagree".into());
         }
         for (id, profile) in &self.character_profiles {
+            if let Some(source) = &profile.creation_source {
+                if state.schema_version < 4 {
+                    return Err("legacy state contains future character creation authority".into());
+                }
+                source.validate_shape()?;
+            }
             let character = state.characters.get(id).ok_or("unknown table character")?;
             if character.entity_id != profile.entity_id || character.display_name != profile.name {
                 return Err("table character profile identity disagrees".into());

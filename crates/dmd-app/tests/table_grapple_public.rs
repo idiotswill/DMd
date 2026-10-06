@@ -1976,6 +1976,7 @@ async fn actual_source_critical_knockout_ends_the_incapacitated_holders_grip_aft
         TacticalAction::CreatureWeaponAttack {
             feature_id: "scimitar".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target: holder,
                 grip: WeaponGrip::OneHand(Hand::Right),
@@ -2244,6 +2245,7 @@ async fn pc_physical_attack_keeps_admitted_hand_read_after_release_before_the_re
         pc.clone(),
         TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target,
                 delivery: WeaponDelivery::Melee,

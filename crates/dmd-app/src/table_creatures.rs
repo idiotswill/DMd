@@ -90,6 +90,9 @@ pub(crate) fn current_catalog() -> Result<Vec<crate::TableCreatureOption>, Strin
 }
 
 #[cfg(test)]
+mod ogre_tests;
+
+#[cfg(test)]
 mod source_wire_tests {
     use super::*;
     #[test]

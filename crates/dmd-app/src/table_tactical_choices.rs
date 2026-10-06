@@ -32,6 +32,32 @@ fn continuation_inner(
     encounter: Option<&TacticalEncounter>,
     grapple: bool,
 ) -> Option<crate::TableTacticalContinuation> {
+    let equipment = encounter.and_then(|e| e.flow.as_ref()).is_some_and(|f| {
+        f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+            && f.attack_equipment_access.is_some()
+    });
+    if resolution
+        .attack_after_equipment
+        .as_ref()
+        .is_some_and(|r| r.selected_by.is_some())
+        || (!equipment
+            && (resolution.attack_after_equipment.is_some()
+                || resolution
+                    .frames
+                    .iter()
+                    .flatten()
+                    .chain(resolution.pending.iter().map(|p| &p.work))
+                    .chain(resolution.failed_save.iter().map(|p| &p.pending.work))
+                    .chain(
+                        resolution
+                            .work_trace
+                            .iter()
+                            .flat_map(|t| t.nodes.iter().map(|n| &n.work)),
+                    )
+                    .any(|w| w.kind == TacticalWorkKind::AttackAfterEquipment)))
+    {
+        return None;
+    }
     // Guarded private core work has no application presentation yet.
     if !grapple
         && (resolution.grapple.is_some()
@@ -184,6 +210,13 @@ fn continuation_inner(
                             | TacticalWorkKind::FinishAttack => (
                                 resolution.attack.as_ref().map(|attack| attack.actor),
                                 "Attack consequence",
+                            ),
+                            TacticalWorkKind::AttackAfterEquipment => (
+                                resolution
+                                    .attack_after_equipment
+                                    .as_ref()
+                                    .map(|record| record.cause.actor),
+                                "Attack equipment choice",
                             ),
                             TacticalWorkKind::MoveSegment => (
                                 resolution.movement.as_ref().map(|movement| movement.actor),
@@ -377,6 +410,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            attack_after_equipment: None,
             origin,
             grapple: None,
             turn_actor: own_actor,
@@ -456,6 +490,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            attack_after_equipment: None,
             grapple: None,
             origin: origin.clone(),
             turn_actor: actor,
@@ -563,6 +598,7 @@ mod tests {
             expected_event_sequence: 1,
         };
         let mut r = TacticalResolution {
+            attack_after_equipment: None,
             origin,
             turn_actor: actor,
             turn_number: 1,

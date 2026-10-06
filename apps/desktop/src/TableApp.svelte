@@ -11,7 +11,7 @@
   import SourceControlForm from './components/SourceControlForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
   import GrapplePanel from './components/GrapplePanel.svelte';
-  import { rawDice, channelPlayer, type LocalChannel, type SourceControlOptions, type SourceAdoption } from './table-api';
+  import { rawDice, channelPlayer, type LocalChannel, type SourceControlOptions, type SourceAdoption, type CharacterInput } from './table-api';
   import type { SavageAttackerRoll } from './tactical-api';
   import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type CreatureOption, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
@@ -140,6 +140,10 @@
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel };
   }
+  function createCharacter(player_id: string, input: CharacterInput) {
+    if (!options || locked) return;
+    return act({ CreateCharacterFromSource: { player_id, input, source: options.source, character_id: newId(), entity_id: newId() } });
+  }
   async function send(request: UnconfirmedRequest, existing = false) {
     if (busy || (!existing && (retry || unreadableRetry))) return;
     const tactical = request.kind === 'action' && typeof request.request.action === 'object' && 'Tactical' in request.request.action;
@@ -244,7 +248,7 @@
       {#if !view.active_session}
         <section class="panel"><h2>Players and characters</h2><form onsubmit={(event) => { event.preventDefault(); act({ AddPlayer: { id: newId(), name: playerName } }); }}><fieldset disabled={locked}><legend>Add a player</legend><label>Player name<input required maxlength="200" bind:value={playerName} /></label><button type="submit">Add player</button></fieldset></form>
         {#if view.players.length}<ul>{#each view.players as player}<li>{player.display_name}</li>{/each}</ul>{/if}
-        {#if options && view.players.length}{#key view.revision}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={(player_id,input) => act({ CreateCharacter: { player_id, input, character_id: newId(), entity_id: newId() } })} /></details>{/key}{/if}</section>
+        {#if options && view.players.length}{#key view.revision}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={createCharacter} /></details>{/key}{/if}</section>
         {#if view.players.length}<section class="panel">{#key view.revision}<SessionForm players={view.players} characters={view.characters} sourceActors={view.source_control?.actors??[]} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
       {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll || (!!view.tactical && view.tactical.phase!=='setup' && view.tactical.phase!=='finished' && !view.tactical.aftermath?.may_pause_session)} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Conclude hostilities and settle pending work before ending an encounter session. Aftermath keeps the current turn order on resume. Closing the app preserves pending work for later.</p></section>{/if}
       <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>

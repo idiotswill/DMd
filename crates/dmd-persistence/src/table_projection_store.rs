@@ -48,6 +48,10 @@ pub enum ProjectionCapability {
     GrappleChoice {
         offer: dmd_domain::TableGrappleOffer,
     },
+    AttackEquipment {
+        origin: CommandId,
+        occurrence: u16,
+    },
     ShoveDecision {
         origin: CommandId,
         occurrence: u16,

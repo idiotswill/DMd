@@ -18,6 +18,19 @@ pub(crate) struct TableTransition {
 fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperation, String> {
     Ok(match action {
         TableAction::EnableGrappleAccess => TableOperation::EnableGrappleAccess,
+        TableAction::CreateCharacterFromSource {
+            character_id,
+            entity_id,
+            player_id,
+            source,
+            input,
+        } => TableOperation::CreateCharacterFromSource {
+            character_id: *character_id,
+            entity_id: *entity_id,
+            player_id: *player_id,
+            source: source.clone(),
+            input: input.clone(),
+        },
         TableAction::UpdateContract { contract } => TableOperation::UpdateContract {
             contract: contract.clone(),
         },

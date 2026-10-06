@@ -53,8 +53,21 @@ fn immutable_goblin_revision_changes_only_the_reviewed_typed_anatomy() {
             .collect::<Vec<_>>(),
         vec![new]
     );
-    for source in current.iter().filter(|s| s.id != "goblin-warrior") {
-        assert!(source.ordinary_hands.is_none());
+    let ogre_pin = creature_source_pin(bundled_ogre().unwrap()).unwrap();
+    assert_eq!(
+        current
+            .iter()
+            .filter(|source| creature_source_pin(source).unwrap() == ogre_pin)
+            .count(),
+        1
+    );
+    for source in &current {
+        let pin = creature_source_pin(source).unwrap();
+        if pin == new_pin || pin == ogre_pin {
+            assert_eq!(source.ordinary_hands, Some(OrdinaryHandAnatomy::TwoHandsV1));
+        } else {
+            assert!(source.ordinary_hands.is_none());
+        }
     }
     let mut forged = new_pin;
     forged.definition_fingerprint = old_pin.definition_fingerprint;
@@ -201,6 +214,7 @@ fn source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection() {
                 // Detection must not depend on a new producer having run first.
                 let flow = forged.encounter.as_mut().unwrap().flow.as_mut().unwrap();
                 flow.resolution = Some(Box::new(TacticalResolution {
+                    attack_after_equipment: None,
                     grapple: Some(Box::new(TacticalGrappleResolution {
                         activity: None,
                         proofs: vec![],

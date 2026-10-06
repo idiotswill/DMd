@@ -4,6 +4,7 @@
   import { tacticalPromptIdentity } from '../tactical-focus';
   import TacticalMap from './TacticalMap.svelte';
   import AttackForm from './AttackForm.svelte';
+  import AttackEquipmentForm from './AttackEquipmentForm.svelte';
   import CastingForm from './CastingForm.svelte';
   import AreaForm from './AreaForm.svelte';
   import MovementForm from './MovementForm.svelte';
@@ -26,7 +27,7 @@
   let tieOrder=$state<Record<string,Id[]>>({});
   const activeCharacter=$derived(characters.find(character=>character.entity_id===tactical.active_actor));
   const legacy=$derived(tactical.phase==='active'&&tactical.execution!=='EncounterReleaseV1');
-  const pendingDecision=$derived(!!tactical.shove||!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
+  const pendingDecision=$derived(!!tactical.attack_equipment||!!tactical.shove||!!tactical.hit||!!tactical.missile||!!tactical.continuation||!!tactical.attack_decision||!!tactical.opportunity||!!tactical.liquid_landing||!!tactical.legendary_action||!!tactical.legendary_resistance);
   const unarmedTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Located creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   const firstAidTargets=$derived((host ? tactical.participants : (tactical.observers.find(view=>view.observer===actor)?.contacts ?? []).filter(contact=>contact.status!=='Remembered').map(contact=>({entity_id:contact.entity_id,public_label:contact.label??'Unseen creature'}))).filter(candidate=>candidate.entity_id!==tactical.active_actor));
   function reorder(total:number, actors:Id[], index:number, step:number) {
@@ -64,6 +65,12 @@
   {/if}
   {#if legacy}<p>Finish any pending rolls or decisions, then have the host continue this saved encounter with the current rules. Existing resources and turn progress are preserved.</p>
     {#if host}<button disabled={administrationLocked||pendingRoll||pendingDecision||!!tactical.ready?.length} onclick={()=>onAction({UpgradeExecutionTo:{execution:'EncounterReleaseV1'}})}>Continue saved encounter</button>{/if}
+  {/if}
+  {#if host && !legacy && tactical.phase==='active' && !tactical.equipment_enabled}
+    <button disabled={administrationLocked||pendingRoll||pendingDecision||!!tactical.ready?.length||!!tactical.budget?.movement_spent||!!tactical.budget?.action_spent||!!tactical.budget?.bonus_action_spent} onclick={()=>onAction('ActivateAttackEquipment')}>Enable attack equipment choices</button>
+  {/if}
+  {#if tactical.attack_equipment && controls(tactical.attack_equipment.actor)}
+    {#key `${host}:${player}:${actor}:${tactical.attack_equipment.key}`}<AttackEquipmentForm choice={tactical.attack_equipment} disabled={disabled||pendingRoll} {onAction}/>{/key}
   {/if}
   <TacticalMap {tactical} {characters} {actor}/>
   {#if tactical.shove && ((tactical.shove.stage==='PushReview' && host) || (tactical.shove.stage!=='PushReview' && controls(tactical.shove.actor)))}
