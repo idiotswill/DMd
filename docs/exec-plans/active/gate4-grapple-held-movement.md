@@ -356,3 +356,17 @@ Static audit `tooling/ci-oct6/held-eeeed2c-dead-target-correction-audit.json`, S
 The new regression is UNRUN, bringing this slice to23 new cases (18 Rust,5 desktop).
 No compiler, additional formatter, tests or database/native runtime was invoked.
 Root review, scheduled formatting/verification and publication remain outstanding.
+
+### Living-target correction formatter allocation, plan before formatting
+
+Root fully read the complete56ac885 production/test/plan diff and cleared its
+source. Root now allocates one direct workspace Rustfmt pass, followed by the
+same bounded check, on exactly `crates/dmd-rules/src/tactical/grapple/transport.rs`
+and `crates/dmd-app/tests/support/table_grapple_ground_transport.rs`, using
+`--edition 2024 --config skip_children=true`. Record complete commands/results,
+inspect formatting punctuation and compare preserved literal/test tokens.
+Freeze the coherent result for root's final review. No Cargo, compiler, tests,
+npm, database or native execution is allocated; all23 new cases remain UNRUN.
+Prepare an external draft PR description against the complete public Grapple
+branch at4d8, accurately preserving the ground-only partial scope and outstanding
+carry/multiple-target and verification requirements. Root owns push/PR creation.
