@@ -3,6 +3,8 @@ use super::*;
 mod falling_tests;
 #[path = "ground_point_tests.rs"]
 mod ground_point_tests;
+#[path = "ground_transport_tests.rs"]
+mod ground_transport_tests;
 
 fn point(x: i32, y: i32, z: i32) -> SpatialPoint {
     SpatialPoint { x, y, z }

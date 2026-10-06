@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub const TABLE_TRANSPORT_VERSION: u32 = 1;
 pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
 pub const TABLE_GRAPPLE_TRANSPORT_VERSION: u32 = 3;
+pub const TABLE_GROUND_DRAG_TRANSPORT_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -39,6 +40,10 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    MoveGrappled {
+        option: CommandId,
+        path: Vec<TacticalMoveStep>,
+    },
     GrappleChoice {
         handle: CommandId,
     },
@@ -143,6 +148,8 @@ pub struct TableRollOptionsRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableRollOptions {
     pub savage_attacker: Option<TableSavageAttackerOption>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heroic_inspiration: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -252,7 +259,7 @@ pub struct TableHostDiagnostics {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub grapple: Option<TableGrappleView<CommandId>>,
+    pub grapple: Option<TableGrappleView<CommandId, CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub revision: ProjectionRevision,
@@ -527,6 +534,19 @@ pub(crate) fn presented_view(
             .grapple
             .map(|grapple| {
                 Ok::<_, &str>(TableGrappleView {
+                    ground_drag: grapple
+                        .ground_drag
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleTransport {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
                     version: grapple.version,
                     choices: grapple
                         .choices

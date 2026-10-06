@@ -17,6 +17,13 @@ pub(crate) struct TableTransition {
 
 fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperation, String> {
     Ok(match action {
+        TableAction::AwardHeroicInspiration {
+            character_id,
+            reason,
+        } => TableOperation::AwardHeroicInspiration {
+            character_id: *character_id,
+            reason: reason.clone(),
+        },
         TableAction::EnableGrappleAccess => TableOperation::EnableGrappleAccess,
         TableAction::CreateCharacterFromSource {
             character_id,
@@ -31,6 +38,7 @@ fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperati
             source: source.clone(),
             input: input.clone(),
         },
+        TableAction::EnableGrappleTransport => TableOperation::EnableGrappleTransport,
         TableAction::UpdateContract { contract } => TableOperation::UpdateContract {
             contract: contract.clone(),
         },

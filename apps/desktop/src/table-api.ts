@@ -65,7 +65,7 @@ export interface Situation { title: string; description: string; challenges: Cha
 export interface PendingDecision { id: Id; revision: number; player_id: Id; character_id: Id; actor: Id; session_id: Id; text: string; intent: 'SecondWind' | { Check: { kind: { Check: { ability: Ability; skill: Skill | null } }; goal: string; challenge_id: string | null } } | { Unresolved: { question: string } } }
 export interface RollRequest { id: Id; roller: Id | null; dice: { sides: number; count: number }[]; modifier: number; mode: 'Normal' | 'Advantage' | 'Disadvantage'; visibility: string; reason: string }
 export interface TableView {
-  grapple?: { version: 3; choices: { key: Id; actor: Id; label: string }[] };
+  grapple?: { version: 3 | 4; choices: { key: Id; actor: Id; label: string }[]; ground_drag?: { key: Id; actor: Id; label: string }[] };
   source_control?: SourceControlView;
   campaign_id: Id; name: string; revision: Id; diagnostics?: { canonical_event_sequence: number }; contract: TableContract; players: Player[]; characters: CharacterView[];
   active_session: { session_id: Id; display_name: string; started_at_world: number; participants: Participant[] } | null;
@@ -76,7 +76,9 @@ export interface TableView {
   transcript: { id: string; kind: string; speaker: string; text: string }[]; recap: string[];
 }
 export type TableAction =
+  | { AwardHeroicInspiration: { character_id: Id; reason: string } }
   | 'EnableGrappleAccess'
+  | 'EnableGrappleTransport'
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
   | { CreateCharacter: { character_id: Id; entity_id: Id; player_id: Id; input: CharacterInput } }
   | { CreateCharacterFromSource: { character_id: Id; entity_id: Id; player_id: Id; source: CharacterCreationSourcePin; input: CharacterInput } }
@@ -94,7 +96,7 @@ export interface Receipt { command_id: Id; revision?: Id; outcome: { message: st
 export type TextResult = { Accepted: Receipt } | { Observed: { command_id: Id; revision?: Id; text: string; answer: string } };
 export type LocalChannel = 'Host' | { Player: { player_id: Id; character_id: Id } } | { SourceCreature: { player_id: Id; actor: Id } };
 interface ChannelContext { command_id: Id; campaign_id: Id; session_id: Id | null; channel: LocalChannel }
-export interface RequestContext extends ChannelContext { version: 1 | 2 | 3; revision: Id }
+export interface RequestContext extends ChannelContext { version: 1 | 2 | 3 | 4; revision: Id }
 export interface LegacyRequestContext extends ChannelContext { expected_event_sequence: number }
 type SavedContext = RequestContext | LegacyRequestContext;
 export type UnconfirmedRequest = { kind: 'action'; request: SavedContext & { action: TableAction } } | { kind: 'text'; request: SavedContext & { text: string } } | { kind: 'create'; request: { id: Id; name: string; contract: TableContract } };export interface Selection { campaignId: Id | null; playerId: Id | null; sourceActorId?: Id | null }
@@ -120,18 +122,22 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (!['action', 'text'].includes(String(value.kind)) || !id(request.command_id) || !id(request.campaign_id)
     || !(request.session_id === null || id(request.session_id))) return false;
   if ('revision' in request) {
-    if ((request.version !== 1 && request.version !== 2 && request.version !== 3) || !id(request.revision) || 'expected_event_sequence' in request) return false;
+    if ((request.version !== 1 && request.version !== 2 && request.version !== 3 && request.version !== 4) || !id(request.revision) || 'expected_event_sequence' in request) return false;
   } else if ('version' in request || !Number.isSafeInteger(request.expected_event_sequence) || Number(request.expected_event_sequence) < 0) return false;
   const channel = request.channel;
   const pcChannel = object(channel) && Object.keys(channel).length === 1 && object(channel.Player) && id(channel.Player.player_id) && id(channel.Player.character_id);
-  const sourceChannel = (request.version === 2 || request.version === 3) && object(channel) && Object.keys(channel).length === 1 && object(channel.SourceCreature) && id(channel.SourceCreature.player_id) && id(channel.SourceCreature.actor);
+  const sourceChannel = (request.version === 2 || request.version === 3 || request.version === 4) && object(channel) && Object.keys(channel).length === 1 && object(channel.SourceCreature) && id(channel.SourceCreature.player_id) && id(channel.SourceCreature.actor);
   if (channel !== 'Host' && !pcChannel && !sourceChannel) return false;
   if (value.kind === 'text') return pcChannel && typeof request.text === 'string' && request.text.trim().length > 0 && request.text.length <= 8000;
   if (request.action === 'EndSession') return !sourceChannel;
+  if (request.action === 'EnableGrappleTransport') return request.version === 4 && channel === 'Host';
   if (request.action === 'EnableGrappleAccess') return request.version === 3 && channel === 'Host';
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
-  if (['EnableSourceActorAccess','SetSourceCreatureController'].includes(kind)) return (request.version === 2 || request.version === 3) && channel === 'Host' && object(payload);
+  if (kind === 'AwardHeroicInspiration') return request.version === 4 && channel === 'Host'
+    && object(payload) && Object.keys(payload).length === 2
+    && id(payload.character_id) && typeof payload.reason === 'string' && payload.reason.trim().length > 0;
+  if (['EnableSourceActorAccess','SetSourceCreatureController'].includes(kind)) return (request.version === 2 || request.version === 3 || request.version === 4) && channel === 'Host' && object(payload);
   if (sourceChannel && kind !== 'Tactical') return false;
   return ['UpdateContract','AddPlayer','CreateCharacter','CreateCharacterFromSource','CreateCreature','PrepareEquipment','PrepareBattlefield','Tactical','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
 }
@@ -155,6 +161,8 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
+  if (request.request.action === 'EnableGrappleTransport') return 'Enable dragging and Inspiration for this table';
+  if (typeof request.request.action === 'object' && 'AwardHeroicInspiration' in request.request.action) return 'Award Heroic Inspiration';
   if (request.request.action === 'EnableGrappleAccess') return 'Enable Grapple for this table';
   if (typeof request.request.action === 'object' && 'EnableSourceActorAccess' in request.request.action) return 'Enable source creature control';
   if (typeof request.request.action === 'object' && 'SetSourceCreatureController' in request.request.action) return 'Assign source creature control';
@@ -166,7 +174,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
 export const tableApi = {
   sourceControlOptions: (request: { campaign_id: Id; channel: LocalChannel; revision: Id }) => invoke<SourceControlOptions>('desktop_source_control_options', { request }),
   creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),
-  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null }>('desktop_roll_options', { request }),
+  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null; heroic_inspiration?: boolean }>('desktop_roll_options', { request }),
   defaults: () => invoke<TableContract>('desktop_default_contract'),
   list: () => invoke<{ id: Id; name: string }[]>('desktop_list_campaigns'),
   create: (request: { id: Id; name: string; contract: TableContract }) => invoke<TableView>('desktop_create_campaign', { request }),
@@ -189,7 +197,9 @@ export const tableApi = {
         ? action.Tactical.action.GrappleChoice : null;
       const equipment = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'AttackEquipment' in action.Tactical.action
         ? action.Tactical.action.AttackEquipment : null;
-      const input = grapple ? { GrappleChoice: grapple } : equipment ? { AttackEquipment: equipment } : shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
+      const groundDrag = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'MoveGrappled' in action.Tactical.action
+        ? action.Tactical.action.MoveGrappled : null;
+      const input = groundDrag ? { MoveGrappled: groundDrag } : grapple ? { GrappleChoice: grapple } : equipment ? { AttackEquipment: equipment } : shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
       result = await invoke<TextResult>('desktop_submit_table', { request: { ...context, input } });
     } else {
       // A saved v1 nonce goes only to the recovery-only endpoint. Never translate

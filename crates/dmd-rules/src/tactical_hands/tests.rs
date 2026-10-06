@@ -123,6 +123,7 @@ pub(crate) fn install_attempt(
         work_trace: None,
         next_occurrence: 0,
         grapple: Some(Box::new(TacticalGrappleResolution {
+            transport: None,
             activity: Some(GrappleActivity::Attempt(Box::new(TacticalGrappleAttempt {
                 equipment: GrappleEquipmentAdmission {
                     equipment_before: ActorEquipmentLoadout {

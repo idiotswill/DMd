@@ -89,6 +89,7 @@ export interface SavageAttackerRoll {
 export type TacticalAction =
   | 'ActivateAttackEquipment'
   | { AttackEquipment: { handle: Id; choice: AttackEquipmentChoice } }
+  | { SubmitRollWithInspiration: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] }; die_index: number; replacement: { sides: number; value: number } } }
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
   | { GrappleChoice: { handle: Id } }
@@ -112,6 +113,7 @@ export type TacticalAction =
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
   | { MoveSelfOnly: { path: MoveStep[] } }
+  | { MoveGrappled: { option: Id; path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }

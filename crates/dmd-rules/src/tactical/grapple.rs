@@ -10,6 +10,7 @@ pub(crate) use offers::{action as table_action, choices as table_choices};
 mod profile;
 pub(crate) mod reads;
 mod saves;
+pub(crate) mod transport;
 mod validation;
 use super::turns::*;
 use super::*;
@@ -110,6 +111,7 @@ pub(super) fn guard_action(
         action,
         TacticalAction::Grapple { .. }
             | TacticalAction::MoveSelfOnly { .. }
+            | TacticalAction::MoveGrappled { .. }
             | TacticalAction::ChooseGrappleSave { .. }
             | TacticalAction::ApplyGrappleAfterEquipment { .. }
             | TacticalAction::DeclineGrappleAfterEquipment { .. }
@@ -169,6 +171,7 @@ fn work_key(state: &CampaignState, work: &TacticalWorkItem) -> Result<TacticalWo
 }
 fn new_context(activity: GrappleActivity) -> TacticalGrappleResolution {
     TacticalGrappleResolution {
+        transport: None,
         activity: Some(activity),
         proofs: vec![],
         cuts: vec![],

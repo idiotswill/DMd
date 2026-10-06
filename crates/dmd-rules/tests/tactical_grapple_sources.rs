@@ -224,6 +224,7 @@ fn source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection() {
                 flow.resolution = Some(Box::new(TacticalResolution {
                     attack_after_equipment: None,
                     grapple: Some(Box::new(TacticalGrappleResolution {
+                        transport: None,
                         activity: None,
                         proofs: vec![],
                         cuts: vec![],

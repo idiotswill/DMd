@@ -409,7 +409,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && matches!(version, 2..=4))
+    version == 1 || (kind == "table.action" && matches!(version, 2..=5))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -419,7 +419,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2..=4 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2..=5 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)
@@ -544,9 +544,22 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if matches!(event.action, TableAction::AwardHeroicInspiration { .. }) {
+        if event.meta.issuer != CommandIssuer::Admin
+            || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration award has incompatible Host or nested authority".into());
+        }
+        return Ok(());
+    }
     if matches!(
         event.action,
         TableAction::EnableGrappleAccess
+            | TableAction::EnableGrappleTransport
             | TableAction::EnableSourceActorAccess { .. }
             | TableAction::SetSourceCreatureController { .. }
     ) {
@@ -829,9 +842,19 @@ fn validate_rulings(
             {
                 return Err("ruling provenance disagrees with accepted audit".into());
             }
-            let action = commands
+            let command = commands
                 .get(&record.command.id)
-                .and_then(|event| event.rules_event())
+                .ok_or("ruling has no checked typed command")?;
+            if let RecoveryEvent::Table(event) = command
+                && let TableAction::AwardHeroicInspiration { reason, .. } = &event.action
+            {
+                if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
+                    return Err("ruling disagrees with its originating Inspiration award".into());
+                }
+                continue;
+            }
+            let action = command
+                .rules_event()
                 .map(|event| &event.action)
                 .ok_or("ruling has no checked typed rules action")?;
             if action_ruling(action) != Some(&record.ruling) {
@@ -940,6 +963,12 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.grapple_access.as_ref())
     {
         origins.push(&access.origin);
+        origins.extend(
+            access
+                .ground_transport
+                .as_ref()
+                .map(|transport| &transport.origin),
+        );
     }
     if let Some(encounter) = &state.encounter {
         origins.push(&encounter.origin);
@@ -1354,6 +1383,15 @@ fn grapple_origins<'a>(state: &'a CampaignState, origins: &mut Vec<&'a CommandMe
             None => {}
         }
     }
+    if let Some(transport) = resolution
+        .grapple
+        .as_ref()
+        .and_then(|c| c.transport.as_ref())
+    {
+        origins.push(&transport.admission.origin);
+        origins.extend(transport.steps.iter().map(|step| &step.cause));
+        origins.extend(transport.stop.as_ref().map(|stop| &stop.cause));
+    }
     origins.extend(
         resolution
             .movement
@@ -1502,7 +1540,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))
@@ -1572,9 +1610,26 @@ fn validate_origins(
                 },
                 RecoveryEvent::Rules(_) => None,
             });
-        if !matches!(action, Some((TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path }, outcome))
-            if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
-        {
+        let matches = match action {
+            Some((
+                TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path },
+                outcome,
+            )) => {
+                movement.transport.is_none()
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            Some((TacticalAction::MoveGrappled { grip, path }, outcome)) => {
+                movement
+                    .transport
+                    .as_ref()
+                    .is_some_and(|transport| transport.grip == *grip)
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            _ => false,
+        };
+        if !matches {
             return Err("movement receipt disagrees with its originating Move action".into());
         }
     }
