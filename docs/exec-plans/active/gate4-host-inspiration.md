@@ -197,3 +197,16 @@ no compiler, tests, npm, database or native process starts while Offstage owns
 the serial heavy slot. Root will publish a draft for early exact-head CI after
 source review and preservation checks. New runtime/canonical/native verification
 and rightful optional overflow transfer remain required; this is not completion.
+
+## First exact-head CI correction — 2026-10-06
+
+Draft PR69 at d0033dbfc07eab7fc564e96b31962d6246f1fc15 received Windows
+run37437098881 failures in both matrix jobs at frontend static checking.
+Root read the actual stable job112181479436 diagnostics: a missing closing
+object brace in the new inspiration-transport.test.ts reroll fixture causes
+37 cascading TypeScript errors in that file. Correct only that syntax and
+format the new test for readable fixture boundaries; retain both parameterized
+scenarios, all input values, retry operations and assertions. Old tests and
+production code remain untouched. Root owns this correction. Push a fresh
+head for the full checks; these first-head failures remain recorded and the
+ten application plus thirteen frontend cases are not yet verified.
