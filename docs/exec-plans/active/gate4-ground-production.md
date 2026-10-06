@@ -1,5 +1,21 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Reviewed geometry correction freeze — 2026-10-06
+
+Plan914209a preceded source59ee0a29bd30462598c0a3a2a66851e35032344a.
+Root independently read the complete correction, actual failed CI diagnostics,
+source range/occupied-cell geometry, complete helper and preservation audit.
+The accepted setup now proves distance10 before Begin; all original scenario
+bodies and assertions and all610 other Git entries remain unchanged.
+
+Root owns this branch again. Direct Rust2024 rustfmt with skip_children=true
+formatted only the changed setup expression; its subsequent standalone check
+passed. This is formatting/static review evidence only. Corrected-source local
+runtime, full CI and required native acceptance remain outstanding. Publish the
+reviewed correction for fresh CI, then normally receive the whole parent into
+Mage and Consequences, followed by Graze. Preserve each receiving branch's own
+source and record its exact merge before verification. Gate4 remains open.
+
 ## Exact-head Ogre application geometry correction — 2026-10-06
 
 Root transferred sole writing for this bounded correction from freshly fetched,
