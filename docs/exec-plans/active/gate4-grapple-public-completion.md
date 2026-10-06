@@ -8,6 +8,32 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+### Approved identical-source initiative fixture correction (2026-10-06)
+
+Root reviewed frozen `0f6e176a766be15b5944b73285c6c4200e20e92f` and allocated
+one fixture-only correction to public_grapple_oct6. This plan amendment is
+committed before its source edit. The unchanged initiative validator requires
+identical creature sources with identical surprise/circumstances to share one
+physical roll. `Fixture::with_opponent_geometry` currently places its two current,
+unsurprised Goblins in separate groups, so those genuine producer paths cannot
+reach the intended Grapple assertions.
+
+Only that helper may change: when the original source is `goblin-warrior` and the
+optional Goblin opponent exists, declare exact groups `[PC]` and
+`[goblin, opponent]`, submit the actual PC18 and shared Host2, and resolve the
+real source-creature tie by accepted Host `ProposeInitiativeTie` with
+`[goblin, opponent]`. Assert the retained groups/request actors, one shared raw,
+and actual order/totals `PC20 -> goblin4 -> opponent4`. Keep distinct-source and
+no-opponent setup semantics, all25 complete application test bodies, production,
+frontend and every protected old body unchanged. Do not change source profiles,
+controllers, surprise, map geometry, costs or expected Grapple mechanics.
+
+This is source-only and will remain unformatted/uncompiled/unrun. Root retains
+formatter/compiler/runtime/native/publication scheduling and all group3 receipt.
+Freeze a clean head with a complete source diff and original-body preservation
+report for root review. The full receiving checks and existing Gate4 obligations,
+including ordinary dragging/carrying and integrated/native evidence, remain open.
+
 Root resumed the already approved correction on 2026-10-06 at plan-first
 `10fcc38`, transferring the original writer's complete 23-path production/UI
 draft to public_grapple_oct6. The prior writer was stopped; no concurrent source
