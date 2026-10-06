@@ -352,10 +352,19 @@ pub(super) async fn finish_equipment(
         Box::pin(hostile_private_records(f, card.key, None)).await;
     }
     assert!(
-        view(f, &other_player(f)).await.tactical.unwrap().attack_equipment.is_none()
+        view(f, &other_player(f))
+            .await
+            .tactical
+            .unwrap()
+            .attack_equipment
+            .is_none()
     );
     let host_card = view(f, &TableTransportChannel::Host)
-        .await.tactical.unwrap().attack_equipment.unwrap();
+        .await
+        .tactical
+        .unwrap()
+        .attack_equipment
+        .unwrap();
     assert_eq!(host_card.actor, card.actor);
     assert_eq!(host_card.operations, card.operations);
     assert_eq!(host_card.may_decline, card.may_decline);
@@ -380,7 +389,8 @@ pub(super) async fn finish_equipment(
             handle: host_card.key,
             choice: AttackEquipmentChoice::Decline,
         },
-    ).await;
+    )
+    .await;
     Box::pin(atomic_rejection(f, host_own_key)).await;
     let raw_work = request(
         f,

@@ -1,5 +1,22 @@
 # Gate 4 — Genuine Graze before owned Ground equipment
 
+## Reviewed correction formatting freeze — 2026-10-06
+
+Root independently read the complete three-helper correction at
+1978b14f6103fbb7b4515a79b92d5aa44b23fdab, its plan-first amendment, handback,
+actual failed CI output and relevant projection/owner, damage and geometry
+producers. The original privacy case body and all951 old test bodies remain
+exact. Root formatted only those three helpers with standalone Rust2024
+rustfmt/skip_children; subsequent checks passed. Full formatter delta review
+and lexical audit confirm layout and optional trailing commas only.
+
+Root owns the branch again. No corrected-source compiler or runtime evidence
+exists yet. Next normally receive the reviewed whole Consequences04b1fe5 and
+Physical48f7c92 heads under an explicit receiving plan, preserving these three
+helpers and all receiver-specific content. Inspect the complete union before
+fresh CI/focused/canonical verification. Existing native/Gate4 requirements and
+all earlier failures remain open.
+
 Status: CI correction source allocated; correction compiler/runtime UNRUN, 2026-10-06.
 Sole source writer is `public_grapple_oct6` on `codex/gate4-ground-graze`, in its
 separate checkout, replacing the earlier additive author `core_recovery_oct5`.

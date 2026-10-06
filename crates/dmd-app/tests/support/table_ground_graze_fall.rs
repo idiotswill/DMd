@@ -147,14 +147,21 @@ async fn deplete(f: &mut Fixture, path: &Path, target: EntityId, item: ItemId) {
         assert_eq!(active_attack.actor, f.actors[0]);
         assert_eq!(active_attack.target, target);
         assert_eq!(active_attack.stage, TacticalAttackStage::DamageRoll);
-        assert_eq!(active_attack.outcome, Some(WeaponAttackOutcome::Hit {
-            critical, damage_dealt: 0,
-        }));
-        assert_eq!(active_attack.damage, vec![AttackDamageComponent {
-            damage_type: DamageType::Slashing,
-            dice: vec![DieSpec { count: 2, sides: 6 }],
-            modifier: 3,
-        }]);
+        assert_eq!(
+            active_attack.outcome,
+            Some(WeaponAttackOutcome::Hit {
+                critical,
+                damage_dealt: 0,
+            })
+        );
+        assert_eq!(
+            active_attack.damage,
+            vec![AttackDamageComponent {
+                damage_type: DamageType::Slashing,
+                dice: vec![DieSpec { count: 2, sides: 6 }],
+                modifier: 3,
+            }]
+        );
         assert_eq!(active_attack.weapon().unwrap().choice.weapon, item);
         assert_eq!(damage_work.work.kind, TacticalWorkKind::AttackDamage);
         assert_eq!(damage_work.key.origin, attack.command_id);
@@ -166,12 +173,24 @@ async fn deplete(f: &mut Fixture, path: &Path, target: EntityId, item: ItemId) {
         assert_eq!(raw_pending.request.dice, pending.dice);
         assert_eq!(raw_pending.request.modifier, 0);
         assert_eq!(raw_pending.request.mode, RollMode::Normal);
-        assert_eq!(raw_pending.purpose, PendingPurpose::TacticalResolution {
-            encounter: damage_wait.encounter.as_ref().unwrap().id,
-            key: damage_work.key,
-        });
-        assert_eq!(damage_resolution.work_trace.as_ref().unwrap().nodes.iter()
-            .filter(|node| node.work == damage_work.work).count(), 1);
+        assert_eq!(
+            raw_pending.purpose,
+            PendingPurpose::TacticalResolution {
+                encounter: damage_wait.encounter.as_ref().unwrap().id,
+                key: damage_work.key,
+            }
+        );
+        assert_eq!(
+            damage_resolution
+                .work_trace
+                .as_ref()
+                .unwrap()
+                .nodes
+                .iter()
+                .filter(|node| node.work == damage_work.work)
+                .count(),
+            1
+        );
         assert_eq!(
             state(f)
                 .await
@@ -197,14 +216,24 @@ async fn deplete(f: &mut Fixture, path: &Path, target: EntityId, item: ItemId) {
             rules.rolls.len(),
             before.rules.as_ref().unwrap().rolls.len() + 2
         );
-        assert_eq!(&rules.rolls[..damage_rules.rolls.len()], damage_rules.rolls.as_slice());
+        assert_eq!(
+            &rules.rolls[..damage_rules.rolls.len()],
+            damage_rules.rolls.as_slice()
+        );
         let damage_raw = rules.rolls.last().unwrap();
         assert_eq!(damage_raw.request, raw_pending.request);
         assert_eq!(damage_raw.accepted_by.id, damage_input.command_id);
         assert_eq!(damage_raw.result.source, RollSource::Physical);
-        assert_eq!(damage_raw.result.dice, vec![DieResult {
-            sides: 6, value: if critical { 6 } else { 1 },
-        }; if critical { 4 } else { 2 }]);
+        assert_eq!(
+            damage_raw.result.dice,
+            vec![
+                DieResult {
+                    sides: 6,
+                    value: if critical { 6 } else { 1 },
+                };
+                if critical { 4 } else { 2 }
+            ]
+        );
         assert_eq!(damage_raw.resolved.total, if critical { 24 } else { 2 });
         assert_eq!(after.items, before.items);
         assert_eq!(
