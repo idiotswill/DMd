@@ -642,7 +642,25 @@ async fn shield_case(
         assert_ne!(pending.issued_by.id, response);
         assert_eq!(pending.request.mode, RollMode::Normal);
         assert_eq!(pending.request.dice, vec![DieSpec { count: 2, sides: 4 }]);
-        assert_eq!(pending.request.modifier, 3);
+        assert_eq!(pending.request.modifier, 0);
+        let resolution = shielded
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .as_ref()
+            .unwrap();
+        assert_eq!(
+            resolution.attack.as_ref().unwrap().damage,
+            vec![AttackDamageComponent {
+                damage_type: DamageType::Piercing,
+                dice: vec![DieSpec { count: 1, sides: 4 }],
+                modifier: 3,
+            }]
+        );
         Box::pin(hostile_populated_destination(f)).await;
         let input = physical_input(view(f, &player(f)).await, &[4, 4]);
         Box::pin(player_step(f, path, input)).await;
