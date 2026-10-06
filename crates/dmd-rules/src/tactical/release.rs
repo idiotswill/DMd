@@ -313,6 +313,19 @@ fn require_future_placement(state: &CampaignState, actor: EntityId) -> Result<()
 pub fn encounter_release_preflight(
     state: &CampaignState,
 ) -> Result<EncounterReleaseReadiness, RulesError> {
+    if state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .is_some_and(|flow| {
+            flow.version == TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+                && flow.phase == TacticalPhase::Active
+        })
+    {
+        let readiness = encounter_release_preflight_with_released(state, None)?;
+        let _proof = super::released_time::validation_for(state)?;
+        return Ok(readiness);
+    }
     let proof = super::released_time::validation_for(state)?;
     encounter_release_preflight_with_released(state, proof.as_ref())
 }
