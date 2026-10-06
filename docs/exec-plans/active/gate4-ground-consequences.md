@@ -1,5 +1,43 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Reviewed Ground geometry receipt — planned 2026-10-06
+
+Root allocated sole writing for this receipt to `private_grapple_oct6` from clean
+`1fe2f4aff7dea056f27a4dcce0afc27efab8b33e`, tree
+`fcfbbaf0937f8a98180d75a3efdf653464fc4f2c`. Fetch and complete receiving-plan
+review precede this checkpoint. Commit this plan before normally merging whole
+reviewed and published Ground `f9e466430cd753a9056054394f71137fd205b5e8`, tree
+`0f2dbd88de53714fed3aeac8267334ab0eb02df5`, using `--no-ff`.
+
+The sole common ancestor is `a7d40848c8b8588261444bdb5af19f13389b5336`.
+The incoming Ogre helper and Ground production plan both still equal that
+ancestor in this receiver. The full two-file delta and actual shared setup were
+read: normal accepted placement puts the Ogre at X20 beside the PC at X10,
+updates the ruling to adjacent occupied cells, and checks actual distance10
+before Begin. All original Ogre scenario bodies remain exact. This addresses
+the inherited four reach failures without changing production geometry, source,
+item, dice, custody or any original capture.
+
+Keep the complete corrected Shield and Chimera files exact1fe2f4a: raw request
+modifier0, full retained Piercing1d4-plus3 component equality, critical2d4,
+actual11 damage, every subsequent consequence and all other assertions. Keep
+the concentration file, registrations, original controls and all other receiving
+blobs exact, except this plan. Root separately checked both corrected files with
+the direct formatter; this receipt runs no formatter and claims no runtime pass.
+The complete incoming helper and Ground plan must equal f9 after merge, and
+all610 other Ground entries remain exact between a7 and f9. No copied hunks,
+cherry-picks or speculative source reconciliation are allowed; report an actual
+semantic conflict to root before resolving it.
+
+After the normal merge, inspect the whole receiving delta, prove every source
+blob belongs unchanged to the receiving input or the exact incoming correction,
+record parents/tree and freeze clean for root review. This is a development
+receipt within the existing product/Gate4/ADR scope; all Shield/concentration/
+fall, Graze, privacy, replay and native obligations remain. Root retains the
+heavy slot and all later verification/publication. No formatter, compiler,
+tests, npm, database, native application or push is allocated here. Prior actual
+failures stay recorded; fresh exact receiving-head verification remains due.
+
 ## Exact-head raw damage request correction — 2026-10-06
 
 Root transferred sole source writing for this bounded correction from freshly
