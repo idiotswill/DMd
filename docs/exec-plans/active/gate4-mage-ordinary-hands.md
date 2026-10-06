@@ -1,6 +1,6 @@
 # Gate 4 — Immutable Mage ordinary-hand source
 
-## Root receipt of explicit Goblin source correction � 2026-10-06
+## Root receipt of explicit Goblin source correction — 2026-10-06
 
 Root is sole writer. Before this normal whole-history receipt, the complete
 Ground b30-to-1b8 correction was reviewed: only the private pickup fixture and
