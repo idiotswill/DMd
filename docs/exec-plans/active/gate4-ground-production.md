@@ -1,5 +1,28 @@
 # Gate 4 — Ground equipment in the production attack path
 
+## Root correction plan: explicit source pin in pickup controls — 2026-10-06
+
+Fresh PR61 head b30ecac73084566c7f9bb704796f474ffda11b51 failed Linux
+run37446636121/job112213029209 in the two private Goblin Scimitar/Shortbow pickup
+controls at attack_equipment_access_tests.rs:541. The table harness passed70;
+rules library passed253 and failed2. Actual error is ground equipment unavailable.
+The fixture calls historical build_creature, which deliberately creates the V1
+Goblin with no ordinary_hands proof. Pickup correctly requires the explicit V2
+source. Existing source tests prove the historical pin remains unannotated and
+current V2 differs only by its typed anatomy. This is a test setup error, not
+authority to infer hands for historical sources or loosen pickup guards.
+
+Root is sole writer. Commit this plan before source changes. Build positive
+fixture actors with the actual immutable V2 pin through build_creature_from_source;
+assert the retained full pin and anatomy. Preserve all existing positive scenario
+assertions. Add negative Scimitar/Shortbow controls with genuine historical source
+construction, proving pickup refusal leaves the complete input unchanged. Do not
+edit frozen exports, production source, anatomy guards, source JSON or fingerprints.
+Run the entire affected private module and source-anatomy tests, then full rules
+library and strict lint. Publish only the reviewed correction and normally receive
+the full parent in its affected descendants. Full CI and native Gate4 obligations
+remain open; prior passing checks do not transfer to the new head.
+
 ## Reviewed geometry correction freeze — 2026-10-06
 
 Plan914209a preceded source59ee0a29bd30462598c0a3a2a66851e35032344a.
