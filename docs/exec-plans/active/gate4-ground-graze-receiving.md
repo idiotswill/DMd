@@ -1,5 +1,58 @@
 # Ground Graze corrected-parent receipt
 
+## October 6 whole-parent receiving amendment
+
+Status: plan-first source integration, 2026-10-06. The sole writer starts from
+clean `cfdc93a7da2608b06e5e63a9b1789f75620d0d33`, tree
+`39cb15436569b096056b4a8aa9c5c97bb1a32aa6`. Root reviewed the three Graze
+fixture corrections and their exact formatting-only follow-up. Those corrections
+have no receiving-head execution evidence yet.
+
+Normally merge complete reviewed Consequences
+`04b1fe515fad1e54ab4d0a2d9daecd1c87cc23ff`, tree
+`f31688a51e642d18361b577ab9b60c9539423a4b`, first. Its common ancestor is
+`a27d50452577f9a6b2cb8b7419443ed5324c6a60`; the complete incoming delta is
+three test helpers and two execution plans. This brings the ordinary whole
+Ground `f9e466430cd753a9056054394f71137fd205b5e8` receipt, legally adjacent
+Ogre geometry, and raw-zero versus authoritative-component-three damage proof.
+Preserve the receiver's additive Graze module registration in the consequences
+helper while taking the separate reviewed damage assertion correction.
+
+Then normally merge complete reviewed Physical
+`48f7c92b63bd2f9c586d2622d1875342f004b093`, tree
+`eee68a87b8fec25f86d78cf032ab48509b0172cf`. Its common ancestor is
+`709ec08f9f847fa7ae958d99c9591b142be69bec`. The complete incoming history
+includes the exact seven-asset distribution expectation and accepted-main Shove
+union. The 54-path incoming delta includes Shove source already in this receiver;
+14 complete incoming blobs already match the receiver exactly. Preserve every
+Ground/Graze field, constructor, capability, registration and test addition while
+receiving the reviewed whole ancestry. Do not replace receiver-specific combined
+source with a parent's simpler version.
+
+The objective remains Gate 4 integration toward the production-path requirements
+and acceptance boundaries above and in `gate-execution-protocol.md`. No product
+scope or acceptance is changed; ordinary drag/carry and all other open Gate 4
+requirements remain open. This allocation authorizes only the receiving plan,
+normal whole merges, source review and preservation audits. No copied hunks,
+cherry-picks, formatter, compiler, project tests, runtime, database, npm, native
+package or push is allocated. Root retains the sole heavy execution slot.
+
+Acceptance for this source-only handback: inspect both complete incoming deltas
+and common ancestors; preserve the three formatted Graze helpers, the complete
+privacy case body, all installed content, all original test bodies and every
+receiver-specific production/frontend addition. Report any actual source conflict
+with its full hunks before semantic resolution. Independent documentation prefixes
+may be combined only while retaining both full status histories. Record exact
+parents/tree, complete receiving diff, whole-tree blob origins and any deliberate
+unions. Parent verification results do not transfer to this receiving head.
+
+Exact next action: commit this amendment before the first merge, merge Consequences
+then Physical, review and audit the complete result, record the frozen source
+checkpoint, and return sole ownership to root for independent review and fresh
+head-specific verification. This is not a feature or gate acceptance checkpoint.
+
+## Earlier receiving history (retained)
+
 Status: planned before receiving changes, 2026-10-05.
 
 ## Objective and scope
