@@ -1,5 +1,59 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## Receive current Expiry and accepted Shove — 2026-10-06
+
+Root is sole writer from clean, freshly fetched
+`102e9ed3070de59cdb21844edb1671de9a2fb81f`. Receive complete Expiry
+`c093c72da90ad6c49c0da237f520a947dced1a60` by a normal two-parent merge.
+Common base is3fa8e6c17f625098159d70689f9394bcc24050e3. Accepted main is
+5afc992e62bb967aceec69db53f19b6347b70855 and now contains Shove; the earlier
+plan's exclusion described then-unaccepted source and is historical. Current
+Expiry also contains the reviewed due-boundary correction and native evidence.
+Its source391 passed full CI; final evidence headc093 still awaits exact-head CI
+and merge. Receiving it does not claim either slice or their union accepted.
+
+Advance the product's actual turn-based combat and exact recovery requirements
+without breaking the no-turn released-time path. Preserve the original typed
+Turn versus ReleasedInterval separation, shared work queue and source/history
+authentication. Relevant boundaries are ADR028 encounter completion, ADR029
+immutable sources, the tactical Gate4 checkpoint, current production closure,
+and the existing released-context inventory. No Gate5 or new source/content,
+rest, condition, movement or authority expansion is included.
+
+Commit this plan before integration. Read-only merge preview identified nine
+textual conflicts: two frontend files, application restore and source-controller
+routing, domain resolution, rules turn-choice dispatch and three status docs.
+Resolve by retaining both capabilities, all historical evidence and every
+validation obligation; never choose one parent's entire conflicted file blindly.
+Keep released-interval dispatch first and Shove's selected-decision guard on the
+ordinary Turn path. Restore must bind both released source partitions and Shove
+origin/save/push/effect causes. UI and source authority must expose each only to
+the appropriate actor/controller or actorless Host.
+
+The automatic merge also needs deliberate semantic adaptation. Add optional
+Shove to the manual resolution wire codec after attack and before hit_review,
+with the original omitted/default representation, correct field count and
+unchanged strict duplicate/unknown/mixed/null-context rejection. Preserve all
+captured historical bytes. Adapt Shove's constructor and mandatory actor reads
+to actual Turn context; ReleasedInterval cannot acquire a synthetic turn.
+Add `shove: None` to receiving constructors without changing their other fields.
+
+Offstage admits fresh Begin only on execution7 while preserving live old5.
+Extend the accepted Shove producer deliberately to ordinary Turn execution7,
+retaining historical4/5 behavior and all central fresh/live/version guards.
+This adds no Shove operation during a ReleasedInterval. Review every automatic
+source merge and constructor, and add meaningful new codec/version/application
+controls for the combined path. Preserve all prior positive, rejection, legacy,
+replay and source controls; do not recapture immutable history to hide changes.
+
+After complete parent/delta review, freeze and verify the new head with formatting,
+strict affected lint, existing Offstage426 selection, accepted Shove controls,
+new combined checks and complete required CI. Root schedules the single heavy
+local slot after the currently running Grapple integration. Fresh native,
+portable/restart and actual application acceptance of the union remain required;
+neither parent's old passes transfer. Record actual failures and exact next
+actions here. This plan starts integration, not acceptance or a gate-end claim.
+
 ## October 6 preserved Active release diagnostic
 
 The exact clean candidate `8ce529b2f717118192b30c9e789f9bb9e217d046`, tree
