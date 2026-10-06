@@ -36,6 +36,14 @@ pub(crate) fn admit(
             "ground drag belongs to the holder's current turn",
         ));
     }
+    if state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.entities.get(&proof.declaration.target))
+        .is_none_or(|target| target.death.dead)
+    {
+        return Err(prerequisite("ground drag requires a living target"));
+    }
     let start = encounter(state)?
         .participant(holder)
         .ok_or_else(|| invalid("holder absent"))?
@@ -361,6 +369,12 @@ pub(crate) fn choices(
         .into_iter()
         .flat_map(|g| &g.active)
         .filter(|g| g.declaration.grappler == holder)
+        .filter(|g| {
+            rules
+                .entities
+                .get(&g.declaration.target)
+                .is_some_and(|target| !target.death.dead)
+        })
         .map(|g| TableGrappleTransportOffer {
             actor: holder,
             grip: g.declaration.id,

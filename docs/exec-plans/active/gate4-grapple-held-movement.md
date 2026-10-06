@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **COHERENT FORMATTED SOURCE FROZEN; COMPILER AND ALL NEW TESTS UNRUN**.
+Status: **FORMATTED BASE FROZEN; LIVING-TARGET CORRECTION ADDED UNFORMATTED/UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -344,3 +344,15 @@ actual grip and replay identically. Keep all original test bodies exact.
 
 This adds source and one UNRUN test only. The prior43-file formatter allocation
 is finished; no further formatting/compiler/runtime is allocated for this fix.
+
+Source result: exactly14 production lines implement the living-target prerequisite
+and offer filter; reversing those two additions recovers the complete formatted
+transport module byte for byte. The new regression and its bounded original-event
+replay helper append127 lines without altering any of the existing22 new cases or
+919 original Rust test bodies. All625 other Git entries remain exact relative to
+eeeed2c (only production transport, its new test module and this plan differ).
+Static audit `tooling/ci-oct6/held-eeeed2c-dead-target-correction-audit.json`, SHA256
+`bc3519a3d290e747deff40870ed7c05b753bc6c388470da3c9074aac21984986`.
+The new regression is UNRUN, bringing this slice to23 new cases (18 Rust,5 desktop).
+No compiler, additional formatter, tests or database/native runtime was invoked.
+Root review, scheduled formatting/verification and publication remain outstanding.
