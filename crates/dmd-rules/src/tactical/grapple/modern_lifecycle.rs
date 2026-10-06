@@ -97,7 +97,7 @@ pub(super) fn settle(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
             let b = e
                 .participant(grip.declaration.target)
                 .ok_or_else(|| invalid("held target absent"))?;
-            if crate::spatial::participant_distance(a, b).map_err(|e| invalid(e.to_string()))?
+            if crate::spatial::participant_distance(a, b).map_err(|e| invalid(&e.to_string()))?
                 > grip.declaration.range
             {
                 let moved_actor = moved_actor(state, &work)?;
@@ -237,7 +237,7 @@ pub(super) fn validate_flight(
         active: proofs,
     });
     if crate::spatial::flight_loss_fall(encounter(&image)?, &image, fall.actor)
-        .map_err(|e| invalid(e.to_string()))?
+        .map_err(|e| invalid(&e.to_string()))?
         .as_ref()
         != Some(&fall.path)
     {

@@ -1,6 +1,6 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **B6 CI FAILED; NARROW TYPE FIXES AND UNKNOWN-VERSION FIXTURE MIGRATION PLANNED**.
+Status: **NARROW B6 CI CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
@@ -64,6 +64,21 @@ the heavy slot. Only after root review may fresh exact-head verification be
 prepared and allocated; the previous failed logs and UNRUN preparations remain
 evidence. Group 3, dragging/carrying, canonical/CI, independent-review and
 packaged-native acceptance requirements remain unchanged.
+
+The checkpoint above was committed at
+`e787c489c099a2334ac50a63c11cf65612b3ee6f` before editing the three source files.
+The authored delta is exactly two `as_deref()` substitutions, two diagnostic
+borrows and the one old transport specimen's `3` to `99` substitution. Static
+whole-file comparison and `git diff --check` passed. All other 616 Git entries,
+all 919 current Rust test bodies with attributes and occurrences, all 28 inline
+test modules, the other 21 frontend test files and all nine new Grapple frontend
+cases retain their exact source. The old transport file is otherwise byte-exact.
+All 426 selected Rust bodies, names, attributes and lines are unchanged; the
+previous afb/b6 preparations remain UNRUN and unchanged, and the four failed CI
+logs remain preserved. No formatter or runtime has verified these corrections.
+Next: independent root review of the complete clean freeze, then separately
+allocated formatting and fresh exact-head verification. Do not run or retarget
+the obsolete b6 preparation as evidence for this correction.
 
 ### Early draft CI and current-main reconciliation (2026-10-06)
 
