@@ -429,7 +429,8 @@ pub(super) fn reconstruct_with_read(
         Some(admitted) => {
             crate::tactical_weapons::prepare_weapon_attack_with_read(&calculation.input(), admitted)
         }
-        None => prepare_weapon_attack(&calculation.input()),
+        // This is a checked retained before-image, not a fresh public admission.
+        None => crate::tactical_weapons::prepare_tactical_weapon_attack(&calculation.input()),
     }
     .map_err(weapon_error)
 }

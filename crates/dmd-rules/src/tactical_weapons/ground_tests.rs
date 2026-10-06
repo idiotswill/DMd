@@ -342,7 +342,7 @@ fn a_preparation_cannot_be_consumed_with_another_input_state_origin_or_selected_
 fn private_pickup_does_not_treat_a_provisional_reserved_hand_as_free() {
     let mut f = Fixture::new();
     crate::tactical_hands::tests::install_attempt(&mut f.state, f.attack.actor, Hand::Right);
-    // Keep the helper's supported flow4 shape. This is a private physical
+    // Keep the helper's supported flow5 shape. This is a private physical
     // composition control, not accepted Grapple/pickup history.
     let before = f.state.clone();
     let input = f.input();
@@ -414,7 +414,7 @@ fn private_pickup_does_not_treat_a_provisional_reserved_hand_as_free() {
         .flow
         .as_mut()
         .unwrap()
-        .version = 5;
+        .version = 6;
     let before = f.state.clone();
     assert!(
         EffectiveHands::current(&f.state, f.state.rules.as_ref().unwrap(), f.attack.actor).is_err()
