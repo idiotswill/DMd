@@ -56,12 +56,6 @@ fn damage(value: &crate::tactical_definitions::DamageComponent) -> AttackDamageC
     }
 }
 
-pub(super) fn plan(
-    state: &CampaignState,
-    attack: &TacticalAttack,
-) -> Result<IntrinsicPlan, RulesError> {
-    plan_with_read(state, attack, None)
-}
 pub(super) fn plan_with_read(
     state: &CampaignState,
     attack: &TacticalAttack,

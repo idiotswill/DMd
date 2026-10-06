@@ -280,14 +280,13 @@ pub(super) fn validate_end(
     if let GrappleEndCause::OutOfRange {
         moved_actor: actor, ..
     } = end.cause
+        && ((actor != proof.declaration.grappler && actor != proof.declaration.target)
+            || (!transport::moved_by(state, &node.work, actor)
+                && moved_actor(state, &node.work)? != actor))
     {
-        if actor != proof.declaration.grappler && actor != proof.declaration.target
-            || (!transport::moved_by(state, &node.work, actor) && moved_actor(state, &node.work)? != actor)
-        {
-            return Err(invalid(
-                "relation ending differs from its displacement source",
-            ));
-        }
+        return Err(invalid(
+            "relation ending differs from its displacement source",
+        ));
     }
     Ok(())
 }

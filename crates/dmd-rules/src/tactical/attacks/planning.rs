@@ -45,18 +45,6 @@ pub(in crate::tactical) fn admit_target(
     Ok(())
 }
 
-pub(super) fn weapon_plan(
-    state: &CampaignState,
-    meta: &CommandMeta,
-    actor: EntityId,
-    choice: &WeaponUseChoice,
-    window: WeaponActionWindow,
-    loadout: &WeaponLoadout,
-    pack: &RulesPack,
-) -> Result<WeaponAttackPlan, RulesError> {
-    weapon_plan_with_read(state, meta, actor, choice, window, loadout, (pack, None))
-}
-
 pub(super) fn weapon_plan_with_read(
     state: &CampaignState,
     meta: &CommandMeta,
@@ -164,14 +152,6 @@ pub(super) fn weapon_plan_with_read(
     }
     .map_err(weapon_error)
 }
-pub(super) fn hit_facts(
-    state: &CampaignState,
-    actor: EntityId,
-    choice: &WeaponUseChoice,
-    plan: &WeaponAttackPlan,
-) -> Result<(RollMode, i32, bool), RulesError> {
-    hit_facts_with_read(state, actor, choice, plan, None)
-}
 pub(super) fn hit_facts_with_read(
     state: &CampaignState,
     actor: EntityId,
@@ -191,15 +171,6 @@ pub(super) fn hit_facts_with_read(
 
 /// Common visibility/condition/cover facts. Intrinsic and spell adapters provide
 /// their source-derived delivery and disadvantage without invented weapon IDs.
-pub(super) fn hit_facts_for(
-    state: &CampaignState,
-    actor: EntityId,
-    target_id: EntityId,
-    ranged: bool,
-    source_disadvantage: bool,
-) -> Result<(RollMode, i32, bool), RulesError> {
-    hit_facts_for_with_read(state, actor, target_id, ranged, source_disadvantage, None)
-}
 pub(super) fn hit_facts_for_with_read(
     state: &CampaignState,
     actor: EntityId,

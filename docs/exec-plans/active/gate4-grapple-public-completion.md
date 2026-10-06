@@ -1,12 +1,84 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **NARROW B6 CI CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
+Status: **TYPE AND STRICT LINT CORRECTIONS AUTHORED; NEW SOURCE UNVERIFIED**.
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 `a6097d485244a2ed5443765fb4ee40c34625892b`.
 
 ## Allocation, authority and evidence
+
+### Application audit-version lint correction (2026-10-06)
+
+Published `513fd011a930922e2a81eb3f04221a1103761cf8` passes fresh minimum-version,
+architecture, genericity and fast checks. Stable job `112156450474` now reaches
+the application crate and reports nine equivalent numeric-pattern lints across
+rules_restore, table_presentation_history, table_transport_runtime and
+table_runtime. Root read every diagnostic and each surrounding reader. Commit
+this plan before replacing only those nine `2 | 3 | 4` patterns with `2..=4`.
+The accepted historical action/conversation schema set stays exactly 2,3,4;
+no schema5/transportv4 support is added on this public baseline. Preserve every
+original test, validation branch, decoder and audit join.
+
+Root allocates a brief direct formatting pass on only the changed public Rust
+files, followed by its check; no compiler, tests, npm, database or native task
+runs alongside Offstage. Review any resulting formatting delta separately.
+This supersedes the earlier formatter scheduling hold only. Independent source
+review and fresh exact-head CI remain required; no lint suppression is permitted.
+
+Plan `5cd1ecb` preceded the nine substitutions. Direct Rustfmt and its check on
+the four changed files passed. The only additional formatting reflows the same
+presentation-history iterator closure; its expression and evaluation remain
+unchanged. Root read the full diff and whitespace checks passed. Tests, decoder
+branches and the allowed version set are unchanged. This source is ready for
+independent review; no local compiler or runtime has verified it.
+
+### Strict lint correction after the first successful compile (2026-10-06)
+
+Root owns the public branch from reviewed/published
+`2aa9c597b7c73b8b3a34a024e258ab887d5a9bc9`, tree
+`b5541197f6e82e2d2b92a8843ff447b578b58816`. Fresh Linux CI run
+`37428585505` passed the Rust 1.88 check, architecture and genericity guards;
+its stable Rust job `112153838423` passed fast verification and failed strict
+Clippy before tests. The actual complete failure output was read and preserved.
+This confirms the earlier type errors no longer block compilation, not runtime
+acceptance. Current Windows verification remains pending.
+
+Commit this plan before the narrow lint correction. Replace six numeric
+`1 | 2 | 3` persistence version patterns with exactly equivalent `1..=3`.
+Remove only four unused private ordinary forwarding wrappers:
+`intrinsic::plan`, `planning::weapon_plan`, `planning::hit_facts`, and
+`planning::hit_facts_for`. Each only forwards to its existing `_with_read`
+implementation with `None`; compiler diagnostics and complete source searches
+confirm no callers. Keep every live `_with_read` implementation and ordinary
+None branch unchanged, retaining the common-facts documentation on its live
+implementation. Collapse the nested OutOfRange check in modern_lifecycle into
+an equivalent let-chain with the same parenthesized condition, short-circuit
+evaluation and error. Do not suppress warnings or change any assertion, test
+body, live authority check, version set or public API.
+
+The complete resulting source diff requires an independent review and fresh
+exact-head CI. No local formatter/runtime is allocated during the active Offstage
+run. Old CI failure logs and unrun preparations stay bound to their original
+heads. All public Grapple and Gate4 acceptance obligations remain unchanged.
+
+The checkpoint was committed at `33a1888` before editing the four source files.
+The authored delta is exactly the six equivalent range patterns, removal of the
+four unused forwarding wrappers, and the equivalent OutOfRange let-chain above.
+Root read the full source delta; `git diff --check` passed. No existing test body
+or live `_with_read` implementation was edited. No formatter or local runtime
+has run for this correction. Next: independent full-diff review, then fresh CI
+on the published correction; do not credit the prior successful compile as
+verification of this head.
+
+The completed exact-2aa Windows stable log `112153838994` additionally reports
+an unused `crate::table_engine::table` import in `table_tactical.rs:5`. Its
+frontend check/build and all135 tests passed before the same strict-lint failure.
+Root read the import's complete module context and confirmed no uses; the next
+narrow correction removes only that import. Commit this evidence amendment
+before removal. Do not change any live table helper or tests. This adds one
+source path to the independent lint review and avoids knowingly carrying the
+compiler's additional warning into the next strict check.
 
 ### Actual b6 CI failures and approved narrow corrections (2026-10-06)
 
