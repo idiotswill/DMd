@@ -3,7 +3,9 @@
 Status: planned before source correction, 2026-10-06. Root is sole writer on
 `codex/gate4-ground-production`, starting at exact f9e466430cd753a9056054394f71137fd205b5e8.
 This corrects the shared Ground test fixture before normal receipt by its
-Consequences, Physical, Mage, Graze and Grapple integration descendants.
+Consequences, Mage, Graze and Grapple integration descendants. Physical creation
+does not contain this Ground helper and needs no direct correction; the shared
+Graze/Grapple receivers already include the complete Physical history.
 
 ## Actual failure and scope
 
