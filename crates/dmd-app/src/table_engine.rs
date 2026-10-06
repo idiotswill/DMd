@@ -106,6 +106,13 @@ fn resolve_table_internal(
             entity_id,
             player_id,
             input,
+        }
+        | TableAction::CreateCharacterFromSource {
+            character_id,
+            entity_id,
+            player_id,
+            input,
+            ..
         } => {
             host(meta)?;
             setup_only(&next)?;
@@ -115,8 +122,29 @@ fn resolve_table_internal(
             {
                 return Err("Select an existing player and a new character identity.".into());
             }
-            let built = dmd_rules::build_character(input, *entity_id, pack)
-                .map_err(|error| error.to_string())?;
+            let (built, creation_action) = match action {
+                TableAction::CreateCharacterFromSource { source, .. } => {
+                    if character_id.0.is_nil() || entity_id.0.is_nil() {
+                        return Err("Select new non-nil character identities.".into());
+                    }
+                    (
+                        dmd_rules::build_character_from_source(input, *entity_id, source, pack),
+                        RulesAction::CreateCharacterFromSource {
+                            entity_id: *entity_id,
+                            source: source.clone(),
+                            input: input.clone(),
+                        },
+                    )
+                }
+                _ => (
+                    dmd_rules::build_character(input, *entity_id, pack),
+                    RulesAction::CreateCharacter {
+                        entity_id: *entity_id,
+                        input: input.clone(),
+                    },
+                ),
+            };
+            let built = built.map_err(|error| error.to_string())?;
             next.entities.insert(
                 *entity_id,
                 WorldEntity {
@@ -142,10 +170,7 @@ fn resolve_table_internal(
             apply_rules(
                 &mut next,
                 meta,
-                RulesAction::CreateCharacter {
-                    entity_id: *entity_id,
-                    input: input.clone(),
-                },
+                creation_action,
                 pack,
                 &mut rules_event,
                 &mut mechanics,

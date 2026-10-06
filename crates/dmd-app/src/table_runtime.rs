@@ -201,7 +201,8 @@ impl CampaignRuntime {
         let runnable = self.open_campaign(campaign_id).await?;
         load_rules_pack(runnable.content())?;
         Ok(CharacterCreationOptions {
-            catalog: dmd_rules::starter_catalog(),
+            source: dmd_rules::current_character_creation_source()?,
+            catalog: dmd_rules::physical_starter_catalog(),
             fighter_skills: dmd_rules::FIGHTER_SKILLS.to_vec(),
             fighter_masteries: dmd_rules::fighter_mastery_choices()?,
             standard_languages: dmd_rules::STANDARD_LANGUAGES

@@ -9,6 +9,13 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    CreateCharacterFromSource {
+        character_id: CharacterId,
+        entity_id: EntityId,
+        player_id: PlayerId,
+        source: CharacterCreationSourcePin,
+        input: CharacterCreationInput,
+    },
     UpdateContract {
         contract: TableContract,
     },
@@ -644,6 +651,7 @@ pub enum TableTextResult {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CharacterCreationOptions {
+    pub source: CharacterCreationSourcePin,
     pub catalog: dmd_rules::StarterCatalog,
     pub fighter_skills: Vec<Skill>,
     pub fighter_masteries: Vec<String>,

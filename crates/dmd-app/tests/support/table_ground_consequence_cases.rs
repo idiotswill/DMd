@@ -6,6 +6,15 @@ use super::*;
 mod concentration;
 #[path = "table_ground_fall_cases.rs"]
 mod falling;
+#[path = "table_ground_final_helpers.rs"]
+mod final_helpers;
+#[path = "table_ground_privacy_cases.rs"]
+mod privacy;
+#[path = "table_ground_remaining_cases.rs"]
+mod remaining;
+
+#[path = "table_ground_graze_cases.rs"]
+mod graze;
 
 fn owner(f: &Fixture, mage: EntityId) -> TableTransportChannel {
     TableTransportChannel::SourceCreature {

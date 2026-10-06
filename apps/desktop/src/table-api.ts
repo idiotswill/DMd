@@ -26,6 +26,7 @@ export interface CharacterInput {
   purchases: EquipmentChoice[]; worn_armor: string | null; shield: boolean; masteries: string[];
 }
 export interface CharacterProfile {
+  creation_source?: CharacterCreationSourcePin;
   entity_id: Id; name: string; pronouns: string; description: string; alignment: string; backstory: string;
   class_id: string; species_id: string; background_id: string; level: number; experience_points: number;
   size: string; speed_feet: number; base_ability_scores: number[]; background_boosts: number[];
@@ -39,7 +40,12 @@ export interface CharacterSheet { ability_modifiers: number[]; proficiency_bonus
 export interface SheetDetails { ability_scores: number[]; hit_dice: { sides: number; maximum: number; remaining: number }; heroic_inspiration: boolean; saving_throws: { ability: Ability; modifier: number; proficient: boolean }[]; skills: { skill: Skill; ability: Ability; modifier: number; proficiency: 'Proficient' | 'Expertise' | null }[]; conditions: string[]; exhaustion: number; death: { successes: number; failures: number; stable: boolean; dead: boolean } }
 export interface EquipmentView { prepared: boolean; initial_item_count: number; items: { id: Id; name: string; quantity: number }[]; worn_armor: Id | null; shield: Id | null; hands: { hands: ('Free' | { Item: Id })[] } }
 export interface CharacterView { character_id: Id; player_id: Id | null; entity_id: Id; name: string; profile: CharacterProfile | null; sheet: { Character: CharacterSheet } | null; details: SheetDetails | null; second_wind_remaining: number | null; equipment?: EquipmentView | null }
+export interface CharacterCreationSourcePin {
+  ruleset_id: string; ruleset_version: string; catalog_schema_version: number;
+  profile_id: string; definition_fingerprint: string;
+}
 export interface CreationOptions {
+  source: CharacterCreationSourcePin;
   catalog: { schema_version: number; ruleset_id: string; version: string; profile_id: string; starting_money_cp: number; source_pages: number[]; scope: string; items: { id: string; name: string; unit_cost_cp: number; purchase_multiple: number; source_page: number; weapon: boolean }[] };
   fighter_skills: Skill[]; fighter_masteries: string[]; standard_languages: string[]; alignments: string[];
 }
@@ -71,6 +77,7 @@ export interface TableView {
 export type TableAction =
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
   | { CreateCharacter: { character_id: Id; entity_id: Id; player_id: Id; input: CharacterInput } }
+  | { CreateCharacterFromSource: { character_id: Id; entity_id: Id; player_id: Id; source: CharacterCreationSourcePin; input: CharacterInput } }
   | { PrepareEquipment: { character_id: Id; item_ids: Id[] } }
   | { CreateCreature: { creation: CreatureCreation } }
   | { EnableSourceActorAccess: { adopted: SourceAdoption[] } }
@@ -123,7 +130,7 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   const [kind, payload] = Object.entries(request.action)[0];
   if (['EnableSourceActorAccess','SetSourceCreatureController'].includes(kind)) return request.version === 2 && channel === 'Host' && object(payload);
   if (sourceChannel && kind !== 'Tactical') return false;
-  return ['UpdateContract','AddPlayer','CreateCharacter','CreateCreature','PrepareEquipment','PrepareBattlefield','Tactical','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
+  return ['UpdateContract','AddPlayer','CreateCharacter','CreateCharacterFromSource','CreateCreature','PrepareEquipment','PrepareBattlefield','Tactical','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
 }
 export function loadRequest(): UnconfirmedRequest | null {
   const value = localStorage.getItem(REQUEST_KEY);
@@ -147,7 +154,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
   if (typeof request.request.action === 'object' && 'EnableSourceActorAccess' in request.request.action) return 'Enable source creature control';
   if (typeof request.request.action === 'object' && 'SetSourceCreatureController' in request.request.action) return 'Assign source creature control';
-  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',CreateCreature:'Prepare a source creature',PrepareEquipment:'Prepare starting equipment',PrepareBattlefield:'Prepare the encounter map',Tactical:'Resolve an encounter action',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
+  const labels: Record<string, string> = { EndSession:'End the session',UpdateContract:'Update the table agreement',AddPlayer:'Add a player',CreateCharacter:'Create a character',CreateCharacterFromSource:'Create a character',CreateCreature:'Prepare a source creature',PrepareEquipment:'Prepare starting equipment',PrepareBattlefield:'Prepare the encounter map',Tactical:'Resolve an encounter action',StartSession:'Start a session',SetSituation:'Establish a situation',CancelDecision:'Withdraw a declaration',Adjudicate:'Request a supported roll',SubmitPhysical:'Report physical dice' };
   return labels[typeof request.request.action === 'string' ? request.request.action : Object.keys(request.request.action)[0]];
 }
 

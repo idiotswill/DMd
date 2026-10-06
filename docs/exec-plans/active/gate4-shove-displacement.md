@@ -1,11 +1,12 @@
 # Gate 4 — Source-bound Shove and displacement
 
-Status: implementation authored; the first complete remote runtime runs failed
-the Air setup. The published correction is frozen for its existing remote run.
-The separate local Air/release integration checkpoint below is authored and
-statically checked, but uncompiled and unrun; feature acceptance remains pending.
-Root owns the heavy verification
-slot and delegated this 2026-09-30 integration to one branch writer. Branch:
+Status, 2026-10-05: receiving acbcf74 passed all six remote checks. Actual f9c0f3d
+native play and pending/completed cold reopening are complete for the bounded
+route below. Air PR50 is accepted on main32c0c68. Local canonical, final main
+reconciliation, final-head checks and protected merge remain pending. Root is the
+sole writer and allocates one local heavy verification slot. Earlier checkpoints are
+historical and are superseded only by the precisely attributed evidence below.
+Branch:
 `codex/gate4-shove-displacement`; root-created clean base and freshly fetched main
 `c4d8c34c19b5c92eca789f292f99632a0107d861` (2026-09-28).
 
@@ -529,3 +530,135 @@ The published c112 runtime jobs must still finish normally before replacing that
 head. New integrated canonical/CI, historical continuation and native acceptance
 remain outstanding. Root owns the clean integration candidate and publication;
 no dependency or feature is accepted by this documentation checkpoint.
+
+### Verified integrated CI and planned accepted-main union — 2026-10-04
+
+Root freshly fetched main, Air and this branch. Shove remains clean published
+`f9c0f3df7c6c7ed8c53c41adb95480e634a15c20`, tree
+`3a84ab11dc18d9945e2090a94b506340f8c8ebf5`; accepted main is
+`dbf1d633460473183324b4ec519e8d1980884b5c`. Release PR48 is accepted; Air PR50
+is still unaccepted and its local canonical run is in progress. PR51 must never
+merge into Air. Final acceptance still requires verified accepted dependencies,
+retargeting main, final exact-head checks and expected-head protection.
+
+Actual completed Linux run36766897398/runtime110063215011 and Windows
+run36766897495/runtime110063216521 pass all 56 Rust result groups:801/803 tests,
+zero failed/ignored/filtered. The original five receiving suites, including all
+eight original Flow4 continuation cases, pass; all62 table tests, four Missile
+and five release cases pass. All16 named Shove reducer controls and both actual
+file-SQLite Shove scenarios pass. The latter use normal source/transport commands,
+real file reopening and independent in-memory restore; they do not prove a
+second cold file or native desktop operation. The actual Air case covers immune
+Prone, healthy Hover push and unsupported Air Form refusal/Return. These are
+executed tests on f9, not executions on a later documentation head.
+
+Linux used synthetic merge `2297a08814d589140be732e874dc927e5060ccc9`, parents
+Air3f and Shovef9, whose whole tree equals f9. Windows used literal f9. Both MSRV
+checks, architecture and genericity pass. Actual Windows frontend reports126
+tests in19 files, zero Svelte errors/warnings and143 transformed modules.
+Root rehashed all six complete raw job logs and independently recounted every
+Rust result group on October4. Final bundle `tooling/shove-f9c0f3d-ci/final-evidence.json`
+SHA256 `8a1bf431b961eeb10979a94cd1781c54f35e50e10447997f69b36cfb013cf798`;
+root recount `root-log-recount-2026-10-04.json` SHA256
+`e18366fec5c87bfe162fa9c49a68712ee96013a02fba6e8b23dbac641d65c128`.
+The earlier source-specific named audit SHA256 is
+`a23db561485fbde3ec7ad7840b8521cae16fc184c1647666ee014f4c1bd00cbe`;
+Flow4/table/release audit SHA256
+`70708a6f67b4f879037dd94c2e4c08f41e0c2f6de8fa58e09a5ec934f8783ef4`.
+
+Actual portable artifact11130577787 was separately extracted and independently
+verified, archive SHA256
+`cd9c653fdb086dfc704e59c1c717de8bd08d856defe895471aad3868ad0e1c79`,
+executable SHA256
+`c852e0f6bf35fae8a52759d372b11de244035413a0420ea277c16bcf4f1a1f20`.
+All1071 payloads are verified. It has not yet been run natively; no installer was
+installed. Prepared native observations must use this exact package, re-observe
+the actual save, label QA face input accurately, verify fresh blank/reachable
+prompts and pending/completed cold reopening. Package/native provenance remains
+f9 even if a later source-equivalent documentation checkpoint is accepted.
+
+Plan before integration: normally merge freshly fetched reviewed Air
+`f932c73bf1f79cd0c5600431839a6ecece7877f7`, which includes accepted dbf main.
+Compared with already integrated Air3f, its complete delta is six documentation
+paths only; every non-document blob is identical. Accepted dbf versus the exact
+integrated release `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` changes only five
+documentation paths. Preserve qualified Air/Shove/release evidence in any
+documentation conflict. Any unexpected production/test/content change requires
+fresh semantic review before continuing. Do not import MR, expiry, Grapple,
+counts or Ogre. Audit every non-document and protected fixture/raw byte after
+the normal merge, freeze for independent complete integration review and publish
+only after that review. New-head CI, local canonical and native remain pending;
+source equivalence alone does not turn old executions into new ones.
+
+The plan above was committed as `a40e56643daf5655823fc14090b471fde32599a9` before
+normal conflict-free merge `318dd6456411bb2fdcd596a4257b99467804e30a`, tree
+`478d2409e4efd603d36f461281018a86f6fdd330`. The second parent is exact Airf932;
+accepted dbf main is now an ancestor. The complete union changes seven docs only
+versus f9. Root's fresh audit checks all422 non-document tracked blobs: every
+one is identical to f9. All29 fixture Git blobs match the prior protected audit,
+including21 actual raw files independently rehashed against it; the five original
+receiving suites are unchanged. External union audit
+`tooling/shove-318dd64-accepted-main-union-audit-2026-10-04.json` SHA256
+`7010ffed71497ad96a6e3dd57e2b71fcf89340f998ef37f69a8cb95d4c4e0d23` records
+those exact identities. No source/test/fixture assertion or capture was edited.
+
+Next: independent full integration/evidence review, then root's normal draft
+publication for this receiving head. Native remains unrun on the verified f9
+package; its exact source equivalence is established above rather than relabeling
+the binary. Local canonical must use the frozen receiving head, a private fresh
+target and the standard full original suites when the Air heavy slot returns.
+Air acceptance, any later main reconciliation, final-head CI and protected merge
+are still required. No gate or public-family status advances at this checkpoint.
+
+### Actual native completion and accepted-Air receiving plan — 2026-10-05
+
+All six checks on exact acbcf746ce8afbc1fa8554da5c1c028d9224f840 completed:
+Linux run37210717757/job111461173353 and Windows
+run37210717806/job111461173461 report801/803 Rust passes in56 complete groups,
+zero failed/ignored/measured/filtered. Both include all18 Shove-specific cases
+and21 original receiving cases. Both MSRV checks and guards passed. Linux checked
+out synthetic aac870125c53a123f3b472f22a7bf1d0c8e51d57, with Airf932/acbc parents
+and the exact acbc tree; Windows checked out literal acbc. Independent complete
+log audit SHA25650074245e0d2b7c5bfd1dfd7a042fd2e8babdeb51170570ada907c1b021930b7
+and root's separate six-log rehash/recount agree. These are acbc results, not
+checks on a future receiving head.
+
+On October4 root operated the actual verified f9 portable executable identified
+above. In the existing selected QA campaign, commands76–91 exercised a Strength
+save, paid immune Prone, normal turn advancement, a second Dexterity save, player
+East/Keep elevation Push proposal, private host review, Return to a blank player
+choice, reproposal and host Commit. Physical-mode faces were entered as QA value1,
+not claimed as witnessed physical throws. The first total3 and second total6
+were retained with their original cause, request and accepted-face records.
+
+Normal close/reopen preserved the pending first save at78, paid immune outcome80,
+host review88 and completed Push91. The final Push moved the actual Air from
+10east/5south to15east/5south, retaining its five-foot elevation, Hover, HP and
+source. Action remained spent, no extra dice or movement payment appeared, and
+the pending continuation cleared. At final completion/closed/reopened cuts,
+state SHA256cda9bf3a1b9b36dc9556be0a4fe5d303f472d2069c245bca7e1517f8f1e26357
+and all27 selected-campaign tables/397 rows were identical. The independent
+23-cut audit checks journal prefixes1–91, previous command/event causes and old
+raw records; audit SHA256c81a2b8a1f7acb4a7cd899d91e3b4b2de26235c91126c0b6ad459e3f2639e422.
+The early file named returned-choice-89 actually captured88 before submission
+settled; it remains preserved and qualified, with a separate settled89 capture.
+Final normal app exit was18:17:44UTC. Normal exit is not forced-crash evidence,
+selected-table comparison is not a full-store backup, and this clear-map route
+does not prove blocked Air Form passage. Package/native attribution remains f9.
+
+Air PR50 subsequently merged with expected-head protection as accepted main
+32c0c682c4dbb235e1f9a119643c5d8626d5cb71, whose complete tree equals reviewed
+ee51fbdab5a57c56d46aca6245f58ad595ec4fc2. Root freshly fetched that main and
+unchanged acbc. Compared with the already received Airf932, main changes only
+the Air plan and coverage-ledger narrative,69 additions/9 deletions; production,
+tests and content are identical. Commit this plan before normally merging exact
+32c0c68. Preserve both qualified evidence histories in any documentation conflict.
+Audit all422 non-document blobs and protected fixtures/raws against actual f9;
+any unexpected difference requires fresh semantic review.
+
+After independent review, retarget PR51 to accepted main and publish the frozen
+union for all six exact-head checks. Root must run canonical ./scripts/verify
+with a fresh private target and default stack/profile/harness settings once the
+single heavy slot is free. Record actual results before final acceptance and
+expected-head merge; verify literal merged main separately. Wider Air Form,
+Multiattack, Whirlwind and the remaining Gate4 obligations remain separate.

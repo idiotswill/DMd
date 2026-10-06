@@ -20,7 +20,8 @@ def main():
     files = []
     for name in (
         "NOTICE.md", "source.json", "kernel.json", "character-creation.json",
-        "tactical.json", "air-elemental-v1.json", "goblin-warrior-v2.json", "ogre-v1.json",
+        "character-creation-physical-v1.json", "tactical.json", "air-elemental-v1.json",
+        "goblin-warrior-v2.json", "ogre-v1.json",
     ):
         data = (root / name).read_bytes()
         if b"\r" in data:
