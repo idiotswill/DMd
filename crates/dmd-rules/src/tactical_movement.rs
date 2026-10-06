@@ -185,18 +185,25 @@ pub(crate) fn validate_result(state: &CampaignState) -> Result<(), RulesError> {
         .checked_sub(result.spent_before)
         .ok_or_else(|| invalid("Movement result refunds accepted expenditure."))?;
     let max_cost = if let Some(transport) = &result.transport {
-        if !crate::table::grapple_transport_enabled(state) || transport.grip.0.is_nil()
-            || transport.target == result.actor || transport.target.0.is_nil()
+        if !crate::table::grapple_transport_enabled(state)
+            || transport.grip.0.is_nil()
+            || transport.target == result.actor
+            || transport.target.0.is_nil()
             || transport.ordinary_cost.checked_add(transport.haul_cost) != Some(cost)
             || transport.ordinary_cost < u32::from(result.completed_steps)
             || transport.ordinary_cost > u32::from(result.completed_steps) * 30
-            || transport.haul_cost > u32::from(result.completed_steps) * 10 {
-            return Err(invalid("Ground drag result differs from its bounded cost components."));
+            || transport.haul_cost > u32::from(result.completed_steps) * 10
+        {
+            return Err(invalid(
+                "Ground drag result differs from its bounded cost components.",
+            ));
         }
         transport.target_start.validate().map_err(invalid)?;
         transport.target_endpoint.validate().map_err(invalid)?;
         40
-    } else { 30 };
+    } else {
+        30
+    };
     let sequence = result.original.expected_event_sequence;
     if result.requested_steps == 0
         || result.requested_steps > 1024
@@ -394,15 +401,29 @@ pub(crate) fn admit(
 }
 
 pub(crate) fn next_coupled_segment(
-    state: &CampaignState, movement: &TacticalMovement,
+    state: &CampaignState,
+    movement: &TacticalMovement,
 ) -> Result<Option<CoupledGroundSegment>, RulesError> {
-    let Some(target) = crate::tactical::grapple::transport::current_target(state, movement)? else { return Ok(None); };
+    let Some(target) = crate::tactical::grapple::transport::current_target(state, movement)? else {
+        return Ok(None);
+    };
     let index = usize::from(movement.next_step);
-    let step = movement.path.get(index).ok_or_else(|| invalid("Movement cursor is complete."))?;
+    let step = movement
+        .path
+        .get(index)
+        .ok_or_else(|| invalid("Movement cursor is complete."))?;
     evaluate_coupled_ground(CoupledGroundQuery {
-        encounter: encounter(state)?, state, holder: movement.actor, target, step,
-        allowance: &allowance(state)?, progress: &progress(state)?, ends_move: index + 1 == movement.path.len(),
-    }).map(Some).map_err(|error| match error {
+        encounter: encounter(state)?,
+        state,
+        holder: movement.actor,
+        target,
+        step,
+        allowance: &allowance(state)?,
+        progress: &progress(state)?,
+        ends_move: index + 1 == movement.path.len(),
+    })
+    .map(Some)
+    .map_err(|error| match error {
         SpatialError::Illegal(message) => prerequisite(message),
         SpatialError::Unsupported => prerequisite("ground drag geometry is not supported"),
         SpatialError::Capacity => prerequisite("Movement reached its bounded execution capacity."),
@@ -434,7 +455,9 @@ pub(crate) fn next_segment(
         ));
     }
     capability(state, movement.actor, step.mode)?;
-    if let Some(coupled) = next_coupled_segment(state, movement)? { return Ok(coupled.holder); }
+    if let Some(coupled) = next_coupled_segment(state, movement)? {
+        return Ok(coupled.holder);
+    }
     let plan = evaluate(
         state,
         movement.actor,
@@ -491,15 +514,25 @@ pub(crate) fn validate_history(
                 .map_err(invalid)?;
             let distance =
                 grid_distance(receipt.from, receipt.to).map_err(|e| invalid(e.to_string()))?;
-            let ordinary_cost = if let Some(history) = crate::tactical::grapple::transport::history(state) {
-                let paired = history.steps.get(index).ok_or_else(|| invalid("Ground drag step receipt absent."))?;
-                if history.admission.origin != movement.origin || paired.total_cost() != Some(receipt.cost)
-                    || paired.holder.from != receipt.from || paired.holder.to != receipt.to
-                    || paired.mode != receipt.mode || paired.cause != receipt.cause {
-                    return Err(invalid("Ground drag receipt differs from movement."));
-                }
-                paired.ordinary_cost
-            } else { receipt.cost };
+            let ordinary_cost =
+                if let Some(history) = crate::tactical::grapple::transport::history(state) {
+                    let paired = history
+                        .steps
+                        .get(index)
+                        .ok_or_else(|| invalid("Ground drag step receipt absent."))?;
+                    if history.admission.origin != movement.origin
+                        || paired.total_cost() != Some(receipt.cost)
+                        || paired.holder.from != receipt.from
+                        || paired.holder.to != receipt.to
+                        || paired.mode != receipt.mode
+                        || paired.cause != receipt.cause
+                    {
+                        return Err(invalid("Ground drag receipt differs from movement."));
+                    }
+                    paired.ordinary_cost
+                } else {
+                    receipt.cost
+                };
             if receipt.cause.expected_event_sequence < movement.origin.expected_event_sequence
                 || receipt.cause.expected_event_sequence < previous_cause.expected_event_sequence
                 || (receipt.cause.expected_event_sequence == previous_cause.expected_event_sequence

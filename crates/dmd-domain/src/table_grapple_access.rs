@@ -71,12 +71,15 @@ impl TableGrappleAccess {
         }
         if let Some(transport) = &self.ground_transport {
             let origin = &transport.origin;
-            if origin.id.0.is_nil() || origin.id == self.origin.id
+            if origin.id.0.is_nil()
+                || origin.id == self.origin.id
                 || origin.campaign_id != state.campaign_id()
                 || origin.expected_event_sequence <= self.origin.expected_event_sequence
                 || origin.expected_event_sequence > state.applied_event_sequence
-                || origin.issuer != CommandIssuer::Admin || origin.actor.is_some()
-                || origin.session_id.is_none_or(|id| id.0.is_nil()) {
+                || origin.issuer != CommandIssuer::Admin
+                || origin.actor.is_some()
+                || origin.session_id.is_none_or(|id| id.0.is_nil())
+            {
                 return Err("invalid ground drag activation provenance".into());
             }
         }

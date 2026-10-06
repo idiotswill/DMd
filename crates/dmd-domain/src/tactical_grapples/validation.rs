@@ -354,7 +354,10 @@ impl TacticalGrappleResolution {
     ) -> Result<(), String> {
         require(!self.is_empty(), "empty grapple resolution attachment")?;
         if let Some(transport) = &self.transport {
-            require(matches!(reads, ReadShape::Activated), "ground drag needs its activated executor")?;
+            require(
+                matches!(reads, ReadShape::Activated),
+                "ground drag needs its activated executor",
+            )?;
             transport.validate_shape(resolution, self)?;
         }
         let mut proof_ids = HashSet::new();

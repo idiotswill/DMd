@@ -182,6 +182,9 @@ pub fn grapple_action(choice: &TableGrappleChoice) -> crate::tactical::TacticalA
 }
 
 pub fn grapple_transport_enabled(state: &CampaignState) -> bool {
-    state.table.as_ref().and_then(|t| t.grapple_access.as_ref())
+    state
+        .table
+        .as_ref()
+        .and_then(|t| t.grapple_access.as_ref())
         .is_some_and(|access| access.ground_transport.is_some())
 }

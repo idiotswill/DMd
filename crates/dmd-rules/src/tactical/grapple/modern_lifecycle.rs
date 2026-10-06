@@ -101,9 +101,13 @@ pub(super) fn settle(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
             if crate::spatial::participant_distance(a, b).map_err(|e| invalid(&e.to_string()))?
                 > grip.declaration.range
             {
-                let moved_actor = if transport::moved_by(state, &work, holder) { holder }
-                    else if transport::moved_by(state, &work, grip.declaration.target) { grip.declaration.target }
-                    else { moved_actor(state, &work)? };
+                let moved_actor = if transport::moved_by(state, &work, holder) {
+                    holder
+                } else if transport::moved_by(state, &work, grip.declaration.target) {
+                    grip.declaration.target
+                } else {
+                    moved_actor(state, &work)?
+                };
                 if moved_actor != holder && moved_actor != grip.declaration.target {
                     return Err(invalid("range end belongs to an unrelated mover"));
                 }

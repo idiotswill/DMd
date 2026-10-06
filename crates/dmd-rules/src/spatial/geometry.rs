@@ -164,7 +164,9 @@ pub(super) fn continuous_horizontal_support(
         .filter_map(|surface| footprint_contact_interval(from, to, footprint, *surface))
         .collect::<Vec<_>>();
     intervals.sort_by(|a, b| {
-        a.low.compare(b.low).then_with(|| b.low_closed.cmp(&a.low_closed))
+        a.low
+            .compare(b.low)
+            .then_with(|| b.low_closed.cmp(&a.low_closed))
     });
     let Some(mut covered) = intervals.first().copied() else {
         return false;

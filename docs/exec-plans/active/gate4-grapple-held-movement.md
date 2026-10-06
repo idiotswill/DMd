@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **COHERENT SOURCE AND WHOLE PUBLIC RECEIPT FROZEN; BOUNDED FORMAT ALLOCATED**.
+Status: **COHERENT FORMATTED SOURCE FROZEN; COMPILER AND ALL NEW TESTS UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -294,3 +294,24 @@ This finding must be resolved and reviewed before publication/acceptance.
 
 The source writer remains ci_oct6; no other checkout is writable here. All
 compiler/runtime and publication work still awaits separate root allocation.
+
+### Bounded formatter result and preservation audit
+
+The allocated direct43-file Rustfmt and identical bounded check both returned0,
+with no stdout/stderr. Command/binary/path evidence is
+`tooling/ci-oct6/held-b1e373b-bounded-format.json`, SHA256
+`cc885fc4a928dc5d2d5b7365f67ba7026049bae009ca2a8ca64eec1a95391d58`.
+Layout changed26 Rust files;602 other Git-normalized source entries remain exact.
+Literal/comment/identifier/operator order is unchanged after separately reviewed
+trailing commas, transparent expression blocks, a diverging-return semicolon and
+sorting the new transport/validation module declarations in two roots. The seven
+existing test/helper/module-root files retain their preformat bytes, including
+only the approved eight constructor additions and two module registrations.
+All919 original Rust test bodies and occurrence counts are exact after reversing
+only those approved constructor insertions; no extra old-test whitespace changes
+occurred. Static preservation report
+`tooling/ci-oct6/held-b1e373b-formatted-source-audit.json`, SHA256
+`a642429df199ed3903b689321513daced0cf97bb32c97199eb0e7ee7759ffa16`.
+The full formatting patch and token-delta inventory are preserved externally.
+These checks establish formatting/source preservation only. Compiler, all22 new
+cases, all retained suites and native/CI acceptance remain UNRUN on this head.

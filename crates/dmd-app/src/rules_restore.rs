@@ -902,7 +902,12 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.grapple_access.as_ref())
     {
         origins.push(&access.origin);
-        origins.extend(access.ground_transport.as_ref().map(|transport| &transport.origin));
+        origins.extend(
+            access
+                .ground_transport
+                .as_ref()
+                .map(|transport| &transport.origin),
+        );
     }
     if let Some(encounter) = &state.encounter {
         origins.push(&encounter.origin);
@@ -1289,7 +1294,11 @@ fn grapple_origins<'a>(state: &'a CampaignState, origins: &mut Vec<&'a CommandMe
             None => {}
         }
     }
-    if let Some(transport) = resolution.grapple.as_ref().and_then(|c| c.transport.as_ref()) {
+    if let Some(transport) = resolution
+        .grapple
+        .as_ref()
+        .and_then(|c| c.transport.as_ref())
+    {
         origins.push(&transport.admission.origin);
         origins.extend(transport.steps.iter().map(|step| &step.cause));
         origins.extend(transport.stop.as_ref().map(|stop| &stop.cause));
@@ -1470,16 +1479,25 @@ fn validate_origins(
                 RecoveryEvent::Rules(_) => None,
             });
         let matches = match action {
-            Some((TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path }, outcome)) =>
-                movement.transport.is_none() && outcome.active_actor == Some(movement.actor)
-                    && path.len() == usize::from(movement.requested_steps),
-            Some((TacticalAction::MoveGrappled { grip, path }, outcome)) =>
-                movement.transport.as_ref().is_some_and(|transport| transport.grip == *grip)
-                    && outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps),
+            Some((
+                TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path },
+                outcome,
+            )) => {
+                movement.transport.is_none()
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            Some((TacticalAction::MoveGrappled { grip, path }, outcome)) => {
+                movement
+                    .transport
+                    .as_ref()
+                    .is_some_and(|transport| transport.grip == *grip)
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
             _ => false,
         };
-        if !matches
-        {
+        if !matches {
             return Err("movement receipt disagrees with its originating Move action".into());
         }
     }

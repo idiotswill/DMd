@@ -618,7 +618,13 @@ fn dispatch(
             movement::begin(next, meta, path, movement::Intent::SelfOnly, execution)?
         }
         TacticalAction::MoveGrappled { grip, path } => {
-            movement::begin(next, meta, path, movement::Intent::GroundDrag(*grip), execution)?;
+            movement::begin(
+                next,
+                meta,
+                path,
+                movement::Intent::GroundDrag(*grip),
+                execution,
+            )?;
         }
         TacticalAction::DeclineOpportunity => movement::decline(next, meta, execution)?,
         TacticalAction::OpportunityAttack { choice } => {
