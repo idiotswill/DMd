@@ -1,5 +1,35 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## October 6 preserved completion-history diagnostic
+
+Exact `9cd146837945dce504aeb7f6fc266f7f9de52673` fails the existing
+`completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims`
+control on Linux111798689219 and Windows111798295472. The movement suite reports
+30 passed and1 failed. Its unauthenticated Finished state is still refused,
+but the new released proof constructor runs full domain structural validation
+first and replaces the established missing-completion-history error with
+`released candidate is structurally invalid`. The original assertion is correct
+and remains unchanged; this is validation diagnostic precedence, not evidence
+of an accepted unauthenticated state.
+
+Commit this plan before implementation. Extract the existing missing-history
+guard in `release::validate_history_with_released` into a small private pure
+`require_completion_history` helper. Retain the exact predicate and error:
+no encounter history, a release-capable execution, and Finished phase. Call that
+helper at the original release validation boundary and at the start of
+`ReleasedValidation::derive`, before general structural validation. The latter
+must still perform every original structural, exact-flow, history and interval
+check. This shares one diagnostic/invariant rather than duplicating it or
+granting proof before validation. No state mutation, historical exception,
+caller-supplied flag, test alteration or new public API is needed.
+
+Root owns this bounded correction. Review the entire exact delta independently,
+keep all old movement/legacy/elapsed bodies and installed content byte-exact,
+then verify the complete31-case movement harness as well as the prepared426
+selection on a freshly frozen head. Earlier426 preparation remains unrun and
+must not be silently retargeted. Preserve both actual failed CI logs, verify
+new-head required checks and retain all outstanding native/gate obligations.
+
 ## Normal receipt of the current Expiry base — 2026-10-05
 
 Root allocates this branch's sole writer for a bounded normal merge of freshly
