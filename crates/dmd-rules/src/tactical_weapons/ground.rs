@@ -675,7 +675,7 @@ fn derive_after<'a>(
                 definitions,
                 &mut loadout,
                 operation,
-                &hands,
+                hands,
             )?;
             let mut candidate = state.clone();
             candidate

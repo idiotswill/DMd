@@ -439,7 +439,7 @@ pub(super) fn validate_physical_plan(
         .loadout(attack.actor)
         .ok_or_else(|| invalid("attack loadout absent"))?;
     let expected_damage = if matches!(attack.source, TacticalAttackSource::CreatureWeapon { .. }) {
-        creature_weapon::validate_source_with_read(state, attack, &plan, read)?
+        creature_weapon::validate_source_with_read(state, attack, plan, read)?
     } else {
         vec![AttackDamageComponent {
             damage_type: plan.damage.damage_type,
@@ -490,7 +490,7 @@ pub(super) fn validate_physical_plan(
     }
     {
         let (mode, armor, critical) =
-            planning::hit_facts_with_read(state, attack.actor, &weapon.choice, &plan, read)?;
+            planning::hit_facts_with_read(state, attack.actor, &weapon.choice, plan, read)?;
         if (attack.mode, attack.armor_class, attack.critical_on_hit) != (mode, armor, critical) {
             return Err(invalid("pending attack circumstances differ"));
         }
