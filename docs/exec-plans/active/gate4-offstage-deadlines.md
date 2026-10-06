@@ -2,9 +2,11 @@
 
 ## October 6 preserved completion-history diagnostic
 
-Exact `9cd146837945dce504aeb7f6fc266f7f9de52673` fails the existing
+Candidate `9cd146837945dce504aeb7f6fc266f7f9de52673` fails the existing
 `completed_receipt_survives_turn_reset_and_rejects_incoherent_anchor_claims`
-control on Linux111798689219 and Windows111798295472. The movement suite reports
+control on Linux111798689219 and Windows111798295472. Windows checks out literal
+9cd; Linux checks out synthetic merge `3ebf751b743d1540e13a075c5a7df3cd95f8d4ef`
+with parents3fa/9cd and exactly the same full tree as9cd. The movement suite reports
 30 passed and1 failed. Its unauthenticated Finished state is still refused,
 but the new released proof constructor runs full domain structural validation
 first and replaces the established missing-completion-history error with
@@ -29,6 +31,14 @@ then verify the complete31-case movement harness as well as the prepared426
 selection on a freshly frozen head. Earlier426 preparation remains unrun and
 must not be silently retargeted. Preserve both actual failed CI logs, verify
 new-head required checks and retain all outstanding native/gate obligations.
+
+Root and an independent reviewer read the complete correction at6de26f5. The
+pure guard's predicate/error and all subsequent validators are preserved; all569
+other Git entries and157 protected test/content entries are exact. Direct rustfmt
+checks on both edited files and Git whitespace checks passed. This final status
+and source-attribution clarification changes documentation only. No new-head
+runtime, native, receiving or Gate4 acceptance is claimed; fresh426 verification
+already includes the complete31-case movement harness and remains pending.
 
 ## Normal receipt of the current Expiry base — 2026-10-05
 
