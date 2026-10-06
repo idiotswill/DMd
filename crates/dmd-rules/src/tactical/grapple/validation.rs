@@ -10,7 +10,7 @@ fn node<'a>(
         .and_then(|t| t.nodes.iter().find(|n| n.work == *work))
         .ok_or_else(|| invalid("Grapple work lacks its exact trace node"))
 }
-fn causal(
+pub(super) fn causal(
     state: &CampaignState,
     meta: &CommandMeta,
     origin: &CommandMeta,
@@ -785,6 +785,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
     if crate::table::grapple_enabled(state) {
         reads::validate_cuts(state)?;
     }
+    transport::validate(state)?;
     if c.activity.is_none() {
         return reads::validate_cuts(state);
     }

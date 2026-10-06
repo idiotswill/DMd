@@ -202,6 +202,7 @@ fn source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection() {
                 let flow = forged.encounter.as_mut().unwrap().flow.as_mut().unwrap();
                 flow.resolution = Some(Box::new(TacticalResolution {
                     grapple: Some(Box::new(TacticalGrappleResolution {
+                        transport: None,
                         activity: None,
                         proofs: vec![],
                         cuts: vec![],

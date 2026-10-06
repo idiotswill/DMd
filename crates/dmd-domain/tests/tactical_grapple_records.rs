@@ -121,6 +121,7 @@ fn resolution() -> TacticalResolution {
 
 fn context(proof: TacticalGrip) -> TacticalGrappleResolution {
     TacticalGrappleResolution {
+        transport: None,
         activity: None,
         proofs: vec![proof],
         cuts: vec![],
@@ -563,6 +564,7 @@ fn empty_and_unknown_record_shapes_fail_without_changing_absent_resolution_json(
     let decoded: TacticalResolution = serde_json::from_value(value.clone()).unwrap();
     assert_eq!(serde_json::to_value(decoded).unwrap(), value);
     let empty = TacticalGrappleResolution {
+        transport: None,
         activity: None,
         proofs: vec![],
         cuts: vec![],
@@ -631,6 +633,7 @@ fn contextual_interim_automatic_shape_needs_matching_failed_work_or_withdrawal()
     });
     r.next_occurrence = 5;
     let mut c = TacticalGrappleResolution {
+        transport: None,
         activity: Some(GrappleActivity::Attempt(Box::new(TacticalGrappleAttempt {
             declaration: g.declaration.clone(),
             equipment: GrappleEquipmentAdmission {
@@ -715,6 +718,7 @@ fn equipment_decision_is_owned_by_its_actual_after_work_and_cannot_be_reused() {
         }),
     };
     let mut c = TacticalGrappleResolution {
+        transport: None,
         activity: Some(GrappleActivity::Attempt(Box::new(a))),
         proofs: vec![],
         cuts: vec![],

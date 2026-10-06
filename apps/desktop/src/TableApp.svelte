@@ -108,7 +108,11 @@
     catch(reason) { if(current())await showError(reason); } finally { if(current())sourceControlLoading=false; }
   }
   async function enableSourceControl(adopted: SourceAdoption[]) {
-    try { await send({kind:'action',request:{...context(),version:view?.grapple ? 3 : 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    catch(reason) { await showError(reason); }
+  }
+  async function enableGroundDrag() {
+    try { await send({kind:'action',request:{...context(),version:4,action:'EnableGrappleTransport'}}); }
     catch(reason) { await showError(reason); }
   }
   async function enableGrapple() {
@@ -136,7 +140,7 @@
     if (!view) throw new Error('Open the saved campaign first.');
     if (playerId && (!attending || (sourceActorId ? !sourceActor : !binding?.character_id))) throw new Error('Select an attending player and their controlled actor.');
     const channel:LocalChannel = playerId ? sourceActor ? {SourceCreature:{player_id:playerId,actor:sourceActor.actor}} : {Player:{player_id:playerId,character_id:binding!.character_id!}} : 'Host';
-    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple ? 3 : view.source_control ? 2 : 1, revision: view.revision,
+    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel };
   }
@@ -258,8 +262,8 @@
         {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} disabled={locked} onSubmit={reportFaces} onSavage={reportSavage} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && sourceActor}<p>Controlling {sourceActor.name}. Use the encounter controls and physical dice requests for this creature.</p>{:else if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
-      {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={locked||!!view.pending||!view.active_session} administrativeDisabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
-      <GrapplePanel {view} {host} actor={selectedActor??null} disabled={locked||!!view.pending||!view.active_session} onEnable={enableGrapple} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
+      {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={locked||!!view.pending||!view.active_session} administrativeDisabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
+      <GrapplePanel {view} {host} actor={selectedActor??null} disabled={locked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
       <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={locked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
       <section class="panel"><h2>Player-safe recap</h2>{#if view.recap.length}<ol>{#each view.recap as entry}<li class="preserve">{entry}</li>{/each}</ol>{:else}<p>No accepted outcomes yet. Proposed actions and questions do not enter the recap.</p>{/if}</section>
       <section class="panel"><h2>Table transcript</h2><div class="transcript" role="log" aria-label="Saved table transcript">{#each view.transcript as entry (entry.id)}<article><p><strong>{entry.speaker}</strong> <span class="tag">{entry.kind}</span></p><p class="preserve">{entry.text}</p></article>{:else}<p>Your accepted table activity and conversation appear here.</p>{/each}</div></section>

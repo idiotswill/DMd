@@ -612,6 +612,7 @@ mod tests {
         }
         r.frames.clear();
         r.grapple = Some(Box::new(TacticalGrappleResolution {
+            transport: None,
             activity: None,
             proofs: vec![],
             cuts: vec![],

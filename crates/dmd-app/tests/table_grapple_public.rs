@@ -2669,3 +2669,6 @@ async fn open_and_resume_replay_original_activation_when_current_and_latest_mark
 
 #[path = "support/table_grapple_public_corrections.rs"]
 mod corrections;
+
+#[path = "support/table_grapple_ground_transport.rs"]
+mod ground_transport;

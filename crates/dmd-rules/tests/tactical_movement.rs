@@ -1063,6 +1063,7 @@ fn initiative_cannot_smuggle_a_structurally_coherent_movement_receipt() {
         .as_mut()
         .unwrap()
         .last_movement = Some(TacticalMovementResult {
+        transport: None,
         original: original.clone(),
         cause: original,
         actor: f.actors[0],

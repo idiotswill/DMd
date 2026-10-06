@@ -53,7 +53,9 @@ pub(super) fn end_grip(
         rules.tactical_grapples = None;
     }
     if crate::table::grapple_enabled(state) && flow(state)?.resolution.is_some() {
-        super::super::movement::refresh_after_grip_end(state, meta, id)?;
+        if !transport::ended(state, meta, id)? {
+            super::super::movement::refresh_after_grip_end(state, meta, id)?;
+        }
     }
     Ok(())
 }
@@ -226,6 +228,9 @@ pub(in crate::tactical) fn release_with_context(
             });
             e.stage = TacticalGrappleEscapeStage::Complete;
             e.selected = None;
+            super::super::turns::pump_with_context(next, meta, execution)?;
+        }
+        if obsolete.is_none() && transport::history(next).is_some_and(|h| h.admission.grip == id) {
             super::super::turns::pump_with_context(next, meta, execution)?;
         }
         // Preserve a selected after-equipment choice and its proof/end. An idle

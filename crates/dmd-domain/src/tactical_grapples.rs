@@ -1,6 +1,8 @@
 //! Proposed ordinary-grip authority and retained causal evidence. These records do
 //! not execute a grapple or authenticate a history; rules and original replay do.
 mod validation;
+mod transport;
+pub use transport::*;
 
 use crate::*;
 use serde::{Deserialize, Serialize};
@@ -403,6 +405,8 @@ pub struct GrappleSelfOnlyAdmission {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalGrappleResolution {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transport: Option<GrappleTransportHistory>,
     pub activity: Option<GrappleActivity>,
     pub proofs: Vec<TacticalGrip>,
     pub cuts: Vec<GrappleReadCut>,
@@ -412,7 +416,8 @@ pub struct TacticalGrappleResolution {
 
 impl TacticalGrappleResolution {
     pub fn is_empty(&self) -> bool {
-        self.activity.is_none()
+        self.transport.is_none()
+            && self.activity.is_none()
             && self.proofs.is_empty()
             && self.cuts.is_empty()
             && self.ends.is_empty()
@@ -423,7 +428,9 @@ impl TacticalGrappleResolution {
 /// Includes orphaned retained fields so absence of live grips cannot hide new
 /// provisional/historical authority from version and recovery-anchor guards.
 pub fn has_tactical_grapple_attachments(state: &CampaignState) -> bool {
-    state
+    state.encounter.as_ref().and_then(|e| e.flow.as_ref())
+        .and_then(|f| f.last_movement.as_ref()).is_some_and(|m| m.transport.is_some())
+        || state
         .rules
         .as_ref()
         .is_some_and(|r| r.tactical_grapples.is_some())
@@ -489,6 +496,12 @@ pub fn validate_tactical_grapple_shapes(state: &CampaignState) -> Result<(), Str
         .ok_or("grapple attachment requires its tactical executor")?;
     if state.schema_version != CURRENT_STATE_SCHEMA_VERSION || flow.version != 5 {
         return Err("grapple authority is not defined for this schema/executor".into());
+    }
+    let transport = flow.last_movement.as_ref().is_some_and(|m| m.transport.is_some())
+        || flow.resolution.as_ref().and_then(|r| r.grapple.as_ref()).is_some_and(|c| c.transport.is_some());
+    if transport && state.table.as_ref().and_then(|t| t.grapple_access.as_ref())
+        .and_then(|a| a.ground_transport.as_ref()).is_none() {
+        return Err("ground drag requires its explicit table activation".into());
     }
     let live = state
         .rules

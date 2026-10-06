@@ -11,6 +11,7 @@ mod profile;
 pub(crate) mod reads;
 mod saves;
 mod validation;
+pub(crate) mod transport;
 use super::turns::*;
 use super::*;
 use execution::ExecutionContext;
@@ -110,6 +111,7 @@ pub(super) fn guard_action(
         action,
         TacticalAction::Grapple { .. }
             | TacticalAction::MoveSelfOnly { .. }
+            | TacticalAction::MoveGrappled { .. }
             | TacticalAction::ChooseGrappleSave { .. }
             | TacticalAction::ApplyGrappleAfterEquipment { .. }
             | TacticalAction::DeclineGrappleAfterEquipment { .. }
@@ -169,6 +171,7 @@ fn work_key(state: &CampaignState, work: &TacticalWorkItem) -> Result<TacticalWo
 }
 fn new_context(activity: GrappleActivity) -> TacticalGrappleResolution {
     TacticalGrappleResolution {
+        transport: None,
         activity: Some(activity),
         proofs: vec![],
         cuts: vec![],

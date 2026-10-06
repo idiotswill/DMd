@@ -23,6 +23,7 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalMovement, Rules
 pub(super) enum Intent {
     Ordinary,
     SelfOnly,
+    GroundDrag(GrappleId),
 }
 
 pub(super) fn begin(
@@ -60,6 +61,7 @@ pub(super) fn begin(
                 ));
             }
         }
+        Intent::GroundDrag(grip) => super::grapple::transport::admit(&execution.read(state)?, meta, grip, path)?,
         Intent::Ordinary => (),
     }
     let movement = crate::tactical_movement::admit(state, meta, actor, path)?;
@@ -94,6 +96,7 @@ pub(super) fn begin(
     if intent == Intent::SelfOnly {
         super::grapple::capture_self_only_movement(state, meta)?;
     }
+    if let Intent::GroundDrag(grip) = intent { super::grapple::transport::capture(state, grip)?; }
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
     pump_with_context(state, meta, execution)
 }
@@ -228,7 +231,15 @@ fn options(
     let before = participant_distance(enemy, mover).map_err(|e| invalid(&e.to_string()))?;
     let mut after = mover.clone();
     after.position = segment.to;
-    let after = participant_distance(enemy, &after).map_err(|e| invalid(&e.to_string()))?;
+    let mut enemy_after = enemy.clone();
+    if let Some(history) = super::grapple::transport::history(state)
+        && history.admission.target == reactor {
+        enemy_after.position.x = enemy_after.position.x.checked_add(segment.to.x - segment.from.x)
+            .ok_or_else(|| invalid("paired opportunity position overflow"))?;
+        enemy_after.position.y = enemy_after.position.y.checked_add(segment.to.y - segment.from.y)
+            .ok_or_else(|| invalid("paired opportunity position overflow"))?;
+    }
+    let after = participant_distance(&enemy_after, &after).map_err(|e| invalid(&e.to_string()))?;
     Ok(super::attacks::opportunity_options_with_hands(
         state,
         reactor,
@@ -304,6 +315,23 @@ fn unavailable(
             origin: meta.clone(),
             kind: TacticalOpportunityDecisionKind::Unavailable,
         });
+    Ok(())
+}
+
+/// A stopped selected transport cannot offer a departure that will never happen.
+/// Accepted Attack children have already consumed their window and remain queued.
+pub(super) fn stop_ground_transport(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+    if resolution(state)?.movement.is_none() { return Ok(()); }
+    if let Some(window) = current_mut(state)?.opportunity.take() {
+        unavailable(state, meta, window.reactor)?;
+    }
+    let reactors = resolution(state)?.frames.iter().flatten().filter_map(|work| match work.kind {
+        TacticalWorkKind::MovementOpportunity { reactor } => Some(reactor), _ => None,
+    }).collect::<Vec<_>>();
+    for frame in &mut resolution_mut(state)?.frames {
+        frame.retain(|work| !matches!(work.kind, TacticalWorkKind::MovementOpportunity { .. }));
+    }
+    for reactor in reactors { unavailable(state, meta, reactor)?; }
     Ok(())
 }
 
@@ -387,7 +415,7 @@ fn advance_segment(
             return finish_movement(
                 state,
                 meta,
-                if displaced || capability_lost {
+                if displaced || capability_lost || super::grapple::transport::interrupted(state)? {
                     TacticalMovementEnd::Interrupted
                 } else {
                     TacticalMovementEnd::Stopped
@@ -445,6 +473,15 @@ fn advance_segment(
                 .collect(),
         )?;
         return Ok(());
+    }
+    if let Some(coupled) = crate::tactical_movement::next_coupled_segment(state, &movement)? {
+        if coupled.holder != segment { return Err(invalid("paired movement query changed before commit")); }
+        super::grapple::transport::record(state, meta, &coupled)?;
+        state.encounter.as_mut().ok_or_else(|| invalid("Battlefield disappeared."))?
+            .participants.iter_mut().find(|p| p.entity_id == coupled.target.actor)
+            .ok_or_else(|| invalid("held target disappeared"))?.position = coupled.target.to;
+        crate::kernel::interrupt_rest(state.rules.as_mut().ok_or(RulesError::Uninitialized)?,
+            coupled.target.actor, state.clock.now);
     }
     state
         .encounter
@@ -521,6 +558,7 @@ fn finish_movement(
 ) -> Result<(), RulesError> {
     let movement = current(state)?.clone();
     let result = TacticalMovementResult {
+        transport: super::grapple::transport::result(state)?,
         original: movement.origin.clone(),
         cause: meta.clone(),
         actor: movement.actor,

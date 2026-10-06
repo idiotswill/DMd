@@ -85,6 +85,110 @@ fn segment_interval(
     Ok(low.compare(high).is_lt().then_some((low, high)))
 }
 
+#[derive(Clone, Copy)]
+struct ContactInterval {
+    low: Fraction,
+    high: Fraction,
+    low_closed: bool,
+    high_closed: bool,
+}
+
+/// Exact times at which a translated square footprint has positive XY contact.
+/// Open surface boundaries differ from the closed time endpoints of the segment.
+fn footprint_contact_interval(
+    from: SpatialPoint,
+    to: SpatialPoint,
+    footprint: i32,
+    surface: SpatialBox,
+) -> Option<ContactInterval> {
+    let mut interval = ContactInterval {
+        low: Fraction::new(0, 1),
+        high: Fraction::new(1, 1),
+        low_closed: true,
+        high_closed: true,
+    };
+    for (start, finish, min, max) in [
+        (from.x, to.x, surface.min.x, surface.max.x),
+        (from.y, to.y, surface.min.y, surface.max.y),
+    ] {
+        let start = i64::from(start);
+        let direction = i64::from(finish) - start;
+        let min = i64::from(min) - i64::from(footprint);
+        let max = i64::from(max);
+        if direction == 0 {
+            if start <= min || start >= max {
+                return None;
+            }
+            continue;
+        }
+        let mut enter = Fraction::new(min - start, direction);
+        let mut leave = Fraction::new(max - start, direction);
+        if enter.compare(leave).is_gt() {
+            std::mem::swap(&mut enter, &mut leave);
+        }
+        if !enter.compare(interval.low).is_lt() {
+            interval.low = enter;
+            interval.low_closed = false;
+        }
+        if !leave.compare(interval.high).is_gt() {
+            interval.high = leave;
+            interval.high_closed = false;
+        }
+        let order = interval.low.compare(interval.high);
+        if order.is_gt() || order.is_eq() && !(interval.low_closed && interval.high_closed) {
+            return None;
+        }
+    }
+    Some(interval)
+}
+
+pub(super) fn horizontal_sweep_contacts(
+    from: SpatialPoint,
+    to: SpatialPoint,
+    footprint: i32,
+    surface: SpatialBox,
+) -> bool {
+    footprint_contact_interval(from, to, footprint, surface).is_some()
+}
+
+/// Union actual temporal footprint contact, including single unsupported instants.
+/// This is not a swept bounding-box test and grants no movement authority.
+pub(super) fn continuous_horizontal_support(
+    from: SpatialPoint,
+    to: SpatialPoint,
+    footprint: i32,
+    surfaces: &[SpatialBox],
+) -> bool {
+    let mut intervals = surfaces
+        .iter()
+        .filter_map(|surface| footprint_contact_interval(from, to, footprint, *surface))
+        .collect::<Vec<_>>();
+    intervals.sort_by(|a, b| {
+        a.low.compare(b.low).then_with(|| b.low_closed.cmp(&a.low_closed))
+    });
+    let Some(mut covered) = intervals.first().copied() else {
+        return false;
+    };
+    if !covered.low.compare(Fraction::new(0, 1)).is_eq() || !covered.low_closed {
+        return false;
+    }
+    for interval in intervals.into_iter().skip(1) {
+        let order = interval.low.compare(covered.high);
+        if order.is_gt() || order.is_eq() && !(covered.high_closed || interval.low_closed) {
+            return false;
+        }
+        match interval.high.compare(covered.high) {
+            std::cmp::Ordering::Greater => {
+                covered.high = interval.high;
+                covered.high_closed = interval.high_closed;
+            }
+            std::cmp::Ordering::Equal => covered.high_closed |= interval.high_closed,
+            std::cmp::Ordering::Less => {}
+        }
+    }
+    covered.high.compare(Fraction::new(1, 1)).is_eq() && covered.high_closed
+}
+
 pub(super) fn samples(volume: SpatialBox) -> Vec<SpatialPoint> {
     let mut samples = Vec::with_capacity(9);
     // Inset from the face by half a foot to avoid treating a zero-width boundary as

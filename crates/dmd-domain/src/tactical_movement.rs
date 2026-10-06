@@ -140,6 +140,8 @@ pub enum TacticalMovementEnd {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalMovementResult {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transport: Option<crate::GrappleTransportResult>,
     pub original: CommandMeta,
     pub cause: CommandMeta,
     pub actor: EntityId,

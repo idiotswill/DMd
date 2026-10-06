@@ -3,6 +3,7 @@ use super::*;
 
 fn empty_context() -> TacticalGrappleResolution {
     TacticalGrappleResolution {
+        transport: None,
         activity: None,
         proofs: vec![],
         cuts: vec![],
@@ -30,7 +31,7 @@ pub(super) fn retain(state: &mut CampaignState, grip: &TacticalGrip) -> Result<(
     Ok(())
 }
 
-fn active_work(state: &CampaignState) -> Result<TacticalWorkItem, RulesError> {
+pub(super) fn active_work(state: &CampaignState) -> Result<TacticalWorkItem, RulesError> {
     let trace = resolution(state)?
         .work_trace
         .as_ref()
@@ -100,7 +101,9 @@ pub(super) fn settle(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
             if crate::spatial::participant_distance(a, b).map_err(|e| invalid(&e.to_string()))?
                 > grip.declaration.range
             {
-                let moved_actor = moved_actor(state, &work)?;
+                let moved_actor = if transport::moved_by(state, &work, holder) { holder }
+                    else if transport::moved_by(state, &work, grip.declaration.target) { grip.declaration.target }
+                    else { moved_actor(state, &work)? };
                 if moved_actor != holder && moved_actor != grip.declaration.target {
                     return Err(invalid("range end belongs to an unrelated mover"));
                 }
@@ -279,7 +282,7 @@ pub(super) fn validate_end(
     } = end.cause
     {
         if actor != proof.declaration.grappler && actor != proof.declaration.target
-            || moved_actor(state, &node.work)? != actor
+            || (!transport::moved_by(state, &node.work, actor) && moved_actor(state, &node.work)? != actor)
         {
             return Err(invalid(
                 "relation ending differs from its displacement source",

@@ -222,21 +222,53 @@ verification pass. Root owns publication and accepted-head decisions.
 
 ## Validation status, risks and next action
 
-Completed: read the controlling repository instructions and relevant gate/product/
-architecture contracts; read pinned movement, lifecycle, geometry, presentation,
-authority and recovery boundaries; independent design review; receiver source-byte
-comparison; continuous-support correction and independent clear review. No source,
-formatter, compiler, tests, database or native runtime ran for this slice.
+Source checkpoint on 2026-10-06: implemented the bounded domain history/result,
+explicit table activation, paired spatial segment and exact support interval
+union, one shared movement budget/queue, work-owned paired range evidence,
+selected-grip stop with unanswered OA retirement, v4 opaque route submission,
+schema5 replay/binding readers, and desktop route choice. Ordinary paths keep the
+None branch; optional absent fields preserve previous serialization. Carry and
+multi-target transport remain outside this intermediate slice.
 
-Known risks: old v3 digest reconstruction; offered versus accepted OA retirement;
-final cost summaries after detailed resolution retirement; retained-proof shape
-when no live grip remains; joint moving-body collision and continuous dry support;
-original action/authentication joins; hidden-view changes; exact source dependency
-intake. The public baseline's current type/frontend failures remain prerequisites,
-not failures attributed to this unimplemented feature.
+Added 22 meaningful tests, all **UNRUN**: 8 pure spatial tests; 9 accepted table
+journal/cold-replay scenarios; 5 desktop selection/lock/stale/retry cases. The
+application scenarios cover exact poses/cost and selected-target non-provocation,
+paid prefix budget stop, target-only hidden solid, four-cost difficult Crawl,
+activation/foreign/direct/stale refusals, actual independent hostile reactor,
+release before response, and release after issued attack dice. The new reactor
+fixture is a separate original accepted setup with actual hostile allegiance;
+the original fixture bodies and assertions remain untouched.
 
-**Exact next action:** implement the coherent domain/geometry/rules/transport/
-desktop/recovery slice from the reviewed receiving source, preserve the exact
-baseline bodies under the approved None-only migration, and freeze for review.
-Do not run formatter/compiler/tests/database/native tools without root's slot.
-The source writer remains ci_oct6; no other checkout is writable here.
+A source-only inverse audit recovered every byte of the five existing test/helper
+files after removing exactly eight approved `transport: None` lines. The two
+existing test-module roots recover exactly after removing only new module
+registrations. Evidence: `tooling/ci-oct6/held-source-preservation-premerge.json`,
+SHA256 `9b39b9d4eda58d1d9d3bdef6121bf308edb9c3ec2b81813979a0e402b270b26d`.
+Independent peer source review of the frozen geometry/paired evaluator found no
+blocking defect; that is not runtime acceptance. A normal Git whitespace check
+passes. No formatter, compiler, tests, database, npm or native execution ran here.
+
+Remaining validation obligations include all original tests and the full planned
+intersection matrix above: genuine reverse/source-controlled holders, multiple
+unselected relation endings and target-side range evidence, surviving fall/Shield/
+concentration consequences, further hostile receipt and complete hidden-audience
+comparisons, plus native/package and exact-head CI. Arithmetic size controls are
+not claimed as genuine Tiny/Large source acceptance. This source checkpoint is
+not Gate4 completion or a verification pass.
+
+**Reviewed whole public receipt planned next:** once this coherent source is
+committed, normally merge exact
+`4d8f5bcf029b56443bb67d0b03e93f8ae8560323` (tree
+`21d80363621517a07660c17a95d470ee0e783f2c`). That reviewed successor includes the
+public lint-only changes and their plan, not a feature rewrite. Known overlap:
+public spelling changes `1 | 2 | 3` to `1..=3` and `2 | 3 | 4` to `2..=4`;
+this new feature deliberately extends the same readers to `1..=4` and `2..=5`.
+Preserve the incoming unused forwarding-function/import removals and combine the
+OutOfRange equivalent let-chain with this slice's paired moved-body predicate.
+Report actual semantic conflicts to root before manual resolution; audit the
+complete union and old tests afterward. No cherry-pick or partial receipt.
+
+Root may then schedule a bounded changed-file formatter and full independent
+source review, and allocate subsequent runtime verification. Until allocation,
+no formatter/compiler/tests/database/native tools may run. The source writer
+remains ci_oct6; no other checkout is writable here.

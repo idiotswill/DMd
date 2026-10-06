@@ -83,6 +83,11 @@ pub(crate) fn apply_operation(
     let mut tactical_event = None;
     let mut mechanics = None;
     let message = match action {
+        TableOperation::EnableGrappleTransport => {
+            if !execution.is_owned() { return Err("Ground drag activation requires original table history.".into()); }
+            table_mut(next)?.grapple_access = Some(Box::new(super::grapple_access::activate_transport(state, meta)?));
+            "Ground drag is enabled for this table.".into()
+        }
         TableOperation::EnableGrappleAccess => {
             if !execution.is_owned() {
                 return Err("Grapple activation requires original table history.".into());

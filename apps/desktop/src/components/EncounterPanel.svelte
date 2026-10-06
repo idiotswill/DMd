@@ -17,8 +17,8 @@
   import ShoveDecisionForm from './ShoveDecisionForm.svelte';
   import FirstAidForm from './FirstAidForm.svelte';
   import AftermathForm from './AftermathForm.svelte';
-  let { tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, administrativeDisabled, pendingRoll=false, onAction }: {
-    tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;playerControlledSources?:Id[];disabled?:boolean;administrativeDisabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
+  let { groundDrag=[], tactical, characters, host, actor, player, playerControlledSources=[], disabled=false, administrativeDisabled, pendingRoll=false, onAction }: {
+    groundDrag?:{key:Id;actor:Id;label:string}[];tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;playerControlledSources?:Id[];disabled?:boolean;administrativeDisabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
   const controls=(subject:Id|null)=>host ? subject===null||!playerControlledSources.includes(subject) : actor===subject;
   const administrationLocked=$derived(administrativeDisabled??disabled);
@@ -110,7 +110,7 @@
     {#key `${host}:${player}:${actor}:${tactical.attack_options.actor}`}<AttackForm options={tactical.attack_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if !legacy && tactical.movement_options && controls(tactical.movement_options.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.movement_options.actor}:${JSON.stringify(tactical.movement_options.position)}`}<MovementForm options={tactical.movement_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
+    {#key `${host}:${player}:${actor}:${tactical.movement_options.actor}:${JSON.stringify(tactical.movement_options.position)}`}<MovementForm groundDrag={groundDrag.filter(offer=>offer.actor===tactical.movement_options?.actor)} options={tactical.movement_options} disabled={disabled||pendingRoll||pendingDecision} {onAction}/>{/key}
   {/if}
   {#if tactical.opportunity && controls(tactical.opportunity.actor)}
     {#key `${host}:${player}:${actor}:${tactical.opportunity.actor}:${tactical.opportunity.target.actor}`}<OpportunityForm opportunity={tactical.opportunity} disabled={disabled||pendingRoll} {onAction}/>{/key}
