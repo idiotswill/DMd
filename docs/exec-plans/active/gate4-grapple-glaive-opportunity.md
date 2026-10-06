@@ -41,3 +41,15 @@ adapter changes the two source positions and required allegiance. Review the
 entire helper diff and prove inverse equality of the prior file after removing
 the new adapter/layout branches and module registration. Then direct formatting,
 fresh CI and genuine execution are required; authored source is not acceptance.
+
+## Authored source checkpoint
+
+Two additive cases and the explicit layout adapter are authored. Root read the
+complete new module and helper diff. Direct formatting and whitespace checks
+pass. The external inverse audit 877a72b8f6f4e719efde34941817a644ec1b2251f0068b4f0b3bcb51bb6e9c4d
+proves the entire previous public test file remains identical after removing only
+the adapter, three layout branches and module registration. Runtime and compiler
+evidence are pending. Original public 4d8 Linux CI has now finished with 21/25
+public cases passing and four failures (two opportunity ancestry, three-ray
+source option, Chimera pending roll). These require diagnosis on their originating
+branch and a normal whole receipt here; no test assertion is waived.

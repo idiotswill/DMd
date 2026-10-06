@@ -87,6 +87,9 @@ mod mage_shield;
 #[path = "support/grapple_physical_graze.rs"]
 mod physical_graze;
 
+#[path = "support/grapple_physical_opportunity.rs"]
+mod physical_opportunity;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -184,6 +187,43 @@ impl Fixture {
         pc_opportunity: bool,
         physical_weapon: Option<&str>,
     ) -> Self {
+        Box::pin(Self::with_creation_layout(
+            definition,
+            size,
+            opponent,
+            pc_opportunity,
+            physical_weapon,
+            false,
+        ))
+        .await
+    }
+    async fn with_physical_opportunity() -> Self {
+        Box::pin(Self::with_creation_layout(
+            "goblin-warrior",
+            CreatureSize::Small,
+            true,
+            true,
+            Some("glaive"),
+            true,
+        ))
+        .await
+    }
+    async fn with_creation_layout(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
+        physical_weapon: Option<&str>,
+        long_reach_witness: bool,
+    ) -> Self {
+        assert!(
+            !long_reach_witness
+                || (definition == "goblin-warrior"
+                    && size == CreatureSize::Small
+                    && opponent
+                    && pc_opportunity
+                    && physical_weapon == Some("glaive"))
+        );
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
         std::fs::create_dir(&directory).unwrap();
@@ -379,7 +419,7 @@ impl Fixture {
                         public_label: "Small armored figure".into(),
                         position: SpatialPoint {
                             x: if size == CreatureSize::Huge { 60 } else { 20 },
-                            y: 10,
+                            y: if long_reach_witness { 20 } else { 10 },
                             z: 0,
                         },
                         height: match size {
@@ -389,7 +429,7 @@ impl Fixture {
                         },
                         allies: vec![],
                         enemies: std::iter::once(f.actors[0])
-                            .chain(f.opponent.filter(|_| !pc_opportunity))
+                            .chain(f.opponent.filter(|_| !pc_opportunity || long_reach_witness))
                             .collect(),
                     })
                     .chain(f.opponent.map(|actor| TableCreaturePlacement {
@@ -397,7 +437,13 @@ impl Fixture {
                         public_label: "Other guard".into(),
                         position: SpatialPoint {
                             x: if pc_opportunity { 10 } else { 30 },
-                            y: if pc_opportunity { 20 } else { 10 },
+                            y: if long_reach_witness {
+                                30
+                            } else if pc_opportunity {
+                                20
+                            } else {
+                                10
+                            },
                             z: 0,
                         },
                         height: 8,
