@@ -476,3 +476,58 @@ remembered campaign auto-open and the shared app-data store: use a compatible
 verified integrated package and genuine fresh QA campaign, never downgrade a
 later saved campaign. Pending/completed cold recovery and owned expiry selection
 at the actual60second source deadline remain required. Keep Gate4 open.
+
+### Accepted Shove receiving plan and verification scheduling — 2026-10-06
+
+Root freshly fetched accepted main
+`5afc992e62bb967aceec69db53f19b6347b70855`. PR52 currently remains exact
+`3fa8e6c17f625098159d70689f9394bcc24050e3`, tree
+`cd646d51e7fc823bc333785462425ff2fa4ed3cb`. Receive whole accepted main by a
+normal merge before final verification. The single common base is accepted
+Air32c0c682c4dbb235e1f9a119643c5d8626d5cb71. A read-only Git merge preview is
+conflict-free at tree `daf30b04f1920e7e0397ee753d5a5f1343d8318e`; that preview
+does not establish actual branch integration or execution. Preserve every source,
+fixture and test from both parents, especially the shared turns.rs: accepted
+Shove admission/owner/current turn guards and exact due-only Time/Turn boundary.
+No test-body adaptation is authorized by this receipt. No unaccepted MR, Grapple,
+Ground, Offstage or other development branch enters this bounded candidate.
+
+Review the complete resulting tree against both parents and the common base.
+Obtain an independent source review before normal publication, then require new
+exact-head Linux/native Windows CI. Existing accepted Shove and earlier Expiry
+runs remain attributed to their actual heads. No old green status verifies the
+combined source. Canonical checks and actual packaged source Hold Person deadline
+play remain necessary before acceptance and protected expected-head merge.
+
+Exact3fa now has successful full canonical-equivalent CI: Windows
+run37298848719/job111726480393 reports792 Rust tests in56 result groups, with
+zero failed/ignored/measured/filtered; CI run37298848615 reports790. Windows also
+passes118 frontend tests/18 files, zero Svelte errors/warnings and unchanged
+desktop packaging. Root and independent audits retain the actual logs and
+source/tree bindings. Windows log SHA256 is
+`f51628235c82d9aa30633931ce1f7018695e1492787123616fd1ee6fd2be349e`;
+independent audit SHA256 is
+`fd2796d020ce59b6462a4f4193d81b5d014d2a4ffad4fae6a565eab50efdb55e`.
+The resulting CI package could not be downloaded: a freshly issued artifact URL
+returned403/error1010 before expiry. No ZIP, local payload or native execution is
+claimed from that response. Earlier c9 package/native preparations remain intact.
+
+Scheduling amendment: do not repeat an unchanged multi-hour local whole-workspace
+suite merely to reproduce the directly verified exact3fa full CI. Those proposed
+local commands remain UNRUN. This does not waive full verification on the new
+combined head: its actual CI logs must be audited separately, and its fresh local
+canonical desktop package must run the unmodified packaging script, including
+frontend/static/notice checks. Any actual failure requires a justified fix and
+new-head verification. Preserve the isolated3fa clone, all prepared wrappers and
+prospective native records as unrun historical preparation; create distinctly
+named successor build/provenance records for the reviewed receiving head.
+
+Native packaging requires Microsoft C++ Build Tools/Windows SDK. The official
+Microsoft-signed bootstrapper has been verified, and the owner explicitly agreed
+to handle its Windows UAC prompt. Installation awaits completion of the sole
+Offstage102 local run; no second compiler/test/native/database process is
+allocated. Root will verify installed components and use a process-scoped pinned
+MSVC toolchain without changing the existing GNU default. Local planned Rust1.98.1
+and prior CI Rust1.99.0 must remain accurately distinguished. Native source-based
+deadline, paid resources/raw-history preservation, pending/completed cold recovery,
+final combined-source review/checks and literal merged-main proof remain open.
