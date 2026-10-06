@@ -2921,3 +2921,6 @@ mod ground_transport;
 
 #[path = "support/table_grapple_inspiration.rs"]
 mod inspiration;
+
+#[path = "support/grapple_combined_current.rs"]
+mod combined_current;

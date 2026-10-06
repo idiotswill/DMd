@@ -201,3 +201,29 @@ is allowed; no compiler, Cargo, test, npm, database, native/package or push runs
 After source review, freeze clean with complete parent-relative diff and exact
 old-body/tree preservation audit. Root owns independent review and the later
 single-slot runtime schedule, including canonical checks and exact-head CI.
+
+### New combined source controls prepared
+
+The new `support/grapple_combined_current.rs` contains four real application
+cases and local v4 helpers; the public harness changes only by appending its
+module registration. No old helper arguments, bodies, production source,
+content, frontend tests or captured histories change. The physical opportunity
+case uses the outer guard as holder and the nearer guard as hauled target:
+starting outside unarmed reach avoids a distinct earlier opportunity. Its first
+pair costs20 and its second pair pauses at the actual Glaive reach crossing;
+final paired expenditure is40. The ground-placement case pays60 for three
+coupled segments before a real thrown Dagger falls at the new target position;
+it also refuses a hostile recovery image substituting the old target position.
+A read-only peer consult checked the physical-source Inspiration path and
+identified the normal removal of the optional graph after its last grip ends;
+the new Escape assertion now verifies that complete removal.
+
+Each material command calls the unchanged cold helper for file reopen,
+independent portable continuation, exact accepted response retries, changed
+payload refusal and original replay. These controls have only been authored
+and source-reviewed: none has executed. Direct formatting/check of the new
+module and a complete base-tree/body preservation audit are the only allocated
+checks. Root must independently inspect the final source and run these four
+cases, the complete inherited harness and canonical exact-head verification
+when the sole heavy slot is free. Ground/Held/Inspiration gate and native
+acceptance remain pending without any waived obligation.
