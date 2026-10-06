@@ -1,5 +1,46 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Exact-head raw damage request correction — 2026-10-06
+
+Root transferred sole source writing for this bounded correction from freshly
+fetched, clean `a27d50452577f9a6b2cb8b7419443ed5324c6a60` to `ci_oct6`.
+The complete active plan and actual producer/packet paths were read before
+this plan. Commit it before source changes. No Ground59ee receipt or separate
+Graze correction is included; those remain independently reviewed work.
+
+Actual Linux111757575667 and Windows111757430377 each reached nine Rust
+harnesses with 142 passed and six failed. Their table harness had 67 passed and
+six failed: four inherited Ogre geometry failures, plus this Shield critical
+case at table_ground_consequence_cases.rs:645 and Chimera fall case at
+table_ground_fall_cases.rs:245. Both new failures assert raw request modifier3
+but observe0. Full logs and the previous failed checks remain evidence; prior
+authored/unrun checkpoints below are historical, not current runtime claims.
+
+The production request builder in tactical/attacks.rs deliberately flattens
+damage dice, doubles their counts on a critical, and sets the physical request
+modifier to0. The retained authoritative AttackDamageComponent keeps the base
+Piercing1d4 with modifier3. The damage packet starts with each component's
+modifier once and then adds the raw faces; a critical's two4s still cause11
+damage. Putting3 on the raw request is not the existing representation and no
+production damage or request change is justified.
+
+Change only those two raw-request expectations to0. At each same pending cut,
+add complete equality against the authoritative attack.damage vector containing
+exactly one Piercing component with1d4 and modifier3. Preserve the existing
+critical raw2d4 assertion and every subsequent11-damage/HP, source/payment,
+response cause, knockout/fall ancestry, equipment, private-view, cold/portable,
+retry and hostile-record control. Do not change the concentration case or any
+production, content, original fixture or other test body. This corrects which
+surface owns the modifier while retaining the full damage obligation.
+
+This preserves the existing Gate4/product/ADR acceptance boundaries. Freeze the
+unformatted source for independent root review and complete-byte preservation
+audit. No formatter, compiler, tests, database, native application, push or
+descendant mutation is allocated to this writer. Root schedules focused same
+Shield/fall cases and required full exact-head verification after correction;
+the observed Ogre failures still require the separately reviewed whole Ground
+receipt. No feature, native or Gate4 acceptance is claimed by this source fix.
+
 ## Corrected source-registry receipt — planned 2026-10-05
 
 Root resumes sole ownership of this branch at
