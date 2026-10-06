@@ -1,5 +1,31 @@
 # Gate 4 — Immutable Mage ordinary-hand source
 
+## Ground receipt frozen for root review — 2026-10-06
+
+Plan `77c9a89cb17120e677b57b3f148074e53d9ad33d` preceded the normal merge
+`acec4f7357c1ee89e7f3ce969d072a43cc56a8eb`, tree
+`8d0a91ea1a9b51d1bc87685a4e303db9ce39bba0`. Its parents are that plan commit
+and exact Ground `f9e466430cd753a9056054394f71137fd205b5e8`. Git merged without
+conflicts or manual source adaptation. The entire merge patch is identical to
+the Ground ancestor-to-f9 patch; both incoming files equal the reviewed f9 blobs.
+
+The static receiving audit confirms all617 other receiver entries remain exact
+65cd4b7, including all24 receiver-specific entries outside this plan. All610
+unchanged Ground entries are exact between a7 and f9. Every original Ogre
+function except the intended `prepare` helper (11 functions, including all four
+tests), and the entire file outside that helper, remain exact. All620 tracked
+working files match the merged tree after CRLF normalization. This final status
+commit changes only this plan and retains its complete original body.
+
+External merge audit `ground-f9-mage-receipt-acec4f7-2026-10-06.json` has SHA-256
+`9409dfa1969c1284bb7a3080f8a70d4a226543ade74aacf93cadc2cc0733d138`.
+The complete receiving delta is preserved outside the repository; the final
+clean freeze receives its own complete hash audit at handback. No formatter,
+compiler, test, npm, database, native application or push ran for this receipt.
+Root resumes sole ownership for independent receiving review, publication and
+fresh exact-head verification. Earlier failed runs remain open evidence; Mage,
+Ground, native and Gate4 acceptance are not established by this source merge.
+
 ## Reviewed Ground geometry receipt — planned 2026-10-06
 
 Root allocated sole writing for this receipt to `private_grapple_oct6` from clean
