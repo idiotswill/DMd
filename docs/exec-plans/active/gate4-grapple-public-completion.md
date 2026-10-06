@@ -8,6 +8,35 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+### Strict lint correction after the first successful compile (2026-10-06)
+
+Root owns the public branch from reviewed/published
+`2aa9c597b7c73b8b3a34a024e258ab887d5a9bc9`, tree
+`b5541197f6e82e2d2b92a8843ff447b578b58816`. Fresh Linux CI run
+`37428585505` passed the Rust 1.88 check, architecture and genericity guards;
+its stable Rust job `112153838423` passed fast verification and failed strict
+Clippy before tests. The actual complete failure output was read and preserved.
+This confirms the earlier type errors no longer block compilation, not runtime
+acceptance. Current Windows verification remains pending.
+
+Commit this plan before the narrow lint correction. Replace six numeric
+`1 | 2 | 3` persistence version patterns with exactly equivalent `1..=3`.
+Remove only four unused private ordinary forwarding wrappers:
+`intrinsic::plan`, `planning::weapon_plan`, `planning::hit_facts`, and
+`planning::hit_facts_for`. Each only forwards to its existing `_with_read`
+implementation with `None`; compiler diagnostics and complete source searches
+confirm no callers. Keep every live `_with_read` implementation and ordinary
+None branch unchanged, retaining the common-facts documentation on its live
+implementation. Collapse the nested OutOfRange check in modern_lifecycle into
+an equivalent let-chain with the same parenthesized condition, short-circuit
+evaluation and error. Do not suppress warnings or change any assertion, test
+body, live authority check, version set or public API.
+
+The complete resulting source diff requires an independent review and fresh
+exact-head CI. No local formatter/runtime is allocated during the active Offstage
+run. Old CI failure logs and unrun preparations stay bound to their original
+heads. All public Grapple and Gate4 acceptance obligations remain unchanged.
+
 ### Actual b6 CI failures and approved narrow corrections (2026-10-06)
 
 Root allocated sole writing to private_grapple_oct6 from clean published
