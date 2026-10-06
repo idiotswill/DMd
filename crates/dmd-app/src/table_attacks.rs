@@ -9,6 +9,27 @@ pub(super) fn options(
     state: &CampaignState,
     actor: EntityId,
 ) -> Result<Option<crate::TableAttackOptions>, String> {
+    options_inner(state, actor, None)
+}
+
+pub(super) fn options_with_ground(
+    state: &CampaignState,
+    actor: EntityId,
+    pack: &dmd_rules::RulesPack,
+) -> Result<Option<crate::TableAttackOptions>, String> {
+    if !dmd_rules::tactical::attack_equipment_enabled(state) {
+        return options(state, actor);
+    }
+    let pickups = dmd_rules::tactical_weapons::ground_pickup_options(state, actor, pack)
+        .map_err(|e| e.to_string())?;
+    options_inner(state, actor, Some(&pickups))
+}
+
+fn options_inner(
+    state: &CampaignState,
+    actor: EntityId,
+    pickups: Option<&[dmd_rules::tactical_weapons::GroundPickupOption]>,
+) -> Result<Option<crate::TableAttackOptions>, String> {
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -33,7 +54,9 @@ pub(super) fn options(
             && item.quantity > 0
     };
     let mut weapons = Vec::new();
-    for item in state.items.values().filter(usable) {
+    for item in state.items.values().filter(|item| {
+        usable(item) || pickups.is_some_and(|all| all.iter().any(|p| p.item == item.id))
+    }) {
         let Some(weapon) = definitions.weapon(&item.definition_id) else {
             continue;
         };
@@ -73,6 +96,15 @@ pub(super) fn options(
             WeaponGrip::OneHand(hand) => !hands.is_reserved(*hand),
             WeaponGrip::TwoHands => !hands.has_reservation(),
         });
+        let pickup = pickups.and_then(|all| all.iter().find(|p| p.item == item.id));
+        if let Some(pickup) = pickup {
+            grips.retain(|grip| match grip {
+                WeaponGrip::OneHand(hand) => pickup.hands.contains(hand),
+                WeaponGrip::TwoHands => [Hand::Left, Hand::Right]
+                    .into_iter()
+                    .all(|hand| hands.is_free(&loadout.hands, hand)),
+            });
+        }
         if grips.is_empty() {
             continue;
         }
@@ -97,7 +129,11 @@ pub(super) fn options(
             deliveries,
             abilities,
             grips,
-            purposes: purposes(state, actor, item.id, weapon, definitions),
+            purposes: if pickup.is_some() {
+                vec![WeaponAttackPurpose::Normal]
+            } else {
+                purposes(state, actor, item.id, weapon, definitions)
+            },
             ammunition_required: ammunition_id.is_some(),
             ammunition,
             source_features: source_features(state, actor, item)?,
@@ -121,6 +157,19 @@ pub(super) fn options(
         })
         .collect();
     Ok(Some(crate::TableAttackOptions {
+        equipment: pickups.map(|all| crate::TableEquipmentOptions {
+            pickups: all
+                .iter()
+                .filter_map(|p| {
+                    let item = state.items.get(&p.item)?;
+                    Some(crate::TableGroundPickup {
+                        item: p.item,
+                        name: definitions.weapon(&item.definition_id)?.name.clone(),
+                        hands: p.hands.clone(),
+                    })
+                })
+                .collect(),
+        }),
         actor,
         hands: loadout.hands.clone(),
         weapons,

@@ -12,6 +12,9 @@ use dmd_rules::{RulesAction, RulesAnswer, RulesError, RulesOutcome, RulesPack, R
 #[path = "support/tactical_runtime_cases.rs"]
 mod tactical_runtime_cases;
 
+#[path = "support/ogre_package_cases.rs"]
+mod ogre_package_cases;
+
 struct Fixture {
     directory: PathBuf,
     content: PathBuf,

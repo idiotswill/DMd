@@ -1,5 +1,13 @@
 # Gate 4 — Recover physical ground weapons during an attack
 
+Current receiving status, 2026-10-05: coherent Ground/Ogre source662 normally
+receives reviewed lifecycle1702 and its exact9eb persistence-test cleanup. The
+previous432 focused63 and9eb focused lifecycle6 results are dependency evidence.
+The current production source remains UNCOMPILED/UNRUN; independent union review
+and fresh root-allocated checks are next. Full app/replay/UI/native acceptance
+remains in [the production plan](gate4-ground-production.md). The complete
+historical corrections and failed attempts below remain preserved.
+
 ## Windows persistence fixture cleanup correction — 2026-10-05
 
 Current PR57 head `f701b3f1f3200d4d816504e61c6c5788ca114279`, tree
@@ -49,7 +57,7 @@ the exact restart test and all six lifecycle tests under its serialized test slo
 
 ## Historical reserved-hand correction — 2026-10-04
 
-PR57 at `8ec12c3` has an actual Linux test failure.
+Current status, 2026-10-04: PR57 at `8ec12c3` has an actual Linux test failure.
 Run37204883315/job111443894733 completed with exit101 after39 reported groups,
 478 passes and one failure; the full workspace did not complete. The failing
 reserved-hand test changes the synthetic helper's supported flow4 to5 before
@@ -68,6 +76,13 @@ accepted Grapple/pickup history. Commit the test-only fix, review it independent
 propagate it to receiving candidates and execute focused checks at their exact
 reviewed heads. Windows and receiving PR60 runtime checks remain pending; no
 runtime success or new compilation is claimed for the correction.
+
+Separate production follow-on, 2026-10-04: the root-owned
+[production plan](gate4-ground-production.md) on `codex/gate4-ground-production`
+starts from published private-lifecycle `ae3906e` and has complete independent
+design review recorded in that plan. Its explicit activation preserves old presentation digests, while the
+complete before/after, source, app/UI and genuine recovery contract below remains
+mandatory. No follow-on source, runtime or acceptance is claimed.
 
 Historical follow-on assignment, 2026-10-04: that checkout became
 `codex/gate4-ground-equipment-lifecycle`, based on guarded foundation

@@ -69,7 +69,7 @@ pub(crate) fn project_table(
             version: 2,
             actors: crate::table_source_control::visible_actors(state, &viewer).map_err(invalid)?,
         });
-        view.tactical = crate::table_tactical::view_v2(state, &viewer).map_err(invalid)?;
+        view.tactical = crate::table_tactical::view_v2(state, &viewer, pack).map_err(invalid)?;
         // Only source-owned public tactical requests gain the new table visibility.
         // Legacy PC kernel queries (including source-inappropriate sheet formulas) stay frozen.
         if let TableViewer::Player(player) = viewer
@@ -330,7 +330,7 @@ pub(crate) fn project_table_v1(
         pending,
         roll,
         roll_channel,
-        tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
+        tactical: crate::table_tactical::view(state, &viewer, pack).map_err(invalid)?,
         creature_setup: crate::table_creatures::view(state, matches!(viewer, TableViewer::Host))
             .map_err(invalid)?,
         situation_title: table.situation.title.clone(),

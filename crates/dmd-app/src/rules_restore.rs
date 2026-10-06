@@ -811,6 +811,20 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
     }
 }
 
+fn ground_image_origins<'a>(
+    image: &'a dmd_domain::AttackGroundPickupBefore,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&image.ground.origin, &image.equipment.command]);
+}
+
+fn equipment_cause_origins<'a>(
+    cause: &'a dmd_domain::AttackEquipmentCause,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&cause.origin, &cause.completed_by]);
+}
+
 fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let mut origins = state
         .table
@@ -848,6 +862,24 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(access) = &flow.attack_equipment_access {
+                origins.push(&access.origin);
+            }
+            for receipt in &flow.budget.weapon_history {
+                if let Some(image) = &receipt.ground_pickup_before {
+                    ground_image_origins(image, &mut origins);
+                }
+                if let Some(after) = &receipt.after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend([&after.selected_by, &after.chosen_by]);
+                    if let Some(applied) = &after.applied {
+                        origins.push(&applied.equipment_before.command);
+                        if let Some(image) = &applied.ground_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                    }
+                }
+            }
             if let Some(aftermath) = &flow.aftermath {
                 origins.push(&aftermath.origin);
             }
@@ -865,6 +897,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(after) = &resolution.attack_after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend(after.selected_by.as_ref());
+                }
                 if let Some(shove) = &resolution.shove {
                     origins.push(&shove.origin);
                     if let Some(save) = &shove.save {
@@ -987,6 +1023,12 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                     origins.push(&attack.origin);
                     if let Some(weapon) = attack.weapon() {
                         origins.push(&weapon.equipment_before.command);
+                        if let Some(image) = &weapon.ground_pickup_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                        if let Some(parent) = &weapon.after_equipment_parent {
+                            origins.push(&parent.paused_by);
+                        }
                     }
                     if let dmd_domain::TacticalAttackAdmission::Opportunity(window) =
                         &attack.admission
@@ -1213,6 +1255,49 @@ fn validate_origins(
                 && outcome.next_roll.is_none() && !outcome.awaiting_turn_work)
         {
             return Err("aftermath conclusion lacks its exact accepted host decision".into());
+        }
+    }
+    if let Some(flow) = state.encounter.as_ref().and_then(|e| e.flow.as_ref()) {
+        let accepted = |origin: &CommandMeta| {
+            commands
+                .get(&origin.id)
+                .and_then(|event| match event {
+                    RecoveryEvent::Tactical(event) => Some(event.as_ref()),
+                    RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
+                    RecoveryEvent::Rules(_) => None,
+                })
+                .filter(|event| event.meta == *origin)
+        };
+        if let Some(access) = &flow.attack_equipment_access
+            && !accepted(&access.origin)
+                .is_some_and(|event| event.action == TacticalAction::ActivateAttackEquipment)
+        {
+            return Err("equipment activation lacks its original accepted host command".into());
+        }
+        for after in flow
+            .budget
+            .weapon_history
+            .iter()
+            .filter_map(|r| r.after_equipment.as_ref())
+        {
+            let choice = after
+                .applied
+                .as_ref()
+                .map_or(dmd_domain::AttackEquipmentChoice::Decline, |applied| {
+                    dmd_domain::AttackEquipmentChoice::Apply(applied.operation)
+                });
+            if !accepted(&after.chosen_by).is_some_and(|event| {
+                event.action
+                    == TacticalAction::ChooseAttackEquipment {
+                        work: after.work,
+                        choice,
+                    }
+            }) {
+                return Err(
+                    "equipment decision differs from its original accepted work and operation"
+                        .into(),
+                );
+            }
         }
     }
     let pending = state

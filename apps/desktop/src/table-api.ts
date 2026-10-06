@@ -174,7 +174,9 @@ export const tableApi = {
         ? action.Tactical.action.MissileResponse : null;
       const shove = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'ShoveDecision' in action.Tactical.action
         ? action.Tactical.action.ShoveDecision : null;
-      const input = shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
+      const equipment = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'AttackEquipment' in action.Tactical.action
+        ? action.Tactical.action.AttackEquipment : null;
+      const input = equipment ? { AttackEquipment: equipment } : shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
       result = await invoke<TextResult>('desktop_submit_table', { request: { ...context, input } });
     } else {
       // A saved v1 nonce goes only to the recovery-only endpoint. Never translate

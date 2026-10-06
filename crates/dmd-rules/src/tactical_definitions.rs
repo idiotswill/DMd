@@ -14,6 +14,27 @@ pub const AIR_ELEMENTAL_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/air-elemental-v1.json");
 pub const GOBLIN_WARRIOR_V2_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/goblin-warrior-v2.json");
+pub const OGRE_SOURCE_JSON: &str = include_str!("../../../content/srd-5.2.1/ogre-v1.json");
+
+/// Immutable source representation only. Creation remains closed until the
+/// physical own-turn/OA/recovery adapters are complete and independently reviewed.
+pub fn bundled_ogre() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(OGRE_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Ogre JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            ensure(
+                source.id == "ogre" && legacy.creature(&source.id).is_none(),
+                "additive Ogre identity collides with V1",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
 
 /// A new immutable revision annotates the reviewed ordinary hand roles. Every
 /// printed action/statistic remains equal to V1; V1 bytes and fingerprints stay put.

@@ -258,6 +258,11 @@ fn resolve_table_internal(
             // This transcript is shared by the whole table, including unaware PCs.
             if matches!(
                 action,
+                dmd_rules::tactical::TacticalAction::ActivateAttackEquipment
+            ) {
+                "Attack equipment choices enabled for this encounter.".into()
+            } else if matches!(
+                action,
                 dmd_rules::tactical::TacticalAction::ConcludeHostilities { .. }
             ) {
                 "Hostilities concluded. Ongoing saves and durations continue in the existing turn order.".into()

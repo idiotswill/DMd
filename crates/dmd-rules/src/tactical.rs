@@ -3,6 +3,7 @@
 mod aftermath;
 mod areas;
 pub(crate) mod attack_equipment;
+mod attack_equipment_access;
 mod attacks;
 mod casting;
 mod continuations;
@@ -28,7 +29,7 @@ mod validation;
 mod work_trace;
 use crate::{ResolveRoll, RulesError, RulesPack};
 pub use aftermath::require_aftermath_session_boundary;
-pub use attacks::savage_attacker_dice;
+pub use attacks::{physical_source_opportunity_grips, savage_attacker_dice};
 use dmd_domain::*;
 pub use failed_save::validate_failed_save;
 pub use hit_reactions::shield_choices;
@@ -40,6 +41,90 @@ pub use release::{
 };
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};
+
+pub(crate) fn validate_paid_equipment_read(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+) -> Result<(), RulesError> {
+    attacks::validate_paid_equipment_read(state, attack)
+}
+
+pub(crate) fn validate_attack_equipment_state(state: &CampaignState) -> Result<(), RulesError> {
+    attack_equipment_access::validate_records(state)
+}
+
+/// Encounter-local opt-in, never inferred from renderer or executable version.
+/// Full state validation authenticates the marker's lineage; restore replays it.
+pub fn attack_equipment_enabled(state: &CampaignState) -> bool {
+    state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .is_some_and(|f| {
+            f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                && f.attack_equipment_access.is_some()
+        })
+}
+
+/// Data-only offers for the actual selected cause, including an empty Apply set.
+pub struct AttackEquipmentOptions {
+    pub work: TacticalWorkKey,
+    pub actor: EntityId,
+    pub operations: Vec<AttackEquipmentOperation>,
+}
+
+pub fn attack_equipment_options(
+    state: &CampaignState,
+    pack: &RulesPack,
+) -> Result<Option<AttackEquipmentOptions>, RulesError> {
+    if !attack_equipment_enabled(state) {
+        return Ok(None);
+    }
+    attack_equipment_access::validate_records(state)?;
+    let Some(record) = flow(state)?
+        .resolution
+        .as_ref()
+        .and_then(|r| r.attack_after_equipment.as_ref())
+        .filter(|r| r.selected_by.is_some())
+    else {
+        return Ok(None);
+    };
+    let work = TacticalWorkKey {
+        resolution: flow(state)?.resolution.as_ref().unwrap().origin.id,
+        occurrence: record.work.occurrence,
+    };
+    let operations = crate::tactical_weapons::ground::after_options(
+        state,
+        record.cause.actor,
+        record.cause.window,
+        pack,
+    )
+    .map_err(|e| invalid(&e.to_string()))?;
+    Ok(Some(AttackEquipmentOptions {
+        work,
+        actor: record.cause.actor,
+        operations,
+    }))
+}
+pub(crate) fn validate_equipment_completion_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    attacks::validate_equipment_completion_read(state, meta)
+}
+pub(crate) fn validate_equipment_choice_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+) -> Result<&'a TacticalAttack, RulesError> {
+    attacks::validate_equipment_choice_read(state, meta)
+}
+pub(crate) fn validate_paid_equipment_plan(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    plan: &crate::tactical_weapons::WeaponAttackPlan,
+) -> Result<(), RulesError> {
+    attacks::validate_paid_equipment_plan(state, attack, plan)
+}
 pub use work_trace::tactical_frame_host_ordering;
 
 pub const TACTICAL_EVENT_KIND: &str = "tactical.action_resolved";
@@ -48,6 +133,9 @@ pub const TACTICAL_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TacticalAction {
+    /// Reserved until the table/presentation/replay consumers are integrated.
+    /// The shared rules producer exists, but public policies still refuse it.
+    ActivateAttackEquipment,
     /// Retire only fully settled, explicitly concluded flow 5 timing.
     FinishEncounter,
     ConcludeHostilities {
@@ -343,9 +431,12 @@ fn resolve_with_policy(
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    // All policies refuse new pickup authority until the complete owned after
-    // lifecycle and table path are integrated. Do not put this in Live-only checks.
-    if action_uses_ground_pickup(action) {
+    // Missing activation retains the historical refusal under both policies.
+    // Activation itself has a separate quiescent host-only producer below.
+    if action_uses_ground_pickup(action)
+        && !matches!(action, TacticalAction::ActivateAttackEquipment)
+        && !attack_equipment_enabled(state)
+    {
         return Err(prerequisite("ground pickup execution is not enabled"));
     }
     crate::validate_state(state, pack)?;
@@ -367,6 +458,9 @@ fn resolve_with_policy(
     }
     let mut next = state.clone();
     match action {
+        TacticalAction::ActivateAttackEquipment => {
+            attack_equipment_access::activate(&mut next, meta, pack)?;
+        }
         TacticalAction::RespondToMissile {
             window,
             actor,
@@ -495,6 +589,11 @@ fn resolve_with_policy(
         TacticalAction::Move { path } => movement::begin(&mut next, meta, path)?,
         TacticalAction::DeclineOpportunity => movement::decline(&mut next, meta)?,
         TacticalAction::OpportunityAttack { choice } => {
+            if matches!(choice, TacticalMeleeChoice::CreatureWeapon { .. }) {
+                // New wire producers are gated for Historical as well as Live,
+                // before selecting any retained parent or reaching payment.
+                attacks::require_ogre_execution(&next)?;
+            }
             let window = movement::selected_opportunity(&next)?.clone();
             attacks::begin_opportunity_attack(
                 &mut next,
@@ -612,6 +711,7 @@ fn resolve_with_policy(
                 ground_items: vec![],
                 ready: vec![],
                 aftermath: None,
+                attack_equipment_access: None,
             };
             next.encounter
                 .as_mut()
@@ -742,7 +842,9 @@ pub fn replay_tactical(
 
 fn action_uses_ground_pickup(action: &TacticalAction) -> bool {
     match action {
-        TacticalAction::ChooseAttackEquipment { .. } => true,
+        TacticalAction::ActivateAttackEquipment | TacticalAction::ChooseAttackEquipment { .. } => {
+            true
+        }
         TacticalAction::Attack { choice }
         | TacticalAction::OpportunityAttack {
             choice: TacticalMeleeChoice::Weapon(choice),

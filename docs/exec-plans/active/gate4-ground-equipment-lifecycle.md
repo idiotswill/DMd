@@ -1,5 +1,13 @@
 # Gate 4 — Guarded attack equipment continuation
 
+Current receiving status, 2026-10-05: coherent Ground/Ogre source662 normally
+receives reviewed lifecycle1702 and its exact9eb persistence-test cleanup. The
+previous432 focused63 and9eb focused lifecycle6 results are dependency evidence.
+The current production source remains UNCOMPILED/UNRUN; independent union review
+and fresh root-allocated checks are next. Full app/replay/UI/native acceptance
+remains in [the production plan](gate4-ground-production.md). The complete
+historical corrections and failed attempts below remain preserved.
+
 ## October 5 verified cleanup dependency intake
 
 The exact 432ffeb focused run completed formatting, strict domain/rules/app
@@ -19,6 +27,22 @@ the exact incoming persistence-test files; review the whole union before
 publication or production receiving. Current-head CI and canonical verification
 remain required. This intake grants no public admission or gate acceptance.
 
+Historical production-follow-on status (superseded by checkpoint3 below):
+Separate production follow-on, 2026-10-04: root created
+`codex/gate4-ground-production` from clean published `ae3906e`. The complete
+[production activation plan](gate4-ground-production.md) awaits independent review;
+no follow-on source or execution has run. It preserves this lifecycle contract,
+adds explicit historically absent activation for presentation compatibility and
+connects real before-pickup commit/paid reconstruction/app/UI/replay. The original
+PR60 checkout remains frozen; its runtime and focused verification are pending.
+
+Current status: draft PR60 at aff47ba failed its first actual CI compile. Source
+43bb7f5 corrects the moved receipt and test session type; independent bounded
+review is CLEAR. Root is sole writer, 2026-10-04. Fresh exact-head compilation
+is pending; all23 rules controls and the app preflight remain UNRUN.
+Runtime and production acceptance are not established.
+
+Historical prerequisite correction and execution record:
 Current correction/writer status, 2026-10-04: root transferred sole source writing
 to `gate4_ci_oct4` from clean `10df3c19958352632d76f47c4773553ad8a164ce`,
 tree `98a37c409be97e51f306cc70ae31ec960326627f`. The second exact-head

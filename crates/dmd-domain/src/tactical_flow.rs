@@ -142,4 +142,8 @@ pub struct TacticalFlow {
     /// preserves the exact old durable JSON and presentation contract.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub aftermath: Option<Box<TacticalAftermath>>,
+    /// Explicit activation is retained only by this encounter. Begin never
+    /// infers it from executor version or the availability of ground equipment.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_equipment_access: Option<Box<crate::TacticalAttackEquipmentAccess>>,
 }

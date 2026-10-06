@@ -49,6 +49,16 @@ fn capabilities(
     state: &CampaignState,
 ) -> Result<Vec<ProjectionCapability>, String> {
     let mut result = Vec::new();
+    if let Some(choice) = raw
+        .tactical
+        .as_ref()
+        .and_then(|t| t.attack_equipment.as_ref())
+    {
+        result.push(ProjectionCapability::AttackEquipment {
+            origin: choice.key.resolution,
+            occurrence: choice.key.occurrence,
+        });
+    }
     if let Some(shove) = raw.tactical.as_ref().and_then(|t| t.shove.as_ref()) {
         result.push(ProjectionCapability::ShoveDecision {
             origin: shove.key.resolution,

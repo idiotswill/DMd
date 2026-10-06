@@ -45,6 +45,10 @@ pub struct TranscriptVisibility {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum ProjectionCapability {
+    AttackEquipment {
+        origin: CommandId,
+        occurrence: u16,
+    },
     ShoveDecision {
         origin: CommandId,
         occurrence: u16,

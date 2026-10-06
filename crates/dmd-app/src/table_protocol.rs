@@ -316,6 +316,10 @@ pub struct TableCreatureView {
 #[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub equipment_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_equipment: Option<TableAttackEquipmentView<HitKey>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shove: Option<TableShoveView<HitKey>>,
     pub encounter_id: EncounterId,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -472,6 +476,17 @@ pub struct TableOpportunityView {
     pub weapons: Option<TableAttackOptions>,
     pub unarmed: bool,
     pub features: Vec<TableCreatureAttackChoice>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub physical_source_weapons: Vec<TablePhysicalSourceWeaponChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TablePhysicalSourceWeaponChoice {
+    pub feature_id: String,
+    pub item: ItemId,
+    pub label: String,
+    pub weapon_name: String,
+    pub grips: Vec<WeaponGrip>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -503,10 +518,38 @@ pub enum TableAttackDecisionKind {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableAttackOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub equipment: Option<TableEquipmentOptions>,
     pub actor: EntityId,
     pub hands: WeaponLoadout,
     pub weapons: Vec<TableWeaponChoice>,
     pub targets: Vec<TableAttackTarget>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEquipmentOptions {
+    pub pickups: Vec<TableGroundPickup>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableGroundPickup {
+    pub item: ItemId,
+    pub name: String,
+    pub hands: Vec<Hand>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAttackEquipmentView<Key = TacticalWorkKey> {
+    pub key: Key,
+    pub actor: EntityId,
+    pub operations: Vec<TableEquipmentOperation>,
+    pub may_decline: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEquipmentOperation {
+    pub operation: AttackEquipmentOperation,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

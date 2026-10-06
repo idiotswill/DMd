@@ -93,6 +93,7 @@ fn derive_intent(
 ) -> Result<Intent, String> {
     let tactical_input = match &request.input {
         TableTransportInput::SelectWork { .. }
+        | TableTransportInput::AttackEquipment { .. }
         | TableTransportInput::ShoveDecision { .. }
         | TableTransportInput::HitResponse { .. }
         | TableTransportInput::MissileResponse { .. } => true,
@@ -122,6 +123,42 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::AttackEquipment { handle, choice } => {
+            let (origin, occurrence) = current
+                .handles
+                .iter()
+                .find_map(|h| match h.capability {
+                    ProjectionCapability::AttackEquipment { origin, occurrence }
+                        if h.opaque == handle.0 =>
+                    {
+                        Some((origin, occurrence))
+                    }
+                    _ => None,
+                })
+                .ok_or("That equipment decision is not available in this view.")?;
+            let record = state
+                .encounter
+                .as_ref()
+                .and_then(|e| e.flow.as_ref())
+                .and_then(|f| f.resolution.as_ref())
+                .filter(|r| r.origin.id == origin)
+                .and_then(|r| r.attack_after_equipment.as_ref())
+                .filter(|r| {
+                    r.selected_by.is_some()
+                        && r.work.occurrence == occurrence
+                        && r.work.kind == TacticalWorkKind::AttackAfterEquipment
+                })
+                .ok_or("That equipment decision is no longer available.")?;
+            Intent::Action(Box::new(TableAction::Tactical {
+                action: TacticalAction::ChooseAttackEquipment {
+                    work: TacticalWorkKey {
+                        resolution: origin,
+                        occurrence: record.work.occurrence,
+                    },
+                    choice: *choice,
+                },
+            }))
+        }
         TableTransportInput::ShoveDecision { handle, decision } => {
             let (origin, occurrence, stage) = current
                 .handles
@@ -313,6 +350,9 @@ fn derive_intent(
             match &mut action {
                 TableAction::SubmitPhysical { request_id, .. } => *request_id = roll(*request_id)?,
                 TableAction::Tactical { action } => match action {
+                    TacticalAction::ChooseAttackEquipment { .. } => {
+                        return Err("Select the visible equipment decision handle.".into());
+                    }
                     TacticalAction::ChooseShoveSave { .. }
                     | TacticalAction::ChooseShoveOutcome { .. }
                     | TacticalAction::RuleShovePush { .. } => {
