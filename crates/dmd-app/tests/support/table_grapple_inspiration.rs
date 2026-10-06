@@ -309,9 +309,9 @@ async fn pending_award_and_wrong_raw_foreign_or_invalid_inspiration_submissions_
 #[tokio::test]
 async fn consumed_inspiration_cannot_be_spent_again_but_old_award_and_reroll_retry_survive_session_change() {
     let mut f = Box::pin(Fixture::new()).await;
-    enable(&mut f).await; let award = grant(&mut f).await; target_pc(&mut f, "Strength").await;
+    enable(&mut f).await; let award_request = grant(&mut f).await; target_pc(&mut f, "Strength").await;
     let reroll = inspired(&f, 20, 1).await; Box::pin(f.cold(reroll.clone())).await;
-    let award_response = Box::pin(f.runtime.submit_presented_table(award.clone())).await.unwrap();
+    let award_response = Box::pin(f.runtime.submit_presented_table(award_request.clone())).await.unwrap();
     let reroll_response = Box::pin(f.runtime.submit_presented_table(reroll.clone())).await.unwrap();
     finish_goblin(&mut f).await; escape(&mut f, "Athletics").await;
     assert_eq!(options(&f, f.pc(0)).await.heroic_inspiration, Some(false));
@@ -336,7 +336,7 @@ async fn consumed_inspiration_cannot_be_spent_again_but_old_award_and_reroll_ret
         id: new_session, name: "Next session".into(), participants: (0..2).map(|i| SessionParticipant { player_id: f.players[i], character_id: Some(f.characters[i]), attendance: AttendanceStatus::Present }).collect(),
     }))).await; start.session_id = Some(new_session); Box::pin(f.cold(start)).await;
     let rows = all_rows(&f.pool).await;
-    assert_eq!(Box::pin(f.runtime.submit_presented_table(award)).await.unwrap(), award_response);
+    assert_eq!(Box::pin(f.runtime.submit_presented_table(award_request)).await.unwrap(), award_response);
     assert_eq!(Box::pin(f.runtime.submit_presented_table(reroll)).await.unwrap(), reroll_response);
     assert_eq!(all_rows(&f.pool).await, rows);
     assert!(!f.state().await.rules.unwrap().entities[&f.actors[0]].heroic_inspiration);
