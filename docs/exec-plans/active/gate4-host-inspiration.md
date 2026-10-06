@@ -170,3 +170,30 @@ planning checkpoints: record a new decision only when actual scope/source facts
 change. Next: receive the complete formatting successor at this clean source
 checkpoint, add genuine producer and reroll application cases, then return a
 clean source freeze with full protection audit for root's independent review.
+
+## Root continuation after author usage limit — 2026-10-06
+
+The author stopped on an account usage limit with committed producer/UI9cd83b3
+and normal whole formatting receipt7198f7ecfddf7cb817c57915b52f3333896525ba.
+Root now takes sole write ownership. Root fully read the production/UI delta,
+existing roll-options authorization and grant/ruling primitive, all ten new
+application cases and thirteen new frontend cases. These tests use real Host
+awards and physical save/Escape inputs; their hostile state mutations are
+recovery rejection inputs, never accepted producer setup. They remain UNRUN.
+
+The author left only the new application support module, its three-line harness
+registration, and two new frontend test files uncommitted. Preserve that source
+as a coherent checkpoint. Root's static review found the accepted-award request
+local in the session-change test shadows the `award` helper subsequently called
+for a closed-session refusal. Rename only that local and its references before
+compilation; preserve every request, assertion and scenario.
+
+Then normally receive the whole reviewed held successor1fc1c5265dc6b16ac6aff0a500e6eec91da76100:
+actual living-target admission/offer correction, genuine death regression and
+equivalent domain receipt let-chain lint fix. Preserve the shared activation
+message and Host-award restrictions here. Inspect any merge conflict explicitly.
+Allocate a brief direct Rustfmt/check only on Rust paths changed by this branch;
+no compiler, tests, npm, database or native process starts while Offstage owns
+the serial heavy slot. Root will publish a draft for early exact-head CI after
+source review and preservation checks. New runtime/canonical/native verification
+and rightful optional overflow transfer remain required; this is not completion.
