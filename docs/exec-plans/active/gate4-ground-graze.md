@@ -70,6 +70,14 @@ all-other-file preservation audit. Root then reviews and schedules exact receivi
 checks. All original17 scenarios, existing outcomes and negative atomicity remain
 required; source correction is not a pass, and Gate4 remains open.
 
+The amendment was committed alone at `9c76cb7` before Rust edits. All three
+allocated helper corrections are now authored, including unchanged-history
+assertions across the real shared initiative tie and authoritative damage raw.
+The privacy case body and all other source files are preserved. No production or
+API change was needed or made. The correction remains unformatted/uncompiled/
+unrun; its clean handback includes a separate stdlib/Git preservation report and
+complete three-file diff for root's review before execution allocation.
+
 ## Objective and approved authority
 
 Implement section4 of the root-approved remaining-consequences plan,

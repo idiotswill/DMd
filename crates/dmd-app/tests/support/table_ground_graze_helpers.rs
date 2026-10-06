@@ -351,15 +351,16 @@ pub(super) async fn finish_equipment(
     if hostile {
         Box::pin(hostile_private_records(f, card.key, None)).await;
     }
+    assert!(
+        view(f, &other_player(f)).await.tactical.unwrap().attack_equipment.is_none()
+    );
+    let host_card = view(f, &TableTransportChannel::Host)
+        .await.tactical.unwrap().attack_equipment.unwrap();
+    assert_eq!(host_card.actor, card.actor);
+    assert_eq!(host_card.operations, card.operations);
+    assert_eq!(host_card.may_decline, card.may_decline);
+    assert_ne!(host_card.key, card.key);
     for channel in [TableTransportChannel::Host, other_player(f)] {
-        assert!(
-            view(f, &channel)
-                .await
-                .tactical
-                .unwrap()
-                .attack_equipment
-                .is_none()
-        );
         let wrong_owner = request(
             f,
             channel,
@@ -371,6 +372,16 @@ pub(super) async fn finish_equipment(
         .await;
         Box::pin(atomic_rejection(f, wrong_owner)).await;
     }
+    // Host has its own projected capability; the player-owner rule still denies it.
+    let host_own_key = request(
+        f,
+        TableTransportChannel::Host,
+        TableTransportInput::AttackEquipment {
+            handle: host_card.key,
+            choice: AttackEquipmentChoice::Decline,
+        },
+    ).await;
+    Box::pin(atomic_rejection(f, host_own_key)).await;
     let raw_work = request(
         f,
         player(f),
