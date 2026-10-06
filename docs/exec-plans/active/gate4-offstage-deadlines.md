@@ -54,6 +54,97 @@ portable/restart and actual application acceptance of the union remain required;
 neither parent's old passes transfer. Record actual failures and exact next
 actions here. This plan starts integration, not acceptance or a gate-end claim.
 
+## Receiving reconciliation and combined controls — 2026-10-06
+
+After plan7171644 and the open normal c093 merge, root allocated sole source
+writing to public_grapple_oct6; root retains independent review, publication and
+the sole heavy slot. Root's initial conflict script resolved nine text overlaps
+without a runtime run. Additional source inspection before edits found one
+newly received `turns::choose` Shove ownership call still reading the removed
+`resolution.turn_actor`; use fallible `turn_context()?.actor` after the existing
+ReleasedInterval-first dispatch. This preserves actorless released ordering.
+
+Precisely bounded fixture migrations before edits:
+
+- `table_shove_air::prepare` and `table_shove_ledge::prepare` are newly executed
+  setup helpers, not captured histories. Change only their fresh Begin execution
+  from EncounterReleaseV1 to ReleasedTimeV1. Their actors, source pins, geometry,
+  dice, source ownership and original scenario assertions remain unchanged.
+- `current_and_synthetic_retained_shove_keep_paid_work_through_all_three_choices`
+  already calls the receiver's fresh7 fixture. Change only the fresh-producer
+  version assertion from5 to7 and add7 to the existing [5,4] continuation loop.
+  Keep both5 and4 specimens, every paid-work/ownership/outcome assertion, and the
+  separate explicit old4-to5 upgrade control. This is a declared current fixture
+  migration, not recapture or reattribution of historical evidence.
+
+Add new controls rather than rewriting existing ones: actual optional Shove
+wire round-trip/order and omitted/null compatibility against the genuine old
+Turn capture, strict duplicate/unknown/context rejection with Shove present;
+real paused released-deadline validation rejecting a synthetic foreign Shove
+attachment or Shove work without mutating its original candidate; and genuine
+current7 table Shove followed by normal release/elapsed time, with cold reopen,
+independent portable continuation, old opaque-command retries and fresh Shove
+refusal after turn authority is retired. The codec remains structural; actual
+ReleasedInterval rules validation independently disallows every populated Shove
+attachment and every Shove work kind. Do not mint a synthetic Turn context.
+
+All original tests/captures/assets must remain exact except the three explicit
+current fixture edits above and incoming required `shove: None` constructor
+additions. Audit every resolution literal and old body against both parents.
+Direct rustfmt on changed Rust files is allocated; Cargo/rustc/tests/npm/DB/native
+and push remain unallocated. A static/format pass is not runtime evidence.
+
+### Receiving source handback, runtime still pending
+
+The normal c093 union is reconciled through the real typed context, codec,
+restore, controller, transport, presentation, work queue and fall consumers.
+The manual wire codec writes optional Shove after attack and before hit review,
+counts the field only when populated and retains strict context decoding.
+ReleasedInterval validation explicitly refuses a populated Shove attachment;
+its producer initializes the new field to None. Ordinary Shove admits the
+actual current7 Turn as well as retained4/5 work, using fallible Turn reads at
+validation and selected-work ownership. No synthetic Turn or new elapsed-time
+body action is introduced.
+
+Four additive controls are authored: old captured Turn wire omission/null,
+populated field order and strict decoding; a real paused equal-deadline interval
+rejecting a hostile Shove attachment, all four Shove work kinds and Host/player
+commands; genuine current7 paid Shove retaining its real Turn and refusing
+elapsed/Finish bypass; and actual source-owned table Shove followed by ordinary
+release and elapsed time, with file-backed cold reopen, independent portable
+continuation, exact accepted retries, stale/fresh-handle refusal and retained
+journal/projection prefixes. The existing table driver remains byte-exact.
+
+Static audit compares the complete 585-path parent union. All 826 receiver
+Rust test bodies and 18 incoming-only bodies remain, with 841 exact bodies,
+two required `shove: None` literal additions and the one declared current7
+version assertion/additive loop migration. The latter keeps its original5/4
+specimens and every gameplay assertion; the explicit old4-to5 upgrade test is
+unchanged. Both new Begin helpers have a full-file inverse-byte proof for their
+single5-to7 edit. All 29 captured fixture files and all seven content files
+remain exact; the 21 frontend test/support files remain exact parent files or
+the exact additive TablePosition union with the pre-existing receiver7 helper.
+Every one of the 13 resolution literals and three tactical-view construction/
+destructuring sites includes the new field; manual codec decoding is explicit.
+
+Direct rustfmt and direct check passed on the 15 manually touched Rust paths.
+Only five files changed during formatting: the four new-control files and
+controller routing. The latter gained three expression-arm brace pairs and
+lost their optional commas; all other tokens remain exact. No compiler, lint,
+Rust/frontend test, database, package or native process ran for this union.
+The external source audit and complete parent diffs are review aids, not
+runtime or independent acceptance evidence.
+
+Next: root independently reviews the complete frozen normal merge and assigns
+the single heavy slot. Required checks include the unchanged Offstage426
+selection, all accepted Shove controls, the four new combined controls, strict
+affected all-target lint, frontend Shove/released-time controls, verify-fast,
+verify and complete exact-head CI. The application control is in table_loop;
+the other new controls are domain wire tests, rules released_time library tests
+and tactical_attacks::shove. Fresh packaged/native and real portable/restart
+acceptance of the union remain pending. Keep both parent verification records
+attributed only to their own heads; Gate4 and the slice are not accepted here.
+
 ## October 6 preserved Active release diagnostic
 
 The exact clean candidate `8ce529b2f717118192b30c9e789f9bb9e217d046`, tree

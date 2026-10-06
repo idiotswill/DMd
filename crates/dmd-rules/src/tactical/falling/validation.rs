@@ -198,6 +198,13 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             }
         }
         match &fall.cause {
+            TacticalFallCause::Shove {
+                shove,
+                consequence,
+                work,
+            } => {
+                super::super::shove::validate_fall(state, fall, shove, consequence, *work)?;
+            }
             TacticalFallCause::FlightLost if !complete => {
                 if crate::spatial::flight_loss_fall(encounter(state)?, state, fall.actor)
                     .map_err(|e| invalid(&e.to_string()))?

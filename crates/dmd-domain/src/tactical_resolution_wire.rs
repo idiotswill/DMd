@@ -34,6 +34,8 @@ struct Wire {
     #[serde(default)]
     attack: Option<crate::TacticalAttack>,
     #[serde(default)]
+    shove: Option<Box<crate::TacticalShove>>,
+    #[serde(default)]
     hit_review: Option<Box<crate::TacticalHitReview>>,
     #[serde(default)]
     movement: Option<Box<crate::TacticalMovement>>,
@@ -61,6 +63,7 @@ impl Serialize for TacticalResolution {
         count += usize::from(self.failed_save.is_some());
         count += usize::from(self.legendary_window.is_some());
         count += usize::from(self.attack.is_some());
+        count += usize::from(self.shove.is_some());
         count += usize::from(self.hit_review.is_some());
         count += usize::from(self.movement.is_some());
         count += usize::from(self.work_trace.is_some());
@@ -90,6 +93,9 @@ impl Serialize for TacticalResolution {
         }
         if self.attack.is_some() {
             wire.serialize_field("attack", &self.attack)?;
+        }
+        if self.shove.is_some() {
+            wire.serialize_field("shove", &self.shove)?;
         }
         if self.hit_review.is_some() {
             wire.serialize_field("hit_review", &self.hit_review)?;
@@ -153,6 +159,7 @@ impl<'de> Deserialize<'de> for TacticalResolution {
             failed_save: wire.failed_save,
             legendary_window: wire.legendary_window,
             attack: wire.attack,
+            shove: wire.shove,
             hit_review: wire.hit_review,
             movement: wire.movement,
             casts: wire.casts,

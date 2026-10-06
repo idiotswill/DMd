@@ -226,6 +226,7 @@ fn begin_boundary_from(
         legendary_window: None,
         hit_review: None,
         attack: None,
+        shove: None,
         movement: None,
         casts: vec![],
         missiles: vec![],
@@ -313,7 +314,8 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         return super::released_time::pump(state, meta);
     }
     for _ in 0..32_768 {
-        if super::falling::selected(state)?.is_some()
+        if super::shove::waiting(state)
+            || super::falling::selected(state)?.is_some()
             || resolution(state)?
                 .movement
                 .as_ref()
@@ -330,7 +332,8 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             }
         }
         super::movement::prune(state, meta)?;
-        if super::hit_reactions::waiting(state)
+        if super::shove::waiting(state)
+            || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
             || resolution(state)?.pending.is_some()
             || super::falling::selected(state)?.is_some()
@@ -411,7 +414,10 @@ pub(super) fn choose(
     if resolution(state)?.released_interval().is_some() {
         return super::released_time::choose(state, meta, occurrence);
     }
-    if super::hit_reactions::waiting(state) || super::missiles::waiting(state) {
+    if super::shove::waiting(state)
+        || super::hit_reactions::waiting(state)
+        || super::missiles::waiting(state)
+    {
         return Err(RulesError::Pending);
     }
     if super::work_trace::tactical_frame_host_ordering(resolution(state)?)? {
@@ -420,6 +426,13 @@ pub(super) fn choose(
         // raw save/reaction/resistance authority is deliberately unaffected.
         privileged(meta)?;
     } else {
+        if resolution(state)?.shove.is_some() {
+            super::shove::authorize_owner(
+                state,
+                meta,
+                resolution(state)?.turn_context().map_err(invalid)?.actor,
+            )?;
+        }
         if !resolution(state)?.missiles.is_empty()
             && controller(
                 state,

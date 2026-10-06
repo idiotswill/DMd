@@ -1755,3 +1755,108 @@ fn paused_interval_still_requires_geometry_for_a_future_raw_dependency() {
     );
     assert_eq!(forged, before);
 }
+
+#[test]
+fn released_interval_refuses_shove_attachment_work_and_commands_without_turn_authority() {
+    let mut f = Fixture::two_mages();
+    f.run(None, advance(28_860));
+    let original = f.state.clone();
+    validate_tactical_state(&original).unwrap();
+    crate::validate_state(&original, &f.pack).unwrap();
+    let r = resolution(&original).unwrap();
+    assert!(r.turn_context().is_err());
+    assert!(r.released_interval().is_some());
+    assert!(r.shove.is_none());
+    assert!(original.rules.as_ref().unwrap().timing.is_none());
+    let occurrence = r.frames[0][0].occurrence;
+
+    // Hostile structural attachment only, never an accepted Shove producer.
+    // The explicit interval validator must reject the field independently of
+    // the ordinary Turn/Shove validator (which released work does not enter).
+    let mut forged = original.clone();
+    resolution_mut(&mut forged).unwrap().shove = Some(Box::new(TacticalShove {
+        origin: r.origin.clone(),
+        actor: f.actors[0],
+        target: f.actors[1],
+        window: WeaponActionWindow {
+            id: r.origin.id,
+            kind: WeaponActionKind::AttackAction,
+        },
+        actor_source: None,
+        target_source: None,
+        actor_from: SpatialPoint { x: 10, y: 10, z: 0 },
+        target_from: SpatialPoint { x: 20, y: 10, z: 0 },
+        difficulty: 13,
+        stage: TacticalShoveStage::SaveChoice,
+        selected: None,
+        save: None,
+        push: None,
+        effect: None,
+    }));
+    let encoded = forged.encode_json().unwrap();
+    let forged = CampaignState::decode_json(&encoded).unwrap();
+    assert!(
+        ReleasedValidation::derive(&forged)
+            .err()
+            .unwrap()
+            .to_string()
+            .contains("invalid persisted released interval boundary")
+    );
+    assert!(
+        resolve_tactical(
+            &forged,
+            &f.meta(None),
+            &TacticalAction::ChooseTurnWork { occurrence },
+            &f.pack
+        )
+        .is_err()
+    );
+    assert_eq!(forged.encode_json().unwrap(), encoded);
+    for kind in [
+        TacticalWorkKind::BeginShove,
+        TacticalWorkKind::ShoveSave,
+        TacticalWorkKind::ChooseShoveOutcome,
+        TacticalWorkKind::FinishShove,
+    ] {
+        let mut forged = original.clone();
+        resolution_mut(&mut forged).unwrap().frames[0][0].kind = kind;
+        let before = forged.clone();
+        assert!(validate_tactical_state(&forged).is_err());
+        assert!(
+            resolve_tactical(
+                &forged,
+                &f.meta(None),
+                &TacticalAction::ChooseTurnWork { occurrence },
+                &f.pack
+            )
+            .is_err()
+        );
+        assert_eq!(forged, before);
+    }
+    for action in [
+        TacticalAction::Shove {
+            target: f.actors[1],
+        },
+        TacticalAction::ChooseShoveSave {
+            ability: ShoveSaveAbility::Strength,
+        },
+        TacticalAction::ChooseShoveOutcome {
+            choice: ShoveChoice::Prone,
+        },
+        TacticalAction::RuleShovePush {
+            ruling: ShoveGeometryRuling::CommitExactPush,
+        },
+    ] {
+        for meta in [f.meta(None), f.meta(Some(0))] {
+            assert!(resolve_tactical(&original, &meta, &action, &f.pack).is_err());
+        }
+    }
+    assert_eq!(f.state, original);
+    let completed = f.run(None, TacticalAction::ChooseTurnWork { occurrence });
+    assert!(completed.outcome.active_actor.is_none());
+    assert!(!completed.outcome.awaiting_turn_work);
+    assert_eq!(f.state.clock.now, WorldInstant(28_860));
+    assert!(flow(&f.state).unwrap().resolution.is_none());
+    assert!(f.state.rules.as_ref().unwrap().timing.is_none());
+    assert!(effects(&f.state).unwrap().effects.is_empty());
+}

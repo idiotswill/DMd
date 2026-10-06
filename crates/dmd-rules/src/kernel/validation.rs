@@ -613,6 +613,7 @@ fn validate_state_inner(
                 | TacticalRollRole::AreaSave
                 | TacticalRollRole::LiquidLandingCheck
                 | TacticalRollRole::Medicine
+                | TacticalRollRole::ShoveSave
                 | TacticalRollRole::Concentration => Some(20),
                 TacticalRollRole::StableRecovery => Some(4),
                 TacticalRollRole::CreatureRecharge => Some(6),

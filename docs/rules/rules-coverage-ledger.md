@@ -4,6 +4,18 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
+Current integration note, 2026-10-06: fetched main is
+`5afc992e62bb967aceec69db53f19b6347b70855` after Air PR50 and Shove PR51.
+The [native expiry record](../checkpoints/gate4-expiry-native-2026-10-06.md) now
+documents actual391 primary deadline/recovery; final PR52 checks/merge remain open.
+PR48's separate successful literal-main checks are recorded in
+the [release plan](../exec-plans/active/gate4-encounter-release.md).
+
+The current Offstage receipt of this source remains unverified.
+Both prior branches' verification remains attributed to their original heads.
+
+Historical Offstage receiving checkpoint (2026-10-05):
+
 Received integration checkpoint, 2026-10-05: PR50 is accepted at main
 `32c0c682c4dbb235e1f9a119643c5d8626d5cb71`; separate literal32 runtime checks
 were pending at that checkpoint. This names this branch's accepted source baseline,

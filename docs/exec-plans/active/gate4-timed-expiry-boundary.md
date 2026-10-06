@@ -1,6 +1,11 @@
 # Gate 4 — Timed effect expiry at turn boundaries
 
-Status, 2026-10-04: **All six CI checks pass on integrated fcc74a9, including the
+Current status, 2026-10-06: **Reviewed source391 receives accepted main5af.
+Native primary deadline and all five cold checkpoints pass; full CI passes808
+Linux and810 Windows Rust tests. Final documentation-head CI and merge remain pending.**
+See the final checkpoint below and the linked native evidence record.
+
+Historical status, 2026-10-04: **All six CI checks pass on integrated fcc74a9, including the
 seven expiry controls and original receiving histories. Accepted-main dbf1d633
 reconciliation is complete. Local canonical, genuine native deadline play and
 final receiving-head verification remain pending; reconcile again if main advances.**
@@ -476,3 +481,97 @@ remembered campaign auto-open and the shared app-data store: use a compatible
 verified integrated package and genuine fresh QA campaign, never downgrade a
 later saved campaign. Pending/completed cold recovery and owned expiry selection
 at the actual60second source deadline remain required. Keep Gate4 open.
+
+### Accepted Shove receiving plan and verification scheduling — 2026-10-06
+
+Root freshly fetched accepted main
+`5afc992e62bb967aceec69db53f19b6347b70855`. PR52 currently remains exact
+`3fa8e6c17f625098159d70689f9394bcc24050e3`, tree
+`cd646d51e7fc823bc333785462425ff2fa4ed3cb`. Receive whole accepted main by a
+normal merge before final verification. The single common base is accepted
+Air32c0c682c4dbb235e1f9a119643c5d8626d5cb71. A read-only Git merge preview is
+conflict-free at tree `daf30b04f1920e7e0397ee753d5a5f1343d8318e`; that preview
+does not establish actual branch integration or execution. Preserve every source,
+fixture and test from both parents, especially the shared turns.rs: accepted
+Shove admission/owner/current turn guards and exact due-only Time/Turn boundary.
+No test-body adaptation is authorized by this receipt. No unaccepted MR, Grapple,
+Ground, Offstage or other development branch enters this bounded candidate.
+
+Review the complete resulting tree against both parents and the common base.
+Obtain an independent source review before normal publication, then require new
+exact-head Linux/native Windows CI. Existing accepted Shove and earlier Expiry
+runs remain attributed to their actual heads. No old green status verifies the
+combined source. Canonical checks and actual packaged source Hold Person deadline
+play remain necessary before acceptance and protected expected-head merge.
+
+Exact3fa now has successful full canonical-equivalent CI: Windows
+run37298848719/job111726480393 reports792 Rust tests in56 result groups, with
+zero failed/ignored/measured/filtered; CI run37298848615 reports790. Windows also
+passes118 frontend tests/18 files, zero Svelte errors/warnings and unchanged
+desktop packaging. Root and independent audits retain the actual logs and
+source/tree bindings. Windows log SHA256 is
+`f51628235c82d9aa30633931ce1f7018695e1492787123616fd1ee6fd2be349e`;
+independent audit SHA256 is
+`fd2796d020ce59b6462a4f4193d81b5d014d2a4ffad4fae6a565eab50efdb55e`.
+The resulting CI package could not be downloaded: a freshly issued artifact URL
+returned403/error1010 before expiry. No ZIP, local payload or native execution is
+claimed from that response. Earlier c9 package/native preparations remain intact.
+
+Scheduling amendment: do not repeat an unchanged multi-hour local whole-workspace
+suite merely to reproduce the directly verified exact3fa full CI. Those proposed
+local commands remain UNRUN. This does not waive full verification on the new
+combined head: its actual CI logs must be audited separately, and its fresh local
+canonical desktop package must run the unmodified packaging script, including
+frontend/static/notice checks. Any actual failure requires a justified fix and
+new-head verification. Preserve the isolated3fa clone, all prepared wrappers and
+prospective native records as unrun historical preparation; create distinctly
+named successor build/provenance records for the reviewed receiving head.
+
+Native packaging requires Microsoft C++ Build Tools/Windows SDK. The official
+Microsoft-signed bootstrapper has been verified, and the owner explicitly agreed
+to handle its Windows UAC prompt. Installation awaits completion of the sole
+Offstage102 local run; no second compiler/test/native/database process is
+allocated. Root will verify installed components and use a process-scoped pinned
+MSVC toolchain without changing the existing GNU default. Local planned Rust1.98.1
+and prior CI Rust1.99.0 must remain accurately distinguished. Native source-based
+deadline, paid resources/raw-history preservation, pending/completed cold recovery,
+final combined-source review/checks and literal merged-main proof remain open.
+
+### Native391 primary deadline completed — 2026-10-06
+
+The real primary deadline, all five pending/settled/completed cold triples,
+owned ordering, sibling cancellation, paid-resource/history preservation and
+protected bridge/f9 return now pass on391. The [native evidence record](../../checkpoints/gate4-expiry-native-2026-10-06.md)
+binds actual package hashes, generated identities, process exits/reopens and the
+30-capture/174-prefix audit. No native export/retry or all-store claim is made.
+The exact391 Linux run37436120537/job112178227390 completed successfully:808 Rust
+passes in49 nonempty/seven empty harnesses, zero failed/ignored/filtered, including
+the genuine deadline/restore test. Actual synthetic merge
+5f73a2465902e45c00221997284724d0d6ee77f0 has exactly391's tree; GitHub parents/tree
+and the complete checkout log were checked. Normalized log SHA256 is
+9505e036b80b5eaddbd4490662788fb98fbb75e927f69a12b6fc1aa58ef9dfc5.
+Native Windows run37436120513 subsequently completed successfully: stable
+job112178227674 passed810 Rust tests in50 nonempty/six empty harnesses, with
+zero failed/ignored/measured/filtered. Its actual checkout is literal391, not
+the Linux synthetic merge. Source Hold Person deadline/restore and all six rules
+controls passed. Rust1.99.0 MSVC,126 frontend tests/19 files, zero static errors
+or warnings, seven notice checks and canonical release/installer packaging pass.
+MSRV1.88 job112178227380 also passed. The normalized stable log SHA256 is
+05249daa0bcb8ff2681ccdac0e71f474106a167459554e7b6660bb1d2a3674a9;
+MSRV log03342d6860742c32becc1671aac2f0a0dfcefab91c17f324d6591504df6bc864.
+CI artifact11413439842 was uploaded successfully; it is not the locally verified
+Rust1.98.1 native executable and no download or payload audit is claimed for it.
+
+Root completed a separate final review of the entire bounded main-to391 source
+delta, all three new test modules, helper extraction/registrations, ADR/status
+changes and the complete native evidence. The572-entry parent union audit binds
+the full source; every historical fixture and assertion is preserved. No source
+finding remains. The peer's final written review was unavailable because its
+account usage limit interrupted it; root's self-review is explicitly attributed.
+
+The next coherent commit records only these five Markdown evidence/status files.
+Verify every non-document Git entry and the original tracked working files
+against391 before publication. This does not change the verified native source,
+content, packaging or migrations. Nevertheless final evidence-head full CI is
+required before expected-head merge, followed by literal merged-main checks.
+Those checks and the wider Gate4 acceptance remain open.

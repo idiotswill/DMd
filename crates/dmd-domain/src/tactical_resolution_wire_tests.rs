@@ -132,3 +132,75 @@ fn version_seven_preserves_five_and_rejects_reserved_six_and_future_versions() {
     );
     assert!(!crate::TacticalExecutionVersion::EncounterReleaseV1.supports_released_time());
 }
+
+#[test]
+fn additive_shove_wire_keeps_original_turn_bytes_order_and_strict_context() {
+    let original = captured_wire();
+    assert!(!original.contains("\"shove\":"));
+    let null = original.replacen('{', "{\"shove\":null,", 1);
+    let absent: TacticalResolution = serde_json::from_str(&original).unwrap();
+    let decoded_null: TacticalResolution = serde_json::from_str(&null).unwrap();
+    assert_eq!(decoded_null, absent);
+    assert_eq!(serde_json::to_string(&decoded_null).unwrap(), original);
+
+    // Structural codec specimen only: no claim that an attack and Shove may
+    // coexist mechanically. The actual resolver tests authenticate paid work.
+    let mut cursor = absent;
+    let attack = cursor.attack.as_ref().unwrap();
+    cursor.shove = Some(Box::new(crate::TacticalShove {
+        origin: cursor.origin.clone(),
+        actor: attack.actor,
+        target: attack.target,
+        window: crate::WeaponActionWindow {
+            id: cursor.origin.id,
+            kind: crate::WeaponActionKind::AttackAction,
+        },
+        actor_source: None,
+        target_source: None,
+        actor_from: crate::SpatialPoint { x: 0, y: 0, z: 0 },
+        target_from: crate::SpatialPoint { x: 10, y: 0, z: 0 },
+        difficulty: 13,
+        stage: crate::TacticalShoveStage::SaveChoice,
+        selected: Some(TacticalWorkItem {
+            occurrence: 0,
+            kind: TacticalWorkKind::BeginShove,
+        }),
+        save: None,
+        push: None,
+        effect: None,
+    }));
+    let wire = serde_json::to_string(&cursor).unwrap();
+    assert_eq!(
+        serde_json::from_str::<TacticalResolution>(&wire).unwrap(),
+        cursor
+    );
+    assert!(wire.find("\"attack\":").unwrap() < wire.find("\"shove\":").unwrap());
+    assert!(wire.find("\"shove\":").unwrap() < wire.find("\"hit_review\":").unwrap());
+    let shove = serde_json::to_string(cursor.shove.as_ref().unwrap()).unwrap();
+    assert_eq!(
+        wire.replacen(&format!("\"shove\":{shove},"), "", 1),
+        original
+    );
+    for extra in [
+        "\"shove\":null,",
+        "\"shove\":null,\"shove\":null,",
+        "\"released_interval\":null,",
+        "\"future_context\":{},",
+        "\"turn_number\":1,",
+    ] {
+        assert!(
+            serde_json::from_str::<TacticalResolution>(&wire.replacen(
+                '{',
+                &format!("{{{extra}"),
+                1
+            ),)
+            .is_err(),
+            "{extra}"
+        );
+    }
+    let mut unknown: serde_json::Value = serde_json::from_str(&wire).unwrap();
+    unknown["shove"]["future_authority"] = true.into();
+    assert!(serde_json::from_value::<TacticalResolution>(unknown).is_err());
+    cursor.shove = None;
+    assert_eq!(serde_json::to_string(&cursor).unwrap(), original);
+}

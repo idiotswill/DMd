@@ -308,27 +308,43 @@ pub(crate) fn authorize_tactical(
         .as_ref()
         .and_then(|timing| timing.order.get(timing.index))
         .map(|entry| entry.actor);
-    let actor =
-        match action {
-            // These retain source monster/mixed-tie and explicitly delegated ordering.
-            A::Establish { .. }
-            | A::Begin { .. }
-            | A::ConcludeHostilities { .. }
-            | A::FinishEncounter
-            | A::AdvanceReleasedTime { .. }
-            | A::UpgradeExecution
-            | A::UpgradeExecutionTo { .. }
-            | A::ProposeInitiativeTie { .. }
-            | A::AcceptInitiativeTie { .. } => None,
-            A::RespondToHit { .. }
-            | A::CastHitShield { .. }
-            | A::DeclineSelectedHitShield { .. } => resolution
+    let actor = match action {
+        // These retain source monster/mixed-tie and explicitly delegated ordering.
+        A::Establish { .. }
+        | A::Begin { .. }
+        | A::ConcludeHostilities { .. }
+        | A::FinishEncounter
+        | A::AdvanceReleasedTime { .. }
+        | A::UpgradeExecution
+        | A::UpgradeExecutionTo { .. }
+        | A::ProposeInitiativeTie { .. }
+        | A::AcceptInitiativeTie { .. } => None,
+        A::RespondToHit { .. } | A::CastHitShield { .. } | A::DeclineSelectedHitShield { .. } => {
+            resolution
                 .and_then(|resolution| resolution.hit_review.as_ref())
                 .and_then(|hit| hit.respondent.as_ref())
-                .map(|respondent| respondent.actor),
-            A::DelegateHitResponses { .. } => resolution
-                .and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor)),
-            A::RespondToMissile { window, actor, .. } => resolution
+                .map(|respondent| respondent.actor)
+        }
+        A::DelegateHitResponses { .. } => {
+            resolution.and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor))
+        }
+        A::RespondToMissile { window, actor, .. } => resolution
+            .filter(|resolution| resolution.origin.id == window.resolution)
+            .and_then(|resolution| {
+                resolution
+                    .missiles
+                    .iter()
+                    .find(|missile| missile.work.occurrence == window.occurrence)
+            })
+            .and_then(|missile| {
+                missile
+                    .respondents
+                    .iter()
+                    .find(|target| target.response.actor == *actor)
+            })
+            .map(|target| target.response.actor),
+        A::CastMissileShield { window, .. } | A::DeclineSelectedMissileShield { window } => {
+            resolution
                 .filter(|resolution| resolution.origin.id == window.resolution)
                 .and_then(|resolution| {
                     resolution
@@ -336,113 +352,102 @@ pub(crate) fn authorize_tactical(
                         .iter()
                         .find(|missile| missile.work.occurrence == window.occurrence)
                 })
-                .and_then(|missile| {
-                    missile
-                        .respondents
-                        .iter()
-                        .find(|target| target.response.actor == *actor)
-                })
-                .map(|target| target.response.actor),
-            A::CastMissileShield { window, .. } | A::DeclineSelectedMissileShield { window } => {
-                resolution
-                    .filter(|resolution| resolution.origin.id == window.resolution)
-                    .and_then(|resolution| {
-                        resolution
-                            .missiles
-                            .iter()
-                            .find(|missile| missile.work.occurrence == window.occurrence)
-                    })
-                    .and_then(|missile| match missile.stage {
-                        TacticalMissileStage::Selected { respondent } => {
-                            missile.respondents.get(usize::from(respondent))
-                        }
-                        _ => None,
-                    })
-                    .map(|target| target.response.actor)
-            }
-            A::DelegateMissileResponses { .. } => resolution
-                .and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor)),
-            A::OrderMissileResponses { window, .. } => resolution.and_then(|resolution| {
-                let delegated = resolution.origin.id == window.resolution
-                    && resolution
-                        .missiles
-                        .iter()
-                        .find(|missile| missile.work.occurrence == window.occurrence)
-                        .is_some_and(|missile| missile.delegated_by.is_some());
-                (!delegated).then_some(resolution.turn_context().ok()?.actor)
-            }),
-            A::OrderHitResponses { .. } => resolution.and_then(|resolution| {
-                (!resolution
-                    .hit_review
-                    .as_ref()
-                    .is_some_and(|hit| hit.delegated_by.is_some()))
-                .then_some(resolution.turn_context().ok()?.actor)
-            }),
-            A::ChooseTurnWork { .. } => match resolution {
-                Some(resolution) if resolution.released_interval().is_some() => None,
-                Some(resolution)
-                    if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
-                        .map_err(|error| error.to_string())? =>
-                {
-                    Some(resolution.turn_context().map_err(str::to_owned)?.actor)
-                }
-                _ => None,
-            },
-            A::SubmitRoll { .. }
-            | A::SubmitRollWithInspiration { .. }
-            | A::SubmitSavageAttacker { .. } => rules
-                .pending
-                .as_ref()
-                .filter(|pending| pending.request.visibility == RollVisibility::Public)
-                .and_then(|pending| pending.request.roller),
-            A::VoluntarilyFailSave => rules
-                .pending
-                .as_ref()
-                .and_then(|pending| pending.request.roller),
-            A::UseLegendaryResistance | A::DeclineLegendaryResistance => resolution
-                .and_then(|resolution| resolution.failed_save.as_ref())
-                .map(|failed| failed.pending.key.subject),
-            A::DeclineLegendaryAction => resolution
-                .and_then(|resolution| resolution.legendary_window.as_ref())
-                .and_then(|window| match window.work.kind {
-                    TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
+                .and_then(|missile| match missile.stage {
+                    TacticalMissileStage::Selected { respondent } => {
+                        missile.respondents.get(usize::from(respondent))
+                    }
                     _ => None,
-                }),
-            A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
-                .and_then(|resolution| resolution.attack.as_ref())
-                .map(|attack| attack.actor),
-            A::DeclineOpportunity | A::OpportunityAttack { .. } => resolution
-                .and_then(|resolution| resolution.movement.as_ref())
-                .and_then(|movement| movement.opportunity.as_ref())
-                .map(|window| window.reactor),
-            A::ChooseLiquidLanding { .. } => resolution
-                .and_then(|resolution| {
-                    resolution
-                        .falls
-                        .iter()
-                        .find(|fall| fall.stage == TacticalFallStage::LandingChoice)
                 })
-                .map(|fall| fall.actor),
-            A::CastSpell { choice, .. } => Some(choice.actor),
-            A::AbandonReady { actor } => Some(*actor),
-            A::Ready { .. }
-            | A::UnarmedStrike { .. }
-            | A::FirstAid { .. }
-            | A::SecondWind
-            | A::DonShield { .. }
-            | A::DoffShield
-            | A::CreatureWeaponAttack { .. }
-            | A::CreatureArea { .. }
-            | A::CreatureAttack { .. }
-            | A::Move { .. }
-            | A::Attack { .. }
-            | A::EndTurn
-            | A::Dash { .. }
-            | A::Disengage
-            | A::Dodge
-            | A::StandProne
-            | A::StartAttackAction => active,
-        };
+                .map(|target| target.response.actor)
+        }
+        A::DelegateMissileResponses { .. } => {
+            resolution.and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor))
+        }
+        A::OrderMissileResponses { window, .. } => resolution.and_then(|resolution| {
+            let delegated = resolution.origin.id == window.resolution
+                && resolution
+                    .missiles
+                    .iter()
+                    .find(|missile| missile.work.occurrence == window.occurrence)
+                    .is_some_and(|missile| missile.delegated_by.is_some());
+            (!delegated).then_some(resolution.turn_context().ok()?.actor)
+        }),
+        A::OrderHitResponses { .. } => resolution.and_then(|resolution| {
+            (!resolution
+                .hit_review
+                .as_ref()
+                .is_some_and(|hit| hit.delegated_by.is_some()))
+            .then_some(resolution.turn_context().ok()?.actor)
+        }),
+        A::ChooseTurnWork { .. } => match resolution {
+            Some(resolution) if resolution.released_interval().is_some() => None,
+            Some(resolution)
+                if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
+                    .map_err(|error| error.to_string())? =>
+            {
+                Some(resolution.turn_context().map_err(str::to_owned)?.actor)
+            }
+            _ => None,
+        },
+        A::SubmitRoll { .. }
+        | A::SubmitRollWithInspiration { .. }
+        | A::SubmitSavageAttacker { .. } => rules
+            .pending
+            .as_ref()
+            .filter(|pending| pending.request.visibility == RollVisibility::Public)
+            .and_then(|pending| pending.request.roller),
+        A::VoluntarilyFailSave => rules
+            .pending
+            .as_ref()
+            .and_then(|pending| pending.request.roller),
+        A::UseLegendaryResistance | A::DeclineLegendaryResistance => resolution
+            .and_then(|resolution| resolution.failed_save.as_ref())
+            .map(|failed| failed.pending.key.subject),
+        A::DeclineLegendaryAction => resolution
+            .and_then(|resolution| resolution.legendary_window.as_ref())
+            .and_then(|window| match window.work.kind {
+                TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
+                _ => None,
+            }),
+        A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
+            .and_then(|resolution| resolution.attack.as_ref())
+            .map(|attack| attack.actor),
+        A::ChooseShoveSave { .. } => resolution.and_then(|r| r.shove.as_ref()).map(|s| s.target),
+        A::ChooseShoveOutcome { .. } => resolution.and_then(|r| r.shove.as_ref()).map(|s| s.actor),
+        A::RuleShovePush { .. } => None,
+        A::DeclineOpportunity | A::OpportunityAttack { .. } => resolution
+            .and_then(|resolution| resolution.movement.as_ref())
+            .and_then(|movement| movement.opportunity.as_ref())
+            .map(|window| window.reactor),
+        A::ChooseLiquidLanding { .. } => resolution
+            .and_then(|resolution| {
+                resolution
+                    .falls
+                    .iter()
+                    .find(|fall| fall.stage == TacticalFallStage::LandingChoice)
+            })
+            .map(|fall| fall.actor),
+        A::CastSpell { choice, .. } => Some(choice.actor),
+        A::AbandonReady { actor } => Some(*actor),
+        A::Ready { .. }
+        | A::UnarmedStrike { .. }
+        | A::Shove { .. }
+        | A::FirstAid { .. }
+        | A::SecondWind
+        | A::DonShield { .. }
+        | A::DoffShield
+        | A::CreatureWeaponAttack { .. }
+        | A::CreatureArea { .. }
+        | A::CreatureAttack { .. }
+        | A::Move { .. }
+        | A::Attack { .. }
+        | A::EndTurn
+        | A::Dash { .. }
+        | A::Disengage
+        | A::Dodge
+        | A::StandProne
+        | A::StartAttackAction => active,
+    };
     if actor.is_some_and(|actor| {
         rules
             .tactical_creatures

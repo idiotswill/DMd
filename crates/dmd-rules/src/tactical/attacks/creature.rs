@@ -137,6 +137,7 @@ pub(in crate::tactical) fn begin_creature_attack(
         legendary_window: None,
         hit_review: None,
         attack: Some(attack),
+        shove: None,
         movement: None,
         casts: vec![],
         missiles: vec![],

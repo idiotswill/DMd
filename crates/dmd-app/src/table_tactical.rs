@@ -132,6 +132,42 @@ fn view_with_source_access(
         vec![]
     };
     Ok(Some(crate::TableTacticalView {
+        shove: flow.and_then(|f| f.resolution.as_deref()).and_then(|r| {
+            let shove = r.shove.as_deref()?;
+            let selected = shove.selected.as_ref()?;
+            let actor = if shove.stage == TacticalShoveStage::SaveChoice {
+                shove.target
+            } else {
+                shove.actor
+            };
+            let player_controlled = state
+                .characters
+                .values()
+                .any(|c| c.entity_id == actor && c.controlling_player_id.is_some())
+                || state
+                    .rules
+                    .as_ref()
+                    .and_then(|r| r.tactical_creatures.as_ref())
+                    .and_then(|c| c.runtime(actor))
+                    .is_some_and(|r| matches!(r.controller, CreatureController::Player(_)));
+            let visible = if shove.stage == TacticalShoveStage::PushReview {
+                host
+            } else if host {
+                !player_controlled
+            } else {
+                own.contains(&actor)
+            };
+            visible.then_some(crate::TableShoveView {
+                key: TacticalWorkKey {
+                    resolution: r.origin.id,
+                    occurrence: selected.occurrence,
+                },
+                actor,
+                stage: shove.stage,
+                from: (shove.stage != TacticalShoveStage::SaveChoice).then_some(shove.target_from),
+                destination: shove.push.as_ref().map(|p| p.destination),
+            })
+        }),
         encounter_id: encounter.id,
         released_time: choices::released_time(state, host),
         aftermath: flow

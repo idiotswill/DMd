@@ -893,11 +893,38 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                         }
                     }
                 }
+                if let Some(shove) = &resolution.shove {
+                    origins.push(&shove.origin);
+                    if let Some(save) = &shove.save {
+                        origins.push(&save.chosen_by);
+                        origins.extend(save.resolved_by.as_ref());
+                    }
+                    if let Some(push) = &shove.push {
+                        origins.push(&push.chosen_by);
+                    }
+                    if let Some(effect) = &shove.effect {
+                        match effect {
+                            dmd_domain::TacticalShoveEffect::Prone { chosen_by, .. } => {
+                                origins.push(chosen_by)
+                            }
+                            dmd_domain::TacticalShoveEffect::Push { intent, ruled_by }
+                            | dmd_domain::TacticalShoveEffect::BlockedPush { intent, ruled_by } => {
+                                origins.extend([&intent.chosen_by, ruled_by])
+                            }
+                        }
+                    }
+                }
                 for fall in &resolution.falls {
                     origins.push(&fall.origin);
                     if let dmd_domain::TacticalFallCause::MovementEnd { movement, .. } = &fall.cause
                     {
                         origins.push(movement);
+                    }
+                    if let dmd_domain::TacticalFallCause::Shove {
+                        shove, consequence, ..
+                    } = &fall.cause
+                    {
+                        origins.extend([shove, consequence]);
                     }
                     match &fall.stage {
                         dmd_domain::TacticalFallStage::LandingCheck { accepted_by, .. } => {

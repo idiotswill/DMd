@@ -19,6 +19,7 @@ pub(super) fn is_failure(
             | TacticalRollRole::Concentration
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
+            | TacticalRollRole::ShoveSave
     ) {
         return Ok(false);
     }
@@ -27,6 +28,9 @@ pub(super) fn is_failure(
     };
     if pending.key.role == TacticalRollRole::AreaSave {
         return super::areas::save_failed(state, pending, Some(result));
+    }
+    if pending.key.role == TacticalRollRole::ShoveSave {
+        return super::shove::save_failed(state, pending, Some(result));
     }
     if pending.key.role == TacticalRollRole::SpellSave {
         return super::casting::save_failed(state, pending, Some(result));
@@ -212,6 +216,9 @@ pub(super) fn choose(
         .clone()
         .ok_or_else(|| prerequisite("no Legendary Resistance decision is due"))?;
     let proof = validate_failed_save(state, &failed)?;
+    if resolution(state)?.shove.is_some() {
+        super::shove::authorize_owner(state, meta, failed.pending.key.subject)?;
+    }
     // Creature authority is distinct from the active turn's controller. The source
     // adapter checks autonomous/summoned controller binding; declining needs it too.
     let current = state

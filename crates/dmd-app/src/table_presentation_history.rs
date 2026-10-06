@@ -49,6 +49,13 @@ fn capabilities(
     state: &CampaignState,
 ) -> Result<Vec<ProjectionCapability>, String> {
     let mut result = Vec::new();
+    if let Some(shove) = raw.tactical.as_ref().and_then(|t| t.shove.as_ref()) {
+        result.push(ProjectionCapability::ShoveDecision {
+            origin: shove.key.resolution,
+            occurrence: shove.key.occurrence,
+            stage: shove.stage,
+        });
+    }
     if let Some(roll) = &raw.roll {
         result.push(ProjectionCapability::Roll { canonical: roll.id });
     }

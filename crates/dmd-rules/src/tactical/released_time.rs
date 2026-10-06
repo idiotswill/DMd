@@ -249,6 +249,7 @@ pub(super) fn begin(
         failed_save: None,
         legendary_window: None,
         attack: None,
+        shove: None,
         hit_review: None,
         movement: None,
         casts: vec![],

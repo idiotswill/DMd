@@ -45,6 +45,7 @@ pub(super) fn begin(
         legendary_window: None,
         hit_review: None,
         attack: None,
+        shove: None,
         movement: Some(Box::new(movement)),
         casts: vec![],
         missiles: vec![],

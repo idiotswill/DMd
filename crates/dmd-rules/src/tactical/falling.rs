@@ -324,6 +324,9 @@ pub(super) fn choose(
     let index = selected(state)?.ok_or_else(|| prerequisite("No liquid landing choice is due."))?;
     let actor = current(state, index)?.actor;
     authorize(state, meta, actor)?;
+    if resolution(state)?.shove.is_some() {
+        super::shove::authorize_owner(state, meta, actor)?;
+    }
     let kind = if let Some(choice) = choice {
         if !source::can_attempt_liquid_landing(state, actor)? {
             return Err(prerequisite(
