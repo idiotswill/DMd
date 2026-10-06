@@ -37,6 +37,14 @@ review a freshly targeted unchanged82 run after the final freeze. Preserve all
 earlier actual failed runs and the c2 unformatted handback; this amendment and
 its source correction provide no runtime, application, native or Gate4 pass.
 
+The three-group correction is authored under plan-first commit
+`03c2fbcaedbc071ffaad04fd3014e0369cd37eec`. Only the helper's group construction,
+three-request submission, actual Host tie command and full initiative assertion
+changed. Both previously corrected bodies remain exact c2 bytes. Static Git
+whitespace checking passed; no formatter or execution ran. Source is frozen
+UNFORMATTED/UNCOMPILED/UNRUN for root's complete review. The next action is root
+review followed by a separately allocated edited-file formatter window.
+
 ## October 5 actual attack-producer failures and bounded correction
 
 Frozen `418eeb770404e8c93de3407b839704caa3fc303d`, tree

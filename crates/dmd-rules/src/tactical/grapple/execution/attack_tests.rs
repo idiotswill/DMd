@@ -933,18 +933,30 @@ fn with_held_cultist_and_caster(
                 },
                 surprised: false,
             }).collect(),
-            groups: actors.into_iter().map(|actor| InitiativeGroup {
-                actors: vec![actor], request_id: RollRequestId::new(),
+            groups: [vec![human], vec![goblin], vec![held, cultist]].into_iter().map(|actors| InitiativeGroup {
+                actors, request_id: RollRequestId::new(),
             }).collect(),
             execution: TacticalExecutionVersion::EncounterReleaseV1,
         },
     );
-    for (actor, face) in actors.into_iter().zip([20, 10, 5, 1]) {
+    for (actor, face) in [human, goblin, held].into_iter().zip([20, 10, 5]) {
         let request = pending(&state);
         assert_eq!(request.roller, Some(actor));
         let result = faces(request, face);
         public(&mut state, pack, Some(actor), TacticalAction::SubmitRoll { result });
     }
+    public(
+        &mut state,
+        pack,
+        None,
+        TacticalAction::ProposeInitiativeTie { order: vec![held, cultist] },
+    );
+    assert_eq!(state.rules.as_ref().unwrap().timing.as_ref().unwrap().order, vec![
+        InitiativeEntry { actor: human, total: 22, tie_break: 0 },
+        InitiativeEntry { actor: goblin, total: 12, tie_break: 0 },
+        InitiativeEntry { actor: held, total: 7, tie_break: 0 },
+        InitiativeEntry { actor: cultist, total: 7, tie_break: 1 },
+    ]);
     assert_eq!(active(&state).unwrap(), human);
     crate::validate_state(&state, pack).unwrap();
     crate::tactical::validate_tactical_state(&state).unwrap();
