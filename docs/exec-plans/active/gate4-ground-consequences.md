@@ -1,5 +1,32 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Ground receipt frozen for root review — 2026-10-06
+
+Plan `bb577c15f3f77d582d88106576a911acbf8d3471` preceded normal merge
+`c25ed409241f2b647f682a7c42f1c89efecc52b0`, tree
+`013a8e0bee8ab475b2d59e54b96211465a7cceb1`. Its parents are that plan and
+exact Ground `f9e466430cd753a9056054394f71137fd205b5e8`. The merge was clean,
+with no conflict or manual source adaptation. Its entire patch equals the exact
+Ground ancestor-to-f9 patch, and both incoming blobs equal reviewed f9.
+
+The static receiving audit proves all613 other receiver entries remain exact
+1fe2f4a, including all four receiver-specific source entries outside this plan.
+The corrected Shield and Chimera files retain their full exact bytes, including
+the raw0/component3 assertions; concentration and registrations are unchanged.
+All610 other Ground entries are exact between a7 and f9. The 11 original Ogre
+functions outside `prepare`, all four original test names/bodies, and the whole
+file outside that helper remain exact. All616 tracked working files match the
+merge tree after CRLF normalization. This final status commit edits only this
+plan and preserves its complete original body and every prior failure record.
+
+External merge audit `ground-f9-consequences-receipt-c25ed40-2026-10-06.json`
+has SHA-256 `49563c31a2922029a70f92ac693d1199e32e2aa4bb53d1f7b811f3440f514767`.
+The final clean freeze and complete receiving delta receive a separate hash
+audit at handback. No formatter, compiler, tests, npm, database, native app or
+push ran for this receipt. Root resumes sole ownership for complete independent
+receiving review, publication and fresh exact-head checks. The previous failed
+runtime evidence and remaining integrated/native/Gate4 obligations stay open.
+
 ## Reviewed Ground geometry receipt — planned 2026-10-06
 
 Root allocated sole writing for this receipt to `private_grapple_oct6` from clean
