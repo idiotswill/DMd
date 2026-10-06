@@ -1,5 +1,29 @@
 # Grapple Group 3 whole-source integration
 
+## Root receipt of verified Goblin fixture correction — 2026-10-06
+
+Root remains sole writer. The incoming explicit V2 Goblin fixture correction
+at Ground1b8 passed the full256-test rules library, four source-anatomy tests,
+workspace formatting and strict rules all-target Clippy on Rust1.98.1 GNU.
+The positive scenario bodies stay unchanged; both genuine historical V1 weapon
+routes now prove atomic refusal without invented hand anatomy. Production,
+source content and immutable exports remain exact. Full CI/native acceptance
+is separate and stays open. The original failed b30 CI evidence is preserved.
+
+Normally receive these whole histories in order after committing this plan:
+- Whole head `90a1e7d7b172146d57fba75584cc91a1e9a7a7b5`; permitted incoming entries: `crates/dmd-rules/src/tactical/attack_equipment_access_tests.rs`, `docs/exec-plans/active/gate4-ground-production.md`, `docs/exec-plans/active/gate4-ground-consequences.md`, `docs/exec-plans/active/gate4-ground-graze.md`.
+- Whole head `5278a9d3531225ea9906a4d2538287dd6a4c9730`; permitted incoming entries: `docs/exec-plans/active/gate4-mage-ordinary-hands.md`.
+
+These histories have multiple merge bases because prior parent corrections
+were received separately. Do not treat a single three-dot diff as a union proof.
+For each normal merge, compare every resulting Git entry with the pre-merge
+receiver, allowing only the enumerated complete incoming blobs above to differ.
+No source hunk adaptation is intended. Stop on unexpected conflicts or paths.
+This retains every receiver-specific positive, helper, guard and history. Record
+parents/tree and full entry evidence externally, then publish the reviewed
+clean head for its own CI. No earlier result transfers to the new receiving
+head. The full Gate4, native and original slice acceptance remains binding.
+
 Status: **GRAZE/MAGE UNION PUBLISHED; COMBINED POSITIVES AND VERIFICATION ACTIVE**, 2026-10-06.
 The original plan preceded source changes; root now owns the recovered union.
 Branch `codex/gate4-grapple-positive-integration`,
