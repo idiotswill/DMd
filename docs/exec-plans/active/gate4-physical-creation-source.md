@@ -1,5 +1,32 @@
 # Gate 4 — Pinned physical character creation
 
+## October 6 exact-head CI correction
+
+Both canonical platforms on `709ec08f9f847fa7ae958d99c9591b142be69bec`
+failed the unchanged `distributed_srd_manifest_verifies_kernel_source_and_license_bytes`
+control. Linux job111766060948 and Windows job111767169942 report that the
+actual manifest contains the approved `character-creation-physical-v1.json`,
+while the expected exact file set still lists only the six older entries.
+Root read the full test, manifest and regeneration script. The new asset is
+already required by the approved design and installed-content validation.
+
+Commit this correction plan first, then add only that literal path to the
+test's expected BTreeSet. Keep every prior filename and the exact-set equality,
+catalog integrity load and exact campaign ruleset resolution. No production,
+content byte, checksum, old creation input or replay fixture changes are needed.
+This updates the distribution contract for the approved additional asset;
+it does not relax integrity checks or alter any old source definition.
+
+Preserve the actual prior local result: formatting and strict affected-package
+Clippy passed, and 133 tests in eleven complete harnesses passed, including all
+three new table application cases. The following historical missile harness
+was interrupted after seven named successes without a final eight-test summary;
+five later harnesses were not reached. The cause is unknown and no process is
+running on recovery. These results are not a completed focused186 or canonical
+pass. Full original evidence remains outside Git. After correction, review the
+complete exact delta, verify the distribution harness and remaining controls,
+rerun required exact-head CI and retain the outstanding native acceptance.
+
 ## Authored coherent source handback — 2026-10-05
 
 Implementation now follows the approved design below on this independent branch;
