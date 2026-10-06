@@ -1,5 +1,30 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Root receipt of explicit Goblin source correction — 2026-10-06
+
+Root is sole writer. Before this normal whole-history receipt, the complete
+Ground b30-to-1b8 correction was reviewed: only the private pickup fixture and
+its plan changed. Positive Goblin controls select the actual immutable V2 pin
+and assert full source/anatomy; historical V1 remains unannotated and is tested
+for atomic refusal with both weapons. Production guards, source content,
+historical exports and all existing positive scenario bodies remain unchanged.
+
+Incoming source is 1b8bdc06e7cae9cc57f55995b4c04ec98bb7a370, tree
+9c55606c83748d62a88df5fe238e837a6e173102. Exact-source local Rust1.98.1 GNU
+verification passed256 rules-library tests, four source-anatomy tests, all
+workspace formatting and strict rules all-target Clippy. Default test stack,
+profile and concurrency were retained. The real full Linux b30 failure remains
+recorded; local targeted evidence does not replace full CI or native acceptance.
+Rules log SHA256 is
+4b7f8ce59bed4db54310d9186575337cd80248a547903e39e284ca03a82f2044.
+
+Commit this plan first, normally merge the entire incoming head with no copied
+hunks, then inspect the complete delta and audit every Git entry against both
+parents and their merge base. Preserve all receiver-only source exactly. Stop
+on any unexpected conflict. Publish only the reviewed clean union for fresh
+exact-head verification. Gate4 and all original production/native obligations
+remain open; no parent check transfers to this receiving head.
+
 ## Ground receipt frozen for root review — 2026-10-06
 
 Plan `bb577c15f3f77d582d88106576a911acbf8d3471` preceded normal merge

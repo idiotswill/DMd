@@ -270,11 +270,41 @@ impl Fixture {
     }
 
     fn source(shot: bool) -> Self {
+        let source = crate::tactical_creatures::creature_source_pin(
+            crate::tactical_definitions::bundled_goblin_warrior_v2().unwrap(),
+        )
+        .unwrap();
+        let f = Self::source_with_pin(shot, Some(&source));
+        assert_eq!(
+            f.state
+                .rules
+                .as_ref()
+                .unwrap()
+                .tactical_creatures
+                .as_ref()
+                .unwrap()
+                .profile(f.actor)
+                .unwrap()
+                .source,
+            source
+        );
+        assert_eq!(
+            crate::tactical_grapple_sources::ordinary_grapple_anatomy(&f.state, f.actor, &f.pack)
+                .unwrap(),
+            Some(GrappleAnatomyProof::Creature {
+                source,
+                ordinary_hands: OrdinaryHandAnatomy::TwoHandsV1,
+            })
+        );
+        f
+    }
+
+    fn source_with_pin(shot: bool, source: Option<&CreatureSourcePin>) -> Self {
         use crate::tactical_creature_equipment::{
             creature_current_armor, creature_equipment_plan, materialize_creature_equipment,
         };
         use crate::tactical_creatures::{
-            CreatureBuildChoice, CreatureHitPointChoice, build_creature,
+            CreatureBuildChoice, CreatureHitPointChoice, build_creature_from_source,
         };
         let mut f = Self::new();
         let target_source = flow(&f.state)
@@ -292,7 +322,7 @@ impl Fixture {
         entity.kind = EntityKind::Creature;
         f.state.entities.insert(actor, entity);
         let origin = f.host();
-        let built = build_creature(
+        let built = build_creature_from_source(
             &f.state,
             &origin,
             actor,
@@ -304,6 +334,7 @@ impl Fixture {
                 controller: CreatureController::Host,
                 in_lair: false,
             },
+            source,
         )
         .unwrap();
         let rules = f.state.rules.as_mut().unwrap();
@@ -1055,6 +1086,36 @@ fn private_paid_reader_rejects_wrong_activation_duplicate_receipt_payment_raw_an
             "case {case}"
         );
         assert_eq!(state, original, "case {case}");
+    }
+}
+
+#[test]
+fn private_historical_goblin_pickup_refuses_without_inventing_anatomy() {
+    for shot in [false, true] {
+        let mut f = Fixture::source_with_pin(shot, None);
+        assert_eq!(
+            crate::tactical_grapple_sources::ordinary_grapple_anatomy(&f.state, f.actor, &f.pack)
+                .unwrap(),
+            None
+        );
+        f.pickup(f.choice.weapon, Hand::Right);
+        f.activate();
+        let before = f.state.clone();
+        let meta = f.meta(f.actor);
+        let selected = CreatureWeaponUseChoice {
+            after_equipment: f.choice.after_equipment,
+            weapon: f.choice.weapon,
+            target: f.target,
+            grip: f.choice.grip,
+            ammunition: f.choice.ammunition,
+            equipment_change: f.choice.equipment_change,
+        };
+        let feature = if shot { "shortbow" } else { "scimitar" };
+        assert!(
+            attacks::begin_creature_weapon(&mut f.state, &meta, feature, &selected, &f.pack)
+                .is_err()
+        );
+        assert_eq!(f.state, before);
     }
 }
 

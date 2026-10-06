@@ -1,5 +1,37 @@
 # Gate 4 — Genuine Graze before owned Ground equipment
 
+## Root receipt of verified Goblin fixture correction — 2026-10-06
+
+Root remains sole writer. The incoming explicit V2 Goblin fixture correction
+at Ground1b8 passed the full256-test rules library, four source-anatomy tests,
+workspace formatting and strict rules all-target Clippy on Rust1.98.1 GNU.
+The positive scenario bodies stay unchanged; both genuine historical V1 weapon
+routes now prove atomic refusal without invented hand anatomy. Production,
+source content and immutable exports remain exact. Full CI/native acceptance
+is separate and stays open. The original failed b30 CI evidence is preserved.
+
+Normally receive these whole histories in order after committing this plan:
+- Whole head `7845239d8ed4b8929b22cb091ca0b4a0fdd07cf2`; permitted incoming entries: `crates/dmd-rules/src/tactical/attack_equipment_access_tests.rs`, `docs/exec-plans/active/gate4-ground-production.md`, `docs/exec-plans/active/gate4-ground-consequences.md`.
+
+These histories have multiple merge bases because prior parent corrections
+were received separately. Do not treat a single three-dot diff as a union proof.
+For each normal merge, compare every resulting Git entry with the pre-merge
+receiver. Source and Ground plan must be complete incoming blobs. The first
+static audit stopped before committing because the Consequences plan also
+contains this receiver's previously accepted final-controls history. Preserve
+that entire receiver document and prepend only the incoming correction section;
+prove that removing the exact new section returns the receiver's full bytes.
+Do not replace the whole document with the incoming version. The audited
+source merge was clean and unchanged; the initial whole-document expectation
+was too strict. The uncommitted merge was aborted normally before this plan
+correction. A newly inserted Windows-encoded dash is also corrected to UTF-8;
+all older plan bytes remain unchanged. Re-fetch the corrected incoming head.
+No source hunk adaptation is intended. Stop on unexpected conflicts or paths.
+This retains every receiver-specific positive, helper, guard and history. Record
+parents/tree and full entry evidence externally, then publish the reviewed
+clean head for its own CI. No earlier result transfers to the new receiving
+head. The full Gate4, native and original slice acceptance remains binding.
+
 ## Reviewed correction formatting freeze — 2026-10-06
 
 Root independently read the complete three-helper correction at
