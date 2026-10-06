@@ -466,7 +466,16 @@ async fn run(release_hand: bool) {
         }]
     );
     let mut forged = issued.clone();
-    let cut = resolution_mut(&mut forged)
+    let cut = forged
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
         .grapple
         .as_mut()
         .unwrap()
