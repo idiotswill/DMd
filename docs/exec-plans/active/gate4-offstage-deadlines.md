@@ -1,5 +1,59 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## October 6 preserved Active release diagnostic
+
+The exact clean candidate `8ce529b2f717118192b30c9e789f9bb9e217d046`, tree
+`8634c056b19041454dda4706212fbfa66bc04073`, completed the fresh focused run
+at 2026-10-06T06:18:49Z. Formatting and strict all-target Clippy passed;
+the reached Rust harnesses passed 20 + 4 + 4 + 17 + 56 cases and failed one:
+**101 passed, 1 failed, 324 unrun** of the frozen 426 identities. The full
+57-case tactical-turns harness failed only
+`release::dependency_scan_uses_actual_collective_setup_capacity_and_scene_authority`
+at its original assertion that the error contains `another active scene`.
+Its log SHA256 is
+`c355bed3e89492ad7b6916da86e33b8ee306413a083ec4f4f532e9c155cf307c`.
+Preserve the entire failed-run directory and target. No later command ran;
+the complete 31-case movement harness is already selected once among them.
+
+The case begins exact flow 7, concludes hostilities while remaining Active,
+installs a real defense-only absolute effect, and duplicates its retained
+actor into another Active scene. Public `release::encounter_release_preflight`
+currently derives `released_time::validation_for` before the detailed scan.
+`ReleasedValidation::derive` calls domain structural validation, whose
+`validate_scenes` rejects the duplicate Participant before
+`release::require_future_placement` can report the specific retained-dependency
+scene error. This cause is established from source; the failing log prints the
+assertion rather than the actual returned error. The extracted completion-history
+guard requires Finished phase and is not the cause here. The later capacity
+assertions were unreached; do not infer another failure or alter their path.
+
+Both earlier 9cd CI jobs stopped at tactical-movement with 30 passes and one
+failure after 49 completed harnesses; neither reached tactical-turns. Linux
+used synthetic `3ebf751b743d1540e13a075c5a7df3cd95f8d4ef` with the complete
+9cd tree; Windows used literal `9cd146837945dce504aeb7f6fc266f7f9de52673`.
+The current test and proof-before-scan ordering already existed at 9cd. This
+is preexisting source behavior newly observed at 8ce, not evidence of a new
+completion-history-guard regression. The unchanged historical flow-5 copy
+passed in the reached historical-release harness.
+
+Commit this plan before implementation. Root allocates one source writer for
+only the public preflight wrapper: when phase is Active and execution is exact
+flow 7, first run the existing `encounter_release_preflight_with_released` with
+`None`, then require the complete original `validation_for` before returning
+readiness. Preserve the original proof-first path for every other phase/version.
+The existing scan requires Active aftermath and no resolution, so no legitimate
+released-interval proof exemption applies. The mandatory full validation must
+still reject every structural or released-context defect before success.
+
+Keep all other callers, `retained_encounter_dependencies`, the proof constructor,
+history validation and actual flow-7 finish path unchanged. Do not catch errors,
+special-case scene/message text, weaken proof or permission, or edit any test.
+Retain all original 57 turn tests and all 426 selected bodies byte-exact.
+Freeze the minimal unformatted commit with full-tree and inverse-source audits
+for root's independent review. Root retains the sole heavy slot, formatting,
+fresh-head runtime/CI, publication and gate acceptance; this source correction
+does not claim a new pass or waive the outstanding native and gate obligations.
+
 ## October 6 preserved completion-history diagnostic
 
 Candidate `9cd146837945dce504aeb7f6fc266f7f9de52673` fails the existing
