@@ -412,7 +412,7 @@ async fn run(release_hand: bool) {
     assert_eq!(attack.origin.id, selected.command_id);
     assert_eq!(
         attack.admission,
-        TacticalAttackAdmission::Opportunity(window.clone())
+        TacticalAttackAdmission::Opportunity(Box::new(window.clone()))
     );
     assert_eq!(attack.weapon().unwrap().choice, glaive(weapon, mover));
     assert!(attack.weapon().unwrap().after_equipment_parent.is_none());
