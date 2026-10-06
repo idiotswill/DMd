@@ -1,5 +1,52 @@
 # Ground Graze corrected-parent receipt
 
+## October 6 receiving source freeze
+
+Plan `53f1d4fc3315399c8bb6d49488dc0575b435c420` preceded normal Consequences
+merge `b2add3c4e1c73ad6213cd752fa095928d0fc7b8c`, tree
+`5f320f43f4f72f532fa9196d5be8ae21bf3cc042`. Its second parent is complete
+reviewed `04b1fe515fad1e54ab4d0a2d9daecd1c87cc23ff`. The merge was conflict-free;
+all added/removed lines in its complete five-path delta equal the incoming
+ancestor-to-parent corrections. The receiver's Graze registration and prior
+Consequences status history remain intact in the two automatic unions.
+
+Normal Physical merge `decb73e45f9766509e136bf6d09d5e5dea6a9d6d`, tree
+`40546c59876de08c25e9758198372de7a07ee1cf`, then received complete reviewed
+`48f7c92b63bd2f9c586d2622d1875342f004b093` with the Consequences merge as its
+first parent. Its sole conflict was the receiver's equipment Decline/Apply
+retry block opposite an empty incoming side, before the common complete Shove
+retry test. Root reviewed the full conflict and approved removing only the
+three marker lines. The entire resolved frontend file equals original receiver
+blob `93727c363b8781a5834d9312fe7644bf8dd6262a`; no test input or body changed.
+The complete Physical receiving delta is the single physical-catalog filename
+in the exact distribution set and the two exact incoming plan histories. The
+receiver's Goblin and Ogre filenames remain in that set unchanged.
+
+The pure Git/source audit proves 637 tracked entries, with 628 exact to cfdc.
+The nine changed paths are four reviewed parent test corrections and five plans.
+All production and frontend blobs, the three formatted Graze helpers, the whole
+privacy case file, Graze scenario file and active Graze plan, and all ten installed
+content entries remain exact cfdc. Of 185 protected files, 181 remain exact and
+four contain only the approved incoming corrections. All 26 inline test modules
+and 950 of 951 original Rust test bodies remain exact. The sole body exception
+is the approved distribution control with exactly the added physical filename;
+its strict equality and every prior filename/assertion remain unchanged. Every
+working file matches its Git blob, preserving intentionally stored CRLF bytes.
+
+Merge audit `graze-decb73e-receiving-preservation-audit-2026-10-06.json` has
+SHA-256 `d18026c67324877aeccebb65bc2597d8ff5c580d3a6fbc776ee5d5799ee708e4`.
+The preserved full raw conflict has SHA-256
+`b4bebf27f908c75e55d3c7a56303ef5734c275b9a70c593815a67434ac428796`.
+This final documentation checkpoint changes only this receiving plan; a separate
+external final-head audit records its exact head/tree, full parent-relative
+patches and whole-tree blob classification.
+
+No formatter, compiler, project tests, runtime, database, npm, native application
+or push ran in this receipt. Static preservation does not establish acceptance.
+Root resumes sole ownership for independent review, publication and fresh
+head-specific checks. The Graze scenarios, prior actual failures, integrated
+canonical/CI/native obligations and remaining Gate 4 scope stay open.
+
 ## October 6 whole-parent receiving amendment
 
 Status: plan-first source integration, 2026-10-06. The sole writer starts from
