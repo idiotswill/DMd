@@ -83,10 +83,17 @@ pub(crate) fn apply_operation(
     let mut tactical_event = None;
     let mut mechanics = None;
     let message = match action {
+        TableOperation::AwardHeroicInspiration { character_id, reason } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration award requires original table history.".into());
+            }
+            super::inspiration::award(state, next, meta, *character_id, reason)?;
+            "Heroic Inspiration awarded.".into()
+        }
         TableOperation::EnableGrappleTransport => {
             if !execution.is_owned() { return Err("Ground drag activation requires original table history.".into()); }
             table_mut(next)?.grapple_access = Some(Box::new(super::grapple_access::activate_transport(state, meta)?));
-            "Ground drag is enabled for this table.".into()
+            "Dragging and Inspiration controls are enabled for this table.".into()
         }
         TableOperation::EnableGrappleAccess => {
             if !execution.is_owned() {

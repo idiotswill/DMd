@@ -707,15 +707,7 @@ fn apply(
             Ok(outcome)
         }
         RulesAction::GrantInspiration { actor, ruling } => {
-            adjudicate(rules, meta, ruling)?;
-            let e = entity_mut(rules, *actor)?;
-            if e.heroic_inspiration {
-                return Err(prerequisite(
-                    "Heroic Inspiration does not stack; designate another eligible recipient",
-                ));
-            }
-            e.heroic_inspiration = true;
-            Ok(RulesOutcome::Changed)
+            grant_inspiration(rules, meta, *actor, ruling)
         }
         RulesAction::CancelRoll { ruling } => {
             adjudicate(rules, meta, ruling)?;
@@ -1058,6 +1050,24 @@ fn apply(
             Ok(RulesOutcome::Changed)
         }
     }
+}
+
+/// Shared fixed grant; callers retain their own command-path admission guards.
+pub(crate) fn grant_inspiration(
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    ruling: &Ruling,
+) -> Result<RulesOutcome, RulesError> {
+    adjudicate(rules, meta, ruling)?;
+    let e = entity_mut(rules, actor)?;
+    if e.heroic_inspiration {
+        return Err(prerequisite(
+            "Heroic Inspiration does not stack; designate another eligible recipient",
+        ));
+    }
+    e.heroic_inspiration = true;
+    Ok(RulesOutcome::Changed)
 }
 
 fn adjudicate(

@@ -70,6 +70,7 @@ export interface TableView {
   transcript: { id: string; kind: string; speaker: string; text: string }[]; recap: string[];
 }
 export type TableAction =
+  | { AwardHeroicInspiration: { character_id: Id; reason: string } }
   | 'EnableGrappleAccess'
   | 'EnableGrappleTransport'
   | { UpdateContract: { contract: TableContract } } | { AddPlayer: { id: Id; name: string } }
@@ -150,7 +151,8 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
-  if (request.request.action === 'EnableGrappleTransport') return 'Enable ground drag for this table';
+  if (request.request.action === 'EnableGrappleTransport') return 'Enable dragging and Inspiration for this table';
+  if (typeof request.request.action === 'object' && 'AwardHeroicInspiration' in request.request.action) return 'Award Heroic Inspiration';
   if (request.request.action === 'EnableGrappleAccess') return 'Enable Grapple for this table';
   if (typeof request.request.action === 'object' && 'EnableSourceActorAccess' in request.request.action) return 'Enable source creature control';
   if (typeof request.request.action === 'object' && 'SetSourceCreatureController' in request.request.action) return 'Assign source creature control';
@@ -162,7 +164,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
 export const tableApi = {
   sourceControlOptions: (request: { campaign_id: Id; channel: LocalChannel; revision: Id }) => invoke<SourceControlOptions>('desktop_source_control_options', { request }),
   creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),
-  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null }>('desktop_roll_options', { request }),
+  rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null; heroic_inspiration?: boolean }>('desktop_roll_options', { request }),
   defaults: () => invoke<TableContract>('desktop_default_contract'),
   list: () => invoke<{ id: Id; name: string }[]>('desktop_list_campaigns'),
   create: (request: { id: Id; name: string; contract: TableContract }) => invoke<TableView>('desktop_create_campaign', { request }),

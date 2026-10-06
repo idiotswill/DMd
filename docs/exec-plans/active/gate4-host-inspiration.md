@@ -1,6 +1,6 @@
 # Gate 4 — Genuine Host Inspiration award and physical reroll
 
-Status: **APPROVED FIRST-AWARD DESIGN; SOURCE IMPLEMENTATION STARTING**.
+Status: **SOURCE AUTHORED; ADDITIVE APP VERIFICATION CASES IN PROGRESS; UNRUN**.
 Date: 2026-10-06. Sole source writer: private_grapple_oct6, allocated by root.
 Branch: `codex/gate4-host-inspiration`; checkout: `gate4-host-inspiration`.
 Root-created clean base: `2b1ea17f36bce457375909a50bc6aaa0606d4430`, tree
@@ -142,6 +142,24 @@ canonical verification and exact-head CI require explicit recorded results.
 Native physical original/replacement dice and save/exit/reopen remain required.
 No prior sibling/parent pass certifies this branch.
 
+## Source checkpoint and whole dependency receipt
+
+The typed Host award, strict outer ruling provenance join, optional v4 owned
+roll availability, ordinary physical replacement controls and seven additive
+frontend cases are authored. The original kernel grant operation order and
+guards remain intact. No compiler, formatter or runtime has run on this branch;
+these are implementation changes, not acceptance evidence. Genuine application
+award/save/Escape, hostile recovery and retry/privacy cases are the next slice.
+
+Root authorized normal whole receipt of the held formatting-only successor
+`eeeed2c11c45a2654d46dd306061aab9d8290a2d`, tree
+`a310630b7d0401cc343dd6203461655fa511b4ec`, at this coherent source checkpoint.
+It descends from the original received base. Inspect the whole incoming delta,
+preserve this branch's award semantics and original controls, and report any
+substantive conflict before resolving it. Its direct-format evidence does not
+verify this branch. The known held dead-target offer correction is a separate
+future whole successor and is not being implemented here.
+
 ## Scheduling and next action
 
 Root owns the sole heavy slot. This allocation permits source/new-test/docs work
@@ -149,6 +167,6 @@ only after the concrete received head is supplied and this plan is committed.
 No formatter/compiler/Cargo/tests/npm/database/native/push is allocated here.
 Preserve failed logs and obsolete unrun preparations. Do not create redundant
 planning checkpoints: record a new decision only when actual scope/source facts
-change. Next: record the supplied exact head/tree, commit this plan, implement
-the bounded producer and real tests, and return an unformatted clean source
-freeze with full protection audit for root's independent review.
+change. Next: receive the complete formatting successor at this clean source
+checkpoint, add genuine producer and reroll application cases, then return a
+clean source freeze with full protection audit for root's independent review.

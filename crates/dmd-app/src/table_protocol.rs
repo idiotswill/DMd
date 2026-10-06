@@ -9,6 +9,7 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    AwardHeroicInspiration { character_id: CharacterId, reason: String },
     EnableGrappleAccess,
     EnableGrappleTransport,
     UpdateContract {

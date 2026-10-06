@@ -6,6 +6,7 @@ mod validation;
 pub use definitions::*;
 use dmd_domain::*;
 pub(crate) use engine::{apply_table_with_context, interrupt_rest, query_with_read};
+pub(crate) use engine::grant_inspiration;
 pub use engine::{query, replay, resolve};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
