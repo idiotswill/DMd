@@ -5,8 +5,10 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-Current accepted main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50.
-The Air source is accepted; separate literal32 runtime checks remain pending.
+Current fetched main is `5afc992e62bb967aceec69db53f19b6347b70855` after PR51.
+Air source admission and source-bound Shove are merged. PR52's actual native391
+deadline and five cold checkpoints now pass; its [evidence record](../../checkpoints/gate4-expiry-native-2026-10-06.md)
+keeps final checks/merge and the broader Gate4 obligations open.
 The [release plan](gate4-encounter-release.md) records PR48's separate successful
 literal-main checks. All remaining Gate4 obligations below stay open.
 
