@@ -9,14 +9,16 @@ fn pack() -> TacticalDefinitions {
 #[test]
 fn gear_counts_are_canonical_and_never_add_a_field_to_old_sources() {
     use dmd_rules::tactical_creatures::{
-        creature_definition_fingerprint, immutable_creature_sources,
+        creature_definition_fingerprint, creature_source_pin, immutable_creature_sources,
     };
     // Keep every old omitted-field expectation; Ogre's count-bearing immutable
     // source has its own additive controls in tactical_ogre_source.
+    let mage_pin = creature_source_pin(bundled_mage_v2().unwrap()).unwrap();
     let originals: Vec<_> = immutable_creature_sources()
         .unwrap()
         .into_iter()
         .filter(|source| source.id != "ogre")
+        .filter(|source| creature_source_pin(source).unwrap() != mage_pin)
         .collect();
     assert_eq!(originals.len(), 12);
     for source in originals {

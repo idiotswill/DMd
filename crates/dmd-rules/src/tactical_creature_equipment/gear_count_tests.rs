@@ -127,11 +127,13 @@ fn repeated_generated_requirements_keep_one_original_stack() {
 
 #[test]
 fn every_immutable_source_keeps_its_original_ordered_allocations() {
-    // Ogre's new allocation is tested separately; retain every original vector.
+    // Added revisions have separate controls; retain every original vector.
+    let mage_pin = creature_source_pin(bundled_mage_v2().unwrap()).unwrap();
     let sources: Vec<_> = immutable_creature_sources()
         .unwrap()
         .into_iter()
         .filter(|source| source.id != "ogre")
+        .filter(|source| creature_source_pin(source).unwrap() != mage_pin)
         .collect();
     assert_eq!(sources.len(), 12);
     for source in sources {

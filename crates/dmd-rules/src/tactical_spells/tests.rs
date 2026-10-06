@@ -1,5 +1,6 @@
 use super::*;
 mod binding_tests;
+mod mage_revision;
 
 fn fixture(
     spell_id: &str,
