@@ -398,12 +398,21 @@ physical Dexterity save fails. Finish the paid equipment cut either unchanged
 or by equipping its original Wand in the right hand. Assert exact current
 source/anatomy/accepted-command provenance and refusal of equipment in the
 reserved hand. On the Mage's next turn, cast actual Mage Armor using respectively
-the accessible specified material or the held focus (which shares S/M), while
-the grip remains live. Reject the opposite unavailable material route and a
-wrong player without changing any destination rows. Continue through the
+the accessible specified material while the grip remains live, or after first
+releasing the grip when the other hand holds the Wand. Reject a Wand-as-focus
+substitution: the exact Mage source supplies no physical focus grant. In the
+Wand-held case, assert that the reserved/free-hand distinction blocks specified
+material access until release. Reject a wrong player without changing any
+destination rows. Continue through the
 existing cold/portable/exact-retry helper at every gameplay cut; release the
 actual grip afterward and preserve source and physical item identities.
 
 These two cases are additive. Do not change the old-Mage assertion or an old
 fixture/helper to make them pass. S-only Shield reservation/release, two-grip
 limits, the other physical/source scenarios and native equivalents remain due.
+
+Source inspection corrected the initial focus-positive design before authoring
+tests: tactical_spells/binding.rs explicitly rejects substitute components
+without a source-backed physical grant; the immutable Mage plan forbids adding
+a focus waiver. Mere Wand gear supplies no grant. Test this current boundary
+and lawful specified-material behavior; do not invent a positive focus receipt.
