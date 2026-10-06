@@ -62,6 +62,35 @@ heavy scheduling: no formatter, compiler, Cargo, npm, test/runtime, SQLite/nativ
 publication or push without a separate root allocation. Offstage verification and
 the requested native installer currently precede this branch in that schedule.
 
+### Approved omitted-field constructor migration
+
+Before production edits, root explicitly authorizes the normal Rust constructor
+migration required by the reviewed new optional transport fields. Add only
+`transport: None` to old struct literals; preserve every prior expression,
+assertion, name and order. The absent field remains omitted from old serialized
+images. This is type evolution, not a weakened expected outcome or new authority.
+Perform an inverse-byte audit against the exact received baseline, independently
+of future runtime verification. No such constructor edit has been made yet.
+
+The current source inventory contains eight literals in five files:
+
+| File | Existing test/helper |
+| --- | --- |
+| `crates/dmd-domain/tests/tactical_grapple_records.rs` | helper `context`; tests `empty_and_unknown_record_shapes_fail_without_changing_absent_resolution_json`, `contextual_interim_automatic_shape_needs_matching_failed_work_or_withdrawal`, `equipment_decision_is_owned_by_its_actual_after_work_and_cannot_be_reused` |
+| `crates/dmd-rules/tests/tactical_movement.rs` | `initiative_cannot_smuggle_a_structurally_coherent_movement_receipt` |
+| `crates/dmd-rules/tests/tactical_grapple_sources.rs` | `source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection` |
+| `crates/dmd-rules/src/tactical_hands/tests.rs` | helper `install_attempt` |
+| `crates/dmd-app/src/table_tactical_choices.rs` | `guarded_grapple_work_and_attachments_have_no_continuation_projection` |
+
+Seven construct TacticalGrappleResolution and one constructs TacticalMovementResult.
+These are six test bodies and two helpers. Report any additional required literal
+found after whole-history receipt before expanding this exact inventory.
+
+Root has identified public successor
+`2aa9c597b7c73b8b3a34a024e258ab887d5a9bc9`, tree
+`b5541197f6e82e2d2b92a8843ff447b578b58816`, for independent review. It is not yet
+received and production edits still await root's explicit review-clear handback.
+
 ## Product, checkpoint and architecture traceability
 
 Binding references: root AGENTS; [product definition](../../product-definition.md);
