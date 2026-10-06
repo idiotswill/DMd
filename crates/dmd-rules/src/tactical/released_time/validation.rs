@@ -8,6 +8,7 @@ pub(crate) struct ReleasedValidation<'a> {
 }
 impl<'a> ReleasedValidation<'a> {
     pub(super) fn derive(state: &'a CampaignState) -> Result<Self, RulesError> {
+        super::super::release::require_completion_history(state)?;
         if !state.validate().is_empty() {
             return Err(invalid("released candidate is structurally invalid"));
         }

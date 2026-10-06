@@ -525,16 +525,9 @@ pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
 
 /// New completion attachments remain checked before the inactive/no-flow early
 /// returns. No historical flow without such an attachment gains an exception.
-pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
-    let proof = super::released_time::validation_for(state)?;
-    validate_history_with_released(state, proof.as_ref())
-}
-pub(super) fn validate_history_with_released(
-    state: &CampaignState,
-    released: Option<&super::released_time::ReleasedValidation<'_>>,
-) -> Result<(), RulesError> {
-    let Some(history) = &state.encounter_history else {
-        if state
+pub(super) fn require_completion_history(state: &CampaignState) -> Result<(), RulesError> {
+    if state.encounter_history.is_none()
+        && state
             .encounter
             .as_ref()
             .and_then(|encounter| encounter.flow.as_ref())
@@ -543,11 +536,24 @@ pub(super) fn validate_history_with_released(
                     .is_some_and(TacticalExecutionVersion::supports_release)
                     && flow.phase == TacticalPhase::Finished
             })
-        {
-            return Err(invalid(
-                "Finished encounter lacks authenticated completion history",
-            ));
-        }
+    {
+        return Err(invalid(
+            "Finished encounter lacks authenticated completion history",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
+    let proof = super::released_time::validation_for(state)?;
+    validate_history_with_released(state, proof.as_ref())
+}
+pub(super) fn validate_history_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
+    require_completion_history(state)?;
+    let Some(history) = &state.encounter_history else {
         return Ok(());
     };
     history.validate(state).map_err(|error| invalid(&error))?;
