@@ -336,3 +336,55 @@ The earlier parent-union preservation audit is SHA256
 No compiler or runtime ran. Next: record the complete normal Graze receipt,
 then receive whole Mage db1beaa and inspect the actual additive conflicts and
 genuine historical-Mage fixture migration before publishing a coherent draft.
+
+## Historical Mage fixture implementation allocation
+
+The whole Mage db1beaa merge is open onto clean Graze receipt eacb5ce. Root
+reviewed the actual four additive conflicts and retained both content payloads,
+both NOTICE paragraphs, the complete Physical package test and Mage registration.
+The canonical manifest now includes ten payloads. Before modifying the named
+old-Mage fixture call, add a dedicated support module implementing
+`Fixture::with_original_mage`. It reads the unchanged Shield-selected export,
+restores it through `restore_campaign`, derives the old actor/session from that
+history, and follows the dependency's actual Shield, execution upgrade, EndTurn,
+ConcludeHostilities and FinishEncounter continuation. End the old session through
+the table command, then create two ordinary new player characters and equipment,
+inspect source control through presented options, assign the old Mage to Host,
+prepare the courtyard and submit ordinary physical initiative rolls. Preserve
+the old profile and original journal prefix explicitly. No state image, source
+pin, accepted event or SQL row is manufactured or edited.
+
+Only the named test's constructor expression and the new module registration
+may change in the existing public test file. Its gameplay and assertions remain
+byte-exact after inverse replacement. The new helper's initial Shield commands
+use normal submitted transport; the original test's existing cold/portable
+activation, grip and next-turn continuations then exercise the complete retained
+history. Runtime remains unverified until allocated after source review.
+
+Inspection of the actual unchanged capture confirms SourceActorsV1 was already
+enabled by its original event11. The helper must assert that the presented
+options remain enabled/settled and that the original access record is unchanged;
+do not issue a duplicate enable command. Its Medium V1 profile is also asserted.
+Root allocates direct Rustfmt/check on the new support module only; no compiler
+or runtime allocation and no reformatting of the historical test file.
+
+The historical helper is authored and its direct formatting/check passed. Root
+read its full formatted source and every automatic Mage receiving delta. The
+source audit proves 678 of 686 parent-union paths equal a complete parent (with
+normal text checkout line endings). The eight composed paths are the four
+reviewed conflicts, installed-content loader, exact ten-payload distribution
+test, constructor migration and this plan. All 30 byte-sensitive content/raw
+capture paths retain exact parent bytes. The loader contains only the exact
+incoming Mage validation block beyond the Graze parent, and the entire old
+public test file returns to its parent after inverse removal of the three-line
+module registration and one constructor replacement. Manifest lengths/checksums
+verify all ten complete payloads. Audit SHA256
+bc60e92128843f91a2530e5303dfe9018fb818a0b26656c280619bb6c5d34c8d.
+
+Root allocates publishing this coherent union as a draft against public Grapple
+so exact combined compilation/regressions can run in CI while local Offstage
+verification retains the heavy slot. This is dependency/source integration,
+not acceptance of the still-unwritten positive combinations listed above.
+Do not merge until full review, combined runtime/native evidence and all slice
+acceptance are complete. Next: inspect actual combined-head CI output, fix any
+concrete receiving defect without weakening tests, then author those positives.

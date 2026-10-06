@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 5207,
+      "byte_len": 6106,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "62bd7cc0559e9a04"
+        "value": "7a7344ee097a0ee0"
       }
     },
     {
@@ -77,6 +77,14 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "fbd9e806fb626bc4"
+      }
+    },
+    {
+      "path": "mage-v2.json",
+      "byte_len": 3287,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "37ecf4043c2c86d0"
       }
     }
   ]

@@ -14,6 +14,7 @@ pub const AIR_ELEMENTAL_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/air-elemental-v1.json");
 pub const GOBLIN_WARRIOR_V2_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/goblin-warrior-v2.json");
+pub const MAGE_V2_SOURCE_JSON: &str = include_str!("../../../content/srd-5.2.1/mage-v2.json");
 pub const OGRE_SOURCE_JSON: &str = include_str!("../../../content/srd-5.2.1/ogre-v1.json");
 
 /// Immutable source representation only. Creation remains closed until the
@@ -53,6 +54,31 @@ pub fn bundled_goblin_warrior_v2() -> Result<&'static CreatureDefinition, Defini
             ensure(
                 source == expected,
                 "Goblin revision changed more than reviewed anatomy",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
+
+/// Bounded ordinary-body engineering interpretation for this revision only.
+/// Page305 does not state a hand count; every original source clause stays exact.
+pub fn bundled_mage_v2() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(MAGE_V2_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Mage V2 JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            let mut expected = legacy
+                .creature("mage")
+                .ok_or_else(|| DefinitionError("frozen Mage source is absent".into()))?
+                .clone();
+            expected.ordinary_hands = Some(dmd_domain::OrdinaryHandAnatomy::TwoHandsV1);
+            ensure(
+                source == expected,
+                "Mage revision changed more than reviewed anatomy",
             )?;
             source.validate(legacy)?;
             Ok(source)

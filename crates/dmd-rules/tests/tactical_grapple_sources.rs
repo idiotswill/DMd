@@ -61,9 +61,17 @@ fn immutable_goblin_revision_changes_only_the_reviewed_typed_anatomy() {
             .count(),
         1
     );
+    let mage_pin = creature_source_pin(bundled_mage_v2().unwrap()).unwrap();
+    assert_eq!(
+        current
+            .iter()
+            .filter(|source| creature_source_pin(source).unwrap() == mage_pin)
+            .count(),
+        1
+    );
     for source in &current {
         let pin = creature_source_pin(source).unwrap();
-        if pin == new_pin || pin == ogre_pin {
+        if pin == new_pin || pin == ogre_pin || pin == mage_pin {
             assert_eq!(source.ordinary_hands, Some(OrdinaryHandAnatomy::TwoHandsV1));
         } else {
             assert!(source.ordinary_hands.is_none());

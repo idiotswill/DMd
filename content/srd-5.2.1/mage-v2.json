@@ -1,0 +1,167 @@
+{
+  "id": "mage",
+  "name": "Mage",
+  "statistics": {
+    "size": "Medium",
+    "allowed_sizes": [
+      "Medium",
+      "Small"
+    ],
+    "creature_type": "Humanoid",
+    "creature_tags": [
+      "Wizard"
+    ],
+    "alignment": "Neutral",
+    "armor_class": 15,
+    "prepared_defense": {
+      "spell_id": "mage-armor"
+    },
+    "hit_points": 81,
+    "hit_point_formula": {
+      "dice": [
+        {
+          "count": 18,
+          "sides": 8
+        }
+      ],
+      "fixed": 0
+    },
+    "ability_scores": [
+      9,
+      14,
+      11,
+      17,
+      12,
+      11
+    ],
+    "saving_throw_modifiers": [
+      -1,
+      2,
+      0,
+      6,
+      4,
+      0
+    ],
+    "initiative_modifier": 2,
+    "proficiency_bonus": 3,
+    "challenge_rating": "6",
+    "experience_points": 2300,
+    "speeds": {
+      "walk": 30,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0,
+      "hover": false
+    },
+    "skills": [
+      {
+        "skill": "Arcana",
+        "modifier": 6
+      },
+      {
+        "skill": "History",
+        "modifier": 6
+      },
+      {
+        "skill": "Perception",
+        "modifier": 4
+      }
+    ],
+    "senses": {
+      "blindsight": 0,
+      "darkvision": 0,
+      "tremorsense": 0,
+      "truesight": 0,
+      "passive_perception": 14
+    },
+    "damage_resistances": [],
+    "damage_vulnerabilities": [],
+    "damage_immunities": [],
+    "condition_immunities": [],
+    "exhaustion_immune": false,
+    "languages": [
+      "Common"
+    ],
+    "additional_languages": 3,
+    "can_speak": true,
+    "gear": [
+      "wand"
+    ]
+  },
+  "traits": [],
+  "features": [
+    {
+      "id": "spellcasting",
+      "name": "Spellcasting",
+      "activation": "Action",
+      "feature": {
+        "Spellcasting": {
+          "ability": "Intelligence",
+          "save_dc": 14,
+          "attack_bonus": null,
+          "spells": [
+            {
+              "spell_id": "mage-armor",
+              "cast_level": 1,
+              "uses_per_long_rest": null
+            }
+          ]
+        }
+      },
+      "source_page": 305
+    },
+    {
+      "id": "protective-magic",
+      "name": "Protective Magic",
+      "activation": "Reaction",
+      "feature": {
+        "Spellcasting": {
+          "ability": "Intelligence",
+          "save_dc": 14,
+          "attack_bonus": null,
+          "spells": [
+            {
+              "spell_id": "counterspell",
+              "cast_level": 3,
+              "uses_per_long_rest": null
+            },
+            {
+              "spell_id": "shield",
+              "cast_level": 1,
+              "uses_per_long_rest": null
+            }
+          ]
+        }
+      },
+      "source_page": 305,
+      "usage": {
+        "PerLongRest": {
+          "uses": 3
+        }
+      }
+    }
+  ],
+  "legendary_budget": null,
+  "coverage": {
+    "SelectedFeatures": {
+      "omitted": [
+        "multiattack",
+        "arcane-burst",
+        "spellcasting-detect-magic",
+        "spellcasting-light",
+        "spellcasting-mage-hand",
+        "spellcasting-prestidigitation",
+        "spellcasting-fireball",
+        "spellcasting-invisibility",
+        "spellcasting-cone-of-cold",
+        "spellcasting-fly",
+        "misty-step"
+      ]
+    }
+  },
+  "source_pages": [
+    305
+  ],
+  "ordinary_hands": "TwoHandsV1"
+}

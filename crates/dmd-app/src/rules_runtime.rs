@@ -295,6 +295,19 @@ pub(crate) fn load_rules_pack(
         return Err(RunnableCampaignError::RulesContent(
             "Goblin Warrior V2 source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
     }
+    let mage = installed.manifest.files.iter().find(|file| file.path == "mage-v2.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent(
+            "Mage V2 source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let mage_bytes = fs::read(base.join("mage-v2.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent(
+            "Mage V2 source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if mage_bytes.len() as u64 != mage.byte_len
+        || fnv1a64_hex(&mage_bytes) != mage.checksum.value
+        || mage_bytes != include_bytes!("../../../content/srd-5.2.1/mage-v2.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Mage V2 source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
+    }
     let ogre = installed.manifest.files.iter().find(|file| file.path == "ogre-v1.json")
         .ok_or_else(|| RunnableCampaignError::RulesContent(
             "Ogre source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;

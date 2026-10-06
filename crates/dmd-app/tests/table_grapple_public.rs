@@ -75,6 +75,9 @@ async fn hostile_destination(export: &CampaignExport) {
 #[path = "support/sqlite_test_cleanup.rs"]
 mod cleanup;
 
+#[path = "support/grapple_original_mage.rs"]
+mod original_mage;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -1754,7 +1757,7 @@ async fn player_owned_goblin_genuine_save_and_after_equipment_retry_survive_cont
 
 #[tokio::test]
 async fn current_old_mage_accepts_incoming_pc_grip_but_never_gains_a_grappling_anatomy_grant() {
-    let mut f = Box::pin(Fixture::with_source("mage", CreatureSize::Medium)).await;
+    let mut f = Box::pin(Fixture::with_original_mage()).await;
     Box::pin(f.activate()).await;
     Box::pin(f.establish_pc_grip()).await;
     let pc = f.pc(0);
