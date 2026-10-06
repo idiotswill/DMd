@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **PLAN FIRST; NO PRODUCTION EDITS OR LOCAL VERIFICATION**.
+Status: **REVIEWED PUBLIC CORRECTIONS RECEIVED; SOURCE IMPLEMENTATION STARTING**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -90,6 +90,16 @@ Root has identified public successor
 `2aa9c597b7c73b8b3a34a024e258ab887d5a9bc9`, tree
 `b5541197f6e82e2d2b92a8843ff447b578b58816`, for independent review. It is not yet
 received and production edits still await root's explicit review-clear handback.
+
+Root completed the independent full correction/inverse audit and authorized whole
+receipt. Normal merge `35dcee92fc62b6121b5efc3931adca19005bc2f4`, tree
+`5e06b94e35be783930f7c9a3792449416aa15868`, received exact2aa without conflicts
+or manual adaptation. All620 incoming Git entries match2aa and both held-plan
+documents match prior237d920. The independent receiving audit SHA256 is
+`028c697e52faf18f0de9a88eb1cf021212e0d0ff0bf8fb9f03ec888b95c315b7`.
+The prior waiting restriction above is now satisfied. Root also confirmed the
+continuous-support peer review clear. Source/new-test implementation is allocated;
+heavy execution and publication remain prohibited until root schedules them.
 
 ## Product, checkpoint and architecture traceability
 
@@ -225,7 +235,8 @@ original action/authentication joins; hidden-view changes; exact source dependen
 intake. The public baseline's current type/frontend failures remain prerequisites,
 not failures attributed to this unimplemented feature.
 
-**Exact next action:** commit this plan first, report its immutable head to root,
-and continue read-only source exploration. Await root's reviewed public correction
-head; normally receive its complete history and audit the union before production
-edits. The source writer remains ci_oct6; no other checkout is writable here.
+**Exact next action:** implement the coherent domain/geometry/rules/transport/
+desktop/recovery slice from the reviewed receiving source, preserve the exact
+baseline bodies under the approved None-only migration, and freeze for review.
+Do not run formatter/compiler/tests/database/native tools without root's slot.
+The source writer remains ci_oct6; no other checkout is writable here.
