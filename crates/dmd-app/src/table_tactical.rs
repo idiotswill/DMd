@@ -1,5 +1,6 @@
 //! Session-bound encounter setup and viewer-specific presentation.
 use dmd_domain::*;
+use dmd_rules::RulesPack;
 use dmd_rules::tactical::*;
 
 #[path = "table_areas.rs"]

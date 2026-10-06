@@ -1,6 +1,7 @@
 //! Current full-pin creation and original-event replay, with malformed input controls.
 use super::*;
 use crate::{TableAction, TableEvent, TableOutcome, table_engine};
+use dmd_rules::RulesPack;
 
 fn fixture() -> (CampaignState, CommandMeta, RulesPack) {
     let mut state = CampaignState::empty(
