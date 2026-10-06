@@ -53,3 +53,10 @@ evidence are pending. Original public 4d8 Linux CI has now finished with 21/25
 public cases passing and four failures (two opportunity ancestry, three-ray
 source option, Chimera pending roll). These require diagnosis on their originating
 branch and a normal whole receipt here; no test assertion is waived.
+
+The first 3f8 CI compile run found a missing boxed Opportunity constructor and
+an out-of-scope private mutation helper in this new module. The boxed shape was
+corrected after source review in fdfd650. Replace the unavailable helper call
+with an explicit mutable borrow of the same forged negative-control resolution;
+retain the forged-window assertion and all positive inputs. The ensuing type
+diagnostic is dependent on that missing helper. No runtime results yet.
