@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **COHERENT FORMATTED SOURCE FROZEN; COMPILER AND ALL NEW TESTS UNRUN**.
+Status: **FORMATTED LIVING-TARGET SUCCESSOR FROZEN; ALL23 NEW CASES UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -315,3 +315,90 @@ occurred. Static preservation report
 The full formatting patch and token-delta inventory are preserved externally.
 These checks establish formatting/source preservation only. Compiler, all22 new
 cases, all retained suites and native/CI acceptance remain UNRUN on this head.
+
+### Reviewed living-target admission correction, plan before source
+
+Root identified and allocated the bounded follow-up from formatted eeeed2c.
+`grapple/transport.rs::choices` currently filters only outgoing holder identity;
+`admit` checks owner, current turn and horizontal mode but not target vitality.
+The existing `spatial/movement.rs::evaluate_coupled_ground` rejects a dead target
+only after a movement has already been admitted, producing a zero-step stopped
+event. Target death intentionally need not end the grip. Filter offers by the
+actual current rules entity's `death.dead`, and require that same living target
+at typed admission before any movement resolution is created. Preserve grips,
+release, existing death behavior and all geometry/continuation predicates.
+
+Add one genuine application regression in the new ground-transport test module.
+Use the unchanged original Fixture, actual accepted grip, normal turn cycling,
+owned prepared Dagger, physical critical20 plus two4 damage faces and NormalDamage
+to kill the real10HP Goblin Warrior. No HP/death/source/proof edits are allowed.
+Enable transport on that settled actual history; verify no ground-drag offer,
+unchanged live relation and available release. Reconstruct a test-only owned
+CampaignExecution from that exact export's original anchor and typed TableEvents
+using existing public replay APIs and expected nested children. Require complete
+state equality, then assert direct MoveGrappled rejects with the living-target
+prerequisite and leaves the owner unchanged. This is separate from opaque/raw
+transport refusal, which cannot by itself exercise inner admission. Preserve
+all durable rows across rejected transport; cold release must still retire the
+actual grip and replay identically. Keep all original test bodies exact.
+
+This adds source and one UNRUN test only. The prior43-file formatter allocation
+is finished; no further formatting/compiler/runtime is allocated for this fix.
+
+Source result: exactly14 production lines implement the living-target prerequisite
+and offer filter; reversing those two additions recovers the complete formatted
+transport module byte for byte. The new regression and its bounded original-event
+replay helper append127 lines without altering any of the existing22 new cases or
+919 original Rust test bodies. All625 other Git entries remain exact relative to
+eeeed2c (only production transport, its new test module and this plan differ).
+Static audit `tooling/ci-oct6/held-eeeed2c-dead-target-correction-audit.json`, SHA256
+`bc3519a3d290e747deff40870ed7c05b753bc6c388470da3c9074aac21984986`.
+The new regression is UNRUN, bringing this slice to23 new cases (18 Rust,5 desktop).
+No compiler, additional formatter, tests or database/native runtime was invoked.
+Root review, scheduled formatting/verification and publication remain outstanding.
+
+### Living-target correction formatter allocation, plan before formatting
+
+Root fully read the complete56ac885 production/test/plan diff and cleared its
+source. Root now allocates one direct workspace Rustfmt pass, followed by the
+same bounded check, on exactly `crates/dmd-rules/src/tactical/grapple/transport.rs`
+and `crates/dmd-app/tests/support/table_grapple_ground_transport.rs`, using
+`--edition 2024 --config skip_children=true`. Record complete commands/results,
+inspect formatting punctuation and compare preserved literal/test tokens.
+Freeze the coherent result for root's final review. No Cargo, compiler, tests,
+npm, database or native execution is allocated; all23 new cases remain UNRUN.
+Prepare an external draft PR description against the complete public Grapple
+branch at4d8, accurately preserving the ground-only partial scope and outstanding
+carry/multiple-target and verification requirements. Root owns push/PR creation.
+
+The allocated two-file Rustfmt and bounded check both returned0 with no output.
+Production transport bytes were already formatted and remain exact; only the
+appended test/helper changed layout. Full diff and token review preserve every
+literal, comment, operator and semicolon, with only trailing commas and transparent
+match-expression blocks. The original22 new cases, all919 old Rust test bodies
+and every other source file remain exact relative to the reviewed56ac885 source.
+Command report `tooling/ci-oct6/held-1eb5bdb-two-file-format.json`, SHA256
+`c64b6dc1430d12f310d1f1cb23de1adccb72a33715c00dacfb0d2d64c7ee36ba`;
+preservation report `tooling/ci-oct6/held-1eb5bdb-format-preservation.json`, SHA256
+`fa2b7d864ed474b16ae46257b797f02949467ab70c6355b97c4e860ed1bd6aaf`.
+No compiler, tests, npm, database or native execution occurred. Root must review
+the exact final diff and publish the draft, then schedule compiler/runtime and
+complete the outstanding acceptance matrix before any merge or Gate4 claim.
+
+### First exact-head CI correction — 2026-10-06
+
+Root takes sole write ownership after the author stopped on an account usage
+limit; no other writer remains active. Draft PR68 was opened at
+74a121f533d733148c591f114004e98f1151c73e against public4d8. Both MSRV jobs and
+the architecture/genericity guards pass. Linux fast verification and native
+Windows all-target checking pass, but strict Clippy fails on the nested movement
+receipt condition in `dmd-domain/src/tactical_grapples/transport.rs:195`.
+Root read the actual Linux112172602155 and Windows112172603149 logs. They report
+the same `collapsible_if` error; runtime tests did not execute in either job.
+
+Before source changes: combine the existing Some(movement) pattern with the
+parenthesized complete mismatch predicate in a let-chain. Preserve every field,
+receipt comparison, branch and error. Do not add lint allowances or alter tests.
+Allocate only a direct one-file Rustfmt/check after review. Preserve the first
+failed logs, publish the small correction and require new exact-head checks.
+All acceptance and local heavy/native scheduling requirements remain unchanged.

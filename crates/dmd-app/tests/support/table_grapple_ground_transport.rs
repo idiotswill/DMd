@@ -810,3 +810,248 @@ async fn ground_drag_activation_is_host_only_settled_and_replayed_from_its_origi
     Box::pin(reject_state_image(&f, forged)).await;
     f.close().await;
 }
+
+// Replay this test's actual accepted producer history into the public owned
+// rules API. This is not a saved-state admission hook or a replacement authority.
+fn replay_ground_fixture(export: &CampaignExport) -> dmd_rules::table::CampaignExecution {
+    use dmd_rules::table::{CampaignExecution, ExpectedNested, TableOperation};
+    let first = export
+        .snapshots
+        .iter()
+        .min_by_key(|s| s.event_sequence)
+        .unwrap();
+    let anchor = CampaignState::decode_json(&first.state_json).unwrap();
+    let pack =
+        dmd_rules::RulesPack::from_json(include_str!("../../../../content/srd-5.2.1/kernel.json"))
+            .unwrap();
+    let mut owner = CampaignExecution::from_original_anchor(anchor, pack).unwrap();
+    for row in export
+        .event_journal
+        .iter()
+        .filter(|row| row.sequence > first.event_sequence)
+    {
+        let event: TableEvent = serde_json::from_str(&row.payload_json).unwrap();
+        let operation = match event.action.clone() {
+            TableAction::AddPlayer { id, name } => TableOperation::AddPlayer { id, name },
+            TableAction::CreateCharacter {
+                character_id,
+                entity_id,
+                player_id,
+                input,
+            } => TableOperation::CreateCharacter {
+                character_id,
+                entity_id,
+                player_id,
+                input,
+            },
+            TableAction::PrepareEquipment {
+                character_id,
+                item_ids,
+            } => TableOperation::PrepareEquipment {
+                character_id,
+                item_ids,
+            },
+            TableAction::CreateCreature { creation } => TableOperation::CreateCreature { creation },
+            TableAction::EnableSourceActorAccess { adopted } => {
+                TableOperation::EnableSourceActorAccess { adopted }
+            }
+            TableAction::SetSourceCreatureController { actor, controller } => {
+                TableOperation::SetSourceCreatureController { actor, controller }
+            }
+            TableAction::StartSession {
+                id,
+                name,
+                participants,
+            } => TableOperation::StartSession {
+                id,
+                name,
+                participants,
+            },
+            TableAction::PrepareBattlefield { setup } => {
+                TableOperation::PrepareBattlefield { setup }
+            }
+            TableAction::Tactical { action } => TableOperation::Tactical { action },
+            TableAction::EnableGrappleAccess => TableOperation::EnableGrappleAccess,
+            TableAction::EnableGrappleTransport => TableOperation::EnableGrappleTransport,
+            other => panic!("unexpected operation in genuine ground fixture: {other:?}"),
+        };
+        assert_eq!(
+            event.meta.expected_event_sequence,
+            owner.read().state().applied_event_sequence
+        );
+        let prepared = owner
+            .prepare_table_replay(
+                &event.meta,
+                &operation,
+                ExpectedNested {
+                    rules_event: event.rules_event.as_ref(),
+                    tactical_event: event.tactical_event.as_ref(),
+                },
+            )
+            .unwrap();
+        assert_eq!(prepared.produced().message, event.outcome.message);
+        assert_eq!(prepared.produced().mechanics, event.outcome.mechanics);
+        let applied = prepared.commit();
+        assert_eq!(
+            applied.after().state().applied_event_sequence,
+            u64::try_from(row.sequence).unwrap()
+        );
+    }
+    assert_eq!(
+        owner.read().state(),
+        &CampaignState::decode_json(&export.current_state.state_json).unwrap()
+    );
+    owner
+}
+
+#[tokio::test]
+async fn actual_target_death_keeps_release_but_removes_drag_and_rejects_owned_admission() {
+    let mut f = Box::pin(Fixture::new()).await;
+    Box::pin(f.activate()).await;
+    let grip = Box::pin(f.establish_pc_grip()).await;
+    let holder = f.actors[0];
+    let target = f.goblin;
+    let pc = f.pc(0);
+    let original = f.state().await;
+    let proof = original
+        .rules
+        .as_ref()
+        .unwrap()
+        .tactical_grapples
+        .as_ref()
+        .unwrap()
+        .active[0]
+        .clone();
+    assert_eq!(proof.declaration.id, grip);
+    assert_eq!(original.rules.as_ref().unwrap().entities[&target].hp, 10);
+    assert!(
+        !original.rules.as_ref().unwrap().entities[&target]
+            .death
+            .dead
+    );
+    assert!(!original.rules.as_ref().unwrap().entities[&target].uses_death_saves);
+    Box::pin(f.cold_action(pc.clone(), TacticalAction::EndTurn)).await;
+    Box::pin(f.cold_action(TableTransportChannel::Host, TacticalAction::EndTurn)).await;
+    let weapon = f
+        .state()
+        .await
+        .items
+        .values()
+        .find(|item| item.custody == Custody::Entity(holder) && item.definition_id == "dagger")
+        .unwrap()
+        .id;
+    Box::pin(f.cold_action(
+        pc.clone(),
+        TacticalAction::Attack {
+            choice: WeaponUseChoice {
+                weapon,
+                target,
+                delivery: WeaponDelivery::Melee,
+                ability: Ability::Strength,
+                grip: WeaponGrip::OneHand(Hand::Right),
+                purpose: WeaponAttackPurpose::Normal,
+                ammunition: None,
+                equipment_change: Some(AttackEquipmentChange {
+                    timing: EquipmentChangeTiming::BeforeAttack,
+                    operation: AttackEquipmentOperation::Equip {
+                        item: weapon,
+                        hand: Hand::Right,
+                    },
+                }),
+            },
+        },
+    ))
+    .await;
+    Box::pin(f.cold_roll(pc.clone(), 20)).await;
+    Box::pin(f.decline_hit(pc.clone(), TableTransportChannel::Host)).await;
+    let damage = f.state().await.rules.unwrap().pending.unwrap().request;
+    assert_eq!(damage.dice, vec![DieSpec { count: 2, sides: 4 }]);
+    Box::pin(f.cold_roll(pc.clone(), 4)).await;
+    assert_eq!(
+        resolution(&f.state().await).attack.as_ref().unwrap().stage,
+        TacticalAttackStage::KnockoutChoice
+    );
+    Box::pin(f.cold_action(
+        pc.clone(),
+        TacticalAction::ChooseAttackKnockout {
+            choice: KnockoutChoice::NormalDamage,
+        },
+    ))
+    .await;
+    let dead = f.state().await;
+    assert!(dead.rules.as_ref().unwrap().entities[&target].death.dead);
+    assert_eq!(dead.entities[&target].existence, EntityExistence::Dead);
+    assert_eq!(dead.rules.as_ref().unwrap().entities[&target].hp, 0);
+    assert_eq!(
+        dead.rules
+            .as_ref()
+            .unwrap()
+            .tactical_grapples
+            .as_ref()
+            .unwrap()
+            .active,
+        vec![proof.clone()]
+    );
+    assert!(flow(&dead).resolution.is_none());
+    enable(&mut f).await;
+    let before = f.state().await;
+    let offered = f.view(pc.clone()).await.grapple.unwrap();
+    assert!(offered.ground_drag.is_empty());
+    assert!(
+        offered
+            .choices
+            .iter()
+            .any(|choice| choice.label.starts_with("Release "))
+    );
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let mut owner = replay_ground_fixture(&export);
+    assert_eq!(owner.read().state(), &before);
+    let meta = CommandMeta {
+        id: CommandId::new(),
+        campaign_id: f.campaign,
+        session_id: Some(f.session),
+        issuer: CommandIssuer::Player(f.players[0]),
+        actor: Some(AgentRef::Entity(holder)),
+        expected_event_sequence: before.applied_event_sequence,
+    };
+    let direct = dmd_rules::table::TableOperation::Tactical {
+        action: TacticalAction::MoveGrappled {
+            grip,
+            path: vec![step(0, 10)],
+        },
+    };
+    let error = match owner.prepare_table(&meta, &direct) {
+        Ok(_) => panic!("dead target admitted a movement"),
+        Err(error) => error,
+    };
+    assert!(
+        error.contains("ground drag requires a living target"),
+        "{error}"
+    );
+    assert_eq!(owner.read().state(), &before);
+    let raw_request = request(
+        &f,
+        pc,
+        action(TacticalAction::MoveGrappled {
+            grip,
+            path: vec![step(0, 10)],
+        }),
+    )
+    .await;
+    Box::pin(f.reject(raw_request)).await;
+    assert_eq!(f.state().await, before);
+    let released = release(&f).await;
+    Box::pin(f.cold(released)).await;
+    let after = f.state().await;
+    assert!(after.rules.as_ref().unwrap().tactical_grapples.is_none());
+    assert!(after.rules.as_ref().unwrap().entities[&target].death.dead);
+    assert_eq!(
+        after.encounter.as_ref().unwrap().participants,
+        before.encounter.as_ref().unwrap().participants
+    );
+    assert_eq!(
+        flow(&after).budget.movement_spent,
+        flow(&before).budget.movement_spent
+    );
+    f.close().await;
+}

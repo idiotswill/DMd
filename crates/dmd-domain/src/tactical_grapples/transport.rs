@@ -192,8 +192,8 @@ impl GrappleTransportHistory {
             cause = &step.cause;
             previous_work = Some(step.work.occurrence);
         }
-        if let Some(movement) = &resolution.movement {
-            if movement.origin != admission.origin
+        if let Some(movement) = &resolution.movement
+            && (movement.origin != admission.origin
                 || movement.actor != admission.holder
                 || movement.path != admission.path
                 || movement.initial_position != admission.holder_from
@@ -206,10 +206,9 @@ impl GrappleTransportHistory {
                         || a.to != b.holder.to
                         || a.mode != b.mode
                         || Some(a.cost) != b.total_cost()
-                })
-            {
-                return Err("ground drag and ordinary movement receipts differ".into());
-            }
+                }))
+        {
+            return Err("ground drag and ordinary movement receipts differ".into());
         }
         if let Some(stop) = &self.stop
             && (stop.cause.expected_event_sequence < cause.expected_event_sequence
