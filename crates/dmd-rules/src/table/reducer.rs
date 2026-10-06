@@ -91,8 +91,12 @@ pub(crate) fn apply_operation(
             "Heroic Inspiration awarded.".into()
         }
         TableOperation::EnableGrappleTransport => {
-            if !execution.is_owned() { return Err("Ground drag activation requires original table history.".into()); }
-            table_mut(next)?.grapple_access = Some(Box::new(super::grapple_access::activate_transport(state, meta)?));
+            if !execution.is_owned() {
+                return Err("Ground drag activation requires original table history.".into());
+            }
+            table_mut(next)?.grapple_access = Some(Box::new(
+                super::grapple_access::activate_transport(state, meta)?,
+            ));
             "Dragging and Inspiration controls are enabled for this table.".into()
         }
         TableOperation::EnableGrappleAccess => {

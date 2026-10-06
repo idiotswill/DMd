@@ -240,7 +240,10 @@ impl<'a> TableRead<'a> {
     pub fn shield_choices(&self, actor: EntityId) -> Result<Vec<SpellCastChoice>, RulesError> {
         crate::tactical::shield_choices_with_read(&self.context(), actor)
     }
-    pub fn grapple_transport_choices(&self, issuer: CommandIssuer) -> Result<Vec<TableGrappleTransportOffer>, RulesError> {
+    pub fn grapple_transport_choices(
+        &self,
+        issuer: CommandIssuer,
+    ) -> Result<Vec<TableGrappleTransportOffer>, RulesError> {
         crate::tactical::grapple::transport::choices(&self.context(), issuer)
     }
     pub fn grapple_choices(

@@ -715,13 +715,31 @@ impl<'owner> ExecutionContext<'owner> {
             after_flow.and_then(|f| f.resolution.as_ref()),
         ) && before_resolution.origin == after_resolution.origin
         {
-            let old_transport = before_resolution.grapple.as_ref().and_then(|c| c.transport.as_ref());
-            let new_transport = after_resolution.grapple.as_ref().and_then(|c| c.transport.as_ref());
+            let old_transport = before_resolution
+                .grapple
+                .as_ref()
+                .and_then(|c| c.transport.as_ref());
+            let new_transport = after_resolution
+                .grapple
+                .as_ref()
+                .and_then(|c| c.transport.as_ref());
             match (old_transport, new_transport) {
                 (None, None) => (),
-                (Some(old), Some(new)) if old.admission == new.admission && new.steps.starts_with(&old.steps)
-                    && old.stop.as_ref().is_none_or(|stop| new.stop.as_ref() == Some(stop)) => (),
-                _ => return Err(invalid("ongoing resolution rewrote ground drag admission or history")),
+                (Some(old), Some(new))
+                    if old.admission == new.admission
+                        && new.steps.starts_with(&old.steps)
+                        && old
+                            .stop
+                            .as_ref()
+                            .is_none_or(|stop| new.stop.as_ref() == Some(stop)) =>
+                {
+                    ()
+                }
+                _ => {
+                    return Err(invalid(
+                        "ongoing resolution rewrote ground drag admission or history",
+                    ));
+                }
             }
             if let Some(old) = &before_resolution.grapple {
                 let new = after_resolution

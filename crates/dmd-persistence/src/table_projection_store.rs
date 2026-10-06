@@ -45,7 +45,9 @@ pub struct TranscriptVisibility {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum ProjectionCapability {
-    GrappleTransport { offer: dmd_domain::TableGrappleTransportOffer },
+    GrappleTransport {
+        offer: dmd_domain::TableGrappleTransportOffer,
+    },
     GrappleChoice {
         offer: dmd_domain::TableGrappleOffer,
     },

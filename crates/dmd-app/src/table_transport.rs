@@ -40,7 +40,10 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
-    MoveGrappled { option: CommandId, path: Vec<TacticalMoveStep> },
+    MoveGrappled {
+        option: CommandId,
+        path: Vec<TacticalMoveStep>,
+    },
     GrappleChoice {
         handle: CommandId,
     },
@@ -510,12 +513,19 @@ pub(crate) fn presented_view(
             .grapple
             .map(|grapple| {
                 Ok::<_, &str>(TableGrappleView {
-                    ground_drag: grapple.ground_drag.into_iter().map(|choice| {
-                        Ok::<_, &str>(TableGrappleOption {
-                            key: CommandId(handle(&ProjectionCapability::GrappleTransport { offer: choice.key })?),
-                            actor: choice.actor, label: choice.label,
+                    ground_drag: grapple
+                        .ground_drag
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleTransport {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
                         })
-                    }).collect::<Result<Vec<_>, _>>()?,
+                        .collect::<Result<Vec<_>, _>>()?,
                     version: grapple.version,
                     choices: grapple
                         .choices

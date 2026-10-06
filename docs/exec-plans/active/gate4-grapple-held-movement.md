@@ -1,6 +1,6 @@
 # Gate 4 — Grounded movement with a held creature
 
-Status: **REVIEWED PUBLIC CORRECTIONS RECEIVED; SOURCE IMPLEMENTATION STARTING**.
+Status: **COHERENT FORMATTED SOURCE FROZEN; COMPILER AND ALL NEW TESTS UNRUN**.
 Date: 2026-10-06. Sole writer: ci_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-held-movement`; PR: not opened.
 Starting head: `b6ef6207d37f99bf3edb35349cd59b59cf4c81d3`, tree
@@ -256,19 +256,62 @@ comparisons, plus native/package and exact-head CI. Arithmetic size controls are
 not claimed as genuine Tiny/Large source acceptance. This source checkpoint is
 not Gate4 completion or a verification pass.
 
-**Reviewed whole public receipt planned next:** once this coherent source is
-committed, normally merge exact
-`4d8f5bcf029b56443bb67d0b03e93f8ae8560323` (tree
-`21d80363621517a07660c17a95d470ee0e783f2c`). That reviewed successor includes the
-public lint-only changes and their plan, not a feature rewrite. Known overlap:
-public spelling changes `1 | 2 | 3` to `1..=3` and `2 | 3 | 4` to `2..=4`;
-this new feature deliberately extends the same readers to `1..=4` and `2..=5`.
-Preserve the incoming unused forwarding-function/import removals and combine the
-OutOfRange equivalent let-chain with this slice's paired moved-body predicate.
-Report actual semantic conflicts to root before manual resolution; audit the
-complete union and old tests afterward. No cherry-pick or partial receipt.
+**Reviewed whole public receipt completed:** normal merge
+`2b1ea17f36bce457375909a50bc6aaa0606d4430`, tree
+`bdba724c96ce9b5c1c36b218be4d62f64f068b14`, receives exact
+`4d8f5bcf029b56443bb67d0b03e93f8ae8560323` into coherent feature
+`db5223ce1c394b67945730dfbf65ca639694d7ff`. Root reviewed and explicitly
+approved the six conflict resolutions: retain feature reader ranges `1..=4`
+and `2..=5`, adopt incoming closure formatting and the equivalent OutOfRange
+let-chain with the paired moved-body predicate. All incoming unused forwarding
+functions/import removals and their plan are retained. The complete 628-entry
+Git union and every working Git-normalized blob match the explicit expected
+union; all six combined files were checked byte for byte against that union.
+Evidence: `tooling/ci-oct6/held-db5223c-receive-4d8-union-audit.json`, SHA256
+`ddcad24a692db3078115aa1b54d89f45fad521125928b369dc6d7bb8ba871f9d`.
 
-Root may then schedule a bounded changed-file formatter and full independent
-source review, and allocate subsequent runtime verification. Until allocation,
-no formatter/compiler/tests/database/native tools may run. The source writer
-remains ci_oct6; no other checkout is writable here.
+### Narrow formatter scheduling allocation, 2026-10-06
+
+Root explicitly allocates the workspace Rustfmt executable directly, with
+`--edition 2024 --config skip_children=true`, on exactly the 43 changed Rust
+paths listed in `tooling/ci-oct6/held-db5223c-changed-rust-paths.json` (SHA256
+`d9e5a75c354cc3e5f73b6770079cad4f5afea44de5e032c3242ab8bafb7490c7`), followed
+by the identical bounded `--check`. This is a narrow scheduling exception while
+root retains the heavy slot for Offstage; it permits no Cargo, compiler, tests,
+npm, database or native execution. Inspect the formatting-only delta separately,
+qualify any whitespace changes in old controls, and preserve all original test
+expressions/assertions beyond the eight approved absent-field constructor lines.
+Commit a coherent formatted head for independent review and whole-history sibling
+intake. Formatting is not compile/runtime acceptance.
+
+Root's subsequent source review found an admission/offer gap: a legitimately dead
+target can retain its grip and is currently offered for drag before the segment
+evaluator refuses it. Correct offers and direct admission to enforce the declared
+living-target-only slice, with a genuine source-produced target-death regression,
+as a separate successor after this formatted freeze. Preserve the actual grip,
+release controls and all old target-death tests; corpse cargo remains undecided.
+This finding must be resolved and reviewed before publication/acceptance.
+
+The source writer remains ci_oct6; no other checkout is writable here. All
+compiler/runtime and publication work still awaits separate root allocation.
+
+### Bounded formatter result and preservation audit
+
+The allocated direct43-file Rustfmt and identical bounded check both returned0,
+with no stdout/stderr. Command/binary/path evidence is
+`tooling/ci-oct6/held-b1e373b-bounded-format.json`, SHA256
+`cc885fc4a928dc5d2d5b7365f67ba7026049bae009ca2a8ca64eec1a95391d58`.
+Layout changed26 Rust files;602 other Git-normalized source entries remain exact.
+Literal/comment/identifier/operator order is unchanged after separately reviewed
+trailing commas, transparent expression blocks, a diverging-return semicolon and
+sorting the new transport/validation module declarations in two roots. The seven
+existing test/helper/module-root files retain their preformat bytes, including
+only the approved eight constructor additions and two module registrations.
+All919 original Rust test bodies and occurrence counts are exact after reversing
+only those approved constructor insertions; no extra old-test whitespace changes
+occurred. Static preservation report
+`tooling/ci-oct6/held-b1e373b-formatted-source-audit.json`, SHA256
+`a642429df199ed3903b689321513daced0cf97bb32c97199eb0e7ee7759ffa16`.
+The full formatting patch and token-delta inventory are preserved externally.
+These checks establish formatting/source preservation only. Compiler, all22 new
+cases, all retained suites and native/CI acceptance remain UNRUN on this head.

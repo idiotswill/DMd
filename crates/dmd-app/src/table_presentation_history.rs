@@ -60,7 +60,11 @@ fn capabilities(
         );
     }
     if let Some(grapple) = &raw.grapple {
-        result.extend(grapple.ground_drag.iter().map(|choice| ProjectionCapability::GrappleTransport { offer: choice.key.clone() }));
+        result.extend(grapple.ground_drag.iter().map(|choice| {
+            ProjectionCapability::GrappleTransport {
+                offer: choice.key.clone(),
+            }
+        }));
     }
     if let Some(shove) = raw.tactical.as_ref().and_then(|t| t.shove.as_ref()) {
         result.push(ProjectionCapability::ShoveDecision {
