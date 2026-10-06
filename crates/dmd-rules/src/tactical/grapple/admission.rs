@@ -107,7 +107,7 @@ pub(super) fn live_constraints(state: &CampaignState) -> Result<(), RulesError> 
                 != HandAssignment::Free
             {
                 return Err(prerequisite(
-                    "current physical equipment overlaps a live grip",
+                    "current physical equipment overlaps a reserved hand",
                 ));
             }
             if !crate::tactical_conditions::can_act(rules, grip.declaration.grappler)?

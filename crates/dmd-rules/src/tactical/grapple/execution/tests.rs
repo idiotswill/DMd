@@ -191,8 +191,35 @@ fn typed_pending_withdrawal_preserves_exact_cancel_and_eligible_export() {
         .request
         .id;
     let rolls = owner.state().rules.as_ref().unwrap().rolls.clone();
+    let mut cancelled = owner
+        .state()
+        .rules
+        .as_ref()
+        .unwrap()
+        .cancelled_roll_ids
+        .clone();
+    cancelled.push(id);
     apply(&mut owner, human, TacticalAction::WithdrawGrapple { grip });
+    assert_eq!(
+        attempt(owner.state()).unwrap().stage,
+        TacticalGrappleAttemptStage::AfterEquipment
+    );
+    assert!(matches!(
+        attempt(owner.state()).unwrap().outcome,
+        Some(GrappleAttemptOutcome::Withdrawn { cancelled: Some(actual), .. }) if actual == id
+    ));
+    assert!(attempt(owner.state()).unwrap().reservation().is_none());
+    let rules = owner.state().rules.as_ref().unwrap();
+    assert!(rules.pending.is_none());
+    assert!(rules.timing.as_ref().unwrap().action_spent);
+    assert_eq!(rules.rolls, rolls);
+    assert_eq!(rules.cancelled_roll_ids, cancelled);
+    decline(&mut owner, human, grip);
     assert!(flow(owner.state()).unwrap().resolution.is_none());
+    assert_eq!(
+        owner.state().rules.as_ref().unwrap().cancelled_roll_ids,
+        cancelled
+    );
     assert_eq!(owner.state().rules.as_ref().unwrap().rolls, rolls);
     assert_eq!(
         owner

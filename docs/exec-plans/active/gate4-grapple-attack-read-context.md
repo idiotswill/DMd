@@ -1,5 +1,218 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 6 retained-core reserved-hand diagnostic correction
+
+Exact `ff0e10351df4c8c1e9341e4c1ee2dffde2283dc6`, tree
+`e7d0d9f8eaf848235c8ebe553b34324b8245985e`, passed formatting, strict
+domain/rules/app all-target Clippy, opportunity1, owner10 and attack15. The
+retained-core24 command then passed23 and failed1 at 05:56:18 UTC. Preserve its
+full log, SHA256
+`7df5af8b4d91190adc7fc65da2a98ffc22fc4e8f8237513a9ec9568d87b72ffc`.
+The exact focused82 attempt therefore has49 passed,1 failed and32 unrun; no
+later command ran. Prior failures remain preserved, and no old result transfers
+to the next source head.
+
+Root transferred sole source writing for this narrow correction. An independent
+reader confirmed the full failed log, complete retained-core test and actual
+callers. The existing
+`retired_live_grip_rejects_physical_overlap_before_release_can_erase_it` control
+creates a real retired Attempt with a live grip, then forges a carried physical
+item into that reserved hand. Its physical-only inventory validation succeeds;
+the Grapple validator must reject before release can erase the reservation.
+The failure is its first diagnostic assertion, not an accepted invalid state.
+
+`validation::validate` first calls `admission::supported_context`, which calls
+`live_constraints`. That early guard already rejects the non-Free physical hand
+with `RulesError::Prerequisite`, but reports `overlaps a live grip`. The unchanged
+test and later `EffectiveHands::validate_loadout` use `overlaps a reserved hand`.
+`release_with_context` validates before `end_grip`, so preserving this early guard
+also preserves the release refusal and atomic input protection.
+
+Commit this amendment before implementation. Change only the early message to
+`current physical equipment overlaps a reserved hand` in `grapple/admission.rs`.
+Preserve its predicate, `prerequisite` constructor, validation order and every
+other source byte. Preserve the complete original test, both message assertions,
+whole-state and live-grip equality, valid release control, and all82 selected
+test bodies/names. Do not replace the early guard with the later Invalid error or
+weaken the test to accept arbitrary refusal text.
+
+Return a clean unformatted source freeze and exact Git-byte preservation audit
+for root review. This source-only task authorizes no formatter, compiler, tests,
+DB, npm, native, push or CI. Root separately allocates formatting and new-head82
+verification after review; canonical/public/application/native and Gate4
+acceptance obligations remain unchanged. This amendment and correction provide
+no new runtime pass or public activation.
+
+The one-message correction is authored under plan-first commit
+`bac0727cc1534c8650844752a1cc64582a39d62e` and returned UNFORMATTED/UNCOMPILED/UNRUN
+for root review. Only static Git whitespace checking and source/log inspection
+ran; exact-head execution remains pending under root's separate allocation.
+
+## October 6 formatted correction freeze
+
+Root read and accepted the complete unformatted initiative correction at
+`9768a405c611aae3442eb8a64e7a246b641b6962`, tree
+`425ecb47b9d154dccc3ea0ed25d8614cf6f900cc`, for verification. Root then allocated
+only direct rustfmt on the edited attack test file and preparation of a new
+unchanged82 selection. Direct Rust2024 rustfmt with `skip_children=true` passed;
+the complete formatting delta changes only the new helper and the two corrected
+test bodies. All22 original helpers and13 passing attack bodies remain exact.
+Source is frozen after formatting, still UNCOMPILED/UNRUN. No Cargo, test, DB,
+native, npm, push or CI execution is allocated. Prepare fresh evidence/target
+paths with the unchanged reviewed v2 engine, updated source hashes and locations;
+return the complete preparation for independent root review before any launch.
+
+## October 6 source-review correction to identical-creature initiative
+
+Root transferred sole source ownership from clean
+`c2e0647b3302dbc116e9aa4bf1431f6ad757928d`, tree
+`932969b658c785dcfa12498083d73a68fe32f4a5`, for this bounded fixture correction.
+That unformatted correction was not executed. Independent source review found
+that its Begin declaration gives two identical Host Cultists separate initiative
+groups. The unchanged `tactical/validation.rs` requires matching source,
+surprise and initiative circumstances to share one roll; the proposed setup
+would reject before reaching either corrected assertion. This is a source-review
+finding, not a newly observed runtime failure.
+
+Commit this amendment before source changes. Change only the new
+`with_held_cultist_and_caster` helper and this plan. Preserve the two complete
+corrected test bodies from c2, all22 older helpers, all13 passing attack bodies,
+all82 selected names and all595 other Git entries. No production, source pin,
+controller, profile, capture, consent or validator change is authorized.
+
+Use exactly three initiative groups: `[human]`, `[goblin]`, and
+`[held, cultist]`. Submit the actual three physical requests with faces20/10/5;
+assert each pending request names the group's first actor, including held for
+the shared Cultist request. Both Cultists use the unchanged source modifier+2;
+the original Human has Dexterity14/exhaustion0 and the Goblin source modifier
+is+2. After all three real submissions, use the privileged rules action
+`ProposeInitiativeTie { order: [held, cultist] }` through the existing public
+command helper. Assert the entire resulting initiative entries in order:
+Human22, Goblin12, held7, caster7, with tie breaks0/0/0/1. Do not insert a timing
+record, alter source circumstances to avoid grouping, or auto-resolve the tie.
+The existing complete concentration body then traverses those real turns.
+
+Return a clean unformatted source freeze for full root review and an immutable
+Git/body preservation audit. Formatter/compiler/tests, npm, DB/native, push and
+CI remain unallocated. Root must separately allocate formatting and independently
+review a freshly targeted unchanged82 run after the final freeze. Preserve all
+earlier actual failed runs and the c2 unformatted handback; this amendment and
+its source correction provide no runtime, application, native or Gate4 pass.
+
+The three-group correction is authored under plan-first commit
+`03c2fbcaedbc071ffaad04fd3014e0369cd37eec`. Only the helper's group construction,
+three-request submission, actual Host tie command and full initiative assertion
+changed. Both previously corrected bodies remain exact c2 bytes. Static Git
+whitespace checking passed; no formatter or execution ran. Source is frozen
+UNFORMATTED/UNCOMPILED/UNRUN for root's complete review. The next action is root
+review followed by a separately allocated edited-file formatter window.
+
+## October 5 actual attack-producer failures and bounded correction
+
+Frozen `418eeb770404e8c93de3407b839704caa3fc303d`, tree
+`6786662a96bc3a3337488406cc8af013b8efa327`, passed formatting, strict
+domain/rules/app all-target Clippy, opportunity1 and owner10. The attack15 group
+then passed13 and failed2 at 13:46:42 UTC; remaining56 did not run. Preserve the
+full attack log, SHA256
+`3888686e850ee4a5280f51f18f2a8f168b4f478459f5144d8592d7c81162acf5`, and all
+earlier failures. No correction has been compiled or executed.
+
+Root and the independent reader traced both failures to the two new test
+producers/expectations. Hold Person targets only source Humanoids, but the
+concentration test targeted the immutable Fey Goblin. The real spell correctly
+spends its source use and produces no target save, so the first pending helper
+unwrap fails before any guarded attack. Preserve paid no-effect source typing;
+do not edit the Goblin profile, insert a concentration group or add fake dice.
+The actual KnockOut reducer sets HP1, default DeathState and an owned knockout
+recovery/rest cause. Its new test incorrectly expected zero-HP stabilization.
+Preserve that production behavior and the original one-HP knockout controls.
+
+Commit this amendment before source changes. Sole writer may change only this
+plan and `grapple/execution/attack_tests.rs`: one additive private setup helper
+and the two failed bodies. Preserve all13 passing attack bodies, all existing
+helpers, every owner/core/opportunity control, source pin and capture byte.
+No production change is authorized. This is the same private four-family
+verification scope, not public/application/native acceptance.
+
+Static follow-up before any run found that admission's unchanged
+shove::opposition rejects two player-owned actors even when declared enemies.
+The initial existing-second-Human proposal in plan11f17c7 therefore cannot be
+used. Preserve this consent boundary; no production or controller bypass is
+authorized. The following source-valid producer supersedes only that proposal.
+
+The concentration helper must retain the captured Human holder, Goblin and
+canonical Cultist and add a distinct second canonical Host-controlled Cultist
+as the held Humanoid target. Build its complete mechanics/profile/runtime through
+build_creature_from_source with the genuine Cultist source pin, Average HP and
+Host controller, then materialize actual source equipment. Its new world entity
+uses only the existing private scene scaffold; do not edit original actor facts.
+Conclude and Finish the preceding private encounter through reducers, then
+Establish/Begin a fresh four-actor encounter with actual initiative rolls and
+source declarations. Place the held Cultist at (20,0,0), distinct from holder
+(10,10,0), Goblin (20,10,0) and Cultist (20,20,0), inside the original bounds.
+Use the actual actor-group initiative order and faces20/10/5/1, then actual
+EndTurn commands to reach the caster. This is source-valid private setup, not
+a replayed accepted application history. Both new source creatures retain
+their genuine Humanoid type, HP, features, counters and physical gear.
+
+Cast Hold Person on that distinct held Cultist and submit its real failed Wisdom save.
+Assert actual paralysis/concentration; after the caster's EndTurn, create the
+owner and grapple that held Cultist. Preserve automatic Strength-save coverage with
+exact target/role and unchanged raw history. Traverse real turns and the target's
+failed repeat save, then retain the actual dagger attack on the concentrating
+Cultist. Preserve complete attack evidence, direct child ancestry, exact pending
+tuple across release, successful concentration submission and export refusal.
+No generic loop may skip a required selected work choice or substitute an effect.
+
+For KnockOut, capture the actual pre-choice next occurrence and clock, and use
+the returned accepted KnockOut command to construct the entire expected owned
+recovery/rest authorization independently. Assert HP1, Prone, default DeathState,
+derived Unconscious, full recovery, actual rest entry and equipment command.
+Retain original raw request, trace, retirement, physical custody/equipment and
+one-completion history controls. Do not merely remove the failing assertion.
+
+Freeze the complete unformatted source for independent root review first.
+Formatting, compiler/tests, DB/native, npm, push and CI remain unallocated;
+root owns the single heavy slot. Later use a separately allocated formatter
+window and a fresh frozen-head82 preparation/review/run. Keep all previously
+required public six-family, original replay, persistence/native and receiving
+acceptance obligations below; no older runtime result proves this correction.
+
+The bounded correction is authored and frozen for root's full source review,
+explicitly UNFORMATTED/UNCOMPILED/UNRUN. The new helper uses the second Host
+Cultist design from the separate pre-code consent amendment; it adds no test
+names and changes none of the existing helper bodies. Source author inspected
+the complete delta and ordinary source, opposition, initiative, condition,
+concentration and knockout paths. Only a static Git diff check was executed.
+Next action: root reviews the entire helper and two test bodies, then allocates
+the direct formatter window before any final-head verification preparation.
+
+## October 5 actual pending-withdrawal test failure
+
+Exact `ade8e93b450d6e02027afc7615a555db16b2915d` passed formatting,
+strict domain/rules/app all-target Clippy and the corrected opportunity test.
+The ten owner controls then ran: nine passed; the pending-withdrawal control
+failed at execution/tests.rs195 because it expected immediate resolution
+retirement. The run stopped at 13:14:54 UTC; the remaining71 controls did not
+run. Full failed log SHA256:
+046e3991499e04b7953a54ed46b30092f495efab04f1f9c59d6c746f771a9229.
+
+Root and an independent reader traced the actual no-before-equipment producer:
+withdraw_with_context cancels the unfinished request and complete_attempt
+preserves the owed AfterEquipment choice. The original core control
+withdrawal_before_or_during_raw_preserves_one_equipment_allowance explicitly
+requires this distinction. Preserve that production behavior and every original
+core test. Commit this plan before changing only the new owner control.
+
+Assert the genuine withdrawal outcome, paid Action, freed reservation, absent
+raw pending request and exact inherited cancellation/raw history while the
+AfterEquipment choice remains. Resolve it with the existing typed decline
+helper, then retain the original completed-resolution, eligible export and
+reentry controls. No manual state repair or production change is authorized.
+Review the complete correction independently, then rerun all82 selected controls
+from a frozen head with formatting and strict linting first. Preserve every
+earlier failure; this focused run does not establish public or native acceptance.
+
 ## October 5 actual test-call compilation failure
 
 Exact58b6a9051b5696e78842cde8d8ed115d361bc2b4 passed formatting but strict
