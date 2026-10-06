@@ -7,6 +7,9 @@ use dmd_rules::tactical::TacticalAction;
 #[path = "table_ogre_equipment_cases.rs"]
 mod ogre;
 
+#[path = "table_ground_consequence_cases.rs"]
+mod consequences;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
