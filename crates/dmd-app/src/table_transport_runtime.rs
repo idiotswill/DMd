@@ -405,7 +405,8 @@ fn derive_intent(
             let mut action = (**action).clone();
             if matches!(action, TableAction::AwardHeroicInspiration { .. })
                 && (request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
-                    || !dmd_rules::table::grapple_transport_enabled(state)) {
+                    || !dmd_rules::table::grapple_transport_enabled(state))
+            {
                 return Err("Inspiration awards require the current table controls.".into());
             }
             match &mut action {
@@ -800,8 +801,11 @@ impl CampaignRuntime {
                         .heroic_inspiration,
                 });
         tx.commit().await.map_err(recovery)?;
-        Ok(TableRollOptions { savage_attacker, heroic_inspiration:
-            dmd_rules::table::grapple_transport_enabled(state).then(|| state.rules.as_ref().unwrap().entities[&actor].heroic_inspiration) })
+        Ok(TableRollOptions {
+            savage_attacker,
+            heroic_inspiration: dmd_rules::table::grapple_transport_enabled(state)
+                .then(|| state.rules.as_ref().unwrap().entities[&actor].heroic_inspiration),
+        })
     }
     pub async fn recover_legacy_table_request(
         &self,

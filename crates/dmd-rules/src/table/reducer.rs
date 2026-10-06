@@ -83,7 +83,10 @@ pub(crate) fn apply_operation(
     let mut tactical_event = None;
     let mut mechanics = None;
     let message = match action {
-        TableOperation::AwardHeroicInspiration { character_id, reason } => {
+        TableOperation::AwardHeroicInspiration {
+            character_id,
+            reason,
+        } => {
             if !execution.is_owned() {
                 return Err("An Inspiration award requires original table history.".into());
             }

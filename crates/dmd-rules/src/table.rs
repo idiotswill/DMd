@@ -17,7 +17,10 @@ pub mod source_control;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
-    AwardHeroicInspiration { character_id: CharacterId, reason: String },
+    AwardHeroicInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
     EnableGrappleAccess,
     EnableGrappleTransport,
     UpdateContract {
