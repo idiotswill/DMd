@@ -1,6 +1,6 @@
 # Gate 4 — Genuine Graze before owned Ground equipment
 
-## Root receipt of verified Goblin fixture correction � 2026-10-06
+## Root receipt of verified Goblin fixture correction — 2026-10-06
 
 Root remains sole writer. The incoming explicit V2 Goblin fixture correction
 at Ground1b8 passed the full256-test rules library, four source-anatomy tests,
@@ -16,7 +16,16 @@ Normally receive these whole histories in order after committing this plan:
 These histories have multiple merge bases because prior parent corrections
 were received separately. Do not treat a single three-dot diff as a union proof.
 For each normal merge, compare every resulting Git entry with the pre-merge
-receiver, allowing only the enumerated complete incoming blobs above to differ.
+receiver. Source and Ground plan must be complete incoming blobs. The first
+static audit stopped before committing because the Consequences plan also
+contains this receiver's previously accepted final-controls history. Preserve
+that entire receiver document and prepend only the incoming correction section;
+prove that removing the exact new section returns the receiver's full bytes.
+Do not replace the whole document with the incoming version. The audited
+source merge was clean and unchanged; the initial whole-document expectation
+was too strict. The uncommitted merge was aborted normally before this plan
+correction. A newly inserted Windows-encoded dash is also corrected to UTF-8;
+all older plan bytes remain unchanged. Re-fetch the corrected incoming head.
 No source hunk adaptation is intended. Stop on unexpected conflicts or paths.
 This retains every receiver-specific positive, helper, guard and history. Record
 parents/tree and full entry evidence externally, then publish the reviewed
