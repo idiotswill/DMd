@@ -43,6 +43,10 @@ pub(crate) fn view(
                     item,
                     hand: selected,
                 } => (item, format!("equip in {}", hand(selected))),
+                AttackEquipmentOperation::Pickup {
+                    item,
+                    hand: selected,
+                } => (item, format!("pick up in {}", hand(selected))),
                 AttackEquipmentOperation::Unequip { item } => (item, "stow".to_owned()),
             };
             let name = state

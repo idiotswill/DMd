@@ -78,6 +78,9 @@ mod cleanup;
 #[path = "support/grapple_original_mage.rs"]
 mod original_mage;
 
+#[path = "support/grapple_mage_components.rs"]
+mod mage_components;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,

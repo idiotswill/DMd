@@ -420,3 +420,19 @@ Further physical-path review found that Attack-action equipment changes rightly
 admit weapons only; Wand is Gear. The two-reservation case therefore uses two
 actual paid grips, not an unavailable Wand equip menu. General Gear handling is
 not supplied by these tests. No production guard or old test was changed.
+
+Review of the new equipment enum found one remaining receiving compile defect:
+the Grapple label renderer matches only Equip/Unequip, while the complete Ground
+dependency adds Pickup. Add the explicit Pickup label arm, matching the ordinary
+equipment renderer's meaning. This does not add a Grapple pickup producer or
+change sealed physical admission; the current Grapple menu still enumerates
+carried weapons only. Exact combined compilation remains pending in queued CI.
+
+Both named Mage material/reservation cases are now authored, read in full and
+formatted. They use only presented creation, physical saves, opaque grip menus,
+normal turn transitions and the existing cold/portable/retry driver. Their
+negative submissions compare all live database rows. Current source profile,
+declaration/accepted-roll provenance, both remaining grip identities, physical
+item identity, no added dice and unrelated private projection are asserted.
+The historical public file gained only a new module registration; no existing
+test body or shared helper changed. These two cases are UNCOMPILED/UNRUN.
