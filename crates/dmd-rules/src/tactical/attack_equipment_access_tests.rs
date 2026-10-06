@@ -421,6 +421,44 @@ impl Fixture {
                 .id
         });
         f.choice.ability = Ability::Dexterity;
+        // This constructed fresh-combat fixture must also leave the retained
+        // target's old source cursor through the same operation as release.
+        let leave = f.host();
+        let current = f
+            .state
+            .rules
+            .as_ref()
+            .unwrap()
+            .tactical_creatures
+            .as_ref()
+            .unwrap();
+        assert!(current.runtime(f.target).unwrap().observed_turn.is_some());
+        let transition = crate::tactical_creatures::apply_creature_schedule(
+            &f.state,
+            current,
+            &leave,
+            &crate::tactical_creatures::CreatureScheduleOperation::LeaveCombat { actor: f.target },
+        )
+        .unwrap();
+        assert_eq!(
+            transition.cost,
+            crate::tactical_creatures::CreatureActionCost::None
+        );
+        assert!(transition.requests.is_empty());
+        assert!(transition.activation.is_none());
+        assert!(transition.feature.is_none());
+        let mut expected = current.clone();
+        let retained = expected
+            .runtime
+            .iter_mut()
+            .find(|runtime| runtime.actor == f.target)
+            .unwrap();
+        retained.observed_turn = None;
+        retained.routine = None;
+        retained.legendary_window_spent = false;
+        retained.last_operation = leave;
+        assert_eq!(transition.next, expected);
+        f.state.rules.as_mut().unwrap().tactical_creatures = Some(transition.next);
         f.state.applied_event_sequence += 1;
         let begin = TacticalAction::Begin {
             execution: TacticalExecutionVersion::EncounterReleaseV1,

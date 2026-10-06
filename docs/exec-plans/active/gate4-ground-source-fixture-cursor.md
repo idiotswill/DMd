@@ -43,3 +43,22 @@ Gate 4 acceptance criteria; native and remaining integration work remain due.
 
 Exact next action: commit this plan, correct the retained target's setup through
 the existing source operation, then review and publish the bounded correction.
+
+## Authored correction
+
+Plan1ce0a0a preceded the source edit. The 38-line helper addition runs after
+ordinary source equipment materialization and before the existing sequence
+advance/new Begin. This ordering preserves the original materializer's command
+sequence. The actual LeaveCombat transition must have no resource cost, request,
+activation or feature; its entire source attachment equals the previous one with
+only the target's cursor/routine/window and the known last-operation command
+changed. All profiles, limited resources and the new Goblin remain exact.
+
+Root inspected the complete formatted diff; direct formatting/check and whitespace
+checks pass. Preservation audit SHA256
+1302d4e5fdbdd2d1940c0ce544780a9205f616bc1db79bdd216c1f76c6a6893e
+proves all611 other original tracked blobs are exact, and removing exactly this
+addition returns the full old helper/test file. Every old test body and assertion
+is retained. Corrected compilation and runtime remain UNRUN. Publish the coherent
+correction and normally receive it in the affected descendants before their final
+verification. Earlier passes and failures remain attributed to their actual heads.
