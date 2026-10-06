@@ -34,6 +34,11 @@ Freeze a clean head with a complete source diff and original-body preservation
 report for root review. The full receiving checks and existing Gate4 obligations,
 including ordinary dragging/carrying and integrated/native evidence, remain open.
 
+The plan-only amendment was committed at `a5254cb` before the helper edit. The
+specified fixture correction and intermediate request/raw/tie assertions are now
+authored. No formatter/compiler/test ran; the clean source freeze will carry the
+separate stdlib/Git preservation audit, which is not runtime evidence.
+
 Root resumed the already approved correction on 2026-10-06 at plan-first
 `10fcc38`, transferring the original writer's complete 23-path production/UI
 draft to public_grapple_oct6. The prior writer was stopped; no concurrent source

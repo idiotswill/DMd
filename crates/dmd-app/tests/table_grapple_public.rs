@@ -342,6 +342,23 @@ impl Fixture {
             }),
         )
         .await;
+        let shared_opponent = f.opponent.filter(|_| definition == "goblin-warrior");
+        let groups = vec![
+            InitiativeGroup {
+                actors: vec![f.actors[0]],
+                request_id: RollRequestId::new(),
+            },
+            InitiativeGroup {
+                actors: std::iter::once(f.goblin).chain(shared_opponent).collect(),
+                request_id: RollRequestId::new(),
+            },
+        ]
+        .into_iter()
+        .chain(f.opponent.filter(|_| shared_opponent.is_none()).map(|actor| InitiativeGroup {
+            actors: vec![actor],
+            request_id: RollRequestId::new(),
+        }))
+        .collect::<Vec<_>>();
         Box::pin(
             f.host(TableAction::Tactical {
                 action: TacticalAction::Begin {
@@ -369,29 +386,82 @@ impl Fixture {
                         surprised: false,
                     }))
                     .collect(),
-                    groups: vec![
-                        InitiativeGroup {
-                            actors: vec![f.actors[0]],
-                            request_id: RollRequestId::new(),
-                        },
-                        InitiativeGroup {
-                            actors: vec![f.goblin],
-                            request_id: RollRequestId::new(),
-                        },
-                    ]
-                    .into_iter()
-                    .chain(f.opponent.map(|actor| InitiativeGroup {
-                        actors: vec![actor],
-                        request_id: RollRequestId::new(),
-                    }))
-                    .collect(),
+                    groups: groups.clone(),
                 },
             }),
         )
         .await;
-        Box::pin(f.roll(f.pc(0), 18)).await;
-        Box::pin(f.roll(TableTransportChannel::Host, 2)).await;
-        if f.opponent.is_some() {
+        if let Some(opponent) = shared_opponent {
+            let begun = f.state().await;
+            let flow = begun.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+            assert_eq!(groups.len(), 2);
+            assert_eq!(groups[0].actors, vec![f.actors[0]]);
+            assert_eq!(groups[1].actors, vec![f.goblin, opponent]);
+            assert_ne!(groups[0].request_id, groups[1].request_id);
+            assert_eq!(flow.initiative_groups, groups);
+            let rules = begun.rules.as_ref().unwrap();
+            assert!(rules.rolls.is_empty());
+            let pending = rules.pending.as_ref().unwrap();
+            assert_eq!(pending.request.id, groups[0].request_id);
+            assert_eq!(pending.request.roller, Some(f.actors[0]));
+        }
+        let pc_roll = Box::pin(f.roll(f.pc(0), 18)).await;
+        if shared_opponent.is_some() {
+            let after_pc = f.state().await;
+            let rules = after_pc.rules.as_ref().unwrap();
+            assert_eq!(rules.rolls.len(), 1);
+            let pending = rules.pending.as_ref().unwrap();
+            assert_eq!(pending.request.id, groups[1].request_id);
+            assert_eq!(pending.request.roller, Some(f.goblin));
+        }
+        let source_roll = Box::pin(f.roll(TableTransportChannel::Host, 2)).await;
+        if let Some(opponent) = shared_opponent {
+            let tied = f.state().await;
+            let rules = tied.rules.as_ref().unwrap();
+            assert_eq!(rules.rolls.len(), 2);
+            assert!(rules.pending.is_none());
+            for (index, actor, accepted_by, face, total) in [
+                (0, f.actors[0], pc_roll.command_id, 18, 20),
+                (1, f.goblin, source_roll.command_id, 2, 4),
+            ] {
+                let roll = &rules.rolls[index];
+                assert_eq!(roll.request.id, groups[index].request_id);
+                assert_eq!(roll.request.roller, Some(actor));
+                assert_eq!(roll.request.mode, RollMode::Normal);
+                assert_eq!(roll.request.dice, vec![DieSpec { count: 1, sides: 20 }]);
+                assert_eq!(roll.request.modifier, 2);
+                assert_eq!(roll.result.source, RollSource::Physical);
+                assert_eq!(roll.result.dice, vec![DieResult { sides: 20, value: face }]);
+                assert_eq!(roll.accepted_by.id, accepted_by);
+                assert_eq!(roll.resolved.total, total);
+            }
+            let flow = tied.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+            assert_eq!(flow.initiative_groups, groups);
+            assert_eq!(flow.phase, TacticalPhase::InitiativeTies { ties: vec![InitiativeTie {
+                total: 4, actors: vec![f.goblin, opponent], proposed_order: None,
+                accepted_by: vec![], host_decided: false,
+            }] });
+            Box::pin(f.host(TableAction::Tactical {
+                action: TacticalAction::ProposeInitiativeTie {
+                    order: vec![f.goblin, opponent],
+                },
+            })).await;
+            let ready = f.state().await;
+            let final_rules = ready.rules.as_ref().unwrap();
+            assert_eq!(final_rules.rolls, rules.rolls);
+            let flow = ready.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+            assert_eq!(flow.phase, TacticalPhase::Active);
+            assert_eq!(flow.initiative_groups, groups);
+            assert_eq!(flow.initiative_decisions, vec![InitiativeTie {
+                total: 4, actors: vec![f.goblin, opponent],
+                proposed_order: Some(vec![f.goblin, opponent]), accepted_by: vec![],
+                host_decided: true,
+            }]);
+            let timing = final_rules.timing.as_ref().unwrap();
+            assert_eq!(timing.index, 0);
+            assert_eq!(timing.order.iter().map(|entry| (entry.actor, entry.total, entry.tie_break))
+                .collect::<Vec<_>>(), vec![(f.actors[0], 20, 0), (f.goblin, 4, 0), (opponent, 4, 1)]);
+        } else if f.opponent.is_some() {
             Box::pin(f.roll(TableTransportChannel::Host, 1)).await;
         }
         f
