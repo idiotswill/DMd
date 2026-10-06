@@ -459,3 +459,32 @@ unchanged attack-roll history, no damage die,81HP and one shared use/Reaction;
 the blocked path asserts a real Dagger damage roll,77HP and zero Shield cost.
 All five new current-Mage application cases remain UNCOMPILED/UNRUN. No existing
 material case, historical helper or old test body changed in this addition.
+
+On exact a2bb62b, the canonical architecture and genericity launchers passed
+locally. The architecture checker unit suite reported eight tests with one
+existing Windows symlink-privilege skip (seven executed successfully); Linux CI
+must exercise that fixture. These lightweight source checks did not run Cargo
+or claim combined runtime acceptance. Full a2 CI remains queued.
+
+## Current physical purchases with incoming grips and owned Graze completion
+
+Add two named Greatsword/Glaive application cases using presented current
+physical character creation, exact purchase/materialization and real Goblin V2
+creation. Reuse the existing battlefield/initiative setup by introducing one
+explicit optional physical-creation path: existing `with_opponent_geometry`
+delegates with `None`, preserving every old command and assertion; the new
+`with_physical_weapon` entry selects the current creation pin and adds the
+chosen purchase/masteries. Preserve the raw old helper and prove the reviewed
+inverse to its entire file; no existing test body may change.
+
+Equip the actual two-hand weapon via a paid initial attack and decline its real
+Graze miss, then let the Host Goblin establish a right-hand grip on the PC after
+a physical failed save. On the PC's next turn, the real held weapon attacks its
+grappler with a normal physical roll. Its miss must retain Grapple admission,
+pause for actual Graze apply/decline, then enter owned AfterAttack equipment only
+after that decision and attack retirement. Verify original weapon/custody,
+parent/completion provenance, no fabricated damage dice, unchanged live grip,
+and actual stow/decline. Foreign capability/owner and forged completion-parent
+submissions must leave all populated database rows unchanged. Every gameplay
+cut uses existing cold/portable/exact retry verification. Death/concentration/
+fall, supporting-hand Glaive OA and Ogre/LR combinations remain separate work.
