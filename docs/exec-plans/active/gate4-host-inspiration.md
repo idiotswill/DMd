@@ -210,3 +210,18 @@ scenarios, all input values, retry operations and assertions. Old tests and
 production code remain untouched. Root owns this correction. Push a fresh
 head for the full checks; these first-head failures remain recorded and the
 ten application plus thirteen frontend cases are not yet verified.
+
+## Actual saved-award recovery defect — 2026-10-06
+
+After the syntax correction, aebd1d3 passed Svelte static checking with zero
+errors/warnings. Windows stable job112184298155 ran 153 frontend cases:151
+passed and two award-retry cases failed. Both actual failures show that the
+saved-request loader rejects AwardHeroicInspiration on restart; the outer
+action was missing from its local recovery allowlist. The reroll retry and
+all seven new component cases passed on this head. Preserve these original
+regressions and fix production loading with a dedicated v4 Host-only award
+shape, retaining the original saved identity/reason rather than rebuilding it.
+Add refusal coverage for old versions, non-Host channels and malformed award
+payloads. Application authority remains enforced by the existing Rust reducer.
+The retained actual log is external pr69-aeb-ci-112184298155-2026-10-06.log.
+New full checks remain required on the correction; no native acceptance yet.

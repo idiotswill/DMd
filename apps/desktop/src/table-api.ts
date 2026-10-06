@@ -127,6 +127,9 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (request.action === 'EnableGrappleAccess') return request.version === 3 && channel === 'Host';
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
+  if (kind === 'AwardHeroicInspiration') return request.version === 4 && channel === 'Host'
+    && object(payload) && Object.keys(payload).length === 2
+    && id(payload.character_id) && typeof payload.reason === 'string' && payload.reason.trim().length > 0;
   if (['EnableSourceActorAccess','SetSourceCreatureController'].includes(kind)) return (request.version === 2 || request.version === 3 || request.version === 4) && channel === 'Host' && object(payload);
   if (sourceChannel && kind !== 'Tactical') return false;
   return ['UpdateContract','AddPlayer','CreateCharacter','CreateCreature','PrepareEquipment','PrepareBattlefield','Tactical','StartSession','SetSituation','CancelDecision','Adjudicate','SubmitPhysical'].includes(kind) && object(payload);
