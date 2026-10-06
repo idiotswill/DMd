@@ -1,5 +1,48 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 6 retained-core reserved-hand diagnostic correction
+
+Exact `ff0e10351df4c8c1e9341e4c1ee2dffde2283dc6`, tree
+`e7d0d9f8eaf848235c8ebe553b34324b8245985e`, passed formatting, strict
+domain/rules/app all-target Clippy, opportunity1, owner10 and attack15. The
+retained-core24 command then passed23 and failed1 at 05:56:18 UTC. Preserve its
+full log, SHA256
+`7df5af8b4d91190adc7fc65da2a98ffc22fc4e8f8237513a9ec9568d87b72ffc`.
+The exact focused82 attempt therefore has49 passed,1 failed and32 unrun; no
+later command ran. Prior failures remain preserved, and no old result transfers
+to the next source head.
+
+Root transferred sole source writing for this narrow correction. An independent
+reader confirmed the full failed log, complete retained-core test and actual
+callers. The existing
+`retired_live_grip_rejects_physical_overlap_before_release_can_erase_it` control
+creates a real retired Attempt with a live grip, then forges a carried physical
+item into that reserved hand. Its physical-only inventory validation succeeds;
+the Grapple validator must reject before release can erase the reservation.
+The failure is its first diagnostic assertion, not an accepted invalid state.
+
+`validation::validate` first calls `admission::supported_context`, which calls
+`live_constraints`. That early guard already rejects the non-Free physical hand
+with `RulesError::Prerequisite`, but reports `overlaps a live grip`. The unchanged
+test and later `EffectiveHands::validate_loadout` use `overlaps a reserved hand`.
+`release_with_context` validates before `end_grip`, so preserving this early guard
+also preserves the release refusal and atomic input protection.
+
+Commit this amendment before implementation. Change only the early message to
+`current physical equipment overlaps a reserved hand` in `grapple/admission.rs`.
+Preserve its predicate, `prerequisite` constructor, validation order and every
+other source byte. Preserve the complete original test, both message assertions,
+whole-state and live-grip equality, valid release control, and all82 selected
+test bodies/names. Do not replace the early guard with the later Invalid error or
+weaken the test to accept arbitrary refusal text.
+
+Return a clean unformatted source freeze and exact Git-byte preservation audit
+for root review. This source-only task authorizes no formatter, compiler, tests,
+DB, npm, native, push or CI. Root separately allocates formatting and new-head82
+verification after review; canonical/public/application/native and Gate4
+acceptance obligations remain unchanged. This amendment and correction provide
+no new runtime pass or public activation.
+
 ## October 6 formatted correction freeze
 
 Root read and accepted the complete unformatted initiative correction at
