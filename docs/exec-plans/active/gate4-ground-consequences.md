@@ -1,5 +1,111 @@
 # Gate 4 — Ground equipment across real attack consequences
 
+## Ground receipt frozen for root review — 2026-10-06
+
+Plan `bb577c15f3f77d582d88106576a911acbf8d3471` preceded normal merge
+`c25ed409241f2b647f682a7c42f1c89efecc52b0`, tree
+`013a8e0bee8ab475b2d59e54b96211465a7cceb1`. Its parents are that plan and
+exact Ground `f9e466430cd753a9056054394f71137fd205b5e8`. The merge was clean,
+with no conflict or manual source adaptation. Its entire patch equals the exact
+Ground ancestor-to-f9 patch, and both incoming blobs equal reviewed f9.
+
+The static receiving audit proves all613 other receiver entries remain exact
+1fe2f4a, including all four receiver-specific source entries outside this plan.
+The corrected Shield and Chimera files retain their full exact bytes, including
+the raw0/component3 assertions; concentration and registrations are unchanged.
+All610 other Ground entries are exact between a7 and f9. The 11 original Ogre
+functions outside `prepare`, all four original test names/bodies, and the whole
+file outside that helper remain exact. All616 tracked working files match the
+merge tree after CRLF normalization. This final status commit edits only this
+plan and preserves its complete original body and every prior failure record.
+
+External merge audit `ground-f9-consequences-receipt-c25ed40-2026-10-06.json`
+has SHA-256 `49563c31a2922029a70f92ac693d1199e32e2aa4bb53d1f7b811f3440f514767`.
+The final clean freeze and complete receiving delta receive a separate hash
+audit at handback. No formatter, compiler, tests, npm, database, native app or
+push ran for this receipt. Root resumes sole ownership for complete independent
+receiving review, publication and fresh exact-head checks. The previous failed
+runtime evidence and remaining integrated/native/Gate4 obligations stay open.
+
+## Reviewed Ground geometry receipt — planned 2026-10-06
+
+Root allocated sole writing for this receipt to `private_grapple_oct6` from clean
+`1fe2f4aff7dea056f27a4dcce0afc27efab8b33e`, tree
+`fcfbbaf0937f8a98180d75a3efdf653464fc4f2c`. Fetch and complete receiving-plan
+review precede this checkpoint. Commit this plan before normally merging whole
+reviewed and published Ground `f9e466430cd753a9056054394f71137fd205b5e8`, tree
+`0f2dbd88de53714fed3aeac8267334ab0eb02df5`, using `--no-ff`.
+
+The sole common ancestor is `a7d40848c8b8588261444bdb5af19f13389b5336`.
+The incoming Ogre helper and Ground production plan both still equal that
+ancestor in this receiver. The full two-file delta and actual shared setup were
+read: normal accepted placement puts the Ogre at X20 beside the PC at X10,
+updates the ruling to adjacent occupied cells, and checks actual distance10
+before Begin. All original Ogre scenario bodies remain exact. This addresses
+the inherited four reach failures without changing production geometry, source,
+item, dice, custody or any original capture.
+
+Keep the complete corrected Shield and Chimera files exact1fe2f4a: raw request
+modifier0, full retained Piercing1d4-plus3 component equality, critical2d4,
+actual11 damage, every subsequent consequence and all other assertions. Keep
+the concentration file, registrations, original controls and all other receiving
+blobs exact, except this plan. Root separately checked both corrected files with
+the direct formatter; this receipt runs no formatter and claims no runtime pass.
+The complete incoming helper and Ground plan must equal f9 after merge, and
+all610 other Ground entries remain exact between a7 and f9. No copied hunks,
+cherry-picks or speculative source reconciliation are allowed; report an actual
+semantic conflict to root before resolving it.
+
+After the normal merge, inspect the whole receiving delta, prove every source
+blob belongs unchanged to the receiving input or the exact incoming correction,
+record parents/tree and freeze clean for root review. This is a development
+receipt within the existing product/Gate4/ADR scope; all Shield/concentration/
+fall, Graze, privacy, replay and native obligations remain. Root retains the
+heavy slot and all later verification/publication. No formatter, compiler,
+tests, npm, database, native application or push is allocated here. Prior actual
+failures stay recorded; fresh exact receiving-head verification remains due.
+
+## Exact-head raw damage request correction — 2026-10-06
+
+Root transferred sole source writing for this bounded correction from freshly
+fetched, clean `a27d50452577f9a6b2cb8b7419443ed5324c6a60` to `ci_oct6`.
+The complete active plan and actual producer/packet paths were read before
+this plan. Commit it before source changes. No Ground59ee receipt or separate
+Graze correction is included; those remain independently reviewed work.
+
+Actual Linux111757575667 and Windows111757430377 each reached nine Rust
+harnesses with 142 passed and six failed. Their table harness had 67 passed and
+six failed: four inherited Ogre geometry failures, plus this Shield critical
+case at table_ground_consequence_cases.rs:645 and Chimera fall case at
+table_ground_fall_cases.rs:245. Both new failures assert raw request modifier3
+but observe0. Full logs and the previous failed checks remain evidence; prior
+authored/unrun checkpoints below are historical, not current runtime claims.
+
+The production request builder in tactical/attacks.rs deliberately flattens
+damage dice, doubles their counts on a critical, and sets the physical request
+modifier to0. The retained authoritative AttackDamageComponent keeps the base
+Piercing1d4 with modifier3. The damage packet starts with each component's
+modifier once and then adds the raw faces; a critical's two4s still cause11
+damage. Putting3 on the raw request is not the existing representation and no
+production damage or request change is justified.
+
+Change only those two raw-request expectations to0. At each same pending cut,
+add complete equality against the authoritative attack.damage vector containing
+exactly one Piercing component with1d4 and modifier3. Preserve the existing
+critical raw2d4 assertion and every subsequent11-damage/HP, source/payment,
+response cause, knockout/fall ancestry, equipment, private-view, cold/portable,
+retry and hostile-record control. Do not change the concentration case or any
+production, content, original fixture or other test body. This corrects which
+surface owns the modifier while retaining the full damage obligation.
+
+This preserves the existing Gate4/product/ADR acceptance boundaries. Freeze the
+unformatted source for independent root review and complete-byte preservation
+audit. No formatter, compiler, tests, database, native application, push or
+descendant mutation is allocated to this writer. Root schedules focused same
+Shield/fall cases and required full exact-head verification after correction;
+the observed Ogre failures still require the separately reviewed whole Ground
+receipt. No feature, native or Gate4 acceptance is claimed by this source fix.
+
 ## Corrected source-registry receipt — planned 2026-10-05
 
 Root resumes sole ownership of this branch at

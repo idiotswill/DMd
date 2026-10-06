@@ -242,7 +242,28 @@ async fn run_case(f: &mut Fixture, path: &Path) {
         let pending = view(f, &player(f)).await.roll.unwrap();
         assert_eq!(pending.mode, RollMode::Normal);
         assert_eq!(pending.dice, vec![DieSpec { count: 2, sides: 4 }]);
-        assert_eq!(pending.modifier, 3);
+        assert_eq!(pending.modifier, 0);
+        {
+            let damage_state = state(f).await;
+            let resolution = damage_state
+                .encounter
+                .as_ref()
+                .unwrap()
+                .flow
+                .as_ref()
+                .unwrap()
+                .resolution
+                .as_ref()
+                .unwrap();
+            assert_eq!(
+                resolution.attack.as_ref().unwrap().damage,
+                vec![AttackDamageComponent {
+                    damage_type: DamageType::Piercing,
+                    dice: vec![DieSpec { count: 1, sides: 4 }],
+                    modifier: 3,
+                }]
+            );
+        }
         assert_eq!(
             state(f)
                 .await
