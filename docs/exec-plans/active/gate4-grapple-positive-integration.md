@@ -1,5 +1,40 @@
 # Grapple Group 3 whole-source integration
 
+## Actual local rules failures and bounded correction — 2026-10-06
+
+Root's exclusive fresh-target GNU Rust1.98.1 run on14ce compiled successfully
+and reported295 rules-library passes/21 failures. The earlier shared-target
+attempt used a stale Ground domain artifact and reported131 missing symbols
+that exist in this source; its failure remains recorded separately. No source
+changed between attempts. Fresh log SHA256 is
+ec3e98beae1ab955df4d321251444455ce478a09831403b6d9755ec7bd9005fa.
+The nine new application cases have not yet run because the runner stopped at
+the failing rules library. Full CI and native acceptance remain open.
+
+Twenty failures are the unchanged private after-equipment controls: retained
+reconstruction calls public prepare_weapon_attack on its bounded before-image.
+That fresh public entry correctly requires Ground activation and rejects these
+deliberately constructed private producer fixtures. Before integration, retained
+reconstruction called the private physical calculation. Restore that distinction
+only in planning::reconstruct_with_read's already checked None branch by calling
+prepare_tactical_weapon_attack. Keep the attached-read identity, retained
+AttackRead, raw-Grapple refusal, activated paid-reader and all source/stage checks.
+The Some branch keeps its actual owned historical read. Do not relax public
+prepare_weapon_attack or add activation to old fixtures to conceal the regression.
+
+The remaining ground hand test uses install_attempt, now correctly constructing
+flow5, then assigns5 again while expecting an unsupported-version refusal.
+Migrate only that negative probe to unsupported6 and correct its supported-flow
+comment to5. Preserve every original assertion, physical candidate equality,
+reserved/right versus free/left control and separate raw-admission refusal.
+This is the sole planned existing-test expression change, justified by the
+current domain validator's exact flow5 contract; no production version broadens.
+
+Commit this plan before either edit. Inspect the complete two-file delta and
+prove all other source/test bytes unchanged, then rerun the full rules library,
+the nine intended application cases and strict affected checks on the new head.
+Root remains sole writer. All earlier failures and Gate4 obligations remain.
+
 ## Root receipt of verified Goblin fixture correction — 2026-10-06
 
 Root remains sole writer. The incoming explicit V2 Goblin fixture correction
