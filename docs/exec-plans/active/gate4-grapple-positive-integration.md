@@ -394,25 +394,29 @@ concrete receiving defect without weakening tests, then author those positives.
 The coherent union is published as draft PR70 at658c87f/tree9664186; full CI is
 queued. Add a separate support module with two named current-Mage scenarios:
 an actual Host-controlled V2 Mage grips a PC with its left hand after the PC's
-physical Dexterity save fails. Finish the paid equipment cut either unchanged
-or by equipping its original Wand in the right hand. Assert exact current
-source/anatomy/accepted-command provenance and refusal of equipment in the
-reserved hand. On the Mage's next turn, cast actual Mage Armor using respectively
-the accessible specified material while the grip remains live, or after first
-releasing the grip when the other hand holds the Wand. Reject a Wand-as-focus
-substitution: the exact Mage source supplies no physical focus grant. In the
-Wand-held case, assert that the reserved/free-hand distinction blocks specified
-material access until release. Reject a wrong player without changing any
+physical Dexterity save fails. Finish the paid equipment cut unchanged. In the
+second case, use the next ordinary turn to grip an adjacent Goblin with the
+right hand after its own physical save. Assert exact current source/anatomy/
+accepted-command provenance and refusal of equipment in a reserved hand. On a
+later Mage turn, cast actual Mage Armor using the accessible specified material
+with one grip; with two grips, release one before casting while the other stays
+live. Reject a Wand-as-focus substitution: the exact Mage source supplies no
+physical focus grant. Assert that physically empty but reserved hands block
+specified material access until release. Reject a wrong player without changing any
 destination rows. Continue through the
 existing cold/portable/exact-retry helper at every gameplay cut; release the
 actual grip afterward and preserve source and physical item identities.
 
 These two cases are additive. Do not change the old-Mage assertion or an old
-fixture/helper to make them pass. S-only Shield reservation/release, two-grip
-limits, the other physical/source scenarios and native equivalents remain due.
+fixture/helper to make them pass. S-only Shield reservation/release, the other
+physical/source scenarios and native equivalents remain due.
 
 Source inspection corrected the initial focus-positive design before authoring
 tests: tactical_spells/binding.rs explicitly rejects substitute components
 without a source-backed physical grant; the immutable Mage plan forbids adding
 a focus waiver. Mere Wand gear supplies no grant. Test this current boundary
 and lawful specified-material behavior; do not invent a positive focus receipt.
+Further physical-path review found that Attack-action equipment changes rightly
+admit weapons only; Wand is Gear. The two-reservation case therefore uses two
+actual paid grips, not an unavailable Wand equip menu. General Gear handling is
+not supplied by these tests. No production guard or old test was changed.
