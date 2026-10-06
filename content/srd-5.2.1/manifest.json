@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 3369,
+      "byte_len": 3897,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "849083ed0f02650b"
+        "value": "cf0762dc84e06aa8"
       }
     },
     {
@@ -53,6 +53,14 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "fb84cb6236c1303f"
+      }
+    },
+    {
+      "path": "night-hag-v2.json",
+      "byte_len": 2731,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "bc0d25b2db9c04ad"
       }
     }
   ]

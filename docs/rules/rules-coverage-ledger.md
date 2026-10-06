@@ -4,6 +4,12 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
+Current integration note, 2026-10-05: PR50 is accepted at main
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`. The [release plan](../exec-plans/active/gate4-encounter-release.md)
+retains successful literal-dbf checks. Separate literal32 runtime verification
+is pending. Older candidate statements below remain historical evidence. No
+Gate4 family status or player-acceptance claim changes.
+
 ## What is accounted for
 
 The ledger has 55 rules/content families. Every family has one numeric `primary_gate`, legal/source citations, explicit scope, status, mechanical test evidence, production integration evidence, player acceptance evidence and final Gate 14 ownership. Empty evidence arrays mean no such evidence is claimed. An inventory entry inherits its owning family's scope and gate accounting; a primitive family's integration status does not declare every source subrule implemented. Listing a spell or creature does not implement it.
@@ -97,12 +103,39 @@ inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled wi
 all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
 canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
 (783 Linux /785 MSVC); the plan records exact logs and independent review.
-Final documentation-head checks/review, protected merge and literal main proof
-remain outstanding. No evidence array or family status
+PR50 subsequently passed its final checks/review and merged at main32c0c68;
+separate literal-main32 runtime proof remains pending. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
 slice still owes its genuine paid Prone-immunity continuation and recovery.
+
+The bounded [Magic Resistance source prerequisite](../exec-plans/active/gate4-magic-resistance-source.md)
+now records complete corrected d4bb42c CI:791 Linux/793 MSVC Rust tests, including
+the independently audited Windows partition union and verified unopened package.
+Local canonical and real native MR play/recovery remain pending. The historical authored
+checkpoints below retain their original status; current evidence and exact failed
+Windows attempts are qualified in the MR plan. No family or evidence array advances.
+
+Historical MR source checkpoint: the bounded prerequisite
+adds a separate selected Night Hag revision with its printed trait, exact same-ID
+revision lookup and current-admission separation. Private save categories derive
+from canonical spell work, retained source clauses or the audited nonmagical breath
+and Concentration causes. Tests for source/admission/content integrity, synthetic
+category composition and real Hold Person-Fiend/breath controls are authored only;
+no compile, test, native or production evidence is claimed and no evidence array
+advances. Real positive MR via Counterspell and a genuine repeated-save mechanism
+remain Gate 4 requirements, as does old/new same-ID application coexistence after
+the separately accepted encounter-release integration or an original pre-encounter
+capture. Historical source payloads, picker bytes and accepted fixtures stay frozen.
+
+Historical coexistence checkpoint: the locally integrated release/source candidate includes an independently
+reviewed genuine old/new Hag coexistence child of the frozen Shield-Hit replay
+suite. It completes original pending work, explicitly upgrades/releases, creates
+the current revision and authors both revisions' later real spell execution and
+cold persistence controls. The imported test is **UNCOMPILED/UNRUN**; its presence
+does not close coexistence or provide positive Magic Resistance gameplay evidence.
+Both development dependencies remain subject to separate acceptance.
 
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Integrated

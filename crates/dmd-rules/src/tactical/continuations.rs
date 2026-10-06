@@ -53,13 +53,14 @@ pub(super) fn save_request(
     key: TacticalRollKey,
     ability: Ability,
     reason: &str,
+    cause: super::save_cause::SaveCause<'_>,
 ) -> Result<Option<RollRequest>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let disposition = tactical_conditions::save_conditions(
         rules,
         actor,
         ability,
-        Circumstances::default(),
+        super::save_cause::circumstances(state, actor, ability, cause)?,
         dodge_context(state, actor)?,
     )?;
     let TestDisposition::Roll(mode) = disposition else {
@@ -330,13 +331,19 @@ pub(super) fn request(
             key,
             Ability::Constitution,
             "Concentration saving throw",
+            super::save_cause::SaveCause::Concentration,
         ),
         TacticalWorkKind::Effect { ticket: id } => {
             let ticket = ticket(state, *id)?;
             match &ticket.payload {
-                EffectTriggerPayload::SavingThrow { ability, .. } => {
-                    save_request(state, ticket.target, key, *ability, "Effect saving throw")
-                }
+                EffectTriggerPayload::SavingThrow { ability, .. } => save_request(
+                    state,
+                    ticket.target,
+                    key,
+                    *ability,
+                    "Effect saving throw",
+                    super::save_cause::SaveCause::Repeated(ticket),
+                ),
                 EffectTriggerPayload::Damage { dice, modifier, .. } => Ok(Some(RollRequest {
                     id: key.request_id(),
                     roller: Some(ticket.source.actor),

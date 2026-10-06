@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  DMD_SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+
 concurrency:
   group: desktop-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
@@ -40,6 +43,14 @@ jobs:
           shared-key: desktop-${{ matrix.rust }}
           cache-workspace-crates: false
           cache-on-failure: true
+      - uses: actions/setup-python@v7
+        if: matrix.rust == 'stable'
+        with:
+          python-version: '3.11'
+      - name: Test the exhaustive native coverage guard
+        if: matrix.rust == 'stable'
+        shell: pwsh
+        run: python -B -m unittest discover -s scripts/tests -p test_windows_test_partition.py
       - name: Frontend checks, tests, static build and application icons
         shell: pwsh
         run: ./scripts/desktop-prepare.ps1
@@ -54,16 +65,109 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo clippy --locked -p dmd-desktop --all-targets --target x86_64-pc-windows-msvc -- -D warnings
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run workspace regressions on native Windows
+      - name: Run native workspace regressions except the isolated recovery case
         if: matrix.rust == 'stable'
         shell: pwsh
-        run: cargo test --locked --workspace --target x86_64-pc-windows-msvc
+        run: python -B scripts/windows_test_partition.py run remainder --output "$env:RUNNER_TEMP/dmd-windows-tests-remainder"
+      - name: Preserve remainder logs and verified evidence
+        uses: actions/upload-artifact@v7
+        if: always() && matrix.rust == 'stable'
+        with:
+          name: dmd-windows-tests-remainder-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dmd-windows-tests-remainder/
+          retention-days: 14
+
+  isolated:
+    name: Windows isolated recovery regression
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-stable
+          cache-workspace-crates: false
+          cache-on-failure: true
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Prepare desktop assets for complete workspace discovery
+        shell: pwsh
+        run: ./scripts/desktop-prepare.ps1
+      - name: Run exactly the isolated case with workspace feature resolution
+        shell: pwsh
+        run: python -B scripts/windows_test_partition.py run isolated --output "$env:RUNNER_TEMP/dmd-windows-tests-isolated"
+      - name: Preserve isolated logs and verified evidence
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: dmd-windows-tests-isolated-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dmd-windows-tests-isolated/
+          retention-days: 14
+
+  package:
+    name: Windows verified package
+    needs: [windows, isolated]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v8
+        with:
+          name: dmd-windows-tests-remainder-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dmd-windows-tests-remainder/
+      - uses: actions/download-artifact@v8
+        with:
+          name: dmd-windows-tests-isolated-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dmd-windows-tests-isolated/
+      - name: Prove the actual passing sets cover the complete workspace exactly once
+        shell: pwsh
+        run: >-
+          python -B scripts/windows_test_partition.py validate
+          --remainder "$env:RUNNER_TEMP/dmd-windows-tests-remainder"
+          --isolated "$env:RUNNER_TEMP/dmd-windows-tests-isolated"
+          --output "$env:RUNNER_TEMP/dmd-windows-test-coverage.json"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dmd-windows-test-coverage-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/dmd-windows-test-coverage.json
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-stable
+          cache-workspace-crates: false
+          cache-on-failure: true
+      - name: Prepare the verified source for packaging
+        shell: pwsh
+        run: ./scripts/desktop-prepare.ps1
       - name: Build and package fresh release application and offline installer
-        if: matrix.rust == 'stable'
         shell: pwsh
         run: ./scripts/desktop-package.ps1
       - uses: actions/upload-artifact@v7
-        if: matrix.rust == 'stable'
         with:
           name: dmd-windows-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/desktop/

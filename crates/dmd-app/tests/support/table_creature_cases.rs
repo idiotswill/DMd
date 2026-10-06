@@ -10,6 +10,11 @@ async fn current_catalog_creates_air_through_owned_transport_and_cold_restore() 
     current_catalog_creates_pinned_source("air-elemental").await;
 }
 
+#[tokio::test]
+async fn current_catalog_creates_corrected_hag_through_owned_transport_and_cold_restore() {
+    current_catalog_creates_pinned_source("night-hag").await;
+}
+
 async fn current_catalog_creates_pinned_source(definition_id: &str) {
     let directory =
         std::env::temp_dir().join(format!("dmd-current-catalog-{}", CampaignId::new().0));
@@ -134,12 +139,42 @@ async fn current_catalog_creates_pinned_source(definition_id: &str) {
         })),
     };
     assert!(mage.source.is_some());
+    assert_eq!(
+        catalog
+            .iter()
+            .filter(|entry| entry.definition_id == definition_id)
+            .count(),
+        1
+    );
+    if definition_id == "night-hag" {
+        assert!(
+            mage.abilities
+                .iter()
+                .any(|ability| ability == "Magic Resistance")
+        );
+        assert_eq!(
+            mage.source,
+            Some(
+                dmd_rules::tactical_creatures::creature_source_pin(
+                    dmd_rules::tactical_definitions::bundled_night_hag_v2().unwrap()
+                )
+                .unwrap()
+            )
+        );
+        assert!(
+            !mage
+                .omitted_features
+                .iter()
+                .any(|id| id == "magic-resistance")
+        );
+        assert!(mage.omitted_features.iter().any(|id| id == "soul-bag"));
+    }
     if definition_id == "air-elemental" {
         assert!(!mage.execution_limits.is_empty());
     }
     // Refused live commands are not historical producers. Absence is never filled
     // by normalization and cannot select the newly admitted source.
-    for bad_pin in 0..3 {
+    for bad_pin in 0..if definition_id == "night-hag" { 4 } else { 3 } {
         let before_refusal = export_campaign(&f.pool, f.campaign).await.unwrap();
         let mut rejected = request.clone();
         rejected.command_id = CommandId::new();
@@ -154,7 +189,15 @@ async fn current_catalog_creates_pinned_source(definition_id: &str) {
             1 => {
                 creation.source.as_mut().unwrap().definition_fingerprint = "0000000000000000".into()
             }
-            _ => creation.source.as_mut().unwrap().ruleset_version = "5.2.2".into(),
+            2 => creation.source.as_mut().unwrap().ruleset_version = "5.2.2".into(),
+            _ => {
+                creation.source = Some(
+                    dmd_rules::tactical_creatures::creature_source_pin(
+                        dmd_rules::tactical_creatures::creature_definition("night-hag").unwrap(),
+                    )
+                    .unwrap(),
+                )
+            }
         }
         assert!(
             Box::pin(f.runtime.submit_presented_table(rejected))

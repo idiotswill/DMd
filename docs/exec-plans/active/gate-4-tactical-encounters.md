@@ -2,7 +2,13 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-## Current integration checkpoint — 2026-10-01
+Current accepted main is `32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50.
+The [release plan](gate4-encounter-release.md) retains successful literal-dbf
+checks; the [Air plan](gate4-air-elemental-source-admission.md) records its own
+source evidence. Separate literal-main32 runtime verification is pending.
+Candidate statuses below are historical; all remaining Gate4 obligations stay open.
+
+## Historical integration checkpoint — 2026-10-01
 
 Fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
 PR48 merge. Final reviewed head d4 passed all six checks and has exactly the same

@@ -1,6 +1,18 @@
 # Gate 4 — Authenticated encounter release and the next battlefield
 
-Status: integrated source `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` passes
+Current status, 2026-10-04: PR48 is accepted at main
+`dbf1d633460473183324b4ec519e8d1980884b5c`. Separate literal-main CI runs
+[36834974479](https://github.com/idiotswill/DMd/actions/runs/36834974479) and
+[36834974592](https://github.com/idiotswill/DMd/actions/runs/36834974592) completed
+all six checks successfully (776 Linux / 778 Windows Rust tests). Native and local
+canonical evidence below remains attributed to source8c; no new native execution
+of the main package is claimed. Gate4 and its other slices remain unaccepted.
+
+October5 dependency update: Air PR50 is accepted at main32c0c68. The successful
+literal-dbf checks above retain their exact attribution; separate literal32
+runtime checks are pending. The release's source/native evidence is unchanged.
+
+Historical receiving status: integrated source `8c03f9fb0058610fd37c0cfe7762e8b96d658f38` passes
 canonical verification, all six CI jobs and the actual packaged two-encounter
 continuation with Finished and pending-attack cold restarts. Original-source flow 4
 capture/baseline and all eight receiving continuations pass. Independent source,

@@ -1,5 +1,10 @@
 # Gate 4 Air Elemental immutable source admission
 
+October5 receiving status: PR50 is accepted at main
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after its final checks and review.
+Separate literal-main32 runtime verification remains pending. The dated source
+evidence and then-pending publication steps below retain their historical meaning.
+
 Status, 2026-10-04: integrated `f932c73` passes canonical verification (782 GNU
 Rust tests) and all six CI jobs (783 Linux / 785 MSVC tests). Independent full
 review and the completion-log audit are clear. All 411 non-document files match

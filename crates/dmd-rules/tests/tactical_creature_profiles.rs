@@ -45,6 +45,57 @@ fn fixture() -> (CampaignState, CommandMeta, EntityId) {
 }
 
 #[test]
+fn corrected_hag_is_a_distinct_complete_revision_without_upgrading_old_profiles() {
+    use dmd_rules::tactical_definitions::*;
+    let old = creature_definition("night-hag").unwrap();
+    let current = bundled_night_hag_v2().unwrap();
+    let old_pin = creature_source_pin(old).unwrap();
+    let current_pin = creature_source_pin(current).unwrap();
+    assert_ne!(old_pin, current_pin);
+    assert_eq!(old.id, current.id);
+    assert_eq!(creature_source(&old_pin).unwrap(), old);
+    assert_eq!(creature_source(&current_pin).unwrap(), current);
+    assert!(!old.traits.contains(&MonsterTrait::MagicResistance));
+    assert_eq!(current.traits, [MonsterTrait::MagicResistance]);
+    assert_eq!(
+        current.statistics.saving_throw_modifiers[Ability::Constitution.index()],
+        3
+    );
+    // The stored full revision changes only the approved trait and its omission.
+    // This comparison is a test; production never reconstructs either revision.
+    let mut expected = old.clone();
+    expected.traits.push(MonsterTrait::MagicResistance);
+    let DefinitionCoverage::SelectedFeatures { omitted } = &mut expected.coverage else {
+        panic!("the source is a selected adaptation, not a complete stat block");
+    };
+    assert!(omitted.iter().any(|id| id == "magic-resistance"));
+    omitted.retain(|id| id != "magic-resistance");
+    assert_eq!(*current, expected);
+    let admitted = current_creature_sources().unwrap();
+    assert_eq!(
+        admitted
+            .iter()
+            .filter(|entry| entry.id == "night-hag")
+            .count(),
+        1
+    );
+    assert!(admitted.contains(&current));
+    assert!(!admitted.contains(&old));
+    let (state, meta, actor) = fixture();
+    let selection = choice("night-hag", CreatureSize::Medium);
+    let legacy = build_creature(&state, &meta, actor, &selection).unwrap();
+    let corrected =
+        build_creature_from_source(&state, &meta, actor, &selection, Some(&current_pin)).unwrap();
+    assert_eq!(legacy.profile.source, old_pin);
+    assert_eq!(corrected.profile.source, current_pin);
+    assert_eq!(legacy.mechanics, corrected.mechanics);
+    validate_creature_profile(&state, &legacy.profile, &legacy.mechanics).unwrap();
+    validate_creature_profile(&state, &corrected.profile, &corrected.mechanics).unwrap();
+    assert_eq!(source_for_profile(&legacy.profile).unwrap(), old);
+    assert_eq!(source_for_profile(&corrected.profile).unwrap(), current);
+}
+
+#[test]
 fn mage_import_requires_real_preparation_and_retains_exact_physical_components() {
     let (state, meta, actor) = fixture();
     let mut selection = choice("mage", CreatureSize::Small);
