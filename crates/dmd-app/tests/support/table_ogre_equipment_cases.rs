@@ -187,19 +187,52 @@ async fn prepare(f: &mut Fixture, path: &Path) -> Gear {
         TableTransportInput::Action(Box::new(prepare_equipment)),
     ))
     .await;
-    let battlefield = TableAction::PrepareBattlefield { setup: Box::new(TableBattlefieldSetup {
-        encounter_id: EncounterId::new(), scene_id: SceneId::new(), location_id: LocationId::new(),
-        name: "Visible courtyard".into(), battlefield: Battlefield {
-            bounds: SpatialBox { min: SpatialPoint { x: 0, y: 0, z: 0 }, max: SpatialPoint { x: 200, y: 100, z: 50 } },
-            floor_z: 0, floor_surface: "stone".into(), ambient_light: LightLevel::Bright,
-            terrain: vec![], obstacles: vec![], lights: vec![],
-        }, characters: vec![TableCharacterPlacement { character_id: f.characters[0], position: SpatialPoint { x: 10, y: 10, z: 0 },
-            height: 12, allies: vec![], enemies: vec![actor] }],
-        creatures: vec![TableCreaturePlacement { actor, public_label: "Large armed giant".into(), position: SpatialPoint { x: 30, y: 10, z: 0 },
-            height: 20, allies: vec![], enemies: vec![f.actors[0]] }],
-        area_grid_policy: None, geometry_ruling: Ruling { basis: RulingBasis::GmAdjudication,
-            reason: "Visible level stone courtyard and an unobstructed five-foot gap between occupied spaces.".into() },
-    }) };
+    let battlefield = TableAction::PrepareBattlefield {
+        setup: Box::new(TableBattlefieldSetup {
+            encounter_id: EncounterId::new(),
+            scene_id: SceneId::new(),
+            location_id: LocationId::new(),
+            name: "Visible courtyard".into(),
+            battlefield: Battlefield {
+                bounds: SpatialBox {
+                    min: SpatialPoint { x: 0, y: 0, z: 0 },
+                    max: SpatialPoint {
+                        x: 200,
+                        y: 100,
+                        z: 50,
+                    },
+                },
+                floor_z: 0,
+                floor_surface: "stone".into(),
+                ambient_light: LightLevel::Bright,
+                terrain: vec![],
+                obstacles: vec![],
+                lights: vec![],
+            },
+            characters: vec![TableCharacterPlacement {
+                character_id: f.characters[0],
+                position: SpatialPoint { x: 10, y: 10, z: 0 },
+                height: 12,
+                allies: vec![],
+                enemies: vec![actor],
+            }],
+            creatures: vec![TableCreaturePlacement {
+                actor,
+                public_label: "Large armed giant".into(),
+                position: SpatialPoint { x: 20, y: 10, z: 0 },
+                height: 20,
+                allies: vec![],
+                enemies: vec![f.actors[0]],
+            }],
+            area_grid_policy: None,
+            geometry_ruling: Ruling {
+                basis: RulingBasis::GmAdjudication,
+                reason:
+                    "Visible level stone courtyard with adjacent occupied cells at five-foot reach."
+                        .into(),
+            },
+        }),
+    };
     Box::pin(step(
         f,
         path,
@@ -207,6 +240,16 @@ async fn prepare(f: &mut Fixture, path: &Path) -> Gear {
         TableTransportInput::Action(Box::new(battlefield)),
     ))
     .await;
+    let placed = state(f).await;
+    let encounter = placed.encounter.as_ref().unwrap();
+    assert_eq!(
+        dmd_rules::spatial::participant_distance(
+            encounter.participant(f.actors[0]).unwrap(),
+            encounter.participant(actor).unwrap(),
+        )
+        .unwrap(),
+        10
+    );
     let begin = TacticalAction::Begin {
         execution: TacticalExecutionVersion::EncounterReleaseV1,
         combatants: vec![
