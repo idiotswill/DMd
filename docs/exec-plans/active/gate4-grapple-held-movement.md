@@ -315,3 +315,32 @@ occurred. Static preservation report
 The full formatting patch and token-delta inventory are preserved externally.
 These checks establish formatting/source preservation only. Compiler, all22 new
 cases, all retained suites and native/CI acceptance remain UNRUN on this head.
+
+### Reviewed living-target admission correction, plan before source
+
+Root identified and allocated the bounded follow-up from formatted eeeed2c.
+`grapple/transport.rs::choices` currently filters only outgoing holder identity;
+`admit` checks owner, current turn and horizontal mode but not target vitality.
+The existing `spatial/movement.rs::evaluate_coupled_ground` rejects a dead target
+only after a movement has already been admitted, producing a zero-step stopped
+event. Target death intentionally need not end the grip. Filter offers by the
+actual current rules entity's `death.dead`, and require that same living target
+at typed admission before any movement resolution is created. Preserve grips,
+release, existing death behavior and all geometry/continuation predicates.
+
+Add one genuine application regression in the new ground-transport test module.
+Use the unchanged original Fixture, actual accepted grip, normal turn cycling,
+owned prepared Dagger, physical critical20 plus two4 damage faces and NormalDamage
+to kill the real10HP Goblin Warrior. No HP/death/source/proof edits are allowed.
+Enable transport on that settled actual history; verify no ground-drag offer,
+unchanged live relation and available release. Reconstruct a test-only owned
+CampaignExecution from that exact export's original anchor and typed TableEvents
+using existing public replay APIs and expected nested children. Require complete
+state equality, then assert direct MoveGrappled rejects with the living-target
+prerequisite and leaves the owner unchanged. This is separate from opaque/raw
+transport refusal, which cannot by itself exercise inner admission. Preserve
+all durable rows across rejected transport; cold release must still retire the
+actual grip and replay identically. Keep all original test bodies exact.
+
+This adds source and one UNRUN test only. The prior43-file formatter allocation
+is finished; no further formatting/compiler/runtime is allocated for this fix.
