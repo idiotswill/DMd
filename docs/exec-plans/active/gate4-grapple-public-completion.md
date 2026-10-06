@@ -1,6 +1,6 @@
 # Gate 4 â€” Complete public Grapple application path
 
-Status: **TWO NEW APPLICATION SCENARIOS FAILED; ROOT CORRECTING THEIR SETUPS**.
+Status: **TWO FAILED SCENARIO SETUPS CORRECTED AND REVIEWED; FRESH RUNTIME PENDING**.
 
 ## Actual b4bb application failures and narrow correction — 2026-10-06
 
@@ -45,7 +45,23 @@ unchanged. Root will review the complete delta and preservation audit, publish a
 fresh exact head for CI, and run both failures when the current integration run
 releases the sole local heavy slot. No old pass transfers to this correction.
 Preserve all earlier failure evidence and every outstanding native, receiving,
-Grapple and Gate4 acceptance obligation. Offstage integration remains unstarted.
+Grapple and Gate4 acceptance obligation. Offstage was unstarted at this plan's
+checkpoint and has since begun under its separate checked-in receiving plan.
+
+Correction review: root and public_grapple_oct6 separately read the complete
+delta, both scenario bodies and their actual casting, work-pump, geometry,
+opportunity, support and falling producers. The reviewed test-file SHA256 is
+`27bc28aae7b411683f8b43f7af91f0ba53a06a18f9769d4c636b1ebb87966ced`.
+The platform gives distances10/10/10/18/10 along the original floor/up/up/up/down
+positions, retaining the real departure opportunity and ten-foot floor landing.
+Nineteen other top-level test bodies and the separate four-case corrections
+module are unchanged. Direct changed-file Rustfmt and whitespace checks pass.
+No runtime has yet verified this correction. A separate review confirms the
+Ground-reconstruction defect fixed on integration26fc is absent from this public
+baseline, which has no Ground activation wrapper; do not copy that fix here.
+
+## Earlier implementation allocation (historical)
+
 Date: 2026-10-06. Sole writer for this receiving freeze: private_grapple_oct6, explicitly allocated by root.
 Branch: `codex/gate4-grapple-public-completion`; checkout `gate4-grapple-public-completion`.
 Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree

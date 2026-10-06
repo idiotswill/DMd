@@ -145,6 +145,22 @@ impl Fixture {
         opponent: bool,
         pc_opportunity: bool,
     ) -> Self {
+        Box::pin(Self::with_geometry(
+            definition,
+            size,
+            opponent,
+            pc_opportunity,
+            false,
+        ))
+        .await
+    }
+    async fn with_geometry(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
+        pc_platform: bool,
+    ) -> Self {
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
         std::fs::create_dir(&directory).unwrap();
@@ -299,12 +315,34 @@ impl Fixture {
                         floor_surface: "stone".into(),
                         ambient_light: LightLevel::Bright,
                         terrain: vec![],
-                        obstacles: vec![],
+                        obstacles: if pc_platform {
+                            vec![SpatialObstacle {
+                                id: "grappler-platform".into(),
+                                volume: SpatialBox {
+                                    min: SpatialPoint { x: 10, y: 10, z: 0 },
+                                    max: SpatialPoint {
+                                        x: 20,
+                                        y: 20,
+                                        z: 10,
+                                    },
+                                },
+                                blocks_movement: true,
+                                blocks_sight: true,
+                                observable: true,
+                                cover: CoverDegree::Total,
+                            }]
+                        } else {
+                            vec![]
+                        },
                         lights: vec![],
                     },
                     characters: vec![TableCharacterPlacement {
                         character_id: f.characters[0],
-                        position: SpatialPoint { x: 10, y: 10, z: 0 },
+                        position: SpatialPoint {
+                            x: 10,
+                            y: 10,
+                            z: if pc_platform { 10 } else { 0 },
+                        },
                         height: 12,
                         allies: vec![],
                         enemies: std::iter::once(f.goblin)
@@ -1377,7 +1415,7 @@ async fn activated_unarmed_opportunity_keeps_empty_occurrence_read_and_spends_on
 async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_ids_across_cold_replay()
  {
     let mut f = Box::pin(Fixture::with_source("adult-red-dragon", CreatureSize::Huge)).await;
-    Box::pin(f.activate()).await;
+    let activation = Box::pin(f.activate()).await;
     let pc = f.pc(0);
     let target = f.actors[0];
     Box::pin(f.cold_action(pc, TacticalAction::EndTurn)).await;
@@ -1417,13 +1455,17 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
     .await;
     let mut admissions = Vec::new();
     let mut requests = std::collections::HashSet::new();
+    let mut advancing = casting.clone();
     for index in 0..3 {
         Box::pin(f.advance_choice()).await;
         let issued = f.state().await;
         let cut = assert_empty_attack_reads(&issued);
         let attack = resolution(&issued).attack.as_ref().unwrap();
         let pending = resolution(&issued).pending.as_ref().unwrap();
-        assert_ne!(attack.origin.id, casting.command_id);
+        assert_eq!(attack.origin.id, advancing.command_id);
+        if index > 0 {
+            assert_ne!(attack.origin.id, casting.command_id);
+        }
         assert_eq!(
             cut.reader,
             GrappleReader::AttackAdmission {
@@ -1444,20 +1486,16 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
                 .request
                 .id
         );
-        if index == 0 {
-            let export = export_campaign(&f.pool, f.campaign).await.unwrap();
-            let selected = export
-                .table_transport_bindings
-                .iter()
-                .find(|binding| binding.meta.id == attack.origin.id)
-                .unwrap();
-            let selected: TableTransportRequest =
-                serde_json::from_str(&selected.request_json).unwrap();
-            assert!(matches!(
-                selected.input,
-                TableTransportInput::SelectWork { .. }
-            ));
-        }
+        let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+        let selected = export
+            .table_transport_bindings
+            .iter()
+            .find(|binding| binding.meta.id == attack.origin.id)
+            .unwrap();
+        let selected: TableTransportRequest = serde_json::from_str(&selected.request_json).unwrap();
+        // Singleton ray work advances during casting, then the preceding miss.
+        // The actual accepted request owns admission; raw dice retain the cast.
+        assert_eq!(selected, advancing);
         assert!(!admissions.contains(&cut));
         admissions.push(cut);
         assert!(
@@ -1531,7 +1569,13 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
                     let GrappleReader::RequestIssue { roll } = &mut issue.key.reader else {
                         unreachable!()
                     };
-                    roll.origin = attack.origin.id;
+                    let substituted = if index == 0 {
+                        activation.command_id
+                    } else {
+                        attack.origin.id
+                    };
+                    assert_ne!(substituted, roll.origin);
+                    roll.origin = substituted;
                 }
                 "wrong-cast" => r.casts[0].cast.plan.origin.id = CommandId::new(),
                 "wrong-target" => r.casts[0].targets[0].actor = f.goblin,
@@ -1545,7 +1589,7 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
             }
             Box::pin(reject_state_image(&f, forged)).await;
         }
-        Box::pin(f.cold_roll(TableTransportChannel::Host, 1)).await;
+        advancing = Box::pin(f.cold_roll(TableTransportChannel::Host, 1)).await;
     }
     let after = f.state().await;
     assert!(after.encounter.unwrap().flow.unwrap().resolution.is_none());
@@ -2059,11 +2103,34 @@ async fn actual_source_critical_knockout_ends_the_incapacitated_holders_grip_aft
 
 #[tokio::test]
 async fn actual_chimera_flight_loss_keeps_its_fall_and_issued_dice_after_owner_release() {
-    let mut f = Box::pin(Fixture::with_source("chimera", CreatureSize::Large)).await;
+    let mut f = Box::pin(Fixture::with_geometry(
+        "chimera",
+        CreatureSize::Large,
+        false,
+        false,
+        true,
+    ))
+    .await;
     Box::pin(f.activate()).await;
     let pc = f.pc(0);
     let target = f.goblin;
     Box::pin(f.cold_action(pc.clone(), TacticalAction::EndTurn)).await;
+    let initial = f.state().await;
+    let encounter = initial.encounter.as_ref().unwrap();
+    let grappler = encounter.participant(f.actors[0]).unwrap();
+    assert_eq!(
+        grappler.position,
+        SpatialPoint {
+            x: 10,
+            y: 10,
+            z: 10
+        }
+    );
+    assert_eq!(
+        dmd_rules::spatial::fall_destination(encounter, grappler.entity_id).unwrap(),
+        None
+    );
+    assert_eq!(encounter.battlefield.obstacles[0].id, "grappler-platform");
     Box::pin(f.cold_action(
         TableTransportChannel::Host,
         TacticalAction::Move {
@@ -2073,6 +2140,22 @@ async fn actual_chimera_flight_loss_keeps_its_fall_and_issued_dice_after_owner_r
                         x: 20,
                         y: 10,
                         z: 10,
+                    },
+                    mode: MovementMode::Fly,
+                },
+                TacticalMoveStep {
+                    destination: SpatialPoint {
+                        x: 20,
+                        y: 10,
+                        z: 20,
+                    },
+                    mode: MovementMode::Fly,
+                },
+                TacticalMoveStep {
+                    destination: SpatialPoint {
+                        x: 20,
+                        y: 10,
+                        z: 30,
                     },
                     mode: MovementMode::Fly,
                 },
@@ -2113,6 +2196,16 @@ async fn actual_chimera_flight_loss_keeps_its_fall_and_issued_dice_after_owner_r
         }
     );
     Box::pin(f.cold_action(TableTransportChannel::Host, TacticalAction::EndTurn)).await;
+    let ready = f.state().await;
+    let encounter = ready.encounter.as_ref().unwrap();
+    assert_eq!(
+        dmd_rules::spatial::participant_distance(
+            encounter.participant(f.actors[0]).unwrap(),
+            encounter.participant(target).unwrap(),
+        )
+        .unwrap(),
+        10
+    );
     let attempt = f
         .choose(pc.clone(), "Grapple Small armored figure with left hand")
         .await;
