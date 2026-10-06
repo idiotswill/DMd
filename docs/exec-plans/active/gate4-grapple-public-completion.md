@@ -8,6 +8,27 @@ Exact original parent: `ade8e93b450d6e02027afc7615a555db16b2915d`, tree
 
 ## Allocation, authority and evidence
 
+### Early draft CI and current-main reconciliation (2026-10-06)
+
+The owner handoff requires opening slices early enough for CI. Root therefore
+supersedes the earlier publication restriction below: after complete review of
+the coherent groups 1–2 source and private-history receipt, this branch may be
+published as an explicitly unaccepted draft for exact-head CI. This changes
+verification scheduling only. Group 3 positive dependencies, ordinary drag/carry,
+canonical verification, independent review and packaged native acceptance remain
+mandatory before acceptance or merge. A draft or green partial suite is not
+feature or Gate 4 completion.
+
+The reviewed public receiver is `afbaf9b15b5a86872993d9f1f2ae0da0a81e9ddc`,
+tree `e2a11fa9a1b9494dda6ac8dc7a787666091dfe88`. Before publication, normally
+receive freshly fetched main `5afc992e62bb967aceec69db53f19b6347b70855`.
+Its common ancestor with this branch is
+`f9c0f3df7c6c7ed8c53c41adb95480e634a15c20`; the complete incoming delta changes
+seven documentation paths only. Preserve all production, content, frontend and
+test bytes. Review any documentation union, then freeze and retarget the prepared
+426-case selection with unchanged test identities and command arguments. Preserve
+the unrun afb preparation; no older runtime pass verifies the new public head.
+
 ### Approved whole private correction receipt (2026-10-06)
 
 Root allocated sole receiving ownership to private_grapple_oct6 from clean
@@ -848,8 +869,9 @@ One active completion objective, with four reviewable implementation groups:
 
 For a first allocation, authorize groups1â€“2 as one coherent writer assignment with
 the full contract above retained and group3 dependencies explicitly waiting on
-root verification; do not publish/accept until all required positive cases and
-native evidence are complete. If the replay bridge or v3 boundary needs a broader
+root verification. The early draft-CI amendment above permits publication for
+verification; do not accept or merge until all required positive cases and native
+evidence are complete. If the replay bridge or v3 boundary needs a broader
 shared refactor than mapped here, resolve that concrete design before source,
 without weakening guards or redefining the completion boundary.
 
