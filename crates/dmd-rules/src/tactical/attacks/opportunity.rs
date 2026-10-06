@@ -487,7 +487,22 @@ pub(in crate::tactical) fn begin_opportunity_attack(
     }
     super::super::movement::record_attack(state, meta, actor)?;
     resolution_mut(state)?.attack = Some(attack);
-    push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
+    if crate::table::grapple_enabled(state) {
+        // The selected crossing was left when the pump yielded to its owner.
+        // Reenter that actual work only while allocating this accepted child.
+        let work = super::super::work_trace::prior_work(
+            state,
+            &TacticalWorkKind::MovementOpportunity { reactor: actor },
+        )?
+        .ok_or_else(|| invalid("owned opportunity lost its originating work"))?;
+        let previous = super::super::work_trace::enter(state, &work)?;
+        let queued = push_frame(state, vec![TacticalWorkKind::AttackRoll]);
+        let reset = super::super::work_trace::leave(state, previous);
+        queued?;
+        reset?;
+    } else {
+        push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
+    }
     super::super::grapple::reads::capture_admission(state, meta, proofs)?;
     pump_with_context(state, meta, execution)
 }

@@ -1490,6 +1490,19 @@ async fn activated_source_three_rays_keep_distinct_admission_ancestry_and_raw_id
     let pc = f.pc(0);
     let target = f.actors[0];
     Box::pin(f.cold_action(pc, TacticalAction::EndTurn)).await;
+    let legendary = f
+        .view(TableTransportChannel::Host)
+        .await
+        .tactical
+        .unwrap()
+        .legendary_action
+        .unwrap();
+    assert_eq!(legendary, f.goblin);
+    Box::pin(f.cold_action(
+        TableTransportChannel::Host,
+        TacticalAction::DeclineLegendaryAction,
+    ))
+    .await;
     let options = f
         .view(TableTransportChannel::Host)
         .await
@@ -2185,6 +2198,30 @@ async fn actual_chimera_flight_loss_keeps_its_fall_and_issued_dice_after_owner_r
         },
     ))
     .await;
+    let crossing = f
+        .view(pc.clone())
+        .await
+        .tactical
+        .unwrap()
+        .opportunity
+        .unwrap();
+    assert_eq!(crossing.actor, f.actors[0]);
+    assert_eq!(crossing.target.actor, target);
+    Box::pin(f.cold_action(pc.clone(), TacticalAction::DeclineOpportunity)).await;
+    assert_eq!(
+        f.state()
+            .await
+            .encounter
+            .unwrap()
+            .participant(target)
+            .unwrap()
+            .position,
+        SpatialPoint {
+            x: 20,
+            y: 10,
+            z: 20
+        }
+    );
     Box::pin(f.cold_action(TableTransportChannel::Host, TacticalAction::EndTurn)).await;
     let attempt = f
         .choose(pc.clone(), "Grapple Small armored figure with left hand")
