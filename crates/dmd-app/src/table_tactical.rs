@@ -2,8 +2,6 @@
 use dmd_domain::*;
 use dmd_rules::tactical::*;
 
-use crate::table_engine::table;
-
 #[path = "table_areas.rs"]
 mod areas;
 #[path = "table_attacks.rs"]
