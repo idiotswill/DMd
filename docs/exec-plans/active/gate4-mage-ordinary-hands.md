@@ -1,5 +1,41 @@
 # Gate 4 — Immutable Mage ordinary-hand source
 
+## Reviewed Ground geometry receipt — planned 2026-10-06
+
+Root allocated sole writing for this receipt to `private_grapple_oct6` from clean
+`65cd4b7cea87921aaebfb2b38b5394d4c7f3070a`, tree
+`98f8556e2403afb137c308fa9dfd1a7164334c75`. Fetch and full receiving-plan review
+precede this checkpoint. Commit this plan before a normal whole-history
+`--no-ff` merge of reviewed and published Ground
+`f9e466430cd753a9056054394f71137fd205b5e8`, tree
+`0f2dbd88de53714fed3aeac8267334ab0eb02df5`.
+
+The sole common ancestor is `a7d40848c8b8588261444bdb5af19f13389b5336`.
+Only `table_ogre_equipment_cases.rs` and the Ground production plan changed on
+the incoming side. Both receiver files still equal that ancestor. The complete
+incoming delta and actual shared setup were read: accepted Ogre placement moves
+from X30 to X20 beside the PC at X10, the ruling describes adjacent occupied
+cells, and accepted-state participant distance10 is asserted before Begin.
+All original Ogre scenario bodies remain unchanged. Ground's prior four actual
+reach failures remain evidence; source review and formatting are not a pass for
+this receiving head.
+
+Preserve every Mage-specific source, content identity, current-selector migration,
+coexistence case, and the three reviewed async dereferences exactly as at65cd4b7.
+Preserve all other receiver blobs except this receiving plan. Both incoming
+files must equal exact f9 after merge; all610 other Ground entries must remain
+unchanged between the Ground ancestor and f9. Do not copy hunks, cherry-pick,
+adapt source, or resolve a semantic conflict without reporting it to root.
+
+After the normal merge, inspect its entire delta, audit every Git entry and all
+old Ogre function bodies outside the corrected helper, record both parents and
+tree, and freeze a clean receiving head for root's independent review. This
+retains the original product/Gate4/ADR source, replay, package and native
+obligations. It grants no new acceptance or feature scope. Root owns the heavy
+slot and all later verification/publication: no formatter, compiler, tests, npm,
+database, native application or push is allocated to this receipt. Fresh exact
+receiving-head checks remain due; no earlier result transfers to the union.
+
 Status: source authored, UNCOMPILED/UNRUN, 2026-10-05. Sole writer ci_oct5 on
 codex/gate4-mage-ordinary-hands, exact development parent
 a7d40848c8b8588261444bdb5af19f13389b5336/tree91914f6cdf78a955bff6fc64eb83aabd771945bb.
