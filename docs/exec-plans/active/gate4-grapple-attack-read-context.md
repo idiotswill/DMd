@@ -1,5 +1,42 @@
 # Gate 4 — Guarded Grapple reads during own-turn attacks
 
+## October 6 source-review correction to identical-creature initiative
+
+Root transferred sole source ownership from clean
+`c2e0647b3302dbc116e9aa4bf1431f6ad757928d`, tree
+`932969b658c785dcfa12498083d73a68fe32f4a5`, for this bounded fixture correction.
+That unformatted correction was not executed. Independent source review found
+that its Begin declaration gives two identical Host Cultists separate initiative
+groups. The unchanged `tactical/validation.rs` requires matching source,
+surprise and initiative circumstances to share one roll; the proposed setup
+would reject before reaching either corrected assertion. This is a source-review
+finding, not a newly observed runtime failure.
+
+Commit this amendment before source changes. Change only the new
+`with_held_cultist_and_caster` helper and this plan. Preserve the two complete
+corrected test bodies from c2, all22 older helpers, all13 passing attack bodies,
+all82 selected names and all595 other Git entries. No production, source pin,
+controller, profile, capture, consent or validator change is authorized.
+
+Use exactly three initiative groups: `[human]`, `[goblin]`, and
+`[held, cultist]`. Submit the actual three physical requests with faces20/10/5;
+assert each pending request names the group's first actor, including held for
+the shared Cultist request. Both Cultists use the unchanged source modifier+2;
+the original Human has Dexterity14/exhaustion0 and the Goblin source modifier
+is+2. After all three real submissions, use the privileged rules action
+`ProposeInitiativeTie { order: [held, cultist] }` through the existing public
+command helper. Assert the entire resulting initiative entries in order:
+Human22, Goblin12, held7, caster7, with tie breaks0/0/0/1. Do not insert a timing
+record, alter source circumstances to avoid grouping, or auto-resolve the tie.
+The existing complete concentration body then traverses those real turns.
+
+Return a clean unformatted source freeze for full root review and an immutable
+Git/body preservation audit. Formatter/compiler/tests, npm, DB/native, push and
+CI remain unallocated. Root must separately allocate formatting and independently
+review a freshly targeted unchanged82 run after the final freeze. Preserve all
+earlier actual failed runs and the c2 unformatted handback; this amendment and
+its source correction provide no runtime, application, native or Gate4 pass.
+
 ## October 5 actual attack-producer failures and bounded correction
 
 Frozen `418eeb770404e8c93de3407b839704caa3fc303d`, tree
