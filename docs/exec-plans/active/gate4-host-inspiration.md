@@ -1,5 +1,29 @@
 # Gate 4 — Genuine Host Inspiration award and physical reroll
 
+## Root receipt of reviewed public scenario correction — 2026-10-06
+
+Root owns the sole writer from freshly fetched clean `20d136395b44d45360a8f66c1144628d0e509dd2`.
+Receive the complete `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4` parent by normal merge, after this plan.
+For Held movement this is reviewed Public e219; for Host Inspiration it is the
+complete corrected Held successor, including its existing full source history.
+The receiver's implementation and all original positive/negative expectations
+remain unchanged. The two shared public scenarios correct actual failed setup
+premises: real singleton-ray command provenance and supported legal reach to a
+flying Chimera. Complete failed Linux/Windows logs, independent review and the
+exact scope are retained in the incoming public plan.
+
+The read-only preview is clean. Prove every receiver production/content/migration/
+workflow entry remains exact, every additional receiver test module stays exact,
+and the shared test is precisely corrected Public plus this receiver's existing
+module registrations. Keep complete incoming evidence and this receiving plan.
+No formatter/compiler/tests/database/native work is allocated by this receipt.
+Old current-head CI may still be running; it cannot verify this successor. Fresh
+focused and full exact-head checks, native evidence and all remaining Host Inspiration
+and Gate4 obligations remain mandatory. Root will publish the audited clean
+normal merge and coordinate the single local heavy slot separately.
+
+### Earlier receiver checkpoint (historical)
+
 Status: **SOURCE AUTHORED; ADDITIVE APP VERIFICATION CASES IN PROGRESS; UNRUN**.
 Date: 2026-10-06. Sole source writer: private_grapple_oct6, allocated by root.
 Branch: `codex/gate4-host-inspiration`; checkout: `gate4-host-inspiration`.
