@@ -232,3 +232,24 @@ No test or compiler ran. The final clean freeze and complete preservation audit
 are handed to root externally for fresh review. Actual first-award round-trip
 success and hostile-input refusal remain unverified until the required runtime
 checks run on the new exact head.
+
+## First published CI corrections — October 7
+
+Root owns this branch after the independent author's handback. PR71 publishes
+486821da7cd5a0a30c6f30880c4c03c414844cce against the Host54b parent. Fresh root
+review cleared the first-award origin correction. Actual Linux37582267513 and
+Windows37582267547 both fail compilation before Rust runtime: the new hostile
+raw-API test constructs RulesContext.actor with AgentRef where EntityId is
+required (table_inspiration_transfer.rs:479). The nearby CommandMeta.actor
+correctly requires AgentRef and must stay unchanged. Both logs also diagnose
+unnecessary parentheses around the two-variant ruling pattern at
+rules_restore.rs:843; strict warnings must remain enabled.
+
+Commit this plan before the two minimal corrections. Use the same fixture
+entity directly in RulesContext and remove only the redundant pattern
+parentheses. Keep all assertions, issuer cases, refusal paths and production
+semantics intact. No additional test is needed to restate a compile-time type
+contract. Direct formatting, full diff and fresh independent correction review
+precede publication; exact-head runtime and all inherited fixes remain required.
+Windows486 did pass186 frontend tests across28 files, seven notice isolations
+and zero Svelte diagnostics; that does not establish Rust or native acceptance.
