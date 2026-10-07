@@ -127,6 +127,7 @@ fn context(proof: TacticalGrip) -> TacticalGrappleResolution {
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     }
 }
 
@@ -570,6 +571,7 @@ fn empty_and_unknown_record_shapes_fail_without_changing_absent_resolution_json(
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     };
     assert!(empty.validate_shape(&r, None).is_err());
     let mut forged = serde_json::to_value(grip()).unwrap();
@@ -656,6 +658,7 @@ fn contextual_interim_automatic_shape_needs_matching_failed_work_or_withdrawal()
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     };
     c.validate_shape(&r, None).unwrap();
     let mut wrong = r.clone();
@@ -724,6 +727,7 @@ fn equipment_decision_is_owned_by_its_actual_after_work_and_cannot_be_reused() {
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     };
     c.validate_shape(&r, None).unwrap();
     let mut wrong = r.clone();
