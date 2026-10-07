@@ -1,5 +1,45 @@
 # Gate 4 — Owner-controlled excess Heroic Inspiration
 
+## October 7 whole reviewed Held/Public correction intake
+
+Root is sole writer at clean published
+`6b539564e904dcd4c0e189dcc8b8d2378f03c2e9`, tree
+`e17e780def5388a24c808ed8a7f7e4e97eb7b3a3`. Fresh fetch confirms this head,
+main `1a9de14c8a4418893b6664b89f99f0a0c0225ce1`, and Held
+`0c60b9ccf0996dd9e2fa15736d8a7ad57cd11960`, tree
+`25945995df40e2a293870cbebe487830014b0356`. The common ancestor is
+`5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`.
+
+Commit this plan before a normal whole-history merge of the reviewed Held head.
+It receives the two genuine fixture settlements, owned historical opportunity
+admission/completion correction and completed-cast source retention. These address
+the four inherited failures already recorded below; keep the complete individual
+plans, source, added tests and old controls. Preserve all receiver first-award and
+transfer code/tests unchanged except mechanically combined shared additions.
+No cherry-picking, rewritten old history, reduced assertion or changed acceptance.
+
+Both root and independent source reviews clear the incoming correction. Combined
+634-entry audit: `tooling/held-0c60b9-independent-merge-review-2026-10-07.json`,
+SHA256 `278d9371bc16e0047f0020281aeaf011a7b276d86e0c7db2a909f2b2efaa4617`.
+Incoming runtime and native acceptance remain pending. Current6b Linux/Windows
+runtime is still running; its earlier frontend186 and compile/MSRV evidence must
+retain the literal6b attribution. Publishing a successor starts new checks and
+does not transform the interrupted predecessor run into success.
+
+Review the full resulting union and all shared-file combinations, with a separate
+independent review. Check all old test bodies and source assets, direct formatting
+and whitespace, then publish the coherent successor to existing draft PR71.
+Required verification remains all original first-award and new transfer cases,
+inherited corrected failures and new controls, legacy recovery/transport, frontend,
+strict lint and canonical exact-head Linux/Windows checks. Root's only local heavy
+slot is occupied by Held0c verification, so this receipt allocates no local Cargo,
+compiler, tests, npm, database or native execution.
+
+This receipt advances existing source-faithful tactical timing, controller agency
+and exact suspension/recovery requirements; it changes no product boundary or gate
+acceptance. Next: normal merge, source-preservation review, publication and fresh
+exact-head evidence. Native Inspiration/transfer and overall Gate4 remain open.
+
 Status: **SOURCE IMPLEMENTED AND FORMATTED; INDEPENDENT REVIEW AND RUNTIME ACCEPTANCE PENDING**.
 Date: 2026-10-06. Branch: `codex/gate4-inspiration-transfer`.
 Sole writer: private_grapple_oct6, allocated by root. No PR/publication allocated.
