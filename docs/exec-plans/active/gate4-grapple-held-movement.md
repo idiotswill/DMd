@@ -1,5 +1,49 @@
 # Gate 4 — Grounded movement with a held creature
 
+## October 7 actual spatial fixture failure — plan before correction
+
+Root assigns sole writing to mass_capability_fix_oct7 from clean, freshly fetched
+`0c60b9ccf0996dd9e2fa15736d8a7ad57cd11960`, tree
+`25945995df40e2a293870cbebe487830014b0356`. Actual PR68 Linux run37589316510,
+job112686732266 reaches the rules library and fails
+`spatial::tests::ground_transport_tests::ground_support_checks_swept_water_before_floor_and_allows_a_dry_bridge`
+at ground_transport_tests.rs:82: `Invalid("invalid spatial identifier")`.
+The library reports248 passed/1 failed. The saved complete log is
+`tooling/ci-oct7/pr68-0c-job-112686732266-exact.log`; the root CI terminal audit is
+`tooling/ci-oct7/pr68-0c-terminal-audit-1351.json`, SHA256
+`fd35b9613cc844a046bd7dd52bb7f27daa7ced24f0c646d901fc7d37e2f3e9f1`.
+The previous head's failed result remains failed; Windows was cancelled with
+partial evidence and cannot substitute for a full pass.
+
+The fixture's terrain ID `dry bridge` violates the existing domain grammar
+(ASCII alphanumeric plus hyphen/dot/underscore). Validation precedes geometry,
+so the positive test never reaches dry support. The same module's obstacle ID
+`target-only wall` is invalid too: its existing `.is_err()` can pass for malformed
+authored geometry instead of the intended target obstruction. Production
+identifier, coupled movement, collision, support and privacy guards are correct
+for these premises and are outside this correction.
+
+After committing this diagnosis, change only those two fixture IDs to
+`dry-bridge` and `target-only-wall`. Explicitly validate each corrected encounter
+before its query. Preserve every existing water refusal, cost, endpoint,
+occupancy and wall assertion. Add a precise wall-result assertion requiring
+`SpatialError::Illegal("coupled path is obstructed")`, so a malformed fixture or
+unrelated refusal cannot satisfy that negative. Do not alter coordinates,
+participants, visibility, budgets, evaluator code, existing helpers or settings.
+
+This advances the existing Gate4/ADR025 movement/collision/support evidence and
+the product's authoritative tactical geometry contract; it does not change the
+slice, add mechanics or close any acceptance. Source-only Git/file inspection
+and edits are allocated. No compiler/Cargo/npm/tests/database/native/runtime,
+push or merge. Freeze a coherent correction with a complete file inverse and
+all-tree/test preservation audit for root/fresh independent review. Root then
+allocates exact-head affected tests, canonical verification and CI.
+
+Inspect inherited copies on frozen573 integration, PR71, PR72 and0990 roll
+details; report exact source hashes and whole-history transfer needs externally.
+Do not write those branches or treat their earlier runs as verification of this
+successor. All other Held/Grapple/Gate4 requirements above and below remain open.
+
 ## October 7 reviewed retained-cast correction intake
 
 Root resumes sole branch writing at clean
