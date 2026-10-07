@@ -100,3 +100,59 @@ Independent inventory clarifies the test denominator: preconsumer mass had1129
 bodies; the consumer added three ordinary harness cases, giving1132 at5597.
 The union therefore retains1130 exact receiving bodies plus the two explicitly
 reviewed b97 corrections, and adds four unchanged donor details cases (1136).
+
+## Additive M5 and original969 details coverage — plan before implementation
+
+Root assigns sole source writing to mass_capability_fix_oct7 from published clean
+`a67846c894d677a4c93ee48fbfd437178db58384`, tree
+`394e074b3210d0d21cdeefb13a9f65d998a961a6`. The independent actual receipt is
+clear; its report SHA256 is
+`a3f567de5b17de43e34bc204dc2867f1de0d137a62ade3b9febdf1b0bb1a095f`.
+The selected six-item source scope is the complete independent preview report
+`tooling/mass5597-details731-preview-independent-review-2026-10-07.md`, SHA256
+`c1637917d5b9f456ddfeab4a3f0984346c11a6a8d4add9995b2e7e7b8c6aed16`.
+
+Add four separate M cases crossing PC/source ownership with M+G and M+G+T, each
+exercising both Save abilities and both Escape skills (sixteen genuine setups).
+Keep all original G3/G4 helpers and four case bodies literal. A new child support
+module may reuse their unchanged owned-read/submit helpers. Its own producer must
+genuinely conclude and Finish the initial settled EncounterReleaseV1 encounter,
+accept Host M5, prepare a fresh scene and encounter, roll real initiative and
+activate attack equipment before actions. Add one genuine M-only ordinary pending
+roll fallback proving M does not confer G/T or ordinary Inspiration availability.
+
+Assert independent physical5, Grapple3/4 and source2 capabilities, request5 and
+envelope6, schema1 details, unchanged old DTOs/options, actual selected labels,
+all-table/export read-only equality, cold/portable identity, stale/foreign and
+wrong-owner/source refusals, and actual ordinary or inspired physical submission
+with exact retry. For inspired PC saves/escapes use an accepted award and actual
+original/replacement faces. Valid Host handles must join the same canonical Roll
+and still fail strict owner authorization. No global-version capability shortcut.
+
+Add a separate historical details assertion module and one call from
+Fixture::views after constructing the original audience results but before the
+existing complete export/logical-cell guards. It must compare new details with
+each original options success/refusal, use only the actual current channel and
+offered handle, and independently re-read raw/presented views unchanged. The
+existing22-cut cold/portable/original-next/retry matrix and all three genuine new5
+routes then exercise this extra read at their actual pending cuts. Preserve the
+old views function through an exact inverse removing only this call; preserve
+all original harness bodies and all ten existing consumer files otherwise, apart
+from the module declaration. No historical Escape or M-enabled oracle is invented.
+The232 files, request/response strings, old Unsupported roll label, bindings and
+all original mechanics expectations stay literal.
+
+Add rendered M cases alongside the unchanged donor cases for a source-owned
+Escape with details1/one submit5, a PC Save with physical Inspiration and exact
+version5 uncertain-ack restart retry, and discarded delayed M details/error after
+selection changes. Preserve the nine physical-capability cases and all other
+existing frontend bodies, fixtures and envelopes. No production change is scoped.
+
+Author only source, commits, direct standalone changed-file rustfmt and external
+static preservation evidence. No Cargo/compiler/npm/tests/database/native,
+preflight, push or merge is authorized; root owns the sole runtime slot and
+publication. Freeze the complete patch, exact head/tree, new-case inventory,
+whole-source/corpus preservation and explicit small helper inverses for fresh
+review. Every new assertion remains UNRUN until root allocates exact-head checks.
+Any concrete production incompatibility is reported before a separate planned
+correction; old artifacts or tests must never be weakened to fit the build.
