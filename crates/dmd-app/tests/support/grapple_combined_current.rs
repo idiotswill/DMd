@@ -317,7 +317,7 @@ async fn physical_glaive_opportunity_during_drag_retains_paid_pair_and_both_cold
     Box::pin(act(
         &mut f,
         pc.clone(),
-        TacticalAction::ChooseMastery {
+        TacticalAction::ChooseAttackMastery {
             choice: WeaponMasteryChoice::Decline,
         },
     ))
@@ -528,7 +528,7 @@ async fn physical_glaive_opportunity_during_drag_retains_paid_pair_and_both_cold
     Box::pin(act(
         &mut f,
         pc,
-        TacticalAction::ChooseMastery {
+        TacticalAction::ChooseAttackMastery {
             choice: WeaponMasteryChoice::Decline,
         },
     ))

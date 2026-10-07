@@ -435,3 +435,9 @@ Preserve the failed58 logs and its prepared but UNRUN focused runner; prepare a
 separate guarded successor manifest only after review. Full canonical checks,
 the complete combined runtime selection, native acceptance and every remaining
 Gate4 requirement remain pending. This compiler correction changes no scope.
+
+The authored delta is exactly the three planned test references in two files.
+Direct rustfmt checks of both files with child traversal disabled and the Git
+whitespace check pass. Neither production nor an assertion changed. The original
+failed58 evidence and UNRUN preparation remain preserved. Fresh independent
+review and successor-head compilation/runtime verification are still required.

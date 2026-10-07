@@ -1080,6 +1080,7 @@ async fn actual_target_death_keeps_release_but_removes_drag_and_rejects_owned_ad
         pc.clone(),
         TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target,
                 delivery: WeaponDelivery::Melee,
