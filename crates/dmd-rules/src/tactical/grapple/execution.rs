@@ -1,5 +1,6 @@
 //! Private continuity over the ordinary dispatcher, never imported save authority.
 use super::*;
+mod opportunity;
 
 /// A normally validated baseline can enter this chain once. There is deliberately
 /// no Clone, Deserialize, mutable state accessor, or replacement-state operation.
@@ -90,6 +91,8 @@ struct ProducedEvidence {
     decisions: Vec<TacticalSaveDecision>,
     cancelled: Vec<RollRequestId>,
     retired_flow: Option<RetiredFlow>,
+    opportunities: Vec<opportunity::GroundOpportunity>,
+    completed_opportunities: Vec<opportunity::GroundOpportunity>,
 }
 
 /// Observed only at the shared Establish producer after the released encounter
@@ -695,6 +698,7 @@ impl<'owner> ExecutionContext<'owner> {
 
     pub(crate) fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
         self.check_state(state)?;
+        self.validate_opportunity_delta(state)?;
         let Some(owned) = &self.guarded else {
             return Ok(());
         };

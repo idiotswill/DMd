@@ -813,6 +813,140 @@ async fn ground_drag_activation_is_host_only_settled_and_replayed_from_its_origi
     f.close().await;
 }
 
+#[tokio::test]
+async fn issued_ground_opportunity_preserves_a_nonempty_paired_prefix_after_release() {
+    let mut f = Box::pin(opportunity_fixture()).await;
+    Box::pin(f.activate()).await;
+    Box::pin(f.establish_pc_grip()).await;
+    enable(&mut f).await;
+    // The first step remains within the independent reactor's reach; only the
+    // second departure earns its response. Both bodies really paid the prefix.
+    let movement = drag(&f, vec![step(0, 10), step(0, 0)]).await;
+    Box::pin(f.cold(movement)).await;
+    let selected = f.state().await;
+    let prefix = resolution(&selected)
+        .grapple
+        .as_ref()
+        .unwrap()
+        .transport
+        .as_ref()
+        .unwrap()
+        .steps
+        .clone();
+    assert_eq!(prefix.len(), 1);
+    assert_eq!(prefix[0].holder.to, SpatialPoint { x: 0, y: 10, z: 0 });
+    assert_eq!(prefix[0].target.to, SpatialPoint { x: 10, y: 10, z: 0 });
+    assert_eq!(
+        resolution(&selected).movement.as_ref().unwrap().next_step,
+        1
+    );
+    assert_eq!(flow(&selected).budget.movement_spent, 20);
+    let accept = request(
+        &f,
+        TableTransportChannel::Host,
+        action(TacticalAction::OpportunityAttack {
+            choice: TacticalMeleeChoice::UnarmedDamage {
+                ability: Ability::Strength,
+            },
+        }),
+    )
+    .await;
+    Box::pin(f.cold(accept)).await;
+    let issued = f.state().await;
+    let pending = issued.rules.as_ref().unwrap().pending.clone().unwrap();
+    let mut forged = issued.clone();
+    forged
+        .encounter
+        .as_mut()
+        .unwrap()
+        .flow
+        .as_mut()
+        .unwrap()
+        .resolution
+        .as_mut()
+        .unwrap()
+        .grapple
+        .as_mut()
+        .unwrap()
+        .transport
+        .as_mut()
+        .unwrap()
+        .steps[0]
+        .target
+        .to
+        .x += 1;
+    Box::pin(reject_state_image(&f, forged)).await;
+    let release = release(&f).await;
+    Box::pin(f.cold(release)).await;
+    let waiting = f.state().await;
+    assert_eq!(
+        waiting.rules.as_ref().unwrap().pending.as_ref(),
+        Some(&pending)
+    );
+    assert_eq!(resolution(&waiting).attack, resolution(&issued).attack);
+    assert_eq!(resolution(&waiting).frames, resolution(&issued).frames);
+    assert_eq!(
+        resolution(&waiting)
+            .grapple
+            .as_ref()
+            .unwrap()
+            .transport
+            .as_ref()
+            .unwrap()
+            .steps,
+        prefix
+    );
+    assert_eq!(
+        waiting.rules.as_ref().unwrap().rolls,
+        issued.rules.as_ref().unwrap().rolls
+    );
+    assert_eq!(
+        waiting
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent,
+        issued
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+    );
+    let answer = raw(&f, TableTransportChannel::Host, 1).await;
+    Box::pin(f.cold(answer)).await;
+    let done = f.state().await;
+    let result = flow(&done).last_movement.as_ref().unwrap();
+    assert_eq!(result.reason, TacticalMovementEnd::Stopped);
+    assert_eq!((result.completed_steps, result.spent_after), (1, 20));
+    assert_eq!(result.endpoint, prefix[0].holder.to);
+    assert_eq!(
+        result.transport.as_ref().unwrap().target_endpoint,
+        prefix[0].target.to
+    );
+    assert_eq!(
+        done.rules.as_ref().unwrap().rolls.last().unwrap().request,
+        pending.request
+    );
+    assert!(
+        done.rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent
+            .contains(&f.opponent.unwrap())
+    );
+    assert!(flow(&done).resolution.is_none());
+    f.close().await;
+}
+
 // Replay this test's actual accepted producer history into the public owned
 // rules API. This is not a saved-state admission hook or a replacement authority.
 fn replay_ground_fixture(export: &CampaignExport) -> dmd_rules::table::CampaignExecution {

@@ -37,6 +37,36 @@ Freeze a coherent successor and complete byte-preservation/source handback for
 independent review; stop instead of widening scope if the projection cannot be
 implemented soundly within these bounds.
 
+### Source implementation awaiting exact-head verification
+
+The private live token now runs the unchanged movement validator and binds the
+actual candidate, command, complete controller melee choice, original window,
+paired/ordinary prefix and entered crossing work. After real source planning,
+Reaction payment, accepted response and child admission cuts, its consumed token
+observes one immutable result. Historical reads require the exact predecessor or
+that observed result before any candidate validator returns. The final delta
+accounts predecessor plus actual admissions minus actual completions even if the
+entire resolution retires. Completion binds the real command and entered
+AttackDamage/FinishAttack descendant; no saved receipt or execution version is
+introduced. Live selected-grip/geometry/source guards remain unchanged.
+
+Four new private mechanism cases cover predecessor/producer authentication,
+foreign candidates/tokens, twelve changed source/crossing/response/work bindings,
+missing whole-attack/resolution retirement and duplicate completion evidence.
+They use the existing explicitly authored source baseline and genuine shared
+activation/grip/move/opportunity producers; they do not claim application replay.
+A separate public case uses real creation, a paid nonempty paired prefix, cold
+SQLite/portable/retry helpers, a forged copied prefix refusal, and physical child
+completion after release. The original public issued-release case is unchanged.
+
+Direct rustfmt write/check and `git diff --check` pass. All five new cases and
+the full suite are **UNRUN** under this source-only allocation. The separate
+inherited ray correction has not been received. Next: audit every prior tracked
+entry/test body, freeze this successor for independent review, then let root
+schedule focused/full exact-head verification and reviewed whole-history receipt.
+No CI, runtime, native, publication, Grapple acceptance or Gate4 completion claim
+is made by this source checkpoint.
+
 ## October 7 diagnosed fixture corrections and issued-child design
 
 Root assigned sole source writing to `native_capture_audit_oct7` from clean,
