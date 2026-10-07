@@ -18,6 +18,7 @@ pub(crate) struct TableTransition {
 fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperation, String> {
     Ok(match action {
         TableAction::EnableGrappleAccess => TableOperation::EnableGrappleAccess,
+        TableAction::EnableGrappleTransport => TableOperation::EnableGrappleTransport,
         TableAction::UpdateContract { contract } => TableOperation::UpdateContract {
             contract: contract.clone(),
         },

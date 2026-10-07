@@ -188,6 +188,7 @@ pub(super) fn capture_admission(
         .chain(window.iter().flat_map(|(_, proofs)| proofs.iter().cloned()));
     let c = resolution_mut(state)?.grapple.get_or_insert_with(|| {
         Box::new(TacticalGrappleResolution {
+            transport: None,
             activity: None,
             proofs: vec![],
             cuts: vec![],

@@ -59,6 +59,13 @@ fn capabilities(
                 }),
         );
     }
+    if let Some(grapple) = &raw.grapple {
+        result.extend(grapple.ground_drag.iter().map(|choice| {
+            ProjectionCapability::GrappleTransport {
+                offer: choice.key.clone(),
+            }
+        }));
+    }
     if let Some(shove) = raw.tactical.as_ref().and_then(|t| t.shove.as_ref()) {
         result.push(ProjectionCapability::ShoveDecision {
             origin: shove.key.resolution,
@@ -536,10 +543,10 @@ impl<'a> HistoryVerifier<'a> {
             .map_err(|e| e.to_string())?;
         let marked =
             export.command_audit.iter().any(|a| {
-                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=4)
+                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=5)
             }) || export.observations.iter().any(|o| {
                 o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2..=4)
+                    && matches!(o.record.payload_schema_version, 2..=5)
             }) || crate::table_source_control::enabled(&current)
                 || dmd_rules::table::grapple_enabled(&current);
         if current.table.is_none()
@@ -663,13 +670,13 @@ impl<'a> HistoryVerifier<'a> {
             }
             // A new acceptance can never precede initialization of its protocol.
             if export.command_audit.iter().any(|a| {
-                matches!(a.command_schema_version, 2..=4)
+                matches!(a.command_schema_version, 2..=5)
                     && a.command_kind == "table.action"
                     && a.resulting_event_sequence <= self.bootstrap_head as i64
             }) || export.observations.iter().any(|o| {
                 o.ordinal <= self.bootstrap_observation
                     && o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2..=4)
+                    && matches!(o.record.payload_schema_version, 2..=5)
             }) {
                 return Err("protocol marker precedes its bootstrap".into());
             }

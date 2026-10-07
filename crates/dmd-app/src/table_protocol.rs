@@ -10,6 +10,7 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
     EnableGrappleAccess,
+    EnableGrappleTransport,
     UpdateContract {
         contract: TableContract,
     },
@@ -209,7 +210,10 @@ pub struct TableView {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct TableGrappleView<K = TableGrappleOffer> {
+#[serde(bound(deserialize = "K: Deserialize<'de>, T: Deserialize<'de>"))]
+pub struct TableGrappleView<K = TableGrappleOffer, T = TableGrappleTransportOffer> {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ground_drag: Vec<TableGrappleOption<T>>,
     pub version: u32,
     pub choices: Vec<TableGrappleOption<K>>,
 }

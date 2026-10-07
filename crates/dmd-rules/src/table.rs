@@ -16,6 +16,7 @@ pub mod source_control;
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
     EnableGrappleAccess,
+    EnableGrappleTransport,
     UpdateContract {
         contract: TableContract,
     },
@@ -178,4 +179,12 @@ pub fn grapple_enabled(state: &CampaignState) -> bool {
 
 pub fn grapple_action(choice: &TableGrappleChoice) -> crate::tactical::TacticalAction {
     crate::tactical::grapple::table_action(choice)
+}
+
+pub fn grapple_transport_enabled(state: &CampaignState) -> bool {
+    state
+        .table
+        .as_ref()
+        .and_then(|t| t.grapple_access.as_ref())
+        .is_some_and(|access| access.ground_transport.is_some())
 }

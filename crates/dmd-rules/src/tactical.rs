@@ -160,6 +160,10 @@ pub enum TacticalAction {
     MoveSelfOnly {
         path: Vec<TacticalMoveStep>,
     },
+    MoveGrappled {
+        grip: GrappleId,
+        path: Vec<TacticalMoveStep>,
+    },
     DeclineOpportunity,
     OpportunityAttack {
         choice: TacticalMeleeChoice,
@@ -612,6 +616,15 @@ fn dispatch(
         }
         TacticalAction::MoveSelfOnly { path } => {
             movement::begin(next, meta, path, movement::Intent::SelfOnly, execution)?
+        }
+        TacticalAction::MoveGrappled { grip, path } => {
+            movement::begin(
+                next,
+                meta,
+                path,
+                movement::Intent::GroundDrag(*grip),
+                execution,
+            )?;
         }
         TacticalAction::DeclineOpportunity => movement::decline(next, meta, execution)?,
         TacticalAction::OpportunityAttack { choice } => {

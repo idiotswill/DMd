@@ -10,7 +10,9 @@ pub fn enabled(state: &CampaignState) -> bool {
 }
 
 pub fn presentation_version(state: &CampaignState) -> u32 {
-    if super::grapple_enabled(state) {
+    if super::grapple_transport_enabled(state) {
+        4
+    } else if super::grapple_enabled(state) {
         3
     } else if enabled(state) {
         2
@@ -471,6 +473,7 @@ pub fn authorize_tactical(
         | A::CreatureAttack { .. }
         | A::Move { .. }
         | A::MoveSelfOnly { .. }
+        | A::MoveGrappled { .. }
         | A::Attack { .. }
         | A::EndTurn
         | A::Dash { .. }

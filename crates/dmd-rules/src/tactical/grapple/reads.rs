@@ -238,6 +238,7 @@ pub(in crate::tactical) fn capture_admission(
     }
     let grips = proofs.iter().map(|g| g.declaration.id).collect();
     resolution_mut(state)?.grapple = Some(Box::new(TacticalGrappleResolution {
+        transport: None,
         activity: None,
         proofs,
         cuts: vec![GrappleReadCut {

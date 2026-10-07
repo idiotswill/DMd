@@ -120,8 +120,40 @@ pub(crate) fn view(
             label: text,
         });
     }
+    let ground_drag = read
+        .grapple_transport_choices(issuer)
+        .map_err(|error| error.to_string())?
+        .into_iter()
+        .map(|offer| {
+            let grip = state
+                .rules
+                .as_ref()
+                .and_then(|r| r.tactical_grapples.as_ref())
+                .and_then(|g| g.grip(offer.grip))
+                .ok_or("Offered drag grip is absent.")?;
+            let observer = state.encounter.as_ref().ok_or("Drag encounter absent.")?;
+            let view = dmd_rules::spatial::project_actor_view(observer, state, offer.actor)
+                .map_err(|e| e.to_string())?;
+            let name = view
+                .contacts
+                .iter()
+                .find(|c| c.entity_id == grip.declaration.target)
+                .and_then(|c| c.label.as_deref())
+                .unwrap_or("creature");
+            let hand = match grip.declaration.hand {
+                Hand::Left => "left hand",
+                Hand::Right => "right hand",
+            };
+            Ok(crate::TableGrappleOption {
+                actor: offer.actor,
+                label: format!("Drag {name} with {hand}"),
+                key: offer,
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
     Ok(crate::TableGrappleView {
-        version: 3,
+        ground_drag,
+        version: dmd_rules::table::source_control::presentation_version(state),
         choices: shown,
     })
 }
