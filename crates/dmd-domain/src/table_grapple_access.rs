@@ -52,6 +52,8 @@ pub enum TableGrappleAccessVersion {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TableGrappleAccess {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground_transport: Option<TableGrappleTransportAccess>,
     pub version: TableGrappleAccessVersion,
     pub origin: CommandMeta,
 }
@@ -67,6 +69,36 @@ impl TableGrappleAccess {
         {
             return Err("invalid table Grapple activation provenance".into());
         }
+        if let Some(transport) = &self.ground_transport {
+            let origin = &transport.origin;
+            if origin.id.0.is_nil()
+                || origin.id == self.origin.id
+                || origin.campaign_id != state.campaign_id()
+                || origin.expected_event_sequence <= self.origin.expected_event_sequence
+                || origin.expected_event_sequence > state.applied_event_sequence
+                || origin.issuer != CommandIssuer::Admin
+                || origin.actor.is_some()
+                || origin.session_id.is_none_or(|id| id.0.is_nil())
+            {
+                return Err("invalid ground drag activation provenance".into());
+            }
+        }
         Ok(())
     }
+}
+
+/// A journaled capability upgrade, never a deserialized execution authority.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableGrappleTransportAccess {
+    pub version: crate::GrappleTransportKind,
+    pub origin: CommandMeta,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableGrappleTransportOffer {
+    pub actor: EntityId,
+    pub grip: GrappleId,
+    pub kind: crate::GrappleTransportKind,
 }

@@ -233,6 +233,7 @@ async fn scenario(f: &mut Fixture, url: &str, directory: &Path) {
         Some(0),
         action(TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon: dagger,
                 target: cultist,
                 delivery: WeaponDelivery::Thrown,

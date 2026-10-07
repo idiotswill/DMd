@@ -442,6 +442,7 @@ impl Fixture {
         self.state.encounter.as_mut().unwrap().participants[0].enemies = vec![self.actors[1]];
         self.state.encounter.as_mut().unwrap().participants[1].enemies = vec![actor];
         WeaponUseChoice {
+            after_equipment: None,
             weapon: weapon_id,
             target: self.actors[1],
             delivery: if ranged {
@@ -1063,6 +1064,7 @@ fn initiative_cannot_smuggle_a_structurally_coherent_movement_receipt() {
         .as_mut()
         .unwrap()
         .last_movement = Some(TacticalMovementResult {
+        transport: None,
         original: original.clone(),
         cause: original,
         actor: f.actors[0],

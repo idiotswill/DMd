@@ -22,6 +22,13 @@ pub enum TacticalMeleeChoice {
         /// Only an attack whose canonical Gear requires it accepts an ItemId.
         weapon: Option<ItemId>,
     },
+    /// A printed physical source attack with an explicit legal grip. The retained
+    /// crossing supplies actor/target; the exact source supplies all mechanics.
+    CreatureWeapon {
+        feature_id: String,
+        weapon: ItemId,
+        grip: crate::WeaponGrip,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,6 +65,10 @@ pub enum TacticalAttackDelivery {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalWeaponAttack {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment_parent: Option<crate::AttackEquipmentCompletionParent>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground_pickup_before: Option<crate::AttackGroundPickupBefore>,
     pub choice: WeaponUseChoice,
     pub window: WeaponActionWindow,
     pub equipment_before: ActorEquipmentLoadout,
@@ -69,6 +80,8 @@ pub struct TacticalWeaponAttack {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreatureWeaponUseChoice {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment: Option<crate::AfterAttackEquipmentIntent>,
     pub weapon: ItemId,
     pub target: EntityId,
     pub grip: crate::WeaponGrip,

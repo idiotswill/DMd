@@ -169,7 +169,7 @@ pub(crate) fn validate_table_observation(
     }
     let body: TableObservationBody = match record.payload_schema_version {
         1 => serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?,
-        2..=4 => {
+        2..=5 => {
             serde_json::from_str::<crate::table_transport::TransportedTableObservation>(
                 &record.payload_json,
             )
@@ -199,7 +199,8 @@ impl CampaignRuntime {
         let runnable = self.open_campaign(campaign_id).await?;
         load_rules_pack(runnable.content())?;
         Ok(CharacterCreationOptions {
-            catalog: dmd_rules::starter_catalog(),
+            source: dmd_rules::current_character_creation_source()?,
+            catalog: dmd_rules::physical_starter_catalog(),
             fighter_skills: dmd_rules::FIGHTER_SKILLS.to_vec(),
             fighter_masteries: dmd_rules::fighter_mastery_choices()?,
             standard_languages: dmd_rules::STANDARD_LANGUAGES

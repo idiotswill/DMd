@@ -209,6 +209,22 @@ fn advance(
     pump_with_context(state, meta, execution)
 }
 
+#[cfg(test)]
+pub(super) fn respond(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    window: TacticalWorkKey,
+    accept: bool,
+) -> Result<(), RulesError> {
+    respond_with_context(
+        state,
+        meta,
+        window,
+        accept,
+        &mut ExecutionContext::ordinary(),
+    )
+}
+
 pub(super) fn respond_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
@@ -258,6 +274,22 @@ pub(super) fn delegate(
     }
     current.delegated_by = Some(meta.clone());
     Ok(())
+}
+
+#[cfg(test)]
+pub(super) fn order(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    window: TacticalWorkKey,
+    instruction: &TacticalReactionOrdering,
+) -> Result<(), RulesError> {
+    order_with_context(
+        state,
+        meta,
+        window,
+        instruction,
+        &mut ExecutionContext::ordinary(),
+    )
 }
 
 pub(super) fn order_with_context(

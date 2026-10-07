@@ -6,12 +6,14 @@
   import SessionForm from './components/SessionForm.svelte';
   import SituationForm from './components/SituationForm.svelte';
   import RollForm from './components/RollForm.svelte';
+  import InspirationAward from './components/InspirationAward.svelte';
+  import InspirationTransfer from './components/InspirationTransfer.svelte';
   import BattlefieldForm from './components/BattlefieldForm.svelte';
   import CreatureForm from './components/CreatureForm.svelte';
   import SourceControlForm from './components/SourceControlForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
   import GrapplePanel from './components/GrapplePanel.svelte';
-  import { rawDice, channelPlayer, type LocalChannel, type SourceControlOptions, type SourceAdoption } from './table-api';
+  import { rawDice, channelPlayer, type LocalChannel, type SourceControlOptions, type SourceAdoption, type CharacterInput } from './table-api';
   import type { SavageAttackerRoll } from './tactical-api';
   import { clearRequest, loadRequest, loadSelection, newId, requestLabel, saveRequest, saveSelection, tableApi, type CreationOptions, type CreatureOption, type RequestContext, type Situation, type TableAction, type TableContract, type TableView, type UnconfirmedRequest } from './table-api';
 
@@ -19,6 +21,7 @@
   let defaults = $state<TableContract | null>(null);
   let view = $state<TableView | null>(null);
   let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
+  let heroicInspiration = $state(false);
   let creatureCatalog = $state<CreatureOption[] | null>(null);
   let sourceControlOptions = $state<SourceControlOptions | null>(null);
   let sourceControlLoading = $state(false);
@@ -34,6 +37,7 @@
   let refreshGeneration = 0;
   const host = $derived(!playerId);
   const locked = $derived(busy || retry !== null || unreadableRetry);
+  const gameLocked = $derived(locked || !!view?.inspiration_transfer);
   const binding = $derived(view?.active_session?.participants.find(p => p.player_id === playerId && p.attendance === 'Present' && p.character_id));
   const currentCharacter = $derived(view?.characters.find(c => c.character_id === binding?.character_id));
   const sourceActors = $derived(view?.source_control?.actors.filter(actor=>typeof actor.controller==='object'&&actor.controller.Player===playerId) ?? []);
@@ -57,7 +61,7 @@
   async function refresh() {
     const generation = ++refreshGeneration;
     const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null; savageOption = null; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
+    view = null; options = null; hostSituation = null; savageOption = null; heroicInspiration = false; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
     if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer) return;
@@ -73,7 +77,9 @@
         || next.source_control?.actors.some(actor=>actor.actor===sourceActorId&&actor.actor===next.roll?.roller&&typeof actor.controller==='object'&&actor.controller.Player===selectedPlayer))) {
       const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
         channel:selectedPlayer ? sourceActorId ? {SourceCreature:{player_id:selectedPlayer,actor:sourceActorId}} : {Player:{player_id:selectedPlayer,character_id:attending!.character_id!}} : 'Host'});
-      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) savageOption=answer.savage_attacker;
+      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) {
+        savageOption=answer.savage_attacker; heroicInspiration=answer.heroic_inspiration ?? false;
+      }
     }
   }
   async function loadCreatureCatalog(target: string, revision: string, generation: number) {
@@ -108,7 +114,11 @@
     catch(reason) { if(current())await showError(reason); } finally { if(current())sourceControlLoading=false; }
   }
   async function enableSourceControl(adopted: SourceAdoption[]) {
-    try { await send({kind:'action',request:{...context(),version:view?.grapple ? 3 : 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    catch(reason) { await showError(reason); }
+  }
+  async function enableGroundDrag() {
+    try { await send({kind:'action',request:{...context(),version:4,action:'EnableGrappleTransport'}}); }
     catch(reason) { await showError(reason); }
   }
   async function enableGrapple() {
@@ -136,9 +146,13 @@
     if (!view) throw new Error('Open the saved campaign first.');
     if (playerId && (!attending || (sourceActorId ? !sourceActor : !binding?.character_id))) throw new Error('Select an attending player and their controlled actor.');
     const channel:LocalChannel = playerId ? sourceActor ? {SourceCreature:{player_id:playerId,actor:sourceActor.actor}} : {Player:{player_id:playerId,character_id:binding!.character_id!}} : 'Host';
-    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple ? 3 : view.source_control ? 2 : 1, revision: view.revision,
+    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel };
+  }
+  function createCharacter(player_id: string, input: CharacterInput) {
+    if (!options || locked) return;
+    return act({ CreateCharacterFromSource: { player_id, input, source: options.source, character_id: newId(), entity_id: newId() } });
   }
   async function send(request: UnconfirmedRequest, existing = false) {
     if (busy || (!existing && (retry || unreadableRetry))) return;
@@ -205,6 +219,11 @@
   function reportSavage(roll: SavageAttackerRoll) {
     return act({Tactical:{action:{SubmitSavageAttacker:{roll}}}});
   }
+  function reportInspiration(faces: number[], die_index: number, replacement: { sides: number; value: number }) {
+    if (!view?.roll || view.roll_channel !== 'Tactical' || view.grapple?.version !== 4) return;
+    const sides = rawDice(view.roll);
+    return act({Tactical:{action:{SubmitRollWithInspiration:{result:{request_id:view.roll.id,source:'Physical',dice:faces.map((value,index)=>({sides:sides[index],value}))},die_index,replacement}}}});
+  }
   async function speak(event: SubmitEvent) {
     event.preventDefault();
     try { await send({ kind: 'text', request: { ...context(), text } }); } catch (reason) { await showError(reason); }
@@ -239,28 +258,30 @@
     <nav class="actions" aria-label="Campaign sections"><button class:secondary={page !== 'play'} onclick={() => { page = 'play'; }}>Table and sheets</button>{#if host}<button class:secondary={page !== 'setup'} onclick={() => { page = 'setup'; }}>Setup and host controls</button>{/if}</nav>
     {#if host && hostSituation?.challenges.length}<details class="panel"><summary>Current host check context</summary><p class="muted">These difficulties and unrevealed consequences are host-only.</p>{#each hostSituation.challenges as challenge}<article><h3>{challenge.title}</h3><p>{challenge.description}</p><p>{challenge.kind.Check.ability}{challenge.kind.Check.skill ? ` (${challenge.kind.Check.skill})` : ''} · DC {challenge.dc} · {challenge.resolution ? 'Resolved' : 'Unresolved'}</p><p>On success: {challenge.success}</p><p>On failure: {challenge.failure}</p></article>{/each}</details>{/if}
     {#if page === 'setup' && host}
-      <SourceControlForm control={view.source_control} options={sourceControlOptions} players={view.players} disabled={locked||sourceControlLoading||!!view.pending||!!view.roll} onReview={reviewSourceControl} onEnable={enableSourceControl} onAssign={(actor,controller)=>act({SetSourceCreatureController:{actor,controller}})}/>
-      <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.revision}<ContractForm value={view.contract} disabled={locked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
+      <SourceControlForm control={view.source_control} options={sourceControlOptions} players={view.players} disabled={gameLocked||sourceControlLoading||!!view.pending||!!view.roll} onReview={reviewSourceControl} onEnable={enableSourceControl} onAssign={(actor,controller)=>act({SetSourceCreatureController:{actor,controller}})}/>
+      <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.revision}<ContractForm value={view.contract} disabled={gameLocked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
       {#if !view.active_session}
-        <section class="panel"><h2>Players and characters</h2><form onsubmit={(event) => { event.preventDefault(); act({ AddPlayer: { id: newId(), name: playerName } }); }}><fieldset disabled={locked}><legend>Add a player</legend><label>Player name<input required maxlength="200" bind:value={playerName} /></label><button type="submit">Add player</button></fieldset></form>
+        <section class="panel"><h2>Players and characters</h2><form onsubmit={(event) => { event.preventDefault(); act({ AddPlayer: { id: newId(), name: playerName } }); }}><fieldset disabled={gameLocked}><legend>Add a player</legend><label>Player name<input required maxlength="200" bind:value={playerName} /></label><button type="submit">Add player</button></fieldset></form>
         {#if view.players.length}<ul>{#each view.players as player}<li>{player.display_name}</li>{/each}</ul>{/if}
-        {#if options && view.players.length}{#key view.revision}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={locked} onCreate={(player_id,input) => act({ CreateCharacter: { player_id, input, character_id: newId(), entity_id: newId() } })} /></details>{/key}{/if}</section>
-        {#if view.players.length}<section class="panel">{#key view.revision}<SessionForm players={view.players} characters={view.characters} sourceActors={view.source_control?.actors??[]} disabled={locked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
-      {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={locked || !!view.pending || !!view.roll || (!!view.tactical && view.tactical.phase!=='setup' && view.tactical.phase!=='finished' && !view.tactical.aftermath?.may_pause_session)} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Conclude hostilities and settle pending work before ending an encounter session. Aftermath keeps the current turn order on resume. Closing the app preserves pending work for later.</p></section>{/if}
-      <section class="panel"><SituationForm disabled={locked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
-      {#if (!view.tactical || view.tactical.phase==='finished') && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}{#if creatureCatalog !== null}<CreatureForm setup={{...view.creature_setup,catalog:creatureCatalog}} disabled={locked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/>{:else}<p>Loading creature sources...</p>{/if}</section>{/if}
-      {#if view.active_session && (!view.tactical || view.tactical.phase==='finished')}<section class="panel">{#key view.revision}<BattlefieldForm requiredActors={view.tactical?.release?.required_actors??[]} characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} ownedSourceActors={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object"&&view?.active_session?.participants.some(p=>p.player_id===(typeof actor.controller==="object"?actor.controller.Player:null)&&p.attendance==="Present")).map(actor=>actor.actor)} disabled={locked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
+        {#if options && view.players.length}{#key view.revision}<details><summary>Create a character</summary><CharacterForm {options} players={view.players} disabled={gameLocked} onCreate={createCharacter} /></details>{/key}{/if}</section>
+        {#if view.players.length}<section class="panel">{#key view.revision}<SessionForm players={view.players} characters={view.characters} sourceActors={view.source_control?.actors??[]} disabled={gameLocked} onStart={(name,participants) => { const id = newId(); act({ StartSession: { id, name, participants } }, id); }} />{/key}</section>{/if}
+      {:else}<section class="panel"><h2>Current session</h2><ul>{#each view.active_session.participants as participant}<li>{view.players.find(p=>p.id===participant.player_id)?.display_name}: {participant.attendance} · {view.characters.find(c=>c.character_id===participant.character_id)?.name ?? 'No character'}</li>{/each}</ul><button disabled={gameLocked || !!view.pending || !!view.roll || (!!view.tactical && view.tactical.phase!=='setup' && view.tactical.phase!=='finished' && !view.tactical.aftermath?.may_pause_session)} onclick={() => act('EndSession')}>End and save session</button><p class="muted">Conclude hostilities and settle pending work before ending an encounter session. Aftermath keeps the current turn order on resume. Closing the app preserves pending work for later.</p></section>{/if}
+      <section class="panel"><SituationForm disabled={gameLocked || !!view.roll} onSave={(situation) => act({ SetSituation: { situation } })} /></section>
+      {#if (!view.tactical || view.tactical.phase==='finished') && view.creature_setup}<section class="panel">{#if !view.characters.length}<p>Create a player character before preparing creatures.</p>{/if}{#if creatureCatalog !== null}<CreatureForm setup={{...view.creature_setup,catalog:creatureCatalog}} disabled={gameLocked||!!view.pending||!!view.roll||!view.characters.length} onCreate={(creation)=>act({CreateCreature:{creation}})}/>{:else}<p>Loading creature sources...</p>{/if}</section>{/if}
+      {#if view.active_session && (!view.tactical || view.tactical.phase==='finished')}<section class="panel">{#key view.revision}<BattlefieldForm requiredActors={view.tactical?.release?.required_actors??[]} characters={view.characters.filter(character=>view?.active_session?.participants.some(p=>p.character_id===character.character_id&&p.attendance==='Present'))} creatures={view.creature_setup?.creatures??[]} ownedSourceActors={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object"&&view?.active_session?.participants.some(p=>p.player_id===(typeof actor.controller==="object"?actor.controller.Player:null)&&p.attendance==="Present")).map(actor=>actor.actor)} disabled={gameLocked||!!view.pending||!!view.roll} onPrepare={(setup)=>act({PrepareBattlefield:{setup}})}/>{/key}</section>{/if}
     {:else}
       <section class="panel"><h2>{view.situation_title || 'The current situation'}</h2><p class="preserve">{view.situation_description || 'The host has not established a situation yet.'}</p>
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
-          {#if host}<button disabled={locked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending && canSpeak}<div class="actions"><button class="secondary" disabled={locked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={locked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{:else if ownsPending}<p>Switch to your player character to correct or withdraw this declaration.</p>{/if}
+          {#if host}<button disabled={gameLocked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending && canSpeak}<div class="actions"><button class="secondary" disabled={gameLocked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={gameLocked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{:else if ownsPending}<p>Switch to your player character to correct or withdraw this declaration.</p>{/if}
         </div>{/if}
-        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} disabled={locked} onSubmit={reportFaces} onSavage={reportSavage} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && sourceActor}<p>Controlling {sourceActor.name}. Use the encounter controls and physical dice requests for this creature.</p>{:else if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
-      {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={locked||!!view.pending||!view.active_session} administrativeDisabled={locked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
-      <GrapplePanel {view} {host} actor={selectedActor??null} disabled={locked||!!view.pending||!view.active_session} onEnable={enableGrapple} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
-      <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={locked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
+      {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={gameLocked||!!view.pending||!view.active_session} administrativeDisabled={gameLocked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
+      <GrapplePanel {view} {host} actor={selectedActor??null} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
+      <InspirationTransfer {view} {host} disabled={locked} canChoose={!sourceActor && currentCharacter?.character_id===view.inspiration_transfer?.character_id} onChoice={handle=>act({InspirationTransfer:{handle}})} />
+      {#key `${campaignId}:${view.active_session?.session_id}:${host}`}<InspirationAward {view} {host} disabled={gameLocked} onAward={(character_id,reason)=>act({AwardHeroicInspiration:{character_id,reason}})} onExcessAward={(character_id,reason)=>act({AwardExcessInspiration:{character_id,reason}})} />{/key}
+      <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={gameLocked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
       <section class="panel"><h2>Player-safe recap</h2>{#if view.recap.length}<ol>{#each view.recap as entry}<li class="preserve">{entry}</li>{/each}</ol>{:else}<p>No accepted outcomes yet. Proposed actions and questions do not enter the recap.</p>{/if}</section>
       <section class="panel"><h2>Table transcript</h2><div class="transcript" role="log" aria-label="Saved table transcript">{#each view.transcript as entry (entry.id)}<article><p><strong>{entry.speaker}</strong> <span class="tag">{entry.kind}</span></p><p class="preserve">{entry.text}</p></article>{:else}<p>Your accepted table activity and conversation appear here.</p>{/each}</div></section>
     {/if}

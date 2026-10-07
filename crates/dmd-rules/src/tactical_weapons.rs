@@ -2,6 +2,7 @@
 //! The encounter resolver supplies validated truth and commits resources/receipts atomically.
 mod equipment;
 pub(crate) use equipment::apply_attack_equipment_operation;
+pub(crate) mod ground;
 mod history;
 mod mastery;
 #[cfg(test)]
@@ -9,6 +10,7 @@ mod tests;
 use crate::tactical_definitions::*;
 use crate::{RulesPack, ability_modifier, proficiency_bonus, validate_character_intrinsics};
 use dmd_domain::*;
+pub use ground::{GroundPickupOption, ground_pickup_options};
 pub use mastery::*;
 use serde::Serialize;
 use thiserror::Error;
@@ -35,6 +37,7 @@ fn require(condition: bool, message: &str) -> Result<(), WeaponError> {
 }
 
 /// Source identity is established by the encounter resolver, never a player flag.
+#[derive(Clone, Copy)]
 pub enum WeaponActorSource<'a> {
     Character(&'a CharacterProfile),
     /// Ordinary use of equipment. Stat-block features must use their explicit attack
@@ -42,6 +45,7 @@ pub enum WeaponActorSource<'a> {
     CreatureOrdinaryWeapon(&'a CreatureDefinition),
 }
 /// Runtime-derived geometry/timing facts. Intentionally not Deserialize.
+#[derive(Clone, Copy)]
 pub struct WeaponAttackContext<'a> {
     pub origin: &'a CommandMeta,
     pub actor: EntityId,
@@ -148,7 +152,59 @@ pub fn recoverable_ammunition(expended: u32) -> u32 {
 pub fn prepare_weapon_attack(
     input: &WeaponAttackInput<'_>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
-    prepare_weapon_attack_inner(input, None)
+    let ground = is_ground_pickup(input.choice.equipment_change)
+        || input.choice.after_equipment.is_some()
+        || has_unimplemented_ground_records(input.state)
+        || input
+            .history
+            .iter()
+            .any(|r| r.ground_pickup_before.is_some() || r.after_equipment.is_some());
+    if ground && crate::tactical::attack_equipment_enabled(input.state) {
+        crate::tactical::validate_attack_equipment_state(input.state)
+            .map_err(|e| invalid(e.to_string()))?;
+    } else {
+        require(
+            !is_ground_pickup(input.choice.equipment_change)
+                && input.choice.after_equipment.is_none()
+                && !has_unimplemented_ground_records(input.state)
+                && input
+                    .history
+                    .iter()
+                    .all(|r| r.ground_pickup_before.is_none() && r.after_equipment.is_none()),
+            "ground pickup execution is not enabled",
+        )?;
+    }
+    prepare_tactical_weapon_attack(input)
+}
+
+/// Private production calculation behind the unchanged public admission guard.
+/// This grants no command/state authority and returns only a derived plan.
+pub(crate) fn prepare_tactical_weapon_attack(
+    input: &WeaponAttackInput<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    validate_equipment_intent(input)?;
+    ground::prepare(input)
+}
+
+fn validate_equipment_intent(input: &WeaponAttackInput<'_>) -> Result<(), WeaponError> {
+    if input.choice.after_equipment.is_some() {
+        require(
+            input.choice.equipment_change.is_none()
+                && input.choice.purpose == WeaponAttackPurpose::Normal
+                && input.context.on_actor_turn
+                && input.context.window.kind == WeaponActionKind::AttackAction
+                && input
+                    .state
+                    .encounter
+                    .as_ref()
+                    .and_then(|e| e.flow.as_ref())
+                    .is_some_and(|f| {
+                        f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                    }),
+            "later equipment needs an unused ordinary Attack allowance",
+        )?;
+    }
+    Ok(())
 }
 
 pub(crate) fn prepare_weapon_attack_with_read(
@@ -422,6 +478,8 @@ fn prepare_weapon_attack_inner(
             modifier
         };
     let receipt = WeaponAttackReceipt {
+        after_equipment: None,
+        ground_pickup_before: None,
         origin: context.origin.clone(),
         actor: context.actor,
         turn_number: context.turn_number,

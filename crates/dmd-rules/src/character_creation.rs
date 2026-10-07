@@ -1,4 +1,7 @@
 //! The supported SRD 5.2.1 creation profile; choices become validated grants, never caller totals.
+mod physical;
+pub use physical::*;
+
 use crate::{RulesError, RulesPack, ability_modifier};
 use dmd_domain::*;
 use serde::{Deserialize, Serialize};
@@ -226,7 +229,10 @@ fn character_from_profile(
         shield: profile.shield,
         masteries: profile.masteries.clone(),
     };
-    let built = build_character(&input, profile.entity_id, pack)?;
+    let built = match &profile.creation_source {
+        Some(source) => build_character_from_source(&input, profile.entity_id, source, pack)?,
+        None => build_character(&input, profile.entity_id, pack)?,
+    };
     if built.profile != *profile {
         return Err(invalid(
             "profile derived grants/equipment differ from source creation",
@@ -242,6 +248,16 @@ pub fn build_character(
     input: &CharacterCreationInput,
     entity_id: EntityId,
     pack: &RulesPack,
+) -> Result<BuiltCharacter, RulesError> {
+    build_with_catalog(input, entity_id, pack, &starter_catalog(), None)
+}
+
+fn build_with_catalog(
+    input: &CharacterCreationInput,
+    entity_id: EntityId,
+    pack: &RulesPack,
+    catalog: &StarterCatalog,
+    creation_source: Option<CharacterCreationSourcePin>,
 ) -> Result<BuiltCharacter, RulesError> {
     pack.validate()?;
     if !ALIGNMENTS.contains(&input.alignment.as_str()) {
@@ -311,7 +327,6 @@ pub fn build_character(
             "choose three distinct Simple or Martial weapon mastery grants",
         ));
     }
-    let catalog = starter_catalog();
     let mut purchased = BTreeMap::new();
     let mut equipment = Vec::new();
     let mut spent = 0u32;
@@ -375,9 +390,17 @@ pub fn build_character(
         dexterity_cap: None,
         shield: input.shield,
     };
+    // Generic kernel registrations remain the frozen creator's three definitions.
+    // Additional current purchases are authoritative physical tactical equipment.
+    let legacy_catalog = starter_catalog();
     mechanics.attacks = purchased
         .keys()
-        .filter(|id| catalog.items.iter().any(|i| &i.id == *id && i.weapon))
+        .filter(|id| {
+            legacy_catalog
+                .items
+                .iter()
+                .any(|i| &i.id == *id && i.weapon)
+        })
         .cloned()
         .collect();
     mechanics.attack_proficiencies = mechanics.attacks.clone();
@@ -481,6 +504,7 @@ pub fn build_character(
         worn_armor: input.worn_armor.clone(),
         shield: input.shield,
         money_cp,
+        creation_source,
     };
     Ok(BuiltCharacter {
         mechanics,

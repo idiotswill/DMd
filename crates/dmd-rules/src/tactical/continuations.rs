@@ -148,6 +148,7 @@ pub(super) fn key(
         }
         TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
+        | TacticalWorkKind::AttackAfterEquipment
         | TacticalWorkKind::FinishAttack => {
             return Err(invalid("attack work has no ordinary save key"));
         }
@@ -319,7 +320,9 @@ pub(super) fn request_with_read(
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
             super::attacks::request_with_read(read, work, key)
         }
-        TacticalWorkKind::FinishAttack => Err(invalid("attack completion has no raw roll")),
+        TacticalWorkKind::FinishAttack | TacticalWorkKind::AttackAfterEquipment => {
+            Err(invalid("attack completion has no raw roll"))
+        }
         TacticalWorkKind::DeathSave { actor } => {
             let context = crate::tactical_vitality_adapter::context(
                 state,
@@ -392,6 +395,20 @@ pub(super) fn request_with_read(
             Err(invalid("occupied-space consequence has no raw roll"))
         }
     }
+}
+
+#[cfg(test)]
+pub(super) fn start(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: TacticalWorkItem,
+) -> Result<(), RulesError> {
+    start_with_context(
+        state,
+        meta,
+        work,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
 }
 
 pub(super) fn start_with_context(
@@ -505,6 +522,9 @@ fn start_inner(
             return Err(invalid("movement work was not handled"));
         }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => (),
+        TacticalWorkKind::AttackAfterEquipment => {
+            return super::attack_equipment::select(state, meta, &work);
+        }
         TacticalWorkKind::FinishAttack => return Err(invalid("attack completion was not handled")),
         TacticalWorkKind::LegendaryWindow { actor } => {
             let actor = *actor;
@@ -930,7 +950,7 @@ fn finish_inner(
             result.ok_or_else(|| invalid("attack requires raw dice"))?,
             execution,
         )?,
-        TacticalWorkKind::FinishAttack => {
+        TacticalWorkKind::FinishAttack | TacticalWorkKind::AttackAfterEquipment => {
             return Err(invalid("attack completion is not pending dice"));
         }
         TacticalWorkKind::DeathSave { actor } => {

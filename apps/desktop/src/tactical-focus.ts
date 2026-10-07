@@ -1,6 +1,7 @@
 import type { Id } from './table-api';
 
 type TacticalPrompt =
+  | { kind: 'attack-equipment'; key: Id; actor: Id }
   | { kind: 'shove'; key: Id; actor: Id; stage: 'SaveChoice' | 'OutcomeChoice' | 'PushReview' }
   | { kind: 'hit-order' | 'missile-order'; key: Id }
   | { kind: 'hit-response' | 'missile-response'; key: Id; actor: Id; selected: boolean }
@@ -13,6 +14,7 @@ type TacticalPrompt =
 // Tuples avoid collisions between prompt kinds, actors and opaque response keys.
 export function tacticalPromptIdentity(prompt: TacticalPrompt): string {
   switch (prompt.kind) {
+    case 'attack-equipment': return JSON.stringify([prompt.kind, prompt.actor, prompt.key]);
     case 'shove': return JSON.stringify([prompt.kind, prompt.actor, prompt.key, prompt.stage]);
     case 'hit-order': case 'missile-order': return JSON.stringify([prompt.kind, prompt.key]);
     case 'hit-response': case 'missile-response': return JSON.stringify([prompt.kind, prompt.actor, prompt.key, prompt.selected]);

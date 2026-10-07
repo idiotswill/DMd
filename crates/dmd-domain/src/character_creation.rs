@@ -92,6 +92,58 @@ pub struct CharacterProfile {
     pub worn_armor: Option<String>,
     pub shield: bool,
     pub money_cp: u32,
+    /// Explicit current creation revision; absence retains the immutable legacy creator.
+    /// Source identity is not evidence of an accepted command; the application replays it.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub creation_source: Option<CharacterCreationSourcePin>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct CharacterCreationSourcePin {
+    pub ruleset_id: String,
+    pub ruleset_version: String,
+    pub catalog_schema_version: u32,
+    pub profile_id: String,
+    pub definition_fingerprint: String,
+}
+
+impl CharacterCreationSourcePin {
+    pub fn validate_shape(&self) -> Result<(), String> {
+        if self.ruleset_id != "srd-5.2"
+            || self.ruleset_version != "5.2.1"
+            || self.catalog_schema_version != 1
+            || self.profile_id.is_empty()
+            || self.profile_id.len() > 128
+            || self.definition_fingerprint.len() != 16
+            || !self
+                .definition_fingerprint
+                .bytes()
+                .all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b))
+        {
+            return Err("invalid character creation source identity".into());
+        }
+        Ok(())
+    }
+}
+
+/// Structural inventory of new authority, not authentication of its original history.
+pub fn has_current_character_creation(state: &crate::CampaignState) -> bool {
+    state.table.as_ref().is_some_and(|table| {
+        table
+            .character_profiles
+            .values()
+            .any(|profile| profile.creation_source.is_some())
+    }) || state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_inventory.as_ref())
+        .is_some_and(|inventory| {
+            inventory
+                .receipts
+                .iter()
+                .any(|receipt| receipt.creation_profile.creation_source.is_some())
+        })
 }
 
 /// Opt-in typed level-one feature grants. Absent on unchanged historical imported sheets.

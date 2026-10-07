@@ -4,6 +4,15 @@ Status: **The 13 scoped Gate 2 families and two scoped Gate 3 families have mech
 
 [The machine-readable ledger](rules-coverage-ledger.json) is the implementation/evidence record. [The source inventory](srd-5.2.1-inventory.json) records source chapter coverage, glossary membership and named catalogs. [Source provenance](srd-5.2.1-provenance.md) pins the official English SRD 5.2.1 and its commercial CC BY 4.0 terms; the [distribution notice](../../content/srd-5.2.1/NOTICE.md) must accompany source adaptations.
 
+Current integration note, 2026-10-06: fetched main is
+`5afc992e62bb967aceec69db53f19b6347b70855` after Air PR50 and Shove PR51.
+The [native expiry record](../checkpoints/gate4-expiry-native-2026-10-06.md) now
+documents actual391 primary deadline/recovery; final PR52 checks/merge remain open.
+PR48's separate successful literal-main checks are recorded in
+the [release plan](../exec-plans/active/gate4-encounter-release.md).
+The older release-candidate statements below remain historical evidence. No Gate4
+family status or player-acceptance claim changes.
+
 ## What is accounted for
 
 The ledger has 55 rules/content families. Every family has one numeric `primary_gate`, legal/source citations, explicit scope, status, mechanical test evidence, production integration evidence, player acceptance evidence and final Gate 14 ownership. Empty evidence arrays mean no such evidence is claimed. An inventory entry inherits its owning family's scope and gate accounting; a primitive family's integration status does not declare every source subrule implemented. Listing a spell or creature does not implement it.
@@ -97,8 +106,8 @@ inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled wi
 all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
 canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
 (783 Linux /785 MSVC); the plan records exact logs and independent review.
-Final documentation-head checks/review, protected merge and literal main proof
-remain outstanding. No evidence array or family status
+Final Air head ee51 passed review and checks before protected PR50 merge as32c0c68;
+separate literal32 runtime proof remains outstanding. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
 `monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
@@ -116,8 +125,8 @@ items and absolute Mage Armor deadline. The plan distinguishes native evidence f
 the separate real file-SQLite ammunition/drop-custody, replay and refusal families.
 Final evidence head d4 passed independent review and all six checks, then PR48
 merged with expected-head protection as dbf1d63, whose full tree equals d4.
-Separate literal dbf main runtime checks remain pending; complete Gate4 families
-remain implementing. These checkpoints add
+Separate literal dbf main checks subsequently passed, as recorded in the release
+plan; complete Gate4 families remain implementing. These checkpoints add
 no passing evidence to the machine-readable ledger and advances no family status.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.

@@ -27,6 +27,9 @@ fn request_meta(
 ) -> Result<CommandMeta, String> {
     let enabled = crate::table_source_control::enabled(state);
     let grapple = dmd_rules::table::grapple_enabled(state);
+    let transport = dmd_rules::table::grapple_transport_enabled(state);
+    let transport_activation = matches!(&request.input, TableTransportInput::Action(action)
+        if matches!(action.as_ref(), TableAction::EnableGrappleTransport));
     let activation = matches!(&request.input, TableTransportInput::Action(action)
         if matches!(action.as_ref(), TableAction::EnableSourceActorAccess { .. }));
     let grapple_activation = matches!(&request.input, TableTransportInput::Action(action)
@@ -35,6 +38,7 @@ fn request_meta(
         TABLE_TRANSPORT_VERSION => {
             !enabled
                 && !grapple
+                && !transport_activation
                 && !grapple_activation
                 && !activation
                 && !matches!(
@@ -44,11 +48,18 @@ fn request_meta(
         }
         TABLE_SOURCE_TRANSPORT_VERSION => {
             !grapple
+                && !transport_activation
                 && !grapple_activation
                 && (enabled || activation && request.channel == TableTransportChannel::Host)
         }
         TABLE_GRAPPLE_TRANSPORT_VERSION => {
-            grapple || grapple_activation && request.channel == TableTransportChannel::Host
+            !transport
+                && !transport_activation
+                && (grapple || grapple_activation && request.channel == TableTransportChannel::Host)
+        }
+        TABLE_GROUND_DRAG_TRANSPORT_VERSION => {
+            transport
+                || grapple && transport_activation && request.channel == TableTransportChannel::Host
         }
         _ => false,
     };
@@ -103,15 +114,17 @@ fn derive_intent(
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<Intent, String> {
     let tactical_input = match &request.input {
-        TableTransportInput::GrappleChoice { .. }
+        TableTransportInput::MoveGrappled { .. }
+        | TableTransportInput::GrappleChoice { .. }
         | TableTransportInput::SelectWork { .. }
+        | TableTransportInput::AttackEquipment { .. }
         | TableTransportInput::ShoveDecision { .. }
         | TableTransportInput::HitResponse { .. }
         | TableTransportInput::MissileResponse { .. } => true,
         TableTransportInput::Action(action) => {
             matches!(action.as_ref(), TableAction::Tactical { .. })
         }
-        TableTransportInput::Text { .. } => false,
+        TableTransportInput::Text { .. } | TableTransportInput::InspirationTransfer { .. } => false,
     };
     if matches!(
         request.channel,
@@ -134,9 +147,70 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::InspirationTransfer { handle } => {
+            if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                || !matches!(request.channel, TableTransportChannel::Player { .. })
+                || !dmd_rules::table::grapple_transport_enabled(state)
+            {
+                return Err("Select your current Inspiration choice.".into());
+            }
+            let choice = current
+                .handles
+                .iter()
+                .find_map(|entry| match &entry.capability {
+                    ProjectionCapability::InspirationTransfer { choice }
+                        if entry.opaque == handle.0 =>
+                    {
+                        Some(choice.clone())
+                    }
+                    _ => None,
+                })
+                .ok_or("That Inspiration choice is not available in this view.")?;
+            Intent::Action(Box::new(TableAction::ResolveHostInspirationTransfer {
+                choice,
+            }))
+        }
+        TableTransportInput::MoveGrappled { option, path } => {
+            if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                || !dmd_rules::table::grapple_transport_enabled(state)
+            {
+                return Err("Ground drag requires the enabled table transport.".into());
+            }
+            let offer = current
+                .handles
+                .iter()
+                .find_map(|entry| match &entry.capability {
+                    ProjectionCapability::GrappleTransport { offer }
+                        if entry.opaque == option.0 =>
+                    {
+                        Some(offer)
+                    }
+                    _ => None,
+                })
+                .ok_or("That ground drag choice is not available in this view.")?;
+            let actor_matches = match request.channel {
+                TableTransportChannel::Host => true,
+                TableTransportChannel::Player { character_id, .. } => state
+                    .characters
+                    .get(&character_id)
+                    .is_some_and(|character| character.entity_id == offer.actor),
+                TableTransportChannel::SourceCreature { actor, .. } => actor == offer.actor,
+            };
+            if !actor_matches {
+                return Err("Select the actor who owns this ground drag choice.".into());
+            }
+            Intent::Action(Box::new(TableAction::Tactical {
+                action: TacticalAction::MoveGrappled {
+                    grip: offer.grip,
+                    path: path.clone(),
+                },
+            }))
+        }
         TableTransportInput::GrappleChoice { handle } => {
-            if request.version != TABLE_GRAPPLE_TRANSPORT_VERSION
-                || !dmd_rules::table::grapple_enabled(state)
+            if !matches!(
+                request.version,
+                TABLE_GRAPPLE_TRANSPORT_VERSION | TABLE_GROUND_DRAG_TRANSPORT_VERSION
+            ) || !dmd_rules::table::grapple_enabled(state)
             {
                 return Err("Grapple choices require the enabled table transport.".into());
             }
@@ -163,6 +237,42 @@ fn derive_intent(
             }
             Intent::Action(Box::new(TableAction::Tactical {
                 action: dmd_rules::table::grapple_action(&offer.choice),
+            }))
+        }
+        TableTransportInput::AttackEquipment { handle, choice } => {
+            let (origin, occurrence) = current
+                .handles
+                .iter()
+                .find_map(|h| match h.capability {
+                    ProjectionCapability::AttackEquipment { origin, occurrence }
+                        if h.opaque == handle.0 =>
+                    {
+                        Some((origin, occurrence))
+                    }
+                    _ => None,
+                })
+                .ok_or("That equipment decision is not available in this view.")?;
+            let record = state
+                .encounter
+                .as_ref()
+                .and_then(|e| e.flow.as_ref())
+                .and_then(|f| f.resolution.as_ref())
+                .filter(|r| r.origin.id == origin)
+                .and_then(|r| r.attack_after_equipment.as_ref())
+                .filter(|r| {
+                    r.selected_by.is_some()
+                        && r.work.occurrence == occurrence
+                        && r.work.kind == TacticalWorkKind::AttackAfterEquipment
+                })
+                .ok_or("That equipment decision is no longer available.")?;
+            Intent::Action(Box::new(TableAction::Tactical {
+                action: TacticalAction::ChooseAttackEquipment {
+                    work: TacticalWorkKey {
+                        resolution: origin,
+                        occurrence: record.work.occurrence,
+                    },
+                    choice: *choice,
+                },
             }))
         }
         TableTransportInput::ShoveDecision { handle, decision } => {
@@ -353,10 +463,23 @@ fn derive_intent(
         }
         TableTransportInput::Action(action) => {
             let mut action = (**action).clone();
+            if matches!(action, TableAction::ResolveHostInspirationTransfer { .. }) {
+                return Err("Select the visible Inspiration choice handle.".into());
+            }
+            if matches!(
+                action,
+                TableAction::AwardHeroicInspiration { .. }
+                    | TableAction::AwardExcessInspiration { .. }
+            ) && (request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                || !dmd_rules::table::grapple_transport_enabled(state))
+            {
+                return Err("Inspiration awards require the current table controls.".into());
+            }
             match &mut action {
                 TableAction::SubmitPhysical { request_id, .. } => *request_id = roll(*request_id)?,
                 TableAction::Tactical { action } => match action {
-                    TacticalAction::Grapple { .. }
+                    TacticalAction::MoveGrappled { .. }
+                    | TacticalAction::Grapple { .. }
                     | TacticalAction::ChooseGrappleSave { .. }
                     | TacticalAction::ApplyGrappleAfterEquipment { .. }
                     | TacticalAction::DeclineGrappleAfterEquipment { .. }
@@ -364,6 +487,9 @@ fn derive_intent(
                     | TacticalAction::EscapeGrapple { .. }
                     | TacticalAction::ReleaseGrapple { .. } => {
                         return Err("Select the visible Grapple choice handle.".into());
+                    }
+                    TacticalAction::ChooseAttackEquipment { .. } => {
+                        return Err("Select the visible equipment decision handle.".into());
                     }
                     TacticalAction::ChooseShoveSave { .. }
                     | TacticalAction::ChooseShoveOutcome { .. }
@@ -527,6 +653,10 @@ pub(crate) fn validate_event_binding(
             || matches!(
                 event.action,
                 TableAction::EnableGrappleAccess
+                    | TableAction::EnableGrappleTransport
+                    | TableAction::AwardHeroicInspiration { .. }
+                    | TableAction::AwardExcessInspiration { .. }
+                    | TableAction::ResolveHostInspirationTransfer { .. }
                     | TableAction::EnableSourceActorAccess { .. }
                     | TableAction::SetSourceCreatureController { .. }
             )
@@ -535,7 +665,7 @@ pub(crate) fn validate_event_binding(
         }
         return Ok(());
     }
-    if !matches!(audit.command_schema_version, 2..=4) {
+    if !matches!(audit.command_schema_version, 2..=5) {
         return Err("unsupported transport acceptance".into());
     }
     let envelope: TransportedTableAction =
@@ -580,7 +710,7 @@ pub(crate) fn validate_observation_binding(
         }
         return Ok(());
     }
-    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=4) {
+    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=5) {
         return Err("unsupported protocol observation".into());
     }
     let envelope: TransportedTableObservation =
@@ -742,7 +872,11 @@ impl CampaignRuntime {
                         .heroic_inspiration,
                 });
         tx.commit().await.map_err(recovery)?;
-        Ok(TableRollOptions { savage_attacker })
+        Ok(TableRollOptions {
+            savage_attacker,
+            heroic_inspiration: dmd_rules::table::grapple_transport_enabled(state)
+                .then(|| state.rules.as_ref().unwrap().entities[&actor].heroic_inspiration),
+        })
     }
     pub async fn recover_legacy_table_request(
         &self,
@@ -904,6 +1038,10 @@ impl CampaignRuntime {
         if matches!(
             action,
             TableAction::EnableGrappleAccess
+                | TableAction::EnableGrappleTransport
+                | TableAction::AwardHeroicInspiration { .. }
+                | TableAction::AwardExcessInspiration { .. }
+                | TableAction::ResolveHostInspirationTransfer { .. }
                 | TableAction::EnableSourceActorAccess { .. }
                 | TableAction::SetSourceCreatureController { .. }
         ) {

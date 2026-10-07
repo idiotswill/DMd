@@ -35,7 +35,52 @@ pub(super) fn activate(
         return Err("Enable Grapple at a settled current encounter turn.".into());
     }
     Ok(TableGrappleAccess {
+        ground_transport: None,
         version: TableGrappleAccessVersion::OrdinaryGrappleV1,
         origin: meta.clone(),
     })
+}
+
+/// Upgrade the settled existing Grapple executor without replacing its admission.
+pub(super) fn activate_transport(
+    state: &CampaignState,
+    meta: &CommandMeta,
+) -> Result<TableGrappleAccess, String> {
+    let table = state.table.as_ref().ok_or("This campaign has no table.")?;
+    let session = table
+        .active_session
+        .as_ref()
+        .ok_or("Start the current table session first.")?;
+    if meta.issuer != CommandIssuer::Admin
+        || meta.actor.is_some()
+        || meta.campaign_id != state.campaign_id()
+        || meta.expected_event_sequence != state.applied_event_sequence
+        || meta.session_id != Some(session.session_id)
+    {
+        return Err("Ground drag activation requires the current host and session.".into());
+    }
+    let mut access = table
+        .grapple_access
+        .as_deref()
+        .ok_or("Enable Grapple first.")?
+        .clone();
+    if access.ground_transport.is_some() {
+        return Err("Ground drag is already enabled.".into());
+    }
+    source_control::settled(state)?;
+    let flow = state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .ok_or("Start an encounter first.")?;
+    if flow.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        || flow.phase != TacticalPhase::Active
+    {
+        return Err("Enable ground drag at a settled current encounter turn.".into());
+    }
+    access.ground_transport = Some(TableGrappleTransportAccess {
+        version: GrappleTransportKind::GroundDragV1,
+        origin: meta.clone(),
+    });
+    Ok(access)
 }

@@ -120,6 +120,85 @@ impl ActiveTableSession {
     }
 }
 
+/// The actual Host excess award owns an existing feature transfer flag.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableInspirationTransfer {
+    pub origin: CommandMeta,
+    pub character_id: CharacterId,
+}
+
+impl TableInspirationTransfer {
+    pub fn validate(&self, state: &CampaignState) -> Result<(), String> {
+        let table = state
+            .table
+            .as_ref()
+            .ok_or("Inspiration transfer has no table")?;
+        let character = state
+            .characters
+            .get(&self.character_id)
+            .ok_or("Inspiration owner is absent")?;
+        let rules = state
+            .rules
+            .as_ref()
+            .ok_or("Inspiration mechanics are absent")?;
+        let entity = rules
+            .entities
+            .get(&character.entity_id)
+            .ok_or("Inspiration owner has no sheet")?;
+        let player = character
+            .controlling_player_id
+            .ok_or("Inspiration owner is uncontrolled")?;
+        if self.origin.issuer != crate::CommandIssuer::Admin
+            || self.origin.actor.is_some()
+            || self.origin.campaign_id != state.campaign_id()
+            || self.origin.expected_event_sequence > state.applied_event_sequence
+            || character.status != crate::CharacterStatus::Active
+            || character.campaign_id != state.campaign_id()
+            || !state.players.contains_key(&player)
+            || !table
+                .character_profiles
+                .get(&self.character_id)
+                .is_some_and(|profile| profile.entity_id == character.entity_id)
+            || !entity.heroic_inspiration
+            || entity.death.dead
+            || !entity.character_features.as_ref().is_some_and(|features| {
+                features.inspiration_transfer_pending && features.human_resourceful
+            })
+            || !table
+                .grapple_access
+                .as_ref()
+                .is_some_and(|access| access.ground_transport.is_some())
+            || table.pending.is_some()
+            || table.roll_context.is_some()
+            || rules.pending.is_some()
+            || rules.entities.values().any(|other| {
+                other.entity_id != character.entity_id
+                    && other
+                        .character_features
+                        .as_ref()
+                        .is_some_and(|features| features.inspiration_transfer_pending)
+            })
+        {
+            return Err("invalid Host Inspiration transfer provenance or pending state".into());
+        }
+        let session = self
+            .origin
+            .session_id
+            .ok_or("Inspiration award lacks session")?;
+        table.validate_attendance(session, player, self.character_id)
+    }
+}
+
+/// Canonical choice retained only in authenticated history; transport exposes an opaque handle.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableInspirationTransferChoice {
+    pub award: CommandId,
+    pub character_id: CharacterId,
+    pub recipient: Option<CharacterId>,
+}
+
 /// A player proposal. It never supplies a DC, modifier, authority or successful outcome.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -197,6 +276,9 @@ pub struct TableSituation {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TableState {
+    /// Producer proof for the existing single transfer flag; absent on Resourceful history.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspiration_transfer: Option<TableInspirationTransfer>,
     pub contract: TableContract,
     pub character_profiles: HashMap<CharacterId, CharacterProfile>,
     pub active_session: Option<ActiveTableSession>,
@@ -215,6 +297,7 @@ impl TableState {
     #[must_use]
     pub fn new(contract: TableContract) -> Self {
         Self {
+            inspiration_transfer: None,
             contract,
             character_profiles: HashMap::new(),
             active_session: None,
@@ -228,6 +311,9 @@ impl TableState {
 
     pub fn validate(&self, state: &CampaignState) -> Result<(), String> {
         self.contract.validate()?;
+        if let Some(transfer) = &self.inspiration_transfer {
+            transfer.validate(state)?;
+        }
         if let Some(access) = &self.grapple_access {
             access.validate(state)?;
         }
@@ -245,6 +331,12 @@ impl TableState {
             return Err("table contract and applied house rules disagree".into());
         }
         for (id, profile) in &self.character_profiles {
+            if let Some(source) = &profile.creation_source {
+                if state.schema_version < 4 {
+                    return Err("legacy state contains future character creation authority".into());
+                }
+                source.validate_shape()?;
+            }
             let character = state.characters.get(id).ok_or("unknown table character")?;
             if character.entity_id != profile.entity_id || character.display_name != profile.name {
                 return Err("table character profile identity disagrees".into());

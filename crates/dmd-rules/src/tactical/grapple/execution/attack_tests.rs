@@ -1,6 +1,7 @@
 //! Authored private producer controls. These do not activate public admission,
 //! reproduce a journal, or claim application/native acceptance.
 use super::*;
+mod ground_opportunity_tests;
 
 fn command(state: &CampaignState, actor: Option<EntityId>) -> CommandMeta {
     CommandMeta {
@@ -169,6 +170,7 @@ fn item(state: &CampaignState, actor: EntityId, definition: &str) -> ItemId {
 }
 fn dagger(state: &CampaignState, actor: EntityId, target: EntityId) -> WeaponUseChoice {
     WeaponUseChoice {
+        after_equipment: None,
         weapon: item(state, actor, "dagger"),
         target,
         delivery: WeaponDelivery::Melee,
@@ -610,6 +612,7 @@ fn scimitar(state: &CampaignState, goblin: EntityId, target: EntityId) -> Tactic
     TacticalAction::CreatureWeaponAttack {
         feature_id: "scimitar".into(),
         choice: CreatureWeaponUseChoice {
+            after_equipment: None,
             weapon,
             target,
             grip: WeaponGrip::OneHand(Hand::Right),

@@ -10,7 +10,9 @@ pub fn enabled(state: &CampaignState) -> bool {
 }
 
 pub fn presentation_version(state: &CampaignState) -> u32 {
-    if super::grapple_enabled(state) {
+    if super::grapple_transport_enabled(state) {
+        4
+    } else if super::grapple_enabled(state) {
         3
     } else if enabled(state) {
         2
@@ -439,6 +441,10 @@ pub fn authorize_tactical(
                 TacticalWorkKind::LegendaryWindow { actor } => Some(actor),
                 _ => None,
             }),
+        A::ActivateAttackEquipment => None,
+        A::ChooseAttackEquipment { .. } => resolution
+            .and_then(|r| r.attack_after_equipment.as_ref())
+            .map(|r| r.cause.actor),
         A::ChooseAttackKnockout { .. } | A::ChooseAttackMastery { .. } => resolution
             .and_then(|resolution| resolution.attack.as_ref())
             .map(|attack| attack.actor),
@@ -471,6 +477,7 @@ pub fn authorize_tactical(
         | A::CreatureAttack { .. }
         | A::Move { .. }
         | A::MoveSelfOnly { .. }
+        | A::MoveGrappled { .. }
         | A::Attack { .. }
         | A::EndTurn
         | A::Dash { .. }

@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub const TABLE_TRANSPORT_VERSION: u32 = 1;
 pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
 pub const TABLE_GRAPPLE_TRANSPORT_VERSION: u32 = 3;
+pub const TABLE_GROUND_DRAG_TRANSPORT_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -39,8 +40,19 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    InspirationTransfer {
+        handle: CommandId,
+    },
+    MoveGrappled {
+        option: CommandId,
+        path: Vec<TacticalMoveStep>,
+    },
     GrappleChoice {
         handle: CommandId,
+    },
+    AttackEquipment {
+        handle: CommandId,
+        choice: AttackEquipmentChoice,
     },
     ShoveDecision {
         handle: CommandId,
@@ -139,6 +151,8 @@ pub struct TableRollOptionsRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableRollOptions {
     pub savage_attacker: Option<TableSavageAttackerOption>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heroic_inspiration: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -248,7 +262,9 @@ pub struct TableHostDiagnostics {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub grapple: Option<TableGrappleView<CommandId>>,
+    pub inspiration_transfer: Option<TableInspirationTransferView<CommandId>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<TableGrappleView<CommandId, CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub revision: ProjectionRevision,
@@ -299,6 +315,8 @@ pub(crate) fn presented_view(
         .tactical
         .map(|tactical| {
             let TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,
@@ -330,6 +348,19 @@ pub(crate) fn presented_view(
                 shield_options,
                 area_options,
             } = tactical;
+            let attack_equipment = attack_equipment
+                .map(|offer| {
+                    Ok::<_, &str>(TableAttackEquipmentView {
+                        key: CommandId(handle(&ProjectionCapability::AttackEquipment {
+                            origin: offer.key.resolution,
+                            occurrence: offer.key.occurrence,
+                        })?),
+                        actor: offer.actor,
+                        operations: offer.operations,
+                        may_decline: offer.may_decline,
+                    })
+                })
+                .transpose()?;
             let shove = shove
                 .map(|s| {
                     Ok::<_, &str>(TableShoveView {
@@ -467,6 +498,8 @@ pub(crate) fn presented_view(
                 })
                 .transpose()?;
             Ok::<_, &str>(TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,
@@ -502,10 +535,46 @@ pub(crate) fn presented_view(
         .transpose()
         .map_err(str::to_owned)?;
     Ok(TablePresentedView {
+        inspiration_transfer: raw
+            .inspiration_transfer
+            .map(|transfer| {
+                Ok::<_, &str>(TableInspirationTransferView {
+                    character_id: transfer.character_id,
+                    choices: transfer
+                        .choices
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableInspirationOption {
+                                key: CommandId(handle(
+                                    &ProjectionCapability::InspirationTransfer {
+                                        choice: choice.key,
+                                    },
+                                )?),
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
         grapple: raw
             .grapple
             .map(|grapple| {
                 Ok::<_, &str>(TableGrappleView {
+                    ground_drag: grapple
+                        .ground_drag
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleTransport {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
                     version: grapple.version,
                     choices: grapple
                         .choices

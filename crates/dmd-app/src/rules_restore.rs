@@ -159,7 +159,11 @@ fn replay_history(
     // New tactical authority has always been event-sourced. Unlike pre-journal legacy
     // mechanics, it cannot be authenticated by trusting an initial snapshot of itself.
     // Keep the original pre-tactical anchor so every source-derived payload is replayed.
-    if dmd_domain::has_unimplemented_grapple_records(anchor)
+    if dmd_domain::has_current_character_creation(anchor) {
+        return Err("current character creation requires its original pre-creation anchor".into());
+    }
+    if dmd_domain::has_unimplemented_ground_records(anchor)
+        || dmd_domain::has_unimplemented_grapple_records(anchor)
         || dmd_rules::table::grapple_enabled(anchor)
         || anchor.encounter_history.is_some()
         || crate::table_source_control::enabled(anchor)
@@ -235,6 +239,12 @@ fn replay_history(
                     .map_err(|error| format!("table event {sequence}: {error}"))?,
             )
         };
+        if matches!(&event, RecoveryEvent::Rules(event) if matches!(event.action, RulesAction::CreateCharacterFromSource { .. }))
+        {
+            return Err(
+                "current character creation requires its original outer table event".into(),
+            );
+        }
         let (audit, meta) = audits
             .get(&event.meta().id)
             .ok_or_else(|| "rules event has no matching command audit".to_owned())?;
@@ -399,7 +409,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && matches!(version, 2..=4))
+    version == 1 || (kind == "table.action" && matches!(version, 2..=5))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -409,7 +419,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2..=4 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2..=5 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)
@@ -536,7 +546,38 @@ fn validate_event(
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
     if matches!(
         event.action,
+        TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. }
+    ) {
+        if event.meta.issuer != CommandIssuer::Admin
+            || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration award has incompatible Host or nested authority".into());
+        }
+        return Ok(());
+    }
+    if matches!(
+        event.action,
+        TableAction::ResolveHostInspirationTransfer { .. }
+    ) {
+        if !matches!(event.meta.issuer, CommandIssuer::Player(_))
+            || !matches!(event.meta.actor, Some(AgentRef::Entity(_)))
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration choice has incompatible Player or nested authority".into());
+        }
+        return Ok(());
+    }
+    if matches!(
+        event.action,
         TableAction::EnableGrappleAccess
+            | TableAction::EnableGrappleTransport
             | TableAction::EnableSourceActorAccess { .. }
             | TableAction::SetSourceCreatureController { .. }
     ) {
@@ -663,6 +704,7 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
     let mechanical = matches!(
         event.action,
         TableAction::CreateCharacter { .. }
+            | TableAction::CreateCharacterFromSource { .. }
             | TableAction::Adjudicate { .. }
             | TableAction::SubmitPhysical { .. }
     );
@@ -676,6 +718,19 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
         return Err("nested rules authority/outcome disagrees with table envelope".into());
     }
     let matched = match (&event.action, &nested.action) {
+        (
+            TableAction::CreateCharacterFromSource {
+                entity_id,
+                source,
+                input,
+                ..
+            },
+            RulesAction::CreateCharacterFromSource {
+                entity_id: nested_id,
+                source: nested_source,
+                input: nested_input,
+            },
+        ) => entity_id == nested_id && source == nested_source && input == nested_input,
         (
             TableAction::CreateCharacter {
                 entity_id, input, ..
@@ -805,9 +860,20 @@ fn validate_rulings(
             {
                 return Err("ruling provenance disagrees with accepted audit".into());
             }
-            let action = commands
+            let command = commands
                 .get(&record.command.id)
-                .and_then(|event| event.rules_event())
+                .ok_or("ruling has no checked typed command")?;
+            if let RecoveryEvent::Table(event) = command
+                && let TableAction::AwardHeroicInspiration { reason, .. }
+                | TableAction::AwardExcessInspiration { reason, .. } = &event.action
+            {
+                if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
+                    return Err("ruling disagrees with its originating Inspiration award".into());
+                }
+                continue;
+            }
+            let action = command
+                .rules_event()
                 .map(|event| &event.action)
                 .ok_or("ruling has no checked typed rules action")?;
             if action_ruling(action) != Some(&record.ruling) {
@@ -855,10 +921,25 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
         | RulesAction::EndTurn { .. }
         | RulesAction::EndConcentration { .. }
         | RulesAction::CreateCharacter { .. }
+        | RulesAction::CreateCharacterFromSource { .. }
         | RulesAction::SecondWind { .. }
         | RulesAction::ResolveInspirationTransfer { .. }
         | RulesAction::SubmitSavageAttacker { .. } => None,
     }
+}
+
+fn ground_image_origins<'a>(
+    image: &'a dmd_domain::AttackGroundPickupBefore,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&image.ground.origin, &image.equipment.command]);
+}
+
+fn equipment_cause_origins<'a>(
+    cause: &'a dmd_domain::AttackEquipmentCause,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&cause.origin, &cause.completed_by]);
 }
 
 fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
@@ -868,6 +949,13 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    origins.extend(
+        state
+            .table
+            .as_ref()
+            .and_then(|table| table.inspiration_transfer.as_ref())
+            .map(|transfer| &transfer.origin),
+    );
     grapple_origins(state, &mut origins);
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
@@ -901,11 +989,35 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.grapple_access.as_ref())
     {
         origins.push(&access.origin);
+        origins.extend(
+            access
+                .ground_transport
+                .as_ref()
+                .map(|transport| &transport.origin),
+        );
     }
     if let Some(encounter) = &state.encounter {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(access) = &flow.attack_equipment_access {
+                origins.push(&access.origin);
+            }
+            for receipt in &flow.budget.weapon_history {
+                if let Some(image) = &receipt.ground_pickup_before {
+                    ground_image_origins(image, &mut origins);
+                }
+                if let Some(after) = &receipt.after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend([&after.selected_by, &after.chosen_by]);
+                    if let Some(applied) = &after.applied {
+                        origins.push(&applied.equipment_before.command);
+                        if let Some(image) = &applied.ground_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                    }
+                }
+            }
             if let Some(aftermath) = &flow.aftermath {
                 origins.push(&aftermath.origin);
             }
@@ -923,6 +1035,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(after) = &resolution.attack_after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend(after.selected_by.as_ref());
+                }
                 if let Some(shove) = &resolution.shove {
                     origins.push(&shove.origin);
                     if let Some(save) = &shove.save {
@@ -1045,6 +1161,12 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                     origins.push(&attack.origin);
                     if let Some(weapon) = attack.weapon() {
                         origins.push(&weapon.equipment_before.command);
+                        if let Some(image) = &weapon.ground_pickup_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                        if let Some(parent) = &weapon.after_equipment_parent {
+                            origins.push(&parent.paused_by);
+                        }
                     }
                     if let dmd_domain::TacticalAttackAdmission::Opportunity(window) =
                         &attack.admission
@@ -1301,6 +1423,15 @@ fn grapple_origins<'a>(state: &'a CampaignState, origins: &mut Vec<&'a CommandMe
             None => {}
         }
     }
+    if let Some(transport) = resolution
+        .grapple
+        .as_ref()
+        .and_then(|c| c.transport.as_ref())
+    {
+        origins.push(&transport.admission.origin);
+        origins.extend(transport.steps.iter().map(|step| &step.cause));
+        origins.extend(transport.stop.as_ref().map(|stop| &stop.cause));
+    }
     origins.extend(
         resolution
             .movement
@@ -1388,6 +1519,59 @@ fn validate_origins(
             return Err("aftermath conclusion lacks its exact accepted host decision".into());
         }
     }
+    if let Some(flow) = state.encounter.as_ref().and_then(|e| e.flow.as_ref()) {
+        let accepted = |origin: &CommandMeta| {
+            commands
+                .get(&origin.id)
+                .and_then(|event| match event {
+                    RecoveryEvent::Tactical(event) => Some(event.as_ref()),
+                    RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
+                    RecoveryEvent::Rules(_) => None,
+                })
+                .filter(|event| event.meta == *origin)
+        };
+        if let Some(access) = &flow.attack_equipment_access
+            && !accepted(&access.origin)
+                .is_some_and(|event| event.action == TacticalAction::ActivateAttackEquipment)
+        {
+            return Err("equipment activation lacks its original accepted host command".into());
+        }
+        for after in flow
+            .budget
+            .weapon_history
+            .iter()
+            .filter_map(|r| r.after_equipment.as_ref())
+        {
+            let choice = after
+                .applied
+                .as_ref()
+                .map_or(dmd_domain::AttackEquipmentChoice::Decline, |applied| {
+                    dmd_domain::AttackEquipmentChoice::Apply(applied.operation)
+                });
+            if !accepted(&after.chosen_by).is_some_and(|event| {
+                event.action
+                    == TacticalAction::ChooseAttackEquipment {
+                        work: after.work,
+                        choice,
+                    }
+            }) {
+                return Err(
+                    "equipment decision differs from its original accepted work and operation"
+                        .into(),
+                );
+            }
+        }
+    }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+        && !commands.get(&transfer.origin.id).is_some_and(|event| matches!(event,
+            RecoveryEvent::Table(event) if event.meta == transfer.origin
+                && matches!(event.action, TableAction::AwardExcessInspiration { character_id, .. } if character_id == transfer.character_id)))
+    {
+        return Err("Inspiration choice lacks its exact accepted Host excess award".into());
+    }
     let pending = state
         .table
         .as_ref()
@@ -1406,7 +1590,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))
@@ -1476,9 +1660,26 @@ fn validate_origins(
                 },
                 RecoveryEvent::Rules(_) => None,
             });
-        if !matches!(action, Some((TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path }, outcome))
-            if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
-        {
+        let matches = match action {
+            Some((
+                TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path },
+                outcome,
+            )) => {
+                movement.transport.is_none()
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            Some((TacticalAction::MoveGrappled { grip, path }, outcome)) => {
+                movement
+                    .transport
+                    .as_ref()
+                    .is_some_and(|transport| transport.grip == *grip)
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            _ => false,
+        };
+        if !matches {
             return Err("movement receipt disagrees with its originating Move action".into());
         }
     }
@@ -1511,6 +1712,10 @@ fn validate_origins(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "rules_restore_ground_tests.rs"]
+mod ground_tests;
 
 #[cfg(test)]
 mod tests {

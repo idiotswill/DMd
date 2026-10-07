@@ -76,3 +76,50 @@ integrity and attribution. Source/negative tests validate choices and reconstruc
 profiles; transition tests cover authority, dice, recovery, pending decisions, rejection,
 serialization and complete event replay. These tests do not replace Gate 3 production
 desktop acceptance.
+
+## Gate 4 explicit physical creation source — authored 2026-10-05
+
+The current desktop creator uses the additive immutable
+`character-creation-physical-v1.json` profile. It retains the original sixteen
+purchase definitions and adds the SRD 5.2.1 page91 Glaive (20GP) and Greatsword
+(50GP). The full source identity is ruleset `srd-5.2@5.2.1`, catalog schema1,
+profile `human-fighter-soldier-level-1-physical-v1`, and a fingerprint of the
+compact typed catalog (`e2d57011783b3fae` for the authored asset). The installed
+asset must match both its integrity declaration and the executable's embedded
+bytes. Changing a manifest checksum cannot substitute another definition.
+
+`CreateCharacterFromSource` is an explicit new outer table command and nested
+rules command. Both retain the complete required pin and original unchanged
+`CharacterCreationInput`; the desktop saves that exact envelope before delivery.
+The optional profile `creation_source` is omitted for legacy profiles. Absence or
+explicit null selects only the original creator and never authorizes new purchases.
+Original actions, the sixteen-entry catalog and kernel definitions retain their
+meaning and bytes. Current purchases can select the existing tactical masteries,
+but kernel attack registrations still derive only from purchased Club, Dagger and
+Shortbow. Physical ItemIds and the tactical weapon planner own the new weapons.
+
+Starting equipment materialization reconstructs the current profile, retains its
+complete creation pin in the receipt, derives the matching equipment source
+profile, and creates individual weapon identities through the normal atomic
+table command. A pin or receipt does not authenticate its own history. Application
+restore requires the original pre-creation anchor and replays the corresponding
+outer action, nested action, audit and journal metadata before comparing every
+snapshot and current image. A standalone current rules creation journal cannot
+replace the table creation event. This requirement applies before inventory exists.
+
+This is an additive schema4 authority. Legacy schemas1–3 reject non-null future
+creation source fields before JSON map normalization, including malformed pins,
+duplicate profile keys and null-shadowed duplicate fields. Missing/null legacy
+fields remain without current authority. Existing tactical, source-control and
+older schema guards remain in force. Inventory schema1 is unchanged.
+
+The complete source slice includes desktop purchase and exact retry coverage,
+file-SQLite cold/independent portable execution of genuine creation/materialization,
+both weapons' Graze (natural1 and ordinary miss, accept and decline), printed
+hit/critical dice, and a held two-handed Glaive opportunity at10ft using one Reaction before
+movement resumes. Hostile restore and migration cases compare every destination
+table row. At this authored checkpoint these tests are UNCOMPILED/UNRUN; only
+direct rustfmt parsing and static source/content audits have been performed.
+Root owns required exact-head runtime/CI/native verification and any later normal
+receiving merge into the independent Ground or other Gate4 branches. This addendum
+does not declare the feature or gate accepted.

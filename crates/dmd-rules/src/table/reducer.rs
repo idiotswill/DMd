@@ -82,7 +82,58 @@ pub(crate) fn apply_operation(
     let mut rules_event = None;
     let mut tactical_event = None;
     let mut mechanics = None;
+    if state
+        .table
+        .as_ref()
+        .is_some_and(|table| table.inspiration_transfer.is_some())
+        && !matches!(
+            action,
+            TableOperation::ResolveHostInspirationTransfer { .. }
+        )
+    {
+        return Err("Finish the pending player choice before changing the table.".into());
+    }
     let message = match action {
+        TableOperation::AwardExcessInspiration {
+            character_id,
+            reason,
+        } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration award requires original table history.".into());
+            }
+            super::inspiration::award_excess(state, next, meta, *character_id, reason)?;
+            "Extra Heroic Inspiration awarded; its owner chooses whether to give it away.".into()
+        }
+        TableOperation::ResolveHostInspirationTransfer { choice } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration choice requires original table history.".into());
+            }
+            super::inspiration::resolve_transfer(state, next, meta, choice)?;
+            if choice.recipient.is_some() {
+                "Extra Heroic Inspiration given to the selected character.".into()
+            } else {
+                "Extra Heroic Inspiration declined; the original Inspiration is retained.".into()
+            }
+        }
+        TableOperation::AwardHeroicInspiration {
+            character_id,
+            reason,
+        } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration award requires original table history.".into());
+            }
+            super::inspiration::award(state, next, meta, *character_id, reason)?;
+            "Heroic Inspiration awarded.".into()
+        }
+        TableOperation::EnableGrappleTransport => {
+            if !execution.is_owned() {
+                return Err("Ground drag activation requires original table history.".into());
+            }
+            table_mut(next)?.grapple_access = Some(Box::new(
+                super::grapple_access::activate_transport(state, meta)?,
+            ));
+            "Dragging and Inspiration controls are enabled for this table.".into()
+        }
         TableOperation::EnableGrappleAccess => {
             if !execution.is_owned() {
                 return Err("Grapple activation requires original table history.".into());
@@ -136,6 +187,13 @@ pub(crate) fn apply_operation(
             entity_id,
             player_id,
             input,
+        }
+        | TableOperation::CreateCharacterFromSource {
+            character_id,
+            entity_id,
+            player_id,
+            input,
+            ..
         } => {
             host(meta)?;
             setup_only(next)?;
@@ -145,8 +203,29 @@ pub(crate) fn apply_operation(
             {
                 return Err("Select an existing player and a new character identity.".into());
             }
-            let built = crate::build_character(input, *entity_id, pack)
-                .map_err(|error| error.to_string())?;
+            let (built, creation_action) = match action {
+                TableOperation::CreateCharacterFromSource { source, .. } => {
+                    if character_id.0.is_nil() || entity_id.0.is_nil() {
+                        return Err("Select new non-nil character identities.".into());
+                    }
+                    (
+                        crate::build_character_from_source(input, *entity_id, source, pack),
+                        RulesAction::CreateCharacterFromSource {
+                            entity_id: *entity_id,
+                            source: source.clone(),
+                            input: input.clone(),
+                        },
+                    )
+                }
+                _ => (
+                    crate::build_character(input, *entity_id, pack),
+                    RulesAction::CreateCharacter {
+                        entity_id: *entity_id,
+                        input: input.clone(),
+                    },
+                ),
+            };
+            let built = built.map_err(|error| error.to_string())?;
             next.entities.insert(
                 *entity_id,
                 WorldEntity {
@@ -172,10 +251,7 @@ pub(crate) fn apply_operation(
             apply_rules(
                 next,
                 meta,
-                RulesAction::CreateCharacter {
-                    entity_id: *entity_id,
-                    input: input.clone(),
-                },
+                creation_action,
                 pack,
                 &mut rules_event,
                 &mut mechanics,
@@ -285,6 +361,11 @@ pub(crate) fn apply_operation(
             // Detailed outcomes belong to the viewer-specific tactical projection.
             // This transcript is shared by the whole table, including unaware PCs.
             if matches!(
+                action,
+                crate::tactical::TacticalAction::ActivateAttackEquipment
+            ) {
+                "Attack equipment choices enabled for this encounter.".into()
+            } else if matches!(
                 action,
                 crate::tactical::TacticalAction::ConcludeHostilities { .. }
             ) {

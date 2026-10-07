@@ -359,6 +359,13 @@ impl TacticalGrappleResolution {
         reads: ReadShape,
     ) -> Result<(), String> {
         require(!self.is_empty(), "empty grapple resolution attachment")?;
+        if let Some(transport) = &self.transport {
+            require(
+                matches!(reads, ReadShape::Activated),
+                "ground drag needs its activated executor",
+            )?;
+            transport.validate_shape(resolution, self)?;
+        }
         require(
             (matches!(reads, ReadShape::Activated) || self.completed_casts.is_empty())
                 && self.completed_casts.len() <= MAX_TACTICAL_CASTS,

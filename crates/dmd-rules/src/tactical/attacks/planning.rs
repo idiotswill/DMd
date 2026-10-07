@@ -54,7 +54,68 @@ pub(super) fn weapon_plan_with_read(
     loadout: &WeaponLoadout,
     sources: (&RulesPack, Option<&AttackRead<'_>>),
 ) -> Result<WeaponAttackPlan, RulesError> {
+    Ok(prepare_weapon_with_read(state, meta, actor, choice, window, loadout, sources)?.into_plan())
+}
+
+pub(super) fn prepare_weapon_with_read<'a>(
+    state: &'a CampaignState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    choice: &WeaponUseChoice,
+    window: WeaponActionWindow,
+    loadout: &WeaponLoadout,
+    sources: (&RulesPack, Option<&AttackRead<'_>>),
+) -> Result<crate::tactical_weapons::ground::PreparedPhysicalAttack<'a>, RulesError> {
     let (pack, read) = sources;
+    if is_ground_pickup(choice.equipment_change)
+        || (choice.after_equipment.is_some() && flow(state)?.attack_equipment_access.is_some())
+    {
+        super::super::attack_equipment_access::require_origin(state, meta)?;
+    }
+    let calculation = calculation(state, meta, actor, choice, window, loadout, pack)?;
+    crate::tactical_weapons::ground::PreparedPhysicalAttack::new_with_read(
+        state,
+        &calculation.input(),
+        read,
+    )
+    .map_err(weapon_error)
+}
+
+struct PhysicalCalculation<'a> {
+    state: &'a CampaignState,
+    source: WeaponActorSource<'a>,
+    pack: &'a RulesPack,
+    definitions: &'a crate::tactical_definitions::TacticalDefinitions,
+    choice: &'a WeaponUseChoice,
+    context: WeaponAttackContext<'a>,
+    loadout: &'a WeaponLoadout,
+    history: Vec<WeaponAttackReceipt>,
+}
+
+impl PhysicalCalculation<'_> {
+    fn input(&self) -> WeaponAttackInput<'_> {
+        WeaponAttackInput {
+            state: self.state,
+            source: self.source,
+            pack: self.pack,
+            definitions: self.definitions,
+            choice: self.choice,
+            context: self.context,
+            loadout: self.loadout,
+            history: &self.history,
+        }
+    }
+}
+
+fn calculation<'a>(
+    state: &'a CampaignState,
+    meta: &'a CommandMeta,
+    actor: EntityId,
+    choice: &'a WeaponUseChoice,
+    window: WeaponActionWindow,
+    loadout: &'a WeaponLoadout,
+    pack: &'a RulesPack,
+) -> Result<PhysicalCalculation<'a>, RulesError> {
     let e = encounter(state)?;
     let from = e
         .participant(actor)
@@ -116,7 +177,7 @@ pub(super) fn weapon_plan_with_read(
             "partial submersion needs an explicit source geometry ruling",
         ));
     }
-    let input = WeaponAttackInput {
+    Ok(PhysicalCalculation {
         state,
         source,
         pack,
@@ -144,13 +205,8 @@ pub(super) fn weapon_plan_with_read(
                 .map_err(spatial)?,
         },
         loadout,
-        history: &history,
-    };
-    match read {
-        Some(read) => crate::tactical_weapons::prepare_weapon_attack_with_read(&input, read),
-        None => prepare_weapon_attack(&input),
-    }
-    .map_err(weapon_error)
+        history,
+    })
 }
 pub(super) fn hit_facts_with_read(
     state: &CampaignState,
@@ -292,16 +348,20 @@ pub(super) fn reconstruct(
     state: &CampaignState,
     attack: &TacticalAttack,
 ) -> Result<WeaponAttackPlan, RulesError> {
-    reconstruct_with_read(state, attack, None)
+    reconstruct_with_read(state, attack, &ReadContext::ordinary(state))
 }
 pub(super) fn reconstruct_with_read(
     state: &CampaignState,
     attack: &TacticalAttack,
-    read: Option<&AttackRead<'_>>,
+    read: &ReadContext<'_>,
 ) -> Result<WeaponAttackPlan, RulesError> {
-    // Current reservations cannot stand in for an attack's original admission.
-    // The later resolver must authenticate its historical cut before enabling it.
-    if has_unimplemented_grapple_records(state) && read.is_none() {
+    if !std::ptr::eq(read.state(), state) {
+        return Err(invalid(
+            "physical reconstruction differs from its actual read",
+        ));
+    }
+    let admitted = read.attack_retained(attack)?;
+    if has_unimplemented_grapple_records(state) && admitted.is_none() {
         return Err(invalid(
             "Grapple attack reconstruction requires original admission proof",
         ));
@@ -309,6 +369,35 @@ pub(super) fn reconstruct_with_read(
     let weapon = attack
         .weapon()
         .ok_or_else(|| invalid("attack source is not a physical weapon"))?;
+    if is_ground_pickup(weapon.choice.equipment_change)
+        || (weapon.choice.after_equipment.is_some()
+            && flow(state)?.attack_equipment_access.is_some())
+    {
+        let pack =
+            RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
+        // The caller may hold a data clone; only the exact attached declaration
+        // can enter the paid physical reader and its independent stage checks.
+        let attached = current(state)?;
+        if attached != attack {
+            return Err(invalid("physical read differs from attached declaration"));
+        }
+        let retained = crate::tactical_weapons::ground::RetainedPhysicalRead::new_with_read(
+            read, attached, &pack,
+        )
+        .map_err(weapon_error)?;
+        let calculation = calculation(
+            retained.state(),
+            &attack.origin,
+            attack.actor,
+            &weapon.choice,
+            weapon.window,
+            &weapon.equipment_before.hands,
+            &pack,
+        )?;
+        return retained
+            .calculate(&calculation.input())
+            .map_err(weapon_error);
+    }
     let mut before = state.clone();
     before.applied_event_sequence = attack.origin.expected_event_sequence;
     if let Some(ammo) = &weapon.ammunition {
@@ -327,15 +416,69 @@ pub(super) fn reconstruct_with_read(
         .ok_or_else(|| invalid("reserved equipment absent"))?;
     *current = weapon.equipment_before.clone();
     let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
-    weapon_plan_with_read(
+    let calculation = calculation(
         &before,
         &attack.origin,
         attack.actor,
         &weapon.choice,
         weapon.window,
         &weapon.equipment_before.hands,
-        (&pack, read),
-    )
+        &pack,
+    )?;
+    match admitted.as_ref() {
+        Some(admitted) => {
+            crate::tactical_weapons::prepare_weapon_attack_with_read(&calculation.input(), admitted)
+        }
+        // This is a checked retained before-image, not a fresh public admission.
+        None => crate::tactical_weapons::prepare_tactical_weapon_attack(&calculation.input()),
+    }
+    .map_err(weapon_error)
+}
+
+/// Actual completion reads the entered producer or genuine direct material cut.
+/// Its paid physical inverse and historical hand cut have separate owners.
+pub(super) fn reconstruct_completion_with_read(
+    read: &ReadContext<'_>,
+    meta: &CommandMeta,
+) -> Result<WeaponAttackPlan, RulesError> {
+    let state = read.state();
+    let attack = current(state)?;
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical attack absent"))?;
+    if !is_ground_pickup(weapon.choice.equipment_change)
+        && !(weapon.choice.after_equipment.is_some()
+            && flow(state)?.attack_equipment_access.is_some())
+    {
+        return reconstruct_with_read(state, attack, read);
+    }
+    let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
+    let retained = if resolution(state)?
+        .work_trace
+        .as_ref()
+        .is_some_and(|t| t.active.is_some())
+    {
+        crate::tactical_weapons::ground::RetainedPhysicalRead::entered_completion_with_read(
+            read, meta, &pack,
+        )
+    } else {
+        crate::tactical_weapons::ground::RetainedPhysicalRead::material_choice_with_read(
+            read, meta, &pack,
+        )
+    }
+    .map_err(weapon_error)?;
+    let calculation = calculation(
+        retained.state(),
+        &attack.origin,
+        attack.actor,
+        &weapon.choice,
+        weapon.window,
+        &weapon.equipment_before.hands,
+        &pack,
+    )?;
+    retained
+        .calculate(&calculation.input())
+        .map_err(weapon_error)
 }
 
 #[cfg(test)]

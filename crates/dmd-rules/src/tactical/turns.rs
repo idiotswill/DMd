@@ -216,6 +216,7 @@ fn begin_boundary_from(
     }
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
         grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
@@ -247,11 +248,28 @@ fn begin_boundary_from(
         super::ready::expire_owner(state, meta, actor)?;
     }
     expire_legacy(state, actor, number, boundary)?;
-    effect_operation(
-        state,
-        meta,
-        EffectLifecycleOperation::Observe(EffectObservation::Time),
-    )?;
+    let timed_expiry_due = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_effects.as_ref())
+        .is_some_and(|effects| {
+            effects
+                .groups
+                .iter()
+                .map(|group| &group.expires)
+                .chain(effects.effects.iter().map(|effect| &effect.expires))
+                .any(|expiry| expiry_matches(expiry, &EffectObservation::Time, state.clock.now))
+        });
+    // Turn discovers timed expiry and turn work together, preserving their owner's
+    // ordering choice. Retain the historical empty Time stamp on every no-due path.
+    // An absent legacy attachment is initialized by that original Time operation.
+    if !timed_expiry_due {
+        effect_operation(
+            state,
+            meta,
+            EffectLifecycleOperation::Observe(EffectObservation::Time),
+        )?;
+    }
     effect_operation(
         state,
         meta,
@@ -301,6 +319,7 @@ pub(super) fn pump_with_context(
     for _ in 0..32_768 {
         execution.check_live_constraints(state)?;
         if super::grapple::waiting(state)
+            || super::attack_equipment::waiting(state)
             || super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
             || resolution(state)?
@@ -320,6 +339,7 @@ pub(super) fn pump_with_context(
         }
         super::movement::prune(state, meta, execution)?;
         if super::grapple::waiting(state)
+            || super::attack_equipment::waiting(state)
             || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
@@ -423,6 +443,7 @@ pub(super) fn choose_with_context(
     execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if super::grapple::waiting(state)
+        || super::attack_equipment::waiting(state)
         || super::shove::waiting(state)
         || super::hit_reactions::waiting(state)
         || super::missiles::waiting(state)

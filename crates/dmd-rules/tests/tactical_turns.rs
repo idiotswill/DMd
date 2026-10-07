@@ -8,6 +8,8 @@ mod aftermath;
 mod ready;
 #[path = "tactical_turns/release.rs"]
 mod release;
+#[path = "tactical_turns/timed_expiry.rs"]
+mod timed_expiry;
 
 fn resistance_save(ability: Ability) -> EffectTriggerPayload {
     EffectTriggerPayload::SavingThrow {

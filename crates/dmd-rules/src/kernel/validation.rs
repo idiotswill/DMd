@@ -437,6 +437,11 @@ pub(crate) fn validate_state_with_read(
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
     let state = read.state();
+    if has_unimplemented_ground_records(state) && !crate::tactical::attack_equipment_enabled(state)
+    {
+        return Err(invalid("ground pickup execution is not enabled"));
+    }
+    crate::tactical::validate_attack_equipment_state(state)?;
     // Source/domain-only checkpoint: structural records cannot authorize play.
     // Replace with full source/causal validation only in the reviewed resolver slice.
     if has_unimplemented_grapple_records(state) || crate::table::grapple_enabled(state) {

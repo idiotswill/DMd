@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 3369,
+      "byte_len": 6106,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "849083ed0f02650b"
+        "value": "7a7344ee097a0ee0"
       }
     },
     {
@@ -40,6 +40,14 @@
       }
     },
     {
+      "path": "character-creation-physical-v1.json",
+      "byte_len": 3736,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "7b8490dd8bb8fc0a"
+      }
+    },
+    {
       "path": "tactical.json",
       "byte_len": 86489,
       "checksum": {
@@ -61,6 +69,22 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "3ab5048b144641fc"
+      }
+    },
+    {
+      "path": "ogre-v1.json",
+      "byte_len": 3775,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "fbd9e806fb626bc4"
+      }
+    },
+    {
+      "path": "mage-v2.json",
+      "byte_len": 3287,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "37ecf4043c2c86d0"
       }
     }
   ]

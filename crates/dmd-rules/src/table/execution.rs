@@ -46,7 +46,11 @@ pub enum LegacyRulesEventRef<'a> {
 impl CampaignExecution {
     pub fn from_original_anchor(anchor: CampaignState, pack: RulesPack) -> Result<Self, String> {
         reducer::validate_table(&anchor, &pack)?;
-        if has_unimplemented_grapple_records(&anchor)
+        if anchor
+            .table
+            .as_ref()
+            .is_some_and(|table| table.inspiration_transfer.is_some())
+            || has_unimplemented_grapple_records(&anchor)
             || super::grapple_enabled(&anchor)
             || anchor.encounter_history.is_some()
             || source_control::enabled(&anchor)
@@ -230,6 +234,37 @@ impl<'a> TableRead<'a> {
     ) -> Result<crate::tactical_hands::EffectiveHands, RulesError> {
         crate::tactical_hands::EffectiveHands::current_with_read(&self.context(), actor)
     }
+    pub fn ground_pickup_options(
+        &self,
+        actor: EntityId,
+    ) -> Result<
+        Vec<crate::tactical_weapons::GroundPickupOption>,
+        crate::tactical_weapons::WeaponError,
+    > {
+        crate::tactical_weapons::ground::ground_pickup_options_with_read(
+            &self.context(),
+            actor,
+            self.pack,
+        )
+    }
+    pub fn attack_equipment_options(
+        &self,
+    ) -> Result<Option<crate::tactical::AttackEquipmentOptions>, RulesError> {
+        crate::tactical::attack_equipment_options_with_read(&self.context(), self.pack)
+    }
+    pub fn physical_source_opportunity_grips(
+        &self,
+        actor: EntityId,
+        feature: &str,
+        item: ItemId,
+    ) -> Result<Vec<WeaponGrip>, RulesError> {
+        crate::tactical::physical_source_opportunity_grips_with_read(
+            &self.context(),
+            actor,
+            feature,
+            item,
+        )
+    }
     pub fn bind_spell(
         &self,
         plan: &SpellCastPlan,
@@ -239,6 +274,12 @@ impl<'a> TableRead<'a> {
     }
     pub fn shield_choices(&self, actor: EntityId) -> Result<Vec<SpellCastChoice>, RulesError> {
         crate::tactical::shield_choices_with_read(&self.context(), actor)
+    }
+    pub fn grapple_transport_choices(
+        &self,
+        issuer: CommandIssuer,
+    ) -> Result<Vec<TableGrappleTransportOffer>, RulesError> {
+        crate::tactical::grapple::transport::choices(&self.context(), issuer)
     }
     pub fn grapple_choices(
         &self,

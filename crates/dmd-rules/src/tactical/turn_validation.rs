@@ -139,6 +139,9 @@ fn validate_work(
                 .ok_or_else(|| invalid("attack work lacks declaration"))?
                 .target
         }
+        TacticalWorkKind::AttackAfterEquipment => {
+            super::attack_equipment::validate_work(state, work)?
+        }
         TacticalWorkKind::DeathSave { actor } => {
             if *actor != r.turn_actor || r.boundary != TurnBoundary::Start {
                 return Err(invalid("death save outside owner's start boundary"));
@@ -226,6 +229,11 @@ fn validate_work(
     Ok(())
 }
 
+#[cfg(test)]
+pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+    validate_with_read(&super::grapple::execution::ReadContext::ordinary(state))
+}
+
 pub(super) fn validate_with_read(
     read: &super::grapple::execution::ReadContext<'_>,
 ) -> Result<(), RulesError> {
@@ -271,6 +279,7 @@ pub(super) fn validate_with_read(
         let mut ticket_ids = HashSet::new();
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
+            + usize::from(super::attack_equipment::waiting(state))
             + usize::from(super::shove::waiting(state))
             + usize::from(super::grapple::waiting(state))
             + usize::from(super::hit_reactions::waiting(state))
@@ -313,6 +322,12 @@ pub(super) fn validate_with_read(
                 Some(GrappleActivity::Attempt(a)) => a.selected.as_ref(),
                 _ => None,
             }))
+            .chain(
+                r.attack_after_equipment
+                    .iter()
+                    .filter(|a| a.selected_by.is_some())
+                    .map(|a| &a.work),
+            )
         {
             if !occurrences.insert(work.occurrence) {
                 return Err(invalid("duplicate consequence occurrence"));
@@ -354,6 +369,7 @@ pub(super) fn validate_with_read(
         } else if let Some(failed) = &r.failed_save {
             super::failed_save::validate_failed_save_with_read(read, failed)?;
         } else if super::grapple::waiting(state)
+            || super::attack_equipment::waiting(state)
             || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
@@ -401,6 +417,7 @@ pub(super) fn validate_with_read(
     }
     super::creature_bridge::validate(state)?;
     super::attacks::validate_with_read(read)?;
+    super::attack_equipment::validate(state)?;
     super::shove::validate(state)?;
     if has_tactical_grapple_attachments(state) {
         super::grapple::validate(state)?;

@@ -75,6 +75,21 @@ async fn hostile_destination(export: &CampaignExport) {
 #[path = "support/sqlite_test_cleanup.rs"]
 mod cleanup;
 
+#[path = "support/grapple_original_mage.rs"]
+mod original_mage;
+
+#[path = "support/grapple_mage_components.rs"]
+mod mage_components;
+
+#[path = "support/grapple_mage_shield.rs"]
+mod mage_shield;
+
+#[path = "support/grapple_physical_graze.rs"]
+mod physical_graze;
+
+#[path = "support/grapple_physical_opportunity.rs"]
+mod physical_opportunity;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -113,6 +128,11 @@ fn action(action: TacticalAction) -> TableTransportInput {
     TableTransportInput::Action(Box::new(TableAction::Tactical { action }))
 }
 
+struct FixtureOpposition {
+    pc_opportunity: bool,
+    opponent_opposes_pc: bool,
+}
+
 struct Fixture {
     pool: sqlx::SqlitePool,
     runtime: CampaignRuntime,
@@ -145,11 +165,52 @@ impl Fixture {
         opponent: bool,
         pc_opportunity: bool,
     ) -> Self {
-        Box::pin(Self::with_geometry(
+        Box::pin(Self::with_creation_source(
             definition,
             size,
             opponent,
             pc_opportunity,
+            None,
+        ))
+        .await
+    }
+    async fn with_physical_weapon(weapon: &str) -> Self {
+        assert!(matches!(weapon, "greatsword" | "glaive"));
+        Box::pin(Self::with_creation_source(
+            "goblin-warrior",
+            CreatureSize::Small,
+            false,
+            false,
+            Some(weapon),
+        ))
+        .await
+    }
+    async fn with_creation_source(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
+        physical_weapon: Option<&str>,
+    ) -> Self {
+        Box::pin(Self::with_creation_layout(
+            definition,
+            size,
+            opponent,
+            pc_opportunity,
+            physical_weapon,
+            false,
+            false,
+        ))
+        .await
+    }
+    async fn with_physical_opportunity() -> Self {
+        Box::pin(Self::with_creation_layout(
+            "goblin-warrior",
+            CreatureSize::Small,
+            true,
+            true,
+            Some("glaive"),
+            true,
             false,
         ))
         .await
@@ -161,6 +222,61 @@ impl Fixture {
         pc_opportunity: bool,
         pc_platform: bool,
     ) -> Self {
+        Box::pin(Self::with_creation_layout(
+            definition,
+            size,
+            opponent,
+            pc_opportunity,
+            None,
+            false,
+            pc_platform,
+        ))
+        .await
+    }
+    async fn with_creation_layout(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        pc_opportunity: bool,
+        physical_weapon: Option<&str>,
+        long_reach_witness: bool,
+        pc_platform: bool,
+    ) -> Self {
+        Box::pin(Self::with_creation_layout_and_opposition(
+            definition,
+            size,
+            opponent,
+            FixtureOpposition {
+                pc_opportunity,
+                opponent_opposes_pc: false,
+            },
+            physical_weapon,
+            long_reach_witness,
+            pc_platform,
+        ))
+        .await
+    }
+    async fn with_creation_layout_and_opposition(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        opposition: FixtureOpposition,
+        physical_weapon: Option<&str>,
+        long_reach_witness: bool,
+        pc_platform: bool,
+    ) -> Self {
+        let FixtureOpposition {
+            pc_opportunity,
+            opponent_opposes_pc,
+        } = opposition;
+        assert!(
+            !long_reach_witness
+                || (definition == "goblin-warrior"
+                    && size == CreatureSize::Small
+                    && opponent
+                    && pc_opportunity
+                    && physical_weapon == Some("glaive"))
+        );
         let directory =
             std::env::temp_dir().join(format!("dmd-grapple-public-{}", CampaignId::new().0));
         std::fs::create_dir(&directory).unwrap();
@@ -189,13 +305,37 @@ impl Fixture {
                 name: format!("Player {index}"),
             }))
             .await;
-            Box::pin(f.host(TableAction::CreateCharacter {
-                character_id: f.characters[index],
-                entity_id: f.actors[index],
-                player_id: f.players[index],
-                input: creation(&format!("Character {index}")),
-            }))
-            .await;
+            if let Some(weapon) = physical_weapon {
+                let options = f
+                    .runtime
+                    .character_creation_options(f.campaign)
+                    .await
+                    .unwrap();
+                let mut input = creation(&format!("Character {index}"));
+                if index == 0 {
+                    input.purchases.push(EquipmentChoice {
+                        item_id: weapon.into(),
+                        quantity: 1,
+                    });
+                    input.masteries = ["greatsword".into(), "glaive".into(), "dagger".into()];
+                }
+                Box::pin(f.host(TableAction::CreateCharacterFromSource {
+                    character_id: f.characters[index],
+                    entity_id: f.actors[index],
+                    player_id: f.players[index],
+                    source: options.source,
+                    input,
+                }))
+                .await;
+            } else {
+                Box::pin(f.host(TableAction::CreateCharacter {
+                    character_id: f.characters[index],
+                    entity_id: f.actors[index],
+                    player_id: f.players[index],
+                    input: creation(&format!("Character {index}")),
+                }))
+                .await;
+            }
         }
         let current = f.view(TableTransportChannel::Host).await;
         let catalog = f
@@ -354,7 +494,7 @@ impl Fixture {
                         public_label: "Small armored figure".into(),
                         position: SpatialPoint {
                             x: if size == CreatureSize::Huge { 60 } else { 20 },
-                            y: 10,
+                            y: if long_reach_witness { 20 } else { 10 },
                             z: 0,
                         },
                         height: match size {
@@ -364,20 +504,30 @@ impl Fixture {
                         },
                         allies: vec![],
                         enemies: std::iter::once(f.actors[0])
-                            .chain(f.opponent.filter(|_| !pc_opportunity))
+                            .chain(f.opponent.filter(|_| !pc_opportunity || long_reach_witness))
                             .collect(),
                     })
-                    .chain(f.opponent.map(|actor| TableCreaturePlacement {
-                        actor,
-                        public_label: "Other guard".into(),
-                        position: SpatialPoint {
-                            x: if pc_opportunity { 10 } else { 30 },
-                            y: if pc_opportunity { 20 } else { 10 },
-                            z: 0,
-                        },
-                        height: 8,
-                        allies: vec![],
-                        enemies: vec![f.goblin],
+                    .chain(f.opponent.map(|actor| {
+                        TableCreaturePlacement {
+                            actor,
+                            public_label: "Other guard".into(),
+                            position: SpatialPoint {
+                                x: if pc_opportunity { 10 } else { 30 },
+                                y: if long_reach_witness {
+                                    30
+                                } else if pc_opportunity {
+                                    20
+                                } else {
+                                    10
+                                },
+                                z: 0,
+                            },
+                            height: 8,
+                            allies: vec![],
+                            enemies: std::iter::once(f.goblin)
+                                .chain(opponent_opposes_pc.then_some(f.actors[0]))
+                                .collect(),
+                        }
                     }))
                     .collect(),
                     geometry_ruling: Ruling {
@@ -731,8 +881,15 @@ impl Fixture {
                 .unwrap(),
             accepted
         );
-        let mut changed = request;
-        changed.input = action(TacticalAction::Dodge);
+        let mut changed = request.clone();
+        changed.input = if request.input == action(TacticalAction::Dodge) {
+            action(TacticalAction::Dash {
+                speed: DashSpeed::Speed,
+            })
+        } else {
+            action(TacticalAction::Dodge)
+        };
+        assert_ne!(changed.input, request.input);
         assert!(
             Box::pin(self.runtime.submit_presented_table(changed))
                 .await
@@ -1811,7 +1968,7 @@ async fn player_owned_goblin_genuine_save_and_after_equipment_retry_survive_cont
 
 #[tokio::test]
 async fn current_old_mage_accepts_incoming_pc_grip_but_never_gains_a_grappling_anatomy_grant() {
-    let mut f = Box::pin(Fixture::with_source("mage", CreatureSize::Medium)).await;
+    let mut f = Box::pin(Fixture::with_original_mage()).await;
     Box::pin(f.activate()).await;
     Box::pin(f.establish_pc_grip()).await;
     let pc = f.pc(0);
@@ -2033,6 +2190,7 @@ async fn actual_source_critical_knockout_ends_the_incapacitated_holders_grip_aft
         TacticalAction::CreatureWeaponAttack {
             feature_id: "scimitar".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target: holder,
                 grip: WeaponGrip::OneHand(Hand::Right),
@@ -2374,6 +2532,7 @@ async fn pc_physical_attack_keeps_admitted_hand_read_after_release_before_the_re
         pc.clone(),
         TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target,
                 delivery: WeaponDelivery::Melee,
@@ -2799,3 +2958,12 @@ async fn open_and_resume_replay_original_activation_when_current_and_latest_mark
 
 #[path = "support/table_grapple_public_corrections.rs"]
 mod corrections;
+
+#[path = "support/table_grapple_ground_transport.rs"]
+mod ground_transport;
+
+#[path = "support/table_grapple_inspiration.rs"]
+mod inspiration;
+
+#[path = "support/grapple_combined_current.rs"]
+mod combined_current;

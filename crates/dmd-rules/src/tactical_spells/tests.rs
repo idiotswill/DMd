@@ -1,5 +1,6 @@
 use super::*;
 mod binding_tests;
+mod mage_revision;
 
 fn fixture(
     spell_id: &str,
@@ -896,6 +897,7 @@ fn add_flow(
             ground_items: vec![],
             ready: vec![],
             aftermath: None,
+            attack_equipment_access: None,
         }),
     });
     state.rules.as_mut().unwrap().timing = Some(CombatTiming {

@@ -1,5 +1,6 @@
 //! Private continuity over the ordinary dispatcher, never imported save authority.
 use super::*;
+mod opportunity;
 
 /// A normally validated baseline can enter this chain once. There is deliberately
 /// no Clone, Deserialize, mutable state accessor, or replacement-state operation.
@@ -90,6 +91,8 @@ struct ProducedEvidence {
     decisions: Vec<TacticalSaveDecision>,
     cancelled: Vec<RollRequestId>,
     retired_flow: Option<RetiredFlow>,
+    opportunities: Vec<opportunity::GroundOpportunity>,
+    completed_opportunities: Vec<opportunity::GroundOpportunity>,
 }
 
 /// Observed only at the shared Establish producer after the released encounter
@@ -164,7 +167,7 @@ impl<'a> ReadContext<'a> {
         }
     }
 
-    pub(in crate::tactical) fn attack_retained(
+    pub(crate) fn attack_retained(
         &self,
         attack: &TacticalAttack,
     ) -> Result<Option<reads::AttackRead<'a>>, RulesError> {
@@ -296,6 +299,7 @@ impl<'owner> ExecutionContext<'owner> {
             action,
             TacticalAction::Grapple { .. }
                 | TacticalAction::MoveSelfOnly { .. }
+                | TacticalAction::MoveGrappled { .. }
                 | TacticalAction::ChooseGrappleSave { .. }
                 | TacticalAction::ApplyGrappleAfterEquipment { .. }
                 | TacticalAction::DeclineGrappleAfterEquipment { .. }
@@ -694,6 +698,7 @@ impl<'owner> ExecutionContext<'owner> {
 
     pub(crate) fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
         self.check_state(state)?;
+        self.validate_opportunity_delta(state)?;
         let Some(owned) = &self.guarded else {
             return Ok(());
         };
@@ -714,6 +719,29 @@ impl<'owner> ExecutionContext<'owner> {
             after_flow.and_then(|f| f.resolution.as_ref()),
         ) && before_resolution.origin == after_resolution.origin
         {
+            let old_transport = before_resolution
+                .grapple
+                .as_ref()
+                .and_then(|c| c.transport.as_ref());
+            let new_transport = after_resolution
+                .grapple
+                .as_ref()
+                .and_then(|c| c.transport.as_ref());
+            match (old_transport, new_transport) {
+                (None, None) => (),
+                (Some(old), Some(new))
+                    if old.admission == new.admission
+                        && new.steps.starts_with(&old.steps)
+                        && old
+                            .stop
+                            .as_ref()
+                            .is_none_or(|stop| new.stop.as_ref() == Some(stop)) => {}
+                _ => {
+                    return Err(invalid(
+                        "ongoing resolution rewrote ground drag admission or history",
+                    ));
+                }
+            }
             if let Some(old) = &before_resolution.grapple {
                 let new = after_resolution
                     .grapple

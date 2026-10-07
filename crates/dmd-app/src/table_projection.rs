@@ -131,7 +131,8 @@ pub(crate) fn project_table_read(
             actors: crate::table_source_control::visible_actors(state, &viewer).map_err(invalid)?,
         });
         view.tactical =
-            crate::table_tactical::view_read(read.tactical(), &viewer, true).map_err(invalid)?;
+            crate::table_tactical::view_read(read.tactical(), &viewer, true, read.pack())
+                .map_err(invalid)?;
         // Only source-owned public tactical requests gain the new table visibility.
         // Legacy PC kernel queries (including source-inappropriate sheet formulas) stay frozen.
         if let TableViewer::Player(player) = viewer
@@ -154,6 +155,33 @@ pub(crate) fn project_table_read(
             request.reason = roll_label(&pending.purpose, state);
             view.roll = Some(request);
             view.roll_channel = Some(TableRollChannel::Tactical);
+        }
+    }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+    {
+        let issuer = match viewer {
+            TableViewer::Host => CommandIssuer::Admin,
+            TableViewer::Player(player) => CommandIssuer::Player(player),
+        };
+        let choices =
+            dmd_rules::table::inspiration_transfer_choices(state, issuer).map_err(invalid)?;
+        if matches!(viewer, TableViewer::Host) || !choices.is_empty() {
+            view.inspiration_transfer = Some(crate::TableInspirationTransferView {
+                character_id: transfer.character_id,
+                choices: choices
+                    .into_iter()
+                    .map(|choice| crate::TableInspirationOption {
+                        label: choice.recipient.map_or_else(
+                            || "Decline the extra Inspiration".into(),
+                            |id| format!("Give to {}", state.characters[&id].display_name),
+                        ),
+                        key: choice,
+                    })
+                    .collect(),
+            });
         }
     }
     Ok(view)
@@ -398,6 +426,7 @@ fn project_table_v1_read(
         .rev()
         .collect();
     Ok(TableView {
+        inspiration_transfer: None,
         grapple: None,
         source_control: None,
         campaign_id,
@@ -410,7 +439,7 @@ fn project_table_v1_read(
         pending,
         roll,
         roll_channel,
-        tactical: crate::table_tactical::view_read(read.tactical(), &viewer, false)
+        tactical: crate::table_tactical::view_read(read.tactical(), &viewer, false, pack)
             .map_err(invalid)?,
         creature_setup: crate::table_creatures::view(state, matches!(viewer, TableViewer::Host))
             .map_err(invalid)?,
