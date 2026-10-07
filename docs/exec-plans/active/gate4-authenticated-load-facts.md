@@ -730,3 +730,44 @@ other test body, dependency, build setting or historical artifact. Independent
 bounded source review and fresh exact-head frontend execution remain required.
 The prior c080/987 failures stay preserved. Local969 capture retains the sole
 heavy allocation; no local npm, compiler, test, native app or database is run.
+
+### Receive the reviewed combined main history before historical consumption
+
+Root is the sole branch writer. Fresh remote receiver is
+`0bc3723bfc1268ec1a841b2bc6bd6ef2495411fc`, tree
+`cd80f96190ca5c7c82e6aaa7da82edaf4dfa6930`. Its actual Windows MSRV job
+112788507658 passes Svelte with zero errors/warnings, all239 frontend cases in
+34 files, static build and all-target MSRV checking. Full Rust checks remain
+pending. This corrects the prior fixture failure; it does not verify a new merge.
+
+Receive the whole published combined head
+`573305cd68e71d51d097703f5797379fe40696ce`, tree
+`e4b42195eeabff92d132c3cc16632650572827a3`, by a normal two-parent merge after
+this plan commit and independent composition review. It contains accepted main
+`4cf815bd0f0d9b128612867ba829c9ac1c2549f7`, with the reviewed due-only timed
+expiry boundary and exact Physical creation evidence. Both prior receiver1c and
+the corrected Glaive Host-positive/foreign-player-negative fixture are common
+history. No cherry-pick or recreated implementation is needed.
+
+The source-only conflict-free preview is
+`d20c70a9042a080c86c404ead93293336bea14c1`:743 entries,725 receiver-exact,
+18 changed/added paths all exact incoming573. It preserves all mass authority,
+separate G3/G4 and S2 capabilities, physical catalog/distribution corrections,
+frontend fixes, original bodies and immutable historical content. Seven genuine
+incoming expiry cases are added. Inspect the shared turn observer against the
+mass-only fixed-candidate path and preserve the existing Grapple ownership guard.
+The donor's bounded native evidence remains attributed to its original executable.
+
+Verify actual parents/tree against that preview except this explicit append-only
+plan. Freeze the new receiving source before assigning a sole historical-consumer
+writer. Fresh exact-head verification follows; parent checks never transfer.
+
+The separate original969 capture has now completed all six stages: canonical
+verify-fast, normal-profile executable build, all three exact capture routes and
+strict workspace/all-target Clippy. It ended at2026-10-07T12:57:06Z with unchanged
+head/tree and released the local lock. Its191 files (188 payloads and3 manifests)
+contain22 saved transitions. Ground and recipient independent audits have passed;
+the completed decline/final audit is pending. No archive is imported yet. A
+separate checked-in consumer plan must bind the final audited receipt, unchanged
+files, all original retries and fresh v5 continuations before implementation.
+The old producer, archived DTO wording and original failure evidence stay intact.
