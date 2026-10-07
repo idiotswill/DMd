@@ -392,3 +392,27 @@ require the actor-authority refusal. Correct owner commands and all existing
 positive comparisons are unchanged. Direct standalone rustfmt and Git diff
 checks pass; independent full-tree preservation review is next. All compiler,
 consumer, database, native and canonical runtime checks remain UNRUN.
+
+## Actual a678 Linux CI lint correction — plan before source
+
+PR72 run37662283948, Linux job112932899057, compiled the a678 integration
+successfully through canonical fast verification, then failed strict Clippy
+at17:53:42 UTC on2026-10-07 (exit101). The original saved job response is
+`tooling/ci-oct7/pr72-a678-job-112932899057-response.json`. Its actual diagnostics
+identify only unused_mut at historical_physical/mod.rs79 and single_match at
+historical_physical/play.rs255–280. No consumer test execution is implied.
+
+Pause the separately planned additive details work, preserving its unfinished
+source externally. Before resuming it, make a separate minimal correction:
+remove mut from the portable restore binding; replace the inner one-pattern
+TableAction match with if let while preserving its complete pattern, comments,
+stimulus, assertions, request assignment and no-op behavior for other actions.
+Do not change the outer accepted-input match, any assertion, corpus byte,
+production code, command/options, original case body or verification policy.
+The two existing helper syntax changes are explicit preservation exceptions;
+prove whole-file inverses and retain all1136 original Rust test bodies.
+
+Freeze this correction separately for root and independent review/publication.
+No Cargo/compiler/npm/test/database/native run is allocated to this author.
+Only direct changed-file rustfmt and external static audits are allowed; the
+correction remains runtime UNRUN until root schedules exact-head checks.
