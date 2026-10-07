@@ -544,3 +544,47 @@ review. Receive the whole3a successor normally after this amendment, then freeze
 the combined result. This is not a compiler/runtime acceptance claim. Original586
 run67388 remains immutable, and the old failed86 and intermediate3b receipt remain
 in Git/evidence history without being relabeled as successful builds.
+
+## Correct the ordinary weapon opportunity channel expectation
+
+Original local run67388 finished on exact586 at2026-10-07T11:11:05Z. Canonical
+verify-fast and both new Ogre cases passed. The next Glaive case failed in
+Fixture::reject at table_grapple_public.rs914: a submitted request was accepted.
+The remaining12 cases and strict Clippy were not reached. Complete failed log
+SHA256 is55b5daacbe1286b2bb4dd6791bf8640e0f298ed6da3dedde8ed47f340027d192;
+root terminal audit0556c45503c34c2bcdc0e083d661aadb84fc8ae65f7714d6512d1767af52705f
+rechecked all723 source files and every completed log. The original checkout and
+target remain unchanged; the heavy lock has been released.
+
+Root and an independent reviewer traced the exact first Host iteration of
+reject_other_channels for Action::OpportunityAttack with the PC's real held
+Glaive. Host maps to trusted Admin with no actor. The existing generic tactical
+authorize explicitly permits that issuer for the selected PC reactor; source
+control's distinct restriction applies to player-controlled source creatures.
+This direct ordinary weapon action has no owner-only opaque decision handle.
+The scenario's valid weapon/window is therefore correctly admitted. The unrelated
+PC1 attempt had not yet been reached. This failure is distinct from the cold
+helper's Dodge-to-Dodge retry bug; revieweddf cannot repair this false negative.
+
+Root is sole writer of this receiving branch. Commit this diagnosis/plan before
+the correction. Preserve every production/content/frontend byte and the shared
+reject_other_channels behavior for owner-bound equipment and physical-reroll
+decisions. Replace only the Glaive case's inappropriate shared-helper call with
+a dedicated ordinary-weapon channel check. Keep an actual foreign PC1 refusal
+with complete state/row atomicity. Independently restore the genuine paused
+export to a separate runtime and prove trusted Host admission through the real
+application: original PC reactor/weapon/paid pair and physical-roll ownership,
+exact accepted retry and original replay. The original live fixture must remain
+unchanged, then continue its original PC0 cold path and complete endpoints.
+No direct positive state edit, permission broadening or altered production guard
+is allocated. This is the single justified old-case change; inventory its exact
+one-call substitution and retain every other1108 old Rust case body byte.
+
+Freeze the correction for independent full-file review, prepare a new exact-head
+selection including the failed Glaive and corrected transfer cases, and publish
+through a normal fast-forward of the idle original integration after verification
+preparation. Preserve all586 and intermediate df artifacts as historical evidence.
+The separate frozen969 producer has unchanged pre-mass production and distinct
+capture routes; root may allocate it after the failure/capture-path diagnosis.
+No capture result replaces the corrected combined selection, full checks, native
+acceptance, ordinary carrying or any remaining Gate4 requirement.
