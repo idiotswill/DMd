@@ -227,3 +227,61 @@ checks. Root must independently inspect the final source and run these four
 cases, the complete inherited harness and canonical exact-head verification
 when the sole heavy slot is free. Ground/Held/Inspiration gate and native
 acceptance remain pending without any waived obligation.
+
+## Receive reviewed Inspiration, opportunity and cast corrections, 2026-10-07
+
+The receiving writer is `source_review_oct7`, allocated by root solely to this
+checkout. Start from clean `fa681e146a97b875c54f7fc75a3d9f8b9a31ef31`
+(tree `71b42c21deb027140efd54876d89ffc42015a3b0`). A fresh fetch confirms
+main `1a9de14c8a4418893b6664b89f99f0a0c0225ce1`, original PR70 remote
+`26fc4e7e1a4f8e28fb8f1227e5662e3b0eb28854`, and incoming reviewed
+Inspiration head `d5ebc7cbccd967273dce6186a138853902b72a3d`
+(tree `5fdb4863944451e1a92d5a2903e78d0121119e2a`). Their common
+ancestor is `54b674234011da4b8aee800fde74ad92d7df266d`. Commit this
+plan before a normal whole merge, retaining both histories and every incoming
+plan, test and production path. The incoming head includes excess-Inspiration
+transfer, the strict first-award restore correction, the owned opportunity
+producer/retirement correction, retained completed-cast provenance, and two
+previously reviewed Held fixture corrections. Its source reviews are clear;
+combined runtime verification remains pending.
+
+The unchanged product-definition, Gate 4 checkpoint, execution protocol and
+positive-integration plan continue to govern this receipt. This is composition
+only: no new implementation, schema change, narrowed acceptance or generic
+guard bypass is allocated. Preserve the four complete current-combined cases,
+all nine earlier physical/Mage cases, original source/issuer/custody/raw-roll
+ancestry, Ground and physical equipment flows, Ogre/Mage behavior, and the
+retained physical preparation `None` branch. Do not substitute fresh Ground
+authority for a retained source read.
+
+Git's preliminary merge identifies four overlaps. Resolve them as explicit
+unions, then review every automatically composed path:
+
+- Keep the receiver's source-pinned `createCharacter` callback and the incoming
+  pending-transfer `gameLocked` controls and transfer presentation.
+- Route incoming `InspirationTransfer` through its opaque command input while
+  retaining receiver `AttackEquipment` routing and every older envelope.
+- Keep both strict restore blocks: accepted physical equipment activation and
+  decisions, followed by accepted Host excess-award provenance.
+- In attack completion, keep equipment continuation and then record owned
+  opportunity retirement immediately before clearing the attack. The equipment
+  hook is a no-op for an opportunity; its ordinary Attack-action continuation
+  registers a child without replacing the entered completion. Preserve both
+  hooks and all their authority checks.
+
+Acceptance for this source receipt is a clean frozen normal merge, a complete
+parent-relative patch and tree inventory, exact automatic/explicit union
+reproduction, and full inherited test-body preservation. Account explicitly for
+the already reviewed eleven omitted-empty `completed_casts` constructor fields
+and Held fixture corrections; do not edit assertions, old scenario bodies,
+captured histories, content or frontend test assets. Any unexpected production
+incompatibility must be reported before a broader correction.
+
+Only source reads, Git composition/audits and direct formatting of changed Rust
+files with child traversal disabled are allocated. No Cargo, compiler, tests,
+npm, native application, database access or push is allocated. Root owns the
+active heavy slot elsewhere, fresh independent review, later canonical
+`verify-fast`/`verify`, exact-head CI and advancement of existing PR70. The next
+action is to commit this plan, perform the merge, audit the full union and hand
+back the frozen source. All gameplay, native and Gate 4 acceptance obligations
+remain pending.
