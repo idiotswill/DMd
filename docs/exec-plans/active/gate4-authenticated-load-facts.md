@@ -557,3 +557,46 @@ After receipt and a clean freeze, root owns independent review and all heavy
 verification/publication. The author must hand back exact tree/parents, complete
 diff, old-body inverse and protected-source inventory. Carrying support, capacity
 integration and every remaining Gate4 obligation remain open and unchanged.
+
+### Independent capability-version correction, 2026-10-07
+
+Root allocates `mass_capability_fix_oct7` as the sole writer for this bounded
+correction, starting from clean `475d94e40a5e1652d176ffddae55d9b16e8a24df`, tree
+`f79e6ced344f5a8f29f4b8d3f05d71bf53fae98b`. Origin main and the two published
+donor branches were fetched; this mass branch remains unpublished. No donor
+receipt is allocated here. The separate inherited Glaive fixture correction must
+be received later as reviewed whole history by root.
+
+The complete independent source review found one P1 desktop regression:
+`table_grapple::view` uses the global presentation version for its independent
+Grapple capability field. With physical facts enabled, it emits 5 instead of 3
+for Grapple alone or 4 for Ground/Inspiration. The actual desktop then hides
+the later Ground activation and Inspiration award controls, and its physical
+Inspiration submission handler returns without sending. Review evidence is
+`tooling/load-facts-475d94e-full-independent-review-2026-10-07.md`, SHA256
+`0a33f531cab6488347fdd11354270160644938ad5781f6aa7687ca5563936d52`;
+source-pin manifest SHA256
+`1c9bae24860bc126ec9936d0493d137498439f4e78e01c79508056a75fa654bc`.
+
+Keep the outer presentation, binding and fresh request version at 5 when mass is
+active, and keep `physical.version = 5` and `source_control.version = 2`. Select
+the Grapple field independently from the actual Ground activation: absent when
+Grapple is absent, 3 for Grapple without Ground, and 4 with Ground. Preserve the
+existing exact UI capability checks and all production admission predicates;
+neither mass nor an inequality on the presentation version grants Ground.
+
+Extend genuine current mass-case helpers at the M-only, M+G and M+G+T boundaries
+to check all audience DTOs and actual saved projection/binding/request versions.
+Retain all original Rust case bodies and all 23 prior mass frontend cases. Add
+real rendered TableApp cases for later Ground activation over request 5,
+first/excess awards and owner choices only with Ground, and physical Inspiration
+submission exactly once over request 5. Include its retained original request
+across uncertain acknowledgement and retry; keep original and replacement faces.
+
+This diagnosis is committed before code. Root's serial heavy slot is occupied
+by the genuine v4 capture. This writer may run Git, static source inventories
+and direct changed-file rustfmt only: compilation, Cargo, npm, project tests,
+native execution and database work are UNRUN. Freeze the coherent correction for
+root's independent review; do not push, open a PR, merge or claim acceptance.
+Historical corpus consumption, carrying/support/capacity and every remaining
+Gate 4 acceptance requirement above remain unchanged.
