@@ -367,3 +367,9 @@ introduced; the actual desktop dirty reason remains unknown.
 Pinned official sources:
 [hosted Rust Cargo submodule](https://github.com/rust-lang/rust/tree/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/src/tools/cargo)
 and [Cargo fingerprint implementation](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/compiler/fingerprint/mod.rs).
+
+The logging namespace correction is implemented; all18 lightweight controls pass
+again (0.839s), and diff whitespace checks pass. The single constant is the only
+code change after4927674. Hosted diagnostic output remains unrun and requires
+fresh review/publication. Preserve4927674 as the reviewed-but-corrected candidate;
+do not imply that its obsolete filter could diagnose the actual hosted rebuild.

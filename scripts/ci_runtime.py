@@ -21,7 +21,7 @@ SPECIAL = {'table_loop': 'table-loop', 'legacy_shield_missile_v1_replay': 'legac
            'table_grapple_public': 'grapple-public'}
 SCHEMA = 1
 ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
-FINGERPRINT_LOG = 'cargo::core::compiler::fingerprint=info'
+FINGERPRINT_LOG = 'cargo::compiler::fingerprint=info'
 DIAGNOSTIC_ENV = ('CARGO_LOG', 'RUSTDOC', 'DMD_CI_RUNTIME_CONTEXT', 'CARGO_HOME', 'RUSTUP_HOME',
                   'RUSTUP_TOOLCHAIN', 'RUSTC', 'RUSTC_WRAPPER', 'RUSTC_WORKSPACE_WRAPPER',
                   'RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'RUSTDOCFLAGS',
