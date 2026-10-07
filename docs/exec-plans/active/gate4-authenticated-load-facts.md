@@ -709,3 +709,24 @@ the request assertion still requires numeric version5 and leaves all subsequent
 exact action/channel/revision/retry checks intact. Whitespace checking passed.
 Full-file inverse review, independent correction review and fresh actual CI
 follow the freeze; no frontend compilation or test pass is inferred from source.
+
+### Actual c080 frontend activation fixture failure
+
+Both Windows c080 jobs112784626045/112784626176 pass svelte-check, then fail
+the same one of239 frontend cases. The other238 pass across34 files. Complete
+logs and retired987 cancellation evidence are retained in the CI audit SHA256
+`d9f8025a08762ba921cbe5f52d85354864d5a6940a666a0234f119404bad30b7`.
+The failed physical-facts transport activation case calls tableApi.action after
+beforeEach resets the invoke mock, without providing any mocked result. Its first
+call therefore returns undefined to the existing Accepted-receipt validation.
+This is an observed fixture failure, not evidence of a production routing defect.
+
+Commit this diagnosis before adding a complete Accepted-shaped acknowledgement
+immediately before each of this case's three activation calls. Use one-shot mocks
+so an unexpected extra invocation still lacks a receipt; assert the three-call
+count. Preserve every existing save/load, exact version5, action, session and
+desktop endpoint expectation. Do not alter table-api production validation, any
+other test body, dependency, build setting or historical artifact. Independent
+bounded source review and fresh exact-head frontend execution remain required.
+The prior c080/987 failures stay preserved. Local969 capture retains the sole
+heavy allocation; no local npm, compiler, test, native app or database is run.
