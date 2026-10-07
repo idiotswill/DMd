@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "d6877194-fb2d-414f-b60f-b0ca22987c68",
+    "campaign_id": "cb6a408d-e54f-4ec5-a139-ede41d8f152c",
+    "session_id": "a00cb016-d7f6-4d9f-a531-8967fdf59ce4",
+    "issuer": {
+      "Player": "32678806-1ea1-49fa-ab35-9b9c5a7664d6"
+    },
+    "actor": {
+      "Entity": "6ea87923-b484-4e7c-8c72-ff87757a00ee"
+    },
+    "expected_event_sequence": 27
+  },
+  "audience": {
+    "Player": "32678806-1ea1-49fa-ab35-9b9c5a7664d6"
+  },
+  "projection_ordinal": 29,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 28
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"d6877194-fb2d-414f-b60f-b0ca22987c68\",\"campaign_id\":\"cb6a408d-e54f-4ec5-a139-ede41d8f152c\",\"session_id\":\"a00cb016-d7f6-4d9f-a531-8967fdf59ce4\",\"channel\":{\"Player\":{\"player_id\":\"32678806-1ea1-49fa-ab35-9b9c5a7664d6\",\"character_id\":\"78f9d4ad-0f25-451d-a487-9d91876b9769\"}},\"revision\":\"8cdcab23-0ff1-4bdb-a40e-22d7826fd4a5\",\"input\":{\"GrappleChoice\":{\"handle\":\"9f1d0e4a-3a0f-4c66-b314-28af4f4c4c78\"}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"d6877194-fb2d-414f-b60f-b0ca22987c68\",\"revision\":\"c79ec39c-b7c7-45a6-9f5b-a908187b7d38\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+}

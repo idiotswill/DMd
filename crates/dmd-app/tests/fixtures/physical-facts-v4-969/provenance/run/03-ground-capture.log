@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.75s
+     Running tests\table_grapple_public.rs (C:\Users\jadra\Documents\ChatGPT\DMD\tooling\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07-target\debug\deps\table_grapple_public-151a39acfa4516a1.exe)
+
+running 1 test
+test ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw has been running for over 60 seconds
+test ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 75 filtered out; finished in 2196.32s
+
