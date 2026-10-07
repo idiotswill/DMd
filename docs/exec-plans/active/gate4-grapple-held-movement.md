@@ -41,6 +41,29 @@ Root independently reviews the frozen fixture delta and proposed production
 design, then schedules actual exact-head verification. Failed5d5 evidence and
 all original compatibility fixtures stay preserved at their actual identities.
 
+### October 7 fixture-only handback and historical-geometry limit
+
+After plan-first commit473aca0, the two declared new fixtures are corrected:
+the wall and both privacy checks use `hidden-seam`; activation now follows the
+actual owner's earned after-equipment choice through the unchanged cold helper.
+No other fixture, prior assertion or production behavior is changed. The complete
+Rust file is byte-recoverable to5d5 by reversing only those three literal changes
+and removing the two added choice/submission lines. A Git whitespace check
+passes. No formatter, compiler, Cargo, tests, npm, database, native or push ran;
+fresh review and runtime verification remain required.
+
+The production diagnosis reached an explicit evidence limit before edits.
+Transport admission plus its committed prefix retains holder and target poses,
+but `TacticalOpportunityWindow` does not retain the reactor's admission body/pose
+or the accepted occupancy, cover and support inputs. The separate window read
+retains hand-grip proofs, not those spatial inputs. Later accepted children may
+change bodies, so current scene state cannot safely serve as that before-image.
+Root requires a minimal immutable admitted-crossing receipt proposal and review
+before production implementation; broad scene/state copying or trusting current
+candidate membership is not an approved substitute. The issued-child and inherited
+ray failures therefore remain outstanding. The fixture-only successor does not
+claim either is repaired or that the failed public harness now passes.
+
 ## Root receipt of reviewed public scenario correction — 2026-10-06
 
 Root owns the sole writer from freshly fetched clean `ca6fa4c7651657823a2cd0b380592b98cd51d961`.

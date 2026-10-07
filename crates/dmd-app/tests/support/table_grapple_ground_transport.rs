@@ -602,7 +602,7 @@ async fn ground_drag_release_keeps_issued_opportunity_dice_and_reaction_then_sto
 #[tokio::test]
 async fn hidden_target_only_wall_stops_the_pair_without_cost_or_relocating_either_body() {
     let wall = SpatialObstacle {
-        id: "hidden seam".into(),
+        id: "hidden-seam".into(),
         volume: SpatialBox {
             min: SpatialPoint { x: 30, y: 10, z: 0 },
             max: SpatialPoint {
@@ -622,7 +622,7 @@ async fn hidden_target_only_wall_stops_the_pair_without_cost_or_relocating_eithe
     enable(&mut f).await;
     let before = f.view(f.pc(0)).await;
     let visible = serde_json::to_string(&before).unwrap();
-    assert!(!visible.contains("hidden seam"));
+    assert!(!visible.contains("hidden-seam"));
     let movement = drag(&f, vec![step(20, 10)]).await;
     Box::pin(f.cold(movement)).await;
     let after = f.state().await;
@@ -637,7 +637,7 @@ async fn hidden_target_only_wall_stops_the_pair_without_cost_or_relocating_eithe
     assert!(
         !serde_json::to_string(&f.view(f.pc(0)).await)
             .unwrap()
-            .contains("hidden seam")
+            .contains("hidden-seam")
     );
     f.close().await;
 }
@@ -782,6 +782,8 @@ async fn ground_drag_activation_is_host_only_settled_and_replayed_from_its_origi
     Box::pin(f.reject(unsettled)).await;
     let withdraw = f.choose(f.pc(0), "Withdraw this Grapple attempt").await;
     Box::pin(f.cold(withdraw)).await;
+    let finish = f.choose(f.pc(0), "Finish without changing equipment").await;
+    Box::pin(f.cold(finish)).await;
     enable(&mut f).await;
     let original = f.state().await;
     let mut forged = original.clone();
