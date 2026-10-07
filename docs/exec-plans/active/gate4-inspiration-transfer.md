@@ -301,3 +301,37 @@ unavailable on PATH and did not execute; the explicit existing binary resolved
 that tooling issue. Only the one RulesContext actor expression and two pattern
 parentheses changed. Corrected-head compilation/runtime is still unrun; fresh
 peer review is required before push.
+
+## Distinct changed-payload retry control, 2026-10-07
+
+Actual d5 Linux job112689033767 passes fast verification and strict Clippy, then
+fails one Rust case: transfer's pending-choice lock test. Full public harness
+result is57 passed/one failed/zero ignored/zero filtered in3751.64 seconds;
+128 passes and one failure across the complete reached harnesses. Its failure
+is at table_grapple_public.rs:736 in the shared cold helper, where a purported
+changed-payload retry unexpectedly succeeds. The full log is preserved outside
+Git as tooling/ci-oct7/pr71-d5-job-112689033767-exact.log. Windows remains pending.
+This is failed partial evidence, not a pass for d5 or its descendants.
+
+Root and an independent source trace locate the failure before the pending
+transfer setup: the case first invokes act(..., Dodge), whose genuine producer
+immediately calls cold on that request. The helper's negative unconditionally
+sets changed.input to Dodge, so here it submits the exact original request.
+Production correctly returns the previously accepted response. The test never
+reaches its later award/transfer assertions in that failed run.
+
+Commit this amendment before the bounded correction. Keep all original case
+bodies and every production byte. In the shared cold helper, clone the request,
+choose Dash only when the original input is exactly Dodge, otherwise retain the
+existing Dodge substitution, and assert the inputs differ before submitting the
+same-ID changed payload. Keep exact retries, cold/portable outcome comparisons,
+the original refusal assertion and full export/replay comparisons unchanged.
+This repairs the negative stimulus without weakening the acceptance invariant.
+
+Root is sole writer of this branch after fresh d5 remote/local/clean checks.
+The586 integration checkout is frozen under its separate local run and receives
+no edit. Audit the entire two-file delta and all959 original Rust test bodies,
+get independent review, then publish a successor for fresh exact-head CI. A later
+normal whole-history receipt will propagate it to integration and compatibility
+capture after their own freeze boundaries. No local heavy run is allocated here.
+All first-award/transfer, canonical, native and Gate4 acceptance remains due.
