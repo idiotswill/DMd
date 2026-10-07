@@ -534,6 +534,18 @@ fn validate_event(
 /// Context before an imported anchor cannot be re-created. Even there, a table envelope
 /// may contain only its defined nested mechanics, exact authority and matching outcome.
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
+    if matches!(event.action, TableAction::AwardHeroicInspiration { .. }) {
+        if event.meta.issuer != CommandIssuer::Admin
+            || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration award has incompatible Host or nested authority".into());
+        }
+        return Ok(());
+    }
     if matches!(
         event.action,
         TableAction::EnableGrappleAccess
@@ -806,9 +818,19 @@ fn validate_rulings(
             {
                 return Err("ruling provenance disagrees with accepted audit".into());
             }
-            let action = commands
+            let command = commands
                 .get(&record.command.id)
-                .and_then(|event| event.rules_event())
+                .ok_or("ruling has no checked typed command")?;
+            if let RecoveryEvent::Table(event) = command
+                && let TableAction::AwardHeroicInspiration { reason, .. } = &event.action
+            {
+                if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
+                    return Err("ruling disagrees with its originating Inspiration award".into());
+                }
+                continue;
+            }
+            let action = command
+                .rules_event()
                 .map(|event| &event.action)
                 .ok_or("ruling has no checked typed rules action")?;
             if action_ruling(action) != Some(&record.ruling) {

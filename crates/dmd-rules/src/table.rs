@@ -11,10 +11,16 @@ mod battlefield;
 mod creatures;
 mod equipment;
 mod grapple_access;
+mod inspiration;
+pub use inspiration::award_ruling as inspiration_award_ruling;
 pub mod source_control;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
+    AwardHeroicInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
     EnableGrappleAccess,
     EnableGrappleTransport,
     UpdateContract {

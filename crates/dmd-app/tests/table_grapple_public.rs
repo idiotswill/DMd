@@ -2802,3 +2802,6 @@ mod corrections;
 
 #[path = "support/table_grapple_ground_transport.rs"]
 mod ground_transport;
+
+#[path = "support/table_grapple_inspiration.rs"]
+mod inspiration;

@@ -81,6 +81,7 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { SubmitRollWithInspiration: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] }; die_index: number; replacement: { sides: number; value: number } } }
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
   | { GrappleChoice: { handle: Id } }

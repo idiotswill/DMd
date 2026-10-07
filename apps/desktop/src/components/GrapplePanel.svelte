@@ -33,9 +33,9 @@
 
 {#if view.grapple?.version===3 && host && onEnableTransport && view.tactical?.phase==='active'}
   <fieldset disabled={disabled||!!view.pending||!!view.roll||!!view.tactical.continuation||!!view.tactical.ready?.length}>
-    <legend>Ground drag</legend>
-    <p>Enable movement with one held creature along a dry, supported route.</p>
-    <button type="button" onclick={onEnableTransport}>Enable ground drag</button>
+    <legend>Dragging and Inspiration</legend>
+    <p>Enable movement with one held creature along a dry, supported route and Host-awarded Heroic Inspiration. Each award is a separate Host ruling.</p>
+    <button type="button" onclick={onEnableTransport}>Enable dragging and Inspiration</button>
   </fieldset>
 {/if}
 

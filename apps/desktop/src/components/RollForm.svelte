@@ -1,10 +1,12 @@
 <script lang="ts">
   import { rawDice, signed, type RollRequest } from '../table-api';
   import type { SavageAttackerRoll } from '../tactical-api';
-  let { request, disabled = false, onSubmit, savageOption = null, onSavage }: {
+  let { request, disabled = false, onSubmit, savageOption = null, onSavage, heroicInspiration = false, onInspiration }: {
     request: RollRequest; disabled?: boolean; onSubmit: (faces: number[]) => void;
     savageOption?: { weapon_dice: number; heroic_inspiration: boolean } | null;
     onSavage?: (roll: SavageAttackerRoll) => void;
+    heroicInspiration?: boolean;
+    onInspiration?: (faces: number[], die_index: number, replacement: { sides: number; value: number }) => void;
   } = $props();
   const sides = $derived(rawDice(request));
   let faces = $state<number[]>([]);
@@ -12,6 +14,8 @@
   let chosen = $state<''|'First'|'Second'>('');
   let inspiration = $state(false); let inspirationDie = $state(''); let replacement = $state<number>();
   let error = $state('');
+  let ordinaryInspiration = $state(false); let ordinaryDie = $state(''); let ordinaryReplacement = $state<number>();
+  const ordinarySides = $derived(sides[Number(ordinaryDie)]);
   const rerollSides = $derived(sides[Number(inspirationDie.split(':')[1])]);
   const valid = (values: number[], dice: number[]) => values.length===dice.length&&dice.every((side,i)=>Number.isInteger(values[i])&&values[i]>=1&&values[i]<=side);
   function submit(event: SubmitEvent) {
@@ -24,6 +28,12 @@
       const raw=(values:number[])=>({request_id:request.id,source:'Physical' as const,dice:values.map((value,i)=>({sides:sides[i],value}))});
       error='';onSavage({weapon_dice:count,first:raw(faces),second:raw([...second,...faces.slice(count)]),chosen,
         inspiration:inspiration?{roll:inspirationDie.split(':')[0] as 'First'|'Second',die_index:Number(inspirationDie.split(':')[1]),replacement:{sides:rerollSides,value:replacement!}}:null});return;
+    }
+    if (ordinaryInspiration && heroicInspiration && onInspiration) {
+      if (ordinaryDie === '' || !Number.isInteger(Number(ordinaryDie)) || !ordinarySides || !Number.isInteger(ordinaryReplacement) || ordinaryReplacement! < 1 || ordinaryReplacement! > ordinarySides) {
+        error = 'Select the die and report its valid Inspiration replacement.'; return;
+      }
+      error = ''; onInspiration([...faces], Number(ordinaryDie), { sides: ordinarySides, value: ordinaryReplacement! }); return;
     }
     error = ''; onSubmit([...faces]);
   }
@@ -42,6 +52,14 @@
         {#if inspiration}<label>Die to reroll<select required bind:value={inspirationDie}><option value="">Select a die</option>{#each sides as side,i}<option value={`First:${i}`}>{i<savageOption.weapon_dice?'First weapon':'Shared additional'} die {i+1} · d{side}</option>{#if i<savageOption.weapon_dice}<option value={`Second:${i}`}>Second weapon die {i+1} · d{side}</option>{/if}{/each}</select></label><label>Inspiration replacement<input required type="number" min="1" max={rerollSides} step="1" bind:value={replacement} /></label>{/if}
       {/if}
       <label>Damage set to use<select required bind:value={chosen}><option value="">Choose a set</option><option value="First">First weapon set</option><option value="Second">Second weapon set</option></select></label>
+    {/if}
+  {/if}
+  {#if !savage && heroicInspiration && onInspiration}
+    <label><input type="checkbox" bind:checked={ordinaryInspiration} /> Spend Heroic Inspiration to reroll one die</label>
+    {#if ordinaryInspiration}
+      <p>Keep the original faces above. Roll one selected die again and use its replacement, even if it is lower.</p>
+      <label>Die to reroll<select required bind:value={ordinaryDie}><option value="">Select a die</option>{#each sides as side, i}<option value={String(i)}>Die {i+1} · d{side}</option>{/each}</select></label>
+      <label>Inspiration replacement<input required type="number" min="1" max={ordinarySides} step="1" bind:value={ordinaryReplacement} /></label>
     {/if}
   {/if}
   {#if error}<p role="alert" class="error">{error}</p>{/if}<button type="submit">Report these faces</button>

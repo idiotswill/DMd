@@ -144,6 +144,8 @@ pub struct TableRollOptionsRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableRollOptions {
     pub savage_attacker: Option<TableSavageAttackerOption>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heroic_inspiration: Option<bool>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
