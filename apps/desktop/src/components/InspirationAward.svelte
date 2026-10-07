@@ -1,8 +1,9 @@
 <script lang="ts">
   import type { TableView } from '../table-api';
-  let { view, host, disabled = false, onAward }: {
+  let { view, host, disabled = false, onAward, onExcessAward }: {
     view: TableView; host: boolean; disabled?: boolean;
     onAward: (character_id: string, reason: string) => void;
+    onExcessAward?: (character_id: string, reason: string) => void;
   } = $props();
   let character = $state('');
   let reason = $state('');
@@ -11,10 +12,12 @@
   const selected = $derived(candidates.find(c => c.character_id === character));
   function submit(event: SubmitEvent) {
     event.preventDefault();
-    if (!selected || selected.details?.heroic_inspiration || !reason.trim() || new TextEncoder().encode(reason).length > 2000) {
-      error = 'Select a character without Inspiration and give a brief reason for the award.'; return;
+    if (!selected || (selected.details?.heroic_inspiration && !onExcessAward) || !reason.trim() || new TextEncoder().encode(reason).length > 2000) {
+      error = 'Select an eligible character and give a brief reason for the award.'; return;
     }
-    error = ''; onAward(character, reason);
+    error = '';
+    if (selected.details?.heroic_inspiration && onExcessAward) onExcessAward(character, reason);
+    else onAward(character, reason);
   }
 </script>
 
@@ -22,8 +25,8 @@
   <form onsubmit={submit}>
     <fieldset disabled={disabled || !!view.pending || !!view.roll || !!view.tactical?.continuation || !!view.tactical?.ready?.length}>
       <legend>Award Heroic Inspiration</legend>
-      <p>As Host, record a GM award to a player character. A character can hold one Inspiration; overflow transfer is not yet available.</p>
-      <label>Recipient<select required bind:value={character}><option value="">Select a character</option>{#each candidates as candidate}<option value={candidate.character_id} disabled={candidate.details?.heroic_inspiration}>{candidate.name}{candidate.details?.heroic_inspiration ? ' — already inspired' : ''}</option>{/each}</select></label>
+      <p>As Host, record a GM award to a player character. A character can hold one Inspiration.{#if onExcessAward} If they already have it, their attending player chooses whether to give the extra Inspiration to another eligible character.{/if}</p>
+      <label>Recipient<select required bind:value={character}><option value="">Select a character</option>{#each candidates as candidate}<option value={candidate.character_id} disabled={candidate.details?.heroic_inspiration && (!onExcessAward || !view.active_session?.participants?.some(p=>p.player_id===candidate.player_id&&p.character_id===candidate.character_id&&p.attendance==='Present'))}>{candidate.name}{candidate.details?.heroic_inspiration ? ' — already inspired' : ''}</option>{/each}</select></label>
       <label>Reason for the award<textarea required maxlength="2000" bind:value={reason}></textarea></label>
       {#if error}<p role="alert">{error}</p>{/if}
       <button type="submit">Award Heroic Inspiration</button>

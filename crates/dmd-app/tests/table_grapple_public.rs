@@ -731,8 +731,15 @@ impl Fixture {
                 .unwrap(),
             accepted
         );
-        let mut changed = request;
-        changed.input = action(TacticalAction::Dodge);
+        let mut changed = request.clone();
+        changed.input = if request.input == action(TacticalAction::Dodge) {
+            action(TacticalAction::Dash {
+                speed: DashSpeed::Speed,
+            })
+        } else {
+            action(TacticalAction::Dodge)
+        };
+        assert_ne!(changed.input, request.input);
         assert!(
             Box::pin(self.runtime.submit_presented_table(changed))
                 .await

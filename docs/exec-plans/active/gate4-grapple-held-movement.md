@@ -1,5 +1,240 @@
 # Gate 4 — Grounded movement with a held creature
 
+## October 7 actual spatial fixture failure — plan before correction
+
+Root assigns sole writing to mass_capability_fix_oct7 from clean, freshly fetched
+`0c60b9ccf0996dd9e2fa15736d8a7ad57cd11960`, tree
+`25945995df40e2a293870cbebe487830014b0356`. Actual PR68 Linux run37589316510,
+job112686732266 reaches the rules library and fails
+`spatial::tests::ground_transport_tests::ground_support_checks_swept_water_before_floor_and_allows_a_dry_bridge`
+at ground_transport_tests.rs:82: `Invalid("invalid spatial identifier")`.
+The library reports248 passed/1 failed. The saved complete log is
+`tooling/ci-oct7/pr68-0c-job-112686732266-exact.log`; the root CI terminal audit is
+`tooling/ci-oct7/pr68-0c-terminal-audit-1351.json`, SHA256
+`fd35b9613cc844a046bd7dd52bb7f27daa7ced24f0c646d901fc7d37e2f3e9f1`.
+The previous head's failed result remains failed; Windows was cancelled with
+partial evidence and cannot substitute for a full pass.
+
+The fixture's terrain ID `dry bridge` violates the existing domain grammar
+(ASCII alphanumeric plus hyphen/dot/underscore). Validation precedes geometry,
+so the positive test never reaches dry support. The same module's obstacle ID
+`target-only wall` is invalid too: its existing `.is_err()` can pass for malformed
+authored geometry instead of the intended target obstruction. Production
+identifier, coupled movement, collision, support and privacy guards are correct
+for these premises and are outside this correction.
+
+After committing this diagnosis, change only those two fixture IDs to
+`dry-bridge` and `target-only-wall`. Explicitly validate each corrected encounter
+before its query. Preserve every existing water refusal, cost, endpoint,
+occupancy and wall assertion. Add a precise wall-result assertion requiring
+`SpatialError::Illegal("coupled path is obstructed")`, so a malformed fixture or
+unrelated refusal cannot satisfy that negative. Do not alter coordinates,
+participants, visibility, budgets, evaluator code, existing helpers or settings.
+
+This advances the existing Gate4/ADR025 movement/collision/support evidence and
+the product's authoritative tactical geometry contract; it does not change the
+slice, add mechanics or close any acceptance. Source-only Git/file inspection
+and edits are allocated. No compiler/Cargo/npm/tests/database/native/runtime,
+push or merge. Freeze a coherent correction with a complete file inverse and
+all-tree/test preservation audit for root/fresh independent review. Root then
+allocates exact-head affected tests, canonical verification and CI.
+
+Inspect inherited copies on frozen573 integration, PR71, PR72 and0990 roll
+details; report exact source hashes and whole-history transfer needs externally.
+Do not write those branches or treat their earlier runs as verification of this
+successor. All other Held/Grapple/Gate4 requirements above and below remain open.
+
+### Fixture correction source result, all runtime UNRUN
+
+After diagnosis commit `c3b0de13e3aabcfdc151bfd17600fdf779e8d118`, the two IDs
+are hyphenated and each repaired encounter is explicitly validated. The old
+water/occupancy/wall refusals and successful bridge cost/endpoint assertions stay
+unchanged. The additional wall assertion names the exact coupled-path obstruction,
+so the negative can no longer succeed because its authored identifier is invalid.
+No geometry, cost, source/helper, production, content, archive or settings changed.
+
+Static inspection confirms frozen573 integration, PR71 `3a68bd7`, PR72 `8c754d0`
+and roll-details `0990d32` all inherit the identical unrepaired spatial test blob.
+Root must arrange reviewed whole-history receipt into the relevant successors;
+this author did not edit or merge another branch. The full source/old-test inverse
+and transfer inventory are external handback evidence. No formatter, compiler,
+Cargo/npm/tests, database, native, preflight, publication or merge ran here.
+Next: root/fresh independent exact-head source review, then genuine focused and
+canonical/CI verification under root's coordinated execution allocation. This
+source correction does not turn the original failed or cancelled runs into passes.
+
+## October 7 reviewed retained-cast correction intake
+
+Root resumes sole branch writing at clean
+`8c03999d6713a1ecac2af87dcceed9814fb24c80`, tree
+`5a4918e8e834b768a645abaa8638880b33e8f08a`. Independent full source review
+found no actionable defect; the four private cases and new public nonempty-prefix
+case remain unrun. The reviewed fixture-only predecessor is retained unchanged.
+Fresh fetch confirms remote Held `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`,
+Public `f059b49cb8ed516df881d0cf0755bff3badb329f`, and main
+`1a9de14c8a4418893b6664b89f99f0a0c0225ce1`. No unexpected branch movement exists.
+
+Commit this plan before receiving the entire reviewed Public successor f059 by
+normal Git merge. Its actual completed-cast retention corrects the inherited
+three-ray source-validation failure without weakening live casting or old tests.
+The full correction and its original plan must survive intact. Resolve any
+overlap only by preserving both the owned opportunity observer and completed-cast
+fields/hooks; inspect all merge output and compare all resulting tracked blobs
+to both parents. Do not cherry-pick individual source hunks or reset history.
+
+The root full-diff review and independent f059 report are external source evidence
+only (`tooling/grapple-retained-cast-f059b49-independent-review-2026-10-07.json`,
+SHA256 `8661fb47217f1c8a6e3729d26ed58dfb216ee8aba6830535db1c83b9a86c1522`).
+Held review: `tooling/held-owned-opportunity-8c03999-independent-review-2026-10-07.md`,
+SHA256 `c9d5fcf7c482c03c6895ab511d5c7e7ff0eec2632f0b9859d42762c1ed6521a4`.
+Neither substitutes for new combined-head runtime evidence.
+
+After merge, review complete parent deltas, run bounded formatting/whitespace
+checks and publish the coherent head to existing draft PR68 for fresh CI. The
+native weapon session is now closed; root allocates the sole heavy slot for
+focused Held/Public regressions on a target directory unique to this worktree,
+then canonical `verify-fast`/`verify` and required native Windows/Linux CI.
+Run the original failing rays, issued-opportunity release and both repaired
+fixture cases, all five new Held cases, and both retained-cast controls. Preserve
+every old assertion, fixture and original replay path. Inspect actual diagnostics
+before any further correction; no old or sibling green run proves this head.
+
+This advances the existing tactical timing/exact suspension product requirements
+and Gate4/ADR025/ADR028 acceptance. All other Held and integrated Gate4 scope
+remains open. Next action: normal merge of exact f059, full composition review,
+then exact-head verification. No runtime, native Held or gate completion claim.
+
+## October 7 approved owned historical opportunity correction
+
+Root approved source implementation from clean fixture successor
+`a0a238d56feb1c0be0784e48d1a63baafe588df8` after reviewing the complete external
+owned-result proposal (SHA256
+`86d5b8f62a10e869d09f56793408f4ab33a11f874545ecc0cd3e57a4a1e238fc`). A fresh fetch
+still names remote `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`; the approved local
+fixture commits are its clean successors. Commit this plan before production.
+
+The original CampaignExecution seal and complete anchor/journal replay permit
+authenticating the already accepted opportunity result without reconstructing
+historical geometry from current bodies. Replace only the GroundDrag accepted
+attack's historical crossing validation with an internal typed projection over
+the existing complete window, accepted response, source, actual occurrence
+ancestry and full paired/ordinary committed prefix. At read time require that
+projection to equal the exact sealed predecessor or an actual successful live
+producer observed in this command; guarded candidate membership alone is never
+authority. Enforce matching immutable delta and genuine completion evidence.
+
+Capture only after the existing live geometry/source/cost checks succeed. Keep
+the selected live-grip stop guard, fresh offers/responses and future movement
+checks unchanged. Do not add serialized fields, events, execution versions,
+synthetic before-scenes, movement permissions or another queue. This corrects
+issued-child suspension within the existing Gate4/ADR025/ADR028 scope; it does
+not broaden attack reconstruction to arbitrary changed geometry or sources.
+
+Preserve all existing test bodies and the public issued-opportunity release
+scenario byte for byte. Add focused hostile bindings, unobserved producer and
+foreign-clone controls, plus a separate genuine public release scenario with a
+nonempty committed paired prefix and unchanged pending/raw/Reaction evidence.
+Audit every prior tracked entry and test body after direct rustfmt. Source-only
+verification is allocated: no Cargo/compiler/tests/npm/native/database/push.
+Runtime remains unrun until root schedules exact-head focused and full checks.
+Freeze a coherent successor and complete byte-preservation/source handback for
+independent review; stop instead of widening scope if the projection cannot be
+implemented soundly within these bounds.
+
+### Source implementation awaiting exact-head verification
+
+The private live token now runs the unchanged movement validator and binds the
+actual candidate, command, complete controller melee choice, original window,
+paired/ordinary prefix and entered crossing work. After real source planning,
+Reaction payment, accepted response and child admission cuts, its consumed token
+observes one immutable result. Historical reads require the exact predecessor or
+that observed result before any candidate validator returns. The final delta
+accounts predecessor plus actual admissions minus actual completions even if the
+entire resolution retires. Completion binds the real command and entered
+AttackDamage/FinishAttack descendant; no saved receipt or execution version is
+introduced. Live selected-grip/geometry/source guards remain unchanged.
+
+Four new private mechanism cases cover predecessor/producer authentication,
+foreign candidates/tokens, twelve changed source/crossing/response/work bindings,
+missing whole-attack/resolution retirement and duplicate completion evidence.
+They use the existing explicitly authored source baseline and genuine shared
+activation/grip/move/opportunity producers; they do not claim application replay.
+A separate public case uses real creation, a paid nonempty paired prefix, cold
+SQLite/portable/retry helpers, a forged copied prefix refusal, and physical child
+completion after release. The original public issued-release case is unchanged.
+
+Direct rustfmt write/check and `git diff --check` pass. All five new cases and
+the full suite are **UNRUN** under this source-only allocation. The separate
+inherited ray correction has not been received. Next: audit every prior tracked
+entry/test body, freeze this successor for independent review, then let root
+schedule focused/full exact-head verification and reviewed whole-history receipt.
+No CI, runtime, native, publication, Grapple acceptance or Gate4 completion claim
+is made by this source checkpoint.
+
+## October 7 diagnosed fixture corrections and issued-child design
+
+Root assigned sole source writing to `native_capture_audit_oct7` from clean,
+freshly fetched `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`. PR68 Linux
+job112289534633 and Windows job112289465143 both reached the public harness
+with31 passed and4 failed. The retained ray failure belongs to the separate
+Public writer; do not edit or receive that active branch until root supplies its
+reviewed whole successor. The issued-opportunity failure needs a production
+design and root review before implementation, as described below.
+
+Commit this plan before two exact new-fixture producer corrections. The hidden
+wall's `hidden seam` identifier violates the unchanged spatial identifier
+grammar, so change it to `hidden-seam` in its producer and both corresponding
+privacy assertions. Keep the complete geometry, hidden flag, zero-cost and both
+endpoint assertions unchanged. The activation scenario withdraws a real Grapple
+without a before-equipment change; `saves::complete_attempt` correctly queues its
+earned `GrappleAfterEquipment`. Keep the original pending-activation refusal,
+then after withdrawal choose the owner's actual `Finish without changing
+equipment` option through the existing cold/portable/retry helper before the
+Host's successful activation. Do not clear or inject state, grant an allowance,
+weaken settled-state admission, remove any assertion or rewrite an older case.
+
+The issued-child failure is separate: accepted opportunity admission validates
+its stored crossing by reconstructing only attack/pending, Reaction expenditure
+and equipment, then calls the live movement validator. That reaches
+`transport::current_target`, which correctly rejects a stopped route after the
+selected grip ends. Already-issued attack/dice ancestry must remain valid while
+future coupled movement remains stopped. A retained hand read alone does not
+authenticate the complete holder/target crossing. Propose the full historical
+crossing/source/occurrence proof and its original-replay validation before any
+production change; do not remove the live stop guard, resurrect live drag
+authority or cancel accepted dice to satisfy the test.
+
+This correction advances the existing product tactical movement, causal work and
+exact suspension requirements and the active Gate4/ADR028 contract. All other
+Gate4 and Held movement acceptance remains open. Source/Git audits only are
+allocated here; no Cargo, compiler, tests, npm, database, native activity or push.
+Root independently reviews the frozen fixture delta and proposed production
+design, then schedules actual exact-head verification. Failed5d5 evidence and
+all original compatibility fixtures stay preserved at their actual identities.
+
+### October 7 fixture-only handback and historical-geometry limit
+
+After plan-first commit473aca0, the two declared new fixtures are corrected:
+the wall and both privacy checks use `hidden-seam`; activation now follows the
+actual owner's earned after-equipment choice through the unchanged cold helper.
+No other fixture, prior assertion or production behavior is changed. The complete
+Rust file is byte-recoverable to5d5 by reversing only those three literal changes
+and removing the two added choice/submission lines. A Git whitespace check
+passes. No formatter, compiler, Cargo, tests, npm, database, native or push ran;
+fresh review and runtime verification remain required.
+
+The production diagnosis reached an explicit evidence limit before edits.
+Transport admission plus its committed prefix retains holder and target poses,
+but `TacticalOpportunityWindow` does not retain the reactor's admission body/pose
+or the accepted occupancy, cover and support inputs. The separate window read
+retains hand-grip proofs, not those spatial inputs. Later accepted children may
+change bodies, so current scene state cannot safely serve as that before-image.
+Root requires a minimal immutable admitted-crossing receipt proposal and review
+before production implementation; broad scene/state copying or trusting current
+candidate membership is not an approved substitute. The issued-child and inherited
+ray failures therefore remain outstanding. The fixture-only successor does not
+claim either is repaired or that the failed public harness now passes.
+
 ## Root receipt of reviewed public scenario correction — 2026-10-06
 
 Root owns the sole writer from freshly fetched clean `ca6fa4c7651657823a2cd0b380592b98cd51d961`.

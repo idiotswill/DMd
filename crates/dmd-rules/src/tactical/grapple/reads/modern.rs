@@ -1,5 +1,8 @@
 //! Occurrence-bound attack reads for the original-history-owned table executor.
 use super::*;
+mod completed;
+
+pub(super) use completed::retain;
 
 fn trace(state: &CampaignState) -> Result<&TacticalWorkTrace, RulesError> {
     resolution(state)?
@@ -72,6 +75,12 @@ fn raw_source_for_admission(
             let mut records = resolution(state)?
                 .casts
                 .iter()
+                .chain(
+                    context(state)?
+                        .completed_casts
+                        .iter()
+                        .map(|receipt| receipt.record.as_ref()),
+                )
                 .filter(|record| record.cast.plan.occurrence == cast);
             let record = records
                 .next()
@@ -185,6 +194,7 @@ pub(super) fn capture_admission(
             cuts: vec![],
             ends: vec![],
             opportunity_refreshes: vec![],
+            completed_casts: vec![],
         })
     });
     if c.cuts.iter().any(|cut| cut.key == key) {
@@ -283,6 +293,7 @@ pub(super) fn validate_cuts(state: &CampaignState) -> Result<(), RulesError> {
     let Some(c) = &r.grapple else {
         return Ok(());
     };
+    completed::validate(state)?;
     let trace = trace(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let mut issued = Vec::new();

@@ -9,6 +9,7 @@ fn empty_context() -> TacticalGrappleResolution {
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     }
 }
 

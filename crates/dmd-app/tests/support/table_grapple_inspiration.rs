@@ -13,6 +13,9 @@ async fn request(
     request.version = 4;
     request
 }
+
+#[path = "table_inspiration_transfer.rs"]
+mod transfer;
 fn award(character_id: CharacterId, reason: &str) -> TableTransportInput {
     TableTransportInput::Action(Box::new(TableAction::AwardHeroicInspiration {
         character_id,
