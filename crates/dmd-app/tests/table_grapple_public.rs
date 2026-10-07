@@ -78,6 +78,9 @@ mod cleanup;
 #[path = "support/grapple_original_mage.rs"]
 mod original_mage;
 
+#[path = "support/finished_character_creation.rs"]
+mod finished_character_creation;
+
 #[path = "support/grapple_mage_components.rs"]
 mod mage_components;
 

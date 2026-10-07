@@ -33,6 +33,52 @@ pub(crate) fn apply_table_with_context(
     pack: &RulesPack,
     execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<RulesEvent, RulesError> {
+    apply_with_context(state, next, meta, action, pack, execution, false)
+}
+
+/// Only authenticated table creation may add a new entity beside retained
+/// Finished history. Standalone rules commands keep ordinary admission.
+pub(crate) fn apply_table_creation_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<RulesEvent, RulesError> {
+    let finished_creation =
+        matches!(
+            action,
+            RulesAction::CreateCharacter { .. } | RulesAction::CreateCharacterFromSource { .. }
+        ) && matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System)
+            && meta.actor.is_none()
+            && meta.session_id.is_none()
+            && state.table.as_ref().is_some_and(|table| {
+                table.active_session.is_none()
+                    && table.pending.is_none()
+                    && table.roll_context.is_none()
+            })
+            && crate::tactical::require_finished_encounter(state).is_ok();
+    apply_with_context(
+        state,
+        next,
+        meta,
+        action,
+        pack,
+        execution,
+        finished_creation,
+    )
+}
+
+fn apply_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+    finished_creation: bool,
+) -> Result<RulesEvent, RulesError> {
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
@@ -59,11 +105,12 @@ pub(crate) fn apply_table_with_context(
             "physical equipment requires the tactical action path",
         ));
     }
-    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+    if (state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
         || state
             .rules
             .as_ref()
-            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some())
+            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some()))
+        && !finished_creation
     {
         return Err(prerequisite(
             "active tactical state requires the tactical command path",
