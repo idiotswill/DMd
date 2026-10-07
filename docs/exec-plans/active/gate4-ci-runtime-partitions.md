@@ -436,3 +436,12 @@ Actual fresh Windows two-phase execution must prove the MissingFile reason and
 unnecessary rebuild gone, retain identical inventoried/executed bytes, and finish
 all allocation/aggregate/packaging requirements. Any newly observed different
 cause requires its own diagnosis. This proposal is not a passing-build claim.
+
+The selected inert sentinel is now added after plan commit30c89e36. The existing18
+lightweight Python runner controls pass unchanged (0.832s); original complete
+stdout/stderr and executable/argv receipt are saved under
+`tooling/ci-oct7/pr73-capabilities-sentinel-python-controls-2026-10-07.*`.
+Git whitespace checks pass. All build/config/runner/workflow/dependency/test
+bytes remain unchanged; independent full-tree preservation review is next.
+No Cargo/compiler/npm/gameplay/native/database execution occurred. The required
+fresh Windows two-phase/allocation/aggregate/package proof remains UNRUN.
