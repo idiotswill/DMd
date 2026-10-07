@@ -382,3 +382,13 @@ After the bounded source correction, freeze a new exact head and preservation
 receipt for independent cumulative review. No compiler, test, database, native,
 Cargo, npm, push or merge is authorized to this source writer. Runtime remains
 UNRUN and no compatibility/Gate4 acceptance is claimed.
+
+F1 source correction is authored: historical and new inspired-roll probes join
+the current Host/owner opaque Roll capabilities to the actual pending request,
+prove the other Player has no matching offer, retain exact capability refusals,
+and require exact Unauthorized only with the Host own-handle input. Ground
+source/ordinary-Player aliases prove shared revision/roll/canonical identity and
+require the actor-authority refusal. Correct owner commands and all existing
+positive comparisons are unchanged. Direct standalone rustfmt and Git diff
+checks pass; independent full-tree preservation review is next. All compiler,
+consumer, database, native and canonical runtime checks remain UNRUN.

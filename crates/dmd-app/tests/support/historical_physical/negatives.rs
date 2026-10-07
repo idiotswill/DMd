@@ -2,6 +2,156 @@
 use super::*;
 use driver::Fixture;
 
+const UNAUTHORIZED: &str = "issuer is not authorized for this action";
+const NO_RAW_CAPABILITY: &str = "That roll is not available in this view.";
+
+fn raw_result(input: &TableTransportInput) -> Option<&RollResult> {
+    match input {
+        TableTransportInput::Action(action) => match action.as_ref() {
+            TableAction::Tactical {
+                action:
+                    TacticalAction::SubmitRoll { result }
+                    | TacticalAction::SubmitRollWithInspiration { result, .. },
+            } => Some(result),
+            _ => None,
+        },
+        _ => None,
+    }
+}
+fn replace_raw_handle(input: &mut TableTransportInput, id: RollRequestId) {
+    match input {
+        TableTransportInput::Action(action) => match action.as_mut() {
+            TableAction::Tactical {
+                action:
+                    TacticalAction::SubmitRoll { result }
+                    | TacticalAction::SubmitRollWithInspiration { result, .. },
+            } => result.request_id = id,
+            _ => panic!("actual raw action required"),
+        },
+        _ => panic!("actual raw transport required"),
+    }
+}
+fn raw_capability(
+    export: &CampaignExport,
+    channel: &TableTransportChannel,
+    opaque: RollRequestId,
+) -> RollRequestId {
+    let handle = latest(export, audience(channel))
+        .handles
+        .iter()
+        .find(|h| h.opaque == opaque.0)
+        .unwrap();
+    let dmd_persistence::ProjectionCapability::Roll { canonical } = handle.capability else {
+        panic!("offered key must bind exactly a Roll")
+    };
+    canonical
+}
+/// Valid Host translation must reach the owned Grapple save guard. Unrelated
+/// players have no offer; those probes deliberately stop at the capability layer.
+pub async fn inspired_authority(
+    f: &Fixture,
+    owner: &TableTransportRequest,
+    other: &TableTransportChannel,
+) {
+    assert!(
+        matches!(&owner.input,TableTransportInput::Action(a) if matches!(a.as_ref(),TableAction::Tactical {action:TacticalAction::SubmitRollWithInspiration {..}}))
+    );
+    assert_ne!(audience(&owner.channel), audience(other));
+    let export = f.export().await;
+    let state = decoded(&export);
+    let pending = state.rules.as_ref().unwrap().pending.as_ref().unwrap();
+    assert!(
+        matches!(pending.purpose,PendingPurpose::TacticalResolution {key,..} if key.role==TacticalRollRole::GrappleSave)
+    );
+    let original = raw_result(&owner.input).unwrap();
+    let owner_view = f.view(&owner.channel).await;
+    let owner_roll = owner_view.roll.as_ref().unwrap();
+    assert_eq!(original.request_id, owner_roll.id);
+    assert_eq!(
+        raw_capability(&export, &owner.channel, owner_roll.id),
+        pending.request.id
+    );
+    let host = f.view(&TableTransportChannel::Host).await;
+    let host_roll = host.roll.as_ref().unwrap();
+    assert_ne!(host_roll.id, owner_roll.id);
+    assert_eq!(
+        raw_capability(&export, &TableTransportChannel::Host, host_roll.id),
+        pending.request.id
+    );
+    let mut related = host_roll.clone();
+    related.id = owner_roll.id;
+    assert_eq!(&related, owner_roll);
+    let other_view = f.view(other).await;
+    assert!(
+        other_view.roll.is_none(),
+        "uninvolved Player has no raw offer"
+    );
+    assert!(!latest(&export,audience(other)).handles.iter().any(|h|matches!(h.capability,dmd_persistence::ProjectionCapability::Roll {canonical} if canonical==pending.request.id)));
+    for channel in [TableTransportChannel::Host, other.clone()] {
+        let bad = f.request(channel, owner.input.clone()).await;
+        assert_eq!(bad.version, owner.version);
+        assert_ne!(&bad, owner);
+        assert_eq!(
+            Box::pin(f.refuse(bad)).await,
+            NO_RAW_CAPABILITY,
+            "foreign/missing opaque raw capability"
+        );
+    }
+    let mut input = owner.input.clone();
+    replace_raw_handle(&mut input, host_roll.id);
+    let bad = f.request(TableTransportChannel::Host, input).await;
+    assert_eq!(bad.version, owner.version);
+    assert_ne!(&bad, owner);
+    assert_eq!(bad.revision, host.revision);
+    assert_eq!(raw_result(&bad.input).unwrap().dice, original.dice);
+    assert_eq!(raw_result(&bad.input).unwrap().source, original.source);
+    assert_eq!(
+        Box::pin(f.refuse(bad)).await,
+        UNAUTHORIZED,
+        "Host valid current raw capability must reach body-owner authorization"
+    );
+}
+pub async fn source_alias(
+    f: &Fixture,
+    source: &TableTransportRequest,
+    ordinary: &TableTransportChannel,
+) {
+    assert!(matches!(
+        source.channel,
+        TableTransportChannel::SourceCreature { .. }
+    ));
+    assert!(matches!(ordinary, TableTransportChannel::Player { .. }));
+    assert_eq!(audience(&source.channel), audience(ordinary));
+    let export = f.export().await;
+    let state = decoded(&export);
+    let source_view = f.view(&source.channel).await;
+    let ordinary_view = f.view(ordinary).await;
+    assert_eq!(source_view.revision, ordinary_view.revision);
+    assert_eq!(source_view.roll, ordinary_view.roll);
+    let result = raw_result(&source.input).unwrap();
+    assert_eq!(result.request_id, source_view.roll.as_ref().unwrap().id);
+    assert_eq!(
+        raw_capability(&export, ordinary, result.request_id),
+        state
+            .rules
+            .as_ref()
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap()
+            .request
+            .id
+    );
+    let bad = f.request(ordinary.clone(), source.input.clone()).await;
+    assert_eq!(bad.version, source.version);
+    assert_ne!(&bad, source);
+    assert_eq!(
+        Box::pin(f.refuse(bad)).await,
+        UNAUTHORIZED,
+        "same audience capability does not grant another actor's source authority"
+    );
+}
+
 pub async fn live_cut(f: &Fixture, cut: &archive::Cut) {
     let original = &cut.request;
     let mut stale = original.clone();
@@ -16,15 +166,18 @@ pub async fn live_cut(f: &Fixture, cut: &archive::Cut) {
     );
     let mut foreign = original.clone();
     foreign.command_id = CommandId::new();
-    let has_handle = match &mut foreign.input {
-        TableTransportInput::GrappleChoice { handle }
-        | TableTransportInput::InspirationTransfer { handle } => {
+    let capability_error = match &mut foreign.input {
+        TableTransportInput::GrappleChoice { handle } => {
             *handle = CommandId::new();
-            true
+            Some("That Grapple choice is not available in this view.")
+        }
+        TableTransportInput::InspirationTransfer { handle } => {
+            *handle = CommandId::new();
+            Some("That Inspiration choice is not available in this view.")
         }
         TableTransportInput::MoveGrappled { option, .. } => {
             *option = CommandId::new();
-            true
+            Some("That ground drag choice is not available in this view.")
         }
         TableTransportInput::Action(action) => match action.as_mut() {
             TableAction::Tactical {
@@ -33,15 +186,19 @@ pub async fn live_cut(f: &Fixture, cut: &archive::Cut) {
                     | TacticalAction::SubmitRollWithInspiration { result, .. },
             } => {
                 result.request_id = RollRequestId::new();
-                true
+                Some(NO_RAW_CAPABILITY)
             }
-            _ => false,
+            _ => None,
         },
-        _ => false,
+        _ => None,
     };
-    if has_handle {
+    if let Some(expected) = capability_error {
         assert_ne!(&foreign, original);
-        Box::pin(f.refuse(foreign)).await;
+        assert_eq!(
+            Box::pin(f.refuse(foreign)).await,
+            expected,
+            "foreign opaque capability"
+        );
     }
     let other = cut
         .before_views
@@ -56,7 +213,15 @@ pub async fn live_cut(f: &Fixture, cut: &archive::Cut) {
         .await;
     wrong.version = original.version;
     assert_ne!(&wrong, original);
-    Box::pin(f.refuse(wrong)).await;
+    let error = Box::pin(f.refuse(wrong)).await;
+    if let Some(expected) = capability_error {
+        assert_eq!(
+            error, expected,
+            "another audience cannot translate this opaque capability"
+        );
+    } else {
+        eprintln!("historical969 non-opaque wrong-channel refusal: {error}");
+    }
     if matches!(
         original.input,
         TableTransportInput::InspirationTransfer { .. }
@@ -65,7 +230,30 @@ pub async fn live_cut(f: &Fixture, cut: &archive::Cut) {
             .request(TableTransportChannel::Host, original.input.clone())
             .await;
         wrong.version = original.version;
-        Box::pin(f.refuse(wrong)).await;
+        assert_eq!(
+            Box::pin(f.refuse(wrong)).await,
+            "Select your current Inspiration choice.",
+            "Host has no Player Inspiration choice channel"
+        );
+    }
+    if matches!(&original.input,TableTransportInput::Action(a) if matches!(a.as_ref(),TableAction::Tactical {action:TacticalAction::SubmitRollWithInspiration {..}}))
+    {
+        Box::pin(inspired_authority(f, original, &other.channel)).await;
+    }
+    if matches!(
+        original.channel,
+        TableTransportChannel::SourceCreature { .. }
+    ) && raw_result(&original.input).is_some()
+    {
+        let ordinary = cut
+            .before_views
+            .iter()
+            .find(|v| {
+                matches!(v.channel, TableTransportChannel::Player { .. })
+                    && audience(&v.channel) == audience(&original.channel)
+            })
+            .unwrap();
+        Box::pin(source_alias(f, original, &ordinary.channel)).await;
     }
     // The valid saved request is accepted by the caller immediately afterward.
 }

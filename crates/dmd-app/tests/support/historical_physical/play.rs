@@ -138,15 +138,8 @@ async fn raw(
     let request = f.request(channel.clone(), tactical(action)).await;
     // Grapple saves, unlike ordinary weapon attacks, require their real owner.
     if inspired {
-        for other in [
-            TableTransportChannel::Host,
-            roles.pcs.iter().find(|c| **c != channel).unwrap().clone(),
-        ] {
-            let mut bad = f.request(other, request.input.clone()).await;
-            assert_ne!(bad, request);
-            bad.version = request.version;
-            Box::pin(f.refuse(bad)).await;
-        }
+        let other = roles.pcs.iter().find(|c| **c != channel).unwrap();
+        Box::pin(negatives::inspired_authority(f, &request, other)).await;
     }
     Box::pin(f.accept(request.clone(), &roles.channels)).await;
     let state = f.state().await;
@@ -805,13 +798,13 @@ async fn ground(f: &mut Fixture, roles: &Roles) {
             value: 1,
         }],
     };
-    let bad = f
+    let source = f
         .request(
-            roles.pcs[1].clone(),
+            roles.source(),
             tactical(TacticalAction::SubmitRoll { result }),
         )
         .await;
-    Box::pin(f.refuse(bad)).await;
+    Box::pin(negatives::source_alias(f, &source, &roles.pcs[1])).await;
     Box::pin(raw(f, roles, roles.source(), 1, false)).await;
     let done = f.state().await;
     assert_ground_terminal(&done, roles);
