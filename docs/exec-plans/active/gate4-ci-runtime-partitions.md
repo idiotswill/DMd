@@ -133,3 +133,69 @@ failure promptly. Gate4 stays active, and no Gate5 work or product waiver begins
 Official references checked on2026-10-07:
 [GitHub Actions limits](https://docs.github.com/en/actions/reference/limits) and
 [Cargo test](https://doc.rust-lang.org/cargo/commands/cargo-test.html).
+
+## Invocation decision — before implementation, 2026-10-07
+
+Use four fixed allocations: `table-loop`, `legacy-missile`, `grapple-public`,
+and `remainder`. The first three select only the matching complete `dmd-app`
+integration target; remainder owns every other executable and all doctests.
+Discovery, not this list, determines the complete required universe. A genuinely
+absent named allocation is explicit in every manifest and must still return a
+valid empty receipt; no existing target may be omitted.
+
+Each allocation builds the **whole** ordinary workspace first:
+`cargo test --locked --workspace --no-run --message-format=json`, adding only
+the existing `--target x86_64-pc-windows-msvc` on Windows. Cargo metadata and
+compiler-artifact messages bind package/target identity, source, actual enabled
+features, profile, all compile-only outputs and every test executable/hash.
+There is no isolated package/target build, feature override or artifact transfer
+between differently rooted jobs. Each job independently builds the same graph.
+
+Execution uses `cargo test --locked --workspace --message-format=json` with
+the same platform argument. The only execution configuration additions are a
+`target.<host-triple>.runner` and a `RUSTDOC` delegate. Cargo still constructs
+the commands, package working directory, library paths and runtime environment.
+The runner receives Cargo's actual executable and original arguments. It checks
+the exact inventoried executable/hash and actual package cwd, lists all/ignored
+cases, and invokes selected complete harnesses with **unchanged** original
+arguments and inherited cwd/environment. Unselected harnesses produce explicit
+listed-only receipts, never passing execution receipts. No test filter or thread
+argument is added to an executed harness. A custom/non-libtest harness, ignored
+case, unsupported argument/listing or configuration is an explicit failure.
+
+The rustdoc delegate forwards Cargo's original tool arguments/environment/cwd
+to the actual toolchain rustdoc. It lists all/ignored doctests for inventory;
+only remainder executes the original unmodified rustdoc test command. This
+avoids substituting a separate `--doc` build graph. Non-test rustdoc queries are
+delegated unchanged. Doctest identities, original invocation and full results
+remain separately accounted for, including zero-case crates. Unsupported output
+or semantics fail closed. Runtime Cargo artifact graphs must equal discovery;
+all four jobs must agree on normalized source/configuration/build/listing scope.
+
+Each complete executable has its own stdout/stderr log boundary, eliminating
+the interleaved adjacent-target attribution error found in the timing draft.
+Recorded test names and libtest totals must equal the discovered case set;
+failed, ignored, measured, filtered, incomplete or duplicate results refuse a
+successful receipt. Compilation-only outputs remain in the full graph proof.
+Source head/tree, clean tracked content, toolchain, target, lockfile, metadata,
+graph, listings, original command, executable hashes and logs bind each result.
+No credentials or complete environment values are serialized into artifacts.
+
+Receipts and logs are uploaded even on failure, but success is written only
+after final source/graph/coverage checks. A separate required aggregate downloads
+the exact four same-run artifacts and verifies their complete disjoint executed
+union and identical inventory. Missing/failed/cancelled/skipped prerequisites
+fail it. Linux keeps the final `rust` check name. Windows retains `Windows 1.88.0`
+and final `Windows stable`: stable frontend/check/lint, partition receipts,
+runtime aggregation, and unchanged fresh packaging/upload must all succeed.
+Packaging remains a separate post-aggregate job and preserves the original
+source-head checkout and package artifact name. Canonical scripts/verify and
+scripts/verify-fast stay byte-identical.
+
+Official semantics additionally read before this decision:
+[Cargo runner configuration](https://doc.rust-lang.org/cargo/reference/config.html#targettriplerunner),
+[Cargo environment](https://doc.rust-lang.org/cargo/reference/environment-variables.html),
+and [Cargo JSON artifacts](https://doc.rust-lang.org/cargo/reference/external-tools.html#json-messages).
+This is the implementation choice, not a claim that wrappers or equivalence have
+run successfully. Actual two-platform comparison and independent review remain
+mandatory; only lightweight Python runner tests are currently allocated locally.
