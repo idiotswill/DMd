@@ -357,3 +357,28 @@ harnesses under the sole heavy slot. Any real production incompatibility must be
 reported and planned before a bounded source correction; never rewrite the old
 corpus to fit current behavior. Receive separate reviewed donors only after this
 source handback, with their own whole-history composition review.
+
+
+## Frozen1c review finding F1: distinguish opaque capability and ownership
+
+Root read all10 new source files and the plan at frozen
+`1c049a7e0d1824b8ccf20c986947a3188e1521ea`; the concrete finding is test
+reachability, not a production defect. A current Host revision plus the owner's
+opaque raw handle fails transport translation before Grapple's owned-raw guard.
+The original Inspiration captures demonstrate distinct Host/owner roll handles;
+the unrelated Player has no raw offer. Foreign-handle refusal remains useful
+capability evidence but does not prove the deeper body-owner authorization.
+
+Before source changes, select this narrow correction: preserve every existing
+foreign/missing-handle probe and assert/name its actual rejection layer. Add
+Host negatives for historical and genuine new inspired rolls using the Host's
+own current offered handle, joined to the owner's exact canonical Roll capability
+and the actual pending request. Require the precise Unauthorized result after
+that valid translation. Keep the SourceCreature-to-ordinary-PC same-audience
+probe and assert its intended actor-authorization error. All correct owner
+continuations, literal corpus, old bodies and production remain unchanged.
+
+After the bounded source correction, freeze a new exact head and preservation
+receipt for independent cumulative review. No compiler, test, database, native,
+Cargo, npm, push or merge is authorized to this source writer. Runtime remains
+UNRUN and no compatibility/Gate4 acceptance is claimed.
