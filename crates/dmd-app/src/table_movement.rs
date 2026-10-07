@@ -6,9 +6,10 @@ use dmd_domain::*;
 mod tests;
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableMovementOptions>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -86,13 +87,30 @@ pub(super) fn options(
             10
         },
         modes,
+        self_only_required: matches!(read, super::TacticalRead::Owned(_))
+            && dmd_rules::table::grapple_enabled(state)
+            && rules.tactical_grapples.as_ref().is_some_and(|grapples| {
+                grapples
+                    .active
+                    .iter()
+                    .any(|grip| grip.declaration.grappler == actor)
+            }),
     }))
 }
 
+#[cfg(test)]
 pub(super) fn opportunity(
     state: &CampaignState,
     window: &TacticalOpportunityWindow,
 ) -> Result<crate::TableOpportunityView, String> {
+    opportunity_read(super::TacticalRead::Ordinary(state), window)
+}
+
+pub(super) fn opportunity_read(
+    read: super::TacticalRead<'_>,
+    window: &TacticalOpportunityWindow,
+) -> Result<crate::TableOpportunityView, String> {
+    let state = read.state();
     let encounter = state
         .encounter
         .as_ref()
@@ -111,8 +129,14 @@ pub(super) fn opportunity(
             .and_then(|contact| contact.label.clone())
             .unwrap_or_else(|| "Located creature".into()),
     };
-    let mut weapons = super::attacks::options(state, window.reactor)?;
+    let mut weapons = super::attacks::options(read, window.reactor)?;
     if let Some(options) = &mut weapons {
+        let hands = read
+            .hands(window.reactor)
+            .map_err(|error| error.to_string())?;
+        hands
+            .validate_loadout(&options.hands)
+            .map_err(|error| error.to_string())?;
         options.targets = vec![target.clone()];
         options.weapons.retain(|weapon| {
             window.options.iter().any(|option|
@@ -123,19 +147,8 @@ pub(super) fn opportunity(
             weapon.deliveries = vec![WeaponDelivery::Melee];
             weapon.purposes = vec![WeaponAttackPurpose::Normal];
             weapon.grips.retain(|grip| match grip {
-                WeaponGrip::OneHand(hand) => {
-                    options.hands.hands[hand.index()] == HandAssignment::Item(weapon.item)
-                }
-                WeaponGrip::TwoHands => {
-                    options
-                        .hands
-                        .hands
-                        .contains(&HandAssignment::Item(weapon.item))
-                        && options.hands.hands.iter().all(|hand| {
-                            *hand == HandAssignment::Free
-                                || *hand == HandAssignment::Item(weapon.item)
-                        })
-                }
+                WeaponGrip::OneHand(hand) => hands.holds(&options.hands, *hand, weapon.item),
+                WeaponGrip::TwoHands => hands.can_use_two_hands(&options.hands, weapon.item),
             });
         }
         options.weapons.retain(|weapon| !weapon.grips.is_empty());

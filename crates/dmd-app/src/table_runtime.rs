@@ -8,9 +8,7 @@ use crate::{
 };
 use dmd_conversation::{LocalText, interpret_local_text};
 use dmd_domain::*;
-use dmd_persistence::{
-    load_campaign_observations, load_command_audit, load_journal_events, load_session_observation,
-};
+use dmd_persistence::{load_command_audit, load_session_observation};
 use dmd_rules::{RulesAnswer, RulesQuery};
 
 fn invalid(error: impl ToString) -> RunnableCampaignError {
@@ -52,6 +50,9 @@ pub(crate) fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> Str
     match purpose {
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::TacticalResolution { key, .. } => match key.role {
+            // No current producer can issue these roles; runtime admission rejects
+            // all Grapple records until the separately reviewed resolver exists.
+            TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => "Unsupported roll",
             TacticalRollRole::ShoveSave => "Shove saving throw",
             TacticalRollRole::Medicine => "Wisdom (Medicine) first aid",
             TacticalRollRole::SecondWind => "Second Wind healing",
@@ -168,7 +169,7 @@ pub(crate) fn validate_table_observation(
     }
     let body: TableObservationBody = match record.payload_schema_version {
         1 => serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?,
-        2 | 3 => {
+        2..=4 => {
             serde_json::from_str::<crate::table_transport::TransportedTableObservation>(
                 &record.payload_json,
             )
@@ -404,36 +405,28 @@ impl CampaignRuntime {
     ) -> Result<TableView, RunnableCampaignError> {
         let runnable = self.open_campaign(campaign_id).await?;
         let pack = load_rules_pack(runnable.content())?;
-        let events = load_journal_events(&self.pool, campaign_id, 0)
-            .await
-            .map_err(recovery)?;
-        let mut observations = Vec::new();
-        let mut after = 0;
-        loop {
-            let page = load_campaign_observations(&self.pool, campaign_id, after, 500)
-                .await
-                .map_err(recovery)?;
-            let done = page.len() < 500;
-            if let Some(last) = page.last() {
-                after = last.ordinal;
-            }
-            observations.extend(page);
-            if done {
-                break;
-            }
-        }
-        let events = events
+        let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+        let authenticated =
+            crate::rules_restore::authenticate_history(&export, pack).map_err(recovery)?;
+        let (execution, history) = authenticated.into_parts();
+        let read = execution.read();
+        let events = export
+            .event_journal
             .iter()
-            .map(crate::table_projection::ProjectionEvent::from)
-            .collect::<Vec<_>>();
-        crate::table_projection::project_table(
-            runnable.state(),
-            viewer,
-            &pack,
+            .map(crate::table_projection::ProjectionEvent::try_from)
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(recovery)?;
+        crate::table_presentation_history::raw_view(
+            crate::table_projection::ProjectionRead::Owned(&read),
             &events,
-            &observations,
-            None,
+            &export.observations,
+            &history,
+            match viewer {
+                TableViewer::Host => dmd_persistence::ProjectionAudience::Host,
+                TableViewer::Player(player) => dmd_persistence::ProjectionAudience::Player(player),
+            },
         )
+        .map_err(recovery)
     }
 }
 
@@ -444,6 +437,21 @@ pub(crate) fn propose_observation(
     id: ObservationId,
     text: &str,
 ) -> Result<(TableObservationBody, NewSessionObservation), RunnableCampaignError> {
+    propose_observation_read(
+        crate::table_projection::ProjectionRead::Ordinary { state, pack },
+        meta,
+        id,
+        text,
+    )
+}
+
+pub(crate) fn propose_observation_read(
+    read: crate::table_projection::ProjectionRead<'_>,
+    meta: &CommandMeta,
+    id: ObservationId,
+    text: &str,
+) -> Result<(TableObservationBody, NewSessionObservation), RunnableCampaignError> {
+    let state = read.state();
     bounded_text(text, 8000).map_err(invalid)?;
 
     let (player, _, actor, _) = player_channel(state, meta).map_err(invalid)?;
@@ -465,8 +473,7 @@ pub(crate) fn propose_observation(
             ),
         ),
         LocalText::CharacterQuestion => {
-            let answer =
-                dmd_rules::query(state, meta.issuer, &RulesQuery::Character { actor }, pack)?;
+            let answer = read.query(meta.issuer, &RulesQuery::Character { actor })?;
             let RulesAnswer::Character {
                 hp,
                 max_hp,

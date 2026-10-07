@@ -242,6 +242,21 @@ impl Fixture {
     fn plan(&self) -> WeaponAttackPlan {
         prepare_weapon_attack(&self.input()).unwrap()
     }
+    fn reserve_hand(&mut self, hand: Hand) {
+        let character = self
+            .state
+            .characters
+            .values()
+            .find(|c| c.entity_id == self.actor)
+            .unwrap()
+            .id;
+        let mut table = TableState::new(TableContract::default());
+        table
+            .character_profiles
+            .insert(character, self.profile.clone());
+        self.state.table = Some(table);
+        crate::tactical_hands::tests::install_attempt(&mut self.state, self.actor, hand);
+    }
     fn accept(&mut self, outcome: WeaponAttackOutcome) -> CommandId {
         let mut receipt = self.plan().receipt;
         receipt.outcome = outcome;
@@ -269,6 +284,89 @@ impl Fixture {
             .entities
             .insert(self.actor, built.mechanics);
     }
+}
+
+#[test]
+fn derived_reservation_preserves_one_hand_plan_but_blocks_two_hands_and_loading() {
+    let mut sword = Fixture::new("longsword");
+    let original = sword.plan();
+    sword.reserve_hand(Hand::Right);
+    assert_eq!(sword.plan(), original);
+    sword.choice.grip = WeaponGrip::TwoHands;
+    assert!(prepare_weapon_attack(&sword.input()).is_err());
+    sword.choice.grip = WeaponGrip::OneHand(Hand::Left);
+    assert_eq!(
+        sword.plan(),
+        original,
+        "changing the proposed grip spends nothing"
+    );
+
+    let mut sling = Fixture::new("sling");
+    assert_eq!(sling.plan().ammunition.unwrap().quantity, 1);
+    sling.reserve_hand(Hand::Right);
+    let before = serde_json::to_value(&sling.state).unwrap();
+    let error = prepare_weapon_attack(&sling.input())
+        .unwrap_err()
+        .to_string();
+    assert!(error.contains("loading a one-handed ammunition weapon requires a free hand"));
+    assert_eq!(serde_json::to_value(&sling.state).unwrap(), before);
+}
+
+#[test]
+fn thrown_draw_and_explicit_equipment_changes_never_overwrite_the_other_reservation() {
+    let mut f = Fixture::new("dagger");
+    f.choice.delivery = WeaponDelivery::Thrown;
+    f.loadout.hands = [HandAssignment::Free; 2];
+    f.reserve_hand(Hand::Right);
+    let plan = f.plan();
+    assert_eq!(
+        plan.loadout_for_attack.hands[0],
+        HandAssignment::Item(f.choice.weapon)
+    );
+    assert_eq!(plan.loadout_after_attack.hands, [HandAssignment::Free; 2]);
+    let hands = crate::tactical_hands::EffectiveHands::current(
+        &f.state,
+        f.state.rules.as_ref().unwrap(),
+        f.actor,
+    )
+    .unwrap();
+    assert!(!hands.is_free(&plan.loadout_after_attack, Hand::Right));
+    let other = f.duplicate_weapon();
+    f.choice.equipment_change = Some(AttackEquipmentChange {
+        timing: EquipmentChangeTiming::AfterAttack,
+        operation: AttackEquipmentOperation::Equip {
+            item: other,
+            hand: Hand::Right,
+        },
+    });
+    assert!(prepare_weapon_attack(&f.input()).is_err());
+    f.choice.equipment_change.as_mut().unwrap().operation = AttackEquipmentOperation::Equip {
+        item: other,
+        hand: Hand::Left,
+    };
+    assert_eq!(
+        f.plan().loadout_after_attack.hands,
+        [HandAssignment::Item(other), HandAssignment::Free]
+    );
+
+    f.choice.delivery = WeaponDelivery::Melee;
+    f.choice.equipment_change = Some(AttackEquipmentChange {
+        timing: EquipmentChangeTiming::BeforeAttack,
+        operation: AttackEquipmentOperation::Equip {
+            item: f.choice.weapon,
+            hand: Hand::Left,
+        },
+    });
+    assert!(prepare_weapon_attack(&f.input()).is_ok());
+    f.loadout.hands[0] = HandAssignment::Item(other);
+    f.choice.equipment_change.as_mut().unwrap().operation =
+        AttackEquipmentOperation::Unequip { item: other };
+    f.choice.delivery = WeaponDelivery::Thrown;
+    assert!(
+        prepare_weapon_attack(&f.input()).is_ok(),
+        "explicit unequip and Thrown's draw are separate source allowances"
+    );
+    assert!(!hands.is_free(&f.plan().loadout_after_attack, Hand::Right));
 }
 
 #[test]

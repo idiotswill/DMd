@@ -5,11 +5,12 @@ mod request_integrity;
 mod validation;
 pub use definitions::*;
 use dmd_domain::*;
-pub(crate) use engine::interrupt_rest;
+pub(crate) use engine::{apply_table_with_context, interrupt_rest, query_with_read};
 pub use engine::{query, replay, resolve};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 pub(crate) use validation::savage_result;
+pub(crate) use validation::validate_state_with_read;
 pub use validation::{ability_modifier, armor_class, proficiency_bonus, validate_state};
 pub use validation::{check_modifier as test_modifier, conditions as active_conditions};
 

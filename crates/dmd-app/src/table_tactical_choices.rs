@@ -3,12 +3,56 @@ use std::collections::HashSet;
 
 use dmd_domain::*;
 
+#[cfg(test)]
 pub(super) fn continuation(
     resolution: &TacticalResolution,
     own: &HashSet<EntityId>,
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    continuation_inner(resolution, own, host, encounter, false)
+}
+
+pub(super) fn continuation_read(
+    read: super::TacticalRead<'_>,
+    resolution: &TacticalResolution,
+    own: &HashSet<EntityId>,
+    host: bool,
+    encounter: Option<&TacticalEncounter>,
+) -> Option<crate::TableTacticalContinuation> {
+    let enabled = matches!(read, super::TacticalRead::Owned(_))
+        && dmd_rules::table::grapple_enabled(read.state());
+    continuation_inner(resolution, own, host, encounter, enabled)
+}
+
+fn continuation_inner(
+    resolution: &TacticalResolution,
+    own: &HashSet<EntityId>,
+    host: bool,
+    encounter: Option<&TacticalEncounter>,
+    grapple: bool,
+) -> Option<crate::TableTacticalContinuation> {
+    // Guarded private core work has no application presentation yet.
+    if !grapple
+        && (resolution.grapple.is_some()
+            || resolution
+                .frames
+                .iter()
+                .flatten()
+                .chain(resolution.pending.iter().map(|p| &p.work))
+                .chain(resolution.failed_save.iter().map(|f| &f.pending.work))
+                .any(|w| {
+                    matches!(
+                        w.kind,
+                        TacticalWorkKind::BeginGrapple { .. }
+                            | TacticalWorkKind::GrappleSave { .. }
+                            | TacticalWorkKind::GrappleAfterEquipment { .. }
+                            | TacticalWorkKind::GrappleEscapeCheck { .. }
+                    )
+                }))
+    {
+        return None;
+    }
     if resolution.hit_review.as_ref().is_some_and(|hit| {
         matches!(
             hit.stage,
@@ -77,6 +121,12 @@ pub(super) fn continuation(
                             };
                         }
                         let (subject, kind) = match &work.kind {
+                            TacticalWorkKind::BeginGrapple { .. }
+                            | TacticalWorkKind::GrappleSave { .. }
+                            | TacticalWorkKind::GrappleAfterEquipment { .. }
+                            | TacticalWorkKind::GrappleEscapeCheck { .. } => {
+                                (None, "Grapple consequence")
+                            }
                             TacticalWorkKind::BeginShove
                             | TacticalWorkKind::ShoveSave
                             | TacticalWorkKind::ChooseShoveOutcome
@@ -328,6 +378,7 @@ mod tests {
         };
         let mut resolution = TacticalResolution {
             origin,
+            grapple: None,
             turn_actor: own_actor,
             turn_number: 4,
             boundary: TurnBoundary::Start,
@@ -405,6 +456,7 @@ mod tests {
             expected_event_sequence: 8,
         };
         let mut resolution = TacticalResolution {
+            grapple: None,
             origin: origin.clone(),
             turn_actor: actor,
             turn_number: 1,
@@ -497,5 +549,76 @@ mod tests {
                 .unwrap()
                 .host_adjudication
         );
+    }
+    #[test]
+    fn guarded_grapple_work_and_attachments_have_no_continuation_projection() {
+        // Structural refusal inputs; no Grapple DTO or admission is exposed.
+        let actor = EntityId::new();
+        let origin = CommandMeta {
+            id: CommandId::new(),
+            campaign_id: CampaignId::new(),
+            session_id: None,
+            issuer: CommandIssuer::Admin,
+            actor: None,
+            expected_event_sequence: 1,
+        };
+        let mut r = TacticalResolution {
+            origin,
+            turn_actor: actor,
+            turn_number: 1,
+            boundary: TurnBoundary::Start,
+            frames: vec![],
+            pending: None,
+            failed_save: None,
+            legendary_window: None,
+            attack: None,
+            shove: None,
+            hit_review: None,
+            movement: None,
+            casts: vec![],
+            missiles: vec![],
+            falls: vec![],
+            areas: vec![],
+            work_trace: None,
+            next_occurrence: 1,
+            grapple: None,
+        };
+        let id = GrappleId::from_declaration(r.origin.id, actor, EntityId::new(), Hand::Left);
+        for kind in [
+            TacticalWorkKind::BeginGrapple { grip: id },
+            TacticalWorkKind::GrappleSave { grip: id },
+            TacticalWorkKind::GrappleAfterEquipment { grip: id },
+            TacticalWorkKind::GrappleEscapeCheck { grip: id },
+        ] {
+            r.frames = vec![vec![TacticalWorkItem {
+                occurrence: 0,
+                kind,
+            }]];
+            assert!(continuation(&r, &HashSet::from([actor]), false, None).is_none());
+            assert!(continuation(&r, &HashSet::new(), true, None).is_none());
+            let work = r.frames[0][0].clone();
+            r.frames.clear();
+            r.pending = Some(TacticalPendingWork {
+                work,
+                key: TacticalRollKey {
+                    origin: r.origin.id,
+                    role: TacticalRollRole::GrappleSave,
+                    subject: actor,
+                    occurrence: 0,
+                },
+            });
+            assert!(continuation(&r, &HashSet::new(), true, None).is_none());
+            r.pending = None;
+        }
+        r.frames.clear();
+        r.grapple = Some(Box::new(TacticalGrappleResolution {
+            activity: None,
+            proofs: vec![],
+            cuts: vec![],
+            ends: vec![],
+            opportunity_refreshes: vec![],
+            completed_casts: vec![],
+        }));
+        assert!(continuation(&r, &HashSet::new(), true, None).is_none());
     }
 }

@@ -198,6 +198,9 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             }
         }
         match &fall.cause {
+            TacticalFallCause::GrappleFlightLost { .. } => {
+                super::super::grapple::validate_flight(state, fall)?;
+            }
             TacticalFallCause::Shove {
                 shove,
                 consequence,

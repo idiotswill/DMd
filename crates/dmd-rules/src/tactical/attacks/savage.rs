@@ -4,9 +4,16 @@ use super::*;
 /// Read-only source availability. The application must separately require the
 /// audience's actual pending roll capability before exposing these private facts.
 pub fn savage_attacker_dice(state: &CampaignState, pack: &RulesPack) -> Result<usize, RulesError> {
+    savage_attacker_dice_with_read(&ReadContext::ordinary(state), pack)
+}
+pub(crate) fn savage_attacker_dice_with_read(
+    read: &ReadContext<'_>,
+    pack: &RulesPack,
+) -> Result<usize, RulesError> {
+    let state = read.state();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let pending = rules.pending.as_ref().ok_or(RulesError::NoPending)?;
-    super::super::validation::validate_tactical_pending(state, pending)?;
+    super::super::validation::validate_tactical_pending_with_read(read, pending)?;
     let attack = current(state)?;
     if !matches!(attack.source, TacticalAttackSource::Weapon(_))
         || attack.stage != TacticalAttackStage::DamageRoll
@@ -45,7 +52,8 @@ pub fn savage_attacker_dice(state: &CampaignState, pack: &RulesPack) -> Result<u
     if !features.savage_attacker || features.savage_attacker_turn == Some(turn) {
         return Err(prerequisite("Savage Attacker is unavailable this turn"));
     }
-    let plan = planning::reconstruct(state, attack)?;
+    let admitted = read.attack_retained(attack)?;
+    let plan = planning::reconstruct_with_read(state, attack, admitted.as_ref())?;
     let critical = matches!(
         attack.outcome,
         Some(WeaponAttackOutcome::Hit { critical: true, .. })
@@ -63,11 +71,12 @@ pub fn savage_attacker_dice(state: &CampaignState, pack: &RulesPack) -> Result<u
     Ok(count)
 }
 
-pub(in crate::tactical) fn submit(
+pub(in crate::tactical) fn submit_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     roll: &SavageAttackerRoll,
     pack: &RulesPack,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let pending = state
         .rules
@@ -80,7 +89,7 @@ pub(in crate::tactical) fn submit(
         .roller
         .ok_or_else(|| invalid("damage roller absent"))?;
     authorize(state, meta, actor)?;
-    let count = savage_attacker_dice(state, pack)?;
+    let count = savage_attacker_dice_with_read(&execution.read(state)?, pack)?;
     if roll.weapon_dice != Some(count) {
         return Err(invalid(
             "Savage Attacker dice differ from the source weapon",
@@ -108,7 +117,8 @@ pub(in crate::tactical) fn submit(
         .as_mut()
         .unwrap()
         .savage_attacker_turn = Some(turn);
-    super::super::continuations::submit(state, meta, &selected, None)?;
+    super::super::continuations::submit_with_context(state, meta, &selected, None, execution)?;
+    execution.observe_savage_completion(state, meta, pending.request.id, roll)?;
     state
         .rules
         .as_mut()

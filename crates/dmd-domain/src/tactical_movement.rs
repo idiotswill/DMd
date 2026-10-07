@@ -107,6 +107,8 @@ pub struct TacticalOpportunityDecision {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalMovement {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple_self_only: Option<crate::GrappleSelfOnlyAdmission>,
     pub origin: CommandMeta,
     pub actor: EntityId,
     pub path: Vec<TacticalMoveStep>,

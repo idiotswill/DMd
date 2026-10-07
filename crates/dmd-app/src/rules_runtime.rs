@@ -47,6 +47,12 @@ impl CampaignRuntime {
     ) -> Result<CampaignState, RunnableCampaignError> {
         let runnable = self.open_campaign(campaign_id).await?;
         let pack = load_rules_pack(runnable.content())?;
+        if runnable.state().table.is_some() {
+            let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+            let authenticated = crate::rules_restore::authenticate_history(&export, pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+            return Ok(authenticated.into_parts().0.into_state());
+        }
         let applier = RulesReplayApplier::new(pack.clone());
         let state = dmd_persistence::replay_campaign_to_head(&self.pool, campaign_id, &applier)
             .await
@@ -127,6 +133,12 @@ impl CampaignRuntime {
     ) -> Result<RulesAnswer, RunnableCampaignError> {
         let runnable = self.open_campaign(campaign_id).await?;
         let pack = load_rules_pack(runnable.content())?;
+        if runnable.state().table.is_some() {
+            let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+            let authenticated = crate::rules_restore::authenticate_history(&export, pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+            return Ok(authenticated.read().query(viewer, &query)?);
+        }
         Ok(dmd_rules::query(runnable.state(), viewer, &query, &pack)?)
     }
 
@@ -254,6 +266,19 @@ pub(crate) fn load_rules_pack(
     {
         return Err(RunnableCampaignError::RulesContent(
             "Air Elemental source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
+    }
+    let goblin = installed.manifest.files.iter().find(|file| file.path == "goblin-warrior-v2.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent(
+            "Goblin Warrior V2 source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let goblin_bytes = fs::read(base.join("goblin-warrior-v2.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent(
+            "Goblin Warrior V2 source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if goblin_bytes.len() as u64 != goblin.byte_len
+        || fnv1a64_hex(&goblin_bytes) != goblin.checksum.value
+        || goblin_bytes != include_bytes!("../../../content/srd-5.2.1/goblin-warrior-v2.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Goblin Warrior V2 source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
     }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;

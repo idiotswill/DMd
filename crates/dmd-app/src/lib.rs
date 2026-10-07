@@ -25,7 +25,7 @@ use dmd_domain::{
 };
 use dmd_persistence::{
     CampaignExport, CampaignLifecycleSummary, CampaignStateSnapshotCodec, LifecycleError,
-    OpenCampaign, create_campaign, open_campaign, restore_campaign,
+    OpenCampaign, create_campaign, restore_campaign,
 };
 use dmd_rules::RulesPack;
 use sqlx::SqlitePool;
@@ -136,10 +136,27 @@ impl CampaignRuntime {
         &self,
         campaign_id: CampaignId,
     ) -> Result<RunnableCampaign, RunnableCampaignError> {
-        let raw = open_campaign(&self.pool, campaign_id).await?;
+        let export = dmd_persistence::export_campaign(&self.pool, campaign_id).await?;
+        let state = CampaignState::decode_json(&export.current_state.state_json)
+            .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
         let catalog = self.load_catalog()?;
-        let content = catalog.resolve_campaign(&raw.state.campaign)?;
-        let pack = Self::validate_rules(&raw.state, &content)?;
+        let content = catalog.resolve_campaign(&state.campaign)?;
+        if Self::has_rules_history(&export, &state)? {
+            let pack = rules_runtime::load_rules_pack(&content)?;
+            let authenticated = rules_restore::authenticate_history(&export, pack)
+                .map_err(RunnableCampaignError::RulesContent)?;
+            let (execution, _) = authenticated.into_parts();
+            return Ok(RunnableCampaign {
+                lifecycle: export.lifecycle,
+                state: execution.into_state(),
+                content,
+            });
+        }
+        let pack = Self::validate_rules(&state, &content)?;
+        let raw = OpenCampaign {
+            lifecycle: export.lifecycle,
+            state,
+        };
         Self::make_runnable(raw, &catalog, pack.as_ref())
     }
 
@@ -159,22 +176,43 @@ impl CampaignRuntime {
             .map_err(|error| RunnableCampaignError::ExportStateDecode(error.to_string()))?;
         let catalog = self.load_catalog()?;
         let content = catalog.resolve_campaign(&preflight_state.campaign)?;
-        let mut pack = Self::validate_rules(&preflight_state, &content)?;
+        let mut pack = if Self::requires_original_history(&preflight_state) {
+            Some(rules_runtime::load_rules_pack(&content)?)
+        } else {
+            Self::validate_rules(&preflight_state, &content)?
+        };
+        let mut authenticated = None;
         if Self::has_rules_history(&upgraded, &preflight_state)? {
             if pack.is_none() {
                 pack = Some(rules_runtime::load_rules_pack(&content)?);
             }
-            rules_restore::validate_rules_export(
-                &upgraded,
-                pack.as_ref().expect("rules pack loaded"),
-            )
-            .map_err(RunnableCampaignError::RulesContent)?;
+            authenticated = Some(
+                rules_restore::authenticate_history(
+                    &upgraded,
+                    pack.as_ref().expect("rules pack loaded").clone(),
+                )
+                .map_err(RunnableCampaignError::RulesContent)?,
+            );
         }
 
         // Content preflight happens before raw restore opens its write transaction. Persistence then
         // revalidates the full export and restores atomically. Check its returned state against
         // the already validated content snapshot, without a fallible file read after the commit.
         let raw = restore_campaign(&self.pool, &upgraded).await?;
+        if let Some(authenticated) = authenticated {
+            // This proof was built before the write from the complete immutable export.
+            // Do not re-admit the returned modern state through a raw validator.
+            if authenticated.read().state() != &raw.state {
+                return Err(RunnableCampaignError::RulesContent(
+                    "restored state differs from its authenticated export".into(),
+                ));
+            }
+            return Ok(RunnableCampaign {
+                lifecycle: raw.lifecycle,
+                state: raw.state,
+                content,
+            });
+        }
         Self::make_runnable(raw, &catalog, pack.as_ref())
     }
 
@@ -221,6 +259,11 @@ impl CampaignRuntime {
             || state.table.is_some()
             || state.encounter.is_some()
             || state.campaign.ruleset.id == "srd-5.2"
+    }
+
+    fn requires_original_history(state: &CampaignState) -> bool {
+        dmd_rules::table::grapple_enabled(state)
+            || dmd_domain::has_unimplemented_grapple_records(state)
     }
 
     fn has_rules_history(

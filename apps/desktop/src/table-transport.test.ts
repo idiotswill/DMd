@@ -78,7 +78,7 @@ describe('durable opaque desktop transport',()=>{
     expect(loadRequest()).toEqual(legacy);
   });
   it('contains mixed or unknown envelope versions instead of guessing a new context',()=>{
-    for(const request of [{...context,version:3},{...context,version:'2'},{...context,expected_event_sequence:3},{...context,revision:''}]){
+    for(const request of [{...context,version:99},{...context,version:'2'},{...context,expected_event_sequence:3},{...context,revision:''}]){
       localStorage.setItem(REQUEST_KEY,JSON.stringify({kind:'text',request:{...request,text:'Hello'}}));
       expect(()=>loadRequest()).toThrow('incomplete or incompatible');
       expect(invoke).not.toHaveBeenCalled();

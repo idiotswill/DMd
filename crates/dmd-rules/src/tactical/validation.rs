@@ -149,8 +149,16 @@ pub fn validate_tactical_pending(
     state: &CampaignState,
     pending: &PendingRoll,
 ) -> Result<(), RulesError> {
+    validate_tactical_pending_with_read(&grapple::execution::ReadContext::ordinary(state), pending)
+}
+
+pub(crate) fn validate_tactical_pending_with_read(
+    read: &grapple::execution::ReadContext<'_>,
+    pending: &PendingRoll,
+) -> Result<(), RulesError> {
+    let state = read.state();
     if matches!(pending.purpose, PendingPurpose::TacticalResolution { .. }) {
-        return super::turn_validation::pending(state, pending);
+        return super::turn_validation::pending_with_read(read, pending);
     }
     let PendingPurpose::TacticalInitiative {
         encounter: id,
@@ -245,6 +253,17 @@ fn validate_ties(
 }
 
 pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> {
+    validate_tactical_state_with_read(&grapple::execution::ReadContext::ordinary(state))
+}
+
+pub(crate) fn validate_tactical_state_with_read(
+    read: &grapple::execution::ReadContext<'_>,
+) -> Result<(), RulesError> {
+    let state = read.state();
+    if has_unimplemented_grapple_records(state) || crate::table::grapple_enabled(state) {
+        read.require_guarded("Grapple execution is not enabled by this source/domain checkpoint")?;
+        grapple::validate(state)?;
+    }
     super::release::validate_history(state)?;
     let Some(encounter) = &state.encounter else {
         return Ok(());
@@ -302,8 +321,8 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
             {
                 return Err(invalid("invalid initiative phase"));
             }
-            validate_tactical_pending(
-                state,
+            validate_tactical_pending_with_read(
+                read,
                 rules
                     .pending
                     .as_ref()
@@ -363,5 +382,5 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
         }
     }
     super::aftermath::validate(state)?;
-    super::turn_validation::validate(state)
+    super::turn_validation::validate_with_read(read)
 }

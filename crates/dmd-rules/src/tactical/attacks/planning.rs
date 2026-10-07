@@ -1,3 +1,4 @@
+use super::super::grapple::reads::AttackRead;
 use super::*;
 use crate::spatial::{cover_from, participant_distance, perceive};
 use crate::tactical_conditions::{AttackPerception, attack_conditions};
@@ -44,15 +45,16 @@ pub(in crate::tactical) fn admit_target(
     Ok(())
 }
 
-pub(super) fn weapon_plan(
+pub(super) fn weapon_plan_with_read(
     state: &CampaignState,
     meta: &CommandMeta,
     actor: EntityId,
     choice: &WeaponUseChoice,
     window: WeaponActionWindow,
     loadout: &WeaponLoadout,
-    pack: &RulesPack,
+    sources: (&RulesPack, Option<&AttackRead<'_>>),
 ) -> Result<WeaponAttackPlan, RulesError> {
+    let (pack, read) = sources;
     let e = encounter(state)?;
     let from = e
         .participant(actor)
@@ -114,7 +116,7 @@ pub(super) fn weapon_plan(
             "partial submersion needs an explicit source geometry ruling",
         ));
     }
-    prepare_weapon_attack(&WeaponAttackInput {
+    let input = WeaponAttackInput {
         state,
         source,
         pack,
@@ -143,32 +145,39 @@ pub(super) fn weapon_plan(
         },
         loadout,
         history: &history,
-    })
+    };
+    match read {
+        Some(read) => crate::tactical_weapons::prepare_weapon_attack_with_read(&input, read),
+        None => prepare_weapon_attack(&input),
+    }
     .map_err(weapon_error)
 }
-pub(super) fn hit_facts(
+pub(super) fn hit_facts_with_read(
     state: &CampaignState,
     actor: EntityId,
     choice: &WeaponUseChoice,
     plan: &WeaponAttackPlan,
+    read: Option<&AttackRead<'_>>,
 ) -> Result<(RollMode, i32, bool), RulesError> {
-    hit_facts_for(
+    hit_facts_for_with_read(
         state,
         actor,
         choice.target,
         choice.delivery != WeaponDelivery::Melee,
         !plan.disadvantage.is_empty(),
+        read,
     )
 }
 
 /// Common visibility/condition/cover facts. Intrinsic and spell adapters provide
 /// their source-derived delivery and disadvantage without invented weapon IDs.
-pub(super) fn hit_facts_for(
+pub(super) fn hit_facts_for_with_read(
     state: &CampaignState,
     actor: EntityId,
     target_id: EntityId,
     ranged: bool,
     source_disadvantage: bool,
+    read: Option<&AttackRead<'_>>,
 ) -> Result<(RollMode, i32, bool), RulesError> {
     let e = encounter(state)?;
     let from = e
@@ -237,8 +246,14 @@ pub(super) fn hit_facts_for(
             }
         }
     }
+    let condition_rules = read.map(AttackRead::condition_rules);
+    if read.is_some_and(|r| {
+        r.actor() != actor || r.target() != target_id || !std::ptr::eq(r.state(), state)
+    }) {
+        return Err(invalid("condition reader differs from actual attack"));
+    }
     let condition = attack_conditions(
-        rules,
+        condition_rules.as_ref().unwrap_or(rules),
         actor,
         target_id,
         ranged,
@@ -272,10 +287,25 @@ pub(super) fn hit_facts_for(
 /// Undo only this attack's bounded, recorded reservation for source reconstruction.
 /// No caller-defined after-state is replayed; accepted event history proves that this
 /// original equipment/ammunition image was the one actually reserved at declaration.
+#[cfg(test)]
 pub(super) fn reconstruct(
     state: &CampaignState,
     attack: &TacticalAttack,
 ) -> Result<WeaponAttackPlan, RulesError> {
+    reconstruct_with_read(state, attack, None)
+}
+pub(super) fn reconstruct_with_read(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    read: Option<&AttackRead<'_>>,
+) -> Result<WeaponAttackPlan, RulesError> {
+    // Current reservations cannot stand in for an attack's original admission.
+    // The later resolver must authenticate its historical cut before enabling it.
+    if has_unimplemented_grapple_records(state) && read.is_none() {
+        return Err(invalid(
+            "Grapple attack reconstruction requires original admission proof",
+        ));
+    }
     let weapon = attack
         .weapon()
         .ok_or_else(|| invalid("attack source is not a physical weapon"))?;
@@ -297,13 +327,66 @@ pub(super) fn reconstruct(
         .ok_or_else(|| invalid("reserved equipment absent"))?;
     *current = weapon.equipment_before.clone();
     let pack = RulesPack::from_json(include_str!("../../../../../content/srd-5.2.1/kernel.json"))?;
-    weapon_plan(
+    weapon_plan_with_read(
         &before,
         &attack.origin,
         attack.actor,
         &weapon.choice,
         weapon.window,
         &weapon.equipment_before.hands,
-        &pack,
+        (&pack, read),
     )
+}
+
+#[cfg(test)]
+mod hand_tests {
+    use super::*;
+
+    #[test]
+    fn genuine_old_before_image_survives_but_new_current_hands_cannot_authenticate_it() {
+        let export: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../../dmd-app/tests/fixtures/shield-hit-v1-selected.json"
+        ))
+        .unwrap();
+        let mut state: CampaignState =
+            serde_json::from_str(export["current_state"]["state_json"].as_str().unwrap()).unwrap();
+        let attack = state
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .resolution
+            .as_ref()
+            .unwrap()
+            .attack
+            .as_ref()
+            .unwrap()
+            .clone();
+        let weapon = attack.weapon().unwrap();
+        assert_eq!(
+            weapon.equipment_before.hands.hands,
+            [HandAssignment::Free; 2]
+        );
+        let before = serde_json::to_value(&state).unwrap();
+        let original = reconstruct(&state, &attack).unwrap();
+        assert_eq!(
+            original.loadout_for_attack.hands[Hand::Right.index()],
+            HandAssignment::Item(weapon.choice.weapon)
+        );
+        assert_eq!(serde_json::to_value(&state).unwrap(), before);
+
+        // Pure historical boundary control, never an accepted Grapple history:
+        // a source-shaped current Attempt cannot prove this older admission.
+        crate::tactical_hands::tests::install_attempt(&mut state, attack.actor, Hand::Left);
+        let guarded = serde_json::to_value(&state).unwrap();
+        assert!(
+            reconstruct(&state, &attack)
+                .unwrap_err()
+                .to_string()
+                .contains("requires original admission proof")
+        );
+        assert_eq!(serde_json::to_value(&state).unwrap(), guarded);
+    }
 }

@@ -77,6 +77,7 @@ pub(super) fn begin(
     feature_id: &str,
     aim: TacticalAreaAim,
     ordering: TacticalAreaOrdering,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -170,6 +171,7 @@ pub(super) fn begin(
     budget.movement_origin = None;
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
         turn_number,
@@ -191,7 +193,7 @@ pub(super) fn begin(
     }));
     push_frame(state, vec![TacticalWorkKind::FinishArea { area: 0 }])?;
     push_frame(state, vec![TacticalWorkKind::AreaDamageRoll { area: 0 }])?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn validate_ordering(

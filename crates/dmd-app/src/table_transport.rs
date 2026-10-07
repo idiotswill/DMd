@@ -9,6 +9,7 @@ use serde::{Deserialize, Serialize};
 
 pub const TABLE_TRANSPORT_VERSION: u32 = 1;
 pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
+pub const TABLE_GRAPPLE_TRANSPORT_VERSION: u32 = 3;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -38,6 +39,9 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    GrappleChoice {
+        handle: CommandId,
+    },
     ShoveDecision {
         handle: CommandId,
         decision: Box<TableShoveInput>,
@@ -243,6 +247,8 @@ pub struct TableHostDiagnostics {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<TableGrappleView<CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub revision: ProjectionRevision,
@@ -496,6 +502,28 @@ pub(crate) fn presented_view(
         .transpose()
         .map_err(str::to_owned)?;
     Ok(TablePresentedView {
+        grapple: raw
+            .grapple
+            .map(|grapple| {
+                Ok::<_, &str>(TableGrappleView {
+                    version: grapple.version,
+                    choices: grapple
+                        .choices
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleChoice {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
         source_control: raw.source_control,
         revision,
         diagnostics: matches!(audience, ProjectionAudience::Host).then_some(TableHostDiagnostics {

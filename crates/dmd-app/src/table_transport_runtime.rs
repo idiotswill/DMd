@@ -1,6 +1,7 @@
 //! One SQLite writer owns revision comparison, canonical-head derivation, gameplay
 //! acceptance, and the durable exact response. No second pool acquisition occurs.
 use crate::table_presentation_history::{self as presentation, PresentationHistory};
+use crate::table_projection::ProjectionRead;
 use crate::table_transport::{TransportedTableAction, TransportedTableObservation};
 use crate::*;
 use dmd_conversation::{LocalText, interpret_local_text};
@@ -25,11 +26,16 @@ fn request_meta(
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<CommandMeta, String> {
     let enabled = crate::table_source_control::enabled(state);
+    let grapple = dmd_rules::table::grapple_enabled(state);
     let activation = matches!(&request.input, TableTransportInput::Action(action)
         if matches!(action.as_ref(), TableAction::EnableSourceActorAccess { .. }));
+    let grapple_activation = matches!(&request.input, TableTransportInput::Action(action)
+        if matches!(action.as_ref(), TableAction::EnableGrappleAccess));
     let supported = match request.version {
         TABLE_TRANSPORT_VERSION => {
             !enabled
+                && !grapple
+                && !grapple_activation
                 && !activation
                 && !matches!(
                     request.channel,
@@ -37,7 +43,12 @@ fn request_meta(
                 )
         }
         TABLE_SOURCE_TRANSPORT_VERSION => {
-            enabled || activation && request.channel == TableTransportChannel::Host
+            !grapple
+                && !grapple_activation
+                && (enabled || activation && request.channel == TableTransportChannel::Host)
+        }
+        TABLE_GRAPPLE_TRANSPORT_VERSION => {
+            grapple || grapple_activation && request.channel == TableTransportChannel::Host
         }
         _ => false,
     };
@@ -92,7 +103,8 @@ fn derive_intent(
     latest: &HashMap<ProjectionAudience, ProjectionChange>,
 ) -> Result<Intent, String> {
     let tactical_input = match &request.input {
-        TableTransportInput::SelectWork { .. }
+        TableTransportInput::GrappleChoice { .. }
+        | TableTransportInput::SelectWork { .. }
         | TableTransportInput::ShoveDecision { .. }
         | TableTransportInput::HitResponse { .. }
         | TableTransportInput::MissileResponse { .. } => true,
@@ -122,6 +134,37 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::GrappleChoice { handle } => {
+            if request.version != TABLE_GRAPPLE_TRANSPORT_VERSION
+                || !dmd_rules::table::grapple_enabled(state)
+            {
+                return Err("Grapple choices require the enabled table transport.".into());
+            }
+            let offer = current
+                .handles
+                .iter()
+                .find_map(|entry| match &entry.capability {
+                    ProjectionCapability::GrappleChoice { offer } if entry.opaque == handle.0 => {
+                        Some(offer)
+                    }
+                    _ => None,
+                })
+                .ok_or("That Grapple choice is not available in this view.")?;
+            let actor_matches = match request.channel {
+                TableTransportChannel::Host => true,
+                TableTransportChannel::Player { character_id, .. } => state
+                    .characters
+                    .get(&character_id)
+                    .is_some_and(|character| character.entity_id == offer.actor),
+                TableTransportChannel::SourceCreature { actor, .. } => actor == offer.actor,
+            };
+            if !actor_matches {
+                return Err("Select the actor who owns this Grapple choice.".into());
+            }
+            Intent::Action(Box::new(TableAction::Tactical {
+                action: dmd_rules::table::grapple_action(&offer.choice),
+            }))
+        }
         TableTransportInput::ShoveDecision { handle, decision } => {
             let (origin, occurrence, stage) = current
                 .handles
@@ -313,6 +356,15 @@ fn derive_intent(
             match &mut action {
                 TableAction::SubmitPhysical { request_id, .. } => *request_id = roll(*request_id)?,
                 TableAction::Tactical { action } => match action {
+                    TacticalAction::Grapple { .. }
+                    | TacticalAction::ChooseGrappleSave { .. }
+                    | TacticalAction::ApplyGrappleAfterEquipment { .. }
+                    | TacticalAction::DeclineGrappleAfterEquipment { .. }
+                    | TacticalAction::WithdrawGrapple { .. }
+                    | TacticalAction::EscapeGrapple { .. }
+                    | TacticalAction::ReleaseGrapple { .. } => {
+                        return Err("Select the visible Grapple choice handle.".into());
+                    }
                     TacticalAction::ChooseShoveSave { .. }
                     | TacticalAction::ChooseShoveOutcome { .. }
                     | TacticalAction::RuleShovePush { .. } => {
@@ -471,9 +523,11 @@ pub(crate) fn validate_event_binding(
     if audit.command_schema_version == 1 {
         if saved.is_some()
             || crate::table_source_control::enabled(before)
+            || dmd_rules::table::grapple_enabled(before)
             || matches!(
                 event.action,
-                TableAction::EnableSourceActorAccess { .. }
+                TableAction::EnableGrappleAccess
+                    | TableAction::EnableSourceActorAccess { .. }
                     | TableAction::SetSourceCreatureController { .. }
             )
         {
@@ -481,7 +535,7 @@ pub(crate) fn validate_event_binding(
         }
         return Ok(());
     }
-    if !matches!(audit.command_schema_version, 2 | 3) {
+    if !matches!(audit.command_schema_version, 2..=4) {
         return Err("unsupported transport acceptance".into());
     }
     let envelope: TransportedTableAction =
@@ -509,21 +563,24 @@ pub(crate) fn validate_event_binding(
 }
 pub(crate) fn validate_observation_binding(
     export: &CampaignExport,
-    state: &CampaignState,
+    read: crate::table_projection::ProjectionRead<'_>,
     observation: &SessionObservation,
     prior: &HashMap<ProjectionAudience, ProjectionChange>,
     history: &PresentationHistory,
-    pack: &RulesPack,
 ) -> Result<(), String> {
+    let state = read.state();
     let record = &observation.record;
     let saved = binding(export, CommandId(record.id.0))?;
     if record.payload_schema_version == 1 {
-        if saved.is_some() || crate::table_source_control::enabled(state) {
+        if saved.is_some()
+            || crate::table_source_control::enabled(state)
+            || dmd_rules::table::grapple_enabled(state)
+        {
             return Err("legacy observation has an unsolicited transport binding".into());
         }
         return Ok(());
     }
-    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2 | 3) {
+    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=4) {
         return Err("unsupported protocol observation".into());
     }
     let envelope: TransportedTableObservation =
@@ -536,7 +593,7 @@ pub(crate) fn validate_observation_binding(
         return Err("game action became a protocol observation".into());
     };
     let (expected, mut expected_record) =
-        crate::table_runtime::propose_observation(state, pack, &meta, record.id, &text)
+        crate::table_runtime::propose_observation_read(read, &meta, record.id, &text)
             .map_err(|e| e.to_string())?;
     expected_record.payload_schema_version = record.payload_schema_version;
     expected_record.payload_json = json(&envelope)?;
@@ -565,8 +622,9 @@ impl CampaignRuntime {
         let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
             .await
             .map_err(recovery)?;
-        let (state, pack) = self.protocol_pack(&export)?;
-        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        let (execution, history) = self.protocol_history(&export)?;
+        let read = execution.read();
+        let state = read.state();
         if history
             .latest
             .get(&ProjectionAudience::Host)
@@ -578,10 +636,10 @@ impl CampaignRuntime {
             ));
         }
         let result = TableSourceControlOptions {
-            enabled: crate::table_source_control::enabled(&state),
-            settled: crate::table_source_control::settled(&state).is_ok(),
-            adopted: crate::table_source_control::adoptions(&state).map_err(recovery)?,
-            actors: crate::table_source_control::visible_actors(&state, &TableViewer::Host)
+            enabled: crate::table_source_control::enabled(state),
+            settled: crate::table_source_control::settled(state).is_ok(),
+            adopted: crate::table_source_control::adoptions(state).map_err(recovery)?,
+            actors: crate::table_source_control::visible_actors(state, &TableViewer::Host)
                 .map_err(recovery)?,
         };
         tx.commit().await.map_err(recovery)?;
@@ -601,8 +659,7 @@ impl CampaignRuntime {
         let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
             .await
             .map_err(recovery)?;
-        let (_, pack) = self.protocol_pack(&export)?;
-        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        let (_, history) = self.protocol_history(&export)?;
         if history
             .latest
             .get(&ProjectionAudience::Host)
@@ -625,8 +682,9 @@ impl CampaignRuntime {
         let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
             .await
             .map_err(recovery)?;
-        let (state, pack) = self.protocol_pack(&export)?;
-        let history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        let (execution, history) = self.protocol_history(&export)?;
+        let read = execution.read();
+        let state = read.state();
         let visible = history
             .latest
             .get(&request.channel.audience())
@@ -671,17 +729,18 @@ impl CampaignRuntime {
             actor: selected,
         } = request.channel
             && (selected != actor
-                || !crate::table_source_control::owns_source(&state, player_id, actor))
+                || !crate::table_source_control::owns_source(state, player_id, actor))
         {
             return Err(rejected("Select the source creature who owns this roll."));
         }
-        let savage_attacker = dmd_rules::tactical::savage_attacker_dice(&state, &pack)
-            .ok()
-            .map(|weapon_dice| TableSavageAttackerOption {
-                weapon_dice,
-                heroic_inspiration: state.rules.as_ref().unwrap().entities[&actor]
-                    .heroic_inspiration,
-            });
+        let savage_attacker =
+            read.savage_attacker_dice()
+                .ok()
+                .map(|weapon_dice| TableSavageAttackerOption {
+                    weapon_dice,
+                    heroic_inspiration: state.rules.as_ref().unwrap().entities[&actor]
+                        .heroic_inspiration,
+                });
         tx.commit().await.map_err(recovery)?;
         Ok(TableRollOptions { savage_attacker })
     }
@@ -776,29 +835,16 @@ impl CampaignRuntime {
         }
         // Authenticate selection at the original semantic image, not today's
         // attendance or ownership. The caller cannot substitute an arbitrary actor.
-        let mut matched = false;
-        crate::rules_restore::visit_rules_history(&export, &pack, |_, state, _| {
-            if state.applied_event_sequence == meta.expected_event_sequence {
-                matched = match request.channel {
-                    TableTransportChannel::SourceCreature { .. } => false,
-                    TableTransportChannel::Host => {
-                        meta.issuer == CommandIssuer::Admin && meta.actor.is_none()
-                    }
-                    TableTransportChannel::Player {
-                        player_id,
-                        character_id,
-                    } => {
-                        meta.issuer == CommandIssuer::Player(player_id)
-                            && state.characters.get(&character_id).is_some_and(|c| {
-                                c.controlling_player_id == Some(player_id)
-                                    && meta.actor == Some(AgentRef::Entity(c.entity_id))
-                            })
-                    }
-                };
-            }
-            Ok(())
-        })
+        let verified = crate::rules_restore::authenticate_history_with_selection(
+            &export,
+            pack.clone(),
+            Some(presentation::LegacySelectionCheck::new(
+                meta.clone(),
+                request.channel.clone(),
+            )),
+        )
         .map_err(recovery)?;
+        let matched = verified.selection_matches() == Some(true);
         if !matched {
             return Err(rejected(
                 "Legacy channel does not match its original acceptance.",
@@ -847,14 +893,18 @@ impl CampaignRuntime {
             tx.commit().await.map_err(recovery)?;
             return Ok(receipt);
         }
-        if !accept_new || crate::table_source_control::enabled(&state) {
+        if !accept_new
+            || crate::table_source_control::enabled(&state)
+            || dmd_rules::table::grapple_enabled(&state)
+        {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",
             ));
         }
         if matches!(
             action,
-            TableAction::EnableSourceActorAccess { .. }
+            TableAction::EnableGrappleAccess
+                | TableAction::EnableSourceActorAccess { .. }
                 | TableAction::SetSourceCreatureController { .. }
         ) {
             return Err(rejected(
@@ -929,7 +979,7 @@ impl CampaignRuntime {
         let complete = export_campaign_in_transaction(&mut tx, meta.campaign_id)
             .await
             .map_err(recovery)?;
-        presentation::validate_history(&complete, &pack).map_err(recovery)?;
+        crate::rules_restore::validate_rules_export(&complete, &pack).map_err(recovery)?;
         let receipt = TableReceipt {
             command_id: meta.id,
             event_sequence: transition.state.applied_event_sequence,
@@ -971,7 +1021,10 @@ impl CampaignRuntime {
             tx.commit().await.map_err(recovery)?;
             return Ok(body);
         }
-        if !accept_new || crate::table_source_control::enabled(&state) {
+        if !accept_new
+            || crate::table_source_control::enabled(&state)
+            || dmd_rules::table::grapple_enabled(&state)
+        {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",
             ));
@@ -1026,23 +1079,31 @@ impl CampaignRuntime {
         let catalog = self.load_catalog()?;
         let content = catalog.resolve_campaign(&state.campaign)?;
         let pack = crate::rules_runtime::load_rules_pack(&content)?;
-        crate::table_engine::validate_table(&state, &pack).map_err(recovery)?;
         Ok((state, pack))
+    }
+    fn protocol_history(
+        &self,
+        export: &CampaignExport,
+    ) -> Result<(dmd_rules::table::CampaignExecution, PresentationHistory), RunnableCampaignError>
+    {
+        let (_, pack) = self.protocol_pack(export)?;
+        crate::rules_restore::authenticate_history(export, pack)
+            .map(|verified| verified.into_parts())
+            .map_err(recovery)
     }
     async fn bootstrap_presentation(
         &self,
         tx: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
         export: &mut CampaignExport,
-        state: &CampaignState,
-        pack: &RulesPack,
+        read: &dmd_rules::table::TableRead<'_>,
         history: &mut PresentationHistory,
     ) -> Result<(), RunnableCampaignError> {
         if history.ordinal != 0 {
             return Ok(());
         }
-        let record = presentation::build_record(
-            state,
-            pack,
+        let state = read.state();
+        let record = presentation::build_record_read(
+            ProjectionRead::Owned(read),
             export,
             history,
             ProjectionCause::Bootstrap {
@@ -1071,16 +1132,21 @@ impl CampaignRuntime {
         let mut export = export_campaign_in_transaction(&mut tx, campaign_id)
             .await
             .map_err(recovery)?;
-        let (state, pack) = self.protocol_pack(&export)?;
-        let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
-        self.bootstrap_presentation(&mut tx, &mut export, &state, &pack, &mut history)
+        let (execution, mut history) = self.protocol_history(&export)?;
+        let read = execution.read();
+        self.bootstrap_presentation(&mut tx, &mut export, &read, &mut history)
             .await?;
         let audience = match viewer {
             TableViewer::Host => ProjectionAudience::Host,
             TableViewer::Player(id) => ProjectionAudience::Player(id),
         };
-        let view = presentation::current_view(&state, &pack, &export, &history, audience)
-            .map_err(rejected)?;
+        let view = presentation::current_view_read(
+            ProjectionRead::Owned(&read),
+            &export,
+            &history,
+            audience,
+        )
+        .map_err(rejected)?;
         tx.commit().await.map_err(recovery)?;
         Ok(view)
     }
@@ -1096,8 +1162,10 @@ impl CampaignRuntime {
         let mut export = export_campaign_in_transaction(&mut tx, request.campaign_id)
             .await
             .map_err(recovery)?;
-        let (state, pack) = self.protocol_pack(&export)?;
-        let mut history = presentation::validate_history(&export, &pack).map_err(recovery)?;
+        let (mut execution, mut history) = self.protocol_history(&export)?;
+        let read = execution.read();
+        let state = read.state();
+        let pack = read.pack().clone();
         // Exact accepted identity wins before current audience ownership, attendance,
         // pending choice, or revision. A changed original envelope is never a retry.
         if let Some(saved) = binding(&export, request.command_id).map_err(recovery)? {
@@ -1123,19 +1191,19 @@ impl CampaignRuntime {
                 "This identity belongs to a legacy request; recover its original input.",
             ));
         }
-        self.bootstrap_presentation(&mut tx, &mut export, &state, &pack, &mut history)
+        self.bootstrap_presentation(&mut tx, &mut export, &read, &mut history)
             .await?;
-        let meta = request_meta(&state, &request, &history.latest).map_err(rejected)?;
-        let intent = derive_intent(&state, &request, &history.latest).map_err(rejected)?;
+        let meta = request_meta(state, &request, &history.latest).map_err(rejected)?;
+        let intent = derive_intent(state, &request, &history.latest).map_err(rejected)?;
         let (response, acceptance) = match intent {
             Intent::Action(action) => {
-                let mut transition =
-                    crate::table_engine::resolve_table(&state, &meta, &action, &pack)
+                let (prepared, table_event, session_change) =
+                    crate::table_engine::prepare_owned(&mut execution, &meta, &action)
                         .map_err(rejected)?;
-                transition.state.applied_event_sequence = meta
-                    .expected_event_sequence
-                    .checked_add(1)
-                    .ok_or_else(|| rejected("Event sequence exhausted."))?;
+                let applied = prepared.commit();
+                let before = applied.before();
+                let after = applied.after();
+                let next = after.state();
                 let envelope = TransportedTableAction {
                     request: request.clone(),
                     action: *action,
@@ -1146,42 +1214,39 @@ impl CampaignRuntime {
                 let id = EventId::new();
                 let event = PendingEvent {
                     id,
-                    occurred_at: transition.state.clock.now,
+                    occurred_at: next.clock.now,
                     source: EventSource::RuleResolution,
                     actor: meta.actor,
                     caused_by_event_ids: vec![],
-                    payload: transition.event.clone(),
+                    payload: table_event.clone(),
                 }
                 .encode(TABLE_EVENT_KIND, TABLE_EVENT_VERSION)
                 .map_err(rejected)?;
-                let explanation = json(&transition.event.outcome).map_err(rejected)?;
+                let explanation = json(&table_event.outcome).map_err(rejected)?;
                 commit_campaign_transition_in_transaction(
                     &mut tx,
                     &meta,
                     &payload,
-                    &transition.state,
+                    next,
                     &[event],
                     &explanation,
-                    transition.session_change.as_ref(),
+                    session_change.as_ref(),
                 )
                 .await
                 .map_err(|e| RunnableCampaignError::Journal(Box::new(e)))?;
                 // Only the rendered event fields are needed before the complete
                 // transaction can be exported/validated again.
-                let row =
-                    event_row(&meta, id, &transition.state, &transition.event).map_err(recovery)?;
+                let row = event_row(&meta, id, next, &table_event).map_err(recovery)?;
                 export.event_journal.push(row.clone());
-                let visible = presentation::accepted_event_visibility(
-                    &state,
-                    &transition.state,
+                let visible = presentation::accepted_event_visibility_read(
+                    ProjectionRead::Owned(&before),
+                    ProjectionRead::Owned(&after),
                     &row,
-                    &pack,
                     &mut history,
                 )
                 .map_err(recovery)?;
-                let record = presentation::build_record(
-                    &transition.state,
-                    &pack,
+                let record = presentation::build_record_read(
+                    ProjectionRead::Owned(&after),
                     &export,
                     &mut history,
                     ProjectionCause::Event {
@@ -1195,16 +1260,20 @@ impl CampaignRuntime {
                     .await
                     .map_err(recovery)?;
                 (
-                    receipt(&request, &history, &transition.event.outcome).map_err(recovery)?,
+                    receipt(&request, &history, &table_event.outcome).map_err(recovery)?,
                     TransportAcceptance::Command {
-                        resulting_event_sequence: transition.state.applied_event_sequence,
+                        resulting_event_sequence: next.applied_event_sequence,
                     },
                 )
             }
             Intent::Observation(text) => {
                 let id = ObservationId(meta.id.0);
-                let (body, mut observation) =
-                    crate::table_runtime::propose_observation(&state, &pack, &meta, id, &text)?;
+                let (body, mut observation) = crate::table_runtime::propose_observation_read(
+                    ProjectionRead::Owned(&read),
+                    &meta,
+                    id,
+                    &text,
+                )?;
                 observation.payload_schema_version = request.version + 1;
                 observation.payload_json = json(&TransportedTableObservation {
                     request: request.clone(),
@@ -1219,14 +1288,13 @@ impl CampaignRuntime {
                 .await
                 .map_err(recovery)?;
                 history.observation_ordinal += 1;
-                presentation::accepted_observation_visibility(&state, &observation, &mut history);
+                presentation::accepted_observation_visibility(state, &observation, &mut history);
                 export.observations.push(SessionObservation {
                     ordinal: history.observation_ordinal,
                     record: observation,
                 });
-                let record = presentation::build_record(
-                    &state,
-                    &pack,
+                let record = presentation::build_record_read(
+                    ProjectionRead::Owned(&read),
                     &export,
                     &mut history,
                     ProjectionCause::Observation { id },

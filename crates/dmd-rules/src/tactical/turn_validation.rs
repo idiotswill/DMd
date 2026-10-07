@@ -10,6 +10,16 @@ fn provenance(
     validate_equipment_change_origin(state, meta, subject).map_err(|e| invalid(&e))
 }
 pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<(), RulesError> {
+    pending_with_read(
+        &super::grapple::execution::ReadContext::ordinary(state),
+        pending,
+    )
+}
+pub(super) fn pending_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+    pending: &PendingRoll,
+) -> Result<(), RulesError> {
+    let state = read.state();
     let PendingPurpose::TacticalResolution { encounter: id, key } = pending.purpose else {
         return Err(invalid("not a tactical resolution request"));
     };
@@ -22,7 +32,7 @@ pub(super) fn pending(state: &CampaignState, pending: &PendingRoll) -> Result<()
         || p.key != key
         || key != super::continuations::key(state, &p.work)?
         || pending.request
-            != super::continuations::request(state, &p.work, key)?
+            != super::continuations::request_with_read(read, &p.work, key)?
                 .ok_or_else(|| invalid("automatic failure has no request"))?
         || pending.ruling
             != super::continuations::ruling(
@@ -48,6 +58,9 @@ pub(super) fn selected_applicable(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    if super::grapple::is_work(&work.kind) {
+        super::grapple::validate_work(state, work)?;
+    }
     if let TacticalWorkKind::Effect { ticket } = work.kind {
         let t = super::continuations::ticket(state, ticket)?;
         if !crate::tactical_effects::trigger_is_applicable(effects(state)?, t)
@@ -78,6 +91,12 @@ fn validate_work(
         return Err(invalid("future work occurrence"));
     }
     let actor = match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => {
+            super::grapple::validate_work(state, work)?
+        }
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ShoveSave
         | TacticalWorkKind::ChooseShoveOutcome
@@ -207,7 +226,10 @@ fn validate_work(
     Ok(())
 }
 
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+) -> Result<(), RulesError> {
+    let state = read.state();
     let f = flow(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     // Historical reached-place receipts survive combat completion, but never
@@ -250,6 +272,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         let mut occupied_space_count = 0;
         if usize::from(r.pending.is_some())
             + usize::from(super::shove::waiting(state))
+            + usize::from(super::grapple::waiting(state))
             + usize::from(super::hit_reactions::waiting(state))
             + usize::from(super::missiles::waiting(state))
             + usize::from(super::falling::selected(state)?.is_some())
@@ -286,6 +309,10 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             .chain(r.failed_save.iter().map(|f| &f.pending.work))
             .chain(r.legendary_window.iter().map(|w| &w.work))
             .chain(r.shove.iter().filter_map(|s| s.selected.as_ref()))
+            .chain(r.grapple.iter().filter_map(|g| match g.activity.as_ref() {
+                Some(GrappleActivity::Attempt(a)) => a.selected.as_ref(),
+                _ => None,
+            }))
         {
             if !occurrences.insert(work.occurrence) {
                 return Err(invalid("duplicate consequence occurrence"));
@@ -325,8 +352,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             }
             super::creature_bridge::validate_window(state, window)?;
         } else if let Some(failed) = &r.failed_save {
-            super::failed_save::validate_failed_save(state, failed)?;
-        } else if super::shove::waiting(state)
+            super::failed_save::validate_failed_save_with_read(read, failed)?;
+        } else if super::grapple::waiting(state)
+            || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
         {
@@ -334,8 +362,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 return Err(invalid("hit response has competing raw dice"));
             }
         } else if r.pending.is_some() {
-            pending(
-                state,
+            pending_with_read(
+                read,
                 rules
                     .pending
                     .as_ref()
@@ -372,10 +400,13 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         ));
     }
     super::creature_bridge::validate(state)?;
-    super::attacks::validate(state)?;
+    super::attacks::validate_with_read(read)?;
     super::shove::validate(state)?;
-    super::hit_reactions::validate(state)?;
-    super::movement::validate(state)?;
+    if has_tactical_grapple_attachments(state) {
+        super::grapple::validate(state)?;
+    }
+    super::hit_reactions::validate_with_read(read)?;
+    super::movement::validate_with_read(read)?;
     super::casting::validate(state)?;
     super::missiles::validate(state)?;
     super::areas::validate(state)?;
@@ -431,6 +462,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                     | TacticalRollRole::SpellSave
                     | TacticalRollRole::AreaSave
                     | TacticalRollRole::ShoveSave
+                    | TacticalRollRole::GrappleSave
             )
             || decision.resolved_by.expected_event_sequence
                 < decision.issued_by.expected_event_sequence
@@ -442,7 +474,13 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             return Err(invalid("invalid non-rolled saving throw decision"));
         }
         if decision.failure == TacticalSaveFailure::Voluntary {
-            authorize(state, &decision.resolved_by, decision.key.subject)?;
+            if crate::table::grapple_enabled(state)
+                && decision.key.role == TacticalRollRole::GrappleSave
+            {
+                read.validate_retained_grapple_decision(decision)?;
+            } else {
+                authorize(state, &decision.resolved_by, decision.key.subject)?;
+            }
             if !rules
                 .cancelled_roll_ids
                 .contains(&decision.key.request_id())

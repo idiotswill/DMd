@@ -82,12 +82,25 @@ pub fn immutable_creature_sources() -> Result<Vec<&'static CreatureDefinition>, 
     sources.push(
         crate::tactical_definitions::bundled_air_elemental().map_err(|e| invalid(e.to_string()))?,
     );
+    sources.push(
+        crate::tactical_definitions::bundled_goblin_warrior_v2()
+            .map_err(|e| invalid(e.to_string()))?,
+    );
     Ok(sources)
 }
 
-/// Current admission does not supersede any V1 source in this additive slice.
+/// Current admission selects the reviewed revision; immutable lookup and ID-only
+/// V1 helpers retain every historical source identity.
 pub fn current_creature_sources() -> Result<Vec<&'static CreatureDefinition>, CreatureError> {
-    immutable_creature_sources()
+    let legacy_goblin = creature_source_pin(creature_definition("goblin-warrior")?)?;
+    immutable_creature_sources()?
+        .into_iter()
+        .filter_map(|source| match creature_source_pin(source) {
+            Ok(pin) if pin == legacy_goblin => None,
+            Ok(_) => Some(Ok(source)),
+            Err(error) => Some(Err(error)),
+        })
+        .collect()
 }
 
 /// A retained profile always wins over the flow's historical ID-only reference.

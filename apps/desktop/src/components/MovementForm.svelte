@@ -4,7 +4,7 @@
   let {options,disabled=false,onAction}:{options:MovementOptions;disabled?:boolean;onAction:(action:TacticalAction)=>void}=$props();
   let route=$state('');const proposal=$derived(proposeMovement(route,options));
   const destination=$derived(proposal.path?.at(-1)?.destination);
-  function submit(event:SubmitEvent){event.preventDefault();if(proposal.path)onAction({Move:{path:proposal.path}});}
+  function submit(event:SubmitEvent){event.preventDefault();if(proposal.path)onAction(options.self_only_required?{MoveSelfOnly:{path:proposal.path}}:{Move:{path:proposal.path}});}
 </script>
 <form onsubmit={submit}><fieldset {disabled}><legend>Move</legend>
   <p>Describe each part of your route. North is toward the top of the map.</p>
@@ -12,5 +12,6 @@
   <p>Available movement: {options.modes.join(', ')}.</p>
   {#if route.trim() && proposal.error}<p role="status">{proposal.error}</p>{/if}
   {#if destination}<p>Destination: {destination.x/2}, {destination.y/2} feet; height {destination.z/2} feet. Terrain and reactions may stop your movement along the route.</p>{/if}
-  <button disabled={!proposal.path}>Follow this route</button>
+  {#if options.self_only_required}<p>Held creatures stay where they are. Moving out of reach ends the grip.</p>{/if}
+  <button disabled={!proposal.path}>{options.self_only_required?'Move only my creature along this route':'Follow this route'}</button>
 </fieldset></form>

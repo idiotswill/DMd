@@ -25,6 +25,8 @@ pub enum TacticalRollRole {
     SecondWind,
     Medicine,
     ShoveSave,
+    GrappleSave,
+    GrappleEscape,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -59,6 +61,8 @@ impl TacticalRollKey {
             TacticalRollRole::SecondWind => 16,
             TacticalRollRole::Medicine => 17,
             TacticalRollRole::ShoveSave => 18,
+            TacticalRollRole::GrappleSave => 19,
+            TacticalRollRole::GrappleEscape => 20,
         };
         let mut bytes = b"dmd.tactical.roll.v1\0".to_vec();
         bytes.push(tag);
@@ -182,6 +186,18 @@ pub enum TacticalWorkKind {
     LegendaryWindow {
         actor: EntityId,
     },
+    BeginGrapple {
+        grip: crate::GrappleId,
+    },
+    GrappleSave {
+        grip: crate::GrappleId,
+    },
+    GrappleAfterEquipment {
+        grip: crate::GrappleId,
+    },
+    GrappleEscapeCheck {
+        grip: crate::GrappleId,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -220,6 +236,8 @@ pub struct TacticalLegendaryWindow {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalResolution {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<Box<crate::TacticalGrappleResolution>>,
     pub origin: CommandMeta,
     pub turn_actor: EntityId,
     pub turn_number: u64,

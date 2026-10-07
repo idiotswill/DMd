@@ -9,13 +9,37 @@ pub fn resolve(
     action: &RulesAction,
     pack: &RulesPack,
 ) -> Result<RulesTransition, RulesError> {
+    let mut next = state.clone();
+    let event = apply_table_with_context(
+        state,
+        &mut next,
+        meta,
+        action,
+        pack,
+        &mut crate::tactical::grapple::execution::ExecutionContext::ordinary(),
+    )?;
+    Ok(RulesTransition {
+        next_state: next,
+        outcome: event.outcome.clone(),
+        event,
+    })
+}
+
+pub(crate) fn apply_table_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<RulesEvent, RulesError> {
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    validate_state(state, pack)?;
+    validate_state_with_read(&execution.read(next)?, pack)?;
     if state
         .rules
         .as_ref()
@@ -67,7 +91,6 @@ pub fn resolve(
             "an Inspiration transfer choice awaits its controller",
         ));
     }
-    let mut next = state.clone();
     let outcome = if let RulesAction::CreateCharacter { entity_id, input } = action {
         authorize(state, meta, *entity_id)?;
         if !state
@@ -88,6 +111,7 @@ pub fn resolve(
             rules.permission = None;
         } else {
             next.rules = Some(RulesState {
+                tactical_grapples: None,
                 tactical_recovery: None,
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
@@ -132,6 +156,7 @@ pub fn resolve(
             return Err(invalid("duplicate/empty mechanical initialization"));
         }
         next.rules = Some(RulesState {
+            tactical_grapples: None,
             tactical_recovery: None,
             pack_id: pack.id.clone(),
             pack_version: pack.version.clone(),
@@ -157,19 +182,16 @@ pub fn resolve(
     } else {
         let mut rules = next.rules.take().ok_or(RulesError::Uninitialized)?;
         let permission = rules.permission.take();
-        let outcome = apply(&mut next, &mut rules, meta, action, pack, permission)?;
+        let outcome = apply(next, &mut rules, meta, action, pack, permission)?;
         next.rules = Some(rules);
         outcome
     };
-    sync_deaths(&mut next);
-    validate_state(&next, pack)?;
-    Ok(RulesTransition {
-        next_state: next,
-        event: RulesEvent {
-            meta: meta.clone(),
-            action: action.clone(),
-            outcome: outcome.clone(),
-        },
+    sync_deaths(next);
+    validate_state_with_read(&execution.read(next)?, pack)?;
+    execution.observe_kernel_result(next, meta, action)?;
+    Ok(RulesEvent {
+        meta: meta.clone(),
+        action: action.clone(),
         outcome,
     })
 }
@@ -192,7 +214,22 @@ pub fn query(
     query: &RulesQuery,
     pack: &RulesPack,
 ) -> Result<RulesAnswer, RulesError> {
-    validate_state(state, pack)?;
+    query_with_read(
+        &crate::tactical::grapple::execution::ReadContext::ordinary(state),
+        issuer,
+        query,
+        pack,
+    )
+}
+
+pub(crate) fn query_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    issuer: CommandIssuer,
+    query: &RulesQuery,
+    pack: &RulesPack,
+) -> Result<RulesAnswer, RulesError> {
+    validate_state_with_read(read, pack)?;
+    let state = read.state();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match query {
         RulesQuery::PendingRoll => Ok(RulesAnswer::PendingRoll(

@@ -5,12 +5,13 @@ use crate::tactical_creatures::{
 };
 use crate::tactical_definitions::{AttackDelivery, FeatureActivation, MonsterFeature};
 
-pub(in crate::tactical) fn begin_creature_attack(
+pub(in crate::tactical) fn begin_creature_attack_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     target: EntityId,
     feature_id: &str,
     weapon: Option<ItemId>,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -98,12 +99,17 @@ pub(in crate::tactical) fn begin_creature_attack(
         outcome: None,
     };
     // Reconstruct every applicable source effect before any source/action cost.
-    let plan = intrinsic::plan(state, &attack)?;
+    let read = execution
+        .read(state)?
+        .attack_current(actor, target, weapon.is_some())?;
+    let proofs = read.as_ref().map(|r| r.captured()).unwrap_or_default();
+    let plan = intrinsic::plan_with_read(state, &attack, read.as_ref())?;
     attack.attack_modifier = plan.modifier;
     attack.mode = plan.mode;
     attack.armor_class = plan.armor;
     attack.critical_on_hit = plan.critical;
     attack.damage = plan.damage;
+    drop(read);
     let mut budget = flow(state)?.budget.clone();
     let now = state.clock.now;
     let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
@@ -125,6 +131,7 @@ pub(in crate::tactical) fn begin_creature_attack(
     flow_mut(state)?.budget = budget;
     let work_trace = super::super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
         turn_number,
@@ -145,7 +152,8 @@ pub(in crate::tactical) fn begin_creature_attack(
         next_occurrence: 0,
     }));
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
-    pump(state, meta)
+    super::super::grapple::reads::capture_admission(state, meta, proofs)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn approach_distance(
