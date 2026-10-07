@@ -352,6 +352,18 @@ impl ExecutionContext<'_> {
                     ..
                 },
             ) => source == feature_id && item == weapon,
+            (
+                TacticalMeleeChoice::CreatureWeapon {
+                    feature_id,
+                    weapon,
+                    grip,
+                },
+                TacticalAttackSource::CreatureWeapon {
+                    feature_id: source,
+                    weapon: item,
+                    ..
+                },
+            ) => source == feature_id && item.choice.weapon == *weapon && item.choice.grip == *grip,
             _ => false,
         };
         if owned.command != &live.command

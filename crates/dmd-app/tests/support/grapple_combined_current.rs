@@ -2,6 +2,9 @@
 //! Setup and every material continuation use accepted commands and original replay.
 use super::*;
 
+#[path = "grapple_combined_ogre.rs"]
+mod ogre;
+
 fn flow(state: &CampaignState) -> &TacticalFlow {
     state.encounter.as_ref().unwrap().flow.as_ref().unwrap()
 }

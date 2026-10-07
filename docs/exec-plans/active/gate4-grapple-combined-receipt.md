@@ -362,3 +362,34 @@ tests, npm, native or database execution, nor push is allocated; root retains
 the heavy slot, fresh independent review and exact-head runtime schedule.
 The new controls are authored evidence until they execute. Gate 4 and all prior
 native/source/cold acceptance obligations remain unchanged and pending.
+
+### Correction source prepared
+
+The production delta is one twelve-line match arm in the owned opportunity
+observer: selected CreatureWeapon feature, ItemId and complete WeaponGrip must
+equal the produced CreatureWeapon source. The catch-all and all other guards
+remain byte-identical. Adjacent durable source enums, source-window admission,
+Ogre physical source validation, retained cut/source readers and actual completion
+already support this variant; no further production change is justified.
+
+Two new application cases in `support/grapple_combined_ogre.rs` exercise actual
+current Ogre Greatclub/TwoHands and Javelin/OneHand(Right) admissions. The original
+combined module gains only the child registration; all four original cases and
+helpers remain unchanged. The existing layout puts the PC at(10,10), Large Ogre
+at(20,10) and Goblin at(10,20) in half-feet. Its occupied-cell distance is10 before
+and20 after the holder moves to(0,10), crossing the actual source reach10 in one
+step while moving the Goblin to(0,20). The tests assert these actual endpoints,
+offered source and reach, paid grip and20 movement cost, original source pin and
+physical custody, one Reaction and unchanged Action budget, exact issued raw
+request, real miss completion, retained grip and original receipt. Both use real
+catalog/current-character creation and the unchanged cold/portable/retry/replay
+driver. Invalid feature, item, hand/grip, historical source variant and foreign
+channels are atomic refusals; forged saved source pin/feature/item/grip images are
+rejected through the existing hostile-restore helper. No synthetic state is used
+as a positive producer. These are authored controls, not executed results.
+
+Direct changed-file rustfmt with child traversal disabled and whitespace checks
+pass. The final handback must record full prior-tree and old-body preservation,
+exact inverse of the registration/production arm, clean frozen head/tree and the
+minimal full patch. Root must freshly review and execute the new head before
+advancing PR70 or claiming behavioral acceptance.
