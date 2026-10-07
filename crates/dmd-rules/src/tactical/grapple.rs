@@ -177,6 +177,7 @@ fn new_context(activity: GrappleActivity) -> TacticalGrappleResolution {
         cuts: vec![],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     }
 }
 fn install_resolution(

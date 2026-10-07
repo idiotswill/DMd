@@ -146,6 +146,7 @@ pub(crate) fn install_attempt(
             cuts: vec![],
             ends: vec![],
             opportunity_refreshes: vec![],
+            completed_casts: vec![],
         })),
     }));
     declaration

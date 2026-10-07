@@ -1,6 +1,7 @@
 //! Authored private producer controls. These do not activate public admission,
 //! reproduce a journal, or claim application/native acceptance.
 use super::*;
+mod ground_opportunity_tests;
 
 fn command(state: &CampaignState, actor: Option<EntityId>) -> CommandMeta {
     CommandMeta {

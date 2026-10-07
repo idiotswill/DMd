@@ -17,6 +17,18 @@ pub(crate) struct TableTransition {
 
 fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperation, String> {
     Ok(match action {
+        TableAction::AwardExcessInspiration {
+            character_id,
+            reason,
+        } => TableOperation::AwardExcessInspiration {
+            character_id: *character_id,
+            reason: reason.clone(),
+        },
+        TableAction::ResolveHostInspirationTransfer { choice } => {
+            TableOperation::ResolveHostInspirationTransfer {
+                choice: choice.clone(),
+            }
+        }
         TableAction::AwardHeroicInspiration {
             character_id,
             reason,

@@ -1136,6 +1136,7 @@ fn complete(
         intrinsic::complete(state, attack, outcome, execution)?;
     }
     super::attack_equipment::completed(state, meta, attack, outcome)?;
+    execution.complete_opportunity(state, meta)?;
     resolution_mut(state)?.attack = None;
     resolution_mut(state)?.hit_review = None;
     Ok(())

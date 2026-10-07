@@ -40,6 +40,9 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    InspirationTransfer {
+        handle: CommandId,
+    },
     MoveGrappled {
         option: CommandId,
         path: Vec<TacticalMoveStep>,
@@ -258,6 +261,8 @@ pub struct TableHostDiagnostics {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspiration_transfer: Option<TableInspirationTransferView<CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grapple: Option<TableGrappleView<CommandId, CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -530,6 +535,29 @@ pub(crate) fn presented_view(
         .transpose()
         .map_err(str::to_owned)?;
     Ok(TablePresentedView {
+        inspiration_transfer: raw
+            .inspiration_transfer
+            .map(|transfer| {
+                Ok::<_, &str>(TableInspirationTransferView {
+                    character_id: transfer.character_id,
+                    choices: transfer
+                        .choices
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableInspirationOption {
+                                key: CommandId(handle(
+                                    &ProjectionCapability::InspirationTransfer {
+                                        choice: choice.key,
+                                    },
+                                )?),
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
         grapple: raw
             .grapple
             .map(|grapple| {

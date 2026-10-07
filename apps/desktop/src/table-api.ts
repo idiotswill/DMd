@@ -65,6 +65,7 @@ export interface Situation { title: string; description: string; challenges: Cha
 export interface PendingDecision { id: Id; revision: number; player_id: Id; character_id: Id; actor: Id; session_id: Id; text: string; intent: 'SecondWind' | { Check: { kind: { Check: { ability: Ability; skill: Skill | null } }; goal: string; challenge_id: string | null } } | { Unresolved: { question: string } } }
 export interface RollRequest { id: Id; roller: Id | null; dice: { sides: number; count: number }[]; modifier: number; mode: 'Normal' | 'Advantage' | 'Disadvantage'; visibility: string; reason: string }
 export interface TableView {
+  inspiration_transfer?: { character_id: Id; choices: { key: Id; label: string }[] };
   grapple?: { version: 3 | 4; choices: { key: Id; actor: Id; label: string }[]; ground_drag?: { key: Id; actor: Id; label: string }[] };
   source_control?: SourceControlView;
   campaign_id: Id; name: string; revision: Id; diagnostics?: { canonical_event_sequence: number }; contract: TableContract; players: Player[]; characters: CharacterView[];
@@ -76,6 +77,8 @@ export interface TableView {
   transcript: { id: string; kind: string; speaker: string; text: string }[]; recap: string[];
 }
 export type TableAction =
+  | { AwardExcessInspiration: { character_id: Id; reason: string } }
+  | { InspirationTransfer: { handle: Id } }
   | { AwardHeroicInspiration: { character_id: Id; reason: string } }
   | 'EnableGrappleAccess'
   | 'EnableGrappleTransport'
@@ -134,6 +137,11 @@ function validSavedRequest(value: unknown): value is UnconfirmedRequest {
   if (request.action === 'EnableGrappleAccess') return request.version === 3 && channel === 'Host';
   if (!object(request.action) || Object.keys(request.action).length !== 1) return false;
   const [kind, payload] = Object.entries(request.action)[0];
+  if (kind === 'InspirationTransfer') return request.version === 4 && pcChannel && id(request.session_id)
+    && object(payload) && Object.keys(payload).length === 1 && id(payload.handle);
+  if (kind === 'AwardExcessInspiration') return request.version === 4 && channel === 'Host' && id(request.session_id)
+    && object(payload) && Object.keys(payload).length === 2 && id(payload.character_id)
+    && typeof payload.reason === 'string' && payload.reason.trim().length > 0 && new TextEncoder().encode(payload.reason).length <= 2000;
   if (kind === 'AwardHeroicInspiration') return request.version === 4 && channel === 'Host'
     && object(payload) && Object.keys(payload).length === 2
     && id(payload.character_id) && typeof payload.reason === 'string' && payload.reason.trim().length > 0;
@@ -161,6 +169,8 @@ export function saveSelection(selection: Selection): void { localStorage.setItem
 export function requestLabel(request: UnconfirmedRequest): string {
   if (request.kind === 'text') return `Your text: ${request.request.text}`;
   if (request.kind === 'create') return `Create campaign: ${request.request.name}`;
+  if (typeof request.request.action === 'object' && 'AwardExcessInspiration' in request.request.action) return 'Award extra Heroic Inspiration';
+  if (typeof request.request.action === 'object' && 'InspirationTransfer' in request.request.action) return 'Resolve your extra Heroic Inspiration';
   if (request.request.action === 'EnableGrappleTransport') return 'Enable dragging and Inspiration for this table';
   if (typeof request.request.action === 'object' && 'AwardHeroicInspiration' in request.request.action) return 'Award Heroic Inspiration';
   if (request.request.action === 'EnableGrappleAccess') return 'Enable Grapple for this table';
@@ -199,7 +209,8 @@ export const tableApi = {
         ? action.Tactical.action.AttackEquipment : null;
       const groundDrag = typeof action === 'object' && 'Tactical' in action && typeof action.Tactical.action === 'object' && 'MoveGrappled' in action.Tactical.action
         ? action.Tactical.action.MoveGrappled : null;
-      const input = groundDrag ? { MoveGrappled: groundDrag } : grapple ? { GrappleChoice: grapple } : equipment ? { AttackEquipment: equipment } : shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
+      const transfer = typeof action === 'object' && 'InspirationTransfer' in action ? action.InspirationTransfer : null;
+      const input = transfer ? { InspirationTransfer: transfer } : groundDrag ? { MoveGrappled: groundDrag } : grapple ? { GrappleChoice: grapple } : equipment ? { AttackEquipment: equipment } : shove ? { ShoveDecision: shove } : missile ? { MissileResponse: missile } : hit ? { HitResponse: hit } : decision ? { SelectWork: { handle: decision.handle } } : { Action: action };
       result = await invoke<TextResult>('desktop_submit_table', { request: { ...context, input } });
     } else {
       // A saved v1 nonce goes only to the recovery-only endpoint. Never translate

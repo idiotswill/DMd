@@ -667,6 +667,7 @@ pub(super) fn finish_cast(
     super::hit_reactions::finish_shield(state, &record)?;
     super::missiles::finish_shield(state, &record)?;
     super::missiles::finish_cast(state, &record)?;
+    super::grapple::reads::retain_completed_cast(state, meta, &record)?;
     resolution_mut(state)?
         .casts
         .retain(|r| r.cast.plan.occurrence != cast);

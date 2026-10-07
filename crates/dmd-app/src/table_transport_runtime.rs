@@ -124,7 +124,7 @@ fn derive_intent(
         TableTransportInput::Action(action) => {
             matches!(action.as_ref(), TableAction::Tactical { .. })
         }
-        TableTransportInput::Text { .. } => false,
+        TableTransportInput::Text { .. } | TableTransportInput::InspirationTransfer { .. } => false,
     };
     if matches!(
         request.channel,
@@ -147,6 +147,29 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::InspirationTransfer { handle } => {
+            if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                || !matches!(request.channel, TableTransportChannel::Player { .. })
+                || !dmd_rules::table::grapple_transport_enabled(state)
+            {
+                return Err("Select your current Inspiration choice.".into());
+            }
+            let choice = current
+                .handles
+                .iter()
+                .find_map(|entry| match &entry.capability {
+                    ProjectionCapability::InspirationTransfer { choice }
+                        if entry.opaque == handle.0 =>
+                    {
+                        Some(choice.clone())
+                    }
+                    _ => None,
+                })
+                .ok_or("That Inspiration choice is not available in this view.")?;
+            Intent::Action(Box::new(TableAction::ResolveHostInspirationTransfer {
+                choice,
+            }))
+        }
         TableTransportInput::MoveGrappled { option, path } => {
             if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
                 || !dmd_rules::table::grapple_transport_enabled(state)
@@ -440,9 +463,15 @@ fn derive_intent(
         }
         TableTransportInput::Action(action) => {
             let mut action = (**action).clone();
-            if matches!(action, TableAction::AwardHeroicInspiration { .. })
-                && (request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
-                    || !dmd_rules::table::grapple_transport_enabled(state))
+            if matches!(action, TableAction::ResolveHostInspirationTransfer { .. }) {
+                return Err("Select the visible Inspiration choice handle.".into());
+            }
+            if matches!(
+                action,
+                TableAction::AwardHeroicInspiration { .. }
+                    | TableAction::AwardExcessInspiration { .. }
+            ) && (request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                || !dmd_rules::table::grapple_transport_enabled(state))
             {
                 return Err("Inspiration awards require the current table controls.".into());
             }
@@ -626,6 +655,8 @@ pub(crate) fn validate_event_binding(
                 TableAction::EnableGrappleAccess
                     | TableAction::EnableGrappleTransport
                     | TableAction::AwardHeroicInspiration { .. }
+                    | TableAction::AwardExcessInspiration { .. }
+                    | TableAction::ResolveHostInspirationTransfer { .. }
                     | TableAction::EnableSourceActorAccess { .. }
                     | TableAction::SetSourceCreatureController { .. }
             )
@@ -1009,6 +1040,8 @@ impl CampaignRuntime {
             TableAction::EnableGrappleAccess
                 | TableAction::EnableGrappleTransport
                 | TableAction::AwardHeroicInspiration { .. }
+                | TableAction::AwardExcessInspiration { .. }
+                | TableAction::ResolveHostInspirationTransfer { .. }
                 | TableAction::EnableSourceActorAccess { .. }
                 | TableAction::SetSourceCreatureController { .. }
         ) {

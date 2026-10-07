@@ -285,3 +285,29 @@ active heavy slot elsewhere, fresh independent review, later canonical
 action is to commit this plan, perform the merge, audit the full union and hand
 back the frozen source. All gameplay, native and Gate 4 acceptance obligations
 remain pending.
+
+### Receiving source audit, 2026-10-07
+
+The normal merge is composed with the four planned explicit unions and no
+additional implementation. The staged audit reproduces all 722 entries from
+Git's automatic merge plus those exact four resolutions: 512 identical-parent
+files, 164 receiver files, 20 incoming files and 22 automatically joined files.
+The final plan-status append is the only further documentation change.
+All 1,088 receiver Rust test bodies remain: 1,081 exact and seven with only the
+already reviewed empty cast fields or two Held fixture repairs. Of 966 incoming
+test bodies, 951 remain exact; fifteen common-base cases retain the receiver's
+existing physical/source/equipment adaptations, with the new empty cast fields
+also present where required. No test or assertion is removed by this receipt.
+All eleven completed-cast constructors are accounted for. All 74 content,
+fixture, lock and frontend test/support paths retain the applicable parent's
+complete bytes; none is manually joined or modified by this receipt.
+
+The complete original public harness, four-case combined module, nine current
+physical/Mage cases and retained physical preparation file remain exact receiver
+bytes. Direct rustfmt checks of every changed Rust file with child traversal
+disabled and `git diff --check` pass. External reproducer
+`tooling/audit-combined-d5-receipt-2026-10-07.py` and the saved conflict preimages
+record the parent union and test inventories. These are source-only results;
+no compilation, gameplay test, native capture or exact-head CI has run here.
+Freeze the normal merge and hand back its exact head/tree and final audit to root
+for independent review and the existing PR70 receiving/verification schedule.

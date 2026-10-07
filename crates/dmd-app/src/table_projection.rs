@@ -157,6 +157,33 @@ pub(crate) fn project_table_read(
             view.roll_channel = Some(TableRollChannel::Tactical);
         }
     }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+    {
+        let issuer = match viewer {
+            TableViewer::Host => CommandIssuer::Admin,
+            TableViewer::Player(player) => CommandIssuer::Player(player),
+        };
+        let choices =
+            dmd_rules::table::inspiration_transfer_choices(state, issuer).map_err(invalid)?;
+        if matches!(viewer, TableViewer::Host) || !choices.is_empty() {
+            view.inspiration_transfer = Some(crate::TableInspirationTransferView {
+                character_id: transfer.character_id,
+                choices: choices
+                    .into_iter()
+                    .map(|choice| crate::TableInspirationOption {
+                        label: choice.recipient.map_or_else(
+                            || "Decline the extra Inspiration".into(),
+                            |id| format!("Give to {}", state.characters[&id].display_name),
+                        ),
+                        key: choice,
+                    })
+                    .collect(),
+            });
+        }
+    }
     Ok(view)
 }
 
@@ -399,6 +426,7 @@ fn project_table_v1_read(
         .rev()
         .collect();
     Ok(TableView {
+        inspiration_transfer: None,
         grapple: None,
         source_control: None,
         campaign_id,

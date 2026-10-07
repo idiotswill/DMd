@@ -82,7 +82,39 @@ pub(crate) fn apply_operation(
     let mut rules_event = None;
     let mut tactical_event = None;
     let mut mechanics = None;
+    if state
+        .table
+        .as_ref()
+        .is_some_and(|table| table.inspiration_transfer.is_some())
+        && !matches!(
+            action,
+            TableOperation::ResolveHostInspirationTransfer { .. }
+        )
+    {
+        return Err("Finish the pending player choice before changing the table.".into());
+    }
     let message = match action {
+        TableOperation::AwardExcessInspiration {
+            character_id,
+            reason,
+        } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration award requires original table history.".into());
+            }
+            super::inspiration::award_excess(state, next, meta, *character_id, reason)?;
+            "Extra Heroic Inspiration awarded; its owner chooses whether to give it away.".into()
+        }
+        TableOperation::ResolveHostInspirationTransfer { choice } => {
+            if !execution.is_owned() {
+                return Err("An Inspiration choice requires original table history.".into());
+            }
+            super::inspiration::resolve_transfer(state, next, meta, choice)?;
+            if choice.recipient.is_some() {
+                "Extra Heroic Inspiration given to the selected character.".into()
+            } else {
+                "Extra Heroic Inspiration declined; the original Inspiration is retained.".into()
+            }
+        }
         TableOperation::AwardHeroicInspiration {
             character_id,
             reason,

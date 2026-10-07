@@ -9,6 +9,13 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    AwardExcessInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
+    ResolveHostInspirationTransfer {
+        choice: TableInspirationTransferChoice,
+    },
     AwardHeroicInspiration {
         character_id: CharacterId,
         reason: String,
@@ -198,6 +205,8 @@ pub enum TableRollChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspiration_transfer: Option<TableInspirationTransferView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub grapple: Option<TableGrappleView>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
@@ -218,6 +227,18 @@ pub struct TableView {
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableInspirationTransferView<K = TableInspirationTransferChoice> {
+    pub character_id: CharacterId,
+    pub choices: Vec<TableInspirationOption<K>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableInspirationOption<K = TableInspirationTransferChoice> {
+    pub key: K,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

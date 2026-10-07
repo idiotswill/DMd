@@ -49,6 +49,13 @@ fn capabilities(
     state: &CampaignState,
 ) -> Result<Vec<ProjectionCapability>, String> {
     let mut result = Vec::new();
+    if let Some(transfer) = &raw.inspiration_transfer {
+        result.extend(transfer.choices.iter().map(|option| {
+            ProjectionCapability::InspirationTransfer {
+                choice: option.key.clone(),
+            }
+        }));
+    }
     if let Some(grapple) = &raw.grapple {
         result.extend(
             grapple
