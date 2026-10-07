@@ -613,3 +613,30 @@ Ground, gift/decline, one physical reroll submission and exact retained retry.
 The 23 prior mass frontend cases remain unchanged. Direct formatting and source
 inspection are complete; all project execution and independent successor review
 remain UNRUN/pending. This source commit does not claim that F1 passed runtime.
+
+### Deliberate reviewed fixture-history receipt
+
+The capability correction is coherently committed at
+`1beb270ed8d838e83eff26e8cae33a8f80b9e43e`, after diagnosis-only parent
+`0818782`. Root now authorizes a normal whole-history merge of exact reviewed
+`1c86dd6c1bb61cd871f7d7db92493bf4c7d71e06`, tree
+`52218c35130b067da3415cb0afcd506af5c1d3da`, without copying or cherry-picking.
+Its independent report SHA256 is
+`8645dc236e4abc0318bace71574231daa08d50e02130eab19a0c5bf102f3b5a8`.
+The full donor source change and complete added plan evidence were inspected.
+
+Both reviewed histories 586 and 3a are already common ancestors. Git's source-only
+merge-tree preview is conflict-free and changes only the combined Glaive helper
+module and combined-receipt plan. Expect both files to equal the donor exactly;
+all other recipient entries must remain exact, including the capability fix and
+physical-facts plan. The donor keeps the unrelated PC rejection and adds genuine
+Host admission in a restored copy, with full unchanged-original and cold PC-path
+assertions. Inventory the single approved old Glaive call substitution; removing
+its new helper and reversing that call must restore the entire prior file.
+
+After receipt, freeze exact parents/tree and source preservation for root's
+independent review. All compilation, runtime, frontend and native checks remain
+UNRUN. Root separately reports main has advanced to the reviewed physical slice
+at `4cf815bd0f0d9b128612867ba829c9ac1c2549f7`; no main merge is allocated here.
+The genuine 969 capture is still running, so its historical consumer remains an
+explicit unmet dependency, with no replacement or skipped historical evidence.
