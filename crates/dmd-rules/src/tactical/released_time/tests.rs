@@ -1794,7 +1794,12 @@ fn released_interval_refuses_shove_attachment_work_and_commands_without_turn_aut
         effect: None,
     }));
     let encoded = forged.encode_json().unwrap();
-    let forged = CampaignState::decode_json(&encoded).unwrap();
+    let decoded = CampaignState::decode_json(&encoded).unwrap();
+    assert_eq!(decoded, forged);
+    let forged = decoded;
+    let before = forged.clone();
+    // Decoding rebuilds HashMaps. Compare refusal bytes to this decoded instance.
+    let encoded = forged.encode_json().unwrap();
     assert!(
         ReleasedValidation::derive(&forged)
             .err()
@@ -1811,6 +1816,7 @@ fn released_interval_refuses_shove_attachment_work_and_commands_without_turn_aut
         )
         .is_err()
     );
+    assert_eq!(forged, before);
     assert_eq!(forged.encode_json().unwrap(), encoded);
     for kind in [
         TacticalWorkKind::BeginShove,

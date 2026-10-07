@@ -34,6 +34,16 @@ the unrun de983 runner and previous CI failure. Fresh-head CI and a separately
 guarded successor selection must include the original failing case unchanged in
 name and all prior controls. Native/complete slice/Gate4 acceptance remain open.
 
+### Authored decoded-state comparison correction
+
+Plan aeecdf5889ea50b265a4dc8ac0ef958925d21488 preceded the test change. The
+roundtrip now explicitly asserts decoded typed equality to the original hostile
+state, retains that decoded state's typed/encoded baseline, and asserts both
+unchanged after the original two refusal checks. All later work/action negatives,
+the actual accepted setup and every original refusal remain. Direct changed-file
+rustfmt check and whitespace checks pass. No compiler or runtime was executed;
+independent exact-head source review and fresh CI remain required.
+
 ## October 7 current Shove release producer correction plan
 
 Root assigned sole source writing on PR63 to `native_capture_audit_oct7` from
