@@ -381,3 +381,9 @@ loses direct toolchain provenance. Pass the existing strings to the diagnostic
 helper without invoking any extra command or changing compilation. Extend only
 the new provenance control, rerun the18 lightweight controls and freeze the full
 cumulative patch for final review. No further optional diagnostic expansion.
+
+The existing toolchain strings are now retained in both phase diagnostics.
+All18 lightweight controls pass (0.855s), including exact multiline toolchain
+provenance and exclusion of unrelated environment values; whitespace checks
+pass. Source is frozen for final cumulative review. Actual hosted diagnostic
+execution and the desktop rebuild cause remain pending.

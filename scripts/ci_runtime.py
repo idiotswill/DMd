@@ -61,11 +61,11 @@ def read_json(path):
     return json.loads(Path(path).read_text(encoding='utf8'))
 
 
-def record_phase(output, phase, argv, env, root, source):
+def record_phase(output, phase, argv, env, root, source, toolchain):
     write_json(output / f'diagnostic-phase-{phase}.json', {
         'diagnostic_only': True, 'phase': phase, 'argv': argv, 'cwd': str(root), 'source': source,
         'run_id': os.environ.get('GITHUB_RUN_ID'), 'run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT'),
-        'environment': {key: env.get(key) for key in DIAGNOSTIC_ENV},
+        'environment': {key: env.get(key) for key in DIAGNOSTIC_ENV}, 'toolchain': toolchain,
         'python': {'path': sys.executable, 'sha256': file_hash(sys.executable), 'version': sys.version},
         'runner': {'path': str(Path(__file__).resolve()), 'sha256': file_hash(__file__)}})
 
@@ -396,7 +396,7 @@ def run_allocation(args):
     packages, docs = workspace_targets(metadata, root)
     build_env = os.environ.copy()
     build_env['CARGO_LOG'] = FINGERPRINT_LOG
-    record_phase(output, 'build', base + ['--no-run'], build_env, root, identity)
+    record_phase(output, 'build', base + ['--no-run'], build_env, root, identity, {'rustc': rustc, 'cargo': cargo})
     built, build_logs = run_logged(base + ['--no-run'], output / 'build', cwd=root, env=build_env)
     graph, messages = artifact_graph(built, roots)
     executables = inventory_executables(messages, packages, root)
@@ -414,7 +414,7 @@ def run_allocation(args):
     env['DMD_CI_RUNTIME_CONTEXT'] = str(context_path)
     env['RUSTDOC'] = str(shim)
     config = f'target.{host}.runner={json.dumps(runner)}'
-    record_phase(output, 'execution', base + ['--config', config], env, root, identity)
+    record_phase(output, 'execution', base + ['--config', config], env, root, identity, {'rustc': rustc, 'cargo': cargo})
     executed, execution_logs = run_logged(base + ['--config', config], output / 'cargo-execution', cwd=root, env=env)
     runtime_graph, runtime_messages = artifact_graph(executed, roots)
     require(runtime_graph == graph, 'Cargo build graph changed between no-run and execution')

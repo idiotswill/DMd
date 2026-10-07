@@ -332,10 +332,13 @@ class ExecutableDiagnostics(unittest.TestCase):
             env = {'CARGO_LOG': ci.FINGERPRINT_LOG, 'RUSTDOC': '/instrumented/rustdoc',
                    'UNRELATED_PRIVATE_VALUE': 'must-not-be-recorded'}
             source = {'head': 'a' * 40, 'tree': 'b' * 40}
-            ci.record_phase(output, 'build', argv, env, output, source)
+            toolchain = {'rustc': 'rustc fixture\ncommit-hash: exact-rustc',
+                         'cargo': 'cargo fixture\ncommit-hash: exact-cargo'}
+            ci.record_phase(output, 'build', argv, env, output, source, toolchain)
             diagnostic = ci.read_json(output / 'diagnostic-phase-build.json')
             self.assertEqual(diagnostic['argv'], argv)
             self.assertEqual(diagnostic['source'], source)
+            self.assertEqual(diagnostic['toolchain'], toolchain)
             self.assertEqual(diagnostic['cwd'], str(output))
             self.assertEqual(diagnostic['environment'], {key: env.get(key) for key in ci.DIAGNOSTIC_ENV})
             self.assertNotIn('must-not-be-recorded', ci.canonical(diagnostic))
