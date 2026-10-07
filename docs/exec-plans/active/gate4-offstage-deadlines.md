@@ -1,5 +1,43 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## October 7 current Shove release producer correction plan
+
+Root assigned sole source writing on PR63 to `native_capture_audit_oct7` from
+clean, freshly fetched `d0bebbefd34805324345cec74d979431f02007ce`.
+The new `current_shove_releases_to_actorless_time_and_retains_exact_old_decision_retries`
+control failed in both actual CI logs: Linux job112298559775 and Windows
+job112298566197 each reached table_loop with67 passing and1 failing case.
+The failing `cold` submission returns `TableRejected` with
+`settle held actions, attacks and movement before finishing`. Linux checked a
+synthetic merge of d0 into c093; Windows checked literal d0. Neither run passes.
+
+Source tracing identifies an invalid test producer sequence, not a relaxed
+release requirement. The real Shove producer starts/pays its Attack action,
+spends the one attack and retains `budget.attack_window` after its consequence
+queue drains. `encounter_release_preflight_with_released` intentionally refuses
+that retained window even when `attacks_remaining` is zero and no resolution is
+pending. The real owning player's EndTurn enters the normal End boundary, then
+the shared turn drain resets the budget and starts the next actual turn. Host
+Conclude/Finish is not a substitute for that owned transition.
+
+Commit this plan first. Change only the new combined application control to
+assert the retained paid window, send the actual player's EndTurn through the
+existing opaque request and cold/portable/exact-retry helper, and assert that the
+real boundary clears the window before Host Conclude/Finish. Make its conclusion
+ruling describe that actual sequence. Preserve every existing driver and older
+test body, all current assertions, raw faces, immutable captures, source pins,
+production preflight and release semantics. No production, fixture, legacy-wire
+or acceptance change is authorized by this correction.
+
+This advances the product's complete tactical timing and exact suspension
+requirements under the active Gate4 checkpoint and ADR028 release preflight.
+It does not establish runtime, package/native or Gate4 acceptance. Only direct
+rustfmt and source/Git audits are allocated here; Cargo, compilation, tests,
+frontend commands, native/SQLite activity and push remain with root. Root must
+independently review the frozen delta, run the exact repaired control and the
+existing verification obligations, and inspect fresh exact-head CI before any
+acceptance claim. The failed d0 evidence remains attributed to d0.
+
 ## Receive current Expiry and accepted Shove — 2026-10-06
 
 Root is sole writer from clean, freshly fetched
