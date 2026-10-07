@@ -493,3 +493,13 @@ Direct changed-file rustfmt and whitespace checks pass. The original1111 count
 in the plan-only commit was a transcription error: the frozen b77 manifest has
 1109 Rust test bodies; none is changed by this helper-only correction. Full source
 audit, independent correction review and fresh runtime evidence follow the freeze.
+
+Root's prepublication review found that the new construction helper has eight
+arguments, exceeding the default strict Clippy threshold. No runtime or CI was
+started on061 and no lint exception is justified. Before publishing, group the
+two opposition flags in a named test-only FixtureOpposition value so the helper
+retains seven arguments. The old wrapper explicitly supplies its existing
+pc_opportunity value and opponent_opposes_pc false; the Ogre scenario explicitly
+supplies both true. Destructure that value at the start of the helper to keep
+its complete setup body unchanged. Preserve every case body and production byte,
+then freeze a successor for the independent review and new focused runner.
