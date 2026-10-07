@@ -1,5 +1,26 @@
 # Gate 4 — Pinned physical character creation
 
+## Native evidence documentation plan — 2026-10-07
+
+Root allocated sole documentation writing on PR #62 to the copied-capture auditor.
+A fresh fetch confirms local and remote `codex/gate4-physical-creation-source` at
+`48f7c92b63bd2f9c586d2622d1875342f004b093`, tree
+`eee68a87b8fec25f86d78cf032ab48509b0172cf`, with a clean working tree.
+
+Record the completed controlled native QA route in this plan and the Gate 4
+checkpoint, with a roadmap pointer. Bind the source/package, saved-capture and
+operator evidence separately. Preserve every existing acceptance requirement and
+historical result with its original attribution. The source-plan, Gate 4 production
+integration and product-definition physical-player requirements remain unchanged;
+entered QA faces do not establish human physical throws or a human playtest.
+
+Scope is these three Markdown documents only. No production, test, content,
+database or runtime changes are allocated. Verify exact artifact hashes, factual
+claims, links and the complete diff; audit all other Git blobs unchanged. Freeze
+the coherent documentation result for independent review. Root retains publication,
+required checks on the final evidence head, protected merge and merged-main
+verification. This work does not close Gate 4 or begin Gate 5.
+
 ## Receive accepted Shove main before renewed CI — 2026-10-06
 
 Root fetched authoritative main5afc992e62bb967aceec69db53f19b6347b70855,
