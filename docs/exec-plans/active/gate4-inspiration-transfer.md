@@ -253,3 +253,11 @@ contract. Direct formatting, full diff and fresh independent correction review
 precede publication; exact-head runtime and all inherited fixes remain required.
 Windows486 did pass186 frontend tests across28 files, seven notice isolations
 and zero Svelte diagnostics; that does not establish Rust or native acceptance.
+
+Root made exactly those two source corrections after planf702889. Direct
+Rustfmt using the established GNU1.98.1 toolchain passed for both files, followed
+by direct check and diff whitespace check. An initial bare rustfmt command was
+unavailable on PATH and did not execute; the explicit existing binary resolved
+that tooling issue. Only the one RulesContext actor expression and two pattern
+parentheses changed. Corrected-head compilation/runtime is still unrun; fresh
+peer review is required before push.

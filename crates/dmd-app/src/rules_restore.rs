@@ -840,8 +840,8 @@ fn validate_rulings(
                 .get(&record.command.id)
                 .ok_or("ruling has no checked typed command")?;
             if let RecoveryEvent::Table(event) = command
-                && let (TableAction::AwardHeroicInspiration { reason, .. }
-                | TableAction::AwardExcessInspiration { reason, .. }) = &event.action
+                && let TableAction::AwardHeroicInspiration { reason, .. }
+                | TableAction::AwardExcessInspiration { reason, .. } = &event.action
             {
                 if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
                     return Err("ruling disagrees with its originating Inspiration award".into());

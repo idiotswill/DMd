@@ -476,7 +476,7 @@ async fn only_current_attending_owner_may_use_opaque_gift_or_decline_and_raw_aut
                     RulesContext {
                         campaign_id: f.campaign,
                         issuer,
-                        actor: Some(AgentRef::Entity(f.actors[0])),
+                        actor: Some(f.actors[0]),
                         session_id: Some(f.session),
                         expected_event_sequence: state.applied_event_sequence
                     },
