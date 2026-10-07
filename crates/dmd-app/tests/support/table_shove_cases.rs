@@ -466,6 +466,8 @@ async fn current_shove_releases_to_actorless_time_and_retains_exact_old_decision
     );
     assert_eq!(flow.phase, TacticalPhase::Active);
     assert!(flow.resolution.is_none());
+    assert_eq!(flow.budget.attacks_remaining, 0);
+    assert!(flow.budget.attack_window.is_some());
     let original = export_campaign(&f.pool, f.campaign).await.unwrap();
     let decisions = original
         .table_transport_bindings
@@ -482,10 +484,49 @@ async fn current_shove_releases_to_actorless_time_and_retains_exact_old_decision
         2,
         "one save selection and one Prone decision"
     );
+    // Resolving Shove spends the attack but retains its paid Attack window.
+    // Only the owner's real End boundary settles it before Host release.
+    let end_turn = request(&f, false, action(TacticalAction::EndTurn)).await;
+    Box::pin(cold(&mut f, &url, end_turn)).await;
+    let after_turn = state(&f).await;
+    let settled_flow = after_turn
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap();
+    assert!(settled_flow.resolution.is_none());
+    assert_eq!(settled_flow.budget.attacks_remaining, 0);
+    assert!(settled_flow.budget.attack_window.is_none());
+    assert_eq!(
+        after_turn
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number,
+        after_shove
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number
+            + 1
+    );
+    assert_eq!(
+        after_turn.rules.as_ref().unwrap().rolls,
+        after_shove.rules.as_ref().unwrap().rolls
+    );
     for action_value in [
         TacticalAction::ConcludeHostilities {
             cadence: AftermathCadence::ContinueExistingOrder,
-            ruling: "End the resolved body-action encounter without another turn.".into(),
+            ruling: "End the resolved body-action encounter after settling its paid Attack window."
+                .into(),
         },
         TacticalAction::FinishEncounter,
     ] {

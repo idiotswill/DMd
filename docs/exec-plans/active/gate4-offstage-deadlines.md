@@ -38,6 +38,28 @@ independently review the frozen delta, run the exact repaired control and the
 existing verification obligations, and inspect fresh exact-head CI before any
 acceptance claim. The failed d0 evidence remains attributed to d0.
 
+### October 7 source correction handback; runtime unrun
+
+After plan-first commitc978a53, only the new combined control now performs a
+real player-owned EndTurn between the completed Shove and Host conclusion.
+It checks the exhausted attack count and still-present paid window before the
+command, then the cleared window/count, drained boundary, exactly one actual
+turn advance and unchanged raw rolls afterward. The unchanged `cold` driver
+covers file-backed reopen, independent portable continuation, original accepted
+retry and changed-body refusal for this additional command. The original Shove
+decision bindings are captured before EndTurn and remain the exact later retry
+subjects; all old journal/projection-prefix assertions remain in place.
+
+Direct rustfmt and direct rustfmt check passed on the one changed Rust file;
+`git diff --check` passed. A full-file inverse-byte comparison reconstructs the
+original d0 Rust blob after removing only the declared additions and restoring
+the conclusion-ruling sentence. Thus every existing helper, older scenario and
+all other assertions remain exact. No production file or captured fixture was
+changed. No compiler, Cargo, runtime test, frontend, database or native command
+ran for this correction, and no push occurred. Root's independent review and
+fresh exact-head verification remain the next required actions; neither the
+actual d0 failures nor earlier parent passes are reclassified by this source fix.
+
 ## Receive current Expiry and accepted Shove — 2026-10-06
 
 Root is sole writer from clean, freshly fetched
