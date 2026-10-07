@@ -640,3 +640,29 @@ UNRUN. Root separately reports main has advanced to the reviewed physical slice
 at `4cf815bd0f0d9b128612867ba829c9ac1c2549f7`; no main merge is allocated here.
 The genuine 969 capture is still running, so its historical consumer remains an
 explicit unmet dependency, with no replacement or skipped historical evidence.
+
+### Complete the distribution declaration consumers
+
+Root owns the branch after the frozen987 handback and published draft PR72.
+Source inspection found a second concrete omission: the shipped manifest has
+the required `equipment-mass-v1.json` declaration, but the developer manifest
+generator's fixed file tuple and the existing distributed-rules test's exact
+expected BTreeSet still contain only the ten earlier files. The generator would
+remove the required declaration, and the exact-set test would fail. This is a
+direct source mismatch, not a claimed Rust test result. Fresh987 CI has only
+partial results so far; all original logs/heads remain correctly attributed.
+
+Commit this diagnosis before changing the two declaration consumers. Add only
+the mass filename to each complete existing list, preserving every earlier
+filename and the exact-set equality, source integrity load and ruleset resolution.
+No content, manifest bytes, production rules, test selection or guard changes
+are allocated. Inventory these justified exceptions to the prior preservation
+counts; preserving an obsolete expected inventory is not the distribution contract.
+Independently verify the entire old files are recovered by removing just these
+literal additions and their comma syntax. Run the corrected generator on a fresh
+external copy of the exact content and require byte-identical manifest output,
+leaving the repository content and all historical evidence untouched. This small
+developer-tool check uses no Cargo, compiler, npm, native app or database and
+does not interfere with the sole active969 capture allocation. Source review and
+fresh exact-head CI must follow; the Rust distribution case and all wider project
+verification remain unrun until their actual outcomes arrive.
