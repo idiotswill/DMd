@@ -100,7 +100,7 @@ describe('independent Grapple and Ground capabilities with physical presentation
     };
     vi.mocked(tableApi.view).mockImplementation(async () => structuredClone(view));
     vi.mocked(tableApi.action).mockImplementation(async request => {
-      expect(request.version).toBe(5);
+      expect(request).toMatchObject({ version: 5 });
       if (request.action === 'EnableGrappleAccess') {
         expect(view.grapple).toBeUndefined();
         view = { ...view, revision: 'grapple-enabled', grapple: { version: 3, choices: [], ground_drag: [] } };

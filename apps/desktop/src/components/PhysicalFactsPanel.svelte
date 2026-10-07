@@ -69,7 +69,7 @@
               {/if}
               {#if control.kind==='body'}<label><input type="checkbox" bind:checked={unknown} disabled={disabled}/> Weight is unknown</label><p>Exclude clothing, equipment and carried objects.</p>{/if}
               {#if (control.kind==='body' && !unknown) || control.kind==='personal' || (control.kind==='item' && (choice==='unit' || choice==='gross' || choice==='nonstandard'))}
-                <label>Pounds<input required type="text" inputmode="decimal" maxlength="27" pattern="(0|[1-9][0-9]*)(\.[0-9]{1,6})?" bind:value={pounds} disabled={disabled}/></label>
+                <label>Pounds<input required type="text" inputmode="decimal" maxlength="27" pattern={'(0|[1-9][0-9]*)(\\.[0-9]{1,6})?'} bind:value={pounds} disabled={disabled}/></label>
               {/if}
               {#if control.kind==='item' && choice==='nonstandard'}<label>Physical difference from the ordinary catalog object<input required maxlength="200" bind:value={name} disabled={disabled}/></label><p>This records this object's physical weight. Its printed source entry and combat properties stay unchanged.</p>{/if}
               {#if control.kind==='personal'}

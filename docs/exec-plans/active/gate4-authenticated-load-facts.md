@@ -702,3 +702,10 @@ assertions. No type cast, disabled check, relaxed pattern or production transpor
 change is needed. Independent source review and fresh Windows check/test/build
 must verify the successor. Root's local969 capture keeps its exclusive heavy
 allocation; no local frontend/compiler run is started for this correction.
+
+The two single-line corrections are authored. The Svelte attribute now contains
+one JavaScript string whose decoded pattern is the same intended original regex;
+the request assertion still requires numeric version5 and leaves all subsequent
+exact action/channel/revision/retry checks intact. Whitespace checking passed.
+Full-file inverse review, independent correction review and fresh actual CI
+follow the freeze; no frontend compilation or test pass is inferred from source.
