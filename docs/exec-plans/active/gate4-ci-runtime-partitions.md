@@ -387,3 +387,52 @@ All18 lightweight controls pass (0.855s), including exact multiline toolchain
 provenance and exclusion of unrelated environment values; whitespace checks
 pass. Source is frozen for final cumulative review. Actual hosted diagnostic
 execution and the desktop rebuild cause remain pending.
+
+
+## Missing watched capabilities directory — before implementation
+
+Actual literal dd344 Windows run37659391088, attempt1, fails jobs112924988940
+(remainder) and112924989071 (grapple-public) at the unchanged before-execution
+executable guard. Both preserved Cargo INFO logs name the same cause: the missing
+`crates/dmd-desktop/capabilities` path makes RunCustomBuild stale (MissingFile),
+then the desktop Test unit stale (StaleDepFingerprint). Only the desktop test
+executable recompiles. Both phases have593 identical JSON messages after removing
+only `fresh`; source/toolchain/runner/cwd and the approved configuration agree.
+Actual expected/replacement SHA256 values are retained. The artifacts contain
+no complete receipt; remainder's69 prior passing cases do not pass the allocation.
+The precise differing PE bytes are not captured, so no linker-timestamp cause is
+claimed. The observed missing watched path is sufficient to explain the rebuild.
+
+Independent full logs/artifact/source diagnosis:
+`tooling/ci-oct7/pr73-dd344-windows-failure-diagnosis-2026-10-07.md`, SHA256
+`5ec156f681f2651812a33321fce543314248ee0a2b7d1fd153b75067febfb387`;
+full source/phase/ZIP-member audit SHA256
+`31b12df4d497ed06601a19ca122f0d5c97e115003c8ab5b615a2eacb3cd1ecc1`.
+Both downloaded failure artifacts match their actual GitHub upload SHA256 values;
+all original failures remain preserved and no active job was cancelled.
+
+Exact locked tauri-build2.6.3 crate checksum
+`bc9ce40b16101cb6ea63d3e221567affd1c3a9205f95d7bc574941a10636b632`
+matches Cargo.lock and the read registry source. Its src/acl.rs lines424-428
+unconditionally emits the default `rerun-if-changed=capabilities` watch, then
+parses `./capabilities/**/*`. Empty security.capabilities does not disable the
+watch. Locked tauri-utils2.9.3 checksum
+`3e176a18e67764923c4f1ce66f25ae4abe5f688384d5eb1a0fa6c77f3d90f887`
+also matches its crate and source. Its src/acl/build.rs lines41-47/204-215 parses
+only json, optional json5 and toml extensions; `.gitkeep` has no such extension.
+
+Root now selects only a tracked inert `crates/dmd-desktop/capabilities/.gitkeep`
+to make that watched directory exist in every fresh checkout. It defines no
+capability or permission. Preserve security.capabilities=[], build.rs, config,
+all production/test bodies, dependencies, workflow/runner bytes, exact phases,
+byte guards, default profile/threading, timeouts and complete coverage. No
+stabilization rebuild, hash replacement/normalization, watch bypass or added
+capability JSON/TOML is selected. Commit this plan before the sentinel.
+
+Allowed local validation is complete Git/source preservation plus the existing18
+lightweight Python runner controls. No Cargo/compiler/npm/gameplay/native/database
+execution is allocated. Freeze for root and independent review before publication.
+Actual fresh Windows two-phase execution must prove the MissingFile reason and
+unnecessary rebuild gone, retain identical inventoried/executed bytes, and finish
+all allocation/aggregate/packaging requirements. Any newly observed different
+cause requires its own diagnosis. This proposal is not a passing-build claim.
