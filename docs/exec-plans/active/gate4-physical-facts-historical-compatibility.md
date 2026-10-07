@@ -289,3 +289,71 @@ The actual unchanged `scripts/check-genericity` passed from this worktree.
 No compiler, Cargo, project test, npm, database or native check ran. Independent
 full-tree relocation review and fresh exact-head CI are required before resuming
 the consumer. The original9c CI failure remains attributed to its actual head.
+
+
+## Source-only consumer implementation on the relocated corpus
+
+The receiving baseline is published `8c754d01b874f105931717bfe60c993587fcb092`,
+tree `4a3e6df53819659e00a1cbc00e9f10a57d481c24`. Its unchanged genericity guard
+passed both the local static check and actual hosted job112822713756. The latter
+checked synthetic6f650525 whose tree equals8c; the original9c failure remains
+preserved. Resume the selected complete consumer scope after that condition.
+
+Three ordinary Cargo-discovered integration harnesses now call shared support:
+`physical_history_ground`, `physical_history_recipient`, and
+`physical_history_decline`. The loader verifies the complete232-file receipt,
+all191 original payload/manifest files, three hard-pinned source manifests,
+ordered8/7/7 cut labels, compact original requests/responses, nested JSON and
+binding/event/audit joins. Negative copies exercise packaging, duplicate keys,
+unsafe paths, corruption and mismatched joins without changing received files.
+
+Every cut's before/after image has authored actual file-SQLite restore, exact
+DTO/roll-options/export/replay, cold reopen, independent portable recovery and
+retained-binding retry checks. A separate genuine next-input branch compares the
+canonical result and typed event. Only its new outer EventId and exact
+same-audience/capability presentation slots are related; previous rows and
+surviving handles remain literal, with explicit nonborrowing/length checks.
+Actual restore authenticates each new branch's untouched digest and bindings.
+All command/read/refusal/retry atomicity checks compare ordered logical cells of
+every database table. Hostile restores preserve an actual unrelated campaign,
+then must accept the original export and reject a duplicate import atomically.
+Structural portability refusals and owned-history semantic refusals are asserted
+separately. Matching forged latest snapshots cannot authenticate resources,
+source raw ownership, physical facts or activation origin.
+
+Pending old routes drain through real controls. Ground reaches the actual reactor
+Start before Finish. Only genuine Finished history enables M5, followed by an
+explicit unknown-body Host fact; no weight, source receipt or completeness is
+invented. Replacement encounters retain old participants and source controllers,
+use ordinary preparation/initiative, and explicitly reactivate paid equipment
+access before spending an Action. Identical Goblins use one shared initiative
+group. New Ground play pays a real prefix, admits its source-owned opportunity,
+releases while the raw remains issued, and answers through the source channel.
+The recipient route separately proves its historical gift excludes another
+recipient offer, then really spends that gift on PC1's save before the new
+transfer and later PC0 save. Decline keeps PC1 uninvolved. All use real turns,
+physical test faces, owned choices and uncertain-ack retries.
+
+The genuine old Ground campaign uses its accepted legacy CreateCharacter route;
+the two Inspiration campaigns use CreateCharacterFromSource. Neither is
+reclassified. Command envelopes advance to6 with request/presentation5;
+TableEvent remains1, CampaignState4 and the physical attachment1. The literal
+old raw/presented `Unsupported roll` and canonical `Grapple saving throw` remain
+explicit expectations. A separate future roll-details receipt must preserve them.
+
+Only new harness/support files and this append are in scope. No production,
+old test body, dependency, catalog, script, fixture byte, profile or verification
+policy changes. Direct standalone rustfmt and Git/source/file audits are the only
+author checks. No Cargo, compiler, project test, npm, database or native execution
+has run for this consumer. These tests are authored, not accepted evidence;
+actual22-cut execution, all3 genuine5 routes, adversarial checks, canonical
+verification and independent frozen review are still required. Test physical
+faces do not claim human physical throws or native desktop acceptance. Carrying,
+Gate4 integrated/native/human play and all other gate obligations remain open.
+
+Next: independently review the frozen complete consumer diff and preservation
+receipt, then root alone schedules exact-head compilation and complete ordinary
+harnesses under the sole heavy slot. Any real production incompatibility must be
+reported and planned before a bounded source correction; never rewrite the old
+corpus to fit current behavior. Receive separate reviewed donors only after this
+source handback, with their own whole-history composition review.
