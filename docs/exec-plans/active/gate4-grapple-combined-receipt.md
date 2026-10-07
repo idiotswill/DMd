@@ -393,3 +393,45 @@ pass. The final handback must record full prior-tree and old-body preservation,
 exact inverse of the registration/production arm, clean frozen head/tree and the
 minimal full patch. Root must freshly review and execute the new head before
 advancing PR70 or claiming behavioral acceptance.
+
+## Exact-head compiler corrections after publication, 2026-10-07
+
+Root owns the sole writer in the original PR70 checkout after its clean normal
+fast-forward to `58fe85403b64141edd08423c9240ceb8287900a9`, tree
+`f69c40920948fac1b4996fb26a0f6cf4d189edf8`. Both root and independent source
+reviews cleared the Ogre choice correction; they were explicitly not compile or
+runtime results. Fresh Git fetch confirms the same PR head and main `1a9de14`.
+
+Exact-head CI now provides three real compiler failures in the application test
+harness. Linux stable job112703972633 and MSRV job112703972692 both checked
+synthetic `d1bcf246`, whose tree equals58; Windows MSRV job112703972545 checked
+literal58. All three report the same errors:
+
+- E0063: `support/table_grapple_ground_transport.rs:1082` constructs
+  WeaponUseChoice without the receiver's optional `after_equipment` field.
+- E0599: `support/grapple_combined_current.rs:320,531` names nonexistent
+  `TacticalAction::ChooseMastery`; the actual producer is ChooseAttackMastery.
+
+Complete failed logs and attribution are retained outside Git under
+`tooling/ci-oct7/pr70-58-job-<job>-exact.log`; failure audit SHA256
+`cc139ad497fcae794ad0f0b5fa20e12fdce799000f7cb29b4b53f02cf9b95e76`.
+No Rust runtime case or Linux Clippy ran in those failed jobs. The Windows MSRV
+frontend completed207 tests in31 files with zero Svelte diagnostics before the
+compile failure; that is frontend evidence only.
+
+Commit this plan before three bounded test-source corrections. Add only
+`after_equipment: None` to the existing real target-death attack constructor,
+preserving its previous behavior and every input/assertion. Change both new
+combined Glaive calls to the actual ChooseAttackMastery variant, keeping the
+exact Decline choice and normal owned dispatcher. Do not add an alias, bypass
+the real choice, weaken an assertion or change production. Preserve all other
+source, content, historical fixtures and prior test bytes; prove the complete
+two-file inverse and inventory the one constructor and two enum-name changes.
+
+Root reviews the full delta and obtains an independent pass, then publishes
+the successor for fresh CI. Direct changed-file formatting/whitespace checks
+are allocated; the local heavy slot remains occupied by immutable Held0c60.
+Preserve the failed58 logs and its prepared but UNRUN focused runner; prepare a
+separate guarded successor manifest only after review. Full canonical checks,
+the complete combined runtime selection, native acceptance and every remaining
+Gate4 requirement remain pending. This compiler correction changes no scope.
