@@ -503,3 +503,101 @@ pc_opportunity value and opponent_opposes_pc false; the Ogre scenario explicitly
 supplies both true. Destructure that value at the start of the helper to keep
 its complete setup body unchanged. Preserve every case body and production byte,
 then freeze a successor for the independent review and new focused runner.
+
+## Receive the distinct retry stimulus without moving the active run
+
+Root owns this separate receiving checkout again. It has normally fast-forwarded
+from58 to reviewed586; the original positive-integration checkout remains frozen
+at586 under local run67388 and its exact-head CI. No active run/source is retargeted.
+Root and independent reviews clear586's fixture correction; its canonical
+verify-fast passed, and the first actual Ogre case is currently running. Those
+partial results are not acceptance for this receiving branch.
+
+PR71 d5 CI exposed a second fixture error: its pending-transfer test first calls
+the real Dodge producer, then the shared cold helper's negative replaces Dodge
+with Dodge. Production correctly recognizes an exact retry; the assertion fails
+before the transfer setup. Reviewed successor86ed8ae17b47f58dd32f629b32a7d53faf577242
+clones the request, substitutes Dash only for original Dodge (otherwise Dodge),
+and asserts inequality before the unchanged refusal/export/replay checks. All966
+current donor case bodies and production bytes remain exact. Its failed d5 log,
+cause, plan and new source review remain preserved; fresh86 CI is pending.
+
+Commit this receipt plan, then normally merge the whole86 history. Expected source
+join is only that exact shared-helper hunk, with complete donor plan history and
+all receiver opposition options and combined controls retained. No cherry-pick,
+assertion reduction, production edit or old test body modification is allocated.
+Audit all723 entries and1109 current case bodies, the complete donor/receiver
+inverse and source/content preservation; get independent final review and freeze.
+No Cargo/compiler/npm/native/database execution or push is allocated to this
+receiving checkout. After original run67388 ends, root can retain its literal586
+outcome, fast-forward the original integration normally, and schedule new exact-
+head verification. Capture/mass branches receive only deliberate whole-history
+changes under their single-writer boundaries. Gate4 acceptance remains unchanged.
+
+The received86 donor subsequently failed all four CI compile jobs: its new Dash
+constructor omitted the required speed. It ran no Rust tests. Root's final donor
+correction3a68bd793e47aad6fbadad9a3b889d47be906189 supplies only the existing
+DashSpeed::Speed field plus the complete failure/correction plan. Both reviewers
+now inspected the actual enum, exported/imported type and existing application
+producer; the full d5/86 inverse and all966 current donor case bodies pass source
+review. Receive the whole3a successor normally after this amendment, then freeze
+the combined result. This is not a compiler/runtime acceptance claim. Original586
+run67388 remains immutable, and the old failed86 and intermediate3b receipt remain
+in Git/evidence history without being relabeled as successful builds.
+
+## Correct the ordinary weapon opportunity channel expectation
+
+Original local run67388 finished on exact586 at2026-10-07T11:11:05Z. Canonical
+verify-fast and both new Ogre cases passed. The next Glaive case failed in
+Fixture::reject at table_grapple_public.rs914: a submitted request was accepted.
+The remaining12 cases and strict Clippy were not reached. Complete failed log
+SHA256 is55b5daacbe1286b2bb4dd6791bf8640e0f298ed6da3dedde8ed47f340027d192;
+root terminal audit0556c45503c34c2bcdc0e083d661aadb84fc8ae65f7714d6512d1767af52705f
+rechecked all723 source files and every completed log. The original checkout and
+target remain unchanged; the heavy lock has been released.
+
+Root and an independent reviewer traced the exact first Host iteration of
+reject_other_channels for Action::OpportunityAttack with the PC's real held
+Glaive. Host maps to trusted Admin with no actor. The existing generic tactical
+authorize explicitly permits that issuer for the selected PC reactor; source
+control's distinct restriction applies to player-controlled source creatures.
+This direct ordinary weapon action has no owner-only opaque decision handle.
+The scenario's valid weapon/window is therefore correctly admitted. The unrelated
+PC1 attempt had not yet been reached. This failure is distinct from the cold
+helper's Dodge-to-Dodge retry bug; revieweddf cannot repair this false negative.
+
+Root is sole writer of this receiving branch. Commit this diagnosis/plan before
+the correction. Preserve every production/content/frontend byte and the shared
+reject_other_channels behavior for owner-bound equipment and physical-reroll
+decisions. Replace only the Glaive case's inappropriate shared-helper call with
+a dedicated ordinary-weapon channel check. Keep an actual foreign PC1 refusal
+with complete state/row atomicity. Independently restore the genuine paused
+export to a separate runtime and prove trusted Host admission through the real
+application: original PC reactor/weapon/paid pair and physical-roll ownership,
+exact accepted retry and original replay. The original live fixture must remain
+unchanged, then continue its original PC0 cold path and complete endpoints.
+No direct positive state edit, permission broadening or altered production guard
+is allocated. This is the single justified old-case change; inventory its exact
+one-call substitution and retain every other1108 old Rust case body byte.
+
+Freeze the correction for independent full-file review, prepare a new exact-head
+selection including the failed Glaive and corrected transfer cases, and publish
+through a normal fast-forward of the idle original integration after verification
+preparation. Preserve all586 and intermediate df artifacts as historical evidence.
+The separate frozen969 producer has unchanged pre-mass production and distinct
+capture routes; root may allocate it after the failure/capture-path diagnosis.
+No capture result replaces the corrected combined selection, full checks, native
+acceptance, ordinary carrying or any remaining Gate4 requirement.
+
+The correction now adds one test-only helper and changes only the failed Glaive
+call site. It first rejects the unrelated PC1 request with full row/state equality,
+then restores the genuine paused export in a separate in-memory application.
+The actual Host request must be accepted for the original reactor/target/weapon,
+carry the original command ID and Admin/no-actor provenance, preserve the paid
+grapple transport and characters, spend that reactor's reaction, and assign the
+physical roll to that reactor. Exact retry and original replay must agree. The
+original export (apart from its export timestamp), all rows and state must remain
+unchanged before the existing PC0 continuation. The shared owner-bound negative
+helper is unchanged. Direct changed-file rustfmt and whitespace checks passed;
+compilation, runtime and CI for this correction remain UNRUN. Independent frozen
+source review and new exact-head verification preparation are the next actions.
