@@ -244,11 +244,28 @@ fn begin_boundary_from(
         super::ready::expire_owner(state, meta, actor)?;
     }
     expire_legacy(state, actor, number, boundary)?;
-    effect_operation(
-        state,
-        meta,
-        EffectLifecycleOperation::Observe(EffectObservation::Time),
-    )?;
+    let timed_expiry_due = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_effects.as_ref())
+        .is_some_and(|effects| {
+            effects
+                .groups
+                .iter()
+                .map(|group| &group.expires)
+                .chain(effects.effects.iter().map(|effect| &effect.expires))
+                .any(|expiry| expiry_matches(expiry, &EffectObservation::Time, state.clock.now))
+        });
+    // Turn discovers timed expiry and turn work together, preserving their owner's
+    // ordering choice. Retain the historical empty Time stamp on every no-due path.
+    // An absent legacy attachment is initialized by that original Time operation.
+    if !timed_expiry_due {
+        effect_operation(
+            state,
+            meta,
+            EffectLifecycleOperation::Observe(EffectObservation::Time),
+        )?;
+    }
     effect_operation(
         state,
         meta,

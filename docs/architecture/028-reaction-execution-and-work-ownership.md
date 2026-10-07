@@ -205,7 +205,12 @@ separate required Gate4 work with their own source and ownership acceptance.
 
 ## Compatibility and verification obligations
 
-### Authenticated encounter release (merged; separate main verification pending)
+### Authenticated encounter release (accepted through PR48)
+
+PR48 is accepted at `dbf1d633460473183324b4ec519e8d1980884b5c`; the
+[release plan](../exec-plans/active/gate4-encounter-release.md) records separate
+successful literal-main checks. The source8c paragraph below preserves its
+historical candidate evidence and then-pending integration requirements.
 
 `EncounterReleaseV1` owns flow 5. Counterspell requires a later boundary. The
 initial domain/rule checkpoint defined this executor and inherited hit/missile
@@ -214,7 +219,8 @@ alongside authenticated finish, closed-session upgrade, replay, replacement and
 desktop controls. Integrated8c03f9f passes canonical/CI historical continuations and
 actual packaged two-encounter recovery; the encounter-release plan records precise
 scope. Final d4 passed all six checks and merged in PR48 as dbf1d63 with exact tree
-equality; separate literal-main runtime checks remain pending. Flows1–4 keep their accepted meanings and
+equality; separate literal-main checks subsequently passed as recorded in the
+release plan. Flows1–4 keep their accepted meanings and
 the historical unit upgrade remains 1→2.
 
 Explicit conclusion is narrative evidence that fighting stopped. A separate host

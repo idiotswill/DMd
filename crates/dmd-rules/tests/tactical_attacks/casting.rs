@@ -218,6 +218,17 @@ fn source_caster(
     spell: &str,
     additional_languages: Vec<String>,
 ) -> (Fixture, SpellCastChoice) {
+    let (mut f, choice) = prepared_source_caster(definition, spell, additional_languages);
+    f.begin();
+    f.run(Some(0), TacticalAction::EndTurn);
+    (f, choice)
+}
+
+fn prepared_source_caster(
+    definition: &str,
+    spell: &str,
+    additional_languages: Vec<String>,
+) -> (Fixture, SpellCastChoice) {
     let mut f = Fixture::new();
     f.arm("club", false, false); // Genuine Human target with its source profile.
     let actor = f.actors[1];
@@ -278,8 +289,6 @@ fn source_caster(
         .unwrap()
         .id;
     f.state.applied_event_sequence += 1;
-    f.begin();
-    f.run(Some(0), TacticalAction::EndTurn);
     (
         f,
         SpellCastChoice {
@@ -294,6 +303,9 @@ fn source_caster(
         },
     )
 }
+
+#[path = "casting_timed_expiry.rs"]
+mod timed_expiry;
 
 #[test]
 fn real_source_mage_casts_mage_armor_with_material_and_audited_timed_defense() {
