@@ -679,3 +679,26 @@ This developer-tool result is not a Rust distribution-test or full-suite pass.
 The original protected-inventory statement now has this explicit generator
 exception, and the old distribution test has this justified additive exact-set
 expectation. No original filename, equality assertion or integrity check is lost.
+
+### Actual Windows frontend compiler failures on987
+
+Both literal987 Windows jobs (stable112777428903 and MSRV112777429145) failed
+the frontend check before running frontend tests/build or Windows Rust checks.
+Their complete logs report exactly two errors and zero warnings. At
+PhysicalFactsPanel.svelte72 the quoted HTML pattern treats its `{1,6}` repetition
+as Svelte interpolation, producing an unused comma expression. At the new
+TablePhysicalCapabilities.test.ts103 the mock parameter is a SavedContext union,
+so direct `.version` access is invalid for its legacy member. Linux MSRV passed
+on the exact987 synthetic tree; no complete987 runtime pass is established.
+Full terminal evidence is retained in tooling/ci-oct7, with combined audit SHA256
+`2eb1322f6efb7c81c7952d9c76f926f31cde952b0a10f68af7f1eea19590dba1`.
+
+Commit this diagnosis before the smallest correction: express the unchanged
+decimal pattern as one escaped JavaScript string attribute, and assert the
+mock request structurally contains numeric version5 instead of accessing a
+property absent from the legacy union member. Preserve the exact pattern's
+digits/precision/leading-zero rules, every form field and all request/retry
+assertions. No type cast, disabled check, relaxed pattern or production transport
+change is needed. Independent source review and fresh Windows check/test/build
+must verify the successor. Root's local969 capture keeps its exclusive heavy
+allocation; no local frontend/compiler run is started for this correction.
