@@ -2,7 +2,16 @@
 
 Status: **Active — owner authorized continuation after Gate 3, 2026-09-24.**
 
-## Current integration checkpoint — 2026-10-01
+Current fetched main is `5afc992e62bb967aceec69db53f19b6347b70855` after PR51.
+Air source admission and source-bound Shove are merged. PR52's timed-expiry
+candidate391 receives that main; its native primary path passes as recorded in
+the [expiry evidence](../../checkpoints/gate4-expiry-native-2026-10-06.md).
+Final PR52 checks/merge and the wider Gate4 acceptance remain open.
+The [release plan](gate4-encounter-release.md) records PR48's separate successful
+literal-main checks. The checkpoints below retain their historical statuses;
+the complete Gate4 remains active.
+
+## Historical integration checkpoint — 2026-10-01
 
 Fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
 PR48 merge. Final reviewed head d4 passed all six checks and has exactly the same
