@@ -228,3 +228,11 @@ source paths, extern libraries, package `--test-run-directory`, flags and target
 It must not route dynamically generated doctest programs through the workspace
 executable inventory. Unexpected runtools/arguments fail closed. The injected
 and restored vectors are both recorded, and negative tests cover this restoration.
+
+Each Windows allocation runs the existing `desktop-prepare.ps1` unchanged in
+its own fresh checkout before Cargo discovery. This supplies the original
+frontend checks/build, icons and licenses required by the desktop build without
+transporting generated build assets or assuming equivalent machine paths.
+Repeated frontend runs are recorded as repeated validation, not extra distinct
+test coverage. The final packaging job also uses the unchanged packaging script
+and its own preparation. There is no new packaging shortcut or stale binary reuse.
