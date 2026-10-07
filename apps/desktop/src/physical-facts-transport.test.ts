@@ -29,14 +29,17 @@ describe('physical fact durable transport',()=>{
   it('uses the explicit activation input and keeps later real feature activations on v5',async()=>{
     const saved:UnconfirmedRequest={kind:'action',request:{...context,action:'EnablePhysicalFacts'}};
     saveRequest(saved);expect(loadRequest()).toEqual(saved);
+    vi.mocked(invoke).mockResolvedValueOnce({Accepted:{command_id:context.command_id,revision:'physical-enabled',outcome:{message:'Physical facts enabled.'}}});
     await tableApi.action(saved.request);
     expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...context,input:'EnablePhysicalFacts'}});
     for(const action of ['EnableGrappleAccess','EnableGrappleTransport'] as const) {
       const request:UnconfirmedRequest={kind:'action',request:{...context,session_id:'session',action}};
       saveRequest(request);expect(loadRequest()).toEqual(request);
+      vi.mocked(invoke).mockResolvedValueOnce({Accepted:{command_id:context.command_id,revision:'feature-enabled',outcome:{message:'Feature enabled.'}}});
       await tableApi.action(request.request);
       expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...context,session_id:'session',input:{Action:action}}});
     }
+    expect(invoke).toHaveBeenCalledTimes(3);
   });
   it.each([
     {version:4},
