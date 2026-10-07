@@ -21,6 +21,11 @@ SPECIAL = {'table_loop': 'table-loop', 'legacy_shield_missile_v1_replay': 'legac
            'table_grapple_public': 'grapple-public'}
 SCHEMA = 1
 ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
+FINGERPRINT_LOG = 'cargo::core::compiler::fingerprint=info'
+DIAGNOSTIC_ENV = ('CARGO_LOG', 'RUSTDOC', 'DMD_CI_RUNTIME_CONTEXT', 'CARGO_HOME', 'RUSTUP_HOME',
+                  'RUSTUP_TOOLCHAIN', 'RUSTC', 'RUSTC_WRAPPER', 'RUSTC_WORKSPACE_WRAPPER',
+                  'RUSTFLAGS', 'CARGO_ENCODED_RUSTFLAGS', 'RUSTDOCFLAGS',
+                  'CARGO_ENCODED_RUSTDOCFLAGS', 'CARGO_INCREMENTAL')
 
 
 def require(condition, message):
@@ -54,6 +59,25 @@ def write_json(path, value):
 
 def read_json(path):
     return json.loads(Path(path).read_text(encoding='utf8'))
+
+
+def record_phase(output, phase, argv, env, root, source):
+    write_json(output / f'diagnostic-phase-{phase}.json', {
+        'diagnostic_only': True, 'phase': phase, 'argv': argv, 'cwd': str(root), 'source': source,
+        'run_id': os.environ.get('GITHUB_RUN_ID'), 'run_attempt': os.environ.get('GITHUB_RUN_ATTEMPT'),
+        'environment': {key: env.get(key) for key in DIAGNOSTIC_ENV},
+        'python': {'path': sys.executable, 'sha256': file_hash(sys.executable), 'version': sys.version},
+        'runner': {'path': str(Path(__file__).resolve()), 'sha256': file_hash(__file__)}})
+
+
+def verify_executable(target, output, phase, message):
+    path = Path(target['executable']).resolve()
+    actual = file_hash(path)
+    if actual != target['sha256']:
+        write_json(output / f'diagnostic-executable-{digest(target["id"])}-{phase}.json', {
+            'diagnostic_only': True, 'phase': phase, 'target': target, 'path': str(path),
+            'expected_sha256': target['sha256'], 'actual_sha256': actual})
+    require(actual == target['sha256'], message)
 
 
 def command(args, cwd=None):
@@ -294,10 +318,10 @@ def delegate(mode, args):
         require(len(matches) == 1, 'Cargo invoked an unlisted executable')
         target = matches[0]
         require(Path.cwd().resolve() == Path(target['package_root']).resolve(), 'Cargo package cwd differs')
-        require(file_hash(path) == target['sha256'], 'executable changed after canonical no-run build')
+        verify_executable(target, output, 'before-execution', 'executable changed after canonical no-run build')
         execute_harness(target['id'], [str(path)], [], context['allocation'],
                         target['allocation'], output)
-        require(file_hash(path) == target['sha256'], 'executable changed during execution')
+        verify_executable(target, output, 'after-execution', 'executable changed during execution')
     else:
         tool = context['rustdoc']
         if '--test' not in args:
@@ -370,7 +394,10 @@ def run_allocation(args):
                                              output / 'metadata', cwd=root)
     metadata = json.loads(metadata_text)
     packages, docs = workspace_targets(metadata, root)
-    built, build_logs = run_logged(base + ['--no-run'], output / 'build', cwd=root)
+    build_env = os.environ.copy()
+    build_env['CARGO_LOG'] = FINGERPRINT_LOG
+    record_phase(output, 'build', base + ['--no-run'], build_env, root, identity)
+    built, build_logs = run_logged(base + ['--no-run'], output / 'build', cwd=root, env=build_env)
     graph, messages = artifact_graph(built, roots)
     executables = inventory_executables(messages, packages, root)
     script = Path(__file__).resolve()
@@ -383,9 +410,11 @@ def run_allocation(args):
     shim = output / ('rustdoc.cmd' if os.name == 'nt' else 'rustdoc')
     make_shim(shim, script)
     env = os.environ.copy()
+    env['CARGO_LOG'] = FINGERPRINT_LOG
     env['DMD_CI_RUNTIME_CONTEXT'] = str(context_path)
     env['RUSTDOC'] = str(shim)
     config = f'target.{host}.runner={json.dumps(runner)}'
+    record_phase(output, 'execution', base + ['--config', config], env, root, identity)
     executed, execution_logs = run_logged(base + ['--config', config], output / 'cargo-execution', cwd=root, env=env)
     runtime_graph, runtime_messages = artifact_graph(executed, roots)
     require(runtime_graph == graph, 'Cargo build graph changed between no-run and execution')
@@ -402,7 +431,7 @@ def run_allocation(args):
                 'assigned harness did not execute')
     require(source_identity(root) == identity, 'source changed during allocation')
     for executable in executables:
-        require(file_hash(executable['executable']) == executable['sha256'], 'final executable hash changed')
+        verify_executable(executable, output, 'final', 'final executable hash changed')
     universe = [normalize({k: x[k] for k in ('id', 'cases', 'assigned', 'original_args',
                                            'cwd', 'cargo_manifest_dir')}, roots) for x in records]
     universe.sort(key=lambda x: x['id'])

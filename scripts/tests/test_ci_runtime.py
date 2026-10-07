@@ -274,5 +274,75 @@ class InvocationAndInventory(unittest.TestCase):
                 self.assertEqual(len(listed['logs']), 2)
 
 
+class ExecutableDiagnostics(unittest.TestCase):
+    def test_changed_executable_records_both_hashes_and_refuses_before_any_harness(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve()
+            executable = output / 'fixture.exe'
+            executable.write_bytes(b'original')
+            target = {'id': 'test:fixture:bin:fixture', 'executable': str(executable),
+                      'sha256': ci.file_hash(executable), 'package_root': str(Path.cwd()),
+                      'allocation': 'remainder'}
+            context = output / 'context.json'
+            ci.write_json(context, {'output': str(output), 'allocation': 'remainder', 'executables': [target]})
+            executable.write_bytes(b'rebuilt')
+            with patch.dict(os.environ, {'DMD_CI_RUNTIME_CONTEXT': str(context)}), patch.object(
+                    ci, 'execute_harness') as execute:
+                with self.assertRaisesRegex(ValueError, 'executable changed after canonical no-run build'):
+                    ci.delegate('runner', [str(executable)])
+                execute.assert_not_called()
+            diagnostic = ci.read_json(output / f'diagnostic-executable-{ci.digest(target["id"])}-before-execution.json')
+            self.assertEqual(diagnostic['expected_sha256'], target['sha256'])
+            self.assertEqual(diagnostic['actual_sha256'], ci.file_hash(executable))
+            self.assertNotEqual(diagnostic['actual_sha256'], diagnostic['expected_sha256'])
+            self.assertTrue(diagnostic['diagnostic_only'])
+            self.assertEqual(diagnostic['target'], target)
+            self.assertEqual(list(output.glob('*.receipt.json')), [])
+            self.assertFalse((output / 'complete.json').exists())
+
+    def test_matching_bytes_execute_and_later_changes_still_refuse(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve()
+            executable = output / 'fixture.exe'
+            executable.write_bytes(b'original')
+            target = {'id': 'test:fixture:bin:fixture', 'executable': str(executable),
+                      'sha256': ci.file_hash(executable), 'package_root': str(Path.cwd()),
+                      'allocation': 'remainder'}
+            context = output / 'context.json'
+            ci.write_json(context, {'output': str(output), 'allocation': 'remainder', 'executables': [target]})
+            with patch.dict(os.environ, {'DMD_CI_RUNTIME_CONTEXT': str(context)}), patch.object(
+                    ci, 'execute_harness') as execute:
+                self.assertEqual(ci.delegate('runner', [str(executable)]), 0)
+                execute.assert_called_once_with(target['id'], [str(executable)], [], 'remainder', 'remainder', output)
+                self.assertEqual(list(output.glob('diagnostic-*.json')), [])
+                execute.side_effect = lambda *args: executable.write_bytes(b'changed-during-execution')
+                with self.assertRaisesRegex(ValueError, 'executable changed during execution'):
+                    ci.delegate('runner', [str(executable)])
+            diagnostic = ci.read_json(output / f'diagnostic-executable-{ci.digest(target["id"])}-after-execution.json')
+            self.assertEqual(diagnostic['expected_sha256'], target['sha256'])
+            self.assertEqual(diagnostic['actual_sha256'], ci.file_hash(executable))
+            with self.assertRaisesRegex(ValueError, 'final executable hash changed'):
+                ci.verify_executable(target, output, 'final', 'final executable hash changed')
+            self.assertFalse((output / 'complete.json').exists())
+
+    def test_phase_diagnostic_records_exact_invocation_and_only_allowlisted_environment(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory).resolve()
+            argv = ['cargo', 'test', '--locked', '--workspace', '--no-run']
+            env = {'CARGO_LOG': ci.FINGERPRINT_LOG, 'RUSTDOC': '/instrumented/rustdoc',
+                   'UNRELATED_PRIVATE_VALUE': 'must-not-be-recorded'}
+            source = {'head': 'a' * 40, 'tree': 'b' * 40}
+            ci.record_phase(output, 'build', argv, env, output, source)
+            diagnostic = ci.read_json(output / 'diagnostic-phase-build.json')
+            self.assertEqual(diagnostic['argv'], argv)
+            self.assertEqual(diagnostic['source'], source)
+            self.assertEqual(diagnostic['cwd'], str(output))
+            self.assertEqual(diagnostic['environment'], {key: env.get(key) for key in ci.DIAGNOSTIC_ENV})
+            self.assertNotIn('must-not-be-recorded', ci.canonical(diagnostic))
+            self.assertEqual(diagnostic['python']['sha256'], ci.file_hash(sys.executable))
+            self.assertEqual(diagnostic['runner']['sha256'], ci.file_hash(ci.__file__))
+            self.assertEqual(list(output.glob('*.receipt.json')), [])
+
+
 if __name__ == '__main__':
     unittest.main()

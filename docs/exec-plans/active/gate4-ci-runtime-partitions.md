@@ -339,3 +339,14 @@ guard relaxation or other build-semantic correction is authorized here.
 Original failed artifacts and prior partial runs remain preserved. Original5413
 Linux has since completed its genuine56-target/817-case union, matching completed
 literal main4cf; this does not pass the current head or either Windows failure.
+
+The diagnostic-only implementation retains all three executable byte guards
+(before execution, after execution and final allocation check), their original
+messages and failure behavior. Its separate JSON files are excluded from harness
+receipt discovery. Both compilation phases retain their original argv and add
+only the fingerprint logging environment value. All18 lightweight Python controls
+pass locally, including the original15 unchanged bodies and three new controls
+for pre-execution refusal, matching/post-execution/final guards and restricted
+phase provenance. `git diff --check` passes. No project runtime was executed.
+Next: independent full bounded source review, then root-controlled publication
+and inspection of actual Cargo dirty reasons. The underlying cause remains open.
