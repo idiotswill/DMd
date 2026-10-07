@@ -81,7 +81,10 @@ pub fn starting_equipment_plan(
         return Err(invalid("character/source identity mismatch"));
     }
     validate_character_profile(profile, pack).map_err(|error| invalid(error.to_string()))?;
-    let catalog = starter_catalog();
+    let catalog = match &profile.creation_source {
+        Some(_) => crate::physical_starter_catalog(),
+        None => starter_catalog(),
+    };
     let mut allocations = Vec::with_capacity(profile.equipment.len());
     for equipment in &profile.equipment {
         let definition = equipment_definition(&equipment.item_id)?.clone();

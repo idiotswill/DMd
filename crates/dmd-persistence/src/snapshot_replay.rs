@@ -47,6 +47,7 @@ impl SnapshotMigration for StateSchemaThreeToFour {
     }
 
     fn migrate_json(&self, json: &str) -> Result<String, String> {
+        reject_legacy_creation_source(json)?;
         let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
         reject_legacy_encounter(&legacy)?;
         if legacy.schema_version != 3 || !legacy.validate().is_empty() {
@@ -66,6 +67,9 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Legacy versions must not acquire future authority merely because their JSON has extra fields.
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
+    if dmd_domain::has_current_character_creation(legacy) {
+        return Err("legacy state contains future character creation authority".into());
+    }
     if legacy
         .table
         .as_ref()
@@ -84,6 +88,7 @@ fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
 }
 
 pub(crate) fn preflight_legacy_authority(json: &str) -> Result<(), String> {
+    reject_legacy_creation_source(json)?;
     if contains_source_actor_access(json)? {
         return Err("legacy state unexpectedly contains source-control authority".into());
     }
@@ -130,12 +135,60 @@ pub(crate) fn contains_source_actor_access(json: &str) -> Result<bool, String> {
         .is_some_and(|table| table.source_actor_access.is_some()))
 }
 
+/// Inspect original nested map entries before map/Value decoding can hide a null shadow.
+fn reject_legacy_creation_source(json: &str) -> Result<(), String> {
+    #[derive(serde::Deserialize)]
+    struct Probe {
+        table: Option<TableProbe>,
+    }
+    #[derive(serde::Deserialize)]
+    struct TableProbe {
+        #[serde(default, deserialize_with = "profiles_have_source")]
+        character_profiles: bool,
+    }
+    #[derive(serde::Deserialize)]
+    struct ProfileProbe {
+        creation_source: Option<serde_json::Value>,
+    }
+    fn profiles_have_source<'de, D: serde::Deserializer<'de>>(
+        deserializer: D,
+    ) -> Result<bool, D::Error> {
+        struct Profiles;
+        impl<'de> serde::de::Visitor<'de> for Profiles {
+            type Value = bool;
+            fn expecting(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                formatter.write_str("a unique character profile map")
+            }
+            fn visit_map<M: serde::de::MapAccess<'de>>(self, mut map: M) -> Result<bool, M::Error> {
+                let mut keys = HashSet::new();
+                let mut found = false;
+                while let Some((key, profile)) = map.next_entry::<String, ProfileProbe>()? {
+                    if !keys.insert(key) {
+                        return Err(serde::de::Error::custom(
+                            "duplicate legacy character profile",
+                        ));
+                    }
+                    found |= profile.creation_source.is_some();
+                }
+                Ok(found)
+            }
+        }
+        deserializer.deserialize_map(Profiles)
+    }
+    let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
+    if probe.table.is_some_and(|table| table.character_profiles) {
+        return Err("legacy state contains future character creation authority".into());
+    }
+    Ok(())
+}
+
 impl SnapshotMigration for StateSchemaTwoToThree {
     fn source_version(&self) -> u32 {
         2
     }
 
     fn migrate_json(&self, json: &str) -> Result<String, String> {
+        reject_legacy_creation_source(json)?;
         let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;
         reject_legacy_encounter(&legacy)?;
         if legacy.schema_version != 2 || !legacy.validate().is_empty() {
@@ -168,6 +221,7 @@ impl SnapshotMigration for StateSchemaOneToTwo {
 /// Explicit schema-1 compatibility, shared by snapshot and portable-export decoding.
 /// Historical input is never edited, and unexpected mechanical data is never discarded.
 pub(crate) fn upgrade_state_schema_one(json: &str) -> Result<String, String> {
+    reject_legacy_creation_source(json)?;
     // Decode the original typed shape before going through Value: a map conversion alone would
     // silently collapse duplicate fields and could conceal malformed legacy authoritative input.
     let legacy = CampaignState::decode_json(json).map_err(|error| error.to_string())?;

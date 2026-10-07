@@ -31,6 +31,8 @@ mod table_missile_cases;
 mod table_night_hag_cases;
 #[path = "support/table_oa_concentration_cases.rs"]
 mod table_oa_concentration_cases;
+#[path = "support/table_physical_creation_cases.rs"]
+mod table_physical_creation_cases;
 #[path = "support/table_projection_cases.rs"]
 mod table_projection_cases;
 #[path = "support/table_ready_cases.rs"]
