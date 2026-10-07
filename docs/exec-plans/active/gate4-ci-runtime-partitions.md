@@ -199,3 +199,22 @@ and [Cargo JSON artifacts](https://doc.rust-lang.org/cargo/reference/external-to
 This is the implementation choice, not a claim that wrappers or equivalence have
 run successfully. Actual two-platform comparison and independent review remain
 mandatory; only lightweight Python runner tests are currently allocated locally.
+
+Cargo source was also checked at
+[`1fd17bcd77ee9d4883d0a766a5995184a4064ff9`](https://github.com/rust-lang/cargo/tree/1fd17bcd77ee9d4883d0a766a5995184a4064ff9):
+`src/compiler/build_context/target_info.rs` initializes the normal host
+configuration from the host target tuple even without `--target`;
+`src/compiler/compilation.rs` selects that runner, then applies the original
+package cwd, package/build-script variables, dynamic library paths and jobserver
+inheritance to the runner process. Build scripts retain the ordinary host path.
+The Python delegate must preserve inheritable descriptors as well as cwd/env
+(`close_fds=False`), rather than quietly breaking Cargo's jobserver inheritance.
+This supports retaining the Linux command without adding `--target`; actual CI
+must still prove every expected executable reached the wrapper on both platforms.
+No unstable host configuration is accepted.
+
+Executable bytes are compared with the canonical no-run inventory **within each
+job** before/after its actual execution. Across independent builds, require equal
+source/toolchain/platform/graph/case identities, not assumed reproducible binary
+hashes or Windows PDB paths. Each job retains its own actual artifact hash. No
+source-only artifact manifest substitutes for a runtime receipt.
