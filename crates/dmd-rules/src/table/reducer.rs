@@ -827,9 +827,17 @@ fn apply_rules(
     execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), String> {
     let before = state.clone();
-    let produced =
+    let produced = if matches!(
+        action,
+        RulesAction::CreateCharacter { .. } | RulesAction::CreateCharacterFromSource { .. }
+    ) {
+        crate::kernel::apply_table_creation_with_context(
+            &before, state, meta, &action, pack, execution,
+        )
+    } else {
         crate::kernel::apply_table_with_context(&before, state, meta, &action, pack, execution)
-            .map_err(|error| error.to_string())?;
+    }
+    .map_err(|error| error.to_string())?;
     *outcome = Some(produced.outcome.clone());
     *event = Some(produced);
     Ok(())
