@@ -350,3 +350,20 @@ for pre-execution refusal, matching/post-execution/final guards and restricted
 phase provenance. `git diff --check` passes. No project runtime was executed.
 Next: independent full bounded source review, then root-controlled publication
 and inspection of actual Cargo dirty reasons. The underlying cause remains open.
+
+Independent review of unpublished4927674 found a diagnostic blocker: the chosen
+`cargo::core::compiler::fingerprint` filter is an obsolete module namespace.
+Actual8d Linux receipts identify Cargo1.99.0 commit
+`5f94df4789f005f9a352888e8355ffc645b7ed0e`; the hosted Windows Rust commit
+`b940084d7eb6a299eb4bfeb8e34901bc051e7ac4` pins the same Cargo submodule.
+That exact Cargo source's `src/compiler/fingerprint/mod.rs` documents
+`cargo::compiler::fingerprint` and emits its INFO dirty-reason events through
+the default module target. The earlier legacy-only filter would not capture
+those events. Before publication, correct only the logging constant to
+`cargo::compiler::fingerprint=info`, retain all prior controls and guards, rerun
+the lightweight suite and freeze again for review. No build-semantic change is
+introduced; the actual desktop dirty reason remains unknown.
+
+Pinned official sources:
+[hosted Rust Cargo submodule](https://github.com/rust-lang/rust/tree/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/src/tools/cargo)
+and [Cargo fingerprint implementation](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/compiler/fingerprint/mod.rs).
