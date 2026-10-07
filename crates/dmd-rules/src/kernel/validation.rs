@@ -436,6 +436,7 @@ pub(crate) fn validate_state_with_read(
     read: &crate::tactical::grapple::execution::ReadContext<'_>,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
+    read.validate_physical_facts()?;
     let state = read.state();
     if has_unimplemented_ground_records(state) && !crate::tactical::attack_equipment_enabled(state)
     {

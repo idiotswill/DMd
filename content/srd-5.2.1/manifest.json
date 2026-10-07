@@ -86,6 +86,14 @@
         "algorithm": "fnv1a64",
         "value": "37ecf4043c2c86d0"
       }
+    },
+    {
+      "path": "equipment-mass-v1.json",
+      "byte_len": 17077,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "1ffe74159f6889cf"
+      }
     }
   ]
 }

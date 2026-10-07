@@ -9,6 +9,9 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    PhysicalFact {
+        acceptance: Box<PhysicalFactAcceptance>,
+    },
     AwardExcessInspiration {
         character_id: CharacterId,
         reason: String,
@@ -204,6 +207,8 @@ pub enum TableRollChannel {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical: Option<crate::TablePhysicalView>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inspiration_transfer: Option<TableInspirationTransferView>,
     #[serde(default, skip_serializing_if = "Option::is_none")]

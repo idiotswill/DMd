@@ -67,6 +67,9 @@ impl SnapshotMigration for StateSchemaThreeToFour {
 /// Legacy versions must not acquire future authority merely because their JSON has extra fields.
 /// Decode the typed shape first so duplicate authoritative fields cannot be hidden by `Value`.
 fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
+    if legacy.physical_facts.is_some() {
+        return Err("Legacy state contains physical-fact authority.".into());
+    }
     if dmd_domain::has_current_character_creation(legacy) {
         return Err("legacy state contains future character creation authority".into());
     }
@@ -126,6 +129,7 @@ pub(crate) fn contains_source_actor_access(json: &str) -> Result<bool, String> {
     #[derive(serde::Deserialize)]
     struct Probe {
         table: Option<TableProbe>,
+        physical_facts: Option<serde_json::Value>,
     }
     #[derive(serde::Deserialize)]
     struct TableProbe {
@@ -133,9 +137,10 @@ pub(crate) fn contains_source_actor_access(json: &str) -> Result<bool, String> {
         grapple_access: Option<serde_json::Value>,
     }
     let probe: Probe = serde_json::from_str(json).map_err(|error| error.to_string())?;
-    Ok(probe
-        .table
-        .is_some_and(|table| table.source_actor_access.is_some() || table.grapple_access.is_some()))
+    Ok(probe.physical_facts.is_some()
+        || probe.table.is_some_and(|table| {
+            table.source_actor_access.is_some() || table.grapple_access.is_some()
+        }))
 }
 
 /// Inspect original nested map entries before map/Value decoding can hide a null shadow.

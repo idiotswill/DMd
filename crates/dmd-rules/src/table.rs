@@ -18,6 +18,9 @@ pub mod source_control;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TableOperation {
+    PhysicalFact {
+        acceptance: Box<PhysicalFactAcceptance>,
+    },
     AwardExcessInspiration {
         character_id: CharacterId,
         reason: String,

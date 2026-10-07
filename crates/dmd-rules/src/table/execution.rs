@@ -6,10 +6,14 @@ use crate::{RulesAnswer, RulesError, RulesPack, RulesQuery};
 /// Only this module constructs a closed image, after a complete validated transition.
 pub(crate) struct ClosedImage {
     state: CampaignState,
+    physical_sources: crate::physical_facts::execution::PhysicalSources,
 }
 impl ClosedImage {
     pub(crate) fn state(&self) -> &CampaignState {
         &self.state
+    }
+    pub(crate) fn physical_sources(&self) -> &crate::physical_facts::execution::PhysicalSources {
+        &self.physical_sources
     }
 }
 
@@ -45,6 +49,9 @@ pub enum LegacyRulesEventRef<'a> {
 
 impl CampaignExecution {
     pub fn from_original_anchor(anchor: CampaignState, pack: RulesPack) -> Result<Self, String> {
+        if anchor.physical_facts.is_some() {
+            return Err("Physical facts require their original pre-activation anchor.".into());
+        }
         reducer::validate_table(&anchor, &pack)?;
         if anchor
             .table
@@ -65,7 +72,10 @@ impl CampaignExecution {
             return Err("tactical recovery requires its original pre-tactical anchor".into());
         }
         Ok(Self {
-            image: ClosedImage { state: anchor },
+            image: ClosedImage {
+                state: anchor,
+                physical_sources: Default::default(),
+            },
             pack,
         })
     }
@@ -109,6 +119,11 @@ impl CampaignExecution {
         } else {
             ExecutionContext::ordinary()
         };
+        if crate::physical_facts::enabled(self.image.state())
+            || matches!(operation, TableOperation::PhysicalFact { acceptance } if matches!(acceptance.input, PhysicalFactInput::Enable))
+        {
+            execution.attach_mass(&self.image, &next, meta);
+        }
         let produced = reducer::apply_operation(
             self.image.state(),
             &mut next,
@@ -130,7 +145,14 @@ impl CampaignExecution {
             .expected_event_sequence
             .checked_add(1)
             .ok_or("table command sequence overflow")?;
-        let candidate = ClosedImage { state: *next };
+        let physical_sources =
+            self.image
+                .physical_sources
+                .after(self.image.state(), &next, meta, operation)?;
+        let candidate = ClosedImage {
+            state: *next,
+            physical_sources,
+        };
         TableRead {
             image: &candidate,
             pack: &self.pack,
@@ -187,7 +209,10 @@ impl CampaignExecution {
             .expected_event_sequence
             .checked_add(1)
             .ok_or("table command sequence overflow")?;
-        let candidate = ClosedImage { state };
+        let candidate = ClosedImage {
+            state,
+            physical_sources: self.image.physical_sources.clone(),
+        };
         TableRead {
             image: &candidate,
             pack: &self.pack,
@@ -206,6 +231,14 @@ impl CampaignExecution {
 }
 
 impl<'a> TableRead<'a> {
+    pub fn physical_fact_offers(&self) -> Result<Vec<PhysicalFactOffer>, String> {
+        self.validate()?;
+        crate::physical_facts::offers(self.state(), self.image.physical_sources())
+    }
+    pub fn physical_load(&self, actor: EntityId) -> Result<PhysicalLoad, String> {
+        self.validate()?;
+        crate::physical_facts::load(&self.context(), actor)
+    }
     pub fn state(&self) -> &'a CampaignState {
         self.image.state()
     }
@@ -332,3 +365,7 @@ impl AppliedTableStep<'_> {
         &self.produced
     }
 }
+
+#[cfg(test)]
+#[path = "execution/physical_tests.rs"]
+mod physical_tests;

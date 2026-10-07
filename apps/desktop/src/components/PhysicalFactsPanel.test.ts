@@ -1,0 +1,61 @@
+import { render, screen } from '@testing-library/svelte';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import PhysicalFactsPanel from './PhysicalFactsPanel.svelte';
+import type { PhysicalView, PhysicalControl } from '../table-api';
+const control:PhysicalControl={key:'opaque-control',label:'Traveler body',kind:'body',source:null,conditions:[],unit:false,gross:false,wallet_cp:null};
+const physical:PhysicalView={version:5,actors:[{actor:'pc',name:'Traveler',body_pounds:null,load:{items:[],known_pounds:'10',complete:false,unresolved:['Actual wallet coins are unresolved.'],body_and_load_pounds:null}}],controls:[control]};
+describe('normal Host physical fact forms',()=>{
+  it('keeps body pounds as exact decimal text and unknown as a separate choice',async()=>{
+    const user=userEvent.setup(),accept=vi.fn();
+    render(PhysicalFactsPanel,{physical,host:true,onAccept:accept});
+    expect(screen.getByText('Known equipment subtotal: 10 lb')).toBeTruthy();
+    await user.selectOptions(screen.getByLabelText('Physical fact'),'opaque-control');
+    await user.type(screen.getByLabelText('Pounds'),'180.000001');
+    await user.type(screen.getByLabelText('Physical description or correction reason'),'Measured unladen body.');
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));
+    expect(accept).toHaveBeenLastCalledWith('opaque-control',{Body:{pounds:'180.000001',reason:'Measured unladen body.'}});
+    await user.click(screen.getByLabelText('Weight is unknown'));
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));
+    expect(accept).toHaveBeenLastCalledWith('opaque-control',{Body:{pounds:null,reason:'Measured unladen body.'}});
+  });
+  it('separates read-only source mass from an explicit nonstandard physical classification',async()=>{
+    const user=userEvent.setup(),accept=vi.fn();
+    render(PhysicalFactsPanel,{physical:{...physical,controls:[{...control,kind:'item',label:'Dagger',source:'1 lb per physical unit'}]},host:true,onAccept:accept});
+    await user.selectOptions(screen.getByLabelText('Physical fact'),'opaque-control');
+    expect(screen.getByText('1 lb per physical unit')).toBeTruthy();
+    expect(screen.queryByRole('option',{name:"Record an unquantified unit's weight"})).toBeNull();
+    await user.selectOptions(screen.getByLabelText('Mass treatment'),'nonstandard');
+    await user.type(screen.getByLabelText('Physical difference from the ordinary catalog object'),'Heavy custom pommel.');
+    await user.type(screen.getByLabelText('Pounds'),'3.25');
+    await user.type(screen.getByLabelText('Physical description or correction reason'),'Measured this actual item.');
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));
+    expect(accept).toHaveBeenCalledExactlyOnceWith('opaque-control',{Item:{choice:{NonstandardUnit:{description:'Heavy custom pommel.',pounds:'3.25'}},reason:'Measured this actual item.'}});
+  });
+  it('records explicit wallet denominations without inventing a distribution or adding a value',async()=>{
+    const user=userEvent.setup(),accept=vi.fn();
+    render(PhysicalFactsPanel,{physical:{...physical,controls:[{...control,kind:'currency',wallet_cp:17170}]},host:true,onAccept:accept});
+    await user.selectOptions(screen.getByLabelText('Physical fact'),'opaque-control');
+    await user.clear(screen.getByLabelText('GP coins'));await user.type(screen.getByLabelText('GP coins'),'171');
+    await user.clear(screen.getByLabelText('SP coins'));await user.type(screen.getByLabelText('SP coins'),'7');
+    await user.type(screen.getByLabelText('Physical description or correction reason'),'The actual existing coins.');
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));
+    expect(accept).toHaveBeenCalledExactlyOnceWith('opaque-control',{Currency:{coins:{cp:0,sp:7,ep:0,gp:171,pp:0},reason:'The actual existing coins.'}});
+  });
+  it('requires explicit separate-object acknowledgement and hides Host controls from players',async()=>{
+    const user=userEvent.setup(),accept=vi.fn();
+    const props={physical:{...physical,controls:[{...control,kind:'personal'}]},host:true,onAccept:accept};
+    const mounted=render(PhysicalFactsPanel,props);
+    await user.selectOptions(screen.getByLabelText('Physical fact'),'opaque-control');
+    await user.type(screen.getByLabelText('Pounds'),'2.5');
+    await user.type(screen.getByLabelText('Additional apparel or payload'),'Travel cloak');
+    await user.type(screen.getByLabelText('Physical description or correction reason'),'Separate apparel.');
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));expect(accept).not.toHaveBeenCalled();
+    await user.click(screen.getByLabelText(/This is a separate previously unlisted object/));
+    await user.click(screen.getByRole('button',{name:'Record physical fact'}));
+    expect(accept).toHaveBeenCalledExactlyOnceWith('opaque-control',{PersonalItem:{name:'Travel cloak',pounds:'2.5',separate_from_listed:true,reason:'Separate apparel.'}});
+    await mounted.rerender({...props,host:false});
+    expect(screen.queryByLabelText('Physical fact')).toBeNull();
+    expect(screen.getByText('Known equipment subtotal: 10 lb')).toBeTruthy();
+  });
+});

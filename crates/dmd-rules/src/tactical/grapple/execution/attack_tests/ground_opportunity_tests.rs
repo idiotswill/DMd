@@ -6,6 +6,7 @@ fn table(owner: &mut GuardedGrappleExecution<'_>, operation: crate::table::Table
     let meta = command(owner.state(), None);
     let mut candidate = Box::new(owner.state().clone());
     let mut execution = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: owner.state(),
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -33,6 +34,7 @@ fn tactical(owner: &mut GuardedGrappleExecution<'_>, actor: EntityId, action: Ta
     let meta = command(owner.state(), Some(actor));
     let mut candidate = Box::new(owner.state().clone());
     let mut execution = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: owner.state(),
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -127,6 +129,7 @@ fn issued_ground_opportunity_requires_exact_predecessor_or_observed_producer() {
     let meta = command(&before, Some(f.holder));
     let candidate = Box::new(before.clone());
     let owned = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: &before,
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -151,6 +154,7 @@ fn issued_ground_opportunity_requires_exact_predecessor_or_observed_producer() {
             .is_err()
     );
     let unobserved = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: &f.selected,
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -202,6 +206,7 @@ fn changed_crossing_source_response_and_work_cannot_borrow_the_predecessor_certi
         let mut candidate = Box::new(before.clone());
         let meta = command(&before, Some(f.holder));
         let owned = ExecutionContext {
+            mass: None,
             guarded: Some(GuardedCommand {
                 predecessor: &before,
                 candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -300,6 +305,7 @@ fn removing_an_attack_or_its_entire_resolution_requires_one_actual_completion() 
         let mut candidate = Box::new(before.clone());
         let meta = command(&before, Some(f.holder));
         let owned = ExecutionContext {
+            mass: None,
             guarded: Some(GuardedCommand {
                 predecessor: &before,
                 candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -317,6 +323,7 @@ fn removing_an_attack_or_its_entire_resolution_requires_one_actual_completion() 
     let mut candidate = Box::new(before.clone());
     let meta = command(&before, Some(f.reactor));
     let mut owned = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: &before,
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -370,6 +377,7 @@ fn live_token_is_candidate_and_choice_bound_before_observation() {
         .clone();
     let mut candidate = Box::new(original.clone());
     let mut owned = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: original,
             candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -382,6 +390,7 @@ fn live_token_is_candidate_and_choice_bound_before_observation() {
         .unwrap();
     let foreign = Box::new(original.clone());
     let mut foreign_context = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: original,
             candidate: std::ptr::from_ref(foreign.as_ref()),

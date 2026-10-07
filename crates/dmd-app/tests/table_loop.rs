@@ -9,6 +9,8 @@ mod table_aftermath_cases;
 #[path = "support/table_area_cases.rs"]
 mod table_area_cases;
 
+#[path = "support/physical_creation_driver.rs"]
+mod physical_creation_driver;
 #[path = "support/table_attack_cases.rs"]
 mod table_attack_cases;
 #[path = "support/table_casting_cases.rs"]
@@ -35,6 +37,8 @@ mod table_night_hag_cases;
 mod table_oa_concentration_cases;
 #[path = "support/table_physical_creation_cases.rs"]
 mod table_physical_creation_cases;
+#[path = "support/table_physical_facts_cases.rs"]
+mod table_physical_facts_cases;
 #[path = "support/table_projection_cases.rs"]
 mod table_projection_cases;
 #[path = "support/table_ready_cases.rs"]

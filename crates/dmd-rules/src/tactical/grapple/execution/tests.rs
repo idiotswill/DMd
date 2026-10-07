@@ -554,6 +554,7 @@ fn foreign_candidate_read_and_unobserved_ordered_deltas_are_rejected() {
     let command = meta(owner.state(), None);
     let mut candidate = Box::new(owner.state().clone());
     let context = ExecutionContext {
+        mass: None,
         guarded: Some(GuardedCommand {
             predecessor: owner.state(),
             candidate: std::ptr::from_ref(candidate.as_ref()),

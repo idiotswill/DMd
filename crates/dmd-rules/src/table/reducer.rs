@@ -94,6 +94,12 @@ pub(crate) fn apply_operation(
         return Err("Finish the pending player choice before changing the table.".into());
     }
     let message = match action {
+        TableOperation::PhysicalFact { acceptance } => {
+            execution
+                .accept_physical_fact(next, meta, acceptance)
+                .map_err(|e| e.to_string())?;
+            "Physical information recorded.".into()
+        }
         TableOperation::AwardExcessInspiration {
             character_id,
             reason,

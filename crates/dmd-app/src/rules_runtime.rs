@@ -321,6 +321,19 @@ pub(crate) fn load_rules_pack(
         return Err(RunnableCampaignError::RulesContent(
             "Ogre source differs from this supported package. Update the installed SRD package; campaign data is unchanged.".into()));
     }
+    let physical = installed.manifest.files.iter().find(|file| file.path == "equipment-mass-v1.json")
+        .ok_or_else(|| RunnableCampaignError::RulesContent("Physical mass source is not declared. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    let physical_bytes = fs::read(base.join("equipment-mass-v1.json"))
+        .map_err(|_| RunnableCampaignError::RulesContent("Physical mass source is missing or unreadable. Update the installed SRD package; campaign data is unchanged.".into()))?;
+    if physical_bytes.len() as u64 != physical.byte_len
+        || fnv1a64_hex(&physical_bytes) != physical.checksum.value
+        || physical_bytes != include_bytes!("../../../content/srd-5.2.1/equipment-mass-v1.json")
+    {
+        return Err(RunnableCampaignError::RulesContent(
+            "Physical mass source differs from this supported package; campaign data is unchanged."
+                .into(),
+        ));
+    }
     let bytes = fs::read(base.join("kernel.json"))
         .map_err(|error| RunnableCampaignError::RulesContent(error.to_string()))?;
     if bytes.len() as u64 != declared.byte_len || fnv1a64_hex(&bytes) != declared.checksum.value {

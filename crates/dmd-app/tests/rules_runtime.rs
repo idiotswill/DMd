@@ -2060,3 +2060,6 @@ async fn missing_undeclared_or_rehashed_physical_creation_source_cannot_mutate_a
 
 #[path = "support/mage_package_cases.rs"]
 mod mage_package_cases;
+
+#[path = "support/physical_mass_content_cases.rs"]
+mod physical_mass_content_cases;

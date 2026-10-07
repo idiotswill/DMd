@@ -49,6 +49,16 @@ fn capabilities(
     state: &CampaignState,
 ) -> Result<Vec<ProjectionCapability>, String> {
     let mut result = Vec::new();
+    if let Some(physical) = &raw.physical {
+        result.extend(
+            physical
+                .controls
+                .iter()
+                .map(|control| ProjectionCapability::PhysicalFact {
+                    offer: control.key.clone(),
+                }),
+        );
+    }
     if let Some(transfer) = &raw.inspiration_transfer {
         result.extend(transfer.choices.iter().map(|option| {
             ProjectionCapability::InspirationTransfer {
@@ -560,12 +570,13 @@ impl<'a> HistoryVerifier<'a> {
             .map_err(|e| e.to_string())?;
         let marked =
             export.command_audit.iter().any(|a| {
-                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=5)
+                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=6)
             }) || export.observations.iter().any(|o| {
                 o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2..=5)
+                    && matches!(o.record.payload_schema_version, 2..=6)
             }) || crate::table_source_control::enabled(&current)
-                || dmd_rules::table::grapple_enabled(&current);
+                || dmd_rules::table::grapple_enabled(&current)
+                || dmd_rules::physical_facts::enabled(&current);
         if current.table.is_none()
             && (!export.table_projection_history.is_empty()
                 || !export.table_transport_bindings.is_empty()
@@ -687,13 +698,13 @@ impl<'a> HistoryVerifier<'a> {
             }
             // A new acceptance can never precede initialization of its protocol.
             if export.command_audit.iter().any(|a| {
-                matches!(a.command_schema_version, 2..=5)
+                matches!(a.command_schema_version, 2..=6)
                     && a.command_kind == "table.action"
                     && a.resulting_event_sequence <= self.bootstrap_head as i64
             }) || export.observations.iter().any(|o| {
                 o.ordinal <= self.bootstrap_observation
                     && o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2..=5)
+                    && matches!(o.record.payload_schema_version, 2..=6)
             }) {
                 return Err("protocol marker precedes its bootstrap".into());
             }

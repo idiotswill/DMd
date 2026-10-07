@@ -481,3 +481,79 @@ it is true for either existing owner proof and grants no feature or permission.
 Keep `is_owned`, `require_guarded` and attack-read admission unchanged. The existing
 CampaignExecution still owns rollback. Add genuine M-only paid attack, completion,
 and both Apply/Decline equipment choices through the current app and cold helper.
+
+
+### Source candidate, 2026-10-07 — verification still pending
+
+The complete foundation is implemented for independent review: an immutable
+62-entry equipment sidecar; exact micro-pound arithmetic; typed settled Host
+activation, body/item/coverage facts, explicit nonstandard applicability, real
+custom ItemId materialization and exact physical currency-lot realization; a
+private source-allocation index rebuilt by owned current/original materializers;
+an independent candidate-bound mass proof; normal Host forms, private load and
+item details; and v5 presentation/transport with command/observation schema6.
+Existing S/G/T permissions remain distinct. `is_owned` and `require_guarded`
+semantics are unchanged. `has_fixed_candidate` is used only at the existing
+transactional after-equipment wrapper to retain either proof's exact candidate.
+
+The final new catalog has 17,077 LF bytes, FNV1a64 `1ffe74159f6889cf`, and
+SHA256 `5550faae8307d7d53bc19955c2d119e2e585e69649770135752a1172268f06ef`.
+The additive manifest declaration pins those exact bytes; prior source assets
+and source fingerprints are unchanged. Printed values stay read-only. Generic
+original objects require Host classification; the nested-test sack's half-pound
+mass is an authored world fact because it is outside the bounded catalog.
+
+Load follows actual custody through bounded nested containers and counts each
+object once. Inclusive/gross container facts refuse separately tracked children.
+Unexpected currency identity, definition, quantity or condition stays unresolved,
+including a forged Spent/zero lot; ordinary spent ammunition can still weigh
+zero. Currency corrections preserve the actual lot identity and current custody,
+and never add spendable value. Body identity excludes unrelated wallet, narrative
+and XP changes. Coverage binds completed source allocations and physical body
+identity, while actual additional apparel is an ordinary separately named item.
+
+New Rust cases are source-authored and UNRUN: five complete application cases
+(current PC/load/private forms, current Ogre/source control, same-ID nonstandard
+throw/pickup, M-only paid after-equipment Apply/Decline, and current-build v4
+finished encounter activation followed by v5 Inspiration); five private owned
+proof/applicability cases (generic classification, candidate authority, producer
+delta, nested contents/gross refusal, and actual-wallet altered-lot refusal); two
+exact-arithmetic cases; and one installed sidecar missing/undeclared/rehash atomic
+refusal case. New frontend cases cover the actual forms, exact decimal text,
+explicit coins/nonstandard classification, opaque commands, lost acknowledgement
+retry and malformed/old/unauthorized saved envelopes. Existing test bodies and
+assertions remain exact except eleven required empty `mass: None` fields in
+private execution-context constructors; a shared physical-creation driver module
+is registered at its common parent so the new app cases use the unchanged actual
+cold/replay/portable helper. Preservation is independently inventoried at freeze.
+
+Early read-only reviews corrected concrete implementation/setup issues before
+freeze: the M-only candidate clone join, currency's spent-ammunition shortcut,
+actual paid equip-before/after sequencing, generic sack source applicability and
+the offered Inspiration decline label. None relaxed a production guard or old
+assertion. Raw current snapshots still cannot mint mass proof, and direct legacy
+command/observation routes cannot submit fresh M-only work. Restores require the
+original activation and exact accepted producer history, including M-only worlds.
+
+Current-build v4/v5 continuation is **not** historical compatibility evidence.
+The separate genuine pre-change v4 capture harness is frozen at `969627f`; its
+three routes/22 cuts have not yet produced an archive under the serial heavy
+allocation. No prior-version fixture was manufactured and no skipped consumer
+was added. Required next work includes receiving the unchanged actual archive,
+adding its consumer, and executing that consumer. Full slice acceptance remains
+pending this prerequisite, exact-head independent source review, canonical
+verify-fast/verify, focused and existing runtime cases, strict Clippy, frontend
+checks, fresh CI and normal desktop evidence. Source formatting and Git/static
+inventory are the only author checks so far; no compiler, Cargo, npm, project
+test, native process or database was executed by the writer.
+
+Root has authorized a normal whole-history receipt of the reviewed PR71 donor
+`3a68bd793e47aad6fbadad9a3b889d47be906189`, tree
+`10321b6e4df060b53445eedb9a5df9427e9999db`, after the coherent source commit.
+It supplies the missing `DashSpeed::Speed` field in the inherited retry fixture;
+do not duplicate it or claim donor CI as this candidate's validation. Origin was
+fetched again before freeze; main remains `1a9de14c8a4418893b6664b89f99f0a0c0225ce1`.
+After receipt and a clean freeze, root owns independent review and all heavy
+verification/publication. The author must hand back exact tree/parents, complete
+diff, old-body inverse and protected-source inventory. Carrying support, capacity
+integration and every remaining Gate4 obligation remain open and unchanged.

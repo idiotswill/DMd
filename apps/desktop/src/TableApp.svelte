@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import ContractForm from './components/ContractForm.svelte';
+  import PhysicalFactsPanel from './components/PhysicalFactsPanel.svelte';
   import CharacterForm from './components/CharacterForm.svelte';
   import CharacterSheet from './components/CharacterSheet.svelte';
   import SessionForm from './components/SessionForm.svelte';
@@ -114,15 +115,19 @@
     catch(reason) { if(current())await showError(reason); } finally { if(current())sourceControlLoading=false; }
   }
   async function enableSourceControl(adopted: SourceAdoption[]) {
-    try { await send({kind:'action',request:{...context(),version:view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
     catch(reason) { await showError(reason); }
   }
+  async function enablePhysicalFacts() {
+    try { await send({kind:'action',request:{...context(),version:5,action:'EnablePhysicalFacts'}}); }
+    catch (reason) { await showError(reason); }
+  }
   async function enableGroundDrag() {
-    try { await send({kind:'action',request:{...context(),version:4,action:'EnableGrappleTransport'}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? 4,action:'EnableGrappleTransport'}}); }
     catch(reason) { await showError(reason); }
   }
   async function enableGrapple() {
-    try { await send({kind:'action',request:{...context(),version:3,action:'EnableGrappleAccess'}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? 3,action:'EnableGrappleAccess'}}); }
     catch(reason) { await showError(reason); }
   }
   async function initialize() {
@@ -146,7 +151,7 @@
     if (!view) throw new Error('Open the saved campaign first.');
     if (playerId && (!attending || (sourceActorId ? !sourceActor : !binding?.character_id))) throw new Error('Select an attending player and their controlled actor.');
     const channel:LocalChannel = playerId ? sourceActor ? {SourceCreature:{player_id:playerId,actor:sourceActor.actor}} : {Player:{player_id:playerId,character_id:binding!.character_id!}} : 'Host';
-    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
+    return { command_id: newId(), campaign_id: view.campaign_id, version: view.physical?.version ?? view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel };
   }
@@ -258,6 +263,7 @@
     <nav class="actions" aria-label="Campaign sections"><button class:secondary={page !== 'play'} onclick={() => { page = 'play'; }}>Table and sheets</button>{#if host}<button class:secondary={page !== 'setup'} onclick={() => { page = 'setup'; }}>Setup and host controls</button>{/if}</nav>
     {#if host && hostSituation?.challenges.length}<details class="panel"><summary>Current host check context</summary><p class="muted">These difficulties and unrevealed consequences are host-only.</p>{#each hostSituation.challenges as challenge}<article><h3>{challenge.title}</h3><p>{challenge.description}</p><p>{challenge.kind.Check.ability}{challenge.kind.Check.skill ? ` (${challenge.kind.Check.skill})` : ''} · DC {challenge.dc} · {challenge.resolution ? 'Resolved' : 'Unresolved'}</p><p>On success: {challenge.success}</p><p>On failure: {challenge.failure}</p></article>{/each}</details>{/if}
     {#if page === 'setup' && host}
+      {#key view.revision}<PhysicalFactsPanel physical={view.physical} {host} disabled={gameLocked} onEnable={enablePhysicalFacts} onAccept={(handle,input)=>act({PhysicalFact:{handle,input}})} />{/key}
       <SourceControlForm control={view.source_control} options={sourceControlOptions} players={view.players} disabled={gameLocked||sourceControlLoading||!!view.pending||!!view.roll} onReview={reviewSourceControl} onEnable={enableSourceControl} onAssign={(actor,controller)=>act({SetSourceCreatureController:{actor,controller}})}/>
       <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.revision}<ContractForm value={view.contract} disabled={gameLocked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
       {#if !view.active_session}
@@ -281,6 +287,7 @@
       <GrapplePanel {view} {host} actor={selectedActor??null} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
       <InspirationTransfer {view} {host} disabled={locked} canChoose={!sourceActor && currentCharacter?.character_id===view.inspiration_transfer?.character_id} onChoice={handle=>act({InspirationTransfer:{handle}})} />
       {#key `${campaignId}:${view.active_session?.session_id}:${host}`}<InspirationAward {view} {host} disabled={gameLocked} onAward={(character_id,reason)=>act({AwardHeroicInspiration:{character_id,reason}})} onExcessAward={(character_id,reason)=>act({AwardExcessInspiration:{character_id,reason}})} />{/key}
+      <PhysicalFactsPanel physical={view.physical} host={false} disabled={gameLocked} />
       <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={gameLocked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
       <section class="panel"><h2>Player-safe recap</h2>{#if view.recap.length}<ol>{#each view.recap as entry}<li class="preserve">{entry}</li>{/each}</ol>{:else}<p>No accepted outcomes yet. Proposed actions and questions do not enter the recap.</p>{/if}</section>
       <section class="panel"><h2>Table transcript</h2><div class="transcript" role="log" aria-label="Saved table transcript">{#each view.transcript as entry (entry.id)}<article><p><strong>{entry.speaker}</strong> <span class="tag">{entry.kind}</span></p><p class="preserve">{entry.text}</p></article>{:else}<p>Your accepted table activity and conversation appear here.</p>{/each}</div></section>

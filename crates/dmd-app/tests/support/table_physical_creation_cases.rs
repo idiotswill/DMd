@@ -1,8 +1,7 @@
 //! Normal current creation is the only producer of these physical weapons.
+use super::physical_creation_driver as driver;
 use super::*;
 use dmd_rules::tactical::TacticalAction;
-#[path = "physical_creation_driver.rs"]
-mod driver;
 use driver::*;
 #[path = "physical_creation_history.rs"]
 mod history;
