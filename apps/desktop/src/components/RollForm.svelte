@@ -1,8 +1,9 @@
 <script lang="ts">
   import { rawDice, signed, type RollRequest } from '../table-api';
   import type { SavageAttackerRoll } from '../tactical-api';
-  let { request, disabled = false, onSubmit, savageOption = null, onSavage, heroicInspiration = false, onInspiration }: {
+  let { request, displayReason, disabled = false, onSubmit, savageOption = null, onSavage, heroicInspiration = false, onInspiration }: {
     request: RollRequest; disabled?: boolean; onSubmit: (faces: number[]) => void;
+    displayReason?: string;
     savageOption?: { weapon_dice: number; heroic_inspiration: boolean } | null;
     onSavage?: (roll: SavageAttackerRoll) => void;
     heroicInspiration?: boolean;
@@ -39,7 +40,7 @@
   }
 </script>
 <form onsubmit={submit}><fieldset data-tactical-focus="physical-roll" tabindex="-1" {disabled}>
-  <legend>Report physical dice</legend><p>{request.reason}</p>
+  <legend>Report physical dice</legend><p>{displayReason ?? request.reason}</p>
   <p>{request.mode === 'Normal' ? 'Normal roll' : request.mode} · rules modifier {signed(request.modifier)}. Enter the faces exactly as rolled; do not add the modifier.</p>
   <div class="form-grid">{#each sides as side, i}<label>Die {i+1} · d{side}<input required type="number" min="1" max={side} step="1" bind:value={faces[i]} /></label>{/each}</div>
   {#if savageOption&&onSavage}

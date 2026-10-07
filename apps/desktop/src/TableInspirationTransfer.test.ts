@@ -5,7 +5,7 @@ import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type TableView } from './table-api';
 
-vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi: { defaults: vi.fn(), list: vi.fn(), create: vi.fn(), view: vi.fn(), options: vi.fn(), situation: vi.fn(), action: vi.fn(), text: vi.fn(), rollOptions: vi.fn(), creatureOptions: vi.fn(), sourceControlOptions: vi.fn() } }));
+vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi: { defaults: vi.fn(), list: vi.fn(), create: vi.fn(), view: vi.fn(), options: vi.fn(), situation: vi.fn(), action: vi.fn(), text: vi.fn(), rollDetails: vi.fn(), creatureOptions: vi.fn(), sourceControlOptions: vi.fn() } }));
 function table(): TableView {
   return { ...emptyView(), grapple: { version: 4, choices: [], ground_drag: [] },
     players: [{ id: 'owner', campaign_id: 'campaign', display_name: 'Sam' }, { id: 'other', campaign_id: 'campaign', display_name: 'Alex' }],
@@ -21,7 +21,7 @@ beforeEach(() => {
   vi.mocked(tableApi.list).mockResolvedValue([{ id: 'campaign', name: 'Saved campaign' }]);
   vi.mocked(tableApi.options).mockResolvedValue(options);
   vi.mocked(tableApi.situation).mockResolvedValue({ title: '', description: '', challenges: [] });
-  vi.mocked(tableApi.rollOptions).mockResolvedValue({ savage_attacker: null });
+  vi.mocked(tableApi.rollDetails).mockResolvedValue({ version:1, options:{ savage_attacker: null }, display_reason:"Pending physical roll" });
   vi.mocked(tableApi.creatureOptions).mockResolvedValue([]);
 });
 

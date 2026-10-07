@@ -185,6 +185,7 @@ export const tableApi = {
   sourceControlOptions: (request: { campaign_id: Id; channel: LocalChannel; revision: Id }) => invoke<SourceControlOptions>('desktop_source_control_options', { request }),
   creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),
   rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null; heroic_inspiration?: boolean }>('desktop_roll_options', { request }),
+  rollDetails: (request: { version: 1; campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ version: 1; options: { savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null; heroic_inspiration?: boolean }; display_reason: string }>('desktop_roll_details', { request }),
   defaults: () => invoke<TableContract>('desktop_default_contract'),
   list: () => invoke<{ id: Id; name: string }[]>('desktop_list_campaigns'),
   create: (request: { id: Id; name: string; contract: TableContract }) => invoke<TableView>('desktop_create_campaign', { request }),

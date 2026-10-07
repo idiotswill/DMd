@@ -1,6 +1,6 @@
 # Gate 4 — Correct live Grapple roll guidance without changing history
 
-Status: planned source implementation,2026-10-07. Branch
+Status: source implemented; independent review and all runtime UNRUN,2026-10-07. Branch
 `codex/gate4-grapple-roll-details`, baseline
 `573305cd68e71d51d097703f5797379fe40696ce`, tree
 `e4b42195eeabff92d132c3cc16632650572827a3`. Root creates this plan; the assigned
@@ -127,3 +127,55 @@ implementation under this plan. All project runtime here is UNRUN. Historical
 mass consumers and CI partitioning remain separately owned branches. Carrying,
 integrated native encounters, human physical dice and every other Gate4 acceptance
 requirement remain open; no Gate5 work begins.
+
+## Source implementation handback, 2026-10-07
+
+The explicit schema1 `TableRollDetailsRequest`/`TableRollDetails` endpoint now
+shares the legacy options path's one owned execution/read and transaction. The
+legacy endpoint, serde omission rules and all historical `roll_label` outputs
+remain intact. The separate live formatter admits only the exact canonical Save
+reason and the two source-validated Escape reasons; other purposes retain the
+audience-safe old formatter. Desktop registration/API and RollForm now pass an
+optional local label separately from the immutable displayed/submitted request.
+The single details response supplies both options and label, with generation,
+campaign/player/source/revision/actual-roll-ID checks and stale-error suppression.
+
+Four added ordinary `table_grapple_public::roll_details` cases expand to sixteen
+genuine PC/source, G3/G4, Strength/Dexterity Save and Athletics/Acrobatics Escape
+setups. Each asserts old raw/presented wording and original options serialization,
+current owner/Host reads, complete logical SQLite rows/export equality, cold open
+and portable restore, unsupported version/unknown field and invalid audience,
+handle, character, source/controller refusals. Host submission with its own valid
+handle still refuses. Real ordinary or PC Inspiration dice use unchanged cold
+accept/retry helpers and assert canonical work/issuer/acceptance, raw faces and
+the single new recorded roll. The old read refuses after acceptance. These are
+authored assertions, not executed results.
+
+Sixteen added rendered frontend cases cover all three labels for PC and selected
+source, exact ordinary envelopes, G4 Inspiration original/replacement and saved
+retry after restart, cold source selection with empty unsent dice, Host waiting,
+and late success/error replies after five context changes. The overlapping-read
+cases explicitly dispatch an already-queued selection/refresh DOM event while
+its control is busy, then use ordinary user interaction for source selection;
+they do not weaken production guards. The roll-ID guard additionally receives a
+changed ID under a retained mocked revision, a defensive stale-UI scenario rather
+than a claim that production can publish such a revision. Optional RollForm
+fallback and raw submission are tested separately in the same rendered file.
+
+The only existing frontend test adaptations are in TableApp, TableInspiration,
+TableInspirationTransfer, TablePhysicalCreation and TablePosition: rename mocked
+options calls to details, wrap the unchanged options response in schema1, and
+add schema1 to the existing exact read-request assertions. All other assertions,
+scenario strings and flow stay exact. All1116 existing Rust test bodies, the
+original producer/helper bodies, content, archives and historical source files
+are required to match the frozen573 inventory in the external preservation audit.
+
+Only direct changed-file rustfmt, static file/Git inspection and source inventory
+auditing were performed. No Cargo, compiler, npm, test, gameplay/database, native,
+preflight, push, PR or merge was run by this author. No runtime pass is claimed.
+Next: root/fresh independent reviewer inspect the complete frozen source and
+external author handback/audit, allocate exact-head affected Rust/frontend and
+canonical verification, then perform the deliberate mass compatibility receipt
+and M+G/T5 plus genuine969 restored-details checks in its approved fixture path.
+Those checks and full CI/native acceptance remain required before merge;
+publication for review/CI belongs to root. Source review alone cannot satisfy them.
