@@ -149,3 +149,16 @@ involved. Capture failures must identify a real producer gap, not patch it away.
 Current blockers/limits: source authoring only; no generated archive, runtime,
 native or compatibility acceptance. Remaining mass/carrying and Gate 4 human
 playtest obligations are unchanged. Next action is the source-only harness.
+
+### Source-derived route ordering correction before route code
+
+`attack_equipment_access::activate_with_context` requires an unused settled turn,
+including no spent Action or retained attack window. Therefore establish the grip
+after, not before, the v4 transport and GroundEquipment activations. Retain the
+genuine v3 Grapple activation request, capture v4 activation, capture GroundEquipment
+activation, then use the unchanged actual choice/raw/cold helpers with explicit
+v4 envelopes to establish and finish the grip. This preserves the original
+producer and avoids activating a feature through paid work. No production or old
+helper changes are needed. Inspiration captures use the actual current Physical
+Glaive creation helper, whose real source pin/purchase/materialization history is
+then retained with their awards, transfers and PC saves.
