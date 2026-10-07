@@ -1,7 +1,7 @@
 # Gate 4 — Authenticated body and equipment load facts
 
-Status: planning and source inventory, 2026-10-07. Implementation is not yet
-allocated. Sole branch writer is root. Branch
+Status: implementation allocated, 2026-10-07. Sole branch writer is
+source_review_oct7; root owns independent review and heavy verification. Branch
 `codex/gate4-authenticated-load-facts`; checkout `gate4-authenticated-load-facts`.
 Baseline is `b77b1597fb99d18643ed76f43202156f3bcf0fe0`, tree
 `f56acf15ef3552436ccfbd8bdc2a199457dae7b3`. Fetched main is
@@ -434,3 +434,20 @@ root's serial heavy allocation is occupied. No push or merge to main is allocate
 Report concrete implementation conflicts promptly and retain the current product
 contract; no disconnected catalog, synthetic positive fact or version shortcut is
 accepted. Freeze complete source and preservation evidence before handback.
+
+### Implementation start and source provenance
+
+Writer received clean `cd60648db894703c954e6f01f58d2d71dd42d388`, tree
+`24eb509d978d94a215d5d2aca24e0cb4532233a5`, fetched origin and read this complete
+plan. Compiler/runtime remain explicitly unrun. The inherited 86 retry fixture
+has a newly reported Dash constructor compile error; root owns the corrected
+donor and a deliberate subsequent receipt. Do not duplicate that correction here.
+
+Catalog applicability for creature item identities will use a private immutable
+grant index on the existing ClosedImage, accumulated only after successful
+PrepareEquipment/CreateCreature operations during original owned replay. This
+retains exact accepted physical identities across custody changes without adding
+or editing old serialized grant bytes. Original-anchor generic items still need
+the selected typed Host classification. The mass candidate proof remains separate
+from Grapple and receives the exact closed predecessor's grant index; it cannot
+be supplied by deserialization, definition text or a raw clone.
