@@ -375,3 +375,62 @@ frontend and genuine application cases supplement the preserved regression suite
 No catalog-only or type-only completion claim is authorized. Root independently
 reviews the frozen implementation and schedules canonical, exact-head CI and native
 verification. All carrying/support/lifecycle Gate4 obligations above remain open.
+
+## Independent review closure and source allocation
+
+The producer review is source-only and clear after the selected closures:
+`load-facts-b77b159-producer-independent-review-2026-10-07.md`, SHA256
+`c7a9faed2cdf9a49739402ce7fb5f48dc85703c5250534f74e169fbc6fc280d7`;
+audit `d9602e14985a80f6b45e94f422c4194b2d8b0736436de8742dceff6cc90f3898`.
+Root selects its ordinary ItemId route for specifically described untracked
+apparel/payload. This supersedes the undecided residual representation above.
+
+The settled Host acceptance materializes a bounded named custom physical object
+with a new deterministic ItemId, actual actor custody and authored positive mass.
+It records that this is a separate previously untracked object, excluding body,
+all actual source allocations, tracked contents and any represented currency lot.
+Do not infer physical sameness from text. The producer cannot reuse an existing
+identity, change someone else's source allocation, copy a registered equipment ID
+to grant properties, or silently replace an earlier residual object. Use a fixed
+custom-load identity class outside source equipment grants; it supplies no attack,
+armor, focus or new spending authority. Subsequent facts refer to that same ItemId
+and actual custody. Its materialization is observed by the same private mass
+component and reconstructed from the original command, like currency issuance.
+
+The normal form describes this as recording additional apparel/payload, with an
+explicit acknowledgement that it excludes equipment already listed. Allow an
+explicit coverage/absence fact when there is no additional untracked payload;
+do not manufacture zero-mass objects. Bind coverage to the actor/body profile and
+completed source allocation identities, not the current independent inventory set.
+Known PC/source starting allocations must already be materialized or be explicitly
+accounted for before claiming complete load, so later PrepareEquipment cannot
+duplicate purportedly untracked starter clothing. A later source/form allocation
+change requires unresolved coverage or an explicit supported causal update.
+Ordinary sword drop/pickup, ammunition consumption and coin movement preserve
+independent custom apparel and coverage. Real operations on that object use its
+identity; no prose-residual-to-item conversion or second object database is added.
+
+Also close the reviewed version joins explicitly: update the desktop's fixed
+activation version overrides as well as context selection; old direct command/
+observation APIs must reject fresh mass-only bypasses while keeping authentic
+historical replay. Origin enumeration must handle physical facts independently
+of optional rules state. Strict old-state/export migration and duplicate-field
+authority detection must reject smuggled mass authority. These are required parts
+of the selected single producer path, not optional follow-up cleanup.
+
+Before source allocation, normally receive the complete reviewed PR71 correction
+`86ed8ae17b47f58dd32f629b32a7d53faf577242`. It fixes only the shared cold-test
+negative by making its payload actually differ, with an explicit inequality
+assertion. All966 current PR71 test bodies and production are unchanged. Its fresh
+CI remains pending; no donor acceptance is transferred. Preserve this complete
+receipt and its original failure evidence instead of duplicating the fixture fix.
+
+After that normal merge, source_review_oct7 becomes sole writer of this branch
+for the complete foundation described here. Root stops source edits and owns the
+independent full-diff review, normal publication and all heavy verification. The
+author may make coherent code/plan commits and direct changed-file formatting,
+but runs no compiler, Cargo, npm, project test, native package or database while
+root's serial heavy allocation is occupied. No push or merge to main is allocated.
+Report concrete implementation conflicts promptly and retain the current product
+contract; no disconnected catalog, synthetic positive fact or version shortcut is
+accepted. Freeze complete source and preservation evidence before handback.
