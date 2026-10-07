@@ -588,3 +588,16 @@ The separate frozen969 producer has unchanged pre-mass production and distinct
 capture routes; root may allocate it after the failure/capture-path diagnosis.
 No capture result replaces the corrected combined selection, full checks, native
 acceptance, ordinary carrying or any remaining Gate4 requirement.
+
+The correction now adds one test-only helper and changes only the failed Glaive
+call site. It first rejects the unrelated PC1 request with full row/state equality,
+then restores the genuine paused export in a separate in-memory application.
+The actual Host request must be accepted for the original reactor/target/weapon,
+carry the original command ID and Admin/no-actor provenance, preserve the paid
+grapple transport and characters, spend that reactor's reaction, and assign the
+physical roll to that reactor. Exact retry and original replay must agree. The
+original export (apart from its export timestamp), all rows and state must remain
+unchanged before the existing PC0 continuation. The shared owner-bound negative
+helper is unchanged. Direct changed-file rustfmt and whitespace checks passed;
+compilation, runtime and CI for this correction remain UNRUN. Independent frozen
+source review and new exact-head verification preparation are the next actions.

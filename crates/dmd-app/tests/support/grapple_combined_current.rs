@@ -208,6 +208,97 @@ async fn reject_other_channels(f: &Fixture, input: TableTransportInput) {
         assert_eq!(f.state().await, state);
     }
 }
+async fn verify_weapon_opportunity_channels(
+    f: &Fixture,
+    input: TableTransportInput,
+    reactor: EntityId,
+) {
+    let foreign = request(f, f.pc(1), input.clone()).await;
+    let rows = all_rows(&f.pool).await;
+    let before = f.state().await;
+    Box::pin(f.reject(foreign)).await;
+    assert_eq!(all_rows(&f.pool).await, rows);
+    assert_eq!(f.state().await, before);
+
+    // Trusted Host input may resolve an ordinary PC weapon opportunity. Prove
+    // that existing boundary in a restored copy, retaining the original PC path.
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let host = request(f, TableTransportChannel::Host, input.clone()).await;
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let mirror = runtime(pool.clone());
+    Box::pin(mirror.restore_campaign(&saved)).await.unwrap();
+    let accepted = Box::pin(mirror.submit_presented_table(host.clone()))
+        .await
+        .unwrap();
+    assert!(matches!(&accepted, TableTransportResult::Accepted(_)));
+    let issued = mirror
+        .open_campaign(f.campaign)
+        .await
+        .unwrap()
+        .state()
+        .clone();
+    let TableTransportInput::Action(action) = input else {
+        panic!("expected ordinary weapon opportunity action")
+    };
+    let TableAction::Tactical {
+        action:
+            TacticalAction::OpportunityAttack {
+                choice: TacticalMeleeChoice::Weapon(choice),
+            },
+    } = *action
+    else {
+        panic!("expected ordinary weapon opportunity choice")
+    };
+    let attack = resolution(&issued).attack.as_ref().unwrap();
+    assert_eq!(attack.actor, reactor);
+    assert_eq!(attack.target, choice.target);
+    assert_eq!(attack.weapon().unwrap().choice, choice);
+    assert_eq!(attack.origin.id, host.command_id);
+    assert_eq!(attack.origin.issuer, CommandIssuer::Admin);
+    assert_eq!(attack.origin.actor, None);
+    assert_eq!(issued.characters, before.characters);
+    assert_eq!(
+        resolution(&issued).grapple.as_ref().unwrap().transport,
+        resolution(&before).grapple.as_ref().unwrap().transport
+    );
+    assert_eq!(
+        issued
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .reactions_spent,
+        vec![reactor]
+    );
+    assert_eq!(
+        issued
+            .rules
+            .as_ref()
+            .unwrap()
+            .pending
+            .as_ref()
+            .unwrap()
+            .request
+            .roller,
+        Some(reactor)
+    );
+    assert_eq!(
+        Box::pin(mirror.submit_presented_table(host)).await.unwrap(),
+        accepted
+    );
+    assert_eq!(
+        Box::pin(mirror.replay_rules(f.campaign)).await.unwrap(),
+        issued
+    );
+    pool.close().await;
+    let mut unchanged = export_campaign(&f.pool, f.campaign).await.unwrap();
+    unchanged.exported_at_utc = saved.exported_at_utc.clone();
+    assert_eq!(unchanged, saved);
+    assert_eq!(all_rows(&f.pool).await, rows);
+    assert_eq!(f.state().await, before);
+}
 fn dagger(item: ItemId, target: EntityId, delivery: WeaponDelivery) -> WeaponUseChoice {
     WeaponUseChoice {
         weapon: item,
@@ -466,7 +557,7 @@ async fn physical_glaive_opportunity_during_drag_retains_paid_pair_and_both_cold
     let input = action(TacticalAction::OpportunityAttack {
         choice: TacticalMeleeChoice::Weapon(use_weapon.clone()),
     });
-    reject_other_channels(&f, input.clone()).await;
+    verify_weapon_opportunity_channels(&f, input.clone(), actor).await;
     let attack = Box::pin(submit(&mut f, pc.clone(), input)).await;
     let issued = f.state().await;
     let current = resolution(&issued).attack.as_ref().unwrap();
