@@ -643,3 +643,58 @@ Root alone allocates the next local heavy run after that six-stage producer ends
 Mass and other dependent branches receive only deliberate reviewed whole history,
 under their own plans and single-writer boundaries. This receipt does not complete
 carrying, historical new-version consumption, native combined acceptance or Gate4.
+
+## Receive the reviewed spatial fixture identifier correction, 2026-10-07
+
+Root allocates sole write ownership of this receiving checkout to
+mass_capability_fix_oct7. Start from clean published combined
+`573305cd68e71d51d097703f5797379fe40696ce`, tree
+`e4b42195eeabff92d132c3cc16632650572827a3`. Fresh fetch confirms that original
+positive-integration still names573 and Held now names the complete reviewed
+successor `b97d1d7f6f07ac9f010d6304d93a5d32a1d53f79`, tree
+`e3afe4b9cda244f3312b7ddaf3a285df85faeeaa`. Root independently read the full
+two-file donor delta, actual failed log, complete test module, domain identifier
+and obstruction paths, and exact inverse; its source review is clear.
+
+Actual PR68 Linux job112686732266 on0c fails the dry-bridge positive with
+Invalid("invalid spatial identifier"). The space-bearing dry bridge ID cannot
+pass encounter validation. The target-only wall ID is also invalid, allowing
+its old generic error assertion to pass for the wrong reason. Reviewed b97
+replaces both IDs with legal hyphenated IDs, explicitly validates each repaired
+encounter and retains every original assertion. Its additional precise wall
+assertion requires Illegal("coupled path is obstructed"). Geometry, fixtures,
+production validation and all other behavior remain unchanged. Donor handback
+SHA256 is012faa89ef1476017c2bc40ea2f5379c12ae085be9a515baff3577a28065d0dc;
+its complete inverse audit is0945ec8b9bf1606a87625674489cc3d1c2e48d43d804b65575cb967f99ca67ff.
+
+Commit this receiving plan before a normal whole-history merge of exact b97.
+The expected source union has only its exact ground_transport_tests.rs and
+complete Held-plan update, plus this receiving-plan append. Stop and report any
+conflict or extra source change. Preserve all728 paths, all production/content/
+history/frontend/settings bytes and1114 unchanged original Rust test bodies.
+Inventory the two explicitly reviewed corrected bodies separately and prove
+the complete test-file inverse restores both original bodies. Do not claim all
+1116 original bodies are literally unchanged. Keep both branch histories and
+their complete plans; no copied correction or cherry-pick is allocated.
+
+The original positive-integration checkout stays untouched at573. Its earlier
+local run was interrupted without a recovered terminal outcome; cause and final
+status are unknown. Preserve its runner, target, logs and all prior evidence.
+Prepare a create-only external successor manifest, runner, source diff and proof
+for that original checkout after root's reviewed normal fast-forward. Preserve
+the old17 exact cases, order and literal Cargo argv. Insert the two corrected
+dmd-rules --lib cases immediately after canonical verify-fast and before the
+expensive application cases: dry-bridge support first, target-wall obstruction
+second. The new selection has19 exact cases and21 total steps, ending with
+strict workspace/all-target Clippy. Preserve normal profiles, default test
+threads, exact outcomes, full source/ancestry/executable/environment guards,
+fresh evidence/target directories and exclusive heavy-slot ownership.
+
+Only Git composition, source reads and external static Python auditing/tooling
+preparation are allocated. No Cargo/compiler/npm/test/native/database process,
+runner import/preflight, push or other checkout write is allocated. Freeze the
+coherent clean receipt with exact parents/tree and full preservation evidence;
+root owns independent review, original-checkout fast-forward, publication and
+fresh runtime allocation. All successor execution remains UNRUN. Product/Gate4
+scope and all outstanding canonical, full-suite, CI, native, carrying and
+historical-version acceptance obligations remain unchanged.

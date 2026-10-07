@@ -71,8 +71,9 @@ fn ground_support_checks_swept_water_before_floor_and_allows_a_dry_bridge() {
     f.encounter.battlefield.terrain[0].volume = volume(point(0, 0, 0), point(100, 100, 10));
     f.actor(f.a).position.z = 20;
     f.actor(f.b).position.z = 20;
-    f.terrain("dry bridge", volume(point(0, 0, 10), point(80, 30, 20)))
+    f.terrain("dry-bridge", volume(point(0, 0, 10), point(80, 30, 20)))
         .supports_top = true;
+    f.encounter.validate(&f.state).unwrap();
     let result = drag(
         &f,
         point(20, 10, 20),
@@ -117,11 +118,12 @@ fn ground_drag_keeps_third_party_occupancy_and_target_solid_sweep() {
     );
     f.actor(f.c).position = point(70, 70, 0);
     f.wall(
-        "target-only wall",
+        "target-only-wall",
         volume(point(30, 10, 0), point(31, 20, 12)),
         CoverDegree::Total,
         false,
     );
+    f.encounter.validate(&f.state).unwrap();
     assert!(
         drag(
             &f,
@@ -131,6 +133,15 @@ fn ground_drag_keeps_third_party_occupancy_and_target_solid_sweep() {
         )
         .is_err()
     );
+    assert!(matches!(
+        drag(
+            &f,
+            point(20, 10, 0),
+            MovementMode::Walk,
+            MovementAllowance::default()
+        ),
+        Err(SpatialError::Illegal(reason)) if reason == "coupled path is obstructed"
+    ));
 }
 #[test]
 fn crawl_difficult_ground_and_haul_are_additive_without_target_prone_surcharge() {
