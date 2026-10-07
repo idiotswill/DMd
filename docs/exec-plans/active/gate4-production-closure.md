@@ -5,20 +5,28 @@ This is a dispatch/application audit, not a reduced checkpoint or a completion c
 All twelve Gate4 ledger families remain `implementing`. The full checkpoint and
 the eighteen-family spell matrix in `gate-4-effect-lifecycle.md` remain binding.
 
-## Current checkpoint after PR48 — 2026-10-01
+Current fetched main is `5afc992e62bb967aceec69db53f19b6347b70855` after PR51.
+Air source admission and source-bound Shove are merged. PR52's actual native391
+deadline and five cold checkpoints now pass; its [evidence record](../../checkpoints/gate4-expiry-native-2026-10-06.md)
+keeps final checks/merge and the broader Gate4 obligations open.
+The [release plan](gate4-encounter-release.md) records PR48's separate successful
+literal-main checks. All remaining Gate4 obligations below stay open.
 
-Fetched main is dbf1d633460473183324b4ec519e8d1980884b5c. Release PR48 merged
-with expected-head protection after complete exact d4 review and six successful
-checks; main's full tree equals that candidate. Separate literal dbf runtime jobs
-remain pending. The release plan preserves the8c implementation's canonical and
-actual native evidence without calling it execution on a different head.
+## Historical checkpoint after PR48 — 2026-10-01
 
-Air3f's six checks and actual verified package now cover source creation, overlap
+At that checkpoint, fetched main was dbf1d633460473183324b4ec519e8d1980884b5c.
+Release PR48 merged with expected-head protection after complete exact d4 review
+and six successful checks; main's full tree equaled that candidate. The separate
+literal dbf runtime checks were then pending and subsequently passed as recorded
+in the release plan, which preserves source8c's canonical and native attribution.
+
+Air3f's six checks and actual verified package covered source creation, overlap
 refusal, corrected placement, owned initiative cold continuation and airborne cold
 continuation with the previous campaign resources/history preserved. Local
-canonical and final receiving-head proof remain open. This is bounded source
-admission, not complete Air actions or full monster running. Shove, expiry, MR,
-guarded Grapple, finite source gear, complete Ogre and ground recovery remain
+canonical and final receiving-head proof were then open and were subsequently
+completed before PR50 acceptance, as recorded in the Air plan. This is bounded
+source admission, not complete Air actions or full monster running. Shove, expiry,
+MR, guarded Grapple, finite source gear, complete Ogre and ground recovery remain
 unaccepted dependent work. All twelve families/eighteen spell mechanisms and the
 other obligations below retain their full scope. No Gate5 or gate completion.
 

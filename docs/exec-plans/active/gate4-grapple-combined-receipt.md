@@ -601,3 +601,45 @@ unchanged before the existing PC0 continuation. The shared owner-bound negative
 helper is unchanged. Direct changed-file rustfmt and whitespace checks passed;
 compilation, runtime and CI for this correction remain UNRUN. Independent frozen
 source review and new exact-head verification preparation are the next actions.
+
+## Receive current accepted main before the next local verification
+
+Root is the sole receiving-branch writer. Freshly fetched main is
+`4cf815bd0f0d9b128612867ba829c9ac1c2549f7`, containing accepted timed-expiry
+PR52 and source-pinned physical creation PR62. Receiver is reviewed and published
+`1c86dd6c1bb61cd871f7d7db92493bf4c7d71e06`. Its full CI remains pending and its
+prepared local18-step selection is UNRUN behind the separate frozen969 capture.
+Preserve all prior success, failure and cancellation evidence at its real head.
+
+Receive whole main by a normal two-parent merge after this plan-only commit.
+Source preview `5261880540ea15cab79d5c333aaafd9276bb42fc` is conflict-free.
+Root read the incoming source changes and accepted evidence; independent review
+SHA256 `bb27823b8444b160ca58ca8da5bffd18a1290c5e0a2384e693501c0491832ba8`
+and audit `1b13dbde9920b0d568edfe0713e468e9203d877d0f4a0420dd18c1d95a799d01`
+verify728 preview entries, all1109 receiver case bodies and seven exact donor
+cases. Fourteen of17 changed paths equal main exactly. The three explicit joins
+retain the entire receiver turns context and add only main's due-only Time/Turn
+block; register the real expiry child while preserving the actual source-option
+pin in the Missile fixture; and retain tactical_grapples None in the turn fixture.
+No receiver assertions, commands, content, frontend or history bytes change.
+
+The timed due detection is the only production change. It retains historical
+empty Time stamps when no raw timed deadline is due and uses the existing Turn
+observer for combined due/turn ownership. Existing Grapple, opportunity, equipment,
+fall, fixed-candidate and pending-work guards remain intact. The Physical receipt
+adds its exact accepted evidence documents; it does not invent new native coverage.
+Verify actual merge parents/tree against this preview plus only this plan append.
+
+After actual whole-tree preservation and independent receipt review, normally
+fast-forward the idle original positive-integration branch and publish with its
+expected1c head. Prepare a new frozen-head runner, preserving the original16
+focused cases and adding the genuine timed-expiry file/recovery case, bracketed
+by canonical verify-fast and strict workspace/all-target Clippy. The old1c runner
+stays UNRUN historical preparation; do not rename its head or reuse its output.
+Fresh full Linux/Windows checks remain required; parent passes do not transfer.
+
+Capture969 and all its partially/completely produced archives remain immutable.
+Root alone allocates the next local heavy run after that six-stage producer ends.
+Mass and other dependent branches receive only deliberate reviewed whole history,
+under their own plans and single-writer boundaries. This receipt does not complete
+carrying, historical new-version consumption, native combined acceptance or Gate4.
