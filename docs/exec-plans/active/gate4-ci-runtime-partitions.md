@@ -277,3 +277,26 @@ No elapsed-time improvement or full workspace pass is claimed yet. Next action:
 root/fresh reviewer inspect the frozen complete diff and preservation inventory,
 then root may publish for genuine two-platform validation. Keep canonical main4cf
 jobs running and preserve every terminal outcome.
+
+## Hosted Windows fixture correction — before implementation
+
+PR73 head `5413da89ade6045c197b5633988dcb02257bb9be` was independently
+reviewed and published. Actual Windows stable-checks job112819324651 failed its
+new `test_custom_harness_is_refused_before_invocation` Python control: the
+expected `harness=false` refusal was preceded by `workspace package outside
+checkout`. The fixture passes an unresolved `TemporaryDirectory` path, while
+workspace discovery resolves its manifest before checking containment. This is
+a fixture path-normalization mismatch on the hosted Windows environment; the
+production allocation entry point already resolves its checkout root.
+
+Apply only `Path(directory).resolve()` in that fixture. Preserve its custom
+harness manifest, exact refusal assertion, all other controls and production
+runner/workflow bytes. Rerun the lightweight Python controls, freeze and request
+review before root publishes a successor. Actual Windows execution is still
+required. Do not relabel the failed original run. The original Linux empty
+Grapple allocation and remainder have uploaded artifacts, but their real complete
+receipts still require inspection; no full-workspace aggregate passed.
+
+The aggregate also requires one workflow run **and attempt** for all four
+receipts. A partial retry that mixes earlier successful allocations with a newer
+attempt refuses. Use a full workflow rerun when retrying this strict design.
