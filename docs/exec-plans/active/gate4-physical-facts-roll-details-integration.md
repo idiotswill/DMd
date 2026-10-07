@@ -44,7 +44,7 @@ No production authority adjustment is justified by this mock finding.
   composition. Independent M5, G3/G4 and source-control capabilities must remain
   independent; a global transport version does not grant a gameplay capability.
 - Inventory the two approved donor spatial-fixture body changes separately;
-  preserve all1127 other existing receiving Rust bodies and all four incoming
+  preserve all1130 other existing receiving Rust bodies and all four incoming
   roll-details bodies. No obsolete expected failure may be silently rewritten.
 - Add a separately planned genuine M5 plus G3/G4 and source2 matrix, and genuine
   restored969 pending-roll details checks. Keep all original donor G3/G4 tests
@@ -95,3 +95,8 @@ recovers the complete original receiving test file byte-for-byte after normal
 line-ending normalization. No case, assertion, raw DTO or command changed.
 Git diff checks pass. Complete independent final-tree review, publication and
 all composed-source runtime checks remain pending.
+
+Independent inventory clarifies the test denominator: preconsumer mass had1129
+bodies; the consumer added three ordinary harness cases, giving1132 at5597.
+The union therefore retains1130 exact receiving bodies plus the two explicitly
+reviewed b97 corrections, and adds four unchanged donor details cases (1136).
