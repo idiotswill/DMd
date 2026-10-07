@@ -128,6 +128,11 @@ fn action(action: TacticalAction) -> TableTransportInput {
     TableTransportInput::Action(Box::new(TableAction::Tactical { action }))
 }
 
+struct FixtureOpposition {
+    pc_opportunity: bool,
+    opponent_opposes_pc: bool,
+}
+
 struct Fixture {
     pool: sqlx::SqlitePool,
     runtime: CampaignRuntime,
@@ -241,11 +246,13 @@ impl Fixture {
             definition,
             size,
             opponent,
-            pc_opportunity,
+            FixtureOpposition {
+                pc_opportunity,
+                opponent_opposes_pc: false,
+            },
             physical_weapon,
             long_reach_witness,
             pc_platform,
-            false,
         ))
         .await
     }
@@ -253,12 +260,15 @@ impl Fixture {
         definition: &str,
         size: CreatureSize,
         opponent: bool,
-        pc_opportunity: bool,
+        opposition: FixtureOpposition,
         physical_weapon: Option<&str>,
         long_reach_witness: bool,
         pc_platform: bool,
-        opponent_opposes_pc: bool,
     ) -> Self {
+        let FixtureOpposition {
+            pc_opportunity,
+            opponent_opposes_pc,
+        } = opposition;
         assert!(
             !long_reach_witness
                 || (definition == "goblin-warrior"

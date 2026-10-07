@@ -22,11 +22,13 @@ async fn run(feature: &str, selected_grip: WeaponGrip) {
         "ogre",
         CreatureSize::Large,
         true,
-        true,
+        FixtureOpposition {
+            pc_opportunity: true,
+            opponent_opposes_pc: true,
+        },
         Some("glaive"),
         false,
         false,
-        true,
     ))
     .await;
     enable(&mut f).await;
