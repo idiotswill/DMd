@@ -1,5 +1,46 @@
 # Gate 4 — Grounded movement with a held creature
 
+## October 7 diagnosed fixture corrections and issued-child design
+
+Root assigned sole source writing to `native_capture_audit_oct7` from clean,
+freshly fetched `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`. PR68 Linux
+job112289534633 and Windows job112289465143 both reached the public harness
+with31 passed and4 failed. The retained ray failure belongs to the separate
+Public writer; do not edit or receive that active branch until root supplies its
+reviewed whole successor. The issued-opportunity failure needs a production
+design and root review before implementation, as described below.
+
+Commit this plan before two exact new-fixture producer corrections. The hidden
+wall's `hidden seam` identifier violates the unchanged spatial identifier
+grammar, so change it to `hidden-seam` in its producer and both corresponding
+privacy assertions. Keep the complete geometry, hidden flag, zero-cost and both
+endpoint assertions unchanged. The activation scenario withdraws a real Grapple
+without a before-equipment change; `saves::complete_attempt` correctly queues its
+earned `GrappleAfterEquipment`. Keep the original pending-activation refusal,
+then after withdrawal choose the owner's actual `Finish without changing
+equipment` option through the existing cold/portable/retry helper before the
+Host's successful activation. Do not clear or inject state, grant an allowance,
+weaken settled-state admission, remove any assertion or rewrite an older case.
+
+The issued-child failure is separate: accepted opportunity admission validates
+its stored crossing by reconstructing only attack/pending, Reaction expenditure
+and equipment, then calls the live movement validator. That reaches
+`transport::current_target`, which correctly rejects a stopped route after the
+selected grip ends. Already-issued attack/dice ancestry must remain valid while
+future coupled movement remains stopped. A retained hand read alone does not
+authenticate the complete holder/target crossing. Propose the full historical
+crossing/source/occurrence proof and its original-replay validation before any
+production change; do not remove the live stop guard, resurrect live drag
+authority or cancel accepted dice to satisfy the test.
+
+This correction advances the existing product tactical movement, causal work and
+exact suspension requirements and the active Gate4/ADR028 contract. All other
+Gate4 and Held movement acceptance remains open. Source/Git audits only are
+allocated here; no Cargo, compiler, tests, npm, database, native activity or push.
+Root independently reviews the frozen fixture delta and proposed production
+design, then schedules actual exact-head verification. Failed5d5 evidence and
+all original compatibility fixtures stay preserved at their actual identities.
+
 ## Root receipt of reviewed public scenario correction — 2026-10-06
 
 Root owns the sole writer from freshly fetched clean `ca6fa4c7651657823a2cd0b380592b98cd51d961`.
