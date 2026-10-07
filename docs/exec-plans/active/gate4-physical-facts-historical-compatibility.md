@@ -39,7 +39,7 @@ producer results, not consumer or full-workspace runtime results.
 
 After final independent audit, import the191 files byte-for-byte: three route
 manifests and188 payloads, totaling21,734,730 bytes. Repository destination is
-`crates/dmd-app/tests/fixtures/physical-facts-v4-969/`. Add exact-byte Git
+`tests/fixtures/physical-facts-v4-969/`. Add exact-byte Git
 attributes for this directory before staging it. Keep the original directory
 external and immutable. Store a separate compact provenance receipt with all
 three manifest hashes, source/executable/runner/tool identities, original logs,
@@ -278,3 +278,14 @@ Consumer implementation is paused: its one new untracked loader draft is safely
 preserved outside Git, and no incomplete consumer source enters this correction.
 After review, resume the same complete22-cut plan from the new fixture location;
 relocation waives no original compatibility, privacy, authority or v5 obligation.
+
+The complete evidence tree is now at `tests/fixtures/physical-facts-v4-969`.
+The separate `tests/fixtures/physical-facts-v4-969-relocation.json` records every
+original/new path through one prefix mapping, all232 exact Git blobs/modes and
+literal byte SHA256 values. Its original manifests and receipt remain unchanged,
+including historical source/destination descriptions. The fixture attribute has
+only its path updated; the consumer's active destination above is corrected.
+The actual unchanged `scripts/check-genericity` passed from this worktree.
+No compiler, Cargo, project test, npm, database or native check ran. Independent
+full-tree relocation review and fresh exact-head CI are required before resuming
+the consumer. The original9c CI failure remains attributed to its actual head.
