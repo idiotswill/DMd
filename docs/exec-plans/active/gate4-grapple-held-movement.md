@@ -1,5 +1,46 @@
 # Gate 4 — Grounded movement with a held creature
 
+## October 7 reviewed retained-cast correction intake
+
+Root resumes sole branch writing at clean
+`8c03999d6713a1ecac2af87dcceed9814fb24c80`, tree
+`5a4918e8e834b768a645abaa8638880b33e8f08a`. Independent full source review
+found no actionable defect; the four private cases and new public nonempty-prefix
+case remain unrun. The reviewed fixture-only predecessor is retained unchanged.
+Fresh fetch confirms remote Held `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`,
+Public `f059b49cb8ed516df881d0cf0755bff3badb329f`, and main
+`1a9de14c8a4418893b6664b89f99f0a0c0225ce1`. No unexpected branch movement exists.
+
+Commit this plan before receiving the entire reviewed Public successor f059 by
+normal Git merge. Its actual completed-cast retention corrects the inherited
+three-ray source-validation failure without weakening live casting or old tests.
+The full correction and its original plan must survive intact. Resolve any
+overlap only by preserving both the owned opportunity observer and completed-cast
+fields/hooks; inspect all merge output and compare all resulting tracked blobs
+to both parents. Do not cherry-pick individual source hunks or reset history.
+
+The root full-diff review and independent f059 report are external source evidence
+only (`tooling/grapple-retained-cast-f059b49-independent-review-2026-10-07.json`,
+SHA256 `8661fb47217f1c8a6e3729d26ed58dfb216ee8aba6830535db1c83b9a86c1522`).
+Held review: `tooling/held-owned-opportunity-8c03999-independent-review-2026-10-07.md`,
+SHA256 `c9d5fcf7c482c03c6895ab511d5c7e7ff0eec2632f0b9859d42762c1ed6521a4`.
+Neither substitutes for new combined-head runtime evidence.
+
+After merge, review complete parent deltas, run bounded formatting/whitespace
+checks and publish the coherent head to existing draft PR68 for fresh CI. The
+native weapon session is now closed; root allocates the sole heavy slot for
+focused Held/Public regressions on a target directory unique to this worktree,
+then canonical `verify-fast`/`verify` and required native Windows/Linux CI.
+Run the original failing rays, issued-opportunity release and both repaired
+fixture cases, all five new Held cases, and both retained-cast controls. Preserve
+every old assertion, fixture and original replay path. Inspect actual diagnostics
+before any further correction; no old or sibling green run proves this head.
+
+This advances the existing tactical timing/exact suspension product requirements
+and Gate4/ADR025/ADR028 acceptance. All other Held and integrated Gate4 scope
+remains open. Next action: normal merge of exact f059, full composition review,
+then exact-head verification. No runtime, native Held or gate completion claim.
+
 ## October 7 approved owned historical opportunity correction
 
 Root approved source implementation from clean fixture successor
