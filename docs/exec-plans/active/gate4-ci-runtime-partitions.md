@@ -373,3 +373,11 @@ again (0.839s), and diff whitespace checks pass. The single constant is the only
 code change after4927674. Hosted diagnostic output remains unrun and requires
 fresh review/publication. Preserve4927674 as the reviewed-but-corrected candidate;
 do not imply that its obsolete filter could diagnose the actual hosted rebuild.
+
+Before final publication, root approves one additional bounded evidence fix:
+persist the already-read `rustc -vV` and `cargo -vV` strings in both pre-phase
+diagnostics. Currently those strings reach only `complete.json`, so a failure
+loses direct toolchain provenance. Pass the existing strings to the diagnostic
+helper without invoking any extra command or changing compilation. Extend only
+the new provenance control, rerun the18 lightweight controls and freeze the full
+cumulative patch for final review. No further optional diagnostic expansion.
