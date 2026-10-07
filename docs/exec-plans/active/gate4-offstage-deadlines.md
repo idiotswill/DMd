@@ -1,5 +1,39 @@
 # Gate 4 — Released elapsed intervals and absolute deadlines
 
+## October 7 decoded-state refusal comparison correction plan
+
+Root owns this bounded correction from clean published
+`de9839eb51e2455581bf76e6393319c6d7831ed2`. Actual Linux run37582524364,
+job112665212417 passed fast verification and strict Clippy, then failed
+`released_interval_refuses_shove_attachment_work_and_commands_without_turn_authority`
+at released_time/tests.rs1814. Reached harnesses have471passes/1failure; the rules
+library has189passes/1failure. Windows remains pending. Complete failed log SHA256
+`610c8266add2c74804363c26f400c4236cff74a510e26c468206b197f1a3b8d6`
+and both actual serialized values are preserved externally.
+
+Root and an independent reviewer decoded the complete assertion payloads: every
+field value and array order is identical. Only HashMap object-key order differs
+at rules/entities, entities and items. The test records bytes before decode_json,
+then compares them to the new decoded state's serialization after two refusals.
+Those actual boundary/command refusals passed. A new HashMap's iteration order is
+not the original state's byte order; this assertion does not isolate mutation.
+
+Preserve the actual hostile encode/decode roundtrip, test identity and both exact
+refusal assertions. Explicitly compare the decoded typed state to its original,
+then snapshot both the decoded typed state and its own encoded bytes before the
+refusal operations. Require both to remain exactly unchanged afterward. This
+strengthens roundtrip and no-mutation evidence without sorting, normalizing or
+dropping a persisted field, assertion, negative or later Shove work/action loop.
+No production, wire codec or accepted history changes are planned.
+
+Commit this plan before source edits. Review the complete bounded diff and all
+other body/file preservation, direct formatting and whitespace; publish only the
+reviewed exact correction. The sole local heavy run remains the separate586
+integration selection, so no local compiler/runtime is allocated here. Preserve
+the unrun de983 runner and previous CI failure. Fresh-head CI and a separately
+guarded successor selection must include the original failing case unchanged in
+name and all prior controls. Native/complete slice/Gate4 acceptance remain open.
+
 ## October 7 current Shove release producer correction plan
 
 Root assigned sole source writing on PR63 to `native_capture_audit_oct7` from
