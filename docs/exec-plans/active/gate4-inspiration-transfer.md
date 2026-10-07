@@ -335,3 +335,13 @@ get independent review, then publish a successor for fresh exact-head CI. A late
 normal whole-history receipt will propagate it to integration and compatibility
 capture after their own freeze boundaries. No local heavy run is allocated here.
 All first-award/transfer, canonical, native and Gate4 acceptance remains due.
+
+Fresh86 CI reports E0533 in all four Rust compile jobs at the new negative input:
+Dash is a struct variant, not a unit variant. No Rust runtime ran. Root's source
+review missed its required speed; the independent review also missed this field.
+The actual enum in tactical.rs:211 and existing turn-core application producer
+use Dash { speed: DashSpeed::Speed }. Commit this plan, then supply that exact
+field while preserving the inequality and all remaining bytes. No assertion or
+lint is changed. Preserve all four complete failed logs and rerun on the corrected
+head; source-only reviews do not substitute for compilation. The active586 local
+run and other writers' received86 histories remain untouched until normal receipt.
