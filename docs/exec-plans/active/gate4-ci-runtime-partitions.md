@@ -305,3 +305,37 @@ The one-line fixture correction is implemented. All15 lightweight Python control
 pass locally again (0.739s), and `git diff --check` passes. Runner and workflow
 blobs remain exact5413. No Cargo/npm/native/database execution was performed;
 fresh hosted Windows proof and independent correction review remain pending.
+
+## Windows executable-change diagnostics — before implementation
+
+Published successor `8d23f55f36a355de00447a0651325bd7aedfbd84` passes the
+15 Python controls on hosted Windows. Runtime jobs112903985987 and112903985905
+in run37653439392 nevertheless fail the existing before-execution byte guard:
+the `dmd-desktop` executable changes after the canonical no-run compilation.
+Both preserved artifacts contain593 Cargo messages in each phase; removing only
+the `fresh` field leaves identical graphs. Only the desktop executable is rebuilt
+in the second phase. Its actual replacement hash and Cargo's dirty reason were
+not recorded. Do not infer a cause from equal graph fields or a stable filename.
+
+Root allocates a diagnostic-only successor. Keep the exact canonical argv,
+phase order, discovery, graph checks, byte guards, harness execution, aggregation,
+profiles, threading and timeouts. Set only Cargo fingerprint INFO logging for
+both compilation phases, retaining complete stderr. Before each phase write a
+separate diagnostic JSON file with the exact argv, cwd, source/run identity,
+runner/Python identity and an explicit allowlist of relevant configuration
+values; never serialize the full environment or credentials. On an executable
+hash mismatch write expected and actual SHA256, target identity, path and guard
+phase before refusing with the existing error. Diagnostic files must not match
+the harness `*.receipt.json` glob and cannot confer a passing outcome.
+
+Add lightweight controls proving mismatches still refuse and never execute a
+harness or create its receipt, and that matching bytes retain the existing
+execution path. Verify the diagnostic environment allowlist excludes unrelated
+values. No local Cargo/npm/native/gameplay/database run is allocated. Freeze the
+bounded patch for independent review before publication. First obtain an actual
+dirty reason; no stabilization rebuild, binary normalization, accepted old hash,
+guard relaxation or other build-semantic correction is authorized here.
+
+Original failed artifacts and prior partial runs remain preserved. Original5413
+Linux has since completed its genuine56-target/817-case union, matching completed
+literal main4cf; this does not pass the current head or either Windows failure.
