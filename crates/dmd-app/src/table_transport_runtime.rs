@@ -806,6 +806,43 @@ impl CampaignRuntime {
         &self,
         request: TableRollOptionsRequest,
     ) -> Result<TableRollOptions, RunnableCampaignError> {
+        self.read_current_roll(request, |_, _, options| Ok(options))
+            .await
+    }
+    pub async fn table_roll_details(
+        &self,
+        request: TableRollDetailsRequest,
+    ) -> Result<TableRollDetails, RunnableCampaignError> {
+        if request.version != 1 {
+            return Err(rejected("Unsupported roll details version."));
+        }
+        self.read_current_roll(
+            TableRollOptionsRequest {
+                campaign_id: request.campaign_id,
+                channel: request.channel,
+                revision: request.revision,
+                roll_id: request.roll_id,
+            },
+            |state, pending, options| {
+                Ok(TableRollDetails {
+                    version: 1,
+                    options,
+                    display_reason: crate::table_runtime::live_roll_label(pending, state)
+                        .map_err(recovery)?,
+                })
+            },
+        )
+        .await
+    }
+    async fn read_current_roll<T>(
+        &self,
+        request: TableRollOptionsRequest,
+        project: impl FnOnce(
+            &CampaignState,
+            &PendingRoll,
+            TableRollOptions,
+        ) -> Result<T, RunnableCampaignError>,
+    ) -> Result<T, RunnableCampaignError> {
         // A read transaction provides one snapshot; this neither bootstraps nor
         // rewrites accepted audience digests, bindings, responses or game state.
         let mut tx = self.pool.begin().await.map_err(recovery)?;
@@ -871,12 +908,16 @@ impl CampaignRuntime {
                     heroic_inspiration: state.rules.as_ref().unwrap().entities[&actor]
                         .heroic_inspiration,
                 });
-        tx.commit().await.map_err(recovery)?;
-        Ok(TableRollOptions {
+        let options = TableRollOptions {
             savage_attacker,
             heroic_inspiration: dmd_rules::table::grapple_transport_enabled(state)
                 .then(|| state.rules.as_ref().unwrap().entities[&actor].heroic_inspiration),
-        })
+        };
+        // The projection runs while the same authenticated execution/read lives.
+        // The legacy caller deliberately retains its original options-only contract.
+        let result = project(state, pending, options)?;
+        tx.commit().await.map_err(recovery)?;
+        Ok(result)
     }
     pub async fn recover_legacy_table_request(
         &self,
