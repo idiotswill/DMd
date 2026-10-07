@@ -161,6 +161,25 @@ pub struct TableRollOptions {
     pub heroic_inspiration: Option<bool>,
 }
 
+/// Opted-in live guidance; this never changes retained presentation bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetailsRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub roll_id: RollRequestId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetails {
+    pub version: u32,
+    pub options: TableRollOptions,
+    pub display_reason: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableSavageAttackerOption {
     pub weapon_dice: usize,

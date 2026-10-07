@@ -4,7 +4,7 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type TableView } from './table-api';
-vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
+vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollDetails:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
 
 function table(): TableView {
   return {...emptyView(),grapple:{version:4,choices:[],ground_drag:[]},
@@ -21,7 +21,7 @@ beforeEach(()=>{
   vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]);
   vi.mocked(tableApi.options).mockResolvedValue(options);
   vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]});
-  vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null,heroic_inspiration:true});
+  vi.mocked(tableApi.rollDetails).mockResolvedValue({version:1,options:{savage_attacker:null,heroic_inspiration:true},display_reason:"Resist the grip"});
 });
 
 describe('ordinary Inspiration through the saved desktop request',()=>{
@@ -102,7 +102,7 @@ describe('ordinary Inspiration through the saved desktop request',()=>{
     expect((screen.getByLabelText('Spend Heroic Inspiration to reroll one die') as HTMLInputElement).checked).toBe(false);
     expect(screen.queryByLabelText('Inspiration replacement')).toBeNull();
     expect(tableApi.action).not.toHaveBeenCalled();expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
-    expect(tableApi.rollOptions).toHaveBeenLastCalledWith({campaign_id:'campaign',revision:'next-request-view',roll_id:'second-owned-roll',channel:{Player:{player_id:'player',character_id:'pc'}}});
+    expect(tableApi.rollDetails).toHaveBeenLastCalledWith({version:1,campaign_id:'campaign',revision:'next-request-view',roll_id:'second-owned-roll',channel:{Player:{player_id:'player',character_id:'pc'}}});
   });
   it('clears unsubmitted award recipient and reason after leaving the Host channel',async()=>{
     const user=userEvent.setup();vi.mocked(tableApi.view).mockResolvedValue(table());

@@ -23,6 +23,7 @@
   let view = $state<TableView | null>(null);
   let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
   let heroicInspiration = $state(false);
+  let rollDisplayReason = $state<string | undefined>();
   let creatureCatalog = $state<CreatureOption[] | null>(null);
   let sourceControlOptions = $state<SourceControlOptions | null>(null);
   let sourceControlLoading = $state(false);
@@ -61,11 +62,11 @@
   function rememberSelection() { saveSelection({ campaignId: campaignId || null, playerId: playerId || null, ...(sourceActorId ? {sourceActorId} : {}) }); }
   async function refresh() {
     const generation = ++refreshGeneration;
-    const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null; savageOption = null; heroicInspiration = false; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
+    const target = campaignId; const selectedPlayer = playerId; const initialSource = sourceActorId;
+    view = null; options = null; hostSituation = null; savageOption = null; heroicInspiration = false; rollDisplayReason = undefined; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
-    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer) return;
+    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer || sourceActorId !== initialSource) return;
     view = next; options = choices; hostSituation = situation ?? null;
     if (!retry && sourceActorId && !next.source_control?.actors.some(actor=>actor.actor===sourceActorId&&typeof actor.controller==='object'&&actor.controller.Player===selectedPlayer)) sourceActorId='';
     rememberSelection();
@@ -76,10 +77,17 @@
       && ((!selectedPlayer && hostMayRoll(next))
         || selected?.entity_id===next.roll.roller && !sourceActorId
         || next.source_control?.actors.some(actor=>actor.actor===sourceActorId&&actor.actor===next.roll?.roller&&typeof actor.controller==='object'&&actor.controller.Player===selectedPlayer))) {
-      const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
-        channel:selectedPlayer ? sourceActorId ? {SourceCreature:{player_id:selectedPlayer,actor:sourceActorId}} : {Player:{player_id:selectedPlayer,character_id:attending!.character_id!}} : 'Host'});
-      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) {
-        savageOption=answer.savage_attacker; heroicInspiration=answer.heroic_inspiration ?? false;
+      const selectedSource=sourceActorId, rollId=next.roll.id;
+      const current=()=>generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&sourceActorId===selectedSource&&view?.revision===next.revision&&view?.roll?.id===rollId;
+      try {
+        const answer = await tableApi.rollDetails({version:1,campaign_id:target,revision:next.revision,roll_id:rollId,
+          channel:selectedPlayer ? selectedSource ? {SourceCreature:{player_id:selectedPlayer,actor:selectedSource}} : {Player:{player_id:selectedPlayer,character_id:attending!.character_id!}} : 'Host'});
+        if(current()) {
+          if(answer.version!==1)throw new Error('Unsupported roll details version.');
+          savageOption=answer.options.savage_attacker; heroicInspiration=answer.options.heroic_inspiration ?? false; rollDisplayReason=answer.display_reason;
+        }
+      } catch(reason) {
+        if(current())throw reason;
       }
     }
   }
@@ -280,7 +288,7 @@
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
           {#if host}<button disabled={gameLocked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending && canSpeak}<div class="actions"><button class="secondary" disabled={gameLocked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={gameLocked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{:else if ownsPending}<p>Switch to your player character to correct or withdraw this declaration.</p>{/if}
         </div>{/if}
-        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} displayReason={rollDisplayReason} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && sourceActor}<p>Controlling {sourceActor.name}. Use the encounter controls and physical dice requests for this creature.</p>{:else if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={gameLocked||!!view.pending||!view.active_session} administrativeDisabled={gameLocked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}

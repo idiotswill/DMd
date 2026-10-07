@@ -90,6 +90,9 @@ mod physical_graze;
 #[path = "support/grapple_physical_opportunity.rs"]
 mod physical_opportunity;
 
+#[path = "support/table_grapple_roll_details.rs"]
+mod roll_details;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
