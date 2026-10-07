@@ -213,3 +213,51 @@ harnesses, strict Clippy, canonical verification, exact-head hosted evidence and
 native/Gate4 acceptance remain root-owned and pending. Next: review the exact
 frozen source and evidence, then allocate its required execution before accepting
 any authored compatibility or details assertion.
+
+## Whole Finished-creation receipt — plan before merge
+
+Root allocates one writer for a normal whole-history receipt of reviewed published
+`4deba086607fda284bf7b40382e53f8027eb2bca`, tree
+`7c484a0d8b9b37e41e009cfd7ba7ee85ce2c217f`, into frozen details coverage
+`7f4dfbbaa1e9cec221fa2355d9e7eee81063c5e6`, tree
+`09db51aa8d58d17ae4d655ad1e1241c246ebb632`. Freshly fetched donor is based on
+common ancestor `1ffb841f67e87c4239b68dc6ff5e045e0395f5c0`. The conflict-free
+preview is tree `56973f4244699c94389078ddd9228857891ba9fc` with995 entries.
+Its six incoming paths are the dedicated Finished-creation plan, new three-case
+support module, existing harness registration, kernel internal export, guarded
+kernel entry and table reducer dispatch. The two files modified on both sides
+contain exactly the original donor hunks applied to the receiving source.
+
+Actual retired8c Windows job112822599085 reports the unchanged
+current_old_mage_accepts_incoming_pc_grip_but_never_gains_a_grappling_anatomy_grant
+case failing at the ordinary submission with "active tactical state requires the
+tactical command path"; its complete harness reports72 passed and1 failed. The
+saved exact log SHA256 is
+`e79c4f47126ec386e22b862926501f831671ad7cf707483d35f95c5ea1352d7a`.
+This diagnoses the retained Finished creation boundary and is not a successor
+runtime result. Earlier573 cancellation logs establish a named failure only.
+
+The donor's dedicated plan remains authoritative for its narrow production
+scope: only the two existing host table character-creation actions gain admission
+after complete existing Finished validation and an actually closed idle session.
+Standalone ordinary rules and other table actions retain their original guard.
+No new wire/schema, caller bypass, rewritten history or old-helper alteration is
+selected. The complete donor source and its independent review were read; report
+SHA256 `9a6ff0896061d7bcb1648b06921bd438cea4c1bbd59c79e9b6c2b157131220b8`.
+This advances character creation and durable campaign continuity within Gate4;
+all other product and gate obligations remain unchanged.
+
+Commit this plan before normal merge. Receive all donor history without copying,
+cherry-picking or changing its production/tests. Stop on unexpected conflicts or
+extra changes. Audit actual receipt equals the preview plus this plan append,
+all1141 receiving Rust bodies and the full original Mage helper remain literal,
+the three donor cases are exact (1144 total), all232 corpus files remain exact,
+and all existing frontend original/additive cases and older reviewed changes are
+unchanged. Freeze the actual head/tree, whole patch and full preservation receipt
+for root and fresh independent review; then release source ownership.
+
+No Cargo/compiler/npm/test/database/native/preflight/push is allocated here.
+All donor and composed-source runtime remains UNRUN. Root owns publication and
+must run the unchanged old Mage regression, all three new creation cases, the
+complete M/details/historical harnesses, frontend suite and canonical/strict/
+hosted checks against the final exact source. No inherited pass accepts this union.
