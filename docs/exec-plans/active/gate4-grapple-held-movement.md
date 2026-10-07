@@ -1,5 +1,42 @@
 # Gate 4 — Grounded movement with a held creature
 
+## October 7 approved owned historical opportunity correction
+
+Root approved source implementation from clean fixture successor
+`a0a238d56feb1c0be0784e48d1a63baafe588df8` after reviewing the complete external
+owned-result proposal (SHA256
+`86d5b8f62a10e869d09f56793408f4ab33a11f874545ecc0cd3e57a4a1e238fc`). A fresh fetch
+still names remote `5d5f552f8dd3f319da2f8ef0d64dd1a12959d6c4`; the approved local
+fixture commits are its clean successors. Commit this plan before production.
+
+The original CampaignExecution seal and complete anchor/journal replay permit
+authenticating the already accepted opportunity result without reconstructing
+historical geometry from current bodies. Replace only the GroundDrag accepted
+attack's historical crossing validation with an internal typed projection over
+the existing complete window, accepted response, source, actual occurrence
+ancestry and full paired/ordinary committed prefix. At read time require that
+projection to equal the exact sealed predecessor or an actual successful live
+producer observed in this command; guarded candidate membership alone is never
+authority. Enforce matching immutable delta and genuine completion evidence.
+
+Capture only after the existing live geometry/source/cost checks succeed. Keep
+the selected live-grip stop guard, fresh offers/responses and future movement
+checks unchanged. Do not add serialized fields, events, execution versions,
+synthetic before-scenes, movement permissions or another queue. This corrects
+issued-child suspension within the existing Gate4/ADR025/ADR028 scope; it does
+not broaden attack reconstruction to arbitrary changed geometry or sources.
+
+Preserve all existing test bodies and the public issued-opportunity release
+scenario byte for byte. Add focused hostile bindings, unobserved producer and
+foreign-clone controls, plus a separate genuine public release scenario with a
+nonempty committed paired prefix and unchanged pending/raw/Reaction evidence.
+Audit every prior tracked entry and test body after direct rustfmt. Source-only
+verification is allocated: no Cargo/compiler/tests/npm/native/database/push.
+Runtime remains unrun until root schedules exact-head focused and full checks.
+Freeze a coherent successor and complete byte-preservation/source handback for
+independent review; stop instead of widening scope if the projection cannot be
+implemented soundly within these bounds.
+
 ## October 7 diagnosed fixture corrections and issued-child design
 
 Root assigned sole source writing to `native_capture_audit_oct7` from clean,
