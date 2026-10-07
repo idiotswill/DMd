@@ -733,7 +733,9 @@ impl Fixture {
         );
         let mut changed = request.clone();
         changed.input = if request.input == action(TacticalAction::Dodge) {
-            action(TacticalAction::Dash)
+            action(TacticalAction::Dash {
+                speed: DashSpeed::Speed,
+            })
         } else {
             action(TacticalAction::Dodge)
         };
