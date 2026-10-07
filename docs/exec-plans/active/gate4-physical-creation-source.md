@@ -1,5 +1,160 @@
 # Gate 4 — Pinned physical character creation
 
+## Current evidence — controlled native QA completed, 2026-10-07
+
+PR #62's source-created weapon route was exercised in the packaged Windows
+application on October 6–7. Root operated normal desktop controls; a separate
+auditor read only copied JSON and recorded UI observations. The entered dice faces
+were controlled automated QA values. They exercise the physical-roll input path,
+but are not evidence of human physical throws or a human table playtest. Gate 4
+acceptance remains pending. The historical dated reports below retain their
+original scope; their earlier UNRUN/current-next-action statements are not the
+current status of this native route.
+
+### Source, package and retained evidence
+
+The executed source was `48f7c92b63bd2f9c586d2622d1875342f004b093`, tree
+`eee68a87b8fec25f86d78cf032ab48509b0172cf`. CI run `37423150396`, Windows job
+`112136794242`, produced artifact `11406378413`. Its archive SHA256 is
+`a550ef65de502f9cae77ff717e2b40c15962e98d04054e7ff095b0fa94a64530`.
+The portable `DMd.exe` SHA256 is
+`f20f13bc2beb0bdb95a5b534f7887f401dd5b1609ee8caf334f322dfb6ed68b9`.
+The verified package provenance is
+`tooling/physical48f-package-completed-provenance-2026-10-06.json`, SHA256
+`9952cfe7f06f6fd757e2e9e65481800962db20f07cf0a9ad3cb65cd1770692e7`.
+
+External paths here are relative to the retained workspace
+`C:/Users/jadra/Documents/ChatGPT/DMD`, outside this Git checkout. The package is
+under `artifacts/physical48f/package/portable/DMd.exe`; copied native evidence is
+under `tooling/native-physical48f-oct06/`. These artifacts are not checked into Git.
+The following names are relative to that evidence directory:
+
+| Evidence artifact | SHA256 |
+|---|---|
+| `copied-capture-audit-final-through-seq39-v3-2026-10-07.json` | `c50cae365523e1f89ec46d8f4a6bd7bab7ff1d855856fc1a5b0453f2b0ee9080` |
+| `independent-physical48f-final-seq39-receipt-2026-10-07.json` | `d7f66ce0feb2a6d9770765d2e7e2e1c5d9f97f4bf7b40f12ec9ab4ea782f1a81` |
+| `independent-physical48f-through-seq32-receipt-2026-10-07.json` | `d76646e889eb9b66e4a1cdfa1ff2443c1f6d5850395705752e29ee3c91f27995` |
+| `graze-seq13-15-copied-mechanical-audit-2026-10-07.json` | `64bbe3c9b08a6ae2d727772b19ce8f9089f6e3e71d04c58f5fdc3f99f4b9cf3e` |
+| `glaive-seq24-27-28-copied-mechanical-audit-2026-10-07.json` | `17662b5155e092e908ec1be991fbc95ecbab9817dbd064f96c50cbe9586af2ea` |
+| `equipment-resume-copied-audit-receipt-2026-10-07.json` | `d15ea8f3734212c6a0227dee5d3d920b2f138139dccfb6a488003a18af046c67` |
+| `ui-observations-oct07.jsonl` (563 rows, 10,890,032 bytes) | `cf46043b6bce0c7af6ec547532e24709e28584e36d7bb2a155716f8c630031af` |
+| `operator-log.md` (completed October 7 append) | `75a7010bd62f78b1f67d1de59cd9fca830ed209e37c39b9602744a1433391b64` |
+
+The operator log was finalized after the copied audits; their earlier operator-log
+snapshot hashes remain historical and are not substituted with the final hash.
+The frozen JSONL ends at `2026-10-07T07:29:54.211Z`. The final audit's first external
+mechanical script stopped before output on a `name` lookup; the saved campaign
+field is `display_name`. The original was preserved and a separately saved v2
+changed only that lookup. Its successful receipt identifies its script SHA256;
+`tooling/independent-physical48f-final-audit-correction-2026-10-07.json` records the
+exact inverse-byte comparison. No capture or earlier report was replaced.
+
+The separately pinned Windows source-job receipt
+`tooling/physical48f-package-ci-outcomes-2026-10-06.json`, SHA256
+`a675124baa6a30ea53839e6ba524a6db10b2b5bb293f5ebbfd4490d5316ccef0`, records 812 Rust
+passes in 50 nonempty harnesses and desktop 130/130 tests in 20 files, with
+svelte-check reporting zero errors/warnings. These are results for source `48f`,
+not fresh checks on this documentation commit. No compiler, Cargo, npm or tests
+were run by the evidence writer.
+
+### Acquired source and actual item identities
+
+QA campaign `0cc2a691-7836-4d5e-99b2-b19fec25053e` was created through the desktop
+with an explicit practice-combat table contract. Both source-created characters
+retain ruleset `srd-5.2`, version `5.2.1`, catalog schema `1`, profile
+`human-fighter-soldier-level-1-physical-v1`, fingerprint `e2d57011783b3fae`.
+Both have Strength 17 and maximum HP 11. Their immutable creation events and
+single materialization receipts bind these actual purchases and allocations:
+
+| Character / actor | Purchases and remaining money | Actual weapon / leather armor ItemIds |
+|---|---|---|
+| Glaive: character `4910a586-68f0-4187-80a2-61d6086d32b4`, actor `d95538b9-8fe7-46d5-a181-c2c8e513c810` | Glaive 2000 cp + leather armor 1000 cp; 17500 cp remains | `6f88dff3-a173-447f-b53e-ce6c3a279b10` / `25c8e0a4-532e-4bd3-8c58-3acb67bcfad8` |
+| Greatsword: character `7155ca12-2af2-442f-9c56-a72cb3eb776c`, actor `bf2deaa7-a4d4-4fa6-82e5-0d439a724db8` | Greatsword 5000 cp + leather armor 1000 cp; 14500 cp remains | `9c11209c-4c98-4cac-99b7-02d1e249c1fb` / `64411b07-2b41-4bb4-8421-19a75788b06e` |
+
+Each quantity is one, with owner and custody equal to that character's actor.
+Both retained the selected weapon mastery and worn purchased leather armor.
+The receipts report exact creation commands/events, player controllers, source
+profiles, purchases and allocations; display names alone are not source evidence.
+The route did not mutate Items, source profiles, HP, payment or SQL to manufacture
+eligibility. The original four Items and two materialization receipts remain at
+sequence 39; actual attacks ready/retain the same weapons with TwoHands.
+
+### Observed mechanics and persistence
+
+- Greatsword's first Attack Action used BeforeAttack Equip. Controlled d20 face 1
+  left a real Graze choice at sequence 14; accept at 15 applied only Strength +3,
+  taking Glaive HP 11 to 8 without a damage roll. The other player's inspected
+  view had no Graze controls and its copied state remained unchanged.
+- Glaive equipped its purchased weapon on its own turn, entered d20 face 1 and
+  declined Graze at sequence 21. Greatsword remained at 11 HP. Glaive retained
+  the weapon after EndTurn. An earlier unarmed opportunity was explicitly declined;
+  it is not counted as the later held-Glaive reaction.
+- At sequence 23, Greatsword's voluntary move from x15 to x20 feet paused at x15
+  before leaving the held Glaive's ten-foot reach; Glaive stayed at x5. The owner's
+  accepted reaction at 24 had no equipment operation. D20 face 12 +5 hit AC14;
+  genuine response ordering/refusal led to pending 1d10 at 27. Face 4 + Strength 3
+  dealt 7 at 28: Greatsword HP 11 to 4, movement completed to x20, five feet spent,
+  one Reaction and no additional Action/equipment allowance. Raw coordinates use
+  half-feet: x30 to x40 and movement cost 10, not a ten-foot move.
+- Greatsword returned ten feet west in the same turn and entered ordinary-miss
+  face 2 +5 =7 against AC14. Graze choice at 31 was declined at 32: Glaive stayed
+  at 8 HP, all seven accepted rolls were unchanged and no damage roll was issued.
+- Both actors ended their turns. Round 3 Greatsword hit with face 12, then ordered
+  responses and Glaive continued without Shield. Pending damage at 38 was the
+  printed 2d6; faces [1,1] + Strength 3 dealt 5 at 39, taking Glaive HP 8 to 3.
+  Greatsword stayed at 4 HP. Its one Action remained spent; no Savage Attacker
+  use, extra equipment or duplicated raw result occurred. No raw request or
+  attack resolution remained, while the encounter itself remained active.
+
+The full audit compares 40 captures and 10 complete live/closed/reopened triples:
+creation (sequence 0), characters-created (4), pending Greatsword attack (13),
+Graze choice (14), Glaive opportunity (23), paid attack (24), pending damage (27),
+movement completion (28), pending Greatsword damage (38) and completion (39).
+Each triple compares complete typed campaign arrays, schema objects/descriptions
+and all eleven migration rows. All 39 transitions between captured cuts retain
+exact accepted-raw prefixes and prior historical typed rows. The final journal
+spans sequences 1–39 and contains nine unique accepted raw-request IDs, without
+replacement results or cancellations. This is copied-record validation, not a
+fresh Rust semantic replay of these captures.
+
+All three protected campaigns remain completely equal to their before-launch
+logical rows: bridge `f5da4b10-50f8-47ef-9ad9-e0a921ad0bdc` at sequence 0,
+Shove `a2858187-20b5-45da-9062-2a9c1d2d7b46` at 91 and Expiry
+`e48574bc-4d06-4d5e-987e-66e7d67b2590` at 75. Root observed normal closes and
+reopens using the same verified EXE. The final process chain after the Glaive
+attack was PID2044 → 18752 → 7372 → 8812 → 5108; the completed operator log
+records exact starts/windows and earlier processes. Root observed Glaive 3/11
+after the final reopen, returned through the ordinary dropdown to Native bridge
+Oct06 A (the protected bridge UUID above), observed Host setup, closed normally
+and confirmed no DMd process/window remained. These process/UI observations are
+separate from copied-data equality. The final bridge-closed capture equals all
+four campaigns in the sequence-39 reopened cut; it is one closed cut, not an
+eleventh triple.
+
+### Limits and exact next action
+
+The October 6 equipment-prepared reopened cut is missing. Its live/closed cuts
+and the separate October 7 before/after-resume cuts agree at sequence 6; they
+do not retroactively prove the missing triple or a forced crash. The native run
+does not claim a critical, Savage Attacker use, every Graze variation, arbitrary
+accepted retry, portable export/restore or relocation, complete privacy coverage,
+reference-hardware performance, human physical dice or a human table playtest.
+The broader automated cases retain their own source/check identities; this native
+receipt does not replace their original-history/recovery/hostile-state acceptance.
+
+This evidence advances normal source acquisition, owned physical weapon play and
+exact combat suspension/resume. It does not complete the integrated Gate 4
+encounter with physical player dice, concentration/ongoing effect, limited
+visibility, blocked/difficult movement, environmental improvisation and an
+opponent who flees/surrenders/negotiates. The product's human-play and endurance
+requirements remain unchanged, as does the original acceptance matrix below.
+
+Next: independently review this complete documentation delta and the cited frozen
+evidence, then root reconciles all remaining PR #62 acceptance and obtains required
+checks on the final evidence head before any protected merge. Verify literal merged
+`main` afterwards. The evidence writer has not pushed, merged or run fresh canonical
+checks. Gate 4 stays active; Gate 5 must not begin from this receipt.
+
 ## Native evidence documentation plan — 2026-10-07
 
 Root allocated sole documentation writing on PR #62 to the copied-capture auditor.

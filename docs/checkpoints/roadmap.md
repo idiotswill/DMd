@@ -23,6 +23,12 @@ continuation evidence. Completed plans are archived under `docs/exec-plans/compl
 The owner authorized continuation on 2026-09-24. **Gate 4 is active; acceptance is pending.**
 Its bounded work is tracked in the [active execution plan](../exec-plans/active/gate-4-tactical-encounters.md).
 
+The [October 7 Physical creation evidence](gate-04-tactical-encounters.md#bounded-native-evidence--physical-creation-2026-10-07)
+records packaged source acquisition, owned weapon play and restart checks on
+source `48f7c9`, with 40 copied captures and ten complete logical triples.
+Controlled QA dice inputs do not establish human physical throws or the complete
+Gate 4 production encounter; gate acceptance remains pending.
+
 ## Preconditions before Gate 2
 
 1. Gate 1 remains accepted on current `main`; re-verify rather than re-opening completed work by assumption.
