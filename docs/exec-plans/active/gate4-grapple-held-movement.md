@@ -44,6 +44,25 @@ details; report exact source hashes and whole-history transfer needs externally.
 Do not write those branches or treat their earlier runs as verification of this
 successor. All other Held/Grapple/Gate4 requirements above and below remain open.
 
+### Fixture correction source result, all runtime UNRUN
+
+After diagnosis commit `c3b0de13e3aabcfdc151bfd17600fdf779e8d118`, the two IDs
+are hyphenated and each repaired encounter is explicitly validated. The old
+water/occupancy/wall refusals and successful bridge cost/endpoint assertions stay
+unchanged. The additional wall assertion names the exact coupled-path obstruction,
+so the negative can no longer succeed because its authored identifier is invalid.
+No geometry, cost, source/helper, production, content, archive or settings changed.
+
+Static inspection confirms frozen573 integration, PR71 `3a68bd7`, PR72 `8c754d0`
+and roll-details `0990d32` all inherit the identical unrepaired spatial test blob.
+Root must arrange reviewed whole-history receipt into the relevant successors;
+this author did not edit or merge another branch. The full source/old-test inverse
+and transfer inventory are external handback evidence. No formatter, compiler,
+Cargo/npm/tests, database, native, preflight, publication or merge ran here.
+Next: root/fresh independent exact-head source review, then genuine focused and
+canonical/CI verification under root's coordinated execution allocation. This
+source correction does not turn the original failed or cancelled runs into passes.
+
 ## October 7 reviewed retained-cast correction intake
 
 Root resumes sole branch writing at clean
