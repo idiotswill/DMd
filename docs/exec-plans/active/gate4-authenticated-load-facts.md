@@ -173,3 +173,205 @@ Next action: receive/review the two exact-b77 prerequisite inventories, record t
 concrete arithmetic/catalog/authority/version design here, commit that plan update,
 then allocate a single implementation writer. Root continues current runtime and
 CI verification independently. No next-gate work is authorized.
+
+## Concrete foundation decisions, 2026-10-07
+
+Root read the complete equipment inventory and producer proposal, checked their
+current production joins, and received a separate source review. This section
+selects the following design for implementation; it does not claim runtime or
+catalog acceptance. Receive the complete reviewed fixture correction
+`58696ac1d0c55ef7f71cfb546fb92e97747ee437` by normal merge before implementation.
+Its production/content bytes equal b77; all1109 existing case bodies are unchanged.
+The dedicated integration checkout remains frozen under its separate runtime.
+
+Source-only design evidence remains outside Git, with these exact hashes:
+
+- equipment inventory JSON: `548da51e88aff50599c91cc5a600411c00ddf9636383f999132f9454cdb89b8a`;
+- equipment design: `7834db3f7de51b7a539221c4b5ed98bda7ab5222e6cf21fe1ac20f3cc9bacd0b`;
+- producer design: `9d72dd177c6a7167954af78e28968c4a8ca972d835c78d708e241bd13fca96af`;
+- producer input manifest: `78795a1c0777d7a00a1eec137850b946d076a873219946240bc26f14fe5f1570`;
+- owned-context clarification: `dfcdd7672df3dfb06305412a3ef02be04a3cb9d7161a66e95c5bf8cd6c8fab20`.
+
+### Exact source arithmetic and applicability
+
+Use checked integer micro-pounds: one pound is1,000,000 units. Ordinary body/item
+facts must be positive; absence of knowledge is a tagged unresolved state. Use
+checked u128 multiplication/addition and reject results outside u64. Transport
+pounds as bounded decimal strings with at most six fractional places, parsed on
+the server; no floats, signs, exponents, rounding, saturation or JavaScript Number
+conversion. These are exact nominal game values, not measured physical precision.
+
+Add an immutable equipment-mass-v1 sidecar, schema1, with exact ruleset/source
+identity, source pages, quantity basis and four typed kinds: intrinsic per unit,
+conditional inclusive gross, subtype required, and unquantified. Cover all62
+registered IDs, while preserving the distinction between26 currently materialized
+IDs and36 registry-only IDs. Retain every old catalog byte and source fingerprint.
+Use the existing deterministic Fnv1a64 pattern over the fully typed catalog's
+canonical serde serialization; pin schema/catalog/ruleset IDs with that fingerprint.
+Declare the new distributed asset's byte length/checksum in the installed content
+manifest and require exact installed bytes as with current creation/source files.
+The fingerprint is consistency evidence, not save-file cryptographic authenticity.
+Do not change the existing checksum algorithm or source grants as a side effect.
+
+All quantities refer to physical units, not purchase bundles. Arrows are1/20lb,
+bolts and sling bullets3/40lb, firearm bullets1/5lb and needles1/50lb per unit.
+Count a container's intrinsic mass separately from tracked contents. Full waterskin
+5lb is conditional gross; unknown fullness and empty/partial tare remain unresolved.
+Holy Symbol needs actual subtype; gaming-set dashes and unpriced spell materials
+are unquantified, never zero. Currency uses the source50 coins/lb relationship.
+
+Select ordinary nominal masses for authenticated current Ogre Greatclub/Javelin
+grants:10lb and2lb each, yielding16lb of listed gear for three Javelins. This is
+catalog applicability to those ordinary registered identities, not a printed Ogre
+body weight or a size multiplier. Explicit custom/oversized variants need accepted
+physical facts and retain their identity across custody changes. They grant no new
+combat property. All unlisted apparel remains a separate unresolved physical scope.
+
+A source-known mass requires actual authenticated materializer provenance or a
+typed Host acceptance of ordinary catalog applicability for a genuine original-
+anchor/custom object. Matching a definition-ID string alone supplies neither.
+Applicability acceptance binds actual ItemId, definition, physical unit semantics,
+source catalog and expected current item context. A custom definition cannot
+masquerade as a source grant or gain attack/focus controls through mass resolution.
+
+### Fact authority and usable wallet representation
+
+Use one optional omitted-when-absent physical-facts attachment with explicit
+activation/catalog origin, current typed body/item/residual/currency records and
+prior-origin amendment links. Bind each subject's real identity, source/profile
+where present, precise scope, value/condition and original CommandMeta. An explicit
+amendment may return a fact to unresolved without deleting original history.
+Do not make generic text claims or independently editable totals authoritative.
+
+The first producer is Host-only: Admin, no actor, exact campaign/head/session
+(including matching absence), owned state and current opaque Host control. The
+normal desktop exposes body pounds, missing item pounds/condition, untracked
+apparel and actual coin denominations. Printed source facts are read-only.
+Players read permitted facts for their own character; this slice creates no
+parallel player-proposal queue or self-certification route. Controller changes
+affect current viewing/decision authority, not accepted factual origin.
+
+Activation/amendment requires setup or Finished encounter and no pending
+declaration, roll, effect, creature routine/recharge, Inspiration transfer,
+resolution or Ready work. An active settled turn is insufficient. Preserve
+existing no-live-grips Finish/session rules and all exact source prerequisites.
+Ordinary mass facts do not grant Grapple, source control, Ground or carrying.
+
+Select denomination lots, not a competing gross-purse authority. Host explicitly
+records CP/SP/EP/GP/PP counts representing the entire existing money_cp balance;
+checked values1/10/50/100/1000 must sum exactly to that unchanged balance. One
+unique physical currency lot, with actual custody and positive total coin count,
+represents that existing wallet. It is not a second spendable value. No automatic
+fewest-coin, all-copper, banked-money or zero-wallet assumption is allowed.
+
+Bind realization to source-profile identity, wallet value and original command.
+Amendment additionally binds exact prior realization and current lot quantity,
+state and custody. Preserve lot identity, represented value and custody; a changed
+denomination statement is an explicit correction of a physical fact, not an
+unperformed currency exchange. Do not recreate missing/destroyed coins on read or
+mint another lot on retry. A later actual payment/exchange needs its own atomic
+producer. Custody may differ from wallet ownership; count the physical lot at its
+actual carrier while retaining the single represented balance. Unexpected balance,
+quantity or lot-state changes make applicability unresolved without blocking the
+real causal mutation. Empty wallets create no zero-mass ItemInstance.
+
+### Current load and continuing physical causes
+
+Validate the entire item graph first, then follow actual custody to terminals,
+count each ItemId once and apply current quantity. Include worn items, loans and
+nested contents; two occupied hands are not two items. Reject cycles/dangling
+references and overflow rather than treating failed traversal as zero. Spent zero
+units are zero quantity; damaged material persists. Destroyed state still in
+carried custody does not prove debris disappeared. Location/missing/destroyed
+terminal custody is a location conclusion rather than annihilation of matter.
+
+Return Complete or Unresolved with a known subtotal and authorized reasons.
+Equipment load excludes the actor's own body; transported body mass includes its
+unladen body plus complete physical load. This prerequisite shows these truthful
+load views without admitting carrying or claiming capacity satisfied.
+
+Residual apparel/payload has a specific accepted untracked scope, separate from
+tracked equipment/currency and unladen body. Explicit absence is permitted; an
+undefined blanket zero is not. Preserve the scope across unrelated tracked-item
+transfers/quantity changes. Only a causal change affecting that payload, its form
+or an actual materialization/overlap invalidates applicability. Binding residual
+validity to any generic inventory change would make ordinary combat item handling
+unusable with settled-only amendment and is not the selected behavior. Final
+bounded scope representation must be reviewed before its implementation.
+
+Retained fact authenticity and current applicability are different checks.
+Real death, damage, source-form, quantity or custody events must still execute.
+When a fact no longer applies, derive unresolved current load without rewriting
+its origin or blocking the cause. Target death preserves body identity; it does
+not create a corpse item, zero mass or automatically drop possessions. Gross facts
+must bind their actual quantity/content scope and reject double-counted contents.
+
+### One execution owner and deliberate version joins
+
+Extend existing ExecutionContext/ReadContext with a separate private mass proof,
+constructed only by CampaignExecution from its ClosedImage, fixed candidate and
+CommandMeta. Preserve the existing Grapple guarded field, activation predicate,
+is_owned/require_guarded and attack-reader branches exactly. Mass-only activation
+must work without broadening those predicates. Carry the separate proof through
+initial, nested and final candidate reads; generic public/raw contexts lack it.
+
+Fixed typed mass producers observe their complete accepted delta. Mass validation
+allows exact retained predecessor records or those current observed productions;
+collection membership or caller-supplied receipts are insufficient. Compare the
+whole attachment and any actually created currency lot, including disappearance,
+before constructing the next ClosedImage. Add no second reducer, database, public
+replace-state hook or caller callback. Original-anchor admission rejects existing
+mass authority, and original audit/event replay reconstructs every fact/amendment.
+Matching forged current state plus latest snapshot remains insufficient.
+
+Select presentation/transport5 and command/observation envelopes6 for explicit
+physical-facts activation; attachment schema1, CampaignState schema4 with absent
+JSON omitted. Do not reinterpret old TableEvent1 or old accepted GroundDragV1.
+Preserve all historical versions1..4, omission behavior, ordering and exact retry.
+Mass absent retains the exact old version-selection branches. Mass present selects
+v5 but every source/Grapple/Ground/Inspiration capability still requires its actual
+activation; v5 is not capability evidence. Later activation of another feature
+under mass requires its original predicate and a genuine command.
+
+Update all real consumers together: TableApp and InspirationAward version/capability
+selection; table-api request/channel and persisted outbox parsing; source-control
+presentation selection; typed transport/meta/derive_intent; source/Ground/Inspiration
+guards; rules_restore command envelope joins; historical audience/digest/control
+validation; projection/binding version allowlists and strict state codecs. A real
+presentation version carrier must support mass-only state. Accepted old retries
+return their saved bytes before fresh revision/channel/attendance checks; new
+old-version submissions after activation refuse atomically. Keep the SQL staged
+export authentication before commit and all refusal atomicity.
+
+Host sees full mass details. Other views follow established sheet/knowledge
+authority; source-creature control alone does not disclose hidden physical facts.
+If a total would reveal hidden inputs, withhold the total/detail rather than
+subtracting hidden items. Unrelated private amendments retain other audiences'
+DTOs/transcripts/revisions/handles. The explicit v5 activation is a version event,
+not permission for later private operations to refresh everybody.
+
+### Compatibility capture, implementation allocation and verification
+
+An independent writer prepares a baseline586 capture-only branch. Production and
+content there are exact pre-mass bytes. Capture genuine v3-to-v4 activation, Ground
+movement/paid opportunity/raw prefixes, first/duplicate Inspiration award, transfer
+recipient/decline and pending/consumed physical reroll through real app producers.
+Retain full exports, original request/response/binding bytes, all audience DTOs,
+controls/revisions, outcome and next legitimate input with source/harness hashes.
+Root schedules it separately after review; no current capture pass is claimed.
+
+The implementation must restore/retry those actual earlier-version artifacts
+unchanged, then separately finish pending work, activate mass legitimately and
+exercise Ground/Inspiration under v5. Same-build roundtrips cannot substitute for
+frozen earlier-version evidence. Keep old fixtures and case bodies unchanged;
+only unavoidable optional-None constructor additions may be separately inventoried
+and reviewed, without changing an assertion or gameplay input.
+
+Implementation is still unallocated pending the final source review and residual
+scope closure. The next writer must implement the complete ordinary Host forms,
+source/fact authority, nonzero-wallet route, honest custody load and recovery in
+this one coherent branch. Meaningful numeric, authority, privacy, forged-history,
+frontend and genuine application cases supplement the preserved regression suite.
+No catalog-only or type-only completion claim is authorized. Root independently
+reviews the frozen implementation and schedules canonical, exact-head CI and native
+verification. All carrying/support/lifecycle Gate4 obligations above remain open.
