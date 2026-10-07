@@ -2,6 +2,9 @@
 //! original helpers. Every new command uses the explicit v4 transport.
 use super::*;
 
+#[path = "v4_capture_ground.rs"]
+mod v4_capture;
+
 // Separate accepted setup gives the independent reactor its actual hostile
 // allegiance to the holder. The original fixture's asymmetric enemies stay exact.
 async fn opportunity_fixture() -> Fixture {

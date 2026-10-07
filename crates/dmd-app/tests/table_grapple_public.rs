@@ -2960,3 +2960,6 @@ mod inspiration;
 
 #[path = "support/grapple_combined_current.rs"]
 mod combined_current;
+
+#[path = "support/v4_capture_archive.rs"]
+mod v4_capture_archive;

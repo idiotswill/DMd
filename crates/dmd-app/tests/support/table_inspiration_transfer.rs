@@ -2,6 +2,9 @@
 //! Existing first-award/physical-roll fixtures and bodies remain unchanged.
 use super::*;
 
+#[path = "v4_capture_inspiration.rs"]
+mod v4_capture;
+
 const EXTRA: &str = "For returning to help a companion escape.";
 
 fn excess(character_id: CharacterId) -> TableTransportInput {
