@@ -1466,7 +1466,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardExcessInspiration { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))

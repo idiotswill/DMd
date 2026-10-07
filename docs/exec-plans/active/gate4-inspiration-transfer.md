@@ -219,3 +219,16 @@ lint, frontend and canonical verification and exact-head Linux/Windows CI. The
 inherited ray cleanup, released issued-opportunity continuation and two Ground
 fixture failures remain separate root-owned work; this narrow correction does not
 resolve or conceal them. Native and overall Gate4 acceptance remain pending.
+
+### Source correction prepared
+
+Plan-first commit `42ad0dc0e4c24fb1f0b70961bcd6b095860b82ad` preceded the
+single origin-admission variant addition. Removing that exact variant restores
+the complete pre-correction `rules_restore.rs`; no validation function, test,
+source data, fixture or frontend path otherwise changes. Direct Rustfmt1.9.0
+stable (2026-09-01 build), edition2024 with `skip_children=true`, and its direct
+check both passed on the one changed Rust file; `git diff --check` passed.
+No test or compiler ran. The final clean freeze and complete preservation audit
+are handed to root externally for fresh review. Actual first-award round-trip
+success and hostile-input refusal remain unverified until the required runtime
+checks run on the new exact head.
