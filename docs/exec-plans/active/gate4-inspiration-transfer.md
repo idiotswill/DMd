@@ -181,3 +181,41 @@ independent source review and packaged native evidence remain mandatory. This
 source freeze neither accepts the slice nor closes Gate4; root decides normal
 whole-history receipt and subsequent verification. No merge or publication was
 performed from this branch.
+
+## Exact CI correction allocation — 2026-10-07
+
+Independent source review of frozen `b3c42d335da2c0b1f069e56b9dc4b3d3dc1762a1`
+reproduced all641 Git/working entries and947 retained old Rust test bodies. No
+additional defect was found in the new transfer delta, but actual base54b Linux
+job112289564250 and Windows job112289496254 each fail eight existing first-award
+cases with `rules request/result/permission origin disagrees with audit`.
+The original first award produces a real privileged ruling and intentionally no
+nested rules event. `command_origins` visits that ruling, while the second origin
+join's explicit outer-action list omits `AwardHeroicInspiration`. The separate
+`validate_rulings` pass already authenticates that award's exact reason and meta.
+This inherited defect also blocks positive transfer setup; the prior source
+audit is preservation evidence and is not a passing runtime result.
+
+Root allocates source_review_oct7 as sole writer of this branch from clean b3c.
+Commit this amendment before code. Add only `AwardHeroicInspiration` to the
+existing outer table origin admission beside `AwardExcessInspiration`. Keep all
+issuer, session, actor, audit kind/version, sequence, exact ruling/action joins,
+anchor restrictions, snapshot comparison and original replay unchanged. Never
+invent a nested event or admit arbitrary outer actions. The frozen Host54b and
+combinedfa681e1 checkouts remain outside this allocation.
+
+The existing ten first-award support cases (eight currently failing after actual
+grant), their shared full cold/replay/portable/retry helper, and the twelve new
+transfer cases already cover this boundary, including hostile ruling, resource,
+issuer, audit and anchor refusal. Preserve every body and fixture; do not add a
+ceremonial duplicate test. After the smallest source correction, direct Rustfmt
+write/check on the changed Rust file and read-only full-tree/body preservation
+audits are allowed. No Cargo, compiler, Clippy, npm, test, database, native, push
+or merge is allocated. Root owns fresh independent review and actual runtime.
+
+Required next verification is all ten original Inspiration cases plus all twelve
+new transfer cases, existing historical replay/transport controls, strict affected
+lint, frontend and canonical verification and exact-head Linux/Windows CI. The
+inherited ray cleanup, released issued-opportunity continuation and two Ground
+fixture failures remain separate root-owned work; this narrow correction does not
+resolve or conceal them. Native and overall Gate4 acceptance remain pending.
