@@ -1,5 +1,30 @@
 # Gate 4 — Owner-controlled excess Heroic Inspiration
 
+## October 7 actual inherited spatial-fixture failure receipt
+
+Root resumes sole writing at clean published
+`3a68bd793e47aad6fbadad9a3b889d47be906189`. Its actual Windows full suite failed
+on the inherited `dry bridge` identifier in the ground-support unit fixture;
+the saved CI audit preserves that failure. Linux cancellation remains partial
+evidence. Neither outcome is a full pass.
+
+After committing this plan, normally merge the complete reviewed Held successor
+`b97d1d7f6f07ac9f010d6304d93a5d32a1d53f79`. The common inherited0c source has
+the same test and Held-plan blobs. The donor changes only two fixture IDs, adds
+explicit encounter validation and strengthens the existing wall refusal to require
+the intended coupled obstruction; all original assertions remain. Root read the
+actual failure, complete diff and production validation/collision path, then
+verified every donor entry and the exact test-file inverse before publication.
+Evidence: `tooling/held-b97-root-review-publication-2026-10-07.json`.
+
+The receiving union must retain all current Inspiration production, scenarios,
+historical fixtures, locks and settings literally. Expected differences are only
+the donor test and Held-plan changes plus this receiving-plan addition. Review
+the complete actual merge, publish to PR71 and require fresh exact-head checks.
+No old failure/cancellation or earlier focused pass becomes successor evidence.
+This receives a test-premise repair, adds no gameplay scope and waives no native,
+canonical, compatibility or Gate4 acceptance. No local runtime is allocated here.
+
 ## October 7 whole reviewed Held/Public correction intake
 
 Root is sole writer at clean published
