@@ -179,3 +179,48 @@ canonical verification, then perform the deliberate mass compatibility receipt
 and M+G/T5 plus genuine969 restored-details checks in its approved fixture path.
 Those checks and full CI/native acceptance remain required before merge;
 publication for review/CI belongs to root. Source review alone cannot satisfy them.
+
+## Root verification and reviewed fixture receipt, 2026-10-07
+
+Root reviewed the entire17-file implementation delta and both new test files.
+The independent full source review is clear at exact0990d320, tree4328d05e;
+report `tooling/ci-oct7/grapple-roll-details-0990-independent-review-2026-10-07.md`
+SHA256 be6de7795b52120247a2bcb91d39a996accc634ddbcb26d9c9c0269c8cd1a20a.
+Its independent731-entry audit retains1116 old Rust bodies and49 protected
+files, with exact history/DTO/authentication/submission inverses.
+
+Exact0990 now passes the ordinary full frontend suite:223 tests in32 files,
+including all16 new rendered cases, zero Svelte errors/warnings, and the149-module
+production build. Source remained clean and byte-identical throughout.
+Evidence: `tooling/roll-details-0990-frontend-2026-10-07`, test log SHA256
+88cb5c749d56a4fe05d0c5c0d2d12ce94dbb29314fd42be2aba9569cb3a527c2.
+Canonical `scripts/verify-fast` also passed at16:56:49 UTC on GNU Rust1.98.1,
+one build job, normal profiles and no test-thread/stack override. It checks
+formatting and the entire locked workspace/all-target compilation; it does not
+execute the four backend cases. Log SHA256
+793173b01eb2fcf8bb238d02b8cd10dddefd78fce0b19ca2536fbff604c887a7.
+Both original source-specific evidence directories remain immutable.
+
+Before publication, receive the whole reviewed combined successor
+`1ffb841f67e87c4239b68dc6ff5e045e0395f5c0`, treef30559a1, after committing
+this plan. That successor normally received Heldb97's actual spatial fixture
+correction: two legal identifiers, explicit encounter validation and an exact
+wall-obstruction refusal, with every existing assertion preserved. The current
+0990 inherits the same two invalid old fixture IDs. Root reviewed the actual
+failure, full donor delta, source inverse and complete1ff union. No production
+or details implementation changes are intended by this receipt.
+
+Expected receiving changes are exactly the corrected test, the complete Held
+plan and combined receiving plan, plus this details-plan appendix. All details
+production/new scenarios, UI, historical data and remaining1114 original bodies
+must stay literal. The two corrected bodies are separately inventoried; do not
+claim all1116 remain unchanged after receipt. Inspect the actual merge and
+publish a stacked draft for fresh exact-head CI. Earlier0990 passes retain their
+source attribution and cannot stand in for successor backend/CI evidence.
+
+The original combined run is separately allocated to1ff. This branch receives
+no local runtime slot during that run. Genuine M+G/T5 and immutable969 restored
+details require a later deliberate receipt into the separately owned mass
+consumer branch. Full Rust execution, strict checks, canonical verification,
+native use and the complete Gate4 encounter remain required; no acceptance is
+waived by source review or the passing frontend/compilation results.
