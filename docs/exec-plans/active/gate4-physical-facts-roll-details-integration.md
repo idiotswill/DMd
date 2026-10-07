@@ -156,3 +156,17 @@ whole-source/corpus preservation and explicit small helper inverses for fresh
 review. Every new assertion remains UNRUN until root allocates exact-head checks.
 Any concrete production incompatibility is reported before a separate planned
 correction; old artifacts or tests must never be weakened to fit the build.
+
+### Resume after the actual CI lint correction
+
+Root and independent review cleared the separate3d4ba3a lint correction and root
+published it at18:04:30 UTC. Resume the preserved additive work while retaining
+those two explicit helper syntax exceptions. The new setup must activate G/T
+only after the genuinely new encounter has completed initiative and reached a
+settled Active turn: the real activation reducer rejects Finished encounters.
+Assert no G/T both immediately after M and while new initiative is pending, then
+assert G3 and optional G4 independently after their accepted request5 activations.
+Transport bindings are ordered by command UUID in persistence; the new helper
+must join the latest audit's actual command ID to its retained binding and parse
+that original request to prove version5. Vector position is not chronology.
+These are corrections to unfinished new-test producers, not production changes.
