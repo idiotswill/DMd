@@ -261,3 +261,11 @@ All donor and composed-source runtime remains UNRUN. Root owns publication and
 must run the unchanged old Mage regression, all three new creation cases, the
 complete M/details/historical harnesses, frontend suite and canonical/strict/
 hosted checks against the final exact source. No inherited pass accepts this union.
+
+Normal receipt completed without conflicts: plan250860e4 preceded merge6923826f,
+whose parents are that receiving plan and the exact4deba086 donor. The merge tree
+dab400a8 contains exactly the preview plus the receiving plan. No manual source
+resolution or test adjustment occurred. Final source/body/corpus preservation
+evidence and complete receipt patch are frozen externally for independent review.
+Git diff checks pass; all composed runtime remains UNRUN. Root receives source
+ownership after handback and alone controls publication and exact-head execution.
