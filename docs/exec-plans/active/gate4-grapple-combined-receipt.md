@@ -311,3 +311,54 @@ record the parent union and test inventories. These are source-only results;
 no compilation, gameplay test, native capture or exact-head CI has run here.
 Freeze the normal merge and hand back its exact head/tree and final audit to root
 for independent review and the existing PR70 receiving/verification schedule.
+
+## Correct the composed physical-creature opportunity binding, 2026-10-07
+
+Independent review of frozen `3467cf996c8ebe88132ff5973e0a5867d2f8d8fc`
+(tree `b94eb2c1656a1300d8afb8ef46232d042897188f`) found a behavioral
+composition defect despite exact parent preservation. Its external report is
+`tooling/combined-3467cf9-independent-review-2026-10-07.md`, SHA256
+`57eeac4afa89df14e8b0fba1541b5544d80c843ee9dcf840055795dfc56ba7dc`.
+The incoming owned opportunity observer recognizes Weapon, UnarmedDamage and
+CreatureFeature choices, but the receiver's actual physical Ogre producer also
+creates CreatureWeapon. During a real GroundDrag crossing the observer rejects
+that legal fourth choice after its live source has been validated. An ordinary
+movement has no paired crossing token and does not exercise this join.
+
+Root returned sole write ownership here to `source_review_oct7` for this bounded
+correction. Fresh fetch still confirms main `1a9de14`, original PR70 `26fc4e7`
+and incoming `d5ebc7c`; the source checkout is clean at the reviewed merge.
+Commit this plan before changing production. Add only the explicit matching
+CreatureWeapon arm, comparing selected feature ID, ItemId and full WeaponGrip
+to the produced physical attack. Keep exact candidate/command identity, live
+source pin and physical facts, original window/response/ancestry, paired prefix,
+retained cuts, immutable predecessor/producer and one-time retirement guards.
+Do not relax the catch-all or reinterpret this as an ordinary Weapon choice.
+
+Inspect neighboring durable source variants and accepted-source/completion
+validation. Initial tracing confirms that the serialized melee source and attack
+source already include CreatureWeapon, retained admission resolves the exact
+Ogre program, and physical completion uses its real weapon plan. The bounded
+projection clones that entire source and proof; no new serialized shape or
+producer is required. Correct another join only if source evidence proves it.
+
+Add a new application module using the existing current catalog creation,
+source-pinned physical PC creation, three-actor layout, activation, opaque
+Grapple/drag controls and cold/portable/exact-retry/original-replay helpers. Use
+an actual Ogre's purchased/materialized Greatclub, equip it through a real paid
+source attack, establish a PC/Goblin grip, and drag that pair out of Ogre reach.
+Require the offered physical source variant, strict reaction/Action accounting,
+source/item/grip/custody and exact admitted crossing; finish an actual physical
+miss and prove paired movement completion and retained original raw evidence.
+Probe changed feature/item/grip and foreign channels without changing destination
+rows, and reject a hostile saved source identity. Keep all old tests and helpers
+unchanged; registration and the new module are additive. A focused private
+token-binding negative may be added if needed to isolate the new comparison.
+
+Acceptance here is the smallest source fix plus preserved full prior tree/test
+bodies, a reviewable source trace and clean frozen handback. Direct changed-Rust
+formatting/check with child traversal disabled is permitted. No compiler, Cargo,
+tests, npm, native or database execution, nor push is allocated; root retains
+the heavy slot, fresh independent review and exact-head runtime schedule.
+The new controls are authored evidence until they execute. Gate 4 and all prior
+native/source/cold acceptance obligations remain unchanged and pending.
