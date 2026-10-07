@@ -73,6 +73,74 @@ async fn load_for(f: &Fixture, actor: EntityId) -> PhysicalLoad {
         .load
         .unwrap()
 }
+async fn assert_mass_capabilities(
+    f: &Fixture,
+    accepted: &TableTransportRequest,
+    grapple_version: Option<u32>,
+) {
+    let current = state(f).await;
+    assert_eq!(
+        dmd_rules::table::source_control::presentation_version(&current),
+        5
+    );
+    assert_eq!(
+        dmd_rules::table::grapple_enabled(&current),
+        grapple_version.is_some()
+    );
+    assert_eq!(
+        dmd_rules::table::grapple_transport_enabled(&current),
+        grapple_version == Some(4)
+    );
+    for channel in [TableTransportChannel::Host, player(f, 0), player(f, 1)] {
+        let projected = view(f, &channel).await;
+        assert_eq!(projected.physical.as_ref().unwrap().version, 5);
+        assert_eq!(
+            projected.grapple.as_ref().map(|grapple| grapple.version),
+            grapple_version
+        );
+        if let Some(source) = &projected.source_control {
+            assert_eq!(source.version, 2);
+        }
+        if grapple_version != Some(4) {
+            assert!(projected.inspiration_transfer.is_none());
+        }
+    }
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    assert_eq!(saved.table_projection_history.last().unwrap().version, 5);
+    let binding = saved
+        .table_transport_bindings
+        .iter()
+        .find(|binding| binding.meta.id == accepted.command_id)
+        .unwrap();
+    assert_eq!(binding.version, 5);
+    let request: TableTransportRequest = serde_json::from_str(&binding.request_json).unwrap();
+    assert_eq!(request.version, 5);
+    assert_eq!(&request, accepted);
+    assert_eq!(
+        saved
+            .table_projection_history
+            .iter()
+            .find(|record| record.ordinal == binding.projection_ordinal)
+            .unwrap()
+            .version,
+        5
+    );
+    if grapple_version != Some(4) {
+        for input in [
+            TableAction::AwardHeroicInspiration {
+                character_id: f.characters[0],
+                reason: "Physical facts alone do not grant Inspiration.".into(),
+            },
+            TableAction::AwardExcessInspiration {
+                character_id: f.characters[0],
+                reason: "Grapple alone does not grant excess Inspiration.".into(),
+            },
+        ] {
+            let forbidden = v5_request(f, TableTransportChannel::Host, action(input)).await;
+            Box::pin(reject(f, forbidden)).await;
+        }
+    }
+}
 async fn create_pc(
     f: &mut Fixture,
     path: &Path,
@@ -779,13 +847,14 @@ async fn custody_case() {
     Box::pin(create_pc(&mut f, &path, 1, &[("leather-armor", 1)])).await;
     Box::pin(materialize(&mut f, &path, 0)).await;
     Box::pin(materialize(&mut f, &path, 1)).await;
-    Box::pin(v5_step(
+    let mass_activation = Box::pin(v5_step(
         &mut f,
         &path,
         TableTransportChannel::Host,
         TableTransportInput::EnablePhysicalFacts,
     ))
     .await;
+    Box::pin(assert_mass_capabilities(&f, &mass_activation, None)).await;
     let dagger = state(&f)
         .await
         .items
@@ -914,20 +983,22 @@ async fn custody_case() {
     assert!(load_for(&f, f.actors[0]).await.complete);
     assert_eq!(load_for(&f, f.actors[0]).await.known_pounds, "13.86");
     // Genuine later feature activations retain their own predicates under v5.
-    Box::pin(v5_step(
+    let grapple_activation = Box::pin(v5_step(
         &mut f,
         &path,
         TableTransportChannel::Host,
         action(TableAction::EnableGrappleAccess),
     ))
     .await;
-    Box::pin(v5_step(
+    Box::pin(assert_mass_capabilities(&f, &grapple_activation, Some(3))).await;
+    let ground_activation = Box::pin(v5_step(
         &mut f,
         &path,
         TableTransportChannel::Host,
         action(TableAction::EnableGrappleTransport),
     ))
     .await;
+    Box::pin(assert_mass_capabilities(&f, &ground_activation, Some(4))).await;
     let channel = player(&f, 0);
     Box::pin(v5_step(
         &mut f,
@@ -1225,13 +1296,14 @@ async fn v4_activation_case() {
     ))
     .await;
     assert!(state(&f).await.physical_facts.is_none());
-    Box::pin(v5_step(
+    let mass_activation = Box::pin(v5_step(
         &mut f,
         &path,
         TableTransportChannel::Host,
         TableTransportInput::EnablePhysicalFacts,
     ))
     .await;
+    Box::pin(assert_mass_capabilities(&f, &mass_activation, Some(4))).await;
     assert_eq!(
         Box::pin(f.runtime.submit_presented_table(original))
             .await

@@ -600,3 +600,16 @@ native execution and database work are UNRUN. Freeze the coherent correction for
 root's independent review; do not push, open a PR, merge or claim acceptance.
 Historical corpus consumption, carrying/support/capacity and every remaining
 Gate 4 acceptance requirement above remain unchanged.
+
+The authored correction now selects only the Grapple DTO's 3/4 field from the
+actual Ground activation. The global version function and all desktop production
+code are unchanged. Genuine current helpers check M-only, M+G, M+G+T and prior
+v4-to-M boundaries: three audience DTOs, real activation request/binding and
+projection versions, plus atomic first/excess award refusals before Ground.
+All 13 existing new Rust case bodies remain unchanged; only two of their setup
+helpers gain additional assertions. Nine new rendered TableApp cases exercise
+both staged activations, first/excess awards, absence of owner choices before
+Ground, gift/decline, one physical reroll submission and exact retained retry.
+The 23 prior mass frontend cases remain unchanged. Direct formatting and source
+inspection are complete; all project execution and independent successor review
+remain UNRUN/pending. This source commit does not claim that F1 passed runtime.

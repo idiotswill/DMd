@@ -157,7 +157,11 @@ pub(crate) fn view(
         .collect::<Result<Vec<_>, String>>()?;
     Ok(crate::TableGrappleView {
         ground_drag,
-        version: dmd_rules::table::source_control::presentation_version(state),
+        version: if dmd_rules::table::grapple_transport_enabled(state) {
+            4
+        } else {
+            3
+        },
         choices: shown,
     })
 }
