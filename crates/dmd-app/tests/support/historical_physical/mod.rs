@@ -12,6 +12,7 @@ use std::path::{Path, PathBuf};
 
 mod archive;
 mod compare;
+mod details;
 mod driver;
 mod mechanics;
 mod negatives;

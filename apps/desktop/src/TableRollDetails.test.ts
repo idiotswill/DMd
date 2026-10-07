@@ -189,3 +189,95 @@ it.each([undefined, 'Strength (Athletics) Escape'])('keeps the optional RollForm
   await user.click(screen.getByRole('button', { name: 'Report these faces' }));
   expect(submit).toHaveBeenCalledExactlyOnceWith([6]); expect(request).toEqual(original);
 });
+
+// Physical presentation5, Grapple3/4, source2 and details1 are independent.
+function massPending(grapple: 3 | 4): TableView {
+  return { ...pending(grapple), physical: { version: 5, actors: [], controls: [] } };
+}
+
+it('renders the M+G source Escape through details1 and submits its physical faces once with version5', async () => {
+  const user = userEvent.setup(); const view = massPending(3);
+  view.roll = { ...view.roll!, id: 'mass-source-escape', roller: 'goblin', modifier: 2 };
+  const original = structuredClone(view);
+  vi.mocked(tableApi.view).mockResolvedValue(view);
+  vi.mocked(tableApi.rollDetails).mockResolvedValue({ version: 1, options: { savage_attacker: null }, display_reason: 'Dexterity (Acrobatics) Escape' });
+  select(); render(TableApp); await ready();
+  expect(tableApi.rollDetails).not.toHaveBeenCalled();
+  expect(screen.queryByLabelText('Die 1 · d20')).toBeNull();
+  await user.selectOptions(screen.getByLabelText('Controlled actor'), 'goblin'); await ready();
+  expect(screen.getByText('Dexterity (Acrobatics) Escape')).toBeTruthy();
+  expect(screen.queryByText('Unsupported roll')).toBeNull();
+  expect(screen.getByText(/Normal roll.*rules modifier \+2/)).toBeTruthy();
+  expect(screen.queryByLabelText('Die 2 · d20')).toBeNull();
+  expect(screen.queryByLabelText('Spend Heroic Inspiration to reroll one die')).toBeNull();
+  expect(tableApi.rollDetails).toHaveBeenCalledExactlyOnceWith({ version: 1, campaign_id: 'campaign', revision: 'visible-revision', roll_id: 'mass-source-escape', channel: sourceChannel });
+  expect(tableApi.rollOptions).not.toHaveBeenCalled();
+  await user.type(screen.getByLabelText('Die 1 · d20'), '14');
+  await user.click(screen.getByRole('button', { name: 'Report these faces' })); await ready();
+  expect(tableApi.action).toHaveBeenCalledExactlyOnceWith({ version: 5, command_id: expect.any(String), campaign_id: 'campaign', session_id: 'session', channel: sourceChannel, revision: 'visible-revision', action: { Tactical: { action: { SubmitRoll: { result: { request_id: 'mass-source-escape', source: 'Physical', dice: [{ sides: 20, value: 14 }] } } } } } });
+  expect(view).toEqual(original); expect(view.roll.reason).toBe('Unsupported roll');
+  expect(view.physical?.version).toBe(5); expect(view.grapple?.version).toBe(3); expect(view.source_control?.version).toBe(2);
+  expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
+});
+
+it('retains the M+G+T physical Inspiration faces and exact version5 retry across restart independently of details1', async () => {
+  const user = userEvent.setup(); const view = massPending(4);
+  view.roll = { ...view.roll!, id: 'mass-pc-save' }; const original = structuredClone(view);
+  vi.mocked(tableApi.view).mockResolvedValue(view);
+  vi.mocked(tableApi.rollDetails).mockResolvedValue(details('Grapple saving throw', true));
+  vi.mocked(tableApi.action).mockRejectedValueOnce({ message: 'Mass dice delivery uncertain.', retryable: true })
+    .mockImplementationOnce(async request => ({ command_id: request.command_id, revision: 'accepted', outcome: { message: 'Encounter action recorded.' } }));
+  select(); const mounted = render(TableApp); await ready();
+  expect(screen.getByText('Grapple saving throw')).toBeTruthy();
+  expect(screen.queryByText('Unsupported roll')).toBeNull();
+  expect(screen.getByText(/Normal roll.*rules modifier \+5/)).toBeTruthy();
+  expect(tableApi.rollDetails).toHaveBeenCalledExactlyOnceWith({ version: 1, campaign_id: 'campaign', revision: 'visible-revision', roll_id: 'mass-pc-save', channel: playerChannel });
+  await user.type(screen.getByLabelText('Die 1 · d20'), '1');
+  await user.click(screen.getByLabelText('Spend Heroic Inspiration to reroll one die'));
+  await user.selectOptions(screen.getByLabelText('Die to reroll'), '0');
+  await user.type(screen.getByLabelText('Inspiration replacement'), '20');
+  await user.click(screen.getByRole('button', { name: 'Report these faces' }));
+  await screen.findByText('Mass dice delivery uncertain.');
+  const saved = JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+  expect(tableApi.action).toHaveBeenCalledExactlyOnceWith(saved.request);
+  expect(saved.request).toEqual({ version: 5, command_id: expect.any(String), campaign_id: 'campaign', session_id: 'session', channel: playerChannel, revision: 'visible-revision', action: { Tactical: { action: { SubmitRollWithInspiration: { result: { request_id: 'mass-pc-save', source: 'Physical', dice: [{ sides: 20, value: 1 }] }, die_index: 0, replacement: { sides: 20, value: 20 } } } } } });
+  expect(view).toEqual(original); expect(view.roll.reason).toBe('Unsupported roll');
+  expect(view.physical?.version).toBe(5); expect(view.grapple?.version).toBe(4); expect(view.source_control?.version).toBe(2);
+  mounted.unmount();
+  vi.mocked(tableApi.view).mockResolvedValue({ ...view, revision: 'mass-later', roll: null, roll_channel: null });
+  select(null); render(TableApp); await ready();
+  expect(screen.queryByText('Grapple saving throw')).toBeNull();
+  expect(screen.queryByLabelText('Die 1 · d20')).toBeNull();
+  await user.click(screen.getByRole('button', { name: 'Retry original request' })); await ready();
+  expect(tableApi.action).toHaveBeenCalledTimes(2);
+  expect(tableApi.action).toHaveBeenNthCalledWith(2, saved.request);
+  expect(tableApi.rollOptions).not.toHaveBeenCalled();
+  expect(localStorage.getItem(REQUEST_KEY)).toBeNull(); expect(view).toEqual(original);
+});
+
+it.each([false, true])('discards delayed M details after a channel change, including error=%s, without private labels or options', async fail => {
+  const view = massPending(4); const original = structuredClone(view);
+  vi.mocked(tableApi.view).mockResolvedValue(view);
+  let resolve!: (answer: Details) => void; let reject!: (reason: unknown) => void;
+  const late = new Promise<Details>((yes, no) => { resolve = yes; reject = no; });
+  vi.mocked(tableApi.rollDetails).mockReturnValueOnce(late);
+  select(); render(TableApp);
+  await waitFor(() => expect(tableApi.rollDetails).toHaveBeenCalledExactlyOnceWith({ version: 1, campaign_id: 'campaign', revision: 'visible-revision', roll_id: 'opaque-save', channel: playerChannel }));
+  expect(screen.queryByText('Unsupported roll')).not.toBeNull();
+  // Deliver a selection event already queued before busy disabled the control.
+  await fireEvent.change(screen.getByLabelText('Local viewing and input channel'), { target: { value: '' } });
+  await ready();
+  expect(screen.getByText("A physical roll is pending. Select the attending player's channel to report their dice.")).toBeTruthy();
+  if (fail) reject('Old private M details failed.');
+  else resolve(details('Old private M Grapple choice', true));
+  await late.catch(() => undefined); await tick();
+  await waitFor(() => {
+    expect(screen.queryByText('Old private M Grapple choice')).toBeNull();
+    expect(screen.queryByText('Old private M details failed.')).toBeNull();
+    expect(screen.queryByLabelText('Spend Heroic Inspiration to reroll one die')).toBeNull();
+    expect(screen.queryByLabelText('Die 1 · d20')).toBeNull();
+  });
+  expect(tableApi.rollDetails).toHaveBeenCalledTimes(1); expect(tableApi.rollOptions).not.toHaveBeenCalled();
+  expect(tableApi.action).not.toHaveBeenCalled(); expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
+  expect(view).toEqual(original);
+});

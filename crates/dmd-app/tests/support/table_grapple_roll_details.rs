@@ -525,3 +525,6 @@ async fn actual_g4_source_saves_and_escapes_keep_source_controller_and_read_only
     Box::pin(case(true, false, 4)).await;
     Box::pin(case(true, true, 4)).await;
 }
+
+#[path = "table_grapple_roll_details_mass.rs"]
+mod mass;

@@ -170,3 +170,46 @@ Transport bindings are ordered by command UUID in persistence; the new helper
 must join the latest audit's actual command ID to its retained binding and parse
 that original request to prove version5. Vector position is not chronology.
 These are corrections to unfinished new-test producers, not production changes.
+
+### Additive source authored; all new runtime remains UNRUN
+
+Five separate ordinary Rust cases are authored in the new mass details module:
+four PC/source by G3/G4 matrices, each with both Save abilities and both Escape
+skills, plus one M-only initiative fallback. The real initial encounter is
+concluded and Finished before M; the genuinely new battlefield and Begin retain
+actual source profiles/controller origins. Initiative completes before G/T
+activation and attack-equipment activation. Capability assertions join actual
+accepted command IDs to bindings and request5, independently checking state4,
+physical attachment1, presentation5, envelope6, Grapple3/4 and source2.
+The unchanged donor read/submission helpers retain their original G3/G4 semantics;
+the new cases pass their independent capability to reads and request5 to commands.
+Additional Host probes join each valid own handle to the same canonical Roll and
+require exact Unauthorized. Accepted physical original/replacement faces, single
+roll provenance, cold/portable read identity and stale reads are asserted.
+
+The historical driver has one explicit details-read call before its unchanged
+export/all-cell guards and one module declaration. The new helper checks original
+options success or exact refusal per actual channel, separate Save/Escape labels,
+independent Inspiration availability, and literal re-read raw/presented DTO bytes.
+It does not alter any original22-cut next input/retry, archive expectation, loader,
+negative or fresh Ground/recipient/decline producer. All232 corpus files remain
+unchanged. Original969 Escape evidence is not claimed.
+
+The desktop details test file has only an append: four expanded rendered cases
+cover M+G source Escape, M+G+T PC physical Inspiration with exact saved version5
+restart retry, and both late success/error after channel selection changes.
+The original16 cases and complete original file prefix, all nine existing
+physical-capability cases, every other frontend source and all production remain
+literal. The four donor G3/G4 Rust cases and helpers are unchanged except the new
+child-module declaration. The two separately reviewed3d4ba3a lint corrections
+remain intact.
+
+Standalone changed-file rustfmt and Git diff checks passed. Final external source
+inventory, all1136 original Rust bodies plus five additive bodies (1141 total),
+explicit full-file hook inverses and corpus preservation are frozen in the author
+handback for independent review. No Cargo/compiler/npm/project test/database,
+native, preflight or publication ran here. Complete frontend and affected ordinary
+harnesses, strict Clippy, canonical verification, exact-head hosted evidence and
+native/Gate4 acceptance remain root-owned and pending. Next: review the exact
+frozen source and evidence, then allocate its required execution before accepting
+any authored compatibility or details assertion.

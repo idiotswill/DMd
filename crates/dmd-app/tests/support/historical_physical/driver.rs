@@ -144,6 +144,7 @@ impl Fixture {
                 roll_options,
             });
         }
+        Box::pin(super::details::assert_reads(self, &views)).await;
         compare::exact_export(&before, &self.export().await);
         assert_eq!(rows(&self.pool).await, cells);
         views
