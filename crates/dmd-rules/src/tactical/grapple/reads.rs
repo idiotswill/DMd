@@ -4,6 +4,17 @@ use super::*;
 use execution::ReadContext;
 mod modern;
 
+pub(in crate::tactical) fn retain_completed_cast(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    record: &TacticalCasting,
+) -> Result<(), RulesError> {
+    if crate::table::grapple_enabled(state) && resolution(state)?.grapple.is_some() {
+        modern::retain(state, meta, record)?;
+    }
+    Ok(())
+}
+
 pub(crate) struct AttackRead<'a> {
     state: &'a CampaignState,
     actor: EntityId,
@@ -237,6 +248,7 @@ pub(in crate::tactical) fn capture_admission(
         }],
         ends: vec![],
         opportunity_refreshes: vec![],
+        completed_casts: vec![],
     }));
     validate_cuts(state)
 }
@@ -345,7 +357,7 @@ pub(in crate::tactical) fn validate_cuts(state: &CampaignState) -> Result<(), Ru
     let Some(c) = r.grapple.as_ref().filter(|c| c.activity.is_none()) else {
         return Ok(());
     };
-    if c.cuts.is_empty() || !c.opportunity_refreshes.is_empty() {
+    if c.cuts.is_empty() || !c.opportunity_refreshes.is_empty() || !c.completed_casts.is_empty() {
         return Err(invalid("unsupported cut-only context"));
     }
     let root = attack_root(state)?;

@@ -207,6 +207,7 @@ fn source_domain_checkpoint_refuses_live_orphaned_and_raw_only_injection() {
                         cuts: vec![],
                         ends: vec![],
                         opportunity_refreshes: vec![],
+                        completed_casts: vec![],
                     })),
                     origin: flow.origin.clone(),
                     turn_actor: flow.combatants[0].actor,

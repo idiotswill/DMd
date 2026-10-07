@@ -617,6 +617,7 @@ mod tests {
             cuts: vec![],
             ends: vec![],
             opportunity_refreshes: vec![],
+            completed_casts: vec![],
         }));
         assert!(continuation(&r, &HashSet::new(), true, None).is_none());
     }

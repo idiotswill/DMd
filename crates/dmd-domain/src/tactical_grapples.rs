@@ -400,6 +400,16 @@ pub struct GrappleSelfOnlyAdmission {
     pub grips: Vec<GrappleId>,
 }
 
+/// Completed source evidence retained only while its attack reads still belong
+/// to this resolution. It is never executable casting work or a reservation.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct GrappleCompletedCast {
+    pub record: Box<TacticalCasting>,
+    pub work: TacticalWorkKey,
+    pub finished_by: CommandMeta,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalGrappleResolution {
@@ -408,6 +418,8 @@ pub struct TacticalGrappleResolution {
     pub cuts: Vec<GrappleReadCut>,
     pub ends: Vec<GrappleEndReceipt>,
     pub opportunity_refreshes: Vec<GrappleOpportunityRefresh>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub completed_casts: Vec<GrappleCompletedCast>,
 }
 
 impl TacticalGrappleResolution {
@@ -417,6 +429,7 @@ impl TacticalGrappleResolution {
             && self.cuts.is_empty()
             && self.ends.is_empty()
             && self.opportunity_refreshes.is_empty()
+            && self.completed_casts.is_empty()
     }
 }
 

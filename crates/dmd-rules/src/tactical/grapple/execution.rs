@@ -721,6 +721,7 @@ impl<'owner> ExecutionContext<'owner> {
                     .ok_or_else(|| invalid("ongoing resolution dropped its Grapple evidence"))?;
                 if !new.cuts.starts_with(&old.cuts)
                     || !new.ends.starts_with(&old.ends)
+                    || !new.completed_casts.starts_with(&old.completed_casts)
                     || old.proofs.iter().any(|proof| !new.proofs.contains(proof))
                 {
                     return Err(invalid(

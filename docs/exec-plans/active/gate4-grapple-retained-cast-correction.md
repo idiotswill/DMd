@@ -1,6 +1,6 @@
 # Gate 4 — Retain completed spell evidence for Grapple reads
 
-Status: **SOURCE DESIGN; IMPLEMENTATION AND RUNTIME PENDING**.
+Status: **SOURCE IMPLEMENTED; INDEPENDENT REVIEW AND ALL RUNTIME PENDING**.
 Date: 2026-10-07. Root allocates source_review_oct7 as sole writer of
 `codex/gate4-grapple-public-completion`, checkout
 `gate4-grapple-public-completion`. Specific remote fetch and clean local inspection
@@ -77,5 +77,59 @@ canonical verification and exact-head Linux/Windows CI. Root owns the sole heavy
 slot, fresh independent review and publication schedule. All runtime remains
 UNRUN until actual logs on the corrected head establish otherwise.
 
-Next: commit this plan before production changes; implement the reviewed bounded
-retention, freeze a clean source audit and return it for independent root review.
+## Implemented source contract and review handback
+
+Plan-first commit: `ec44aa8f423b7ba6b94d399ddcdd66380eab7d8c`. The parent
+reviewed and approved the retained completion design before production edits.
+
+`GrappleCompletedCast` retains the boxed complete source record, exact work key
+and finishing command. The activated actual FinishSpell producer creates it
+only when existing spell attack admissions consume that cast. The original
+live cast cleanup immediately follows; the temporary internal duplicate never
+escapes the producer. No inactive/legacy execution receives a receipt. Empty
+vectors are omitted and deserialize as empty without changing schema versions.
+
+FinishSpell is allocated before all SpellProgram targets as a sibling with the
+same parent; the frames execute in reverse allocation order. Validation checks
+that exact arrangement and each completed target's unique program node. It
+rejects duplicate live/archive identities, missing/incomplete source programs,
+wrong source/targets, orphan receipts, pending/failed/queued or attached attack
+work for the retired cast, and noncausal finishing metadata. Source binding uses
+the unique live or completed record, preserving all original cast-bound raw
+IDs and occurrence targets. The archive never grants a current source choice
+or rechecks historical physical positions after the legitimate payment.
+
+Strict restore collects cast origin, last operation, creature activation and
+finish metadata, and keeps original accepted replay and every snapshot check.
+Inherited receipts are append-only. The existing attachment detection already
+includes the containing Grapple resolution even without live grips. The new
+vector is capped at MAX_TACTICAL_CASTS (128), independently of the unchanged
+live cast/slot reservation and work-trace limits; target bounds remain the
+original retained source validator's bounds. No additional executable queue,
+cost, permission, transport contract or projection was added.
+
+All 11 old struct literals gain only the empty field: four in domain
+`tactical_grapple_records.rs`; one each in rules `tactical_grapple_sources.rs`,
+`tactical_hands/tests.rs`, `grapple.rs`, `grapple/reads.rs`,
+`grapple/reads/modern.rs`, `grapple/modern_lifecycle.rs`, and app
+`table_tactical_choices.rs`. Every other old test statement remains unchanged.
+The complete existing three-ray application test is untouched; its final
+command consumes this receipt during terminal validation and then retires the
+resolution. It remains the actual producer, cold reopen and mirror-replay case.
+
+Two new local unit controls explicitly use synthetic evidence, never a positive
+application setup: thirteen source/target/finish/queue/chronology attacks must fail;
+absent/wrong entered FinishSpell cannot produce a receipt; omitted-empty JSON
+round-trips. These are additional hostile seam controls, not native or gameplay
+acceptance. Their execution is UNRUN.
+
+Direct changed-file rustfmt write/check and `git diff --check` pass. Full Git-entry,
+old-test-body (only the eleven empty-field insertions normalized), fixture,
+frontend and content audits are retained externally in tooling on the frozen
+source head. No Cargo, compiler, Clippy, npm, tests, DB, native, push or merge ran.
+
+Next: fresh independent full-diff/schema/restore review of the frozen source
+head; fix findings on a new reviewed head if needed. Root then schedules the
+two new local unit controls, unchanged three-ray application failure and public
+harness, affected rules/domain suites, protected legacy captures/replay, strict
+lint and canonical exact-head Linux/Windows verification before publication.

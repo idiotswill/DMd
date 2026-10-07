@@ -296,6 +296,12 @@ fn admitted_raw_origin(
             let mut records = resolution
                 .casts
                 .iter()
+                .chain(resolution.grapple.iter().flat_map(|context| {
+                    context
+                        .completed_casts
+                        .iter()
+                        .map(|receipt| receipt.record.as_ref())
+                }))
                 .filter(|record| record.cast.plan.occurrence == cast);
             let record = records.next().ok_or("raw source cast absent")?;
             require(records.next().is_none(), "raw source cast ambiguous")?;
@@ -353,6 +359,32 @@ impl TacticalGrappleResolution {
         reads: ReadShape,
     ) -> Result<(), String> {
         require(!self.is_empty(), "empty grapple resolution attachment")?;
+        require(
+            (matches!(reads, ReadShape::Activated) || self.completed_casts.is_empty())
+                && self.completed_casts.len() <= MAX_TACTICAL_CASTS,
+            "completed cast evidence exceeds its activated scope or capacity",
+        )?;
+        for (index, receipt) in self.completed_casts.iter().enumerate() {
+            let record = &receipt.record;
+            let cast = record.cast.plan.occurrence;
+            require(
+                !resolution
+                    .casts
+                    .iter()
+                    .any(|live| live.cast.plan.occurrence == cast)
+                    && !self.completed_casts[..index]
+                        .iter()
+                        .any(|old| old.record.cast.plan.occurrence == cast)
+                    && node(resolution, receipt.work)?.work.kind
+                        == (TacticalWorkKind::FinishSpell { cast })
+                    && !record.targets.is_empty()
+                    && record.completed.len() == record.targets.len(),
+                "completed cast evidence lacks its unique completed source/work",
+            )?;
+            not_before(&record.cast.plan.origin, &resolution.origin)?;
+            not_before(&receipt.finished_by, &record.cast.last_operation)?;
+            not_before(&receipt.finished_by, &record.cast.plan.origin)?;
+        }
         let mut proof_ids = HashSet::new();
         for proof in &self.proofs {
             proof.validate_shape()?;
