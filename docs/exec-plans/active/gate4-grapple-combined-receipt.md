@@ -533,3 +533,14 @@ receiving checkout. After original run67388 ends, root can retain its literal586
 outcome, fast-forward the original integration normally, and schedule new exact-
 head verification. Capture/mass branches receive only deliberate whole-history
 changes under their single-writer boundaries. Gate4 acceptance remains unchanged.
+
+The received86 donor subsequently failed all four CI compile jobs: its new Dash
+constructor omitted the required speed. It ran no Rust tests. Root's final donor
+correction3a68bd793e47aad6fbadad9a3b889d47be906189 supplies only the existing
+DashSpeed::Speed field plus the complete failure/correction plan. Both reviewers
+now inspected the actual enum, exported/imported type and existing application
+producer; the full d5/86 inverse and all966 current donor case bodies pass source
+review. Receive the whole3a successor normally after this amendment, then freeze
+the combined result. This is not a compiler/runtime acceptance claim. Original586
+run67388 remains immutable, and the old failed86 and intermediate3b receipt remain
+in Git/evidence history without being relabeled as successful builds.
