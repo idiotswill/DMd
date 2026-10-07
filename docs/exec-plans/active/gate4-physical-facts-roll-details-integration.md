@@ -82,3 +82,16 @@ historical compatibility pass or carrying implementation is claimed here.
 Next action: finish independent preview review, make the whole731 receipt,
 inspect the actual tree and minimal mock correction, then publish for CI and
 author the separately bounded additive coverage.
+
+## Receipt and F2 source correction
+
+Receiving plan cb832232 preceded normal merge a4a2cea4. Its actual tree
+f5593b82 differs from the independently inspected preview only by this new plan.
+The twenty donor paths were received with no manual conflict resolution.
+F2 is limited to adding rollDetails to the existing mock and returning schema1,
+the identical original options, and the existing fixture's separate display
+label. The original rollOptions mock remains. Removing those two additions
+recovers the complete original receiving test file byte-for-byte after normal
+line-ending normalization. No case, assertion, raw DTO or command changed.
+Git diff checks pass. Complete independent final-tree review, publication and
+all composed-source runtime checks remain pending.

@@ -9,7 +9,7 @@ vi.mock('./table-api', async original => ({
   ...await original<typeof import('./table-api')>(),
   tableApi: {
     defaults: vi.fn(), list: vi.fn(), create: vi.fn(), view: vi.fn(), options: vi.fn(),
-    situation: vi.fn(), action: vi.fn(), text: vi.fn(), rollOptions: vi.fn(),
+    situation: vi.fn(), action: vi.fn(), text: vi.fn(), rollOptions: vi.fn(), rollDetails: vi.fn(),
     creatureOptions: vi.fn(), sourceControlOptions: vi.fn(),
   },
 }));
@@ -83,6 +83,7 @@ beforeEach(() => {
   vi.mocked(tableApi.options).mockResolvedValue(options);
   vi.mocked(tableApi.situation).mockResolvedValue({ title: '', description: '', challenges: [] });
   vi.mocked(tableApi.rollOptions).mockResolvedValue({ savage_attacker: null, heroic_inspiration: true });
+  vi.mocked(tableApi.rollDetails).mockResolvedValue({ version: 1, options: { savage_attacker: null, heroic_inspiration: true }, display_reason: 'Resist the grip' });
   vi.mocked(tableApi.creatureOptions).mockResolvedValue([]);
 });
 
