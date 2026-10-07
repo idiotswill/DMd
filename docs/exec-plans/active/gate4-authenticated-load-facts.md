@@ -451,3 +451,22 @@ or editing old serialized grant bytes. Original-anchor generic items still need
 the selected typed Host classification. The mass candidate proof remains separate
 from Grapple and receives the exact closed predecessor's grant index; it cannot
 be supplied by deserialization, definition text or a raw clone.
+
+### Physical applicability refinement during implementation
+
+Early independent review identified that a registered definition alone cannot
+forbid an honest fact about a nonstandard physical object. Add an explicit typed
+NonstandardUnit classification: the Host describes the physical difference and
+records positive pounds per actual unit for this exact current ItemId. This is
+an authored world fact that rejects ordinary catalog applicability, not an edit
+to the printed catalog amount. Preserve the item's identity, definition, custody
+and any prior source grant; do not grant or alter combat properties. Ordinary
+Unit still cannot silently override a printed mass. The form must distinguish
+nonstandard classification from ordinary catalog acceptance, and replay retains
+that exact classification and original context across genuine custody movement.
+
+PC body identity binds entity kind/identity, actual species, size and creation
+source, rather than the entire mutable profile. Wallet, equipment, experience,
+narrative and other unrelated profile changes must not invalidate body/coverage.
+Coverage independently binds completed source allocations. Currency separately
+binds the current wallet value, as already selected above.
