@@ -128,6 +128,11 @@ fn action(action: TacticalAction) -> TableTransportInput {
     TableTransportInput::Action(Box::new(TableAction::Tactical { action }))
 }
 
+struct FixtureOpposition {
+    pc_opportunity: bool,
+    opponent_opposes_pc: bool,
+}
+
 struct Fixture {
     pool: sqlx::SqlitePool,
     runtime: CampaignRuntime,
@@ -237,6 +242,33 @@ impl Fixture {
         long_reach_witness: bool,
         pc_platform: bool,
     ) -> Self {
+        Box::pin(Self::with_creation_layout_and_opposition(
+            definition,
+            size,
+            opponent,
+            FixtureOpposition {
+                pc_opportunity,
+                opponent_opposes_pc: false,
+            },
+            physical_weapon,
+            long_reach_witness,
+            pc_platform,
+        ))
+        .await
+    }
+    async fn with_creation_layout_and_opposition(
+        definition: &str,
+        size: CreatureSize,
+        opponent: bool,
+        opposition: FixtureOpposition,
+        physical_weapon: Option<&str>,
+        long_reach_witness: bool,
+        pc_platform: bool,
+    ) -> Self {
+        let FixtureOpposition {
+            pc_opportunity,
+            opponent_opposes_pc,
+        } = opposition;
         assert!(
             !long_reach_witness
                 || (definition == "goblin-warrior"
@@ -475,23 +507,27 @@ impl Fixture {
                             .chain(f.opponent.filter(|_| !pc_opportunity || long_reach_witness))
                             .collect(),
                     })
-                    .chain(f.opponent.map(|actor| TableCreaturePlacement {
-                        actor,
-                        public_label: "Other guard".into(),
-                        position: SpatialPoint {
-                            x: if pc_opportunity { 10 } else { 30 },
-                            y: if long_reach_witness {
-                                30
-                            } else if pc_opportunity {
-                                20
-                            } else {
-                                10
+                    .chain(f.opponent.map(|actor| {
+                        TableCreaturePlacement {
+                            actor,
+                            public_label: "Other guard".into(),
+                            position: SpatialPoint {
+                                x: if pc_opportunity { 10 } else { 30 },
+                                y: if long_reach_witness {
+                                    30
+                                } else if pc_opportunity {
+                                    20
+                                } else {
+                                    10
+                                },
+                                z: 0,
                             },
-                            z: 0,
-                        },
-                        height: 8,
-                        allies: vec![],
-                        enemies: vec![f.goblin],
+                            height: 8,
+                            allies: vec![],
+                            enemies: std::iter::once(f.goblin)
+                                .chain(opponent_opposes_pc.then_some(f.actors[0]))
+                                .collect(),
+                        }
                     }))
                     .collect(),
                     geometry_ruling: Ruling {

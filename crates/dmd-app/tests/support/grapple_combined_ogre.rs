@@ -18,11 +18,14 @@ fn active(state: &CampaignState) -> EntityId {
 }
 
 async fn run(feature: &str, selected_grip: WeaponGrip) {
-    let mut f = Box::pin(Fixture::with_creation_layout(
+    let mut f = Box::pin(Fixture::with_creation_layout_and_opposition(
         "ogre",
         CreatureSize::Large,
         true,
-        true,
+        FixtureOpposition {
+            pc_opportunity: true,
+            opponent_opposes_pc: true,
+        },
         Some("glaive"),
         false,
         false,
@@ -47,6 +50,14 @@ async fn run(feature: &str, selected_grip: WeaponGrip) {
         SpatialPoint { x: 10, y: 20, z: 0 }
     );
     let encounter = initial.encounter.as_ref().unwrap();
+    assert_eq!(
+        encounter.participant(holder).unwrap().enemies,
+        vec![reactor, target]
+    );
+    assert_eq!(
+        encounter.participant(target).unwrap().enemies,
+        vec![reactor, holder]
+    );
     assert_eq!(
         dmd_rules::spatial::participant_distance(
             encounter.participant(reactor).unwrap(),

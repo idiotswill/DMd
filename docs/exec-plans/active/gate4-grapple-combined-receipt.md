@@ -441,3 +441,65 @@ Direct rustfmt checks of both files with child traversal disabled and the Git
 whitespace check pass. Neither production nor an assertion changed. The original
 failed58 evidence and UNRUN preparation remain preserved. Fresh independent
 review and successor-head compilation/runtime verification are still required.
+
+## Correct the real Ogre scenario's opposing relationship, 2026-10-07
+
+Fresh b77 compilation succeeds: both Rust1.88 jobs and repository guards pass;
+Windows also passes207 frontend cases. Its separate local canonical verify-fast
+passed. The first new Ogre application case then failed at
+`table_grapple_public.rs:785` because the requested Grapple choice was absent.
+The full log SHA256 is
+`5d578f50d772c337124f2a1f29c1386206812338e1569a6ea9c086234d8f1b0e`:
+zero passes,one failed,zero ignored,72 filtered,486.73 seconds in the exact case.
+The runner stopped with exit101 for this command; remaining14 cases and Clippy
+were not reached. Failed evidence and the frozen b77 runner remain preserved.
+
+Root traced the actual fixture rather than changing the production admission.
+With pc_opportunity enabled, the PC's enemies include the second Goblin. That
+Goblin's enemies contain only the Ogre. Grapple's plan_attempt_with_read invokes
+the ordinary Shove opposition check, which correctly requires both participants
+to name each other as enemies. Thus this scenario never established the opposing
+relationship required for its intended real PC/Goblin grip. Its positions,
+source acquisition, turn order, hands and opportunity geometry are unaffected.
+
+Commit this plan before the bounded fixture correction. Add an explicit scenario
+parameter to the shared battlefield construction through a new delegated helper;
+the old with_creation_layout wrapper must retain false as its default and the
+complete prior behavior. Only the two new Ogre cases opt in to making the second
+Goblin an enemy of the PC in the actual accepted PrepareBattlefield command.
+Do not mutate a returned CampaignState, bypass the opaque Grapple control, relax
+opposition, or alter the fixture's default relationships for older cases.
+
+Add assertions in the Ogre helper that both participants actually retain that
+reciprocal relationship before choosing Grapple. Keep their real source, paid
+Ogre setup attack, exact positions, current creation, cold/portable/retry helpers,
+physical dice, expected opportunity choice and all hostile controls unchanged.
+Review the full shared-helper inverse and preserve all1109 current Rust test
+bodies. The added relationship assertions belong to the shared Ogre helper,
+outside the two unchanged case bodies. No prior assertion or
+case is removed. Production files must remain exact b77 bytes.
+
+Root is sole writer of the original integration branch after run51588 exited and
+released its lock. The independent reviewer checks the cause and final correction.
+After a clean source freeze, prepare a separate exact-head runner, verify the real
+scenario and full selection, publish for new CI, and retain the prior failed logs.
+No slice, carrying, native or Gate4 acceptance is granted by a fixture repair.
+
+The authored correction delegates the unchanged seven-argument fixture entry to
+an opt-in construction helper, defaults its new flag to false, and adds the PC
+to the target's real setup enemies only for the Ogre scenario's true flag. Two
+new exact relationship assertions precede the unchanged source/geometry checks.
+Direct changed-file rustfmt and whitespace checks pass. The original1111 count
+in the plan-only commit was a transcription error: the frozen b77 manifest has
+1109 Rust test bodies; none is changed by this helper-only correction. Full source
+audit, independent correction review and fresh runtime evidence follow the freeze.
+
+Root's prepublication review found that the new construction helper has eight
+arguments, exceeding the default strict Clippy threshold. No runtime or CI was
+started on061 and no lint exception is justified. Before publishing, group the
+two opposition flags in a named test-only FixtureOpposition value so the helper
+retains seven arguments. The old wrapper explicitly supplies its existing
+pc_opportunity value and opponent_opposes_pc false; the Ogre scenario explicitly
+supplies both true. Destructure that value at the start of the helper to keep
+its complete setup body unchanged. Preserve every case body and production byte,
+then freeze a successor for the independent review and new focused runner.
