@@ -474,9 +474,9 @@ Add assertions in the Ogre helper that both participants actually retain that
 reciprocal relationship before choosing Grapple. Keep their real source, paid
 Ogre setup attack, exact positions, current creation, cold/portable/retry helpers,
 physical dice, expected opportunity choice and all hostile controls unchanged.
-Review the full shared-helper inverse and preserve all1111 current Rust test
-bodies except any explicitly additive fixture assertions (verify the precise
-inventory rather than trusting this provisional count). No prior assertion or
+Review the full shared-helper inverse and preserve all1109 current Rust test
+bodies. The added relationship assertions belong to the shared Ogre helper,
+outside the two unchanged case bodies. No prior assertion or
 case is removed. Production files must remain exact b77 bytes.
 
 Root is sole writer of the original integration branch after run51588 exited and
@@ -484,3 +484,12 @@ released its lock. The independent reviewer checks the cause and final correctio
 After a clean source freeze, prepare a separate exact-head runner, verify the real
 scenario and full selection, publish for new CI, and retain the prior failed logs.
 No slice, carrying, native or Gate4 acceptance is granted by a fixture repair.
+
+The authored correction delegates the unchanged seven-argument fixture entry to
+an opt-in construction helper, defaults its new flag to false, and adds the PC
+to the target's real setup enemies only for the Ogre scenario's true flag. Two
+new exact relationship assertions precede the unchanged source/geometry checks.
+Direct changed-file rustfmt and whitespace checks pass. The original1111 count
+in the plan-only commit was a transcription error: the frozen b77 manifest has
+1109 Rust test bodies; none is changed by this helper-only correction. Full source
+audit, independent correction review and fresh runtime evidence follow the freeze.
