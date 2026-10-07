@@ -503,3 +503,33 @@ pc_opportunity value and opponent_opposes_pc false; the Ogre scenario explicitly
 supplies both true. Destructure that value at the start of the helper to keep
 its complete setup body unchanged. Preserve every case body and production byte,
 then freeze a successor for the independent review and new focused runner.
+
+## Receive the distinct retry stimulus without moving the active run
+
+Root owns this separate receiving checkout again. It has normally fast-forwarded
+from58 to reviewed586; the original positive-integration checkout remains frozen
+at586 under local run67388 and its exact-head CI. No active run/source is retargeted.
+Root and independent reviews clear586's fixture correction; its canonical
+verify-fast passed, and the first actual Ogre case is currently running. Those
+partial results are not acceptance for this receiving branch.
+
+PR71 d5 CI exposed a second fixture error: its pending-transfer test first calls
+the real Dodge producer, then the shared cold helper's negative replaces Dodge
+with Dodge. Production correctly recognizes an exact retry; the assertion fails
+before the transfer setup. Reviewed successor86ed8ae17b47f58dd32f629b32a7d53faf577242
+clones the request, substitutes Dash only for original Dodge (otherwise Dodge),
+and asserts inequality before the unchanged refusal/export/replay checks. All966
+current donor case bodies and production bytes remain exact. Its failed d5 log,
+cause, plan and new source review remain preserved; fresh86 CI is pending.
+
+Commit this receipt plan, then normally merge the whole86 history. Expected source
+join is only that exact shared-helper hunk, with complete donor plan history and
+all receiver opposition options and combined controls retained. No cherry-pick,
+assertion reduction, production edit or old test body modification is allocated.
+Audit all723 entries and1109 current case bodies, the complete donor/receiver
+inverse and source/content preservation; get independent final review and freeze.
+No Cargo/compiler/npm/native/database execution or push is allocated to this
+receiving checkout. After original run67388 ends, root can retain its literal586
+outcome, fast-forward the original integration normally, and schedule new exact-
+head verification. Capture/mass branches receive only deliberate whole-history
+changes under their single-writer boundaries. Gate4 acceptance remains unchanged.
