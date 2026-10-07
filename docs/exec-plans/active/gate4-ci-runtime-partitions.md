@@ -445,3 +445,75 @@ Git whitespace checks pass. All build/config/runner/workflow/dependency/test
 bytes remain unchanged; independent full-tree preservation review is next.
 No Cargo/compiler/npm/gameplay/native/database execution occurred. The required
 fresh Windows two-phase/allocation/aggregate/package proof remains UNRUN.
+
+## Fixed generated-dependency bootstrap — before implementation
+
+Root now authorizes a bounded preparation change after actual Windows08d jobs
+112936821704 and112936821643 in run37662891169 exposed a second dirty input.
+The inert capabilities directory removed the earlier MissingFile reason. Both
+new complete logs instead name a generated tauri-codegen CSS file newer than
+the desktop test dep-info reference; unchanged executable guards reject the
+rebuilt bytes. Both593-message phase graphs agree except fresh. Original logs,
+artifacts, phase identities and expected/actual hashes remain preserved.
+First diagnosis/audit SHA256:
+`95239d7a5c2340effc78cd8bedef2c77dd5257c1800e74f84af4adc0732f25d1`;
+second allocation audit:
+`23ec3995ecff32bee2bbaaadcab68b7d7e6e6da204c37eee28fd8d5014d0cb25`.
+The full source-supported assessment is
+`tooling/ci-oct7/pr73-08d-css-diagnosis-and-bootstrap-assessment-2026-10-07.md`,
+SHA256 `7f98ea48b8567dd6d5f42ff81177c95035d2042db896ec842aa6ee73b26f267b`.
+
+Exact Cargo.lock-verified tauri-codegen2.6.3 creates a content-addressed generated
+asset only when absent, then emits include_bytes for that output. The macro runs
+during rustc expansion. Exact hosted Cargo1.99 fingerprint source rewinds the
+dep-info reference to invocation start. The recorded CSS mtime is newer than
+that reference in both failing jobs. This supports first-generation dependency
+materialization as the cause of the next separate compile. CSS byte streams,
+precreation existence probes, syscalls and precise differing PE bytes were not
+captured; writer timing remains a source-supported inference. The source does
+not repeatedly rewrite an existing identical-content asset.
+
+This explicitly supersedes the earlier diagnostic-only prohibition on a
+preparation rebuild, and only to this extent: execute exactly one fixed canonical
+workspace no-run bootstrap, then the identical canonical inventoried no-run,
+then the original Cargo-owned execution. The bootstrap materializes generated
+dependencies and executes zero tests. There is no retry/stabilization loop,
+timestamp adjustment, watcher bypass, binary normalization or replacement-hash
+acceptance. The executable baseline is created only after the designated second
+no-run; all existing before-harness, after-harness and final guards remain exact.
+
+Both platforms use the same fixed phase contract. Linux gains no --target flag;
+Windows retains its existing explicit MSVC target. Preserve canonical argv,
+default profile/features/threading, package cwd, inherited environment, compile-
+only/zero-case/doc targets and exact whole-harness coverage. Before and between
+compiler phases verify clean source identity, actual rustc/cargo versions,
+runner/Python bytes and unchanged ambient configuration/environment. Private
+environment values may be compared in memory, never serialized. Phase-specific
+execution instrumentation remains the existing RUSTDOC/context/runner additions.
+
+Compare all three complete compiler graphs and executable identities. Keep
+bootstrap, inventory and execution stdout/stderr in full. Internal receipt schema
+becomes2, with exactly four ordered original log pairs: metadata, bootstrap,
+build (inventory), cargo-execution. Aggregate must require those exact named
+pairs, rehash every stream, and reconstruct all three original graphs, complete
+discovered assignments and executable identities against the common universe.
+A bootstrap failure aborts before inventory/context or execution. Further
+post-inventory drift still fails; no incomplete allocation becomes a pass.
+
+Changes are limited to this plan, scripts/ci_runtime.py and its focused Python
+control file. Workflows, application source/tests, immutable corpus, dependencies,
+local verification and desktop configuration remain exact08d. Preserve all18
+current controls and their assertions. The original aggregate fixture alone may
+add its new bootstrap log-pair stimulus to conform to schema2; record its exact
+inverse in the preservation audit. Add controls for fixed Linux/Windows phase
+order/argv/env, bootstrap failure, graph/executable drift, boundary source/
+toolchain/configuration drift, missing/altered/reordered bootstrap evidence and
+the unchanged post-inventory executable refusal.
+
+Only lightweight Python control execution is allocated locally. No Cargo/npm/
+native/gameplay/database run is permitted. Commit this decision before code,
+freeze a full source preservation audit and handback, then await root and an
+independent review before publication. Actual fresh two-platform allocations,
+aggregate, complete canonical case reconciliation and Windows packaging remain
+mandatory. This preparation design is not yet hosted evidence or gate acceptance.
+
