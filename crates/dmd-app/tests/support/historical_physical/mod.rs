@@ -76,7 +76,7 @@ pub async fn run(name: &str) {
             if phase == "after" {
                 Box::pin(f.retry(&cut.request, &cut.response_bytes)).await;
             }
-            let mut portable = Box::pin(driver::Fixture::restore(&f.export().await)).await;
+            let portable = Box::pin(driver::Fixture::restore(&f.export().await)).await;
             Box::pin(portable.exact_views(views)).await;
             Box::pin(portable.exact_image(export)).await;
             Box::pin(portable.retained(&archive.retained)).await;

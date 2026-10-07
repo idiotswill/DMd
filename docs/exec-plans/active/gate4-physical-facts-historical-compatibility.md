@@ -416,3 +416,10 @@ Freeze this correction separately for root and independent review/publication.
 No Cargo/compiler/npm/test/database/native run is allocated to this author.
 Only direct changed-file rustfmt and external static audits are allowed; the
 correction remains runtime UNRUN until root schedules exact-head checks.
+
+The bounded correction is authored: exactly one unused mut removed and exactly
+one inner match converted to if let. Its pattern and entire branch body are
+unchanged; unrelated actions still make no change before the original send.
+Standalone changed-file rustfmt and Git diff checks passed. Full external
+inventory/body preservation and inverse evidence are being frozen for review;
+strict Clippy and all consumer runtime on this successor remain UNRUN.

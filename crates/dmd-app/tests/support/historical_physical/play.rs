@@ -252,12 +252,13 @@ async fn next(f: &mut Fixture, roles: &Roles, cut: &archive::Cut) {
         TableTransportInput::GrappleChoice { handle }
         | TableTransportInput::InspirationTransfer { handle } => handle.0 = key(handle.0),
         TableTransportInput::MoveGrappled { option, .. } => option.0 = key(option.0),
-        TableTransportInput::Action(action) => match action.as_mut() {
-            TableAction::Tactical {
+        TableTransportInput::Action(action) => {
+            if let TableAction::Tactical {
                 action:
                     TacticalAction::SubmitRoll { result }
                     | TacticalAction::SubmitRollWithInspiration { result, .. },
-            } => {
+            } = action.as_mut()
+            {
                 // A fresh earlier attack has a genuinely new canonical raw ID.
                 // Select the actual owned current offer; do not transplant the
                 // original producer's canonical roll or work ancestry.
@@ -276,8 +277,7 @@ async fn next(f: &mut Fixture, roles: &Roles, cut: &archive::Cut) {
                 assert_eq!(roll.reason, original.reason);
                 result.request_id = roll.id;
             }
-            _ => {}
-        },
+        }
         _ => panic!("unreviewed archived continuation shape"),
     }
     Box::pin(send(f, roles, cut.request.channel.clone(), input)).await;
