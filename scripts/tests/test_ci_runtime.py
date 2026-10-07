@@ -1,5 +1,6 @@
 """Lightweight verification-runner tests; never compile or run DMd."""
 import copy
+from contextlib import contextmanager
 import importlib.util
 import json
 import os
@@ -170,6 +171,7 @@ class InvocationAndInventory(unittest.TestCase):
                 receipt['common_sha256'] = ci.digest(receipt['common'])
                 receipt['executables'] = [{'executable': executable}]
                 receipt['command_logs'] = [log_pair('metadata', json.dumps(metadata)),
+                                           log_pair('bootstrap', compiled),
                                            log_pair('build', compiled), log_pair('cargo-execution', compiled)]
                 receipt['records'] = []
                 for item in [target, doc]:
@@ -345,6 +347,198 @@ class ExecutableDiagnostics(unittest.TestCase):
             self.assertEqual(diagnostic['python']['sha256'], ci.file_hash(sys.executable))
             self.assertEqual(diagnostic['runner']['sha256'], ci.file_hash(ci.__file__))
             self.assertEqual(list(output.glob('*.receipt.json')), [])
+
+
+class FixedBootstrap(unittest.TestCase):
+    @contextmanager
+    def fixture(self, platform='linux', fault=None):
+        # Only harmless files and simulated Cargo output; no compiler or DMd
+        # command is invoked. Real inventory/delegation/aggregation stays active.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            script = root / 'scripts' / 'ci_runtime.py'
+            script.parent.mkdir()
+            script.write_text('# immutable fixture executor\n', encoding='utf8')
+            manifest = root / 'Cargo.toml'
+            manifest.write_text('[package]\nname="fixture"\nversion="0.1.0"\n', encoding='utf8')
+            executable = root / 'target' / 'debug' / 'fixture.exe'
+            executable.parent.mkdir(parents=True)
+            target = {'name': 'fixture', 'kind': ['bin'], 'doctest': False,
+                      'src_path': str(root / 'src' / 'main.rs')}
+            metadata = {'workspace_members': ['fixture'], 'packages': [
+                {'id': 'fixture', 'name': 'fixture', 'manifest_path': str(manifest), 'targets': [target]}]}
+            artifact = {'reason': 'compiler-artifact', 'package_id': 'fixture', 'target': target,
+                        'profile': {'test': True, 'opt_level': '0'}, 'features': [],
+                        'filenames': [str(executable)], 'executable': str(executable)}
+            source = {'head': 'a' * 40, 'tree': 'b' * 40, 'lock_sha256': 'c' * 64}
+            host = 'x86_64-pc-windows-msvc' if platform == 'windows' else 'x86_64-unknown-linux-gnu'
+            toolchain = {'rustc': f'rustc fixture\nhost: {host}', 'cargo': 'cargo fixture'}
+            calls = []
+
+            def log_pair(prefix, stdout):
+                pair = {}
+                for stream, text in [('stdout', stdout), ('stderr', '')]:
+                    path = Path(prefix).with_suffix(f'.{stream}.log')
+                    path.write_text(text, encoding='utf8')
+                    pair[stream] = {'path': path.name, 'sha256': ci.file_hash(path)}
+                return pair
+
+            def harness(identity, base, original_args, allocation_name, assigned, output):
+                prefix = ci.digest(identity)
+                logs = [log_pair(output / (prefix + '-list'), 'case: test\n1 test, 0 benchmarks\n'),
+                        log_pair(output / (prefix + '-ignored'), '0 tests, 0 benchmarks\n')]
+                record = {'id': identity, 'cases': ['case'], 'assigned': assigned, 'state': 'listed-only',
+                          'logs': logs, 'original_args': original_args, 'cwd': str(root),
+                          'cargo_manifest_dir': str(root)}
+                if assigned == allocation_name:
+                    record.update(state='executed', outcome=ci.parse_result(complete('case'), ['case']))
+                    logs.append(log_pair(output / (prefix + '-run'), complete('case')))
+                ci.write_json(output / f'{prefix}.receipt.json', record)
+
+            def logged(argv, prefix, *, cwd=None, env=None):
+                phase = Path(prefix).name
+                calls.append({'phase': phase, 'argv': argv[:], 'cwd': cwd,
+                              'env': None if env is None else env.copy()})
+                if phase == 'metadata':
+                    text = json.dumps(metadata)
+                else:
+                    message = copy.deepcopy(artifact)
+                    if phase == 'bootstrap':
+                        executable.write_bytes(b'first-generated-dependency-build')
+                        if fault == 'graph':
+                            message['features'] = ['unexpected']
+                        if fault == 'identity':
+                            message['executable'] = str(executable.with_name('other.exe'))
+                    elif phase == 'build':
+                        executable.write_bytes(b'inventoried-build')
+                    elif phase == 'cargo-execution':
+                        if fault == 'bytes':
+                            executable.write_bytes(b'rebuilt-after-inventory')
+                        with patch.dict(os.environ, {'DMD_CI_RUNTIME_CONTEXT': env['DMD_CI_RUNTIME_CONTEXT']}), patch.object(
+                                ci, 'execute_harness', side_effect=harness):
+                            ci.delegate('runner', [str(executable)])
+                    text = '\n'.join(json.dumps(row) for row in [
+                        message, {'reason': 'build-finished', 'success': True}])
+                pair = log_pair(prefix, text)
+                if phase == 'bootstrap' and fault == 'bootstrap':
+                    raise ValueError('simulated bootstrap command failure')
+                return text, pair
+
+            def command(argv, cwd=None):
+                if argv == ['rustup', 'which', 'rustdoc']:
+                    return str(root / 'rustdoc')
+                self.assertIn(argv, [['rustc', '-vV'], ['cargo', '-vV']])
+                return toolchain[argv[0]]
+
+            with patch.object(ci, '__file__', str(script)), patch.object(ci, 'clean_configuration'), patch.object(
+                    ci, 'source_identity', return_value=source), patch.object(ci, 'command', side_effect=command), patch.object(
+                    ci, 'run_logged', side_effect=logged), patch.object(ci.Path, 'cwd', return_value=root), patch.dict(
+                    os.environ, {'GITHUB_RUN_ID': '10', 'GITHUB_RUN_ATTEMPT': '1'}):
+                yield SimpleNamespace(root=root, calls=calls, source=source, executable=executable,
+                                      platform=platform, output=root / 'target' / 'ci-runtime')
+
+    def test_fixed_canonical_phase_order_and_inventory_baseline_on_both_platforms(self):
+        for platform in ('linux', 'windows'):
+            with self.subTest(platform=platform), self.fixture(platform) as fixture:
+                ci.run_allocation(SimpleNamespace(allocation='remainder', platform=platform))
+                self.assertEqual([c['phase'] for c in fixture.calls], list(ci.COMMAND_PHASES))
+                bootstrap, build, execution = fixture.calls[1:]
+                target = ['--target', 'x86_64-pc-windows-msvc'] if platform == 'windows' else []
+                base = ['cargo', 'test', '--locked', '--workspace', *target, '--message-format=json']
+                self.assertEqual(bootstrap['argv'], base + ['--no-run'])
+                self.assertEqual(build, {**bootstrap, 'phase': 'build'})
+                self.assertEqual(execution['argv'][:-2], base)
+                self.assertEqual(execution['argv'][-2], '--config')
+                self.assertEqual(execution['cwd'], fixture.root)
+                self.assertEqual({k for k in execution['env'] if execution['env'].get(k) != build['env'].get(k)},
+                                 {'RUSTDOC', 'DMD_CI_RUNTIME_CONTEXT'})
+                receipt = ci.read_json(fixture.output / 'remainder' / 'complete.json')
+                self.assertEqual(receipt['schema'], 2)
+                self.assertEqual(receipt['executables'][0]['sha256'], ci.file_hash(fixture.executable))
+                self.assertEqual(fixture.executable.read_bytes(), b'inventoried-build')
+                self.assertEqual(len(receipt['command_logs']), 4)
+                self.assertEqual(receipt['records'][0]['outcome']['passed'], 1)
+
+    def test_bootstrap_failure_aborts_without_inventory_context_or_execution(self):
+        with self.fixture(fault='bootstrap') as fixture:
+            with self.assertRaisesRegex(ValueError, 'bootstrap command failure'):
+                ci.run_allocation(SimpleNamespace(allocation='remainder', platform='linux'))
+            self.assertEqual([c['phase'] for c in fixture.calls], ['metadata', 'bootstrap'])
+            output = fixture.output / 'remainder'
+            self.assertTrue((output / 'bootstrap.stderr.log').exists())
+            self.assertFalse((output / 'context.json').exists())
+            self.assertFalse((output / 'complete.json').exists())
+
+    def test_bootstrap_graph_or_executable_identity_drift_refuses_before_execution(self):
+        for fault, message in [('graph', 'build graph changed'), ('identity', 'executable identity changed')]:
+            with self.subTest(fault=fault), self.fixture(fault=fault) as fixture:
+                with self.assertRaisesRegex(ValueError, message):
+                    ci.run_allocation(SimpleNamespace(allocation='remainder', platform='linux'))
+                self.assertEqual([c['phase'] for c in fixture.calls], ['metadata', 'bootstrap', 'build'])
+                self.assertFalse((fixture.output / 'remainder' / 'context.json').exists())
+
+    def test_post_inventory_rebuild_still_refuses_before_harness_execution(self):
+        with self.fixture(fault='bytes') as fixture:
+            with self.assertRaisesRegex(ValueError, 'executable changed after canonical no-run build'):
+                ci.run_allocation(SimpleNamespace(allocation='remainder', platform='linux'))
+            output = fixture.output / 'remainder'
+            self.assertEqual(list(output.glob('*.receipt.json')), [])
+            self.assertFalse((output / 'complete.json').exists())
+            diagnostic, = output.glob('diagnostic-executable-*.json')
+            record = ci.read_json(diagnostic)
+            self.assertNotEqual(record['expected_sha256'], record['actual_sha256'])
+            self.assertEqual(record['phase'], 'before-execution')
+
+    def test_phase_boundary_refuses_source_toolchain_environment_or_executor_drift(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            executor = root / 'executor.py'
+            executor.write_bytes(b'initial')
+            source = {'head': 'original'}
+            toolchain = {'rustc': 'rustc original', 'cargo': 'cargo original'}
+            environment = dict(os.environ)
+            executors = {str(executor): ci.file_hash(executor)}
+            for fault in ('source', 'toolchain', 'environment', 'executor'):
+                with self.subTest(fault=fault), patch.object(ci, 'clean_configuration'), patch.object(
+                        ci, 'source_identity', return_value={'head': 'changed'} if fault == 'source' else source), patch.object(
+                        ci, 'command', side_effect=lambda argv: 'changed' if fault == 'toolchain' else toolchain[argv[0]]):
+                    ambient = {**environment, 'DMD_BOUNDARY_PROBE': 'changed'} if fault == 'environment' else environment
+                    executor.write_bytes(b'changed' if fault == 'executor' else b'initial')
+                    with patch.dict(os.environ, ambient, clear=True), self.assertRaisesRegex(ValueError, 'changed between phases'):
+                        ci.verify_allocation_boundary(root, source, toolchain, environment, executors)
+
+    def test_aggregate_requires_original_bootstrap_logs_and_exact_order(self):
+        with self.fixture() as fixture:
+            for allocation in ci.ALLOCATIONS:
+                ci.run_allocation(SimpleNamespace(allocation=allocation, platform='linux'))
+            args = SimpleNamespace(directory=str(fixture.output), platform='linux')
+            ci.aggregate(args)
+            path = fixture.output / 'remainder' / 'complete.json'
+            original = path.read_bytes()
+            bootstrap = path.parent / 'bootstrap.stdout.log'
+            original_stdout = bootstrap.read_bytes()
+            for fault, message in [('missing', 'incomplete canonical Cargo logs'),
+                                   ('reordered', 'phase order differs'), ('bytes', 'changed Cargo log'),
+                                   ('graph', 'original Cargo graph differs')]:
+                with self.subTest(fault=fault):
+                    receipt = json.loads(original)
+                    if fault == 'missing':
+                        receipt['command_logs'].pop(1)
+                    elif fault == 'reordered':
+                        receipt['command_logs'][1], receipt['command_logs'][2] = receipt['command_logs'][2], receipt['command_logs'][1]
+                    else:
+                        bootstrap.write_bytes(original_stdout.replace(b'"features": []', b'"features": ["drift"]'))
+                        if fault == 'graph':
+                            receipt['command_logs'][1]['stdout']['sha256'] = ci.file_hash(bootstrap)
+                    path.write_text(json.dumps(receipt), encoding='utf8')
+                    with self.assertRaisesRegex(ValueError, message):
+                        ci.aggregate(args)
+                    path.write_bytes(original)
+                    bootstrap.write_bytes(original_stdout)
+            stderr = path.parent / 'bootstrap.stderr.log'
+            stderr.unlink()
+            with self.assertRaises(FileNotFoundError):
+                ci.aggregate(args)
 
 
 if __name__ == '__main__':

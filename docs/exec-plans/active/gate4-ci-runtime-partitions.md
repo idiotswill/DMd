@@ -517,3 +517,20 @@ independent review before publication. Actual fresh two-platform allocations,
 aggregate, complete canonical case reconciliation and Windows packaging remain
 mandatory. This preparation design is not yet hosted evidence or gate acceptance.
 
+The fixed bootstrap is now implemented after plan commit ee0d1d00. All24
+lightweight Python controls pass locally (2.508s): the original18 retain all
+assertions and bodies except the authorized additional bootstrap log-pair
+fixture stimulus; six new controls exercise phase order on both platforms,
+bootstrap failure, graph/executable-path drift, actual unchanged byte refusal,
+source/toolchain/environment/executor boundaries and aggregate log corruption.
+The aggregate reparses all three complete compiler graphs and requires all four
+original log pairs in their exact phase order. The source of the three existing
+executable byte guards and all harness/default-thread/doctest logic is unchanged.
+
+This is simulated-compiler Python validation, not Cargo or hosted Windows proof.
+No application compilation, npm, gameplay, native or database execution occurred.
+The plan-first diff check reported an extra blank line at EOF, which is removed
+in this implementation; final full-diff whitespace validation is required before
+freeze. Root and an independent reviewer must inspect the complete cumulative
+source change and preservation audit before publication. Fresh exact-head
+Linux/Windows allocations, aggregate and Windows packaging remain UNRUN.

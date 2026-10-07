@@ -19,7 +19,8 @@ import tomllib
 ALLOCATIONS = ('table-loop', 'legacy-missile', 'grapple-public', 'remainder')
 SPECIAL = {'table_loop': 'table-loop', 'legacy_shield_missile_v1_replay': 'legacy-missile',
            'table_grapple_public': 'grapple-public'}
-SCHEMA = 1
+SCHEMA = 2
+COMMAND_PHASES = ('metadata', 'bootstrap', 'build', 'cargo-execution')
 ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')
 FINGERPRINT_LOG = 'cargo::compiler::fingerprint=info'
 DIAGNOSTIC_ENV = ('CARGO_LOG', 'RUSTDOC', 'DMD_CI_RUNTIME_CONTEXT', 'CARGO_HOME', 'RUSTUP_HOME',
@@ -374,6 +375,23 @@ def make_shim(path, script):
     path.chmod(0o755)
 
 
+def verify_allocation_boundary(root, source, toolchain, environment, executors):
+    # Compare private ambient values only in memory; diagnostics keep their
+    # existing allowlist. A phase must never silently adopt a changed identity.
+    require(dict(os.environ) == environment, 'ambient environment changed between phases')
+    clean_configuration(root)
+    require(source_identity(root) == source, 'source changed between phases')
+    require({name: command([name, '-vV']) for name in ('rustc', 'cargo')} == toolchain,
+            'toolchain changed between phases')
+    require(all(file_hash(path) == expected for path, expected in executors.items()),
+            'verification executor changed between phases')
+
+
+def executable_identities(messages):
+    return sorted(canonical({key: message[key] for key in ('package_id', 'target', 'executable')})
+                  for message in messages)
+
+
 def run_allocation(args):
     root = Path(__file__).resolve().parent.parent
     clean_configuration(root)
@@ -383,6 +401,10 @@ def run_allocation(args):
     output.mkdir(parents=True)
     rustc = command(['rustc', '-vV'])
     cargo = command(['cargo', '-vV'])
+    toolchain = {'rustc': rustc, 'cargo': cargo}
+    environment = dict(os.environ)
+    executors = {str(Path(__file__).resolve()): file_hash(__file__),
+                 sys.executable: file_hash(sys.executable)}
     host = next(line.removeprefix('host: ') for line in rustc.splitlines() if line.startswith('host: '))
     require((args.platform == 'windows' and host == 'x86_64-pc-windows-msvc') or
             (args.platform == 'linux' and host == 'x86_64-unknown-linux-gnu'), 'unexpected host')
@@ -394,11 +416,20 @@ def run_allocation(args):
                                              output / 'metadata', cwd=root)
     metadata = json.loads(metadata_text)
     packages, docs = workspace_targets(metadata, root)
-    build_env = os.environ.copy()
+    build_env = environment.copy()
     build_env['CARGO_LOG'] = FINGERPRINT_LOG
-    record_phase(output, 'build', base + ['--no-run'], build_env, root, identity, {'rustc': rustc, 'cargo': cargo})
+    verify_allocation_boundary(root, identity, toolchain, environment, executors)
+    record_phase(output, 'bootstrap', base + ['--no-run'], build_env, root, identity, toolchain)
+    bootstrapped, bootstrap_logs = run_logged(base + ['--no-run'], output / 'bootstrap', cwd=root, env=build_env)
+    bootstrap_graph, bootstrap_messages = artifact_graph(bootstrapped, roots)
+    verify_allocation_boundary(root, identity, toolchain, environment, executors)
+    record_phase(output, 'build', base + ['--no-run'], build_env, root, identity, toolchain)
     built, build_logs = run_logged(base + ['--no-run'], output / 'build', cwd=root, env=build_env)
     graph, messages = artifact_graph(built, roots)
+    require(bootstrap_graph == graph, 'Cargo build graph changed between bootstrap and inventory')
+    require(executable_identities(bootstrap_messages) == executable_identities(messages),
+            'Cargo executable identity changed between bootstrap and inventory')
+    verify_allocation_boundary(root, identity, toolchain, environment, executors)
     executables = inventory_executables(messages, packages, root)
     script = Path(__file__).resolve()
     runner = [sys.executable, '-B', str(script), 'runner']
@@ -409,13 +440,15 @@ def run_allocation(args):
     write_json(context_path, context)
     shim = output / ('rustdoc.cmd' if os.name == 'nt' else 'rustdoc')
     make_shim(shim, script)
-    env = os.environ.copy()
+    env = environment.copy()
     env['CARGO_LOG'] = FINGERPRINT_LOG
     env['DMD_CI_RUNTIME_CONTEXT'] = str(context_path)
     env['RUSTDOC'] = str(shim)
     config = f'target.{host}.runner={json.dumps(runner)}'
-    record_phase(output, 'execution', base + ['--config', config], env, root, identity, {'rustc': rustc, 'cargo': cargo})
+    verify_allocation_boundary(root, identity, toolchain, environment, executors)
+    record_phase(output, 'execution', base + ['--config', config], env, root, identity, toolchain)
     executed, execution_logs = run_logged(base + ['--config', config], output / 'cargo-execution', cwd=root, env=env)
+    verify_allocation_boundary(root, identity, toolchain, environment, executors)
     runtime_graph, runtime_messages = artifact_graph(executed, roots)
     require(runtime_graph == graph, 'Cargo build graph changed between no-run and execution')
     require(inventory_executables(runtime_messages, packages, root) == executables,
@@ -445,7 +478,7 @@ def run_allocation(args):
     receipt = {'schema': SCHEMA, 'status': 'complete', 'allocation': args.allocation,
                'common': common, 'common_sha256': digest(common), 'executables': executables,
                'records': records, 'normalization_roots': roots,
-               'command_logs': [metadata_logs, build_logs, execution_logs]}
+               'command_logs': [metadata_logs, bootstrap_logs, build_logs, execution_logs]}
     write_json(output / 'complete.json', receipt)
     print(f'Allocation {args.allocation} complete; overall workspace pass awaits all {len(ALLOCATIONS)} allocations.')
 
@@ -521,10 +554,11 @@ def aggregate(args):
                 parsed = parse_result((path.parent / record['logs'][2]['stdout']['path']).read_text(encoding='utf8'),
                                       record['cases'], record['id'].startswith('doc:'))
                 require(parsed == record['outcome'], 'original execution differs from receipt')
-        require(len(receipt['command_logs']) == 3, 'incomplete canonical Cargo logs')
-        for pair in receipt['command_logs']:
+        require(len(receipt['command_logs']) == len(COMMAND_PHASES), 'incomplete canonical Cargo logs')
+        for phase, pair in zip(COMMAND_PHASES, receipt['command_logs']):
             require(set(pair) == {'stdout', 'stderr'}, 'incomplete Cargo log streams')
-            for log in pair.values():
+            for stream, log in pair.items():
+                require(log['path'] == f'{phase}.{stream}.log', 'canonical Cargo log phase order differs')
                 require(Path(log['path']).name == log['path'], 'unsafe Cargo log path')
                 require(file_hash(path.parent / log['path']) == log['sha256'], 'missing/changed Cargo log')
         texts = [(path.parent / pair['stdout']['path']).read_text(encoding='utf8')
