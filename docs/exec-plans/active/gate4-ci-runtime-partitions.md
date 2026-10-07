@@ -236,3 +236,44 @@ transporting generated build assets or assuming equivalent machine paths.
 Repeated frontend runs are recorded as repeated validation, not extra distinct
 test coverage. The final packaging job also uses the unchanged packaging script
 and its own preparation. There is no new packaging shortcut or stale binary reuse.
+
+## Implementation handback — 2026-10-07
+
+The new `scripts/ci_runtime.py` and its focused Python controls implement the
+discovery, Cargo-owned delegates, complete original logs, within-job executable
+hash checks and cross-job disjoint-union validation described above. Aggregation
+reparses original metadata, both Cargo compilation graphs, all/ignored listings
+and executed results; it does not trust a compact success label alone. Discovery
+and actual original cwd/arguments must agree across jobs. A listed-only target
+cannot carry an execution result. No executable bytes are transported between jobs.
+
+Both workflows now separate complete runtime allocations and aggregation while
+retaining the original required final names and existing check commands. Failure,
+cancellation or skipping of a prerequisite makes the final required check fail;
+Windows packaging runs only after its complete runtime aggregate. GitHub's
+existing job limit, default test profile/thread count and workflow concurrency
+remain unchanged. The new artifact download action `actions/download-artifact@v8`
+was checked against its official tag, commit
+`9000827ccba6bdab643e8b6fd33ac0654aef8333`.
+
+Local validation completed: 15 lightweight Python tests pass via
+`python -B -m unittest discover -s scripts/tests -p test_ci_runtime.py -v`.
+They include a real harmless Python subprocess for cwd/env forwarding, complete
+aggregate receipt/log reconstruction, altered/missing original logs, missing or
+duplicate allocations, incorrect source/platform/run identity, false listed-only
+outcomes, unsupported harness/listing semantics, complete doctest groups, zero
+cases, incomplete named results and exact rustdoc instrumentation removal.
+`git diff --check` passes. No local Cargo, npm, Rust/gameplay test, native app or
+database work was performed for this slice. `scripts/verify-fast` and
+`scripts/verify` are UNRUN on this head because that runtime was not allocated.
+
+This is a review candidate, not accepted replacement CI. Independent full source
+review, actual workflow syntax/execution, both real Cargo delegate paths, complete
+two-platform receipts, packaging, and comparison with canonical main4cf are still
+required. In particular, Python fixture tests cannot certify Cargo/rustdoc output
+semantics, Windows command forwarding or hosted completion times. Unsupported
+actual semantics must cause a visible failure and a separately reviewed fix.
+No elapsed-time improvement or full workspace pass is claimed yet. Next action:
+root/fresh reviewer inspect the frozen complete diff and preservation inventory,
+then root may publish for genuine two-platform validation. Keep canonical main4cf
+jobs running and preserve every terminal outcome.
