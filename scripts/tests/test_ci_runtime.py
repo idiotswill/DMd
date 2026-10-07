@@ -245,7 +245,7 @@ class InvocationAndInventory(unittest.TestCase):
 
     def test_custom_harness_is_refused_before_invocation(self):
         with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
+            root = Path(directory).resolve()
             manifest = root / 'Cargo.toml'
             manifest.write_text('[package]\nname="demo"\nversion="0.1.0"\n[[test]]\nname="custom"\nharness=false\n')
             metadata = {'workspace_members': ['demo'], 'packages': [

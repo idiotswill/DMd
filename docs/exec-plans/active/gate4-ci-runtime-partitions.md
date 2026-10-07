@@ -300,3 +300,8 @@ receipts still require inspection; no full-workspace aggregate passed.
 The aggregate also requires one workflow run **and attempt** for all four
 receipts. A partial retry that mixes earlier successful allocations with a newer
 attempt refuses. Use a full workflow rerun when retrying this strict design.
+
+The one-line fixture correction is implemented. All15 lightweight Python controls
+pass locally again (0.739s), and `git diff --check` passes. Runner and workflow
+blobs remain exact5413. No Cargo/npm/native/database execution was performed;
+fresh hosted Windows proof and independent correction review remain pending.
