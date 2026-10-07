@@ -218,3 +218,13 @@ job** before/after its actual execution. Across independent builds, require equa
 source/toolchain/platform/graph/case identities, not assumed reproducible binary
 hashes or Windows PDB paths. Each job retains its own actual artifact hash. No
 source-only artifact manifest substitutes for a runtime receipt.
+
+The same pinned Cargo `src/ops/cargo_test.rs` also injects the configured target
+runner into rustdoc as `--test-runtool` / `--test-runtool-arg`. The rustdoc
+delegate must verify this is **exactly our own** execution instrumentation and
+remove only those fields before listing or executing the real tool. The result
+is the original canonical rustdoc argument vector, including Cargo's actual
+source paths, extern libraries, package `--test-run-directory`, flags and target.
+It must not route dynamically generated doctest programs through the workspace
+executable inventory. Unexpected runtools/arguments fail closed. The injected
+and restored vectors are both recorded, and negative tests cover this restoration.
