@@ -666,3 +666,16 @@ developer-tool check uses no Cargo, compiler, npm, native app or database and
 does not interfere with the sole active969 capture allocation. Source review and
 fresh exact-head CI must follow; the Rust distribution case and all wider project
 verification remain unrun until their actual outcomes arrive.
+
+The two lists now include the approved mass asset. Root's external check executed
+the actual corrected generator against a fresh copy of all eleven exact source
+files and reproduced the complete manifest byte for byte; every repository and
+copied content hash remained unchanged. Receipt
+`tooling/mass-distribution-consumers-root-check-2026-10-07.json`, SHA256
+`1677eab9da4c6675eb7c5bbb17b4520a034eed8c71eab097694368acfc2d8537`,
+also proves the complete prior generator and test files are recovered by the
+bounded literal/comma inverse. Direct formatting and whitespace checks pass.
+This developer-tool result is not a Rust distribution-test or full-suite pass.
+The original protected-inventory statement now has this explicit generator
+exception, and the old distribution test has this justified additive exact-set
+expectation. No original filename, equality assertion or integrity check is lost.
