@@ -188,12 +188,8 @@ pub(in crate::tactical) fn begin_opportunity_attack(
 ) -> Result<(), RulesError> {
     authorize(state, meta, actor)?;
     planning::admit_target(state, actor, target)?;
-    let window = super::super::movement::validate_opportunity_with_read(
-        &execution.read(state)?,
-        actor,
-        target,
-    )?
-    .clone();
+    let live = execution.admit_opportunity(state, meta, actor, target, choice)?;
+    let window = live.window().clone();
     let selected = match choice {
         TacticalMeleeChoice::Weapon(c) => {
             if c.target != target
@@ -361,6 +357,7 @@ pub(in crate::tactical) fn begin_opportunity_attack(
         push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
     }
     super::super::grapple::reads::capture_admission(state, meta, proofs)?;
+    execution.observe_opportunity(state, live)?;
     pump_with_context(state, meta, execution)
 }
 
@@ -413,48 +410,50 @@ pub(super) fn validate_admission(
                     "reaction attack differs from accepted crossing/response/cost",
                 ));
             }
-            let mut before = state.clone();
-            before
-                .rules
-                .as_mut()
-                .unwrap()
-                .timing
-                .as_mut()
-                .unwrap()
-                .reactions_spent
-                .retain(|id| *id != attack.actor);
-            let r = resolution_mut(&mut before)?;
-            r.attack = None;
-            r.pending = None;
-            r.movement.as_mut().unwrap().opportunity = Some(window.as_ref().clone());
-            // Equipping a two-handed grip can change hand assignment but does not
-            // change which held implement triggered. Restore the accepted before-image.
-            if let Some(weapon) = attack.weapon() {
-                let loadout = before
+            if !read.accepted_ground_opportunity(attack)? {
+                let mut before = state.clone();
+                before
                     .rules
                     .as_mut()
-                    .and_then(|r| r.tactical_inventory.as_mut())
-                    .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
-                    .ok_or_else(|| invalid("reaction before-equipment absent"))?;
-                *loadout = weapon.equipment_before.clone();
-            }
-            let retained = read.opportunity_window(attack)?;
-            let hands = match retained.as_ref() {
-                Some(retained) => {
-                    crate::tactical_hands::EffectiveHands::opportunity_window(retained)?
+                    .unwrap()
+                    .timing
+                    .as_mut()
+                    .unwrap()
+                    .reactions_spent
+                    .retain(|id| *id != attack.actor);
+                let r = resolution_mut(&mut before)?;
+                r.attack = None;
+                r.pending = None;
+                r.movement.as_mut().unwrap().opportunity = Some(window.as_ref().clone());
+                // Equipping a two-handed grip can change hand assignment but does not
+                // change which held implement triggered. Restore the accepted before-image.
+                if let Some(weapon) = attack.weapon() {
+                    let loadout = before
+                        .rules
+                        .as_mut()
+                        .and_then(|r| r.tactical_inventory.as_mut())
+                        .and_then(|i| i.loadouts.iter_mut().find(|l| l.actor == attack.actor))
+                        .ok_or_else(|| invalid("reaction before-equipment absent"))?;
+                    *loadout = weapon.equipment_before.clone();
                 }
-                None => crate::tactical_hands::EffectiveHands::current(
+                let retained = read.opportunity_window(attack)?;
+                let hands = match retained.as_ref() {
+                    Some(retained) => {
+                        crate::tactical_hands::EffectiveHands::opportunity_window(retained)?
+                    }
+                    None => crate::tactical_hands::EffectiveHands::current(
+                        &before,
+                        before.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+                        attack.actor,
+                    )?,
+                };
+                super::super::movement::validate_opportunity_with_hands(
                     &before,
-                    before.rules.as_ref().ok_or(RulesError::Uninitialized)?,
                     attack.actor,
-                )?,
-            };
-            super::super::movement::validate_opportunity_with_hands(
-                &before,
-                attack.actor,
-                attack.target,
-                &hands,
-            )?;
+                    attack.target,
+                    &hands,
+                )?;
+            }
             let source = match &attack.source {
                 TacticalAttackSource::Weapon(w) => TacticalMeleeSource::Weapon {
                     item: w.choice.weapon,

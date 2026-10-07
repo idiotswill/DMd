@@ -1302,6 +1302,20 @@ fn grapple_origins<'a>(state: &'a CampaignState, origins: &mut Vec<&'a CommandMe
         }
         origins.extend(context.cuts.iter().map(|cut| &cut.issued_by));
         origins.extend(context.ends.iter().map(|end| &end.caused_by));
+        for receipt in &context.completed_casts {
+            origins.extend([
+                &receipt.record.cast.plan.origin,
+                &receipt.record.cast.last_operation,
+                &receipt.finished_by,
+            ]);
+            origins.extend(
+                receipt
+                    .record
+                    .creature_activation
+                    .as_ref()
+                    .map(|activation| &activation.origin),
+            );
+        }
         for refresh in &context.opportunity_refreshes {
             origins.extend([&refresh.movement_origin, &refresh.window_origin]);
         }

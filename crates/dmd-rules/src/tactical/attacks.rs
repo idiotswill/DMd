@@ -731,6 +731,7 @@ fn complete(
     } else {
         intrinsic::complete(state, attack, outcome, execution)?;
     }
+    execution.complete_opportunity(state, meta)?;
     resolution_mut(state)?.attack = None;
     resolution_mut(state)?.hit_review = None;
     Ok(())
