@@ -470,3 +470,14 @@ source, rather than the entire mutable profile. Wallet, equipment, experience,
 narrative and other unrelated profile changes must not invalidate body/coverage.
 Coverage independently binds completed source allocations. Currency separately
 binds the current wallet value, as already selected above.
+
+### Fixed candidate continuity at an existing equipment join
+
+Early independent review found that the ordinary after-attack equipment wrapper
+clones its candidate unless the Grapple-only `is_owned` predicate is true. That
+clone correctly fails the independent mass proof's identity check in M-only play.
+Add a private `has_fixed_candidate` query solely for this clone/transaction choice;
+it is true for either existing owner proof and grants no feature or permission.
+Keep `is_owned`, `require_guarded` and attack-read admission unchanged. The existing
+CampaignExecution still owns rollback. Add genuine M-only paid attack, completion,
+and both Apply/Decline equipment choices through the current app and cold helper.
