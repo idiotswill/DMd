@@ -248,3 +248,33 @@ Pinned independent evidence (copied with the provenance receipt):
 - `v4-recipient-969627f-independent-review-2026-10-07.md`: `de30aecca64a79718e1206d5d429dc6c9e0a5b4080678b3e2a7f8ec935c3b23f`.
 - `v4-decline-969627f-independent-review-2026-10-07.md`: `bd49222ee830e66b1f792281502c8dd8bef6b6055d7d576d4877bcbe3563d16c`.
 - `v4-decline-969627f-independent-audit-2026-10-07.json`: `b3eb4460ab327a2dbff41051bc871261f97174b0c985d6c4753b25882a74bbad`.
+
+## Actual genericity failure and immutable corpus relocation
+
+PR72 head `9c84a8a86d1f0c3da13894944567e672b29a98c8` fails actual
+`genericity-guard` job112814039814. The complete original log identifies seven
+matches, all the same historical checkpoint pathname inside imported source
+inventories in the three original manifests and four provenance files. There is
+no production gameplay match. The guard recursively scans all files under crates,
+so placing repository-wide historical provenance beneath the app crate triggers
+its existing campaign-term prohibition. Preserve this real failed-head evidence.
+
+Commit this diagnosis before relocating the complete232-file evidence tree from
+`crates/dmd-app/tests/fixtures/physical-facts-v4-969` to
+`tests/fixtures/physical-facts-v4-969`. All191 original corpus files and41
+provenance files must retain literal bytes and Git modes/blob IDs. Update only
+the new fixture's .gitattributes rule and this plan's active destination. Original
+provenance/documents keep their historical path references; do not rewrite their
+hashes or their contents. A separate relocation receipt outside the immutable
+fixture records the one-to-one mapping and all232 identities.
+
+The genericity guard remains byte-exact: no regex change, path exception or
+ignored evidence. Validate resolved absolute source/destination paths remain
+inside this worktree before the move. Run the actual lightweight static guard,
+check the complete old/new Git mapping, all untouched source/test bodies and
+literal fixture attributes, then freeze this bounded correction for independent
+root review/publication. No compiler, Cargo, npm, database or native execution.
+Consumer implementation is paused: its one new untracked loader draft is safely
+preserved outside Git, and no incomplete consumer source enters this correction.
+After review, resume the same complete22-cut plan from the new fixture location;
+relocation waives no original compatibility, privacy, authority or v5 obligation.
