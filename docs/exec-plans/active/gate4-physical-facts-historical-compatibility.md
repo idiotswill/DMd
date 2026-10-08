@@ -517,3 +517,18 @@ family. The local heavy slot is now released by the completed failing runner;
 no replacement run has begun. Direct changed-file formatting and static checks
 are permitted for this correction. Gate4 remains active and native/human evidence
 is still outstanding.
+
+The correction is authored after plan-firstdd7a694d. A pure retained-binding
+checker selects by CommandId in the supplied fixed checkpoint, requires that
+checkpoint's complete literal record and exactly one identical current record,
+and preserves duplicate archival witnesses. The async helper retries every
+selected original response; all eight call sites now supply their actual fixed
+restore root. No current-database row can decide whether its absence is allowed.
+The additive shared regression rejects missing, changed and duplicated live rows
+and a changed checkpoint row, checks the pre-command exclusion, and requires all
+five terminal Inspiration witnesses. It is discovered once in each of the three
+original consumer harnesses; their original scenario test bodies are unchanged.
+Standalone formatting and diff checks pass. Production/corpus, original cut and
+replay loops, all fresh acceptance comparisons and exact retry atomicity remain
+unchanged. Independent review and every runtime check on this correction are
+pending; the original failure is preserved and no new pass is claimed.

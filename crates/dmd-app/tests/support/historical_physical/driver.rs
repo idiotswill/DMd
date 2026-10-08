@@ -209,23 +209,16 @@ impl Fixture {
         compare::exact_export(&before, &self.export().await);
         assert_eq!(rows(&self.pool).await, cells);
     }
-    pub async fn retained(&self, retained: &[TableTransportBinding]) {
+    pub async fn retained(&self, checkpoint: &CampaignExport, retained: &[TableTransportBinding]) {
         let before = self.export().await;
-        for binding in retained {
-            if before
-                .table_transport_bindings
-                .iter()
-                .any(|b| b.meta.id == binding.meta.id)
-            {
-                assert!(before.table_transport_bindings.contains(binding));
-                let request: TableTransportRequest =
-                    serde_json::from_str(&binding.request_json).unwrap();
-                assert_eq!(
-                    serde_json::to_string(&request).unwrap(),
-                    binding.request_json
-                );
-                self.retry(&request, binding.response_json.as_bytes()).await;
-            }
+        for binding in compare::retained_bindings(checkpoint, &before, retained) {
+            let request: TableTransportRequest =
+                serde_json::from_str(&binding.request_json).unwrap();
+            assert_eq!(
+                serde_json::to_string(&request).unwrap(),
+                binding.request_json
+            );
+            self.retry(&request, binding.response_json.as_bytes()).await;
         }
     }
     pub async fn refuse(&self, request: TableTransportRequest) -> String {

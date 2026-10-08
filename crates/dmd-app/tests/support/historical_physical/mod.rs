@@ -65,7 +65,7 @@ pub async fn run(name: &str) {
             let mut f = Box::pin(driver::Fixture::restore(export)).await;
             Box::pin(f.exact_views(views)).await;
             Box::pin(f.exact_image(export)).await;
-            Box::pin(f.retained(&archive.retained)).await;
+            Box::pin(f.retained(export, &archive.retained)).await;
             if phase == "after" {
                 Box::pin(f.retry(&cut.request, &cut.response_bytes)).await;
             }
@@ -73,14 +73,14 @@ pub async fn run(name: &str) {
             Box::pin(f.reopen()).await;
             Box::pin(f.exact_views(views)).await;
             Box::pin(f.exact_image(export)).await;
-            Box::pin(f.retained(&archive.retained)).await;
+            Box::pin(f.retained(export, &archive.retained)).await;
             if phase == "after" {
                 Box::pin(f.retry(&cut.request, &cut.response_bytes)).await;
             }
             let portable = Box::pin(driver::Fixture::restore(&f.export().await)).await;
             Box::pin(portable.exact_views(views)).await;
             Box::pin(portable.exact_image(export)).await;
-            Box::pin(portable.retained(&archive.retained)).await;
+            Box::pin(portable.retained(export, &archive.retained)).await;
             if phase == "after" {
                 Box::pin(portable.retry(&cut.request, &cut.response_bytes)).await;
             }
@@ -116,7 +116,7 @@ pub async fn run(name: &str) {
             &actual_views,
         );
         compare::private_award(&cut.before_views, &cut.after_views, &cut.label, name);
-        Box::pin(branch.retained(&archive.retained)).await;
+        Box::pin(branch.retained(&cut.before, &archive.retained)).await;
         Box::pin(branch.close()).await;
         eprintln!("historical969 {name} cut {index:02}: genuine next acceptance PASS");
     }
