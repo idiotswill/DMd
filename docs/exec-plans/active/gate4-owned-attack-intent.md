@@ -1,10 +1,11 @@
 # Gate 4 owned attack declarations
 
-Status: coherent source-only draft for independent review, 2026-10-08;
-frontend/runtime/native verification UNRUN. Branch `codex/gate4-attack-intent`, no PR yet.
-Root creates this plan, then explicitly transfers the sole branch writer to
-`v5_capture_plan_review_oct8`. Root independently reviews the resulting complete
-diff. The existing receiver remains frozen and its verification retains priority.
+Status: independent source review complete, 2026-10-08; frontend/runtime/native
+verification UNRUN. Branch `codex/gate4-attack-intent`, draft publication allocated.
+Root committed the initial plan before transferring implementation to
+`v5_capture_plan_review_oct8`. After the frozen source handback and complete
+independent review, root again owns the sole branch writer and publication.
+The existing receiver remains frozen and its local verification retains priority.
 
 ## Objective and authority
 
@@ -59,9 +60,10 @@ parent correction explicitly and reconcile its whole history before final freeze
   stale asynchronous view replies must not reactivate old confirmation. Recheck
   the actual option IDs and material choices immediately before submission.
 - Restrict the entry point to the current attending PC's owned active turn with
-  an available ordinary attack. Host and source-controlled creature channels do
-  not silently substitute for that PC. Pending rolls/decisions/uncertain outbox
-  block confirmation through the existing game lock.
+  an available ordinary attack in `EncounterReleaseV1`. Earlier execution flows
+  retain their existing controls. Host and source-controlled creature channels
+  do not silently substitute for that PC. Pending rolls/decisions/uncertain
+  outbox block confirmation through the existing game lock.
 
 Do not change server Text interpretation, TableIntent, existing transport DTOs,
 serialization, source catalogs, execution/capability versions, rules/authority,
@@ -106,8 +108,9 @@ and exercise the actual containing TableApp context in tests. Presentation label
 are untrusted text and must render as text. No arbitrary internal ID from prose
 may enter a command.
 
-Next: sole writer inspects the current context/options path and implements the
-bounded client slice. Source-only work is not acceptance; runtime remains unrun.
+Next: publish the reviewed draft against the receiver branch for fresh hosted
+checks. The local heavy slot stays with the receiver. Source review is not
+acceptance; all runtime/native checks and accepted-parent integration remain due.
 
 ## Source decisions — 2026-10-08
 
@@ -174,3 +177,30 @@ resolve its sole target. The helper now retains an empty target until the player
 selects it, with paired pure and full TableApp tests covering the disabled button,
 no outbox/API before selection and confirmation, and the unchanged exact callback.
 This correction is authored and statically reviewed; its tests remain UNRUN.
+
+## Independent review and draft publication allocation — 2026-10-08
+
+Root read the complete eight-file delta at source checkpoint
+`63c37115a1ebc8ed84d3e0bb9c73abf72a616b7e`, tree
+`032e0e67bd60c65626c85337313d7671d7980893`, including all new source/tests and
+this plan. The bare-target finding above was corrected before that freeze; no
+further actionable source issue was found. This is a static review, not a compile
+or runtime result. Git diff whitespace checks passed.
+
+The source audit at that checkpoint is SHA256
+`a6dfab25a8b45b7dff2a63348ce7a9116065ef4f5ce65d8eae485a977e208692`.
+Root independently compared complete Git trees: all1007 other baseline entries
+are exact, only preexisting TableApp changes, and seven paths are added with no
+removals. Existing tests, backend, immutable source, historical corpus, DTOs and
+CI executors are unchanged. The audit also pins all1015 Git/working entries.
+
+After independent review of this documentation-only update, root may publish a
+draft PR targeting `codex/gate4-family-receiver` to expose the bounded eight-file
+diff and start its own fresh hosted checks. Both workflows accept pull requests
+to that branch and isolate concurrency by PR identity. This does not cancel the
+receiver's checks, grant a local heavy slot, accept the dependency or authorize
+merging into the receiver branch. Parent PR76 must first be accepted into main;
+then reconcile the actual accepted ancestry, retarget this PR to main, inspect
+the complete resulting diff and require its own exact-head verification/native
+evidence before protected merge. Preserve any original failed attempts. All
+broader Gate4 and separate human encounter acceptance obligations remain open.
