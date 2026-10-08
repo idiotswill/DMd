@@ -338,3 +338,58 @@ all ordinary workspace/frontend checks and the explicit prior-target cache reuse
 Early hosted draft CI remains authorized in parallel with that local allocation.
 Do not rerun an obsolete donor merely to seek a green badge or relabel either
 failed run as a receiver pass. All final native and gate requirements remain.
+
+## Verified compilation and a later historical oracle failure — 2026-10-08
+
+Draft PR76 was published on reviewed0bafa76d2d9ffaae5fac9480214de03e3f1df511,
+tree9e0303815790b72f90f2af2dfded939be403ee40. Its fresh Linux checks/MSRV/guards
+and Windows prerequisites passed, including296 frontend cases/37 files and
+25 CI controls. Linux synthetic9f40b3f90e326cb32b24620a944574f4f51a28fe has
+the exactc101/0ba parents and identical tree; Windows uses literal0ba.
+
+Local attempt01 passed check/Clippy, then failed normal test compilation with
+14 missing intrinsic-API errors. Source exports were present; direct artifact
+inspection found an older normal application library from another checkout
+inside the reused target, unlike refreshed check/Clippy metadata. Preserve the
+failed log SHA25620e0c63797777f7973168fe3113108074849eea88c3dcc24017abf6de1625757
+and old target. Root explicitly superseded the earlier cache-reuse allocation
+with independently reviewed fresh-target attempt02, keeping source and ordinary
+commands/settings unchanged. Its complete test compilation passed in18m04s.
+Hosted originals independently establish fresh normal application and grapple
+compilation on both platforms; the cache error did not recur.
+
+Both hosted legacy-missile allocations now pass8/8 cases each. Their complete
+current-source inventories are Linux1,148 and Windows1,150 cases/64 total targets,
+including58 executable targets and six doctests. Other listed targets are not
+passed merely because they compiled. Windows remainder then failed the portable
+negative oracle described in the historical-compatibility plan:37 passes/one
+failure, all seven decline cuts passed, later allocation targets unrun.
+Original failure audit SHA256:
+17860eb0a6ccc5dee508b9f5bf742edbfe6c70b8263df1679bdf075883e8d990.
+This head is not acceptable for merge.
+
+After preserving that independently diagnosed failure, root deliberately
+superseded local attempt02 by stopping only its verified owned test process.
+The unchanged runner recorded stage exit127 and terminal non-success at12:10:31,
+with exact0ba clean before/after source, and released its own heavy lock.
+Four full targets passed35 cases; three missile cases passed before the stop,
+five are unresolved, and remaining Rust/Python/frontend stages are unrun.
+The exit is controlled supersession, not another spontaneous assertion failure.
+Original runner result SHA256:
+33912f0e090b3d8eb1df043d1d82faec3ac0ab0917c472eb01bb238c9e5b8124.
+No source/target cleanup or live campaign-store access occurred.
+
+Root now allocates only the plan-first three portable-error literal corrections
+in the shared historical negative helper, as specified in that plan. All
+production, scenario bodies, corpora and rejection/no-write/recovery behavior
+remain intact. Independently review the complete correction and preservation,
+then freeze for a fresh dedicated-target canonical run and full corrected-head
+frontend/CI/package/native acceptance. Preserve all original runs and their
+actual source attribution; no partial/older result accepts the replacement.
+
+Separately, literal-mainc101 Linux push verification has passed all817 cases/
+56 targets, including its six doctests, with the complete four-allocation union
+and original logs audited (SHA256
+c798e0eeb8b75f5887a74f606e95ad34a4ea09121560d60f84a1782a59ed2126).
+Its Windows table-loop/aggregate/package remain pending at this checkpoint.
+MR53, Offstage63, capacity, native and human Gate4 obligations remain open.

@@ -590,3 +590,85 @@ The later genuine finish path explicitly expects no transfer. Existing complete
 export/typed-cell checks and every original scenario/cut remain unchanged.
 Direct changed-file Rustfmt/check and whitespace checks pass. Compilation and
 runtime on this correction are UNRUN; independent full-delta review comes next.
+
+## Actual0ba portable-negative boundary — plan before correction, 2026-10-08
+
+Root remains the sole writer of codex/gate4-family-receiver/PR76, starting from
+0bafa76d2d9ffaae5fac9480214de03e3f1df511, tree
+9e0303815790b72f90f2af2dfded939be403ee40. Fresh fetch confirms the remote head
+is unchanged and actual main remainsc101c202a9d7302e5ac60d791d3d6c5a4ed30e84.
+The checkout is clean and its1,008 working and Git-blob pins were independently
+verified before releasing the source freeze for this plan.
+
+Windows run37763913546/job113268727948 failed at11:53:42 UTC. Normal workspace
+compilation succeeded; five earlier remainder targets passed36 cases. In
+physical_history_decline the binding control passed, but the original scenario
+failed after all seven genuine cuts and17 prior hostile-copy controls passed.
+The complete allocation is37 passes/one failure, not a full historical pass.
+Its later targets and doctests were unrun. Original job log SHA256:
+61d50ba07ee08426d4b6af2f6ef50330eecaa5e7b086af9da61847120e19e514.
+Original59-file artifact SHA256:
+3ec3a2d14eb12dc1db8d7a64fdeb08bc1a557637ff8cde087a6f41b396bdf622.
+Independent failed-allocation audit SHA256:
+17860eb0a6ccc5dee508b9f5bf742edbfe6c70b8263df1679bdf075883e8d990.
+
+The altered Inspiration owner receipt changes only Admin to System. Production
+correctly refuses it at the portable snapshot boundary. The test expected
+"current state is structurally invalid", but actual public preflight returns
+"campaign export is corrupt: current state: decoded snapshot violates
+campaign-state domain invariants". Its assertion stopped before destination
+creation, so that mutant's later no-write and valid-restore checks did not run.
+
+Root and independent source review establish the same deterministic boundary
+for exactly three literals in support/historical_physical/negatives.rs. Public
+upgraded() calls upgraded_json()/decode_state()/state.validate() before the later
+decode_exported_state() guard. The paired-prefix mutation changes target
+translation from-10 to-9 while holder translation remains-10; erased ends leave
+a retained transport stop without its required end; System violates the transfer's
+Admin-only origin. All three are domain-invalid portable states. The two Ground
+outcomes are source predictions, not observed passes. All twelve Portable call
+sites were inspected; the other nine do not share this shadowed-message defect.
+Independent diagnosis SHA256:
+e40a7016570d30181467593511cf25172f3912b01f699915b8a20d0635cbcb66.
+
+After this plan commit, replace only those three expected literals with
+"current state: decoded snapshot violates campaign-state domain invariants".
+Keep one specific expectation, not an alternative list or generic corruption
+message. Preserve rejected() byte-for-byte: Portable must fail upgrade and return
+Lifecycle; Semantic must pass upgrade and later return RulesContent. Keep every
+mutant body, original recovery anchor, paired current/latest image, all-table
+logical-cell equality, unrelated sentinel, target-absence check, subsequent valid
+restore and duplicate-valid-import no-write check. Preserve every original
+scenario, cut, corpus byte and production guard. No additional runtime case or
+production repair is justified by this expectation-only defect.
+
+The original local0ba attempt02 is deliberately superseded after this concrete
+hosted failure. A reviewed root control stopped only its bound test process;
+the unchanged runner finalized at12:10:31 UTC and released its own lock.
+Formatting/check/Clippy and full test compilation passed. Four complete targets
+passed35 cases; the interrupted missile target has three named passes and five
+unresolved cases. There is no local assertion reproduction or full canonical
+pass, and all later local stages are unrun. Original terminal log SHA256:
+2918af8a9ad12b4e83baf76ba2366044f61dd814272683d48060539e776e2868.
+Runner result SHA256:
+33912f0e090b3d8eb1df043d1d82faec3ac0ab0917c472eb01bb238c9e5b8124.
+Independent controlled-supersession audit SHA256:
+80ebedaf429ed948a79b73c5e6733ae17bc55c8f37f4185e8e9cd35d62bc51c7.
+Source/executor/configuration and preserved-evidence pins remain exact; both old
+local targets, all prior failures and the controlled-stop evidence remain intact.
+
+Root allocates direct changed-file formatting and full inverse/preservation
+review for this three-literal fix. Then freeze the corrected head and prepare a
+new independently reviewed canonical runner/manifest with a fresh dedicated
+target. Retain GNU1.98.1, jobs1/incremental0, ordinary profiles/default stack and
+test threads, all existing commands and the full1,147-case/58-executable plus
+six-doctest local inventory. The complete three historical harnesses remain
+unfiltered within canonical verification; all25 CI controls and296/37 frontend
+tests/check/build also remain required. No old-head pass transfers.
+
+Continue the existing hosted jobs for their actual terminal evidence while
+preparing this correction. Publish the reviewed frozen replacement and require
+fresh complete Linux/MSVC unions, MSRV/lint/guards and ordinary packaging.
+Combined native, protected expected-head merge, literal-main and human Gate4
+requirements remain unchanged. No family or Gate4 acceptance, or Gate5 work,
+is authorized by this correction.
