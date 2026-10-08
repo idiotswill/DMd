@@ -463,3 +463,57 @@ without a terminal result during stage07; its first six completed stages remain
 source-attributed, stage07 is UNKNOWN and08-21 unstarted. Preserve its evidence
 and stale lock before assigning the next serial local run. Do not infer a local
 pass, full compatibility or Gate4 acceptance from this source correction.
+
+## Actual52ae fresh-binding comparison — plan before correction, 2026-10-08
+
+Root owns a separate correction branch `codex/gate4-historical-binding-checks`
+in reused clean `gate4-spatial`, starting exact52ae4bf36ce9378eb4ddc48b3bcef8477d2e4580.
+The battlefield branch remains atce8a743; original52ae checkout/PR72 and its hosted
+Windows run remain frozen. Current fetched main remains4cf815. This is a bounded
+test-oracle correction to receive normally into the combined family after review.
+
+The complete local canonical run exited101 at09:12:41 UTC. Six preceding harnesses
+passed44 tests; historical decline failed at cut01, driver.rs220. Original log
+SHA25691b66317d6e4296a850b7238fdd7fef96a65149739d448f58ae5d111262bd5ea.
+Linux run37740397596/job113189528581 independently failed the same assertion;
+log SHA2561b61b5e3ce25fa286593079fcc448632946c4144cb2733699dbb1ce207a5fba6.
+Canonical formatting, checking and strict Clippy had passed; later Rust harnesses
+and local frontend stages remain unrun. No complete compatibility pass is claimed.
+
+Both cut01 archived before/after restoration, cold/portable recovery and original
+retry checks passed before the fresh-next-command branch failed. That branch's
+canonical event/state, literal old prefix, typed projections and its own exact
+new-response retry/cold/portable checks also passed. The preserved dead database
+has SHA25638c400a3fe78f2d7aa62839a466c66f7ebd59d73c193a7d8afbcaf328c9339b4.
+Read-only inspection proves all17 pre-existing bindings literal and exactly one
+new binding: only its accepted response revision differs from the original
+capture, as the existing fresh-acceptance contract permits. Request and every
+other binding field are identical. Root and independent source review agree:
+the final retained helper confuses this newly accepted command with an already
+retained historical binding solely because they share the intended CommandId.
+
+Before source changes, select this correction. Derive required historical
+bindings from the fixed expected checkpoint supplied by the test, never by
+filtering what happens to remain in the live database. Validate every selected
+binding against that immutable checkpoint. The retry helper must require every
+selected binding, exact request/response bytes and unchanged rows; remove its
+current missing-row skip. Literal before/after endpoints use their respective
+archived exports. Fresh-next-command branches use the original before checkpoint,
+while the just-accepted response retains its existing exact branch-specific
+retry checks. Old pending continuation uses its actual archived starting cut;
+terminal/mass/new-play checkpoints require all2/5/5 original retained records.
+
+Keep every cut, loop, archive byte, existing case body, producer identity,
+production source, canonical/CI command and fresh comparison rule unchanged.
+The bounded shared helper/call-site edits are the explicit preservation exception.
+Add a small source-level regression proving missing or substituted required
+bindings fail; do not normalize stored responses, rewrite snapshots, skip cuts,
+ignore assertions, or accept arbitrary identity differences. Review the complete
+delta and baseline preservation independently before runtime.
+
+After review, root schedules all three original historical consumer harnesses
+unfiltered, then canonical/full frontend/exact-head verification for the receiving
+family. The local heavy slot is now released by the completed failing runner;
+no replacement run has begun. Direct changed-file formatting and static checks
+are permitted for this correction. Gate4 remains active and native/human evidence
+is still outstanding.
