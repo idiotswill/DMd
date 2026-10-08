@@ -33,6 +33,7 @@ fn main() {
             host::desktop_submit_table,
             host::desktop_roll_options,
             host::desktop_roll_details,
+            host::desktop_intrinsic_attack_options,
             host::desktop_creature_options,
             host::desktop_source_control_options,
         ])

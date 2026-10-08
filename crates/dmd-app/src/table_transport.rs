@@ -143,6 +143,41 @@ pub struct TableCreatureOptionsRequest {
     pub revision: ProjectionRevision,
 }
 
+/// Advisory current source choices do not alter retained presentation bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub actor: EntityId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackFeature {
+    pub feature_id: String,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackTarget {
+    pub actor: EntityId,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackOptions {
+    pub version: u32,
+    pub revision: ProjectionRevision,
+    pub actor: EntityId,
+    pub features: Vec<TableIntrinsicAttackFeature>,
+    pub targets: Vec<TableIntrinsicAttackTarget>,
+}
+
 /// Read-only live roll affordances are separate from immutable presentation v1.
 /// They are tied to the owned opaque request; accepting them still rederives rules.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

@@ -96,6 +96,9 @@ mod physical_opportunity;
 #[path = "support/table_grapple_roll_details.rs"]
 mod roll_details;
 
+#[path = "support/table_intrinsic_attack_options.rs"]
+mod intrinsic_attack_options;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,

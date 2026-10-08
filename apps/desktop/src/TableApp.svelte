@@ -13,6 +13,8 @@
   import CreatureForm from './components/CreatureForm.svelte';
   import SourceControlForm from './components/SourceControlForm.svelte';
   import EncounterPanel from './components/EncounterPanel.svelte';
+  import IntrinsicAttackPanel from './components/IntrinsicAttackPanel.svelte';
+  import { intrinsicAttackContext } from './intrinsic-attack-context';
   import GrapplePanel from './components/GrapplePanel.svelte';
   import { rawDice, channelPlayer, type LocalChannel, type SourceControlOptions, type SourceAdoption, type CharacterInput } from './table-api';
   import type { SavageAttackerRoll } from './tactical-api';
@@ -40,6 +42,7 @@
   const host = $derived(!playerId);
   const locked = $derived(busy || retry !== null || unreadableRetry);
   const gameLocked = $derived(locked || !!view?.inspiration_transfer);
+  const intrinsicContext = $derived(intrinsicAttackContext(view, playerId, sourceActorId));
   const binding = $derived(view?.active_session?.participants.find(p => p.player_id === playerId && p.attendance === 'Present' && p.character_id));
   const currentCharacter = $derived(view?.characters.find(c => c.character_id === binding?.character_id));
   const sourceActors = $derived(view?.source_control?.actors.filter(actor=>typeof actor.controller==='object'&&actor.controller.Player===playerId) ?? []);
@@ -291,6 +294,7 @@
         {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} displayReason={rollDisplayReason} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && sourceActor}<p>Controlling {sourceActor.name}. Use the encounter controls and physical dice requests for this creature.</p>{:else if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
+      {#if intrinsicContext}{#key intrinsicContext.key}<IntrinsicAttackPanel request={intrinsicContext.request} disabled={gameLocked} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={gameLocked||!!view.pending||!view.active_session} administrativeDisabled={gameLocked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
       <GrapplePanel {view} {host} actor={selectedActor??null} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
       <InspirationTransfer {view} {host} disabled={locked} canChoose={!sourceActor && currentCharacter?.character_id===view.inspiration_transfer?.character_id} onChoice={handle=>act({InspirationTransfer:{handle}})} />

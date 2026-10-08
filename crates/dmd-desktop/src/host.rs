@@ -282,6 +282,17 @@ pub async fn desktop_roll_details(
     Ok(host.runtime().await?.table_roll_details(request).await?)
 }
 #[tauri::command]
+pub async fn desktop_intrinsic_attack_options(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableIntrinsicAttackRequest,
+) -> Result<dmd_app::TableIntrinsicAttackOptions, DesktopError> {
+    Ok(host
+        .runtime()
+        .await?
+        .table_intrinsic_attack_options(request)
+        .await?)
+}
+#[tauri::command]
 pub async fn desktop_source_control_options(
     host: State<'_, DesktopHost>,
     request: dmd_app::TableCreatureOptionsRequest,

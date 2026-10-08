@@ -2,6 +2,14 @@ import { invoke } from '@tauri-apps/api/core';
 import type { BattlefieldSetup, TacticalAction, TacticalView } from './tactical-api';
 
 export type Id = string;
+export interface IntrinsicAttackRequest {
+  version: 1; campaign_id: Id; channel: LocalChannel; revision: Id; actor: Id;
+}
+export interface IntrinsicAttackOptions {
+  version: 1; revision: Id; actor: Id;
+  features: { feature_id: string; label: string }[];
+  targets: { actor: Id; label: string }[];
+}
 export const ABILITIES = ['Strength', 'Dexterity', 'Constitution', 'Intelligence', 'Wisdom', 'Charisma'] as const;
 export type Ability = typeof ABILITIES[number];
 export const SKILLS = ['Acrobatics', 'AnimalHandling', 'Arcana', 'Athletics', 'Deception', 'History', 'Insight', 'Intimidation', 'Investigation', 'Medicine', 'Nature', 'Perception', 'Performance', 'Persuasion', 'Religion', 'SleightOfHand', 'Stealth', 'Survival'] as const;
@@ -217,6 +225,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
 
 // The desktop adapter supplies trusted channels independently of natural-language text.
 export const tableApi = {
+  intrinsicAttackOptions: (request: IntrinsicAttackRequest) => invoke<IntrinsicAttackOptions>('desktop_intrinsic_attack_options', { request }),
   sourceControlOptions: (request: { campaign_id: Id; channel: LocalChannel; revision: Id }) => invoke<SourceControlOptions>('desktop_source_control_options', { request }),
   creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),
   rollOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id; roll_id: Id }) => invoke<{ savage_attacker: { weapon_dice: number; heroic_inspiration: boolean } | null; heroic_inspiration?: boolean }>('desktop_roll_options', { request }),
