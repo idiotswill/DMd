@@ -393,3 +393,23 @@ and original logs audited (SHA256
 c798e0eeb8b75f5887a74f606e95ad34a4ea09121560d60f84a1782a59ed2126).
 Its Windows table-loop/aggregate/package remain pending at this checkpoint.
 MR53, Offstage63, capacity, native and human Gate4 obligations remain open.
+
+## Genuine new Inspiration after Finished — source-only correction
+
+The later b62 Linux remainder failed after all seven decline cuts and24 hostile
+checks, during genuine new-version continuation. The preserved terminal error
+does not name its request; source tracing identifies the new excess award after
+release being rejected by Finished history's strict dependency scan. The active
+[Finished Inspiration plan](gate4-finished-inspiration.md) records the exact
+failure evidence, deliberate local supersession and plan-first821692dc repair.
+
+The source correction now separates Finished readability from strict transition
+admission and adds three genuine application cases under
+`inspiration::transfer::finished::`. The original corpus, producer order and
+prior test bodies remain intact; shared historical acceptance panics now name
+the actual failing request. Direct touched-file formatting and whitespace checks
+pass. Compilation, focused/full runtime, frontend, fresh CI/package and native
+acceptance on this correction are UNRUN. Root independent full-delta review
+precedes a fresh dedicated-target focused-plus-full allocation. No old partial
+pass accepts this source. Verified-package native must include the new Finished
+award/choice interval alongside all existing obligations; Gate4 remains open.

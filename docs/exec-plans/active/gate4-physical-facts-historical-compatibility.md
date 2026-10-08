@@ -679,3 +679,24 @@ invariant message; no alternative was added. Their mutation bodies and the
 shared rejection/no-write/valid-restore helper are unchanged. Direct changed-file
 Rustfmt/check and whitespace checks pass. Corrected-head runtime is UNRUN;
 independent complete-delta/inverse preservation review precedes the next run.
+
+## Later b62 continuation failure: Finished award composition
+
+The corrected portable negatives passed on the b62 Linux remainder, as did all
+seven original decline cuts and24 hostile copies. A later continuation request
+then failed in the shared acceptance helper. The exact terminal attribution and
+source diagnosis are retained in the plan-first
+[Finished Inspiration correction](gate4-finished-inspiration.md). The genuine
+new-version producer awards excess Inspiration after Finished/mass and before
+replacement preparation. That order is preserved: moving the award would hide
+a session-wide product defect. Ground/Recipient continuation is still unverified.
+
+Only the shared driver's two acceptance unwraps now report their actual request
+and error on failure. Every historical scenario, cut, comparison, refusal,
+original checkpoint and corpus byte remains unchanged. The allocated production
+fix and three additive application controls are outside the producer. Direct
+changed-file format/whitespace checks pass; all corrected-head runtime remains
+UNRUN. A focused diagnostic stage is additive; complete unfiltered canonical
+verification must still execute all three historical harnesses and every prior
+case on the same frozen source. Preserve all earlier failures and interrupted
+runs. This checkpoint does not accept the family, native journey or Gate4.

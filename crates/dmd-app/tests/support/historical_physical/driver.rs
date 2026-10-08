@@ -289,10 +289,12 @@ impl Fixture {
         Box::pin(self.reopen()).await;
         let actual = Box::pin(self.runtime.submit_presented_table(request.clone()))
             .await
-            .unwrap();
+            .unwrap_or_else(|error| {
+                panic!("historical acceptance failed for {request:?}: {error}")
+            });
         let other = Box::pin(mirror.runtime.submit_presented_table(request.clone()))
             .await
-            .unwrap();
+            .unwrap_or_else(|error| panic!("portable acceptance failed for {request:?}: {error}"));
         let after = self.export().await;
         let mirrored = mirror.export().await;
         assert_eq!(

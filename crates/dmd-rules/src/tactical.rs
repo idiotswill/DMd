@@ -42,7 +42,7 @@ pub use initiative::preview_initiative_circumstances;
 pub use reaction_order::order_reaction_respondents;
 pub use release::{
     EncounterReleaseReadiness, MAX_RELEASE_DEPENDENCIES, encounter_release_preflight,
-    require_finished_encounter, retained_encounter_dependencies,
+    finished_encounter_dependencies, require_finished_encounter, retained_encounter_dependencies,
 };
 use serde::{Deserialize, Serialize};
 pub use validation::{validate_tactical_pending, validate_tactical_state};

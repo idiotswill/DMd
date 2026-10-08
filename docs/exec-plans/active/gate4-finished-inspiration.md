@@ -1,8 +1,10 @@
 # Gate 4 — New Host Inspiration after authenticated encounter release
 
-Status: plan before implementation, 2026-10-08. PR76 remains a draft and Gate4
-remains active. Root owns `codex/gate4-family-receiver`; implementation may be
-delegated to exactly one named writer, followed by independent root review.
+Status: source correction authored after plan-first821692dc, 2026-10-08;
+compilation and runtime UNRUN. PR76 remains a draft and Gate4 remains active.
+Root delegated sole source writing on `codex/gate4-family-receiver` to
+`v5_capture_plan_review_oct8`; this source handback returns writing to root for
+independent complete-delta review and later verification allocation.
 Starting head is b62d8e719b4998a401745c41cc7cd9ee3fa681b5, tree
 994183da202488546990114e3ff0019deb52c2c5. Fresh origin/main is
 c101c202a9d7302e5ac60d791d3d6c5a4ed30e84. No Gate5 work is allocated.
@@ -120,8 +122,64 @@ capacity, MR or Offstage change is allocated.
 
 ## Next action
 
-Implement the bounded production/read-path correction and genuine regression,
-independently review all changes and preservation, then verify the actual frozen
-head. The historical route still must complete; this diagnosis accepts neither
-the family nor Gate4. PR77 retains its own unaccepted head and must later receive
-the accepted parent through normal ancestry reconciliation.
+Independently review the frozen production/read-path correction, all three new
+application cases and preservation, then verify the actual head. The historical
+route still must complete; source authoring accepts neither the family nor Gate4.
+PR77 retains its own unaccepted head and must later receive the accepted parent
+through normal ancestry reconciliation.
+
+## Authored correction and bounded regression checkpoint
+
+The private dependency scan accepts an optional single Host-transfer actor;
+strict release and replacement-initiative calls always pass None. Only Finished
+history validation and the named `finished_encounter_dependencies` read query
+derive an exception after existing companion validation and a strict origin
+sequence comparison against the latest completion. The query validates Finished
+version/history before reading. `require_finished_encounter` explicitly performs
+the original strict scan after history validation. Host presentation uses the
+new read query; no durable DTO, codec, schema, execution version, ownership or
+replay rule changes. Original command history still authenticates provenance.
+
+Three additive genuine application cases use the existing public fixture and
+the unique `inspiration::transfer::finished::` prefix in `table_grapple_public`:
+
+- `post_release_decline_and_gift_preserve_recovery_privacy_and_resources`
+- `pending_finished_choice_keeps_transition_and_owner_admission_strict`
+- `hostile_finished_choices_cannot_borrow_release_or_other_pending_work`
+
+The first creates real release during an attending session, then awards and
+declines/gifts through actual opaque requests. Existing cold acceptance performs
+file reopen, independent restored acceptance, exact retries, changed-body
+refusal and replay. Additional post-acceptance portable checks retain all three
+audiences and exact retry responses without row writes. Whole-state comparison
+permits only the two award rulings, sequence and intended Inspiration resources;
+the other player's full projection remains exact through pending and decline.
+
+The second first proves that an Active aftermath choice still prevents actual
+release, settles it, releases, then creates a new Finished choice. It refuses
+setup/session/creation and wrong-owner/foreign/raw attempts with all-table row
+checks. Real owner settlement admits session closure, actual character creation,
+a new session and replacement setup using a genuine prior setup payload with
+fresh identities. No accepted setup is produced by mutating campaign state.
+
+The third checks missing companion, origin at/before release, second actor flag,
+retired raw request, unrelated permission, foreign owner and invented command
+identity on hostile copies only. Every rejected portable copy leaves all rows
+of an unrelated destination unchanged, followed by successful original restore
+and replay. The invented identity intentionally demonstrates that structural
+read validation is not journal authentication. Every old test body and corpus
+is preserved; the sole historical helper change adds request/error text to the
+two acceptance panics, without changing the actual producer or refusal order.
+
+Direct Rustfmt (edition2024, skip_children=true, touched Rust files only) and
+`git diff --check` pass. This is source-only validation: no Cargo/compiler,
+application/frontend test, build, native run or database operation was executed.
+The additive focused run must discover these exact three cases; it never replaces
+the unchanged unfiltered canonical and frontend/CI/package acceptance.
+
+The combined native evidence remains UNRUN. On the verified receiver package,
+also exercise the genuine Finished interval: Host excess award, pending cold
+restart, a blocked next boundary, and actual owner decline/gift before continued
+play. This adds no Cartesian matrix and does not replace existing native or
+separate human Gate4 requirements. No native execution is allocated by this
+source checkpoint.

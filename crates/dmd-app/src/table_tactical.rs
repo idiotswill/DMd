@@ -220,7 +220,7 @@ pub(crate) fn view_read(
                 Some(crate::TableEncounterReleaseView {
                     may_finish: false,
                     blocker: None,
-                    required_actors: retained_encounter_dependencies(state)
+                    required_actors: finished_encounter_dependencies(state)
                         .map_err(|error| error.to_string())?,
                 })
             } else {
