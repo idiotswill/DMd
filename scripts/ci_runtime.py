@@ -567,9 +567,12 @@ def aggregate(args):
         metadata = json.loads(texts[0])
         require(normalize(metadata, roots) == receipt['common']['metadata'],
                 'original Cargo metadata differs')
-        for original in texts[1:]:
-            graph, messages = artifact_graph(original, roots)
+        compiler_outputs = [artifact_graph(original, roots) for original in texts[1:]]
+        inventory_identities = executable_identities(normalize(compiler_outputs[1][1], roots))
+        for graph, messages in compiler_outputs:
             require(graph == receipt['common']['graph'], 'original Cargo graph differs')
+            require(executable_identities(normalize(messages, roots)) == inventory_identities,
+                    'original Cargo executable identity differs between phases')
             require(discovered_assignments(metadata, messages) ==
                     {x['id']: x['assigned'] for x in receipt['common']['universe']},
                     'runtime universe differs from original Cargo discovery')

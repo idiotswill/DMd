@@ -541,5 +541,89 @@ class FixedBootstrap(unittest.TestCase):
                 ci.aggregate(args)
 
 
+    def test_aggregate_binds_each_target_to_its_executable_in_every_phase(self):
+        data, source = receipts()
+        targets = [{'name': name, 'kind': ['bin'], 'doctest': False,
+                    'src_path': f'/original/src/{name}.rs'} for name in ('alpha', 'beta')]
+        metadata = {'workspace_members': ['fixture'], 'packages': [
+            {'id': 'fixture', 'name': 'fixture', 'targets': targets}]}
+        messages = [{'reason': 'compiler-artifact', 'package_id': 'fixture', 'target': target,
+                     'profile': {'test': True}, 'features': [],
+                     'filenames': [f'/original/target/debug/{target["name"]}'],
+                     'executable': f'/original/target/debug/{target["name"]}'} for target in targets]
+
+        def compiler_text(artifacts):
+            return '\n'.join(json.dumps(row) for row in [
+                *artifacts, {'reason': 'build-finished', 'success': True}])
+
+        compiled = compiler_text(messages)
+        graph, _ = ci.artifact_graph(compiled, {})
+        universe = [{'id': f'test:fixture:bin:{target["name"]}', 'cases': [target['name']],
+                     'assigned': 'remainder', 'original_args': [], 'cwd': '/original',
+                     'cargo_manifest_dir': '/original'} for target in targets]
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+            for receipt in data:
+                output = directory / receipt['allocation']
+                output.mkdir()
+
+                def log_pair(name, stdout):
+                    pair = {}
+                    for stream, text in [('stdout', stdout), ('stderr', '')]:
+                        path = output / f'{name}.{stream}.log'
+                        path.write_text(text, encoding='utf8')
+                        pair[stream] = {'path': path.name, 'sha256': ci.file_hash(path)}
+                    return pair
+
+                receipt['common'].update(metadata=metadata, graph=graph, universe=universe,
+                                         absent_allocations=list(ci.ALLOCATIONS[:-1]))
+                receipt['common_sha256'] = ci.digest(receipt['common'])
+                receipt['executables'] = [{'executable': message['executable']} for message in messages]
+                receipt['command_logs'] = [log_pair('metadata', json.dumps(metadata)),
+                                           *[log_pair(phase, compiled) for phase in ci.COMMAND_PHASES[1:]]]
+                receipt['records'] = []
+                for item in universe:
+                    record = copy.deepcopy(item)
+                    prefix = ci.digest(item['id'])
+                    record['logs'] = [log_pair(prefix + '-list', item['cases'][0] + ': test\n1 test, 0 benchmarks\n'),
+                                      log_pair(prefix + '-ignored', '0 tests, 0 benchmarks\n')]
+                    record['state'] = 'listed-only'
+                    if receipt['allocation'] == 'remainder':
+                        record['state'] = 'executed'
+                        record['logs'].append(log_pair(prefix + '-run', complete(item['cases'][0])))
+                        record['outcome'] = {'passed': 1, 'summaries': 1}
+                    receipt['records'].append(record)
+                ci.write_json(output / 'complete.json', receipt)
+
+            args = SimpleNamespace(directory=str(directory), platform='linux')
+            with patch.object(ci, 'source_identity', return_value=source), patch.dict(
+                    os.environ, {'GITHUB_RUN_ID': '10', 'GITHUB_RUN_ATTEMPT': '1'}):
+                ci.aggregate(args)
+                path = directory / 'remainder' / 'complete.json'
+                original = path.read_bytes()
+                swapped = copy.deepcopy(messages)
+                for field in ('executable', 'filenames'):
+                    swapped[0][field], swapped[1][field] = swapped[1][field], swapped[0][field]
+                altered = compiler_text(swapped)
+                self.assertEqual(ci.artifact_graph(altered, {})[0], graph)
+                self.assertEqual(sorted(row['executable'] for row in swapped),
+                                 sorted(row['executable'] for row in messages))
+                self.assertNotEqual(ci.executable_identities(swapped), ci.executable_identities(messages))
+                for index, phase in enumerate(ci.COMMAND_PHASES[1:], start=1):
+                    with self.subTest(phase=phase):
+                        receipt = json.loads(original)
+                        log = path.parent / f'{phase}.stdout.log'
+                        original_log = log.read_bytes()
+                        log.write_text(altered, encoding='utf8')
+                        receipt['command_logs'][index]['stdout']['sha256'] = ci.file_hash(log)
+                        path.write_text(json.dumps(receipt), encoding='utf8')
+                        try:
+                            with self.assertRaisesRegex(ValueError, 'original Cargo executable identity differs'):
+                                ci.aggregate(args)
+                        finally:
+                            path.write_bytes(original)
+                            log.write_bytes(original_log)
+
+
 if __name__ == '__main__':
     unittest.main()

@@ -565,3 +565,16 @@ writer. Save full control logs and source preservation audit, freeze the complet
 cumulative change, and return it to root for independent review. The hosted
 two-platform allocations, aggregate, canonical reconciliation and Windows
 packaging remain required and unproved by this correction.
+
+The aggregate now compares complete normalized executable identity tuples from
+all three original compiler outputs against the inventory phase before accepting
+the existing assignment and path checks. The two-target regression accepted the
+original fixture and failed against the uncorrected runner for independently
+swapped bootstrap, inventory and execution associations, despite refreshed hashes.
+With the correction all25 lightweight Python controls pass locally (1.491s),
+including all24 unchanged prior control bodies. Complete meaningful red/green
+stdout and stderr are saved as `tooling/ci-oct8/bootstrap-association-red-isolated.*`
+and `bootstrap-association-green.*`; these are simulated-compiler control logs.
+The preserved original/forged external fixture will also be rechecked without
+recreating or overwriting its evidence. Source audit and root's independent
+review precede publication. No hosted, full-workspace or gate pass is claimed.
