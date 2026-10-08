@@ -14,13 +14,17 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  windows:
-    name: Windows ${{ matrix.rust }}
+  checks:
+    name: ${{ matrix.name }}
     runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
-        rust: ['1.88.0', stable]
+        include:
+          - rust: '1.88.0'
+            name: Windows 1.88.0
+          - rust: stable
+            name: Windows stable checks
     steps:
       - uses: actions/checkout@v7
         with:
@@ -43,6 +47,13 @@ jobs:
       - name: Frontend checks, tests, static build and application icons
         shell: pwsh
         run: ./scripts/desktop-prepare.ps1
+      - uses: actions/setup-python@v7
+        if: matrix.rust == 'stable'
+        with:
+          python-version: '3.11'
+      - name: Verify runtime accounting and refusal controls
+        if: matrix.rust == 'stable'
+        run: python -B -m unittest discover -s scripts/tests -p test_ci_runtime.py -v
       - name: Check Windows workspace including the desktop at the declared MSRV
         shell: pwsh
         run: cargo check --locked --workspace --all-targets --target x86_64-pc-windows-msvc
@@ -54,16 +65,108 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           cargo clippy --locked -p dmd-desktop --all-targets --target x86_64-pc-windows-msvc -- -D warnings
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Run workspace regressions on native Windows
-        if: matrix.rust == 'stable'
+
+  runtime:
+    name: Windows runtime ${{ matrix.allocation }}
+    needs: checks
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        allocation: [table-loop, legacy-missile, grapple-public, remainder]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-stable
+          cache-workspace-crates: false
+          cache-on-failure: true
+      - name: Prepare fresh frontend, icons and licenses
         shell: pwsh
-        run: cargo test --locked --workspace --target x86_64-pc-windows-msvc
+        run: ./scripts/desktop-prepare.ps1
+      - name: Compile canonical workspace and execute assigned complete harnesses
+        run: python -B scripts/ci_runtime.py run --platform windows --allocation ${{ matrix.allocation }}
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: windows-runtime-${{ matrix.allocation }}
+          path: target/ci-runtime/${{ matrix.allocation }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  runtime-complete:
+    name: Windows complete workspace execution
+    needs: [checks, runtime]
+    if: always()
+    runs-on: windows-latest
+    steps:
+      - name: Require all validation and runtime allocations
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          RUNTIME_RESULT: ${{ needs.runtime.result }}
+        shell: pwsh
+        run: |
+          if ($env:CHECKS_RESULT -ne 'success' -or $env:RUNTIME_RESULT -ne 'success') { exit 1 }
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: windows-runtime-*
+          path: target/ci-runtime-receipts/
+      - name: Prove complete disjoint workspace execution from original logs
+        run: python -B scripts/ci_runtime.py aggregate --platform windows --directory target/ci-runtime-receipts
+
+  windows:
+    name: Windows stable
+    needs: [checks, runtime-complete]
+    if: always()
+    runs-on: windows-latest
+    steps:
+      - name: Require checks and complete workspace execution before packaging
+        env:
+          CHECKS_RESULT: ${{ needs.checks.result }}
+          RUNTIME_RESULT: ${{ needs.runtime-complete.result }}
+        shell: pwsh
+        run: |
+          if ($env:CHECKS_RESULT -ne 'success' -or $env:RUNTIME_RESULT -ne 'success') { exit 1 }
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24.19.0'
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: desktop-stable
+          cache-workspace-crates: false
+          cache-on-failure: true
       - name: Build and package fresh release application and offline installer
-        if: matrix.rust == 'stable'
         shell: pwsh
         run: ./scripts/desktop-package.ps1
       - uses: actions/upload-artifact@v7
-        if: matrix.rust == 'stable'
         with:
           name: dmd-windows-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/desktop/
