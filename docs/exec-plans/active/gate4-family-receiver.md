@@ -130,6 +130,32 @@ later Magic Resistance must preserve all current source revisions and accepted
 CI. Neither may silently replace the family. Human physical dice and complete
 multi-round Gate4 acceptance remain outstanding; controlled QA is not human play.
 
-Next: commit this plan, receive71 and59 preserving both plan histories, receive
-reviewedce8, audit the exact staging delta, and await intrinsic source handback
-and the unchanged verification prerequisites. Gate4 remains active; no Gate5.
+## Initial whole-history staging — 2026-10-08
+
+Plan-first commit70945d67d04fb44cb9c38f408f18e6648298b69f preceded all receipts.
+Normal mergea0734692d53837d4a0339160c5d79c6d78420ba9 receives whole71 and
+adds only its25-line plan receipt. Normal merge
+6ffa31eb176d921635292764fdf2985fe1c20d94 receives whole59. Its only conflict was
+the condition-plan header: both complete blocks remain, giving a36-line additive
+documentation delta. Independent review of the exact merge confirms no source,
+test, content or workflow change. All newer receiving condition source remains.
+
+Normal merge2f80aa8f79678d6f01a411d5a6cf0bea82cdd32a then receives wholece8.
+Its four paths exactly match the reviewed battlefield donor. Static tree audit
+against52ae finds998 tracked entries: four changed originals (two battlefield
+components and two historical plans), three new files and no deleted paths.
+The other991 original blobs are identical, including all Rust, original frontend
+tests and physical-history corpus. All three whole donor heads are ancestors.
+External audit `tooling/ci-oct8/family-receiver-2f80-staging-audit.json` has SHA256
+797f02e4256f0228c9f9a6a403ec2427204d63487bacc2d37330ec09c185ec2c.
+These are source/history preservation checks; all receiver runtime remains UNRUN.
+
+Intrinsic author returned frozen4b4e29bc0b0fce71bb85ab2ec8d2418ebc276349,
+treede6bbab2f18d4f79d8a3cf612d8f109df2bd1468. Root's complete independent
+review is pending; that branch has not been received. Original52ae verification
+and73 Windows completion remain running and retain their original identities.
+
+Next: independently review this staging and the complete intrinsic source,
+resolve actual findings, then receive the whole reviewed intrinsic history.
+The unchanged verification, accepted-main73 and native prerequisites still apply.
+Gate4 remains active; no Gate5.
