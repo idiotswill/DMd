@@ -1,7 +1,7 @@
 # Gate 4 owned attack declarations
 
-Status: plan before implementation, 2026-10-08. Source-only development allocated;
-runtime and native acceptance unrun. Branch `codex/gate4-attack-intent`, no PR yet.
+Status: coherent source-only draft for independent review, 2026-10-08;
+frontend/runtime/native verification UNRUN. Branch `codex/gate4-attack-intent`, no PR yet.
 Root creates this plan, then explicitly transfers the sole branch writer to
 `v5_capture_plan_review_oct8`. Root independently reviews the resulting complete
 diff. The existing receiver remains frozen and its verification retains priority.
@@ -108,3 +108,69 @@ may enter a command.
 
 Next: sole writer inspects the current context/options path and implements the
 bounded client slice. Source-only work is not acceptance; runtime remains unrun.
+
+## Source decisions — 2026-10-08
+
+The source-only implementation uses a separate desktop declaration affordance;
+the existing Talk at the table and server Text/replay interpretation stay exact.
+Interpretation enumerates whole visible label combinations rather than splitting
+at words such as "with" or "and" inside names. Duplicate complete parses retain
+material choices. One supported target may omit a weapon; only an actually unique
+held candidate can resolve that omission. Bare "I attack" requires explicit target
+selection even with only one offered target; its unique held weapon may resolve
+only after that selection. Review retains every ambiguous material choice. No prefix of an unsupported
+longer declaration is submitted.
+
+The original physical planner `tactical_weapons/equipment.rs:139–174` allows an
+already-held weapon to use TwoHands when its other slot is free, and an explicit
+OneHand choice to release the other slot. The UI filters existing offered grips:
+OneHand must already hold that ItemId in its named slot; TwoHands needs the item
+already held and both slots free-or-that-item. This creates no equipment change
+or new permission; the existing command still revalidates. Multiple grips and
+abilities require explicit choices. Source-feature offers are excluded here.
+
+The transient context includes the actual options, budget and refresh generation
+as well as campaign/session/revision/PC/source selection/encounter/round. Removing
+the panel while ineligible or locked destroys drafts even if that same opaque
+context returns later. Confirmation recomputes from current options both in the
+component and in TableApp immediately before using the original outbox route.
+
+Root approved a bounded duplicate-label discriminator: the selected PC's own
+current, non-Remembered contact position may be displayed only for IDs already
+in attack_options. It never introduces targets or resolves prose. Multiple
+targets always require explicit choice; indistinguishable duplicate labels without
+distinct own-visible positions block confirmation. Other observers/Host truth and
+remembered locations cannot disambiguate. This display context participates in
+preview invalidation. Duplicate held items display their actual held hand(s).
+
+## Source checkpoint and validation — 2026-10-08
+
+The draft adds the local proposal helper, owned-PC context helper, reachable
+declaration component, a shared new test fixture and two additive test files.
+TableApp adds the component, a current-context recheck and its existing Attack
+submission call. The existing refresh generation becomes reactive so it can
+invalidate this new keyed component; its increment and async identity checks are
+unchanged. Existing send/save/retry/Text bodies, transport DTOs, backend/rules,
+source content, old tests and historical corpus remain untouched.
+
+Authored coverage is eleven pure proposal/context cases and twenty containing
+TableApp cases after the two explicit parameter tables expand. These cover the
+real callback/outbox boundary, no submission on interpretation, supported full
+phrases, refusal of unsupported prefixes, ability/grip and duplicate target/item
+choices, own-contact-only discriminators, stale selections/options/contact data,
+absent/Host/source/foreign-turn/pending boundaries, uncertain delivery/reload,
+another action's outbox and unchanged original Text retries. These are source
+inventories, not executed results or claims about actual dice/native behavior.
+
+Source self-review and `git diff --check` passed. No compiler, Cargo, npm, Vitest,
+Svelte check/build, project parser invocation, native UI or database was run.
+All runtime validation and native acceptance are explicitly UNRUN. Root's b62
+family allocation still owns the heavy slot. No branch publication or acceptance
+is claimed. Next: freeze this draft for root's complete independent diff review;
+make only allocated corrections, then await exact-head verification allocation.
+
+Root's initial source review identified that a bare declaration must not silently
+resolve its sole target. The helper now retains an empty target until the player
+selects it, with paired pure and full TableApp tests covering the disabled button,
+no outbox/API before selection and confirmation, and the unchanged exact callback.
+This correction is authored and statically reviewed; its tests remain UNRUN.
