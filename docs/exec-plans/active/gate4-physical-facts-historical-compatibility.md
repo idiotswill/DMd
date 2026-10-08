@@ -423,3 +423,43 @@ unchanged; unrelated actions still make no change before the original send.
 Standalone changed-file rustfmt and Git diff checks passed. Full external
 inventory/body preservation and inverse evidence are being frozen for review;
 strict Clippy and all consumer runtime on this successor remain UNRUN.
+
+## Actual410 active-activation refusal — plan before correction, 2026-10-08
+
+Root owns this branch at `410a4b46a96c6d385fea3e39f2fd304c334e02f4`, tree
+`aedcd4d37caa9d1713006d25ae6dbcfbff83d08e`. Linux run37667866991/job112951831873
+and Windows run37667866902/job112952083860 fail the first historical decline cut
+at `driver.rs:260`, inside the negative `premature_mass` helper. The original
+archive strict-loader negative probes complete successfully first. The terminal
+diagnostic is `invalid mechanics: This physical-fact control is no longer current.`
+Both complete original logs are preserved, SHA256 respectively:
+`2a9c1765e9733056442bb8622f8124df02b60645a321b19bfaa22a38879026bd` and
+`55493b6d846a9b7205180671375b156842cab7aaff3183ba0b491ff170081f26`.
+Neither run reaches later complete historical or Grapple acceptance.
+
+The current production boundary is correct: physical_facts::offers returns no
+offers when settled() refuses; accept() checks that the submitted offer is
+currently offered before applying it. An Active historical campaign therefore
+rejects the fabricated activation at that current-offer boundary. The helper
+incorrectly expected text from the deeper settled predicate, which is not the
+returned error. Its actual Host request uses version5 and current revision, and
+the existing refuse helper already verifies the full export and every logical
+SQL cell remain unchanged. A separate reviewer inspected the same source/logs
+and agrees with this diagnosis.
+
+Commit this diagnosis before the bounded fixture correction. Explicitly assert
+that the original Active image has no physical_facts attachment, then require
+the exact observed TableRejected message. Preserve the Active-phase, absent
+offered-controls and request-version assertions and the complete atomicity
+helper. This strengthens the reached negative boundary; it does not accept any
+arbitrary refusal or alter production error ordering. No positive command,
+original case body, archive byte, source rule, history or verification policy
+may change. Inventory the single helper as the explicit preservation exception
+and prove its full-file inverse against410.
+
+After independent bounded review, execute the complete three historical
+consumer harnesses and full exact-head verification. The old1ff local run stopped
+without a terminal result during stage07; its first six completed stages remain
+source-attributed, stage07 is UNKNOWN and08-21 unstarted. Preserve its evidence
+and stale lock before assigning the next serial local run. Do not infer a local
+pass, full compatibility or Gate4 acceptance from this source correction.
