@@ -534,3 +534,34 @@ in this implementation; final full-diff whitespace validation is required before
 freeze. Root and an independent reviewer must inspect the complete cumulative
 source change and preservation audit before publication. Fresh exact-head
 Linux/Windows allocations, aggregate and Windows packaging remain UNRUN.
+
+## Aggregate executable association correction — before implementation, 2026-10-08
+
+Independent source review of frozen82c05c0 found that aggregate reconstruction
+checked target assignments and executable path multisets separately. A bounded
+Python reproduction with two simulated targets swapped their executable and
+filename values only in one bootstrap log, refreshed that stream's receipt hash,
+and retained all common, inventory, execution and other-allocation evidence.
+The complete aggregate incorrectly accepted both original and swapped evidence.
+The local bootstrap/inventory identity comparison correctly distinguishes those
+tuples, but the aggregate did not reconstruct the same target-to-path relation.
+Complete stimulus and both results are preserved outside the repository under
+`tooling/ci-oct8/bootstrap-82c05c0-identity-swap-reproduction/`, with the companion
+Python reproduction script. This is simulated evidence, not a Cargo or CI result.
+
+Root allocates only the bounded correction to bootstrap_review_oct8 as sole
+writer; root retains independent review and publication. Before source changes,
+commit this diagnosis and decision. Aggregate must compare each complete
+normalized package_id/target/executable tuple from bootstrap, inventory and
+execution against the designated inventory phase. Preserve all existing graph,
+path, assignment, log hash, coverage, byte, default-thread and source checks.
+Add a two-target regression that first accepts coherent original evidence, then
+refuses a refreshed-hash path association swap in each of the three phases.
+Keep all24 prior controls and all production/workflow/content bytes unchanged.
+
+Only source analysis and lightweight Python controls/reproduction are allocated.
+No Cargo, npm, native, gameplay or database execution; no publication by this
+writer. Save full control logs and source preservation audit, freeze the complete
+cumulative change, and return it to root for independent review. The hosted
+two-platform allocations, aggregate, canonical reconciliation and Windows
+packaging remain required and unproved by this correction.
