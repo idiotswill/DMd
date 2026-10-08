@@ -243,8 +243,10 @@ impl Fixture {
         error
     }
     pub async fn premature_mass(&self) {
+        let state = self.state().await;
+        assert!(state.physical_facts.is_none());
         assert_eq!(
-            self.state().await.encounter.unwrap().flow.unwrap().phase,
+            state.encounter.unwrap().flow.unwrap().phase,
             TacticalPhase::Active
         );
         let host = self.view(&TableTransportChannel::Host).await;
@@ -257,9 +259,9 @@ impl Fixture {
             .await;
         assert_eq!(request.version, 5);
         let error = self.refuse(request).await;
-        assert!(
-            error.contains("Finish pending work") || error.contains("Finish the encounter"),
-            "{error}"
+        assert_eq!(
+            error,
+            "invalid mechanics: This physical-fact control is no longer current."
         );
     }
     /// Genuine acceptance after cold reopen, plus independent portable acceptance.
