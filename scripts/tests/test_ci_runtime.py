@@ -29,7 +29,7 @@ def receipts():
         item.update(original_args=[], cwd='$WORKSPACE', cargo_manifest_dir='$WORKSPACE')
     common = {'schema': ci.SCHEMA, 'source': source, 'platform': 'linux', 'run_id': '10',
               'run_attempt': '1', 'universe': universe,
-              'absent_allocations': ['legacy-missile', 'grapple-public']}
+              'absent_allocations': [name for name in ci.ALLOCATIONS if name not in ('table-loop', 'remainder')]}
     result = []
     for allocation in ci.ALLOCATIONS:
         records = []
@@ -623,6 +623,152 @@ class FixedBootstrap(unittest.TestCase):
                         finally:
                             path.write_bytes(original)
                             log.write_bytes(original_log)
+
+
+class PhysicalHistoryAllocations(unittest.TestCase):
+    def test_exact_physical_targets_preserve_package_kind_and_cases(self):
+        physical = {'physical_history_decline': 'physical-history-decline',
+                    'physical_history_ground': 'physical-history-ground',
+                    'physical_history_recipient': 'physical-history-recipient'}
+        integrations = [{'name': name, 'kind': ['test'], 'doctest': False} for name in physical]
+        lookalikes = [{'name': name, 'kind': [kind], 'doctest': False}
+                     for name in physical for kind in ('lib', 'bin', 'example')]
+        unrelated = {'name': 'physical_history_decline_extra', 'kind': ['test'], 'doctest': False}
+        metadata = {'workspace_members': ['app', 'other'], 'packages': [
+            {'id': 'app', 'name': 'dmd-app', 'targets': [*integrations, *lookalikes, unrelated]},
+            {'id': 'other', 'name': 'another-package', 'targets': integrations}]}
+        messages = [{'package_id': package['id'], 'target': target}
+                    for package in metadata['packages'] for target in package['targets']]
+        assignments = ci.discovered_assignments(metadata, messages)
+        self.assertEqual(len(assignments), 16)
+        for message in messages:
+            package = 'dmd-app' if message['package_id'] == 'app' else 'another-package'
+            target = message['target']
+            identity = f"test:{package}:{','.join(target['kind'])}:{target['name']}"
+            expected = physical[target['name']] if package == 'dmd-app' and target in integrations else 'remainder'
+            self.assertEqual(assignments[identity], expected)
+        for name in physical:
+            # Identical shared names belong to different executable identities.
+            cases = ['bindings_remain_owned', f'{name}_genuine_continuation']
+            listing = ''.join(f'{case}: test\n' for case in cases) + '2 tests, 0 benchmarks\n'
+            self.assertEqual(ci.parse_listing(listing), cases)
+            terminal = (''.join(f'test {case} ... ok\n' for case in cases)
+                        + 'test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; '
+                        '0 filtered out; finished in 0.01s\n')
+            self.assertEqual(ci.parse_result(terminal, cases)['passed'], 2)
+
+    def test_seven_allocation_union_requires_each_original_harness(self):
+        physical = {'physical_history_decline': 'physical-history-decline',
+                    'physical_history_ground': 'physical-history-ground',
+                    'physical_history_recipient': 'physical-history-recipient'}
+        assigned = {'table_loop': 'table-loop', 'legacy_shield_missile_v1_replay': 'legacy-missile',
+                    'table_grapple_public': 'grapple-public', **physical, 'dmd_app': 'remainder'}
+        targets = [{'name': name, 'kind': ['lib'] if name == 'dmd_app' else ['test'],
+                    'doctest': name == 'dmd_app', 'src_path': f'/original/{name}.rs'} for name in assigned]
+        metadata = {'workspace_members': ['app'], 'packages': [
+            {'id': 'app', 'name': 'dmd-app', 'targets': targets}]}
+        messages = [{'reason': 'compiler-artifact', 'package_id': 'app', 'target': target,
+                     'profile': {'test': True}, 'features': [],
+                     'filenames': [f'/original/target/debug/{target["name"]}'],
+                     'executable': f'/original/target/debug/{target["name"]}'} for target in targets]
+        compiled = '\n'.join(json.dumps(row) for row in [
+            *messages, {'reason': 'build-finished', 'success': True}])
+        graph, _ = ci.artifact_graph(compiled, {})
+        universe = [{'id': f"test:dmd-app:{target['kind'][0]}:{target['name']}",
+                     'assigned': assigned[target['name']],
+                     'cases': ['bindings_remain_owned', f'{target["name"]}_genuine_continuation']
+                     if target['name'] in physical else [target['name']],
+                     'original_args': [], 'cwd': '/original', 'cargo_manifest_dir': '/original'}
+                    for target in targets]
+        universe.append({'id': 'doc:dmd-app:dmd_app', 'assigned': 'remainder', 'cases': [],
+                         'original_args': [], 'cwd': '/original', 'cargo_manifest_dir': '/original'})
+        with tempfile.TemporaryDirectory() as directory:
+            directory = Path(directory)
+
+            def write_fixture(inventory, destination):
+                data, source = receipts()
+                for receipt in data:
+                    output = destination / receipt['allocation']
+                    output.mkdir(parents=True)
+
+                    def log_pair(name, stdout):
+                        pair = {}
+                        for stream, text in [('stdout', stdout), ('stderr', '')]:
+                            path = output / f'{name}.{stream}.log'
+                            path.write_text(text, encoding='utf8')
+                            pair[stream] = {'path': path.name, 'sha256': ci.file_hash(path)}
+                        return pair
+
+                    receipt['common'].update(metadata=metadata, graph=graph, universe=inventory,
+                                             absent_allocations=[name for name in ci.ALLOCATIONS
+                                                                 if name not in {x['assigned'] for x in inventory}])
+                    receipt['common_sha256'] = ci.digest(receipt['common'])
+                    receipt['executables'] = [{'executable': message['executable']} for message in messages]
+                    receipt['command_logs'] = [log_pair('metadata', json.dumps(metadata)),
+                                               *[log_pair(phase, compiled) for phase in ci.COMMAND_PHASES[1:]]]
+                    receipt['records'] = []
+                    for item in inventory:
+                        record = copy.deepcopy(item)
+                        prefix = ci.digest(item['id'])
+                        cases = item['cases']
+                        record['logs'] = [log_pair(prefix + '-list', ''.join(f'{case}: test\n' for case in cases)
+                                                  + f'{len(cases)} tests, 0 benchmarks\n'),
+                                          log_pair(prefix + '-ignored', '0 tests, 0 benchmarks\n')]
+                        record['state'] = 'listed-only'
+                        if receipt['allocation'] == item['assigned']:
+                            record['state'] = 'executed'
+                            terminal = (''.join(f'test {case} ... ok\n' for case in cases)
+                                        + f'test result: ok. {len(cases)} passed; 0 failed; 0 ignored; '
+                                        '0 measured; 0 filtered out; finished in 0.01s\n')
+                            record['logs'].append(log_pair(prefix + '-run', terminal))
+                            record['outcome'] = {'passed': len(cases), 'summaries': 1}
+                        receipt['records'].append(record)
+                    ci.write_json(output / 'complete.json', receipt)
+                return data, source
+
+            original = directory / 'original'
+            data, source = write_fixture(universe, original)
+            validated = ci.validate_receipts(data, source, 'linux', '10', '1')
+            self.assertEqual((len(data), validated['targets'], validated['cases']), (7, 8, 10))
+            args = SimpleNamespace(directory=str(original), platform='linux')
+            with patch.object(ci, 'source_identity', return_value=source), patch.dict(
+                    os.environ, {'GITHUB_RUN_ID': '10', 'GITHUB_RUN_ATTEMPT': '1'}):
+                ci.aggregate(args)
+                for target, allocation in physical.items():
+                    index = next(i for i, receipt in enumerate(data) if receipt['allocation'] == allocation)
+                    identity = f'test:dmd-app:test:{target}'
+                    for fault, message in [('missing', 'missing/extra allocation receipt'),
+                                           ('duplicate', 'duplicate/missing allocation'),
+                                           ('incomplete', 'incomplete allocation'),
+                                           ('listed-only', 'false execution state'),
+                                           ('partial', 'missing/incomplete runtime outcome')]:
+                        altered = copy.deepcopy(data)
+                        if fault == 'missing':
+                            altered.pop(index)
+                        elif fault == 'duplicate':
+                            altered[index] = copy.deepcopy(altered[0])
+                        elif fault == 'incomplete':
+                            altered[index]['status'] = 'failed'
+                        else:
+                            record = next(x for x in altered[index]['records'] if x['id'] == identity)
+                            if fault == 'listed-only':
+                                record['state'] = 'listed-only'
+                                record.pop('outcome')
+                            else:
+                                record['outcome']['passed'] = 1
+                        with self.subTest(allocation=allocation, fault=fault), self.assertRaisesRegex(ValueError, message):
+                            ci.validate_receipts(altered, source, 'linux', '10', '1')
+                    # A consistent false assignment can pass receipt-only checks.
+                    # Original unchanged metadata/compiler discovery must reject it.
+                    forged = copy.deepcopy(universe)
+                    next(x for x in forged if x['id'] == identity)['assigned'] = 'remainder'
+                    forged_path = directory / target
+                    forged_data, _ = write_fixture(forged, forged_path)
+                    ci.validate_receipts(forged_data, source, 'linux', '10', '1')
+                    with self.subTest(allocation=allocation, fault='forged assignment'), self.assertRaisesRegex(
+                            ValueError, 'runtime universe differs from original Cargo discovery'):
+                        ci.aggregate(SimpleNamespace(directory=str(forged_path), platform='linux'))
+                ci.aggregate(args)
 
 
 if __name__ == '__main__':

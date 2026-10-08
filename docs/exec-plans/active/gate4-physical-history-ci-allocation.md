@@ -1,6 +1,7 @@
 # Gate 4 — Independent whole historical-harness execution
 
-Status: plan before implementation, 2026-10-08. Branch
+Status: implemented after plan-first2df6e657; all27 pure CI controls pass,
+2026-10-08. Application/runtime/native verification remains UNRUN. Branch
 `codex/gate4-family-receiver`, starting head
 fc41155370dba9fb5fc34a2fccf8e1fd26adbfe3. Root delegated sole source writing to
 `v5_capture_plan_review_oct8`; root independently reviews the complete result
@@ -89,7 +90,7 @@ separately reviewed adaptation before accepting a seven-allocation graph.
    missing, duplicated, incomplete, listed-only and partial outcomes. Coherently
    forge assignment in all receipts/logs and require rejection specifically
    against unchanged original metadata/compiler discovery, not malformed data.
-3. Run ordinary `python -B -m unittest discover -s scripts/tests -v` only. Retain
+3. Run ordinary `python -B -m unittest discover -s scripts/tests -p test_ci_runtime.py -v` only. Retain
    the complete original output externally and prove all27 methods execute.
    This is a pure control run; no Cargo/Rust/frontend/application/native/database
    execution or heavy runner launch is authorized in this allocation.
@@ -106,6 +107,36 @@ those runtime passes.
 
 ## Next action
 
-Commit this plan first. Implement only the five-file scheduling/control slice,
-run and retain the pure Python controls, then return clean source ownership to
-root with exact head/tree, full preservation evidence and runtime UNRUN status.
+Root independently reviews this five-file scheduling/control slice and preserved
+evidence, then owns the frozen head, publication and full verification allocation.
+Source ownership returns to root with the implementation handback. No hosted
+workflow has been triggered or cancelled by this implementation.
+
+## Implementation and actual control evidence
+
+Only the two allocator constants, both runtime matrix lines, the fixture's absent
+allocation list and the two planned controls changed. Every allocator function,
+all25 existing control methods, game source and historical corpus remain exact.
+The new synthetic complete union contains seven allocations/eight targets/ten
+cases, including all three two-case physical harnesses and zero-case docs.
+Each physical allocation independently rejects five incomplete/false execution
+variants. Coherent forged reassignment passes the receipt-only validator and is
+then rejected specifically against original Cargo discovery by the aggregate.
+
+An initial broader Python discovery attempted35 methods, including the separate
+boundary suite, and exposed a fixture-only FileExistsError: the new negative
+fixture tried to reuse the runner's exclusive receipt writer. Its full output
+and source diff/pins are retained at
+`tooling/ci-oct8/physical-history-seven-allocation-controls-01-2026-10-08`.
+The fixture now writes each forged union in its own fresh temporary directory,
+preserving the original positive union. No production write/union guard changed.
+
+The unchanged accepted workflow command above then passed all27 CI methods,
+no skips, in8.761 seconds. Original stdout/stderr/result and tested source pins:
+`tooling/ci-oct8/physical-history-seven-allocation-controls-02-2026-10-08`.
+Terminal stderr SHA256:
+5b09d44883f356e45776675dc4345056dd33fa083f49afba169dc18f15d28bdf.
+Only pure Python controls ran; no Rust/compiler/frontend/application/native or
+campaign database operation ran. Whitespace and exact inverse/source preservation
+checks pass. These control results do not pass the application correction or any
+hosted allocation, full canonical suite, package or native gate obligation.
