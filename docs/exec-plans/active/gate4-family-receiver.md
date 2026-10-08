@@ -319,3 +319,22 @@ guards, ordinary MSVC release/NSIS packaging and native ledger remain mandatory.
 Native work must use the verified receiver package; separate human physical-dice
 and multi-round Gate4 evidence is not replaced by controlled QA. No source or
 scheduling checkpoint closes this family or Gate4.
+
+## Historical probe failure before publication
+
+The separately pinned663 run has now failed at10:11:59 UTC: the corrected cut01
+passed, but cut02-after exposed an unconditional test refusal-message expectation.
+One case passed, one failed, four unrun. Original log SHA256:
+a082d07c5b27fa7185d2e51487d6a83da79d203b17bfcee9b400dc10829a7961.
+Full diagnosis,44-image discrimination and narrowly allocated three-helper fix
+are recorded plan-first in the historical-compatibility plan. Production's
+pending-Inspiration-transfer guard remains unchanged. Source-only independent
+review of204's accepted-main receipt was clear; it does not erase this failure.
+
+Publication waits for that bounded correction and independent full-delta review.
+The local heavy slot is released. After the new final source freeze, prepare and
+review one canonical receiver runner with all three historical targets included,
+all ordinary workspace/frontend checks and the explicit prior-target cache reuse.
+Early hosted draft CI remains authorized in parallel with that local allocation.
+Do not rerun an obsolete donor merely to seek a green badge or relabel either
+failed run as a receiver pass. All final native and gate requirements remain.

@@ -532,3 +532,53 @@ Standalone formatting and diff checks pass. Production/corpus, original cut and
 replay loops, all fresh acceptance comparisons and exact retry atomicity remain
 unchanged. Independent review and every runtime check on this correction are
 pending; the original failure is preserved and no new pass is claimed.
+
+## Actual663 pending-transfer refusal — plan before correction, 2026-10-08
+
+Root owns the combined family receiver at204a68e774eb0c0dfc4c5456ad1abee5bc581414.
+The separately frozen663b49f3 historical run exited101 at10:11:59 UTC. Its pure
+binding regression passed; the original decline consumer passed complete cuts00
+and01 and cut02-before, then failed driver.rs255 at cut02-after. Ground and
+recipient targets did not run: one passed, one failed, four unrun. Original log
+SHA256 a082d07c5b27fa7185d2e51487d6a83da79d203b17bfcee9b400dc10829a7961.
+The actual dead test database was preserved outside the repository,573440 bytes,
+SHA256758c1dd914bfaf233ba19951801c6f54898c3fce38d46149c94f77695afbbf0d.
+Runner result confirms unchanged663 source; its process/owned heavy lock ended.
+No successful full historical or receiver result is inferred.
+
+Root and an independent reader traced the failure to the Host-only premature
+physical-facts probe. The captured duplicate Inspiration award creates a genuine
+pending transfer at sequence19. The single table reducer intentionally refuses
+every fresh operation except resolving that transfer before reaching PhysicalFact.
+Its exact error is "Finish the pending player choice before changing the table."
+The helper unconditionally expected the later physical-offer refusal. The Host
+already receives the pending companion's character notice with no player choices;
+this observation is not a demonstrated privacy defect. Production order remains.
+
+All22 original cuts/44 before-after images were independently inspected. Ground's
+16 images and24 Inspiration images have no pending companion and require the
+existing exact physical-offer error. Only cut02-after and cut03-before of each
+Inspiration route (four images) require the pending-choice error. Each route's
+captured owner resolution clears the companion and returns to the original
+physical-offer boundary. Every image remains Active with physical_facts absent.
+
+Before code, allocate only driver.rs, mod.rs and play.rs in the shared historical
+test helper, plus these plans. Pass the full expected optional transfer from the
+immutable before/after checkpoint to premature_mass. Assert the current transfer
+equals that original value, and the Host notice identifies the same character
+with no player choices. Select exactly one expected error from that checkpoint
+discriminator; never accept either error arbitrarily. The genuine finish helper
+passes None after its accepted ConcludeHostilities, whose existing guard forbids
+an outstanding transfer. Preserve Active/absent-facts/no-controls/Host/version5
+checks and the entire export/every-cell no-write verifier.
+
+Keep all original scenario bodies,22 cuts,44 images, full replay/retry/portable
+loops, corpus bytes, binding controls and production unchanged. Existing full
+loops already discriminate both refusal orders and the actual resolution; no
+extra expensive synthetic case or production change is justified. Direct
+changed-file formatting/static preservation checks are allocated after editing.
+Freeze for independent review, then publish the corrected coherent draft and
+prepare final receiver canonical/frontend verification using the released heavy
+slot. Canonical workspace includes all three historical targets unfiltered.
+Preserve both52 and663 failures; no filtered or partial pass replaces full
+receiver/CI/package/native/Gate4 acceptance.
