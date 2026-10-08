@@ -87,6 +87,7 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { CreatureAttack: { target: Id; feature_id: string; weapon: null } }
   | 'ActivateAttackEquipment'
   | { AttackEquipment: { handle: Id; choice: AttackEquipmentChoice } }
   | { SubmitRollWithInspiration: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] }; die_index: number; replacement: { sides: number; value: number } } }

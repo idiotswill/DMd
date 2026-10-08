@@ -881,6 +881,73 @@ impl CampaignRuntime {
         self.read_current_roll(request, |_, _, options| Ok(options))
             .await
     }
+    pub async fn table_intrinsic_attack_options(
+        &self,
+        request: TableIntrinsicAttackRequest,
+    ) -> Result<TableIntrinsicAttackOptions, RunnableCampaignError> {
+        if request.version != 1 {
+            return Err(rejected("Unsupported intrinsic attack options version."));
+        }
+        let issuer = match request.channel {
+            TableTransportChannel::Host => CommandIssuer::Admin,
+            TableTransportChannel::SourceCreature { player_id, actor }
+                if actor == request.actor =>
+            {
+                CommandIssuer::Player(player_id)
+            }
+            _ => return Err(rejected("Select the source creature's current controller.")),
+        };
+        // One read-only snapshot authenticates both source choices and perception.
+        // No presentation bootstrap, new handle, digest or accepted response write.
+        let mut tx = self.pool.begin().await.map_err(recovery)?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
+        let (execution, history) = self.protocol_history(&export)?;
+        history
+            .latest
+            .get(&request.channel.audience())
+            .filter(|entry| entry.revision == request.revision)
+            .ok_or_else(|| rejected("Refresh the current turn before viewing its attacks."))?;
+        let read = execution.read();
+        let features = read
+            .intrinsic_attack_features(issuer, request.actor)
+            .map_err(rejected)?
+            .into_iter()
+            .map(|(feature_id, label)| TableIntrinsicAttackFeature { feature_id, label })
+            .collect();
+        let state = read.state();
+        let encounter = state
+            .encounter
+            .as_ref()
+            .ok_or_else(|| rejected("The source actor has no current encounter."))?;
+        // Host knowledge and other controlled observers never expand this actor's
+        // targets. Final range/effect/target admission belongs to CreatureAttack.
+        let observed = dmd_rules::spatial::project_actor_view(encounter, state, request.actor)
+            .map_err(recovery)?;
+        let targets = observed
+            .contacts
+            .into_iter()
+            .filter(|contact| {
+                contact.entity_id != request.actor
+                    && contact.status != dmd_rules::spatial::ContactStatus::Remembered
+            })
+            .map(|contact| TableIntrinsicAttackTarget {
+                actor: contact.entity_id,
+                label: contact.label.unwrap_or_else(|| "Located creature".into()),
+            })
+            .collect();
+        let result = TableIntrinsicAttackOptions {
+            version: 1,
+            revision: request.revision,
+            actor: request.actor,
+            features,
+            targets,
+        };
+        tx.commit().await.map_err(recovery)?;
+        Ok(result)
+    }
+
     pub async fn table_roll_details(
         &self,
         request: TableRollDetailsRequest,

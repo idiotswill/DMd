@@ -1,6 +1,7 @@
 # Gate 4 own-turn intrinsic attack controls
 
-Status: planned, source-only allocation on 2026-10-08; runtime verification UNRUN.
+Status: authored under the source-only allocation on 2026-10-08; independent
+review and all compilation/runtime verification remain UNRUN.
 Writer: `v5_capture_plan_review_oct8`. Branch:
 `codex/gate4-intrinsic-attack-controls`; no PR yet. Parent fetched and allocated
 base `52ae4bf36ce9378eb4ddc48b3bcef8477d2e4580`, tree
@@ -82,11 +83,52 @@ The independent read remains advisory; final admission uses unchanged
 Do not fabricate `CommandMeta` to make the planner produce UI choices: Charge
 validates actual accepted movement and attack origins.
 
-All build, test, CI, native, database and production acceptance states are UNRUN
-for this branch. Source-only authoring is allocated while the parent owns a frozen
-52ae canonical run. No Cargo/npm/build/native/database/runtime, push, PR or merge is
-allocated here. Static source review and `git diff --check` only.
+## Authored source and static review, 2026-10-08
 
-Next action: commit the plan, report its identity/scope to parent, then implement
-the bounded read/form with additive tests. Material design changes require parent
-review. Gate 4's broader obligations and final human acceptance remain pending.
+Plan-first commit: `9c900c6b05b21a20f891a193f4e0de176f73b622`.
+
+The new strict v1 `table_intrinsic_attack_options` read uses the existing snapshot
+export/history reconstruction and an owned `TableRead`. Its rules query checks the
+active actor, session attendance, source ownership and pending state. The scheduler
+provides a new pure candidate reader sharing its existing `can_act`, current-turn
+and source-availability predicates. It does not call the mutation, create command
+metadata or forecast an attack. Host can direct Host/Autonomous sources; enabled
+source access preserves player-owned decisions even when the player is absent.
+
+The desktop uses a lazy “Choose creature attack” read, accepted by the parent to
+avoid repeating the expensive full-history read on unrelated table refreshes.
+Choices are transient, actor-perceived and separate from the retained view. The
+panel clears on context/lock changes and ignores obsolete success and failure.
+Submission uses the existing `CreatureAttack` and unchanged save/load/retry path.
+No old serialized structure, source content, accepted executor or test body changed.
+
+Three new Rust tests are authored: a genuine Chimera history with Host/source-owner
+commands, release during pending raw work, ownership reassignment, closed-session
+read refusal, immutable repeated reads, portable restore/retry, and lawful G3/G4
+then Finished-to-M+G4 progression; four distinct source cases; and strict independent
+read schema. Every existing application test body remains unchanged; the existing
+test file only includes the new support module. The new frontend file declares
+26 cases for lazy submission, unchanged outbox reload, context/lock success/error
+races, response binding/version, empty/error states and rendering authority guards.
+These are authored cases, not executed passes or extra mandatory native scenes.
+
+Source inspection corrected one example in the preserved external proposal: Air
+Thunderous Slam has one Thunder component. Young Red Dragon Rend supplies the
+two-component case; Warhorse supplies conditional effects, Air supplies its current
+immutable source pin, and Ogre confirms the physical route remains separate.
+
+Self-review covered the complete added code and test bodies against the existing
+admission/Charge/source-controller rules, desktop retry and source perception paths.
+The static diff is additive: existing test bodies and old DTO/command implementations
+have no removed or replaced lines; no content/corpus files changed. The parent
+explicitly allowed direct `rustfmt.exe --edition 2024 --config skip_children=true`
+for the touched Rust files. That syntax/format pass and `git diff --check` pass;
+they are not typechecking or execution evidence. The formatter did not reformat old
+test bodies. No Cargo/npm/build/native/database/runtime, push, PR or merge ran here.
+
+All tests, builds, required CI, packaged/native and production acceptance are UNRUN
+for this new source. Parent's frozen 52ae run is not this source's verification.
+Next action: parent independently reviews the coherent source commit, schedules
+focused tests plus fast/canonical/exact-head CI and packages the verified receiver
+for the bounded native witness. Resolve any actual findings before acceptance;
+Gate 4's broader obligations and final human encounter remain pending.

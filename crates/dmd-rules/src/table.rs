@@ -12,6 +12,7 @@ mod creatures;
 mod equipment;
 mod grapple_access;
 mod inspiration;
+mod intrinsic_attacks;
 pub use inspiration::award_ruling as inspiration_award_ruling;
 pub use inspiration::transfer_choices as inspiration_transfer_choices;
 pub mod source_control;

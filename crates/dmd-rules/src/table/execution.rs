@@ -231,6 +231,17 @@ impl CampaignExecution {
 }
 
 impl<'a> TableRead<'a> {
+    /// Advisory choices borrow this owned image; accepted attacks still derive
+    /// their current/retained proofs and source costs through CreatureAttack.
+    pub fn intrinsic_attack_features(
+        &self,
+        issuer: CommandIssuer,
+        actor: EntityId,
+    ) -> Result<Vec<(String, String)>, String> {
+        self.validate()?;
+        super::intrinsic_attacks::features(&self.context(), issuer, actor)
+    }
+
     pub fn physical_fact_offers(&self) -> Result<Vec<PhysicalFactOffer>, String> {
         self.validate()?;
         crate::physical_facts::offers(self.state(), self.image.physical_sources())
