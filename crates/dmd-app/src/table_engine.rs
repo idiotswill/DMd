@@ -17,6 +17,9 @@ pub(crate) struct TableTransition {
 
 fn operation(state: &CampaignState, action: &TableAction) -> Result<TableOperation, String> {
     Ok(match action {
+        TableAction::PhysicalFact { acceptance } => TableOperation::PhysicalFact {
+            acceptance: acceptance.clone(),
+        },
         TableAction::AwardExcessInspiration {
             character_id,
             reason,

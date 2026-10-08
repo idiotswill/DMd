@@ -4,7 +4,8 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 use dmd_domain::{
     AgentRef, CampaignId, CampaignState, CommandId, CommandIssuer, CommandMeta, PendingPurpose,
-    PlaySession, PlaySessionId, PlaySessionStatus, RollSource, Ruling, RulingRecord,
+    PhysicalFactAcceptance, PhysicalFactInput, PhysicalFactOffer, PlaySession, PlaySessionId,
+    PlaySessionStatus, RollSource, Ruling, RulingRecord,
 };
 use dmd_persistence::{
     CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow,
@@ -106,7 +107,8 @@ pub(crate) fn authenticate_history_with_selection(
 /// Modern images cannot authenticate themselves. Structural checks still run now;
 /// full semantic checks run on their exact owned replay images before equality below.
 fn validate_decoded_image(state: &CampaignState, pack: &RulesPack) -> Result<(), String> {
-    if dmd_rules::table::grapple_enabled(state)
+    if dmd_rules::physical_facts::enabled(state)
+        || dmd_rules::table::grapple_enabled(state)
         || dmd_domain::has_unimplemented_grapple_records(state)
     {
         if !state.validate().is_empty() {
@@ -162,7 +164,8 @@ fn replay_history(
     if dmd_domain::has_current_character_creation(anchor) {
         return Err("current character creation requires its original pre-creation anchor".into());
     }
-    if dmd_domain::has_unimplemented_ground_records(anchor)
+    if anchor.physical_facts.is_some()
+        || dmd_domain::has_unimplemented_ground_records(anchor)
         || dmd_domain::has_unimplemented_grapple_records(anchor)
         || dmd_rules::table::grapple_enabled(anchor)
         || anchor.encounter_history.is_some()
@@ -409,7 +412,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && matches!(version, 2..=5))
+    version == 1 || (kind == "table.action" && matches!(version, 2..=6))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -419,7 +422,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2..=5 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2..=6 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)
@@ -576,7 +579,8 @@ fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
     }
     if matches!(
         event.action,
-        TableAction::EnableGrappleAccess
+        TableAction::PhysicalFact { .. }
+            | TableAction::EnableGrappleAccess
             | TableAction::EnableGrappleTransport
             | TableAction::EnableSourceActorAccess { .. }
             | TableAction::SetSourceCreatureController { .. }
@@ -957,6 +961,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             .map(|transfer| &transfer.origin),
     );
     grapple_origins(state, &mut origins);
+    if let Some(facts) = &state.physical_facts {
+        origins.push(&facts.origin);
+        origins.extend(facts.records.iter().map(|fact| &fact.origin));
+    }
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
             origins.extend([
@@ -1462,6 +1470,32 @@ fn validate_origins(
     audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
     commands: &HashMap<CommandId, &RecoveryEvent>,
 ) -> Result<(), String> {
+    if let Some(facts) = &state.physical_facts {
+        let original = |origin: &CommandMeta| {
+            commands.get(&origin.id).and_then(|event| match event {
+                RecoveryEvent::Table(event) if event.meta == *origin => match &event.action {
+                    TableAction::PhysicalFact { acceptance } => Some(acceptance.as_ref()),
+                    _ => None,
+                },
+                _ => None,
+            })
+        };
+        if !matches!(original(&facts.origin), Some(PhysicalFactAcceptance { offer: PhysicalFactOffer::Enable { catalog }, input: PhysicalFactInput::Enable }) if catalog == &facts.catalog)
+        {
+            return Err("Physical activation lacks its exact accepted Host command.".into());
+        }
+        for fact in &facts.records {
+            let acceptance = original(&fact.origin)
+                .ok_or("Physical fact lacks its exact original Host command.")?;
+            if dmd_rules::physical_facts::accepted_fact(&fact.origin, acceptance)?.as_ref()
+                != Some(fact)
+            {
+                return Err(
+                    "Physical fact differs from its original accepted value or scope.".into(),
+                );
+            }
+        }
+    }
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
             let accepted = |origin: &CommandMeta| {
@@ -1590,7 +1624,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PhysicalFact { .. } | TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))

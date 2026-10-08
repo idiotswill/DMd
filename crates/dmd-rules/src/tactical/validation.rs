@@ -259,6 +259,7 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
 pub(crate) fn validate_tactical_state_with_read(
     read: &grapple::execution::ReadContext<'_>,
 ) -> Result<(), RulesError> {
+    read.validate_physical_facts()?;
     let state = read.state();
     if has_unimplemented_ground_records(state) && !super::attack_equipment_enabled(state) {
         return Err(invalid("ground pickup execution is not enabled"));

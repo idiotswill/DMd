@@ -1,0 +1,20 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "fc601466-f0f8-4087-955c-91bfabe9a8b5",
+    "campaign_id": "9f23b744-599c-4344-8038-8b60d3747480",
+    "session_id": "1bc373fa-2668-44a4-872c-eca487d0c457",
+    "issuer": "Admin",
+    "actor": null,
+    "expected_event_sequence": 24
+  },
+  "audience": "Host",
+  "projection_ordinal": 26,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 25
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"fc601466-f0f8-4087-955c-91bfabe9a8b5\",\"campaign_id\":\"9f23b744-599c-4344-8038-8b60d3747480\",\"session_id\":\"1bc373fa-2668-44a4-872c-eca487d0c457\",\"channel\":\"Host\",\"revision\":\"5d0e0d91-b48c-42ec-b684-55dd937544d5\",\"input\":{\"GrappleChoice\":{\"handle\":\"c25bb087-ba5f-4f23-abb5-8cf4ac010d40\"}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"fc601466-f0f8-4087-955c-91bfabe9a8b5\",\"revision\":\"d137c7f8-8aa3-4c68-b0b1-6df9558d325f\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+}

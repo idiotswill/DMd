@@ -1,0 +1,803 @@
+{
+  "schema_version": 1,
+  "catalog_id": "equipment-mass-v1",
+  "ruleset_id": "srd-5.2",
+  "ruleset_version": "5.2.1",
+  "source_pdf_sha256": "8974902d109d6e63672d7c490bde9ccf052410503d9cfa768237154fbc5e3d87",
+  "entries": [
+    {
+      "definition_id": "arrows",
+      "source_pages": [
+        94,
+        96
+      ],
+      "quantity_unit": "one projectile",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 50000
+        }
+      }
+    },
+    {
+      "definition_id": "backpack",
+      "source_pages": [
+        95,
+        96
+      ],
+      "quantity_unit": "one empty backpack, excluding separately contained objects",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 5000000
+        }
+      }
+    },
+    {
+      "definition_id": "battleaxe",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "blowgun",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 1000000
+        }
+      }
+    },
+    {
+      "definition_id": "bolts",
+      "source_pages": [
+        94,
+        96
+      ],
+      "quantity_unit": "one projectile",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 75000
+        }
+      }
+    },
+    {
+      "definition_id": "club",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "dagger",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 1000000
+        }
+      }
+    },
+    {
+      "definition_id": "dart",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 250000
+        }
+      }
+    },
+    {
+      "definition_id": "dragonchess",
+      "source_pages": [
+        94
+      ],
+      "quantity_unit": "one gaming set",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "firearm-bullets",
+      "source_pages": [
+        94,
+        96
+      ],
+      "quantity_unit": "one projectile",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 200000
+        }
+      }
+    },
+    {
+      "definition_id": "flail",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "gaming-dice",
+      "source_pages": [
+        94
+      ],
+      "quantity_unit": "one gaming set",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "glaive",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 6000000
+        }
+      }
+    },
+    {
+      "definition_id": "greataxe",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 7000000
+        }
+      }
+    },
+    {
+      "definition_id": "greatclub",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 10000000
+        }
+      }
+    },
+    {
+      "definition_id": "greatsword",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 6000000
+        }
+      }
+    },
+    {
+      "definition_id": "halberd",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 6000000
+        }
+      }
+    },
+    {
+      "definition_id": "hand-crossbow",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    },
+    {
+      "definition_id": "handaxe",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "heavy-crossbow",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 18000000
+        }
+      }
+    },
+    {
+      "definition_id": "holy-symbol",
+      "source_pages": [
+        95,
+        97
+      ],
+      "quantity_unit": "one specified symbol form",
+      "currently_materializable": true,
+      "mass": {
+        "Subtype": {
+          "variants": [
+            {
+              "id": "amulet",
+              "mass": 1000000
+            },
+            {
+              "id": "emblem",
+              "mass": null
+            },
+            {
+              "id": "reliquary",
+              "mass": 2000000
+            }
+          ]
+        }
+      }
+    },
+    {
+      "definition_id": "javelin",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "lance",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 6000000
+        }
+      }
+    },
+    {
+      "definition_id": "leather-armor",
+      "source_pages": [
+        92
+      ],
+      "quantity_unit": "one suit",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 10000000
+        }
+      }
+    },
+    {
+      "definition_id": "light-crossbow",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 5000000
+        }
+      }
+    },
+    {
+      "definition_id": "light-hammer",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "longbow",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "longsword",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    },
+    {
+      "definition_id": "mace",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "maul",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 10000000
+        }
+      }
+    },
+    {
+      "definition_id": "morningstar",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "musket",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 10000000
+        }
+      }
+    },
+    {
+      "definition_id": "needles",
+      "source_pages": [
+        94,
+        96
+      ],
+      "quantity_unit": "one projectile",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 20000
+        }
+      }
+    },
+    {
+      "definition_id": "pike",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 18000000
+        }
+      }
+    },
+    {
+      "definition_id": "pistol",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    },
+    {
+      "definition_id": "playing-cards",
+      "source_pages": [
+        94
+      ],
+      "quantity_unit": "one gaming set",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "quarterstaff",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "quiver",
+      "source_pages": [
+        95,
+        99
+      ],
+      "quantity_unit": "one empty quiver, excluding arrows",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 1000000
+        }
+      }
+    },
+    {
+      "definition_id": "rapier",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "rations",
+      "source_pages": [
+        95,
+        97,
+        99
+      ],
+      "quantity_unit": "one day of rations; current quantity counts days",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "rope",
+      "source_pages": [
+        95,
+        99
+      ],
+      "quantity_unit": "one source rope item; no rope length is asserted here",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 5000000
+        }
+      }
+    },
+    {
+      "definition_id": "scimitar",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    },
+    {
+      "definition_id": "shield",
+      "source_pages": [
+        92
+      ],
+      "quantity_unit": "one shield",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 6000000
+        }
+      }
+    },
+    {
+      "definition_id": "shortbow",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "shortsword",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "sickle",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "sling",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one physical weapon",
+      "currently_materializable": false,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "sling-bullets",
+      "source_pages": [
+        94,
+        96
+      ],
+      "quantity_unit": "one projectile",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 75000
+        }
+      }
+    },
+    {
+      "definition_id": "spear",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    },
+    {
+      "definition_id": "spell-material:dancing-lights",
+      "source_pages": [
+        121,
+        122
+      ],
+      "quantity_unit": "one complete physical material set for this spell",
+      "currently_materializable": false,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "spell-material:fireball",
+      "source_pages": [
+        131
+      ],
+      "quantity_unit": "one complete physical material set for this spell",
+      "currently_materializable": false,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "spell-material:hold-person",
+      "source_pages": [
+        141
+      ],
+      "quantity_unit": "one complete physical material set for this spell",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "spell-material:mage-armor",
+      "source_pages": [
+        145
+      ],
+      "quantity_unit": "one complete physical material set for this spell",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "spell-material:shield-of-faith",
+      "source_pages": [
+        162
+      ],
+      "quantity_unit": "one complete physical material set for this spell",
+      "currently_materializable": false,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "three-dragon-ante",
+      "source_pages": [
+        94
+      ],
+      "quantity_unit": "one gaming set",
+      "currently_materializable": true,
+      "mass": "Unquantified"
+    },
+    {
+      "definition_id": "travelers-clothes",
+      "source_pages": [
+        95,
+        97
+      ],
+      "quantity_unit": "one set of Traveler's Clothes",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "trident",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 4000000
+        }
+      }
+    },
+    {
+      "definition_id": "wand",
+      "source_pages": [
+        96
+      ],
+      "quantity_unit": "one ordinary Arcane Focus wand",
+      "currently_materializable": true,
+      "mass": {
+        "Intrinsic": {
+          "mass": 1000000
+        }
+      }
+    },
+    {
+      "definition_id": "war-pick",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 2000000
+        }
+      }
+    },
+    {
+      "definition_id": "warhammer",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 5000000
+        }
+      }
+    },
+    {
+      "definition_id": "waterskin",
+      "source_pages": [
+        95,
+        100
+      ],
+      "quantity_unit": "one full waterskin including contents",
+      "currently_materializable": true,
+      "mass": {
+        "ConditionalGross": {
+          "condition": "full",
+          "mass": 5000000
+        }
+      }
+    },
+    {
+      "definition_id": "whip",
+      "source_pages": [
+        91
+      ],
+      "quantity_unit": "one ordinary physical weapon",
+      "currently_materializable": false,
+      "mass": {
+        "Intrinsic": {
+          "mass": 3000000
+        }
+      }
+    }
+  ]
+}

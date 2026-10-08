@@ -5,9 +5,11 @@ mod rules_runtime;
 mod tactical_runtime;
 pub use rules_runtime::*;
 pub use tactical_runtime::TacticalReceipt;
+mod table_physical;
 mod table_presentation_history;
 mod table_projection;
 mod table_protocol;
+pub use table_physical::*;
 mod table_transport;
 mod table_transport_runtime;
 pub use table_protocol::*;
@@ -255,14 +257,16 @@ impl CampaignRuntime {
     }
 
     fn uses_rules(state: &CampaignState) -> bool {
-        state.rules.is_some()
+        state.physical_facts.is_some()
+            || state.rules.is_some()
             || state.table.is_some()
             || state.encounter.is_some()
             || state.campaign.ruleset.id == "srd-5.2"
     }
 
     fn requires_original_history(state: &CampaignState) -> bool {
-        dmd_rules::table::grapple_enabled(state)
+        dmd_rules::physical_facts::enabled(state)
+            || dmd_rules::table::grapple_enabled(state)
             || dmd_domain::has_unimplemented_grapple_records(state)
     }
 

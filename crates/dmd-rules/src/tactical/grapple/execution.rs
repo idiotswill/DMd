@@ -52,6 +52,7 @@ impl<'pack> GuardedGrappleExecution<'pack> {
         // constructs guarded authority; neither a caller nor a state clone can.
         let mut candidate = Box::new(self.state.clone());
         let mut execution = ExecutionContext {
+            mass: None,
             guarded: Some(GuardedCommand {
                 predecessor: &self.state,
                 candidate: std::ptr::from_ref(candidate.as_ref()),
@@ -117,12 +118,14 @@ struct GuardedCommand<'a> {
 /// type is not Clone, and guarded construction remains private to the owner.
 pub(crate) struct ExecutionContext<'a> {
     guarded: Option<GuardedCommand<'a>>,
+    mass: Option<crate::physical_facts::execution::MassCommand<'a>>,
 }
 
 pub(crate) struct ReadContext<'a> {
     state: &'a CampaignState,
     guarded: Option<&'a GuardedCommand<'a>>,
     closed: Option<&'a crate::table::execution::ClosedImage>,
+    mass: Option<&'a crate::physical_facts::execution::MassCommand<'a>>,
 }
 
 impl<'a> ReadContext<'a> {
@@ -131,6 +134,7 @@ impl<'a> ReadContext<'a> {
             state: image.state(),
             guarded: None,
             closed: Some(image),
+            mass: None,
         }
     }
 
@@ -139,11 +143,43 @@ impl<'a> ReadContext<'a> {
             state,
             guarded: None,
             closed: None,
+            mass: None,
         }
     }
 
     pub(crate) fn state(&self) -> &'a CampaignState {
         self.state
+    }
+
+    pub(crate) fn validate_physical_facts(&self) -> Result<(), RulesError> {
+        if self.state.physical_facts.is_none() && self.mass.is_none() {
+            return Ok(());
+        }
+        crate::physical_facts::validate_shapes(self.state).map_err(|e| invalid(&e))?;
+        if let Some(mass) = self.mass {
+            mass.validate_read(self.state).map_err(|e| invalid(&e))
+        } else if self.closed.is_some() {
+            Ok(())
+        } else {
+            Err(invalid(
+                "Physical facts require their owned original history.",
+            ))
+        }
+    }
+
+    pub(crate) fn physical_sources(
+        &self,
+    ) -> Result<&crate::physical_facts::execution::PhysicalSources, RulesError> {
+        self.validate_physical_facts()?;
+        if let Some(closed) = self.closed {
+            Ok(closed.physical_sources())
+        } else if let Some(mass) = self.mass {
+            Ok(mass.sources())
+        } else {
+            Err(invalid(
+                "Physical source information requires an owned image.",
+            ))
+        }
     }
 
     pub(crate) fn require_guarded(&self, message: &str) -> Result<(), RulesError> {
@@ -263,6 +299,7 @@ impl<'owner> ExecutionContext<'owner> {
         command: &'owner CommandMeta,
     ) -> Self {
         Self {
+            mass: None,
             guarded: Some(GuardedCommand {
                 predecessor: predecessor.state(),
                 candidate: std::ptr::from_ref(candidate),
@@ -274,6 +311,10 @@ impl<'owner> ExecutionContext<'owner> {
 
     pub(crate) fn is_owned(&self) -> bool {
         self.guarded.is_some()
+    }
+    /// Transactional candidate identity only; this does not grant a game capability.
+    pub(in crate::tactical) fn has_fixed_candidate(&self) -> bool {
+        self.guarded.is_some() || self.mass.is_some()
     }
     pub(in crate::tactical) fn settle_work(
         &self,
@@ -313,7 +354,35 @@ impl<'owner> ExecutionContext<'owner> {
     }
 
     pub(crate) fn ordinary() -> Self {
-        Self { guarded: None }
+        Self {
+            guarded: None,
+            mass: None,
+        }
+    }
+
+    pub(crate) fn attach_mass(
+        &mut self,
+        predecessor: &'owner crate::table::execution::ClosedImage,
+        candidate: &CampaignState,
+        command: &'owner CommandMeta,
+    ) {
+        self.mass = Some(crate::physical_facts::execution::MassCommand::new(
+            predecessor,
+            candidate,
+            command,
+        ));
+    }
+    pub(crate) fn accept_physical_fact(
+        &mut self,
+        candidate: &mut CampaignState,
+        command: &CommandMeta,
+        acceptance: &PhysicalFactAcceptance,
+    ) -> Result<(), RulesError> {
+        self.mass
+            .as_mut()
+            .ok_or_else(|| invalid("Physical facts require the owned Host producer."))?
+            .apply(candidate, command, acceptance)
+            .map_err(|e| invalid(&e))
     }
 
     pub(in crate::tactical) fn observe_encounter_replacement(
@@ -448,10 +517,14 @@ impl<'owner> ExecutionContext<'owner> {
             state,
             guarded: self.guarded.as_ref(),
             closed: None,
+            mass: self.mass.as_ref(),
         })
     }
 
     fn check_state(&self, state: &CampaignState) -> Result<(), RulesError> {
+        if let Some(mass) = &self.mass {
+            mass.check(state).map_err(|e| invalid(&e))?;
+        }
         if self
             .guarded
             .as_ref()
@@ -698,6 +771,9 @@ impl<'owner> ExecutionContext<'owner> {
 
     pub(crate) fn validate_delta(&self, state: &CampaignState) -> Result<(), RulesError> {
         self.check_state(state)?;
+        if let Some(mass) = &self.mass {
+            mass.validate_delta(state).map_err(|e| invalid(&e))?;
+        }
         self.validate_opportunity_delta(state)?;
         let Some(owned) = &self.guarded else {
             return Ok(());

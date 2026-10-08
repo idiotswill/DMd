@@ -117,6 +117,12 @@ pub(crate) fn project_table_read(
     let state = read.state();
     let mut view =
         project_table_v1_read(read, viewer.clone(), events, observations, visible_events)?;
+    if dmd_rules::physical_facts::enabled(state) {
+        let ProjectionRead::Owned(owned) = read else {
+            return Err(invalid("Physical facts require original table history."));
+        };
+        view.physical = Some(crate::table_physical::view(owned, &viewer).map_err(invalid)?);
+    }
     if dmd_rules::table::grapple_enabled(state) {
         let ProjectionRead::Owned(owned) = read else {
             return Err(invalid(
@@ -427,6 +433,7 @@ fn project_table_v1_read(
         .collect();
     Ok(TableView {
         inspiration_transfer: None,
+        physical: None,
         grapple: None,
         source_control: None,
         campaign_id,

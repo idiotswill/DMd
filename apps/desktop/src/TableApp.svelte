@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
   import ContractForm from './components/ContractForm.svelte';
+  import PhysicalFactsPanel from './components/PhysicalFactsPanel.svelte';
   import CharacterForm from './components/CharacterForm.svelte';
   import CharacterSheet from './components/CharacterSheet.svelte';
   import SessionForm from './components/SessionForm.svelte';
@@ -22,6 +23,7 @@
   let view = $state<TableView | null>(null);
   let savageOption = $state<{ weapon_dice: number; heroic_inspiration: boolean } | null>(null);
   let heroicInspiration = $state(false);
+  let rollDisplayReason = $state<string | undefined>();
   let creatureCatalog = $state<CreatureOption[] | null>(null);
   let sourceControlOptions = $state<SourceControlOptions | null>(null);
   let sourceControlLoading = $state(false);
@@ -60,11 +62,11 @@
   function rememberSelection() { saveSelection({ campaignId: campaignId || null, playerId: playerId || null, ...(sourceActorId ? {sourceActorId} : {}) }); }
   async function refresh() {
     const generation = ++refreshGeneration;
-    const target = campaignId; const selectedPlayer = playerId;
-    view = null; options = null; hostSituation = null; savageOption = null; heroicInspiration = false; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
+    const target = campaignId; const selectedPlayer = playerId; const initialSource = sourceActorId;
+    view = null; options = null; hostSituation = null; savageOption = null; heroicInspiration = false; rollDisplayReason = undefined; creatureCatalog = null; sourceControlOptions = null; sourceControlLoading=false;
     if (!target) return;
     const [next, choices, situation] = await Promise.all([tableApi.view(target, selectedPlayer ? { Player: selectedPlayer } : 'Host'), tableApi.options(target), selectedPlayer ? Promise.resolve(null) : tableApi.situation(target)]);
-    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer) return;
+    if (generation !== refreshGeneration || campaignId !== target || playerId !== selectedPlayer || sourceActorId !== initialSource) return;
     view = next; options = choices; hostSituation = situation ?? null;
     if (!retry && sourceActorId && !next.source_control?.actors.some(actor=>actor.actor===sourceActorId&&typeof actor.controller==='object'&&actor.controller.Player===selectedPlayer)) sourceActorId='';
     rememberSelection();
@@ -75,10 +77,17 @@
       && ((!selectedPlayer && hostMayRoll(next))
         || selected?.entity_id===next.roll.roller && !sourceActorId
         || next.source_control?.actors.some(actor=>actor.actor===sourceActorId&&actor.actor===next.roll?.roller&&typeof actor.controller==='object'&&actor.controller.Player===selectedPlayer))) {
-      const answer = await tableApi.rollOptions({campaign_id:target,revision:next.revision,roll_id:next.roll.id,
-        channel:selectedPlayer ? sourceActorId ? {SourceCreature:{player_id:selectedPlayer,actor:sourceActorId}} : {Player:{player_id:selectedPlayer,character_id:attending!.character_id!}} : 'Host'});
-      if(generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&view?.revision===next.revision) {
-        savageOption=answer.savage_attacker; heroicInspiration=answer.heroic_inspiration ?? false;
+      const selectedSource=sourceActorId, rollId=next.roll.id;
+      const current=()=>generation===refreshGeneration&&campaignId===target&&playerId===selectedPlayer&&sourceActorId===selectedSource&&view?.revision===next.revision&&view?.roll?.id===rollId;
+      try {
+        const answer = await tableApi.rollDetails({version:1,campaign_id:target,revision:next.revision,roll_id:rollId,
+          channel:selectedPlayer ? selectedSource ? {SourceCreature:{player_id:selectedPlayer,actor:selectedSource}} : {Player:{player_id:selectedPlayer,character_id:attending!.character_id!}} : 'Host'});
+        if(current()) {
+          if(answer.version!==1)throw new Error('Unsupported roll details version.');
+          savageOption=answer.options.savage_attacker; heroicInspiration=answer.options.heroic_inspiration ?? false; rollDisplayReason=answer.display_reason;
+        }
+      } catch(reason) {
+        if(current())throw reason;
       }
     }
   }
@@ -114,15 +123,19 @@
     catch(reason) { if(current())await showError(reason); } finally { if(current())sourceControlLoading=false; }
   }
   async function enableSourceControl(adopted: SourceAdoption[]) {
-    try { await send({kind:'action',request:{...context(),version:view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? view?.grapple?.version ?? 2,action:{EnableSourceActorAccess:{adopted}}}}); }
     catch(reason) { await showError(reason); }
   }
+  async function enablePhysicalFacts() {
+    try { await send({kind:'action',request:{...context(),version:5,action:'EnablePhysicalFacts'}}); }
+    catch (reason) { await showError(reason); }
+  }
   async function enableGroundDrag() {
-    try { await send({kind:'action',request:{...context(),version:4,action:'EnableGrappleTransport'}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? 4,action:'EnableGrappleTransport'}}); }
     catch(reason) { await showError(reason); }
   }
   async function enableGrapple() {
-    try { await send({kind:'action',request:{...context(),version:3,action:'EnableGrappleAccess'}}); }
+    try { await send({kind:'action',request:{...context(),version:view?.physical?.version ?? 3,action:'EnableGrappleAccess'}}); }
     catch(reason) { await showError(reason); }
   }
   async function initialize() {
@@ -146,7 +159,7 @@
     if (!view) throw new Error('Open the saved campaign first.');
     if (playerId && (!attending || (sourceActorId ? !sourceActor : !binding?.character_id))) throw new Error('Select an attending player and their controlled actor.');
     const channel:LocalChannel = playerId ? sourceActor ? {SourceCreature:{player_id:playerId,actor:sourceActor.actor}} : {Player:{player_id:playerId,character_id:binding!.character_id!}} : 'Host';
-    return { command_id: newId(), campaign_id: view.campaign_id, version: view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
+    return { command_id: newId(), campaign_id: view.campaign_id, version: view.physical?.version ?? view.grapple?.version ?? (view.source_control ? 2 : 1), revision: view.revision,
       session_id: sessionId === undefined ? view.active_session?.session_id ?? null : sessionId,
       channel };
   }
@@ -258,6 +271,7 @@
     <nav class="actions" aria-label="Campaign sections"><button class:secondary={page !== 'play'} onclick={() => { page = 'play'; }}>Table and sheets</button>{#if host}<button class:secondary={page !== 'setup'} onclick={() => { page = 'setup'; }}>Setup and host controls</button>{/if}</nav>
     {#if host && hostSituation?.challenges.length}<details class="panel"><summary>Current host check context</summary><p class="muted">These difficulties and unrevealed consequences are host-only.</p>{#each hostSituation.challenges as challenge}<article><h3>{challenge.title}</h3><p>{challenge.description}</p><p>{challenge.kind.Check.ability}{challenge.kind.Check.skill ? ` (${challenge.kind.Check.skill})` : ''} · DC {challenge.dc} · {challenge.resolution ? 'Resolved' : 'Unresolved'}</p><p>On success: {challenge.success}</p><p>On failure: {challenge.failure}</p></article>{/each}</details>{/if}
     {#if page === 'setup' && host}
+      {#key view.revision}<PhysicalFactsPanel physical={view.physical} {host} disabled={gameLocked} onEnable={enablePhysicalFacts} onAccept={(handle,input)=>act({PhysicalFact:{handle,input}})} />{/key}
       <SourceControlForm control={view.source_control} options={sourceControlOptions} players={view.players} disabled={gameLocked||sourceControlLoading||!!view.pending||!!view.roll} onReview={reviewSourceControl} onEnable={enableSourceControl} onAssign={(actor,controller)=>act({SetSourceCreatureController:{actor,controller}})}/>
       <section class="panel"><h2>Table agreement</h2>{#if view.active_session}<p>End the session to update the agreement.</p><details><summary>Read saved agreement</summary><dl>{#each Object.entries(view.contract).filter(([,value]) => typeof value === 'string') as [key,value]}<dt>{key.replaceAll('_',' ')}</dt><dd>{value}</dd>{/each}</dl></details>{:else}{#key view.revision}<ContractForm value={view.contract} disabled={gameLocked} mechanicsLocked={view.characters.length > 0} onSave={(contract) => act({ UpdateContract: { contract } })} />{/key}{/if}</section>
       {#if !view.active_session}
@@ -274,13 +288,14 @@
         {#if view.pending}<div class="pending"><h3>Uncommitted declaration</h3><p class="preserve">{view.pending.text}</p>{#if typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent}<p>{view.pending.intent.Unresolved.question}</p>{:else}<p>The proposed action is understood and awaits the host's roll request.</p>{/if}
           {#if host}<button disabled={gameLocked || (typeof view.pending.intent === 'object' && 'Unresolved' in view.pending.intent)} onclick={() => view?.pending && act({ Adjudicate: { pending_id: view.pending.id, revision: view.pending.revision, request_id: newId() } })}>Request the supported roll</button>{:else if ownsPending && canSpeak}<div class="actions"><button class="secondary" disabled={gameLocked} onclick={() => { text = 'Actually '; document.getElementById('table-text')?.focus(); }}>Correct this declaration</button><button class="secondary" disabled={gameLocked} onclick={() => view?.pending && act({ CancelDecision: { pending_id: view.pending.id, revision: view.pending.revision } })}>Withdraw declaration</button></div>{:else if ownsPending}<p>Switch to your player character to correct or withdraw this declaration.</p>{/if}
         </div>{/if}
-        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
+        {#if view.roll}{#if (!host && attending && selectedActor === view.roll.roller) || (host && !!view.tactical && hostMayRoll(view))}{#key `${host}:${playerId}:${sourceActorId}:${view.roll.id}`}<RollForm request={view.roll} displayReason={rollDisplayReason} {savageOption} {heroicInspiration} disabled={gameLocked} onSubmit={reportFaces} onSavage={reportSavage} onInspiration={reportInspiration} />{/key}{:else}<p>A physical roll is pending. Select the attending player's channel to report their dice.</p>{/if}{/if}
         {#if !host && sourceActor}<p>Controlling {sourceActor.name}. Use the encounter controls and physical dice requests for this creature.</p>{:else if !host && canSpeak}<form onsubmit={speak}><fieldset disabled={locked}><legend>Talk at the table</legend><label for="table-text">Your declaration, question or correction</label><textarea id="table-text" required maxlength="8000" rows="3" bind:value={text}></textarea><p class="muted">Use ordinary words. Questions do not take actions. Begin a correction with “Actually”. Unclear actions wait for clarification.</p><button type="submit">Send to the table</button></fieldset></form>{:else if host}<p>Select an attending player's channel to speak or report dice. The host requests supported rolls and establishes scene context.</p>{:else}<p>This player is not currently present with a bound character. The host can set attendance when starting the next session.</p>{/if}
       </section>
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={gameLocked||!!view.pending||!view.active_session} administrativeDisabled={gameLocked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
       <GrapplePanel {view} {host} actor={selectedActor??null} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
       <InspirationTransfer {view} {host} disabled={locked} canChoose={!sourceActor && currentCharacter?.character_id===view.inspiration_transfer?.character_id} onChoice={handle=>act({InspirationTransfer:{handle}})} />
       {#key `${campaignId}:${view.active_session?.session_id}:${host}`}<InspirationAward {view} {host} disabled={gameLocked} onAward={(character_id,reason)=>act({AwardHeroicInspiration:{character_id,reason}})} onExcessAward={(character_id,reason)=>act({AwardExcessInspiration:{character_id,reason}})} />{/key}
+      <PhysicalFactsPanel physical={view.physical} host={false} disabled={gameLocked} />
       <section class="panel"><h2>Character sheets</h2>{#each view.characters as character (character.character_id)}<CharacterSheet {character} disabled={gameLocked || !!view.pending || !!view.roll} onPrepare={host && character.equipment && !character.equipment.prepared ? () => act({ PrepareEquipment: { character_id: character.character_id, item_ids: Array.from({ length: character.equipment!.initial_item_count }, () => newId()) } }) : undefined} />{:else}<p>Create your first character in host setup.</p>{/each}</section>
       <section class="panel"><h2>Player-safe recap</h2>{#if view.recap.length}<ol>{#each view.recap as entry}<li class="preserve">{entry}</li>{/each}</ol>{:else}<p>No accepted outcomes yet. Proposed actions and questions do not enter the recap.</p>{/if}</section>
       <section class="panel"><h2>Table transcript</h2><div class="transcript" role="log" aria-label="Saved table transcript">{#each view.transcript as entry (entry.id)}<article><p><strong>{entry.speaker}</strong> <span class="tag">{entry.kind}</span></p><p class="preserve">{entry.text}</p></article>{:else}<p>Your accepted table activity and conversation appear here.</p>{/each}</div></section>

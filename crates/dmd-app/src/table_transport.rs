@@ -11,6 +11,7 @@ pub const TABLE_TRANSPORT_VERSION: u32 = 1;
 pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
 pub const TABLE_GRAPPLE_TRANSPORT_VERSION: u32 = 3;
 pub const TABLE_GROUND_DRAG_TRANSPORT_VERSION: u32 = 4;
+pub const TABLE_PHYSICAL_TRANSPORT_VERSION: u32 = 5;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -40,6 +41,11 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    EnablePhysicalFacts,
+    PhysicalFact {
+        handle: CommandId,
+        input: PhysicalFactInput,
+    },
     InspirationTransfer {
         handle: CommandId,
     },
@@ -155,6 +161,25 @@ pub struct TableRollOptions {
     pub heroic_inspiration: Option<bool>,
 }
 
+/// Opted-in live guidance; this never changes retained presentation bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetailsRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub roll_id: RollRequestId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetails {
+    pub version: u32,
+    pub options: TableRollOptions,
+    pub display_reason: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableSavageAttackerOption {
     pub weapon_dice: usize,
@@ -261,6 +286,8 @@ pub struct TableHostDiagnostics {
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical: Option<TablePhysicalView<CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub inspiration_transfer: Option<TableInspirationTransferView<CommandId>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -586,6 +613,34 @@ pub(crate) fn presented_view(
                                 })?),
                                 actor: choice.actor,
                                 label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
+        physical: raw
+            .physical
+            .map(|physical| {
+                Ok::<_, &str>(TablePhysicalView {
+                    version: physical.version,
+                    actors: physical.actors,
+                    controls: physical
+                        .controls
+                        .into_iter()
+                        .map(|control| {
+                            Ok::<_, &str>(TablePhysicalControl {
+                                key: CommandId(handle(&ProjectionCapability::PhysicalFact {
+                                    offer: control.key,
+                                })?),
+                                label: control.label,
+                                kind: control.kind,
+                                source: control.source,
+                                conditions: control.conditions,
+                                unit: control.unit,
+                                gross: control.gross,
+                                wallet_cp: control.wallet_cp,
                             })
                         })
                         .collect::<Result<Vec<_>, _>>()?,

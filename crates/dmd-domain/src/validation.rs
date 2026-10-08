@@ -29,6 +29,11 @@ impl CampaignState {
     #[must_use]
     pub fn validate(&self) -> Vec<StateInvariantViolation> {
         let mut violations = self.validate_references();
+        if self.schema_version < 4 && self.physical_facts.is_some() {
+            violations.push(StateInvariantViolation::InvalidEncounterState(
+                "Legacy state contains physical-fact authority.".into(),
+            ));
+        }
         if let Err(message) = crate::validate_tactical_grapple_shapes(self) {
             violations.push(StateInvariantViolation::InvalidEncounterState(message));
         }

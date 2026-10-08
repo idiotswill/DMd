@@ -1,5 +1,6 @@
 //! Real setup and one-command cold/portable execution for physical creation tests.
 use super::*;
+use dmd_rules::tactical::TacticalAction;
 use sqlx::Row;
 
 pub(super) fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {

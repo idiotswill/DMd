@@ -1179,6 +1179,7 @@ fn negative_only_changed_cuts_source_and_ancestry_cannot_replace_owned_attack_ev
         let mut candidate = Box::new(before.clone());
         let meta = command(&before, Some(goblin));
         let execution = ExecutionContext {
+            mass: None,
             guarded: Some(GuardedCommand {
                 predecessor: &before,
                 candidate: std::ptr::from_ref(candidate.as_ref()),

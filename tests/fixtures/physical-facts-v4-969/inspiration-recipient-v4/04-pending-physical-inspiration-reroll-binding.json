@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "699bcf11-d056-4ddf-ac8e-2e970c8cbd03",
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+    "issuer": {
+      "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+    },
+    "actor": {
+      "Entity": "b15b79ec-9afd-4372-ae20-8e0f18bd060c"
+    },
+    "expected_event_sequence": 23
+  },
+  "audience": {
+    "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+  },
+  "projection_ordinal": 25,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 24
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"699bcf11-d056-4ddf-ac8e-2e970c8cbd03\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":{\"Player\":{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\"}},\"revision\":\"6079ffba-603a-4e87-892d-337f92aee2a3\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"SubmitRollWithInspiration\":{\"result\":{\"request_id\":\"cb4ec118-839a-4796-a7a0-d57491f715bf\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":1}]},\"die_index\":0,\"replacement\":{\"sides\":20,\"value\":20}}}}}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"699bcf11-d056-4ddf-ac8e-2e970c8cbd03\",\"revision\":\"a343bc2e-28ce-4402-bf71-29567714626a\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+}

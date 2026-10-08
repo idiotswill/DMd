@@ -78,6 +78,9 @@ mod cleanup;
 #[path = "support/grapple_original_mage.rs"]
 mod original_mage;
 
+#[path = "support/finished_character_creation.rs"]
+mod finished_character_creation;
+
 #[path = "support/grapple_mage_components.rs"]
 mod mage_components;
 
@@ -89,6 +92,9 @@ mod physical_graze;
 
 #[path = "support/grapple_physical_opportunity.rs"]
 mod physical_opportunity;
+
+#[path = "support/table_grapple_roll_details.rs"]
+mod roll_details;
 
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(

@@ -670,7 +670,7 @@ pub(super) fn choose_with_context(
     pack: &RulesPack,
     execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    if execution.is_owned() {
+    if execution.has_fixed_candidate() {
         choose_inner(state, meta, work, choice, pack, execution)
     } else {
         let mut candidate = state.clone();

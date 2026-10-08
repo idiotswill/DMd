@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "60a68a86-765e-4bb7-a066-803f5efdf0c5",
+    "campaign_id": "cb6a408d-e54f-4ec5-a139-ede41d8f152c",
+    "session_id": "a00cb016-d7f6-4d9f-a531-8967fdf59ce4",
+    "issuer": {
+      "Player": "32678806-1ea1-49fa-ab35-9b9c5a7664d6"
+    },
+    "actor": {
+      "Entity": "6ea87923-b484-4e7c-8c72-ff87757a00ee"
+    },
+    "expected_event_sequence": 29
+  },
+  "audience": {
+    "Player": "32678806-1ea1-49fa-ab35-9b9c5a7664d6"
+  },
+  "projection_ordinal": 31,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 30
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"60a68a86-765e-4bb7-a066-803f5efdf0c5\",\"campaign_id\":\"cb6a408d-e54f-4ec5-a139-ede41d8f152c\",\"session_id\":\"a00cb016-d7f6-4d9f-a531-8967fdf59ce4\",\"channel\":{\"Player\":{\"player_id\":\"32678806-1ea1-49fa-ab35-9b9c5a7664d6\",\"character_id\":\"78f9d4ad-0f25-451d-a487-9d91876b9769\"}},\"revision\":\"67462508-1712-4992-a349-000597fe2d01\",\"input\":{\"Action\":{\"Tactical\":{\"action\":\"EndTurn\"}}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"60a68a86-765e-4bb7-a066-803f5efdf0c5\",\"revision\":\"818e5018-e1a1-4839-bab7-3532d14d3c7e\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+}

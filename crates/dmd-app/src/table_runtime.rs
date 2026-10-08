@@ -50,8 +50,8 @@ pub(crate) fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> Str
     match purpose {
         PendingPurpose::TacticalInitiative { .. } => "Initiative".into(),
         PendingPurpose::TacticalResolution { key, .. } => match key.role {
-            // No current producer can issue these roles; runtime admission rejects
-            // all Grapple records until the separately reviewed resolver exists.
+            // Retained presentation history includes this original label. Live
+            // guidance uses the separate authenticated roll-details read below.
             TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => "Unsupported roll",
             TacticalRollRole::ShoveSave => "Shove saving throw",
             TacticalRollRole::Medicine => "Wisdom (Medicine) first aid",
@@ -123,6 +123,33 @@ pub(crate) fn roll_label(purpose: &PendingPurpose, state: &CampaignState) -> Str
     }
 }
 
+/// Called only inside the authenticated current-roll read. Protocol replay has
+/// already validated this exact pending request against its owned source/work.
+pub(crate) fn live_roll_label(
+    pending: &PendingRoll,
+    state: &CampaignState,
+) -> Result<String, String> {
+    if let PendingPurpose::TacticalResolution { key, .. } = &pending.purpose {
+        match key.role {
+            TacticalRollRole::GrappleSave => {
+                if pending.request.reason != "Grapple saving throw" {
+                    return Err("The authenticated Grapple save request differs.".into());
+                }
+                return Ok("Grapple saving throw".into());
+            }
+            TacticalRollRole::GrappleEscape => {
+                return match pending.request.reason.as_str() {
+                    "Strength (Athletics) Escape" => Ok("Strength (Athletics) Escape".into()),
+                    "Dexterity (Acrobatics) Escape" => Ok("Dexterity (Acrobatics) Escape".into()),
+                    _ => Err("The authenticated Escape choice differs.".into()),
+                };
+            }
+            _ => {}
+        }
+    }
+    Ok(roll_label(&pending.purpose, state))
+}
+
 pub(crate) fn sheet_details(rules: &RulesState, entity: &MechanicalEntity) -> TableSheetDetails {
     let mut conditions = dmd_rules::active_conditions(rules, entity.entity_id)
         .into_iter()
@@ -169,7 +196,7 @@ pub(crate) fn validate_table_observation(
     }
     let body: TableObservationBody = match record.payload_schema_version {
         1 => serde_json::from_str(&record.payload_json).map_err(|error| error.to_string())?,
-        2..=5 => {
+        2..=6 => {
             serde_json::from_str::<crate::table_transport::TransportedTableObservation>(
                 &record.payload_json,
             )

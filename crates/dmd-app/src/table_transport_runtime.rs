@@ -28,6 +28,8 @@ fn request_meta(
     let enabled = crate::table_source_control::enabled(state);
     let grapple = dmd_rules::table::grapple_enabled(state);
     let transport = dmd_rules::table::grapple_transport_enabled(state);
+    let physical = dmd_rules::physical_facts::enabled(state);
+    let physical_activation = matches!(request.input, TableTransportInput::EnablePhysicalFacts);
     let transport_activation = matches!(&request.input, TableTransportInput::Action(action)
         if matches!(action.as_ref(), TableAction::EnableGrappleTransport));
     let activation = matches!(&request.input, TableTransportInput::Action(action)
@@ -36,7 +38,9 @@ fn request_meta(
         if matches!(action.as_ref(), TableAction::EnableGrappleAccess));
     let supported = match request.version {
         TABLE_TRANSPORT_VERSION => {
-            !enabled
+            !physical
+                && !physical_activation
+                && !enabled
                 && !grapple
                 && !transport_activation
                 && !grapple_activation
@@ -47,19 +51,30 @@ fn request_meta(
                 )
         }
         TABLE_SOURCE_TRANSPORT_VERSION => {
-            !grapple
+            !physical
+                && !physical_activation
+                && !grapple
                 && !transport_activation
                 && !grapple_activation
                 && (enabled || activation && request.channel == TableTransportChannel::Host)
         }
         TABLE_GRAPPLE_TRANSPORT_VERSION => {
-            !transport
+            !physical
+                && !physical_activation
+                && !transport
                 && !transport_activation
                 && (grapple || grapple_activation && request.channel == TableTransportChannel::Host)
         }
         TABLE_GROUND_DRAG_TRANSPORT_VERSION => {
-            transport
-                || grapple && transport_activation && request.channel == TableTransportChannel::Host
+            !physical
+                && !physical_activation
+                && (transport
+                    || grapple
+                        && transport_activation
+                        && request.channel == TableTransportChannel::Host)
+        }
+        TABLE_PHYSICAL_TRANSPORT_VERSION => {
+            physical || physical_activation && request.channel == TableTransportChannel::Host
         }
         _ => false,
     };
@@ -124,7 +139,10 @@ fn derive_intent(
         TableTransportInput::Action(action) => {
             matches!(action.as_ref(), TableAction::Tactical { .. })
         }
-        TableTransportInput::Text { .. } | TableTransportInput::InspirationTransfer { .. } => false,
+        TableTransportInput::Text { .. }
+        | TableTransportInput::InspirationTransfer { .. }
+        | TableTransportInput::EnablePhysicalFacts
+        | TableTransportInput::PhysicalFact { .. } => false,
     };
     if matches!(
         request.channel,
@@ -147,9 +165,51 @@ fn derive_intent(
             .ok_or_else(|| "That roll is not available in this view.".to_owned())
     };
     Ok(match &request.input {
+        TableTransportInput::EnablePhysicalFacts => {
+            if request.version != TABLE_PHYSICAL_TRANSPORT_VERSION
+                || request.channel != TableTransportChannel::Host
+                || dmd_rules::physical_facts::enabled(state)
+            {
+                return Err("Physical facts require a current Host activation.".into());
+            }
+            Intent::Action(Box::new(TableAction::PhysicalFact {
+                acceptance: Box::new(PhysicalFactAcceptance {
+                    offer: PhysicalFactOffer::Enable {
+                        catalog: dmd_rules::physical_facts::catalog::pin()?,
+                    },
+                    input: PhysicalFactInput::Enable,
+                }),
+            }))
+        }
+        TableTransportInput::PhysicalFact { handle, input } => {
+            if request.version != TABLE_PHYSICAL_TRANSPORT_VERSION
+                || request.channel != TableTransportChannel::Host
+                || !dmd_rules::physical_facts::enabled(state)
+            {
+                return Err("Select the current Host physical-fact control.".into());
+            }
+            let offer = current
+                .handles
+                .iter()
+                .find_map(|entry| match &entry.capability {
+                    ProjectionCapability::PhysicalFact { offer } if entry.opaque == handle.0 => {
+                        Some(offer.clone())
+                    }
+                    _ => None,
+                })
+                .ok_or("That physical-fact control is no longer available.")?;
+            Intent::Action(Box::new(TableAction::PhysicalFact {
+                acceptance: Box::new(PhysicalFactAcceptance {
+                    offer,
+                    input: input.clone(),
+                }),
+            }))
+        }
         TableTransportInput::InspirationTransfer { handle } => {
-            if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
-                || !matches!(request.channel, TableTransportChannel::Player { .. })
+            if !matches!(
+                request.version,
+                TABLE_GROUND_DRAG_TRANSPORT_VERSION | TABLE_PHYSICAL_TRANSPORT_VERSION
+            ) || !matches!(request.channel, TableTransportChannel::Player { .. })
                 || !dmd_rules::table::grapple_transport_enabled(state)
             {
                 return Err("Select your current Inspiration choice.".into());
@@ -171,8 +231,10 @@ fn derive_intent(
             }))
         }
         TableTransportInput::MoveGrappled { option, path } => {
-            if request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
-                || !dmd_rules::table::grapple_transport_enabled(state)
+            if !matches!(
+                request.version,
+                TABLE_GROUND_DRAG_TRANSPORT_VERSION | TABLE_PHYSICAL_TRANSPORT_VERSION
+            ) || !dmd_rules::table::grapple_transport_enabled(state)
             {
                 return Err("Ground drag requires the enabled table transport.".into());
             }
@@ -209,7 +271,9 @@ fn derive_intent(
         TableTransportInput::GrappleChoice { handle } => {
             if !matches!(
                 request.version,
-                TABLE_GRAPPLE_TRANSPORT_VERSION | TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                TABLE_GRAPPLE_TRANSPORT_VERSION
+                    | TABLE_GROUND_DRAG_TRANSPORT_VERSION
+                    | TABLE_PHYSICAL_TRANSPORT_VERSION
             ) || !dmd_rules::table::grapple_enabled(state)
             {
                 return Err("Grapple choices require the enabled table transport.".into());
@@ -463,6 +527,9 @@ fn derive_intent(
         }
         TableTransportInput::Action(action) => {
             let mut action = (**action).clone();
+            if matches!(action, TableAction::PhysicalFact { .. }) {
+                return Err("Select the visible Host physical-fact control.".into());
+            }
             if matches!(action, TableAction::ResolveHostInspirationTransfer { .. }) {
                 return Err("Select the visible Inspiration choice handle.".into());
             }
@@ -470,8 +537,10 @@ fn derive_intent(
                 action,
                 TableAction::AwardHeroicInspiration { .. }
                     | TableAction::AwardExcessInspiration { .. }
-            ) && (request.version != TABLE_GROUND_DRAG_TRANSPORT_VERSION
-                || !dmd_rules::table::grapple_transport_enabled(state))
+            ) && (!matches!(
+                request.version,
+                TABLE_GROUND_DRAG_TRANSPORT_VERSION | TABLE_PHYSICAL_TRANSPORT_VERSION
+            ) || !dmd_rules::table::grapple_transport_enabled(state))
             {
                 return Err("Inspiration awards require the current table controls.".into());
             }
@@ -650,9 +719,11 @@ pub(crate) fn validate_event_binding(
         if saved.is_some()
             || crate::table_source_control::enabled(before)
             || dmd_rules::table::grapple_enabled(before)
+            || dmd_rules::physical_facts::enabled(before)
             || matches!(
                 event.action,
-                TableAction::EnableGrappleAccess
+                TableAction::PhysicalFact { .. }
+                    | TableAction::EnableGrappleAccess
                     | TableAction::EnableGrappleTransport
                     | TableAction::AwardHeroicInspiration { .. }
                     | TableAction::AwardExcessInspiration { .. }
@@ -665,7 +736,7 @@ pub(crate) fn validate_event_binding(
         }
         return Ok(());
     }
-    if !matches!(audit.command_schema_version, 2..=5) {
+    if !matches!(audit.command_schema_version, 2..=6) {
         return Err("unsupported transport acceptance".into());
     }
     let envelope: TransportedTableAction =
@@ -705,12 +776,13 @@ pub(crate) fn validate_observation_binding(
         if saved.is_some()
             || crate::table_source_control::enabled(state)
             || dmd_rules::table::grapple_enabled(state)
+            || dmd_rules::physical_facts::enabled(state)
         {
             return Err("legacy observation has an unsolicited transport binding".into());
         }
         return Ok(());
     }
-    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=5) {
+    if record.kind != "table.conversation" || !matches!(record.payload_schema_version, 2..=6) {
         return Err("unsupported protocol observation".into());
     }
     let envelope: TransportedTableObservation =
@@ -806,6 +878,43 @@ impl CampaignRuntime {
         &self,
         request: TableRollOptionsRequest,
     ) -> Result<TableRollOptions, RunnableCampaignError> {
+        self.read_current_roll(request, |_, _, options| Ok(options))
+            .await
+    }
+    pub async fn table_roll_details(
+        &self,
+        request: TableRollDetailsRequest,
+    ) -> Result<TableRollDetails, RunnableCampaignError> {
+        if request.version != 1 {
+            return Err(rejected("Unsupported roll details version."));
+        }
+        self.read_current_roll(
+            TableRollOptionsRequest {
+                campaign_id: request.campaign_id,
+                channel: request.channel,
+                revision: request.revision,
+                roll_id: request.roll_id,
+            },
+            |state, pending, options| {
+                Ok(TableRollDetails {
+                    version: 1,
+                    options,
+                    display_reason: crate::table_runtime::live_roll_label(pending, state)
+                        .map_err(recovery)?,
+                })
+            },
+        )
+        .await
+    }
+    async fn read_current_roll<T>(
+        &self,
+        request: TableRollOptionsRequest,
+        project: impl FnOnce(
+            &CampaignState,
+            &PendingRoll,
+            TableRollOptions,
+        ) -> Result<T, RunnableCampaignError>,
+    ) -> Result<T, RunnableCampaignError> {
         // A read transaction provides one snapshot; this neither bootstraps nor
         // rewrites accepted audience digests, bindings, responses or game state.
         let mut tx = self.pool.begin().await.map_err(recovery)?;
@@ -871,12 +980,16 @@ impl CampaignRuntime {
                     heroic_inspiration: state.rules.as_ref().unwrap().entities[&actor]
                         .heroic_inspiration,
                 });
-        tx.commit().await.map_err(recovery)?;
-        Ok(TableRollOptions {
+        let options = TableRollOptions {
             savage_attacker,
             heroic_inspiration: dmd_rules::table::grapple_transport_enabled(state)
                 .then(|| state.rules.as_ref().unwrap().entities[&actor].heroic_inspiration),
-        })
+        };
+        // The projection runs while the same authenticated execution/read lives.
+        // The legacy caller deliberately retains its original options-only contract.
+        let result = project(state, pending, options)?;
+        tx.commit().await.map_err(recovery)?;
+        Ok(result)
     }
     pub async fn recover_legacy_table_request(
         &self,
@@ -1030,6 +1143,7 @@ impl CampaignRuntime {
         if !accept_new
             || crate::table_source_control::enabled(&state)
             || dmd_rules::table::grapple_enabled(&state)
+            || dmd_rules::physical_facts::enabled(&state)
         {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",
@@ -1037,7 +1151,8 @@ impl CampaignRuntime {
         }
         if matches!(
             action,
-            TableAction::EnableGrappleAccess
+            TableAction::PhysicalFact { .. }
+                | TableAction::EnableGrappleAccess
                 | TableAction::EnableGrappleTransport
                 | TableAction::AwardHeroicInspiration { .. }
                 | TableAction::AwardExcessInspiration { .. }
@@ -1162,6 +1277,7 @@ impl CampaignRuntime {
         if !accept_new
             || crate::table_source_control::enabled(&state)
             || dmd_rules::table::grapple_enabled(&state)
+            || dmd_rules::physical_facts::enabled(&state)
         {
             return Err(rejected(
                 "Refresh this legacy request before submitting new input.",

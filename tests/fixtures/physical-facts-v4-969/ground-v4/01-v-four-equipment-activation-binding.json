@@ -1,0 +1,20 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "1c9a1983-e31e-4260-9cbb-74c6fff07962",
+    "campaign_id": "cb6a408d-e54f-4ec5-a139-ede41d8f152c",
+    "session_id": "a00cb016-d7f6-4d9f-a531-8967fdf59ce4",
+    "issuer": "Admin",
+    "actor": null,
+    "expected_event_sequence": 19
+  },
+  "audience": "Host",
+  "projection_ordinal": 21,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 20
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"1c9a1983-e31e-4260-9cbb-74c6fff07962\",\"campaign_id\":\"cb6a408d-e54f-4ec5-a139-ede41d8f152c\",\"session_id\":\"a00cb016-d7f6-4d9f-a531-8967fdf59ce4\",\"channel\":\"Host\",\"revision\":\"14bd50b9-442b-416e-8a36-439f1bc4cb5b\",\"input\":{\"Action\":{\"Tactical\":{\"action\":\"ActivateAttackEquipment\"}}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"1c9a1983-e31e-4260-9cbb-74c6fff07962\",\"revision\":\"6d5fde1e-ad78-40c2-a865-2e634dea4776\",\"outcome\":{\"message\":\"Attack equipment choices enabled for this encounter.\"}}}"
+}
