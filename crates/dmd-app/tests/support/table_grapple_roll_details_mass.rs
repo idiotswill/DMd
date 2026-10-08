@@ -38,7 +38,7 @@ async fn capabilities(f: &Fixture, grapple: Option<u32>) {
 }
 
 async fn start_mass(source_owner: bool) -> Fixture {
-    let mut f = Box::pin(Fixture::new()).await;
+    let mut f = Box::pin(bodies(source_owner)).await;
     if source_owner {
         Box::pin(f.host(TableAction::SetSourceCreatureController {
             actor: f.goblin,
@@ -92,14 +92,26 @@ async fn start_mass(source_owner: bool) -> Fixture {
             allies: pc.allies.clone(),
             enemies: pc.enemies.clone(),
         }],
-        creatures: vec![TableCreaturePlacement {
+        creatures: std::iter::once(TableCreaturePlacement {
             actor: f.goblin,
             public_label: "Small armored figure".into(),
             position: creature.position,
             height: 8,
             allies: creature.allies.clone(),
             enemies: creature.enemies.clone(),
-        }],
+        })
+        .chain(f.opponent.map(|actor| {
+            let holder = encounter.participant(actor).unwrap();
+            TableCreaturePlacement {
+                actor,
+                public_label: "Other guard".into(),
+                position: holder.position,
+                height: 8,
+                allies: holder.allies.clone(),
+                enemies: holder.enemies.clone(),
+            }
+        }))
+        .collect(),
         geometry_ruling: Ruling {
             basis: RulingBasis::GmAdjudication,
             reason: "Host establishes the retained visible geometry in a genuinely new scene."
@@ -120,6 +132,7 @@ async fn start_mass(source_owner: bool) -> Fixture {
     .await;
     let pc = f.actors[0];
     let goblin = f.goblin;
+    let opponent = f.opponent;
     Box::pin(submit(
         &mut f,
         TableTransportChannel::Host,
@@ -138,7 +151,16 @@ async fn start_mass(source_owner: bool) -> Fixture {
                     },
                     surprised: false,
                 },
-            ],
+            ]
+            .into_iter()
+            .chain(opponent.map(|actor| TacticalCombatant {
+                actor,
+                source: TacticalSource::Creature {
+                    definition_id: "goblin-warrior".into(),
+                },
+                surprised: false,
+            }))
+            .collect(),
             groups: vec![
                 InitiativeGroup {
                     actors: vec![pc],
@@ -148,7 +170,13 @@ async fn start_mass(source_owner: bool) -> Fixture {
                     actors: vec![goblin],
                     request_id: RollRequestId::new(),
                 },
-            ],
+            ]
+            .into_iter()
+            .chain(opponent.map(|actor| InitiativeGroup {
+                actors: vec![actor],
+                request_id: RollRequestId::new(),
+            }))
+            .collect(),
         }),
         5,
     ))
@@ -169,6 +197,16 @@ async fn start_mass(source_owner: bool) -> Fixture {
         .as_ref()
         .unwrap();
     assert_eq!(source.profiles, old_source.profiles);
+    if let Some(holder) = f.opponent {
+        assert_eq!(
+            source.runtime(holder).unwrap().controller,
+            CreatureController::Host
+        );
+        assert_eq!(
+            source.runtime(holder).unwrap().control_origin,
+            old_source.runtime(holder).unwrap().control_origin
+        );
+    }
     assert_eq!(
         source.runtime(goblin).unwrap().controller,
         old_source.runtime(goblin).unwrap().controller
@@ -214,7 +252,10 @@ async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
             },
             2,
         ),
-    ] {
+    ]
+    .into_iter()
+    .chain(f.opponent.map(|_| (TableTransportChannel::Host, 1)))
+    {
         let roll = f.view(channel.clone()).await.roll.unwrap();
         assert_eq!(roll.reason, "Initiative");
         assert_eq!(roll.mode, RollMode::Normal);
@@ -252,6 +293,22 @@ async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
         f.actors[0]
     );
     assert!(state.rules.as_ref().unwrap().pending.is_none());
+    if let Some(holder) = f.opponent {
+        assert_eq!(
+            state
+                .rules
+                .as_ref()
+                .unwrap()
+                .timing
+                .as_ref()
+                .unwrap()
+                .order
+                .iter()
+                .map(|entry| entry.actor)
+                .collect::<Vec<_>>(),
+            vec![f.actors[0], f.goblin, holder]
+        );
+    }
     Box::pin(capabilities(f, None)).await;
     // Real G/T admission requires this settled Active turn, never Finished.
     if let Some(version) = grapple {
@@ -387,11 +444,7 @@ async fn matrix(source_owner: bool, capability: u32) {
                     5,
                 ))
                 .await;
-                let attacker = if source_owner {
-                    f.pc(0)
-                } else {
-                    TableTransportChannel::Host
-                };
+                let attacker = TableTransportChannel::Host;
                 Box::pin(choose(
                     &mut f,
                     attacker.clone(),
@@ -400,6 +453,12 @@ async fn matrix(source_owner: bool, capability: u32) {
                 ))
                 .await;
                 Box::pin(submit(&mut f, attacker, action(TacticalAction::EndTurn), 5)).await;
+                if source_owner {
+                    Box::pin(assert_turn(&f, f.actors[0])).await;
+                    let pc = f.pc(0);
+                    Box::pin(submit(&mut f, pc, action(TacticalAction::EndTurn), 5)).await;
+                    Box::pin(assert_turn(&f, f.goblin)).await;
+                }
                 let offer = f
                     .view(owner.clone())
                     .await
@@ -481,11 +540,7 @@ async fn matrix(source_owner: bool, capability: u32) {
             Box::pin(refused(&f, read)).await;
             Box::pin(capabilities(&f, Some(capability))).await;
             if !escape {
-                let attacker = if source_owner {
-                    f.pc(0)
-                } else {
-                    TableTransportChannel::Host
-                };
+                let attacker = TableTransportChannel::Host;
                 Box::pin(choose(
                     &mut f,
                     attacker,

@@ -854,10 +854,10 @@ impl Fixture {
         self.runtime = runtime(self.pool.clone());
         let accepted = Box::pin(self.runtime.submit_presented_table(request.clone()))
             .await
-            .unwrap();
+            .unwrap_or_else(|error| panic!("cold acceptance failed for {request:?}: {error}"));
         let mirrored = Box::pin(mirror.submit_presented_table(request.clone()))
             .await
-            .unwrap();
+            .unwrap_or_else(|error| panic!("portable acceptance failed for {request:?}: {error}"));
         // Independently accepted projections allocate fresh random audience
         // revisions/handles. Canonical state and public outcome must agree;
         // each database must retain its own exact accepted response on retry.

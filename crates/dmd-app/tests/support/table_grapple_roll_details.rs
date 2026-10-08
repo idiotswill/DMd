@@ -19,8 +19,27 @@ async fn choose(f: &mut Fixture, channel: TableTransportChannel, label: &str, ve
     Box::pin(f.cold(request)).await;
 }
 
+async fn bodies(source_owner: bool) -> Fixture {
+    if source_owner {
+        Box::pin(Fixture::with_opponent(
+            "goblin-warrior",
+            CreatureSize::Small,
+            true,
+        ))
+        .await
+    } else {
+        Box::pin(Fixture::new()).await
+    }
+}
+
+async fn assert_turn(f: &Fixture, actor: EntityId) {
+    let state = f.state().await;
+    let timing = state.rules.as_ref().unwrap().timing.as_ref().unwrap();
+    assert_eq!(timing.order[timing.index].actor, actor);
+}
+
 async fn fixture(version: u32, source_owner: bool) -> Fixture {
-    let mut f = Box::pin(Fixture::new()).await;
+    let mut f = Box::pin(bodies(source_owner)).await;
     if source_owner {
         let actor = f.goblin;
         let controller = CreatureController::Player(f.players[1]);
@@ -324,11 +343,35 @@ async fn pending_save(
 ) -> TableTransportChannel {
     let owner = if source_owner { source(f) } else { f.pc(0) };
     if source_owner {
+        // Closed PvP consent must stay closed. Use an actual opposing Host body.
         let pc = f.pc(0);
+        Box::pin(assert_turn(f, f.actors[0])).await;
+        assert!(
+            f.view(pc.clone())
+                .await
+                .grapple
+                .unwrap()
+                .choices
+                .iter()
+                .all(|offer| !offer
+                    .label
+                    .starts_with("Grapple Small armored figure with "))
+        );
+        Box::pin(submit(f, pc, action(TacticalAction::EndTurn), version)).await;
+        Box::pin(assert_turn(f, f.goblin)).await;
+        Box::pin(submit(
+            f,
+            owner.clone(),
+            action(TacticalAction::EndTurn),
+            version,
+        ))
+        .await;
+        let holder = f.opponent.unwrap();
+        Box::pin(assert_turn(f, holder)).await;
         Box::pin(choose(
             f,
-            pc,
-            "Grapple Small armored figure with left hand",
+            TableTransportChannel::Host,
+            "Grapple Small armored figure with right hand",
             version,
         ))
         .await;
@@ -389,11 +432,7 @@ async fn case(source_owner: bool, escape: bool, version: u32) {
                 version,
             ))
             .await;
-            let attacker = if source_owner {
-                f.pc(0)
-            } else {
-                TableTransportChannel::Host
-            };
+            let attacker = TableTransportChannel::Host;
             Box::pin(choose(
                 &mut f,
                 attacker.clone(),
@@ -408,6 +447,12 @@ async fn case(source_owner: bool, escape: bool, version: u32) {
                 version,
             ))
             .await;
+            if source_owner {
+                Box::pin(assert_turn(&f, f.actors[0])).await;
+                let pc = f.pc(0);
+                Box::pin(submit(&mut f, pc, action(TacticalAction::EndTurn), version)).await;
+                Box::pin(assert_turn(&f, f.goblin)).await;
+            }
             let offer = f
                 .view(owner.clone())
                 .await
@@ -485,11 +530,7 @@ async fn case(source_owner: bool, escape: bool, version: u32) {
         }
         Box::pin(refused(&f, saved_details)).await;
         if !escape {
-            let attacker = if source_owner {
-                f.pc(0)
-            } else {
-                TableTransportChannel::Host
-            };
+            let attacker = TableTransportChannel::Host;
             Box::pin(choose(
                 &mut f,
                 attacker,

@@ -330,7 +330,13 @@ pub(crate) fn choices(
     {
         return Ok(vec![]);
     }
-    let current_flow = flow(state)?;
+    let Some(current_flow) = state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+    else {
+        return Ok(vec![]);
+    };
     if current_flow.phase != TacticalPhase::Active
         || current_flow.resolution.is_some()
         || current_flow.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()

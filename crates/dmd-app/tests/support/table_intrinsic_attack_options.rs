@@ -170,6 +170,41 @@ async fn begin_mass_encounter(f: &mut Fixture, owner: TableTransportChannel) {
         5,
     ))
     .await;
+    // A genuine replacement map is readable before Begin, with retained G4 but
+    // no flow or possible ground-drag offer. These reads must not write rows.
+    let prepared = f.state().await;
+    assert!(prepared.encounter.as_ref().unwrap().flow.is_none());
+    assert!(prepared.rules.as_ref().unwrap().pending.is_none());
+    assert_eq!(
+        prepared.table.as_ref().unwrap().grapple_access,
+        original.table.as_ref().unwrap().grapple_access
+    );
+    assert!(dmd_rules::table::grapple_transport_enabled(&prepared));
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let rows = all_rows(&f.pool).await;
+    for viewer in [
+        TableViewer::Host,
+        TableViewer::Player(f.players[0]),
+        TableViewer::Player(f.players[1]),
+    ] {
+        let raw = f
+            .runtime
+            .table_view(f.campaign, viewer.clone())
+            .await
+            .unwrap();
+        let shown = f
+            .runtime
+            .presented_table_view(f.campaign, viewer)
+            .await
+            .unwrap();
+        assert_eq!(raw.grapple.as_ref().unwrap().version, 4);
+        assert_eq!(shown.grapple.as_ref().unwrap().version, 4);
+        assert!(raw.grapple.unwrap().ground_drag.is_empty());
+        assert!(shown.grapple.unwrap().ground_drag.is_empty());
+    }
+    let premature = request(f, owner.clone()).await;
+    Box::pin(refused(f, premature)).await;
+    Box::pin(unchanged(f, &saved, &rows)).await;
     let actor = f.goblin;
     let pc = f.actors[0];
     Box::pin(submit_at(
@@ -224,6 +259,25 @@ async fn begin_mass_encounter(f: &mut Fixture, owner: TableTransportChannel) {
     }
     let pc = f.pc(0);
     Box::pin(submit_at(f, pc, action(TacticalAction::EndTurn), 5)).await;
+    let active = f.state().await;
+    assert_eq!(
+        active
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .phase,
+        TacticalPhase::Active
+    );
+    assert_eq!(
+        active.table.as_ref().unwrap().grapple_access,
+        prepared.table.as_ref().unwrap().grapple_access
+    );
+    assert!(active.rules.as_ref().unwrap().pending.is_none());
+    let timing = active.rules.as_ref().unwrap().timing.as_ref().unwrap();
+    assert_eq!(timing.order[timing.index].actor, actor);
 }
 
 #[tokio::test]

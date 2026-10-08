@@ -1,9 +1,11 @@
 # Gate 4 — Lawful owned-source rolls and readable replacement setup
 
-Status: plan before implementation, 2026-10-08. Branch
+Status: source correction authored after plan-firstd1c6d4e1, 2026-10-08;
+compilation/runtime UNRUN. Branch
 `codex/gate4-family-receiver`, baseline396530d14135d376e352332129fd7dd6da41574d.
-Root owns this plan and independent review; one delegated writer may implement
-the bounded correction after this plan is committed. No Gate5 work is allocated.
+Root owns this plan and independent review. Delegated sole writer
+`v5_capture_plan_review_oct8` returns source ownership to root at this handback.
+No Gate5 work is allocated.
 
 ## Evidence and objective
 
@@ -74,5 +76,40 @@ ordinary frontend verification. Preserve old failures and every old target.
 Require fresh Linux/MSVC seven-allocation unions, prerequisites, aggregates,
 ordinary Windows package, combined native acceptance and expected-head merge.
 Later literal-main verification and the separate human Gate4 encounter remain
-required. First commit this plan; implement the narrow source/test corrections,
-then return clean source to root for review and actual verification allocation.
+required. Root must independently review the frozen source/test corrections,
+then allocate actual verification. No prior result passes this correction.
+
+## Authored correction and source-only checkpoint
+
+The production change is only the no-flow guard in
+`tactical/grapple/transport.rs::choices`. Original-history, current session and
+attendance checks precede it; all existing flow/version/Active/owner/live-grip
+checks and movement execution remain unchanged. The actual failed request is
+still source-inferred from the preserved shared panic, not newly reproduced.
+
+Only source-owner fixtures add the existing genuine Host goblin opponent. Before
+advancing PC -> owned source -> Host holder, the fixture explicitly asserts that
+the PC has no attempt against the owned target. Host owns its actual Grapple and
+after-equipment completion. Escape advances the intervening PC turn before the
+source owner's action. M replacement preserves the third actual placement,
+source profile/control origin and mutually opposed relationships, then uses a
+separate Host initiative group/physical roll. All source turn identities are
+asserted. PC-only producers still select the original two-body constructor,
+placements, rolls and commands. The four source strata retain their complete
+Strength/Dexterity Save and Athletics/Acrobatics Escape branches and every
+existing read/private-authority/retry/cold/portable/M/G assertion.
+
+The existing intrinsic helper now checks the genuine replacement Prepared map:
+no flow or pending roll, exact retained G4 attachment, empty raw/presented drag
+offers for Host and both players, refused premature intrinsic read and unchanged
+export/all-table rows. Original Begin and physical initiative then proceed to an
+asserted owned active actor, with the existing current intrinsic read afterward.
+Both shared cold acceptance panics now name their request/error. No original
+acceptance/retry/refusal body or test name is removed, and no new test is added.
+
+Direct configured Rustfmt/check (edition2024, skip_children=true, five touched
+Rust files) and `git diff --check` pass. Full source diff/self-review and bounded
+preservation audit are complete. There was no Cargo/compiler/frontend/test,
+application/native/database execution, push or workflow action. All corrected
+runtime evidence remains UNRUN; the five existing failure witnesses must pass
+on the final frozen head before the unchanged full acceptance sequence.
