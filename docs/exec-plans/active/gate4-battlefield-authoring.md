@@ -111,3 +111,20 @@ canonical command, app/database or package has executed for this branch.
 Next: freeze and independently review the exact full diff, resolve any finding,
 then follow the deliberate receiving and verification sequence above. Native
 acceptance and merge remain pending; source authoring is not acceptance.
+
+## Independent capacity finding — before correction
+
+Independent full-source review of `d4ebc263` found one P2 compatibility defect:
+the new combined 512-region cap excludes previously valid mixed maps. The
+unchanged domain independently permits 512 obstacles and 512 terrain volumes.
+Its report is `tooling/ci-oct8/battlefield-d4ebc263-independent-review.md`, SHA256
+`2d552f31f4aaa95b03686ba65706911cefa624b21a09a23fa0ef668093fd2f42`.
+The original source and report remain preserved; all other bounded source and
+preservation checks were clear, with no runtime executed.
+
+Root selects only the exact capacity repair: count wall and nonwall regions
+separately at submission, and allow up to 1024 total draft regions so each
+existing valid combination can be authored. An excess-kind draft can be changed
+to another kind or removed before submission. Keep all geometric/unit checks,
+payloads, existing and new tests and backend bytes unchanged. Freeze the small
+successor diff for independent closure; project execution remains unallocated.
