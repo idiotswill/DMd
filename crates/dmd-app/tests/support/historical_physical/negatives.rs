@@ -603,7 +603,9 @@ pub async fn restore_cases(archive: &archive::Archive) {
             original,
             matched_current(original, &state),
             "forged immutable paired prefix",
-            Layer::Portable("current state is structurally invalid"),
+            Layer::Portable(
+                "current state: decoded snapshot violates campaign-state domain invariants",
+            ),
         ))
         .await;
         let mut state = decoded(original);
@@ -638,7 +640,9 @@ pub async fn restore_cases(archive: &archive::Archive) {
             original,
             matched_current(original, &state),
             "erased free-release receipt",
-            Layer::Portable("current state is structurally invalid"),
+            Layer::Portable(
+                "current state: decoded snapshot violates campaign-state domain invariants",
+            ),
         ))
         .await;
     } else {
@@ -660,7 +664,9 @@ pub async fn restore_cases(archive: &archive::Archive) {
             original,
             matched_current(original, &state),
             "altered Inspiration owner receipt",
-            Layer::Portable("current state is structurally invalid"),
+            Layer::Portable(
+                "current state: decoded snapshot violates campaign-state domain invariants",
+            ),
         ))
         .await;
         let original = &archive.cuts[4].after;

@@ -672,3 +672,10 @@ fresh complete Linux/MSVC unions, MSRV/lint/guards and ordinary packaging.
 Combined native, protected expected-head merge, literal-main and human Gate4
 requirements remain unchanged. No family or Gate4 acceptance, or Gate5 work,
 is authorized by this correction.
+
+The correction is authored after plan-first90b07a5d. Exactly the three specified
+Portable call sites now require the early codec's specific current-state domain
+invariant message; no alternative was added. Their mutation bodies and the
+shared rejection/no-write/valid-restore helper are unchanged. Direct changed-file
+Rustfmt/check and whitespace checks pass. Corrected-head runtime is UNRUN;
+independent complete-delta/inverse preservation review precedes the next run.
