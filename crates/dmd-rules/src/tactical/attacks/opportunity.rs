@@ -306,7 +306,7 @@ pub(super) fn validate_admission(
         }
         TacticalAttackAdmission::OwnTurn => {
             if attack.origin != resolution.origin
-                || attack.actor != resolution.turn_actor
+                || attack.actor != resolution.turn_context().map_err(invalid)?.actor
                 || resolution.movement.is_some()
                 || attack.weapon().is_none()
             {

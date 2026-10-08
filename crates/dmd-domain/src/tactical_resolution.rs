@@ -173,6 +173,10 @@ pub enum TacticalWorkKind {
     RecoverStable {
         actor: EntityId,
     },
+    /// No-roll absolute cleanup in a released interval; never a turn trigger.
+    ExpireLegacyEffect {
+        effect: EffectId,
+    },
     CreatureRecharge {
         actor: EntityId,
         feature_id: String,
@@ -217,44 +221,69 @@ pub struct TacticalLegendaryWindow {
     pub origin: CommandMeta,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct TacticalTurnContext {
+    pub actor: EntityId,
+    pub number: u64,
+    pub boundary: TurnBoundary,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum TacticalResolutionContext {
+    Turn(TacticalTurnContext),
+    ReleasedInterval(Box<crate::ReleasedElapsedContext>),
+}
+
+impl TacticalResolution {
+    pub fn turn_context(&self) -> Result<&TacticalTurnContext, &'static str> {
+        match &self.context {
+            TacticalResolutionContext::Turn(turn) => Ok(turn),
+            TacticalResolutionContext::ReleasedInterval(_) => {
+                Err("released interval has no turn authority")
+            }
+        }
+    }
+    pub fn released_interval(&self) -> Option<&crate::ReleasedElapsedContext> {
+        match &self.context {
+            TacticalResolutionContext::ReleasedInterval(interval) => Some(interval),
+            TacticalResolutionContext::Turn(_) => None,
+        }
+    }
+    pub fn released_interval_mut(&mut self) -> Option<&mut crate::ReleasedElapsedContext> {
+        match &mut self.context {
+            TacticalResolutionContext::ReleasedInterval(interval) => Some(interval),
+            TacticalResolutionContext::Turn(_) => None,
+        }
+    }
+}
+
+#[path = "tactical_resolution_wire.rs"]
+mod wire;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct TacticalResolution {
     pub origin: CommandMeta,
-    pub turn_actor: EntityId,
-    pub turn_number: u64,
-    pub boundary: TurnBoundary,
+    pub context: TacticalResolutionContext,
     /// Last frame is current. Nested damage/concentration consequences finish before
     /// resuming the remaining parent boundary's simultaneous work.
     pub frames: Vec<Vec<TacticalWorkItem>>,
     pub pending: Option<TacticalPendingWork>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub failed_save: Option<TacticalFailedSave>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub legendary_window: Option<TacticalLegendaryWindow>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub attack: Option<crate::TacticalAttack>,
     /// Additive current-executor body action; absence preserves historical JSON.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shove: Option<Box<crate::TacticalShove>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hit_review: Option<Box<crate::TacticalHitReview>>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub movement: Option<Box<crate::TacticalMovement>>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub casts: Vec<crate::TacticalCasting>,
     /// Flow4-only committed target/amount/impact evidence. Empty preserves every
     /// earlier executor's JSON and does not create a second executable queue.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub missiles: Vec<crate::TacticalMissile>,
     /// Source occurrences share the existing frames; this is not a second queue.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub falls: Vec<crate::TacticalFall>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub areas: Vec<crate::TacticalArea>,
     /// Absent in legacy execution. Current execution records exact causal work
     /// ancestry rather than inferring authority from any live source record.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub work_trace: Option<crate::TacticalWorkTrace>,
     pub next_occurrence: u16,
 }
@@ -339,3 +368,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "tactical_resolution_wire_tests.rs"]
+mod wire_tests;

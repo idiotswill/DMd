@@ -29,12 +29,14 @@ fn expiry(expiry: &TacticalEffectExpiry, now: WorldInstant) -> Result<(), RulesE
 /// effects and defense-only spells, own timing; projected conditions do not.
 /// Reuse this scan at Finished/session/replacement boundaries, with no mutation.
 pub fn retained_encounter_dependencies(state: &CampaignState) -> Result<Vec<EntityId>, RulesError> {
-    retained_dependencies(state, false)
+    let proof = super::released_time::validation_for(state)?;
+    retained_dependencies(state, false, proof.as_ref())
 }
 
 fn retained_dependencies(
     state: &CampaignState,
     allow_new_initiative: bool,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
 ) -> Result<Vec<EntityId>, RulesError> {
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let admitted_initiative = allow_new_initiative
@@ -80,7 +82,10 @@ fn retained_dependencies(
                     "settle turn-relative effects before finishing",
                 ));
             }
-            Expiry::AtTime(at) if at <= state.clock.now => {
+            Expiry::AtTime(at)
+                if at <= state.clock.now
+                    && !released.is_some_and(|p| p.legacy(state, effect.id)) =>
+            {
                 return Err(prerequisite(
                     "resolve due legacy effect deadlines before finishing",
                 ));
@@ -91,7 +96,11 @@ fn retained_dependencies(
         dependencies.extend(effect.concentration_owner);
     }
     if let Some(effects) = &rules.tactical_effects {
-        if !effects.pending.is_empty() {
+        if effects
+            .pending
+            .iter()
+            .any(|ticket| !released.is_some_and(|p| p.ticket(state, ticket.id)))
+        {
             return Err(prerequisite("resolve scheduled effects before finishing"));
         }
         for group in &effects.groups {
@@ -100,11 +109,15 @@ fn retained_dependencies(
                     "finish the retained concentration cast before finishing",
                 ));
             }
-            expiry(&group.expires, state.clock.now)?;
+            if !released.is_some_and(|p| p.effect(state, group.id, true)) {
+                expiry(&group.expires, state.clock.now)?;
+            }
             dependencies.insert(group.source.actor);
         }
         for effect in &effects.effects {
-            expiry(&effect.expires, state.clock.now)?;
+            if !released.is_some_and(|p| p.effect(state, effect.id, false)) {
+                expiry(&effect.expires, state.clock.now)?;
+            }
             if effect.triggers.iter().any(|trigger| {
                 matches!(
                     trigger.event,
@@ -146,7 +159,9 @@ fn retained_dependencies(
             if let Some(stable) = &recovery.stable {
                 let wake = crate::tactical_damage::stable_wake_at(stable)
                     .map_err(|error| invalid(&error.to_string()))?;
-                if wake.is_none_or(|at| at <= state.clock.now) {
+                if wake.is_none_or(|at| at <= state.clock.now)
+                    && !released.is_some_and(|p| p.stable(state, *actor))
+                {
                     return Err(prerequisite(
                         "resolve recovery dice and due waking before finishing",
                     ));
@@ -191,7 +206,28 @@ fn retained_dependencies(
     for actor in &dependencies {
         require_future_placement(state, *actor)?;
     }
+    if released.is_some_and(|proof| proof.interval(state)) {
+        require_retained_participants(state, &dependencies)?;
+    }
     Ok(dependencies)
+}
+
+/// Released elapsed work requires actual retained geometry for the entire raw
+/// dependency union. Future placement eligibility alone does not provide it.
+pub(super) fn require_retained_participants(
+    state: &CampaignState,
+    dependencies: &[EntityId],
+) -> Result<(), RulesError> {
+    let current = encounter(state)?;
+    if dependencies
+        .iter()
+        .any(|actor| current.participant(*actor).is_none())
+    {
+        return Err(prerequisite(
+            "released time requires every retained dependency's actual participant position",
+        ));
+    }
+    Ok(())
 }
 
 /// The next supported table placement must be possible before timing is removed.
@@ -277,6 +313,26 @@ fn require_future_placement(state: &CampaignState, actor: EntityId) -> Result<()
 pub fn encounter_release_preflight(
     state: &CampaignState,
 ) -> Result<EncounterReleaseReadiness, RulesError> {
+    if state
+        .encounter
+        .as_ref()
+        .and_then(|encounter| encounter.flow.as_ref())
+        .is_some_and(|flow| {
+            flow.version == TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+                && flow.phase == TacticalPhase::Active
+        })
+    {
+        let readiness = encounter_release_preflight_with_released(state, None)?;
+        let _proof = super::released_time::validation_for(state)?;
+        return Ok(readiness);
+    }
+    let proof = super::released_time::validation_for(state)?;
+    encounter_release_preflight_with_released(state, proof.as_ref())
+}
+pub(super) fn encounter_release_preflight_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<EncounterReleaseReadiness, RulesError> {
     let current = flow(state)?;
     if current.phase != TacticalPhase::Active || current.aftermath.is_none() {
         return Err(prerequisite(
@@ -295,7 +351,7 @@ pub fn encounter_release_preflight(
             "settle held actions, attacks and movement before finishing",
         ));
     }
-    super::aftermath::validate(state)?;
+    super::aftermath::validate_with_released(state, released)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let timing = rules
         .timing
@@ -323,7 +379,7 @@ pub fn encounter_release_preflight(
         }
     }
     super::falling::require_settled_before_action(state)?;
-    let required_actors = retained_encounter_dependencies(state)?;
+    let required_actors = retained_dependencies(state, false, released)?;
     Ok(EncounterReleaseReadiness {
         required_actors,
         next_turn_number,
@@ -335,8 +391,10 @@ pub fn encounter_release_preflight(
 /// never opens a session, preparation or replacement exception.
 pub fn require_finished_encounter(state: &CampaignState) -> Result<(), RulesError> {
     let current = flow(state)?;
-    if current.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+    if !TacticalExecutionVersion::from_flow_version(current.version)
+        .is_some_and(TacticalExecutionVersion::supports_release)
         || current.phase != TacticalPhase::Finished
+        || current.resolution.is_some()
     {
         return Err(prerequisite(
             "finish the existing encounter before preparing another",
@@ -347,12 +405,14 @@ pub fn require_finished_encounter(state: &CampaignState) -> Result<(), RulesErro
 
 pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
     privileged(meta)?;
-    if flow(state)?.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version() {
-        return Err(prerequisite(
-            "continue this saved encounter before finishing it",
-        ));
+    let execution = TacticalExecutionVersion::from_flow_version(flow(state)?.version)
+        .filter(|v| v.supports_release())
+        .ok_or_else(|| prerequisite("continue this saved encounter before finishing it"))?;
+    if execution.supports_released_time() {
+        super::released_time::release_preflight(state)?;
+    } else {
+        encounter_release_preflight(state)?;
     }
-    encounter_release_preflight(state)?;
     let current = encounter(state)?;
     let f = flow(state)?;
     let timing = state
@@ -388,7 +448,7 @@ pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
             number: timing.turn_number,
             boundary: TurnBoundary::Start,
         },
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution,
     };
     let space = TacticalSceneSpace {
         encounter_id: current.id,
@@ -478,21 +538,35 @@ pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<()
 
 /// New completion attachments remain checked before the inactive/no-flow early
 /// returns. No historical flow without such an attachment gains an exception.
-pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
-    let Some(history) = &state.encounter_history else {
-        if state
+pub(super) fn require_completion_history(state: &CampaignState) -> Result<(), RulesError> {
+    if state.encounter_history.is_none()
+        && state
             .encounter
             .as_ref()
             .and_then(|encounter| encounter.flow.as_ref())
             .is_some_and(|flow| {
-                flow.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                TacticalExecutionVersion::from_flow_version(flow.version)
+                    .is_some_and(TacticalExecutionVersion::supports_release)
                     && flow.phase == TacticalPhase::Finished
             })
-        {
-            return Err(invalid(
-                "Finished encounter lacks authenticated completion history",
-            ));
-        }
+    {
+        return Err(invalid(
+            "Finished encounter lacks authenticated completion history",
+        ));
+    }
+    Ok(())
+}
+
+pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> {
+    let proof = super::released_time::validation_for(state)?;
+    validate_history_with_released(state, proof.as_ref())
+}
+pub(super) fn validate_history_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
+    require_completion_history(state)?;
+    let Some(history) = &state.encounter_history else {
         return Ok(());
     };
     history.validate(state).map_err(|error| invalid(&error))?;
@@ -517,7 +591,7 @@ pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> 
             .as_ref()
             .ok_or_else(|| invalid("completed aftermath is absent"))?;
         if rules.timing.is_some()
-            || flow.resolution.is_some()
+            || (flow.resolution.is_some() && !released.is_some_and(|p| p.interval(state)))
             || !flow.ready.is_empty()
             || !flow.dodges.is_empty()
             || !flow.ground_items.is_empty()
@@ -552,7 +626,7 @@ pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> 
                 "Finished encounter differs from its authenticated release boundary",
             ));
         }
-        retained_encounter_dependencies(state)?;
+        retained_dependencies(state, false, released)?;
     } else {
         if rules
             .timing
@@ -569,7 +643,7 @@ pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> 
                 TacticalPhase::Initiative { .. } | TacticalPhase::InitiativeTies { .. }
             )
         }) {
-            let required = retained_dependencies(state, true)?;
+            let required = retained_dependencies(state, true, released)?;
             if current.participants.len() > MAX_RELEASE_DEPENDENCIES
                 || required
                     .iter()

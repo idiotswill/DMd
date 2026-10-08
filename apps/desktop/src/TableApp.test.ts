@@ -8,9 +8,31 @@ vi.mock('./table-api', async (original) => ({ ...await original<typeof import('.
 
 beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
+  it('retries a private elapsed ordering request unchanged after restart and session rollover',async()=>{
+    const user=userEvent.setup(),view=emptyView();
+    view.active_session={session_id:'old-session',display_name:'Courtyard',started_at_world:0,participants:[]};
+    view.tactical={encounter_id:'finished-encounter',phase:'finished',execution:'ReleasedTimeV1',round:null,active_actor:null,battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],released_time:{may_advance:false,blocker:null,may_pause_session:true,interval:{started_at:0,progress_at:28800,target_at:28860,ruling:'Private timing ruling.',choices:[{handle:'opaque-first',label:'Resolve simultaneous deadline 1'},{handle:'opaque-second',label:'Resolve simultaneous deadline 2'}]}}};
+    vi.mocked(tableApi.view).mockResolvedValue(view);
+    vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-response',outcome:{message:'Elapsed deadline ordering recorded.'}}));
+    localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
+    const mounted=render(TableApp);
+    await user.click(await screen.findByRole('button',{name:'Resolve simultaneous deadline 2'}));
+    await screen.findByText('Delivery uncertain.');
+    const saved=JSON.parse(localStorage.getItem(REQUEST_KEY)!);
+    expect(saved.request).toMatchObject({session_id:'old-session',channel:'Host',action:{Tactical:{action:{ChooseTurnWork:{handle:'opaque-second'}}}}});
+    expect(tableApi.creatureOptions).not.toHaveBeenCalled();
+    mounted.unmount();
+    vi.mocked(tableApi.view).mockResolvedValue({...view,revision:'new-session-revision',active_session:{...view.active_session!,session_id:'new-session'},tactical:{...view.tactical,released_time:{may_advance:true,blocker:null,may_pause_session:false,interval:null}}});
+    render(TableApp);
+    await waitFor(()=>expect((screen.getByRole('button',{name:'Retry original request'}) as HTMLButtonElement).disabled).toBe(false));
+    await user.click(screen.getByRole('button',{name:'Retry original request'}));
+    await waitFor(()=>expect(localStorage.getItem(REQUEST_KEY)).toBeNull());
+    expect(tableApi.action).toHaveBeenNthCalledWith(1,saved.request);
+    expect(tableApi.action).toHaveBeenNthCalledWith(2,saved.request);
+  });
   it('retries a closed-session finish unchanged after a new encounter appears',async()=>{
     const user=userEvent.setup(),view=emptyView();
-    view.tactical={encounter_id:'old-encounter',phase:'active',execution:'EncounterReleaseV1',round:2,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],aftermath:{cadence:'ContinueExistingOrder',host_ruling:'Retain consequences.',may_pause_session:true},release:{may_finish:true,blocker:null,required_actors:['mage']}};
+    view.tactical={encounter_id:'old-encounter',phase:'active',execution:'ReleasedTimeV1',round:2,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],aftermath:{cadence:'ContinueExistingOrder',host_ruling:'Retain consequences.',may_pause_session:true},release:{may_finish:true,blocker:null,required_actors:['mage']}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'finished-response',outcome:{message:'Encounter finished.'}}));
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
@@ -35,7 +57,7 @@ describe('durable UI retry',()=>{
     view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
     view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'source-selected-hit',actor:'mage',selected:true,shield:[choice]}}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'source-selected-hit',actor:'mage',selected:true,shield:[choice]}}};
     if(kind==='missile'){
       view.tactical.missile={order:null,delegate:null,responses:[{key:'source-selected-missile',actor:'mage',selected:true,shield:[choice]}]};
       delete view.tactical.hit;
@@ -71,7 +93,7 @@ describe('durable UI retry',()=>{
     view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
     view.characters=[{character_id:'pc',entity_id:'actor',player_id:'player',name:'River',profile:null,sheet:null,details:null,second_wind_remaining:null}];
     view.active_session={session_id:'first-session',display_name:'Evening',started_at_world:0,participants:[{player_id:'player',character_id:'pc',attendance:'Present'}]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:2,active_actor:'actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
     vi.mocked(tableApi.view).mockImplementation(async()=>structuredClone(view));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementation(async received=>{
       if(received.action==='EndSession') view={...view,revision:'closed',active_session:null};
@@ -223,7 +245,7 @@ describe('durable UI retry',()=>{
     view.active_session={session_id:'session',display_name:'Source session',started_at_world:0,participants:[{player_id:'player',character_id:null,attendance:'Present'}]};
     view.source_control={version:2,actors:[{actor:'mage',name:'Source Mage',definition_id:'mage',controller:{Player:'player'},hp:81,max_hp:81}]};
     const choice={actor:'mage',spell_id:'mage-armor',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature' as const,material:{Material:{item:'leather'}},mode:'Immediate' as const};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'mage',variants:[{choice,label:'Mage Armor',concentration:false,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'mage',label:'Self'}]}],unavailable:[]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'mage',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'mage',variants:[{choice,label:'Mage Armor',concentration:false,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'mage',label:'Self'}]}],unavailable:[]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));const hostMount=render(TableApp);
     await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
@@ -259,7 +281,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup(), view=emptyView();
     const choice={actor:'source-mage',spell_id:'shield',grant:{CreatureFeature:{feature_id:'protective-magic'}},resource:'SourceFeature',material:'None',mode:'Immediate'} as const;
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'owned-selected-hit',actor:'source-mage',selected:true,shield:[choice]}}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'attacker',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],hit:{order:null,delegate:null,response:{key:'owned-selected-hit',actor:'source-mage',selected:true,shield:[choice]}}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Encounter action recorded.'}}));
@@ -372,7 +394,7 @@ describe('durable UI retry',()=>{
   it('retries an actual source area declaration with its original aim and host ordering',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Crossing',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'chimera',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],area_options:{actor:'chimera',controller:null,source_space:{min:{x:10,y:40,z:0},max:{x:30,y:60,z:12}},variants:[{feature_id:'fire-breath',label:'Fire Breath',length_feet:15}],unavailable:[]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'chimera',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],area_options:{actor:'chimera',controller:null,source_space:{min:{x:10,y:40,z:0},max:{x:30,y:60,z:12}},variants:[{feature_id:'fire-breath',label:'Fire Breath',length_feet:15}],unavailable:[]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
@@ -395,7 +417,7 @@ describe('durable UI retry',()=>{
   it('retains the actual shield form item, hand and original action head through uncertain restart',async()=>{
     const user=userEvent.setup();const view=emptyView();
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:3,active_actor:'source-actor',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],shield_options:{actor:'source-actor',donned:null,shields:[{item:'carried-shield',hands:['Right']}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));
@@ -471,7 +493,7 @@ describe('durable UI retry',()=>{
     const user=userEvent.setup();const view=emptyView();
     const choice={actor:'source-caster',spell_id:'hold-person',grant:{CreatureFeature:{feature_id:'spellcasting'}},resource:'SourceFeature',material:{Material:{item:'actual-component'}},mode:'Immediate'} as const;
     view.active_session={session_id:'session',display_name:'Courtyard',started_at_world:0,participants:[]};
-    view.tactical={encounter_id:'encounter',phase:'active',execution:'EncounterReleaseV1',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
+    view.tactical={encounter_id:'encounter',phase:'active',execution:'ReleasedTimeV1',round:1,active_actor:'source-caster',battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],casting_options:{actor:'source-caster',unavailable:[],variants:[{choice,label:'Hold Person — source ability',concentration:true,minimum_targets:1,maximum_targets:1,repeated_targets:false,targets:[{actor:'selected-target',label:'Visible traveler'}]}]}};
     vi.mocked(tableApi.view).mockResolvedValue(view);
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted-revision',outcome:{message:'Encounter action recorded.'}}));

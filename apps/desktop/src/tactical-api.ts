@@ -84,9 +84,10 @@ export type TacticalAction =
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
   | 'FinishEncounter'
+  | { AdvanceReleasedTime: { seconds: number; ordering: 'HostSelect'; ruling: string } }
   | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
-  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' } }
+  | { UpgradeExecutionTo: { execution: 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | 'ReleasedTimeV1' } }
   | { HitResponse: { handle: Id; decision: HitDecision } }
   | { MissileResponse: { handle: Id; decision: MissileDecision } }
   | { AbandonReady: { actor: Id } }
@@ -107,14 +108,17 @@ export type TacticalAction =
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
   | { ChooseAttackMastery: { choice: 'Decline' | 'Graze' } }
   | { Dash: { speed: 'Speed'|'Climb'|'Swim'|'Fly'|'Burrow' } } | { ChooseTurnWork: { handle: Id } }
-  | { Begin: { execution: 'ShieldMissileV1' | 'EncounterReleaseV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
+  | { Begin: { execution: 'ShieldMissileV1' | 'EncounterReleaseV1' | 'ReleasedTimeV1'; combatants: { actor: Id; source: 'Character' | { Creature: { definition_id: string } }; surprised: boolean }[]; groups: { actors: Id[]; request_id: Id }[] } }
   | { SubmitRoll: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] } } }
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
   shove?: ShoveView|null;
-  execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | null;
+  execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | 'ReleasedTimeV1' | null;
   release?: { may_finish: boolean; blocker: string | null; required_actors: Id[] } | null;
+  released_time?: { may_advance: boolean; blocker: string | null; may_pause_session: boolean;
+    interval: { started_at: number; progress_at: number; target_at: number; ruling: string;
+      choices: { handle: Id; label: string }[] } | null } | null;
   hit?: HitView | null;
   missile?: MissileView | null;
   aftermath?: { cadence: 'ContinueExistingOrder'; host_ruling: string | null; may_pause_session: boolean };

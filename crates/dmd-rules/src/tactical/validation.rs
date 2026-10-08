@@ -245,7 +245,17 @@ fn validate_ties(
 }
 
 pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> {
-    super::release::validate_history(state)?;
+    let proof = super::released_time::validation_for(state)?;
+    validate_tactical_state_with_released(state, proof.as_ref())
+}
+pub(crate) fn validate_tactical_state_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
+    if released.is_some_and(|proof| !proof.binds(state)) {
+        return Err(invalid("released proof does not bind tactical candidate"));
+    }
+    super::release::validate_history_with_released(state, released)?;
     let Some(encounter) = &state.encounter else {
         return Ok(());
     };
@@ -362,6 +372,6 @@ pub fn validate_tactical_state(state: &CampaignState) -> Result<(), RulesError> 
             }
         }
     }
-    super::aftermath::validate(state)?;
-    super::turn_validation::validate(state)
+    super::aftermath::validate_with_released(state, released)?;
+    super::turn_validation::validate_with_released(state, released)
 }

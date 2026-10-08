@@ -62,7 +62,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
     validate_ancestry(r, s)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     if s.origin != r.origin
-        || s.actor != r.turn_actor
+        || s.actor != r.turn_context().map_err(invalid)?.actor
         || s.actor == s.target
         || s.window.kind != WeaponActionKind::AttackAction
         || flow(state)?.budget.attack_window != Some(s.window)

@@ -23,10 +23,11 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalShove, RulesErr
 }
 fn require_execution(state: &CampaignState) -> Result<(), RulesError> {
     // Retained flow4 work keeps its paid semantics. The central live gate admits
-    // a fresh Shove only on current flow5, before this shared restore guard.
+    // fresh Shove on live flow5/7, before this shared restore guard.
     let version = flow(state)?.version;
     if version != TacticalExecutionVersion::ShieldMissileV1.flow_version()
         && version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        && version != TacticalExecutionVersion::ReleasedTimeV1.flow_version()
     {
         return Err(prerequisite(
             "Shove requires the current encounter execution.",
@@ -273,9 +274,11 @@ pub(super) fn begin(
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number,
-        boundary: TurnBoundary::Start,
+        context: TacticalResolutionContext::Turn(TacticalTurnContext {
+            actor,
+            number: turn_number,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,

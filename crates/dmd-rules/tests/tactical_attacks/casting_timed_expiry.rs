@@ -12,7 +12,7 @@ fn casting_fixture(target_ends_round: bool) -> (Fixture, SpellCastChoice) {
     f.run(
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![
                 TacticalCombatant {
                     actor: f.actors[0],
@@ -169,7 +169,16 @@ fn real_hold_deadline_continues_from_end_command_or_final_owned_raw_save() {
             .find(|work| work.kind == TacticalWorkKind::Effect { ticket })
             .unwrap()
             .occurrence;
-        let owner = usize::from(f.flow().resolution.as_ref().unwrap().turn_actor == f.actors[1]);
+        let owner = usize::from(
+            f.flow()
+                .resolution
+                .as_ref()
+                .unwrap()
+                .turn_context()
+                .expect("turn fixture")
+                .actor
+                == f.actors[1],
+        );
         f.rejected(
             Some(1 - owner),
             TacticalAction::ChooseTurnWork { occurrence },

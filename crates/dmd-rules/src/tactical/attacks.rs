@@ -237,9 +237,11 @@ fn begin_with_source(
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number: number,
-        boundary: TurnBoundary::Start,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor,
+            number,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,

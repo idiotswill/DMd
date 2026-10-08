@@ -120,7 +120,7 @@ pub(super) async fn prepare(f: &mut Fixture) -> EntityId {
     f.host(
         TableAction::Tactical {
             action: TacticalAction::Begin {
-                execution: TacticalExecutionVersion::EncounterReleaseV1,
+                execution: TacticalExecutionVersion::ReleasedTimeV1,
                 combatants: vec![
                     TacticalCombatant {
                         actor: f.actors[0],

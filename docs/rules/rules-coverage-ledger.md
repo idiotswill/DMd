@@ -10,6 +10,17 @@ The [native expiry record](../checkpoints/gate4-expiry-native-2026-10-06.md) now
 documents actual391 primary deadline/recovery; final PR52 checks/merge remain open.
 PR48's separate successful literal-main checks are recorded in
 the [release plan](../exec-plans/active/gate4-encounter-release.md).
+
+The current Offstage receipt of this source remains unverified.
+Both prior branches' verification remains attributed to their original heads.
+
+Historical Offstage receiving checkpoint (2026-10-05):
+
+Received integration checkpoint, 2026-10-05: PR50 is accepted at main
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`; separate literal32 runtime checks
+were pending at that checkpoint. This names this branch's accepted source baseline,
+not the latest global main or new-head execution. PR48's separate successful
+literal-main checks are recorded in the [release plan](../exec-plans/active/gate4-encounter-release.md).
 The older release-candidate statements below remain historical evidence. No Gate4
 family status or player-acceptance claim changes.
 
@@ -106,12 +117,17 @@ inputs and the read-only capture scope. Accepted main `dbf1d63` is reconciled wi
 all 411 non-document files unchanged from `3f3e359`. Integrated `f932c73` now passes
 canonical verification (782 GNU Rust tests, zero failures) and all six CI jobs
 (783 Linux /785 MSVC); the plan records exact logs and independent review.
-Final Air head ee51 passed review and checks before protected PR50 merge as32c0c68;
-separate literal32 runtime proof remains outstanding. No evidence array or family status
+At that pre-merge checkpoint, final documentation-head checks/review, protected
+merge and literal main proof remained outstanding. Final Air head ee51 later
+passed review and checks before protected PR50 merge as
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71`; separate literal32 runtime proof
+was still outstanding at that receiving checkpoint. The source/native evidence
+remains attributed to the exact heads above. No evidence array or family status
 advances here. Air Form special geometry, Multiattack and Whirlwind execution remain
 Gate4 obligations; source data and explicit unavailable boundaries do not close
-`monster-running`, `combat-actions` or Gate6 `monster-content`. The later Shove
-slice still owes its genuine paid Prone-immunity continuation and recovery.
+`monster-running`, `combat-actions` or Gate6 `monster-content`. At that Air
+checkpoint, the later Shove slice still owed its genuine paid Prone-immunity
+continuation and recovery.
 
 The [encounter release plan](../exec-plans/active/gate4-encounter-release.md) now
 owns the approved flow 5 completion/highwater and retained-scene design. Integrated
@@ -125,8 +141,9 @@ items and absolute Mage Armor deadline. The plan distinguishes native evidence f
 the separate real file-SQLite ammunition/drop-custody, replay and refusal families.
 Final evidence head d4 passed independent review and all six checks, then PR48
 merged with expected-head protection as dbf1d63, whose full tree equals d4.
-Separate literal dbf main checks subsequently passed, as recorded in the release
-plan; complete Gate4 families remain implementing. These checkpoints add
+Separate literal dbf main checks subsequently passed all six jobs, as recorded
+in the release plan's 2026-10-04 status. Complete Gate4 families
+remain implementing. These checkpoints add
 no passing evidence to the machine-readable ledger and advances no family status.
 
 When implementation advances, add exact test names/files, production scenarios/heads and player acceptance reports to the matching arrays. A feature may only advance to `mechanically_tested` with test evidence, to `production_integrated` with mechanical and real application evidence, and to `player_accepted` with all three. Gate acceptance remains governed by checkpoints; the ledger cannot waive it.

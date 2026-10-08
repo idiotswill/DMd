@@ -168,7 +168,9 @@ pub(super) fn key(
         TacticalWorkKind::LegendaryWindow { .. } => {
             return Err(invalid("Legendary Action choice has no roll"));
         }
-        TacticalWorkKind::RecoverStable { .. } => return Err(invalid("wake-up has no roll")),
+        TacticalWorkKind::ExpireLegacyEffect { .. } | TacticalWorkKind::RecoverStable { .. } => {
+            return Err(invalid("wake-up has no roll"));
+        }
         TacticalWorkKind::EndOccupiedSpace { .. } => {
             return Err(invalid("occupied-space consequence has no roll"));
         }
@@ -363,7 +365,9 @@ pub(super) fn request(
         TacticalWorkKind::LegendaryWindow { .. } => {
             Err(invalid("legendary decision has no raw roll"))
         }
-        TacticalWorkKind::RecoverStable { .. } => Err(invalid("stable wake-up has no raw roll")),
+        TacticalWorkKind::ExpireLegacyEffect { .. } | TacticalWorkKind::RecoverStable { .. } => {
+            Err(invalid("stable wake-up has no raw roll"))
+        }
         TacticalWorkKind::EndOccupiedSpace { .. } => {
             Err(invalid("occupied-space consequence has no raw roll"))
         }
@@ -376,12 +380,16 @@ pub(super) fn start(
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
     let previous = super::work_trace::enter(state, &work)?;
-    let result = start_inner(state, meta, work).and_then(|()| {
-        if resolution(state)?.work_trace.is_some() {
-            super::falling::queue_losses(state, meta)?;
-        }
-        Ok(())
-    });
+    let result = if resolution(state)?.released_interval().is_some() {
+        super::released_time::execute(state, meta, &work)
+    } else {
+        start_inner(state, meta, work).and_then(|()| {
+            if resolution(state)?.work_trace.is_some() {
+                super::falling::queue_losses(state, meta)?;
+            }
+            Ok(())
+        })
+    };
     let reset = super::work_trace::leave(state, previous);
     result?;
     reset
@@ -510,6 +518,9 @@ fn start_inner(
             if e.concentration != Some(*group) {
                 return Ok(());
             }
+        }
+        TacticalWorkKind::ExpireLegacyEffect { .. } => {
+            return Err(invalid("legacy deadline requires released context"));
         }
         TacticalWorkKind::RecoverStable { actor } => {
             apply_vitality(
@@ -951,7 +962,7 @@ fn finish_inner(
         TacticalWorkKind::LegendaryWindow { .. } => {
             return Err(invalid("legendary decision is not a die roll"));
         }
-        TacticalWorkKind::RecoverStable { .. } => {
+        TacticalWorkKind::ExpireLegacyEffect { .. } | TacticalWorkKind::RecoverStable { .. } => {
             return Err(invalid("wake-up cannot be pending dice"));
         }
     }

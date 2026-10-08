@@ -215,9 +215,11 @@ fn begin_boundary_from(
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number: number,
-        boundary,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor,
+            number,
+            boundary,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,
@@ -308,6 +310,9 @@ fn begin_boundary_from(
 }
 
 pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+    if resolution(state)?.released_interval().is_some() {
+        return super::released_time::pump(state, meta);
+    }
     for _ in 0..32_768 {
         if super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
@@ -363,7 +368,7 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             r.frames.pop();
         }
         let Some(frame) = r.frames.last() else {
-            let boundary = r.boundary;
+            let boundary = r.turn_context().map_err(invalid)?.boundary;
             let next_occurrence = r.next_occurrence;
             flow_mut(state)?.resolution = None;
             if boundary == TurnBoundary::End {
@@ -406,6 +411,9 @@ pub(super) fn choose(
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
+    if resolution(state)?.released_interval().is_some() {
+        return super::released_time::choose(state, meta, occurrence);
+    }
     if super::shove::waiting(state)
         || super::hit_reactions::waiting(state)
         || super::missiles::waiting(state)
@@ -419,15 +427,26 @@ pub(super) fn choose(
         privileged(meta)?;
     } else {
         if resolution(state)?.shove.is_some() {
-            super::shove::authorize_owner(state, meta, resolution(state)?.turn_actor)?;
+            super::shove::authorize_owner(
+                state,
+                meta,
+                resolution(state)?.turn_context().map_err(invalid)?.actor,
+            )?;
         }
         if !resolution(state)?.missiles.is_empty()
-            && controller(state, resolution(state)?.turn_actor)
-                .is_some_and(|player| meta.issuer != CommandIssuer::Player(player))
+            && controller(
+                state,
+                resolution(state)?.turn_context().map_err(invalid)?.actor,
+            )
+            .is_some_and(|player| meta.issuer != CommandIssuer::Player(player))
         {
             return Err(RulesError::Unauthorized);
         }
-        authorize(state, meta, resolution(state)?.turn_actor)?;
+        authorize(
+            state,
+            meta,
+            resolution(state)?.turn_context().map_err(invalid)?.actor,
+        )?;
     }
     if resolution(state)?.pending.is_some()
         || super::falling::selected(state)?.is_some()

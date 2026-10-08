@@ -330,6 +330,9 @@ pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = Tact
     /// Host-only flow 5 capability. Older projection bytes remain unchanged.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub release: Option<TableEncounterReleaseView>,
+    /// A Host-only no-turn interval, separate from the mandatory-actor continuation.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub released_time: Option<TableReleasedTimeView<WorkChoice>>,
     /// Omitted for legacy flows so their historical presentation bytes remain
     /// unchanged. Only explicitly versioned new/upgraded state adds this field.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -429,6 +432,23 @@ pub struct TableEncounterReleaseView {
     pub blocker: Option<String>,
     /// Actors with surviving consequences that the next battlefield must include.
     pub required_actors: Vec<EntityId>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableReleasedTimeView<WorkChoice = TableTacticalWorkChoice> {
+    pub may_advance: bool,
+    pub blocker: Option<String>,
+    pub may_pause_session: bool,
+    pub interval: Option<TableReleasedIntervalView<WorkChoice>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableReleasedIntervalView<WorkChoice = TableTacticalWorkChoice> {
+    pub started_at: WorldInstant,
+    pub progress_at: WorldInstant,
+    pub target_at: WorldInstant,
+    pub ruling: String,
+    pub choices: Vec<WorkChoice>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

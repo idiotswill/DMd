@@ -67,6 +67,19 @@ fn capabilities(
             });
         }
     }
+    if let Some(interval) = raw
+        .tactical
+        .as_ref()
+        .and_then(|t| t.released_time.as_ref())
+        .and_then(|released| released.interval.as_ref())
+    {
+        for choice in &interval.choices {
+            result.push(ProjectionCapability::Work {
+                origin: work_origin(state).ok_or("released work without resolution")?,
+                occurrence: choice.occurrence,
+            });
+        }
+    }
     if let Some(hit) = raw.tactical.as_ref().and_then(|t| t.hit.as_deref()) {
         let mut add = |key: TacticalWorkKey, role| {
             result.push(ProjectionCapability::HitResponse {
@@ -229,6 +242,25 @@ fn classify(
     }
     let body: crate::TableEvent =
         serde_json::from_str(&event.payload_json).map_err(|e| e.to_string())?;
+    if matches!(
+        &body.action,
+        crate::TableAction::Tactical {
+            action: dmd_rules::tactical::TacticalAction::ChooseTurnWork { .. }
+        }
+    ) && before
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .and_then(|f| f.resolution.as_ref())
+        .is_some_and(|r| r.released_interval().is_some())
+    {
+        // The actual visible clock/health changes still update projections, but
+        // private deadline ordering is not a player transcript announcement.
+        return Ok(Some(TranscriptVisibility {
+            event_id: EventId(Uuid::parse_str(&event.id).map_err(|e| e.to_string())?),
+            audiences: vec![ProjectionAudience::Host],
+        }));
+    }
     if matches!(
         body.action,
         crate::TableAction::Declare { .. }

@@ -22,6 +22,9 @@ pub(super) fn view(
     let Some(resolution) = &flow.resolution else {
         return Ok(None);
     };
+    let Ok(turn) = resolution.turn_context() else {
+        return Ok(None);
+    };
     let mut waiting = resolution.missiles.iter().filter(|missile| {
         matches!(
             missile.stage,
@@ -35,7 +38,7 @@ pub(super) fn view(
         return Err("Missile responses have more than one current window.".into());
     }
     if !host
-        && !own.contains(&resolution.turn_actor)
+        && !own.contains(&turn.actor)
         && !missile
             .respondents
             .iter()
@@ -53,12 +56,12 @@ pub(super) fn view(
     let may_order = if missile.delegated_by.is_some() {
         host
     } else {
-        controlled(resolution.turn_actor)
+        controlled(turn.actor)
     };
     let order = if missile.order.is_none() && may_order {
         let observer = (!host)
             .then(|| {
-                dmd_rules::spatial::project_actor_view(encounter, state, resolution.turn_actor)
+                dmd_rules::spatial::project_actor_view(encounter, state, turn.actor)
                     .map_err(|error| error.to_string())
             })
             .transpose()?;
@@ -70,7 +73,7 @@ pub(super) fn view(
             .order
             .iter()
             .filter_map(|entry| {
-                let label = if host || entry.actor == resolution.turn_actor {
+                let label = if host || entry.actor == turn.actor {
                     encounter
                         .participant(entry.actor)
                         .map(|participant| participant.public_label.clone())
@@ -98,16 +101,15 @@ pub(super) fn view(
             .collect();
         Some(TableHitOrder {
             key,
-            actor: resolution.turn_actor,
+            actor: turn.actor,
             participants,
         })
     } else {
         None
     };
-    let delegate = (missile.order.is_none()
-        && missile.delegated_by.is_none()
-        && controlled(resolution.turn_actor))
-    .then_some(key);
+    let delegate =
+        (missile.order.is_none() && missile.delegated_by.is_none() && controlled(turn.actor))
+            .then_some(key);
     let responses = missile
         .respondents
         .iter()

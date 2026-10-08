@@ -505,7 +505,7 @@ async fn prepare_magic(f: &mut Fixture) -> (EntityId, EntityId) {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: ordered
                 .into_iter()
                 .map(|actor| TacticalCombatant {
@@ -871,7 +871,7 @@ async fn source_only_scenario(f: &mut Fixture, url: &str) {
         url,
         None,
         action(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants: vec![TacticalCombatant {
                 actor: mage,
                 source: TacticalSource::Creature {

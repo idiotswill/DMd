@@ -426,6 +426,25 @@ pub(super) fn validate_entity(
     Ok(())
 }
 pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
+    let proof = crate::tactical::released_time::validation_for(state)?;
+    validate_state_inner(state, pack, proof.as_ref())
+}
+#[cfg(test)]
+pub(crate) fn validate_released_state(
+    state: &CampaignState,
+    pack: &RulesPack,
+    proof: &crate::tactical::released_time::ReleasedValidation<'_>,
+) -> Result<(), RulesError> {
+    if !proof.binds(state) {
+        return Err(invalid("released proof does not bind candidate"));
+    }
+    validate_state_inner(state, pack, Some(proof))
+}
+fn validate_state_inner(
+    state: &CampaignState,
+    pack: &RulesPack,
+    released: Option<&crate::tactical::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
     if let Some(history) = &state.encounter_history {
         history.validate(state).map_err(invalid)?;
     }
@@ -489,7 +508,10 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             return Err(invalid("Unconscious creature must remain Prone"));
         }
         match effect.expires {
-            Expiry::AtTime(time) if time <= state.clock.now => {
+            Expiry::AtTime(time)
+                if time <= state.clock.now
+                    && !released.is_some_and(|proof| proof.legacy(state, effect.id)) =>
+            {
                 return Err(invalid("expired time effect"));
             }
             Expiry::AtTurn {
@@ -765,6 +787,6 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             pack.attack(&p.content_id)?;
         }
     }
-    crate::tactical::validate_tactical_state(state)?;
+    crate::tactical::validate_tactical_state_with_released(state, released)?;
     Ok(())
 }

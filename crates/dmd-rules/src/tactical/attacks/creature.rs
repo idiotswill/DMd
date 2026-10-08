@@ -126,9 +126,11 @@ pub(in crate::tactical) fn begin_creature_attack(
     let work_trace = super::super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number,
-        boundary: TurnBoundary::Start,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor,
+            number: turn_number,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,
@@ -261,8 +263,8 @@ pub(super) fn validate_admission(
         .find(|f| f.id == *feature_id)
         .ok_or_else(|| invalid("source feature absent"))?;
     if attack.origin != r.origin
-        || attack.actor != r.turn_actor
-        || r.boundary != TurnBoundary::Start
+        || attack.actor != r.turn_context().map_err(invalid)?.actor
+        || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::Start
         || r.movement.is_some()
         || !r.casts.is_empty()
         || runtime.last_operation != attack.origin

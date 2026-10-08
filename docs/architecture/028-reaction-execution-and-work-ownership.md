@@ -219,8 +219,8 @@ alongside authenticated finish, closed-session upgrade, replay, replacement and
 desktop controls. Integrated8c03f9f passes canonical/CI historical continuations and
 actual packaged two-encounter recovery; the encounter-release plan records precise
 scope. Final d4 passed all six checks and merged in PR48 as dbf1d63 with exact tree
-equality; separate literal-main checks subsequently passed as recorded in the
-release plan. Flows1–4 keep their accepted meanings and
+equality; the release plan's 2026-10-04 status records the subsequent successful
+separate literal-main checks. Flows1–4 keep their accepted meanings and
 the historical unit upgrade remains 1→2.
 
 Explicit conclusion is narrative evidence that fighting stopped. A separate host

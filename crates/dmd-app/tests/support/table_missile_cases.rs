@@ -560,7 +560,7 @@ async fn prepare_with_character(
         f,
         TableTransportChannel::Host,
         tactical(TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants,
             groups,
         }),

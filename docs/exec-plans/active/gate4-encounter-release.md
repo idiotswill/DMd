@@ -955,7 +955,7 @@ separately verify literal merged main. Do not relabel8c canonical/native evidenc
 as a different binary/head's execution. Keep the bounded release limitations and
 remaining Gate4 families; do not begin Gate5.
 
-### Protected merge and separate main verification — 2026-10-01
+### Historical protected merge and separate main verification — 2026-10-01
 
 The final documentation head `d4adb1b1a959ea1c4e2032b6512bd33496177afa`, tree
 `a0a350cf695cce9cc7aa228931d5b10014bc66ce`, passed complete independent review.
@@ -978,5 +978,6 @@ is claimed. Separate literal-main runs
 [36834974592](https://github.com/idiotswill/DMd/actions/runs/36834974592) have four
 quick checks passed and both runtime jobs pending at this checkpoint.
 
-Next: audit actual completed main logs, then record that separate result. Continue
+The next action at that checkpoint was to audit actual completed main logs and
+record their separate result; the 2026-10-04 status above records completion. Continue
 the approved Gate4 workstreams; preserve release's limits and remaining gate debt.

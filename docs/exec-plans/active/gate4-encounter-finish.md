@@ -302,6 +302,16 @@ not a deferral to Gate5/6 or permission to claim arbitrary encounter replacement
 
 ### Historical and audience compatibility
 
+Planning checkpoint, 2026-10-04: [released elapsed intervals and absolute
+deadlines](gate4-offstage-deadlines.md) makes step4's first production interval
+concrete on the unaccepted c9bbcb5 expiry development parent. It is PLAN ONLY,
+awaiting root and independent review before source. The proposed flow7 preserves
+the separate Counterspell flow6 reservation. Its initial grounded/condition-free
+duration and real stable-waking scope does not complete dead/omitted dependencies,
+physical no-turn consequences, authorized rest or relative-boundary rebasing;
+all those obligations below remain in Gate4. No implementation, verification,
+native acceptance or gate status advances through this planning checkpoint.
+
 New records should be absent from old saves unless explicitly introduced by an accepted
 current-version action. Follow ADR028's historical/live execution separation and root's
 post-PR38 version decision; do not reinterpret old Legacy/ReactionsV1 events or saved

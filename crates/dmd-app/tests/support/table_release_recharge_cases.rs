@@ -162,7 +162,7 @@ fn begin(f: &Fixture, mage: EntityId, dragon: EntityId, player_first: bool) -> T
         [mage, dragon, f.actors[0]]
     };
     action(TacticalAction::Begin {
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution: TacticalExecutionVersion::ReleasedTimeV1,
         combatants: order
             .into_iter()
             .map(|actor| TacticalCombatant {

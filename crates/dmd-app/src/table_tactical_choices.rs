@@ -3,12 +3,63 @@ use std::collections::HashSet;
 
 use dmd_domain::*;
 
+pub(super) fn released_time(
+    state: &CampaignState,
+    host: bool,
+) -> Option<crate::TableReleasedTimeView> {
+    let flow = state.encounter.as_ref()?.flow.as_ref()?;
+    if !host
+        || flow.version != TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+        || flow.phase != TacticalPhase::Finished
+    {
+        return None;
+    }
+    let interval = flow.resolution.as_ref().and_then(|r| {
+        r.released_interval()
+            .map(|context| crate::TableReleasedIntervalView {
+                started_at: context.started_at,
+                progress_at: context.progress_at,
+                target_at: context.target_at,
+                ruling: context.ruling.clone(),
+                choices: r
+                    .frames
+                    .last()
+                    .filter(|frame| frame.len() > 1)
+                    .map(|frame| {
+                        frame
+                            .iter()
+                            .map(|work| crate::TableTacticalWorkChoice {
+                                occurrence: work.occurrence,
+                                label: format!(
+                                    "Resolve simultaneous deadline {}",
+                                    u32::from(work.occurrence) + 1
+                                ),
+                            })
+                            .collect()
+                    })
+                    .unwrap_or_default(),
+            })
+    });
+    let readiness = dmd_rules::tactical::released_time_readiness(state);
+    Some(crate::TableReleasedTimeView {
+        may_advance: readiness.is_ok(),
+        blocker: if interval.is_some() {
+            None
+        } else {
+            readiness.err().map(|e| e.to_string())
+        },
+        may_pause_session: dmd_rules::tactical::require_released_session_boundary(state).is_ok(),
+        interval,
+    })
+}
+
 pub(super) fn continuation(
     resolution: &TacticalResolution,
     own: &HashSet<EntityId>,
     host: bool,
     encounter: Option<&TacticalEncounter>,
 ) -> Option<crate::TableTacticalContinuation> {
+    let turn = resolution.turn_context().ok()?;
     if resolution.hit_review.as_ref().is_some_and(|hit| {
         matches!(
             hit.stage,
@@ -27,9 +78,9 @@ pub(super) fn continuation(
         // Always one generic owned invocation indicator and zero work cards,
         // independent of private target count, phase and nested consequences.
         return own
-            .contains(&resolution.turn_actor)
+            .contains(&turn.actor)
             .then_some(crate::TableTacticalContinuation {
-                actor: resolution.turn_actor,
+                actor: turn.actor,
                 host_adjudication: true,
                 choices: vec![],
             });
@@ -40,7 +91,7 @@ pub(super) fn continuation(
                 .iter()
                 .all(|work| matches!(work.kind, TacticalWorkKind::LegendaryWindow { .. }))
     });
-    if !host && (after_turn || !own.contains(&resolution.turn_actor)) {
+    if !host && (after_turn || !own.contains(&turn.actor)) {
         return None;
     }
     let choices = if resolution.pending.is_none()
@@ -122,7 +173,10 @@ pub(super) fn continuation(
                             TacticalWorkKind::RecoverStable { actor } => {
                                 (Some(*actor), "Stable recovery")
                             }
-                            TacticalWorkKind::Effect { .. } => (None, "Effect consequence"),
+                            TacticalWorkKind::Effect { .. }
+                            | TacticalWorkKind::ExpireLegacyEffect { .. } => {
+                                (None, "Effect consequence")
+                            }
                             TacticalWorkKind::CreatureRecharge { actor, .. } => {
                                 (Some(*actor), "Ability recharge")
                             }
@@ -192,7 +246,7 @@ pub(super) fn continuation(
         vec![]
     };
     Some(crate::TableTacticalContinuation {
-        actor: resolution.turn_actor,
+        actor: turn.actor,
         host_adjudication: host_ordering,
         choices,
     })
@@ -328,9 +382,11 @@ mod tests {
         };
         let mut resolution = TacticalResolution {
             origin,
-            turn_actor: own_actor,
-            turn_number: 4,
-            boundary: TurnBoundary::Start,
+            context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+                actor: own_actor,
+                number: 4,
+                boundary: TurnBoundary::Start,
+            }),
             frames: vec![vec![
                 TacticalWorkItem {
                     occurrence: 11,
@@ -406,9 +462,11 @@ mod tests {
         };
         let mut resolution = TacticalResolution {
             origin: origin.clone(),
-            turn_actor: actor,
-            turn_number: 1,
-            boundary: TurnBoundary::Start,
+            context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+                actor,
+                number: 1,
+                boundary: TurnBoundary::Start,
+            }),
             frames: vec![],
             pending: None,
             failed_save: None,

@@ -35,7 +35,7 @@ pub fn pending(state: &CampaignState) -> Option<DeclineHit> {
             occurrence: hit.work.occurrence,
         },
         target: respondent.actor,
-        turn_actor: resolution.turn_actor,
+        turn_actor: resolution.turn_context().expect("turn fixture").actor,
         needs_order: hit.order.is_none(),
         needs_response: respondent.intent.is_none(),
     })

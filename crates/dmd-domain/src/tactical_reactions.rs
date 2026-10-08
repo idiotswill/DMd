@@ -45,6 +45,8 @@ pub enum TacticalExecutionVersion {
     /// Authenticated settled-encounter release and monotonic replacement timing.
     /// App admission is enabled only with the complete release vertical slice.
     EncounterReleaseV1,
+    /// Absolute elapsed intervals after release. Version 6 remains reserved.
+    ReleasedTimeV1,
 }
 
 impl TacticalExecutionVersion {
@@ -59,6 +61,7 @@ impl TacticalExecutionVersion {
             Self::ShieldHitV1 => 3,
             Self::ShieldMissileV1 => 4,
             Self::EncounterReleaseV1 => 5,
+            Self::ReleasedTimeV1 => 7,
         }
     }
 
@@ -69,6 +72,7 @@ impl TacticalExecutionVersion {
             3 => Some(Self::ShieldHitV1),
             4 => Some(Self::ShieldMissileV1),
             5 => Some(Self::EncounterReleaseV1),
+            7 => Some(Self::ReleasedTimeV1),
             _ => None,
         }
     }
@@ -80,18 +84,33 @@ impl TacticalExecutionVersion {
                 | Self::ShieldHitV1
                 | Self::ShieldMissileV1
                 | Self::EncounterReleaseV1
+                | Self::ReleasedTimeV1
         )
     }
 
     pub fn supports_hit_shield(self) -> bool {
         matches!(
             self,
-            Self::ShieldHitV1 | Self::ShieldMissileV1 | Self::EncounterReleaseV1
+            Self::ShieldHitV1
+                | Self::ShieldMissileV1
+                | Self::EncounterReleaseV1
+                | Self::ReleasedTimeV1
         )
     }
 
+    pub fn supports_release(self) -> bool {
+        matches!(self, Self::EncounterReleaseV1 | Self::ReleasedTimeV1)
+    }
+
+    pub fn supports_released_time(self) -> bool {
+        self == Self::ReleasedTimeV1
+    }
+
     pub fn supports_missile_shield(self) -> bool {
-        matches!(self, Self::ShieldMissileV1 | Self::EncounterReleaseV1)
+        matches!(
+            self,
+            Self::ShieldMissileV1 | Self::EncounterReleaseV1 | Self::ReleasedTimeV1
+        )
     }
 }
 

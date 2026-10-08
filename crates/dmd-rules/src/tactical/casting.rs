@@ -195,9 +195,11 @@ pub(super) fn begin(
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: choice.actor,
-        turn_number: turn,
-        boundary: TurnBoundary::Start,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor: choice.actor,
+            number: turn,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,
@@ -749,7 +751,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 SpellCastPhase::Committed | SpellCastPhase::Released
             )
             || record.cast.started_at > state.clock.now
-            || record.cast.started_on_turn > r.turn_number
+            || record.cast.started_on_turn > r.turn_context().map_err(invalid)?.number
             || plan.origin.expected_event_sequence < r.origin.expected_event_sequence
             || (plan.origin.expected_event_sequence == r.origin.expected_event_sequence
                 && plan.origin != r.origin)

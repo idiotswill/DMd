@@ -309,7 +309,7 @@ fn validate_shield(
         || casting.cast.plan.occurrence >= r.next_occurrence
         || casting.cast.phase != SpellCastPhase::Committed
         || casting.cast.last_operation != casting.cast.plan.origin
-        || casting.cast.started_on_turn != r.turn_number
+        || casting.cast.started_on_turn != r.turn_context().map_err(invalid)?.number
         || casting.cast.started_at != state.clock.now
         || casting.targets.len() != 1
         || casting.targets[0].actor != actor
@@ -413,7 +413,7 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
             || !casts.insert(missile.cast)
             || !windows.insert(missile.work.occurrence)
             || cast.cast.plan.occurrence != missile.cast
-            || cast.cast.plan.choice.actor != r.turn_actor
+            || cast.cast.plan.choice.actor != r.turn_context().map_err(invalid)?.actor
             || missile.work.kind != (TacticalWorkKind::BeginMissile { cast: missile.cast })
             || missile.cause != cast.cast.last_operation
             || missile.cause != cast.cast.plan.origin
@@ -457,19 +457,27 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                 Ok(())
             };
         if let Some(delegated) = &missile.delegated_by {
-            retain(delegated, r.turn_actor, &missile.cause)?;
-            owner(state, delegated, r.turn_actor)?;
+            retain(
+                delegated,
+                r.turn_context().map_err(invalid)?.actor,
+                &missile.cause,
+            )?;
+            owner(state, delegated, r.turn_context().map_err(invalid)?.actor)?;
         }
         if let Some(order) = &missile.order {
             retain(
                 &order.origin,
-                r.turn_actor,
+                r.turn_context().map_err(invalid)?.actor,
                 missile.delegated_by.as_ref().unwrap_or(&missile.cause),
             )?;
             if missile.delegated_by.is_some() {
                 privileged(&order.origin)?;
             } else {
-                owner(state, &order.origin, r.turn_actor)?;
+                owner(
+                    state,
+                    &order.origin,
+                    r.turn_context().map_err(invalid)?.actor,
+                )?;
             }
             ordered(state, missile)?;
         }
@@ -673,9 +681,14 @@ pub(in crate::tactical) fn validate(state: &CampaignState) -> Result<(), RulesEr
                     ));
                 }
                 if let Some(completed) = &dart.completed_by {
-                    decision(state, completed, r.turn_actor, &roll.accepted_by)?;
+                    decision(
+                        state,
+                        completed,
+                        r.turn_context().map_err(invalid)?.actor,
+                        &roll.accepted_by,
+                    )?;
                     if let Some(selected) = &dart.selected_by {
-                        owner(state, selected, r.turn_actor)?;
+                        owner(state, selected, r.turn_context().map_err(invalid)?.actor)?;
                     } else if missile
                         .darts
                         .iter()

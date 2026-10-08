@@ -463,7 +463,7 @@ async fn survivor_encounter(f: &mut Fixture, url: &str, directory: &Path, histor
     .await;
     let actor = f.actors[0];
     let begin = action(TacticalAction::Begin {
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution: TacticalExecutionVersion::ReleasedTimeV1,
         combatants: vec![
             TacticalCombatant {
                 actor,

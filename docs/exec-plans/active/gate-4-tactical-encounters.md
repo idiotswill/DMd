@@ -11,11 +11,26 @@ The [release plan](gate4-encounter-release.md) records PR48's separate successfu
 literal-main checks. The checkpoints below retain their historical statuses;
 the complete Gate4 remains active.
 
+The current Offstage receipt of this source remains unverified.
+Both prior branches' verification remains attributed to their original heads.
+
+Historical Offstage receiving checkpoint (2026-10-05):
+
+The accepted-main source checkpoint received by this branch is
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50, received by Offstage
+on 2026-10-05. PR50 admits the bounded Air Elemental source; complete Air gameplay
+and the remaining Gate4 obligations remain open. At that receiving checkpoint,
+separate literal32 runtime checks remained pending. This identifies the received
+source, not the latest global main or fresh execution of this branch.
+PR48 remains accepted at `dbf1d63`; the [release plan](gate4-encounter-release.md)
+records its protected merge and separate successful literal-main checks.
+The candidate statuses below are historical; the complete Gate4 remains active.
+
 ## Historical integration checkpoint — 2026-10-01
 
-Fetched main is `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
+At this checkpoint, fetched main was `dbf1d633460473183324b4ec519e8d1980884b5c` after protected release
 PR48 merge. Final reviewed head d4 passed all six checks and has exactly the same
-full tree as dbf. Separate literal dbf runtime checks remain pending. The detailed
+full tree as dbf. Separate literal dbf runtime checks were then pending. The detailed
 source, canonical, native and final-head evidence is in the release plan.
 
 Air3f passes all six checks and its actual verified package completed creation,

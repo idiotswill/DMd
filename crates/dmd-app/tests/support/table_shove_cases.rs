@@ -435,3 +435,190 @@ async fn owned_shove_prone_and_push_preserve_real_cold_sqlite_capabilities_raw_f
             .unwrap();
     }
 }
+
+#[tokio::test]
+async fn current_shove_releases_to_actorless_time_and_retains_exact_old_decision_retries() {
+    let directory = std::env::temp_dir().join(format!("dmd-shove-release-{}", CampaignId::new().0));
+    std::fs::create_dir_all(&directory).unwrap();
+    let url = format!(
+        "sqlite://{}",
+        directory
+            .join("campaign.sqlite")
+            .to_string_lossy()
+            .replace('\\', "/")
+    );
+    let pool = open_sqlite(&url).await.unwrap();
+    let mut f = Box::pin(Fixture::with_pool(TableContract::default(), pool)).await;
+    // The existing driver admits the real source, pays the Shove, reports its
+    // physical save and chooses Prone through actual opaque ownership handles.
+    Box::pin(exercise(&mut f, &url, false, false)).await;
+    let after_shove = state(&f).await;
+    let flow = after_shove
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap();
+    assert_eq!(
+        flow.version,
+        TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+    );
+    assert_eq!(flow.phase, TacticalPhase::Active);
+    assert!(flow.resolution.is_none());
+    assert_eq!(flow.budget.attacks_remaining, 0);
+    assert!(flow.budget.attack_window.is_some());
+    let original = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let decisions = original
+        .table_transport_bindings
+        .iter()
+        .filter_map(|binding| {
+            let request: TableTransportRequest =
+                serde_json::from_str(&binding.request_json).unwrap();
+            matches!(request.input, TableTransportInput::ShoveDecision { .. })
+                .then_some((request, binding.response_json.clone()))
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(
+        decisions.len(),
+        2,
+        "one save selection and one Prone decision"
+    );
+    // Resolving Shove spends the attack but retains its paid Attack window.
+    // Only the owner's real End boundary settles it before Host release.
+    let end_turn = request(&f, false, action(TacticalAction::EndTurn)).await;
+    Box::pin(cold(&mut f, &url, end_turn)).await;
+    let after_turn = state(&f).await;
+    let settled_flow = after_turn
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap();
+    assert!(settled_flow.resolution.is_none());
+    assert_eq!(settled_flow.budget.attacks_remaining, 0);
+    assert!(settled_flow.budget.attack_window.is_none());
+    assert_eq!(
+        after_turn
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number,
+        after_shove
+            .rules
+            .as_ref()
+            .unwrap()
+            .timing
+            .as_ref()
+            .unwrap()
+            .turn_number
+            + 1
+    );
+    assert_eq!(
+        after_turn.rules.as_ref().unwrap().rolls,
+        after_shove.rules.as_ref().unwrap().rolls
+    );
+    for action_value in [
+        TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "End the resolved body-action encounter after settling its paid Attack window."
+                .into(),
+        },
+        TacticalAction::FinishEncounter,
+    ] {
+        let command = request(&f, true, action(action_value)).await;
+        Box::pin(cold(&mut f, &url, command)).await;
+    }
+    let released = state(&f).await;
+    let release = released
+        .encounter_history
+        .as_ref()
+        .unwrap()
+        .last()
+        .unwrap()
+        .clone();
+    assert_eq!(release.execution, TacticalExecutionVersion::ReleasedTimeV1);
+    assert!(released.rules.as_ref().unwrap().timing.is_none());
+    let command = request(
+        &f,
+        true,
+        action(TacticalAction::AdvanceReleasedTime {
+            seconds: 30,
+            ordering: ReleasedTimeOrdering::HostSelect,
+            ruling: "Wait after the actual Shove and completed encounter.".into(),
+        }),
+    )
+    .await;
+    Box::pin(cold(&mut f, &url, command)).await;
+    let elapsed = state(&f).await;
+    assert_eq!(elapsed.clock.now, WorldInstant(released.clock.now.0 + 30));
+    assert_eq!(
+        elapsed.encounter_history.as_ref().unwrap().last(),
+        Some(&release)
+    );
+    assert!(elapsed.rules.as_ref().unwrap().timing.is_none());
+    let flow = elapsed.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+    assert_eq!(flow.phase, TacticalPhase::Finished);
+    assert!(flow.resolution.is_none());
+    assert_eq!(flow.budget, TacticalTurnBudget::default());
+    assert_eq!(elapsed.items, released.items);
+    assert_eq!(
+        elapsed.rules.as_ref().unwrap().rolls,
+        released.rules.as_ref().unwrap().rolls
+    );
+    let host = view(&f, true).await.tactical.unwrap();
+    assert!(host.active_actor.is_none());
+    assert!(host.shove.is_none());
+
+    let target = elapsed
+        .encounter
+        .as_ref()
+        .unwrap()
+        .participants
+        .iter()
+        .find(|p| p.entity_id != f.actors[0])
+        .unwrap()
+        .entity_id;
+    for host in [false, true] {
+        let fresh = request(&f, host, action(TacticalAction::Shove { target })).await;
+        Box::pin(reject(&f, fresh)).await;
+    }
+    let before_retry = export_campaign(&f.pool, f.campaign).await.unwrap();
+    for (accepted, response) in decisions {
+        assert_eq!(
+            serde_json::to_string(
+                &Box::pin(f.runtime.submit_presented_table(accepted.clone()))
+                    .await
+                    .unwrap(),
+            )
+            .unwrap(),
+            response
+        );
+        let mut fresh = accepted;
+        fresh.command_id = CommandId::new();
+        fresh.revision = view(&f, matches!(fresh.channel, TableTransportChannel::Host))
+            .await
+            .revision;
+        Box::pin(reject(&f, fresh)).await;
+    }
+    let mut after_retry = export_campaign(&f.pool, f.campaign).await.unwrap();
+    after_retry.exported_at_utc = before_retry.exported_at_utc.clone();
+    assert_eq!(after_retry, before_retry);
+    assert_eq!(
+        &after_retry.event_journal[..original.event_journal.len()],
+        &original.event_journal
+    );
+    assert_eq!(
+        &after_retry.table_projection_history[..original.table_projection_history.len()],
+        &original.table_projection_history
+    );
+    f.pool.close().await;
+    drop(f);
+    sqlite_test_cleanup::remove_closed_directory(&directory)
+        .await
+        .unwrap();
+}

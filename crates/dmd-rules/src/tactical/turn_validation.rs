@@ -121,7 +121,9 @@ fn validate_work(
                 .target
         }
         TacticalWorkKind::DeathSave { actor } => {
-            if *actor != r.turn_actor || r.boundary != TurnBoundary::Start {
+            if *actor != r.turn_context().map_err(invalid)?.actor
+                || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::Start
+            {
                 return Err(invalid("death save outside owner's start boundary"));
             }
             *actor
@@ -150,8 +152,13 @@ fn validate_work(
             *actor
         }
         TacticalWorkKind::RecoverStable { actor } => *actor,
+        TacticalWorkKind::ExpireLegacyEffect { .. } => {
+            return Err(invalid("legacy deadline is not turn work"));
+        }
         TacticalWorkKind::EndOccupiedSpace { actor } => {
-            if *actor != r.turn_actor || r.boundary != TurnBoundary::End {
+            if *actor != r.turn_context().map_err(invalid)?.actor
+                || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::End
+            {
                 return Err(invalid(
                     "occupied-space consequence is outside owner's End boundary",
                 ));
@@ -160,13 +167,13 @@ fn validate_work(
         }
         TacticalWorkKind::CreatureRecharge { actor, feature_id } => {
             let ticket = super::creature_bridge::recharge(state, *actor, feature_id)?;
-            if *actor != r.turn_actor
-                || r.boundary != TurnBoundary::Start
+            if *actor != r.turn_context().map_err(invalid)?.actor
+                || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::Start
                 || ticket.origin != r.origin
                 || ticket.turn.encounter_id != encounter(state)?.id
-                || ticket.turn.actor != r.turn_actor
-                || ticket.turn.number != r.turn_number
-                || ticket.turn.boundary != r.boundary
+                || ticket.turn.actor != r.turn_context().map_err(invalid)?.actor
+                || ticket.turn.number != r.turn_context().map_err(invalid)?.number
+                || ticket.turn.boundary != r.turn_context().map_err(invalid)?.boundary
                 || ticket.request.id != super::continuations::key(state, work)?.request_id()
             {
                 return Err(invalid(
@@ -183,8 +190,8 @@ fn validate_work(
                 .ok_or_else(|| invalid("legendary window lacks a source profile"))?;
             let source = crate::tactical_creatures::source_for_profile(profile)
                 .map_err(|e| invalid(&e.to_string()))?;
-            if *actor == r.turn_actor
-                || r.boundary != TurnBoundary::End
+            if *actor == r.turn_context().map_err(invalid)?.actor
+                || r.turn_context().map_err(invalid)?.boundary != TurnBoundary::End
                 || source.legendary_budget.is_none()
             {
                 return Err(invalid(
@@ -207,7 +214,10 @@ fn validate_work(
     Ok(())
 }
 
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_released(
+    state: &CampaignState,
+    released: Option<&super::released_time::ReleasedValidation<'_>>,
+) -> Result<(), RulesError> {
     let f = flow(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     // Historical reached-place receipts survive combat completion, but never
@@ -215,6 +225,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     crate::tactical_movement::validate_result(state)?;
     super::ready::validate(state)?;
     super::work_trace::validate(state)?;
+    if released.is_some_and(|p| p.interval(state)) {
+        return Ok(());
+    }
     if f.phase != TacticalPhase::Active {
         if f.resolution.is_some()
             || !f.dodges.is_empty()
@@ -237,9 +250,9 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     }
     if let Some(r) = &f.resolution {
         provenance(state, &r.origin, actor)?;
-        if r.turn_actor != actor
-            || r.turn_number != timing.turn_number
-            || r.boundary != effect_turn.boundary
+        if r.turn_context().map_err(invalid)?.actor != actor
+            || r.turn_context().map_err(invalid)?.number != timing.turn_number
+            || r.turn_context().map_err(invalid)?.boundary != effect_turn.boundary
             || r.frames.len() > 128
             || r.next_occurrence > 32_768
         {

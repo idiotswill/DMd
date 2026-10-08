@@ -12,6 +12,21 @@ keeps final checks/merge and the broader Gate4 obligations open.
 The [release plan](gate4-encounter-release.md) records PR48's separate successful
 literal-main checks. All remaining Gate4 obligations below stay open.
 
+The current Offstage receipt of this source remains unverified.
+Both prior branches' verification remains attributed to their original heads.
+
+Historical Offstage receiving checkpoint (2026-10-05):
+
+The accepted-main source checkpoint received by this branch is
+`32c0c682c4dbb235e1f9a119643c5d8626d5cb71` after PR50, received by Offstage
+on 2026-10-05. PR50 admits the bounded Air Elemental source; complete Air gameplay
+and the remaining Gate4 obligations remain open. At that receiving checkpoint,
+separate literal32 runtime checks remained pending. This identifies the received
+source, not the latest global main or fresh execution of this branch.
+PR48 remains accepted at `dbf1d63`; the [release plan](gate4-encounter-release.md)
+records its protected merge and separate successful literal-main checks.
+The candidate statuses below are historical; the complete Gate4 remains active.
+
 ## Historical checkpoint after PR48 — 2026-10-01
 
 At that checkpoint, fetched main was dbf1d633460473183324b4ec519e8d1980884b5c.
@@ -25,10 +40,10 @@ refusal, corrected placement, owned initiative cold continuation and airborne co
 continuation with the previous campaign resources/history preserved. Local
 canonical and final receiving-head proof were then open and were subsequently
 completed before PR50 acceptance, as recorded in the Air plan. This is bounded
-source admission, not complete Air actions or full monster running. Shove, expiry,
-MR, guarded Grapple, finite source gear, complete Ogre and ground recovery remain
-unaccepted dependent work. All twelve families/eighteen spell mechanisms and the
-other obligations below retain their full scope. No Gate5 or gate completion.
+source admission, not complete Air actions or full monster running. At that
+checkpoint, Shove, expiry, MR, guarded Grapple, finite source gear, complete Ogre
+and ground recovery remained unaccepted dependent work. All twelve families/eighteen
+spell mechanisms and the other obligations below retain their full scope. No Gate5 or gate completion.
 
 ## Historical checkpoint after PR49 — 2026-09-30
 

@@ -40,8 +40,8 @@ impl CampaignState {
                 .as_ref()
                 .and_then(|encounter| encounter.flow.as_ref())
                 .is_some_and(|flow| {
-                    flow.version
-                        == crate::TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                    crate::TacticalExecutionVersion::from_flow_version(flow.version)
+                        .is_some_and(crate::TacticalExecutionVersion::supports_release)
                         && flow.phase == crate::TacticalPhase::Finished
                 })
         {

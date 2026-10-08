@@ -127,8 +127,12 @@ fn uses(f: &Fixture) -> u8 {
 }
 fn select(f: &mut Fixture, intent_first: bool) -> TacticalWorkKey {
     let window = hit_window(f);
-    let order_owner =
-        hit_responses::owner_index(&f.state, &f.actors, &f.players, resolution(f).turn_actor);
+    let order_owner = hit_responses::owner_index(
+        &f.state,
+        &f.actors,
+        &f.players,
+        resolution(f).turn_context().expect("turn fixture").actor,
+    );
     let order = TacticalAction::OrderHitResponses {
         window,
         instruction: hit_responses::forward_order(),
@@ -702,7 +706,10 @@ fn shield_opportunity_child_preserves_original_move_and_reaction_damage_cause() 
     let rolled = f.run(Some(0), TacticalAction::SubmitRoll { result });
     assert_eq!(resolution(&f).origin, moving.meta);
     assert_eq!(resolution(&f).attack.as_ref().unwrap().origin, attack.meta);
-    assert_eq!(resolution(&f).turn_actor, f.actors[1]);
+    assert_eq!(
+        resolution(&f).turn_context().expect("turn fixture").actor,
+        f.actors[1]
+    );
     let retained_move = resolution(&f).movement.clone();
     let window = hit_window(&f);
     f.rejected(

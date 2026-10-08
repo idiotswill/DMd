@@ -1302,3 +1302,28 @@ fn legacy_saves_reject_inventory_authority_and_duplicate_null_shadows() {
         }
     }
 }
+
+#[test]
+fn legacy_schema_rejects_released_history_and_duplicate_null_shadows() {
+    let codec = CampaignStateSnapshotCodec::new();
+    for version in 1..=3 {
+        let mut value: Value = serde_json::from_str(&state().encode_json().unwrap()).unwrap();
+        value["schema_version"] = json!(version);
+        value["encounter_history"] = json!({"completions":[],"spaces":[],"elapsed_intervals":[]});
+        let payload = value.to_string();
+        assert!(codec.decode_state(version, &payload).is_err());
+        for replacement in [
+            "\"encounter_history\":null,\"encounter_history\":",
+            "\"encounter_history\":{},\"encounter_history\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &payload.replacen("\"encounter_history\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
+}

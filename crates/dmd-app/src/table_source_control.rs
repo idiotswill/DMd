@@ -254,7 +254,8 @@ pub(crate) fn authorize_tactical(
                 execution:
                     TacticalExecutionVersion::ShieldHitV1
                     | TacticalExecutionVersion::ShieldMissileV1
-                    | TacticalExecutionVersion::EncounterReleaseV1,
+                    | TacticalExecutionVersion::EncounterReleaseV1
+                    | TacticalExecutionVersion::ReleasedTimeV1,
                 combatants,
                 ..
             } => combatants.iter().any(|combatant| owned(combatant.actor)),
@@ -262,7 +263,8 @@ pub(crate) fn authorize_tactical(
                 execution:
                     TacticalExecutionVersion::ShieldHitV1
                     | TacticalExecutionVersion::ShieldMissileV1
-                    | TacticalExecutionVersion::EncounterReleaseV1,
+                    | TacticalExecutionVersion::EncounterReleaseV1
+                    | TacticalExecutionVersion::ReleasedTimeV1,
             } => state.encounter.as_ref().is_some_and(|encounter| {
                 encounter
                     .participants
@@ -312,6 +314,7 @@ pub(crate) fn authorize_tactical(
         | A::Begin { .. }
         | A::ConcludeHostilities { .. }
         | A::FinishEncounter
+        | A::AdvanceReleasedTime { .. }
         | A::UpgradeExecution
         | A::UpgradeExecutionTo { .. }
         | A::ProposeInitiativeTie { .. }
@@ -322,7 +325,9 @@ pub(crate) fn authorize_tactical(
                 .and_then(|hit| hit.respondent.as_ref())
                 .map(|respondent| respondent.actor)
         }
-        A::DelegateHitResponses { .. } => resolution.map(|resolution| resolution.turn_actor),
+        A::DelegateHitResponses { .. } => {
+            resolution.and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor))
+        }
         A::RespondToMissile { window, actor, .. } => resolution
             .filter(|resolution| resolution.origin.id == window.resolution)
             .and_then(|resolution| {
@@ -355,7 +360,9 @@ pub(crate) fn authorize_tactical(
                 })
                 .map(|target| target.response.actor)
         }
-        A::DelegateMissileResponses { .. } => resolution.map(|resolution| resolution.turn_actor),
+        A::DelegateMissileResponses { .. } => {
+            resolution.and_then(|resolution| resolution.turn_context().ok().map(|turn| turn.actor))
+        }
         A::OrderMissileResponses { window, .. } => resolution.and_then(|resolution| {
             let delegated = resolution.origin.id == window.resolution
                 && resolution
@@ -363,21 +370,22 @@ pub(crate) fn authorize_tactical(
                     .iter()
                     .find(|missile| missile.work.occurrence == window.occurrence)
                     .is_some_and(|missile| missile.delegated_by.is_some());
-            (!delegated).then_some(resolution.turn_actor)
+            (!delegated).then_some(resolution.turn_context().ok()?.actor)
         }),
         A::OrderHitResponses { .. } => resolution.and_then(|resolution| {
             (!resolution
                 .hit_review
                 .as_ref()
                 .is_some_and(|hit| hit.delegated_by.is_some()))
-            .then_some(resolution.turn_actor)
+            .then_some(resolution.turn_context().ok()?.actor)
         }),
         A::ChooseTurnWork { .. } => match resolution {
+            Some(resolution) if resolution.released_interval().is_some() => None,
             Some(resolution)
                 if !dmd_rules::tactical::tactical_frame_host_ordering(resolution)
                     .map_err(|error| error.to_string())? =>
             {
-                Some(resolution.turn_actor)
+                Some(resolution.turn_context().map_err(str::to_owned)?.actor)
             }
             _ => None,
         },

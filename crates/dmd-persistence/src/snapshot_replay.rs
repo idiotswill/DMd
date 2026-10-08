@@ -75,6 +75,7 @@ fn reject_legacy_encounter(legacy: &CampaignState) -> Result<(), String> {
         .as_ref()
         .is_some_and(|table| table.source_actor_access.is_some())
         || legacy.encounter.is_some()
+        || legacy.encounter_history.is_some()
         || legacy.rules.as_ref().is_some_and(|rules| {
             rules.tactical_effects.is_some()
                 || rules.tactical_inventory.is_some()

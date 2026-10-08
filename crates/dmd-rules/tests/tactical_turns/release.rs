@@ -544,6 +544,7 @@ fn isolated_finished(f: &mut Fixture) {
         }
     }
     f.state.encounter_history = Some(Box::new(TacticalEncounterHistory {
+        elapsed_intervals: vec![],
         completions: vec![receipt],
         spaces: vec![space],
     }));
@@ -626,7 +627,7 @@ fn savage_marker_requires_completion_highwater_in_each_no_timing_phase() {
                 request_id: RollRequestId::new(),
             })
             .collect(),
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution: TacticalExecutionVersion::ReleasedTimeV1,
     };
     f.run(None, action);
     validate_state(&f.state, &f.pack).unwrap();
@@ -957,7 +958,7 @@ fn replacement_setup_and_pending_initiative_cannot_omit_retained_dependencies() 
                 request_id: RollRequestId::new(),
             })
             .collect(),
-        execution: TacticalExecutionVersion::EncounterReleaseV1,
+        execution: TacticalExecutionVersion::ReleasedTimeV1,
     };
     f.run(None, action);
     validate_state(&f.state, &f.pack).unwrap();

@@ -898,13 +898,14 @@ fn ledge_push_landing_keeps_source_route_and_concentration_ancestry_until_final_
 #[test]
 fn current_and_synthetic_retained_shove_keep_paid_work_through_all_three_choices() {
     for execution in [
+        TacticalExecutionVersion::ReleasedTimeV1,
         TacticalExecutionVersion::EncounterReleaseV1,
         TacticalExecutionVersion::ShieldMissileV1,
     ] {
         let mut f = fixture();
         assert_eq!(
             f.flow().version,
-            TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+            TacticalExecutionVersion::ReleasedTimeV1.flow_version()
         );
         let admitted = f.run(Some(0), attempt(&f));
         // Deliberately synthetic reducer coverage: only switch the executor of
@@ -1043,4 +1044,64 @@ fn synthetic_idle_flow4_refuses_fresh_shove_and_unpaid_choices_until_explicit_up
     assert_eq!(record(&f).stage, TacticalShoveStage::SaveChoice);
     assert!(f.rules().timing.as_ref().unwrap().action_spent);
     assert_eq!(f.flow().budget.attacks_remaining, 0);
+}
+
+#[test]
+fn fresh_seven_shove_uses_the_actual_turn_and_refuses_elapsed_work_until_completion() {
+    let mut f = fixture();
+    assert_eq!(
+        f.flow().version,
+        TacticalExecutionVersion::ReleasedTimeV1.flow_version()
+    );
+    let admitted = f.run(Some(0), attempt(&f));
+    let r = f.flow().resolution.as_ref().unwrap();
+    assert_eq!(r.origin, admitted.meta);
+    assert_eq!(
+        r.turn_context().unwrap(),
+        &TacticalTurnContext {
+            actor: f.actors[0],
+            number: f.rules().timing.as_ref().unwrap().turn_number,
+            boundary: TurnBoundary::Start,
+        }
+    );
+    assert!(r.released_interval().is_none());
+    let wire = serde_json::to_string(r).unwrap();
+    assert!(wire.contains("\"turn_actor\":"));
+    assert!(wire.contains("\"shove\":"));
+    assert!(!wire.contains("released_interval"));
+    assert_eq!(
+        serde_json::from_str::<TacticalResolution>(&wire).unwrap(),
+        **r
+    );
+    f.rejected(
+        None,
+        TacticalAction::AdvanceReleasedTime {
+            seconds: 1,
+            ordering: ReleasedTimeOrdering::HostSelect,
+            ruling: "Time cannot bypass an admitted paid body action.".into(),
+        },
+    );
+    f.rejected(None, TacticalAction::FinishEncounter);
+    f.run(
+        None,
+        TacticalAction::ChooseShoveSave {
+            ability: ShoveSaveAbility::Strength,
+        },
+    );
+    f.run(None, TacticalAction::VoluntarilyFailSave);
+    f.run(
+        Some(0),
+        TacticalAction::ChooseShoveOutcome {
+            choice: ShoveChoice::Prone,
+        },
+    );
+    assert!(f.flow().resolution.is_none());
+    assert!(f.rules().timing.as_ref().unwrap().action_spent);
+    assert!(f.rules().entities[&f.actors[1]].prone);
+    assert!(
+        f.state
+            .encounter_history
+            .as_ref()
+            .is_none_or(|history| history.elapsed_intervals.is_empty())
+    );
 }

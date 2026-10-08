@@ -283,7 +283,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
         f,
         None,
         TacticalAction::Begin {
-            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            execution: TacticalExecutionVersion::ReleasedTimeV1,
             combatants,
             groups,
         },
@@ -595,7 +595,10 @@ async fn react(
             .resolution
             .as_ref()
             .unwrap();
-        assert_eq!(resolution.turn_actor, cultist);
+        assert_eq!(
+            resolution.turn_context().expect("turn fixture").actor,
+            cultist
+        );
         let review = resolution.hit_review.as_ref().unwrap();
         assert_eq!(review.stage, TacticalHitReviewStage::Collecting);
         assert_eq!(review.respondent.as_ref().unwrap().actor, cultist);

@@ -34,9 +34,11 @@ pub(super) fn begin(
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
         origin: meta.clone(),
-        turn_actor: actor,
-        turn_number,
-        boundary: TurnBoundary::Start,
+        context: dmd_domain::TacticalResolutionContext::Turn(dmd_domain::TacticalTurnContext {
+            actor,
+            number: turn_number,
+            boundary: TurnBoundary::Start,
+        }),
         frames: vec![],
         pending: None,
         failed_save: None,
@@ -375,7 +377,7 @@ fn finish_movement(
         original: movement.origin.clone(),
         cause: meta.clone(),
         actor: movement.actor,
-        turn_number: resolution(state)?.turn_number,
+        turn_number: resolution(state)?.turn_context().map_err(invalid)?.number,
         start: movement.initial_position,
         endpoint: encounter(state)?
             .participant(movement.actor)
@@ -519,8 +521,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     };
     crate::tactical_movement::validate_history(state, movement)?;
     if movement.origin != resolution.origin
-        || movement.actor != resolution.turn_actor
-        || resolution.boundary != TurnBoundary::Start
+        || movement.actor != resolution.turn_context().map_err(invalid)?.actor
+        || resolution.turn_context().map_err(invalid)?.boundary != TurnBoundary::Start
         || movement.opportunity.is_some() && resolution.attack.is_some()
         || movement.offered.len() > encounter(state)?.participants.len()
         || movement.decisions.len() > movement.offered.len()

@@ -297,6 +297,7 @@ pub(crate) fn presented_view(
                 encounter_id,
                 aftermath,
                 release,
+                released_time,
                 execution,
                 ready,
                 hit,
@@ -436,6 +437,43 @@ pub(crate) fn presented_view(
                     }))
                 })
                 .transpose()?;
+            let released_time = released_time
+                .map(|value| {
+                    let interval = value
+                        .interval
+                        .map(|interval| {
+                            let choices = interval
+                                .choices
+                                .into_iter()
+                                .map(|choice| {
+                                    let origin = work_origin
+                                        .ok_or("released choices lack a resolution origin")?;
+                                    Ok(TablePresentedWorkChoice {
+                                        handle: CommandId(handle(&ProjectionCapability::Work {
+                                            origin,
+                                            occurrence: choice.occurrence,
+                                        })?),
+                                        label: choice.label,
+                                    })
+                                })
+                                .collect::<Result<Vec<_>, &str>>()?;
+                            Ok::<_, &str>(TableReleasedIntervalView {
+                                started_at: interval.started_at,
+                                progress_at: interval.progress_at,
+                                target_at: interval.target_at,
+                                ruling: interval.ruling,
+                                choices,
+                            })
+                        })
+                        .transpose()?;
+                    Ok::<_, &str>(TableReleasedTimeView {
+                        may_advance: value.may_advance,
+                        blocker: value.blocker,
+                        may_pause_session: value.may_pause_session,
+                        interval,
+                    })
+                })
+                .transpose()?;
             let continuation = continuation
                 .map(|value| {
                     let choices = value
@@ -465,6 +503,7 @@ pub(crate) fn presented_view(
                 encounter_id,
                 aftermath,
                 release,
+                released_time,
                 execution,
                 ready,
                 hit,
