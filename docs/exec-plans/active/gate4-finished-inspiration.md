@@ -183,3 +183,42 @@ restart, a blocked next boundary, and actual owner decline/gift before continued
 play. This adds no Cartesian matrix and does not replace existing native or
 separate human Gate4 requirements. No native execution is allocated by this
 source checkpoint.
+
+## Independent source review and second existing failure witness
+
+Root independently reviewed all nine changed files at69eed28c998be3c70f52d8b4840f91893cb55624,
+tree6c6acc80e51279ad9c8d044912ac83165fa1791a, including the full new module,
+complete production diff, all strict-admission callers and status changes. No
+actionable finding remains in that source review. Independent tree/inverse audit
+SHA2564ca259121a86ce515dc82d6304861c6f54d80d3388111ceac8b10c3bbbc0eff6
+confirms1,001 unchanged parent entries, exact prior module/driver bodies after
+inverse, append-only older plans and exactly three additive test names. Runtime
+on that correction remains UNRUN.
+
+Separately, b62 Linux table-loop job113310121854 completed with88 passes/one
+failure after13,620.93s. The sole failing existing case is
+`table_physical_facts_cases::current_v4_finished_encounter_activates_mass_then_v5_inspiration_keeps_original_authority`.
+Its unchanged producer genuinely finishes v4, enables physical facts, then makes
+first/excess Host awards under v5 before owner decline. The shared first-submit
+panic at physical_creation_driver90 reports the same outstanding-choice guard.
+The precise request is again not printed; source identifies the same composition
+gap. No separate production repair is justified by this witness.
+
+Original ZIP SHA256:
+235dca8385bd05cdf2c26d0f8ed4076946d96707de364da65ddec1213b6e0ced.
+Original job log SHA256:
+1b4785bec3cc6e895361046626d5d82cd333a2de12e7d8893f4dabc26d4d30bd.
+Independent audit SHA256:
+d312124537eecfa0e87474385d3be75f4ca5b686b6bf736bb0a3152708de80b6.
+Root read the original failed output, complete case and substantive audit.
+The artifact's89 named outcomes match its actual list; normal full compiler
+graphs and64 metadata targets agree. No complete allocation receipt exists.
+
+Before the unchanged complete canonical run, also execute that exact existing
+v5 case from table_loop as a second additive focused stage, after the three new
+v4 controls. Its original body remains byte-exact. Both early steps use the same
+frozen head, fresh dedicated target, ordinary profile/thread/stack and owned slot.
+Validate exact case names, actual target association, passed counts and expected
+filtered counts; neither filtered step replaces any unfiltered canonical case.
+This is additional early diagnosis for an actually observed failure, not a
+reduced acceptance suite. No older head is passed or rerun to obtain a green badge.
