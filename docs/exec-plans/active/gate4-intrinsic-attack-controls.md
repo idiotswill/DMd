@@ -132,3 +132,25 @@ Next action: parent independently reviews the coherent source commit, schedules
 focused tests plus fast/canonical/exact-head CI and packages the verified receiver
 for the bounded native witness. Resolve any actual findings before acceptance;
 Gate 4's broader obligations and final human encounter remain pending.
+
+## Corrective coverage allocation, 2026-10-08
+
+Parent reviewed the full source at `4b4e29bc0b0fce71bb85ab2ec8d2418ebc276349`
+and identified a privacy-evidence gap: the existing read helper excludes a PC
+which never enters that fixture's encounter. That assertion does not distinguish
+the acting source's perception from Host truth or another owned observer's view.
+No production defect is established by this finding.
+
+The same sole writer resumes bounded source-only work to add a genuine-history
+encounter privacy control. Actual authored geometry, normal table commands and
+production perception must establish a participating target known to Host and/or
+another same-player observer but unlocated by the active source. Reuse this
+history for a remembered-only target and absent-current-controller refusal when
+lawful production transitions support those cuts; do not fabricate state, SQL,
+history, attendance or knowledge. Preserve all pre-existing test bodies and
+production source. Record any unsupported cut rather than silently claiming it.
+
+Direct formatting and static diff checks remain the only execution allowance.
+No compiler, tests, application/native/database runtime, push, PR or merge is
+allocated. Commit the correction and return its exact head and full delta for
+parent review; all new behavioral assertions remain UNRUN.
