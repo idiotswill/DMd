@@ -1,7 +1,7 @@
 # Gate 4 combined family receiver
 
-Status: complete source review and exact368 frontend PASS; accepted-main receipt
-and full receiver verification pending, 2026-10-08. No feature/gate acceptance.
+Status: complete source review, exact368 frontend PASS and accepted-main receipt;
+final receiver verification pending, 2026-10-08. No feature/gate acceptance.
 Branch `codex/gate4-family-receiver`; no PR yet. Root is sole writer
 in the reused clean `gate4-grapple-combined-receipt` checkout. The old
 `codex/gate4-finished-character-creation` ref remains at its unchanged4deba086 head.
@@ -278,3 +278,44 @@ mandatory. Draft publication changes timing only; it grants no acceptance waiver
 Next: normal accepted-main receipt, independent union audit, status freeze and
 early draft publication; continue all actual historical/canonical/CI/native work.
 Gate4 remains active and Gate5 is not started.
+
+## Whole accepted-main receipt and final verification contract
+
+Plan-firstc8d141ae783e1880cfca77d44a13c3097b430883 preceded normal merge
+4c2bb2573810aa1210f0ad3a1473d2e419bce17a, tree
+cb1fe1ae189b53abd52488847d18d94787b7e600, with actual accepted mainc101.
+The conflict-free delta is exactly the six expected CI paths, identical to
+main. All other entries retain the plan-parent bytes. All1,008 tracked entries
+and working Git-filtered hashes match. Receipt audit SHA256:
+6593ced2381c89a18d871ec1674c68d21b408b160c45bb63a37513d442aedc18.
+This status freeze additionally updates only these two execution plans.
+Independent parent-relative review precedes draft publication.
+
+Root read and accepts the complete external verification proposal, SHA256
+ef63a300ba960b4b2449f0af0835c21bbb41cc5c01cc896d792e46f1ce579ee9.
+Use unchanged ./scripts/verify: it includes verify-fast, whole-workspace locked
+check/strict all-target Clippy, unfiltered tests and both final source guards.
+An extra identical fast invocation is unnecessary. Also run all25 accepted CI
+Python controls and ordinary npm ci/check/test/build, retaining original logs.
+
+Source expectations are1,147 Windows GNU cases across58 executable targets and
+six zero-case doctest groups; Linux adds one existing Unix case (1,148), MSVC
+adds three existing host cases (1,150). Each historical target has two cases;
+public Grapple has89. Frontend expects296/37 files. These are source expectations,
+not passes; independently reconcile actual compiler/listing/execution evidence.
+
+After historical663 terminates and is audited, prepare and independently review
+a new final-head runner/manifest. Explicitly reuse its prior52 GNU target only
+as a cache, never as result evidence. Keep GNU1.98.1, jobs1/incremental0, ordinary
+profiles/default stack and test threads, established target-only linker flag,
+all source/executor/configuration guards and exclusive owned heavy lock. Use
+new evidence paths; preserve every old attempt. No filtering, timeout, resume,
+weakened oracle or retry-until-green is authorized.
+
+Hosted workflows remain unchanged; all three historical targets belong to the
+complete remainder allocation. Record Linux's actual synthetic checkout/parents/
+tree separately from Windows's literal head. Both complete aggregates, MSRV/lint/
+guards, ordinary MSVC release/NSIS packaging and native ledger remain mandatory.
+Native work must use the verified receiver package; separate human physical-dice
+and multi-round Gate4 evidence is not replaced by controlled QA. No source or
+scheduling checkpoint closes this family or Gate4.
