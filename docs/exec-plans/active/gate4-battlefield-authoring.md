@@ -89,4 +89,25 @@ that new receiving identity. Capacity transport and the genuine pre-capacity v5
 capture remain separately planned work; neither is implemented here. The
 independently found own-turn intrinsic creature-attack UI gap is also separate.
 
-All implementation, tests, native acceptance and merge are currently UNRUN.
+## Source implementation — 2026-10-08
+
+The form now distinguishes actor elevation/body height and region bottom/extent,
+and proposes water and dry support surfaces through the existing geometry shape.
+Each new water/support region has its own surface identity; no disconnected
+regions are silently declared one connected material. The old ground-level
+proposal is unchanged. Numeric validation preserves exact half-foot units, body
+and region extents remain inside the existing 40-foot ceiling, and a disabled
+form cannot submit. Map descriptions add only a nonzero authorized elevation;
+the player's remembered position remains the original remembered position.
+
+Eleven new frontend cases are authored in a separate file: default compatibility,
+ordinary multi-region/elevated setup, six invalid occupied-space inputs, invalid
+terrain/correction, pending-operation refusal, and actual-versus-remembered
+elevation/privacy. Every existing test file and all Rust/content/corpus bytes
+remain untouched. Static whitespace and preservation checks, followed by fresh
+independent review, precede any runtime allocation. No test, frontend build,
+canonical command, app/database or package has executed for this branch.
+
+Next: freeze and independently review the exact full diff, resolve any finding,
+then follow the deliberate receiving and verification sequence above. Native
+acceptance and merge remain pending; source authoring is not acceptance.
