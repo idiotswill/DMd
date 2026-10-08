@@ -10,6 +10,84 @@ pub fn exact_export(expected: &CampaignExport, actual: &CampaignExport) {
         "only export wall-clock metadata may differ"
     );
 }
+/// Eligibility comes from the immutable starting checkpoint, never the database
+/// under test. A command accepted anew has its own separately checked response.
+pub fn retained_bindings<'a>(
+    checkpoint: &CampaignExport,
+    actual: &CampaignExport,
+    retained: &'a [TableTransportBinding],
+) -> Vec<&'a TableTransportBinding> {
+    let mut required = vec![];
+    for binding in retained {
+        let expected = checkpoint
+            .table_transport_bindings
+            .iter()
+            .filter(|row| row.meta.id == binding.meta.id)
+            .collect::<Vec<_>>();
+        if expected.is_empty() {
+            continue;
+        }
+        assert_eq!(expected, vec![binding], "original checkpoint binding");
+        let current = actual
+            .table_transport_bindings
+            .iter()
+            .filter(|row| row.meta.id == binding.meta.id)
+            .collect::<Vec<_>>();
+        assert_eq!(current, vec![binding], "required retained binding");
+        required.push(binding);
+    }
+    required
+}
+
+#[test]
+fn retained_checkpoint_requires_literal_rows_without_borrowing_a_fresh_response() {
+    let archive = archive::load("inspiration-decline-v4");
+    let cut = &archive.cuts[1];
+    assert!(retained_bindings(&cut.before, &cut.after, &archive.retained).is_empty());
+    let required = retained_bindings(&cut.after, &cut.after, &archive.retained);
+    // Both saved first-award witnesses remain obligations; do not deduplicate.
+    assert_eq!(required.len(), 2);
+    assert_eq!(required[0].meta.id, cut.request.command_id);
+    assert_eq!(required[1].meta.id, cut.request.command_id);
+
+    let mut missing = cut.after.clone();
+    missing
+        .table_transport_bindings
+        .retain(|row| row.meta.id != cut.request.command_id);
+    assert!(
+        std::panic::catch_unwind(|| { retained_bindings(&cut.after, &missing, &archive.retained) })
+            .is_err()
+    );
+    let mut changed = cut.after.clone();
+    changed
+        .table_transport_bindings
+        .iter_mut()
+        .find(|row| row.meta.id == cut.request.command_id)
+        .unwrap()
+        .response_json = "{}".into();
+    assert!(
+        std::panic::catch_unwind(|| { retained_bindings(&cut.after, &changed, &archive.retained) })
+            .is_err()
+    );
+    // Selecting by whole-row equality would silently drop this corrupt expectation.
+    assert!(
+        std::panic::catch_unwind(|| { retained_bindings(&changed, &cut.after, &archive.retained) })
+            .is_err()
+    );
+    let mut duplicate = cut.after.clone();
+    duplicate.table_transport_bindings.push(cut.binding.clone());
+    assert!(
+        std::panic::catch_unwind(|| {
+            retained_bindings(&cut.after, &duplicate, &archive.retained)
+        })
+        .is_err()
+    );
+    let terminal = &archive.cuts.last().unwrap().after;
+    assert_eq!(
+        retained_bindings(terminal, terminal, &archive.retained).len(),
+        5
+    );
+}
 pub fn prefix(before: &CampaignExport, after: &CampaignExport) {
     assert_eq!(before.campaign_id, after.campaign_id);
     assert!(after.command_audit.starts_with(&before.command_audit));

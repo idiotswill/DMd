@@ -317,7 +317,7 @@ pub async fn old_pending(archive: &archive::Archive) {
         ))
         .await;
     }
-    Box::pin(f.retained(&archive.retained)).await;
+    Box::pin(f.retained(&cut.before, &archive.retained)).await;
     Box::pin(finish(&mut f, &roles)).await;
     Box::pin(f.close()).await;
 }
@@ -369,7 +369,7 @@ async fn mass(f: &mut Fixture, roles: &Roles, archive: &archive::Archive) {
             assert!(v.physical.unwrap().controls.is_empty());
         }
     }
-    Box::pin(f.retained(&archive.retained)).await;
+    Box::pin(f.retained(&archive.cuts.last().unwrap().after, &archive.retained)).await;
     // Genuine older accepted requests remain retries, while a distinct fresh v4
     // command using current context cannot write a mass-enabled campaign.
     let mut stale = f
@@ -411,7 +411,7 @@ async fn mass(f: &mut Fixture, roles: &Roles, archive: &archive::Archive) {
         PhysicalFactValue::Body { mass: None, .. }
     ));
     Box::pin(negatives::post_mass(f, &old)).await;
-    Box::pin(f.retained(&archive.retained)).await;
+    Box::pin(f.retained(&archive.cuts.last().unwrap().after, &archive.retained)).await;
 }
 async fn battlefield(f: &mut Fixture, roles: &Roles) {
     let state = f.state().await;
@@ -1002,6 +1002,6 @@ pub async fn new_version(archive: &archive::Archive) {
         assert!(flow(&state).resolution.is_none());
     }
     compare::prefix(terminal, &f.export().await);
-    Box::pin(f.retained(&archive.retained)).await;
+    Box::pin(f.retained(terminal, &archive.retained)).await;
     Box::pin(f.close()).await;
 }
