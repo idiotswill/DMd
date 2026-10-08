@@ -154,3 +154,50 @@ Direct formatting and static diff checks remain the only execution allowance.
 No compiler, tests, application/native/database runtime, push, PR or merge is
 allocated. Commit the correction and return its exact head and full delta for
 parent review; all new behavioral assertions remain UNRUN.
+
+### Authored correction and reachable limits
+
+Correction-scope plan commit: `3807cbd86f6e5d32be328eca9bf26902b4cba387`.
+Parent accepted the bounded genuine privacy and absent-resumption witnesses before
+the correction was completed. One fourth application test is appended; no previous
+test body, helper, production code, content or frontend file changes.
+
+The test reuses the original three-participant creation/initiative history, finishes
+that encounter normally, and authors a new courtyard with an opaque wall. Its
+assertions require actual perception to show the active Chimera cannot locate the participating PC while a
+Goblin across the wall sees that PC. Host participant truth includes the PC, yet
+the Host's advisory source read excludes it. After assigning both sources to the
+same attending player, both observer views exist and the ordinary player's combined
+initiative view knows the PC through the Goblin; the Chimera's choices still exclude
+it. Both reads retain actual Bite candidates. Repeated reads preserve all stored
+rows/export bytes, and one independent portable restore returns identical choices.
+This specifically distinguishes actor perception from Host/all-participant truth
+and the same player's combined observer knowledge.
+
+The same history then concludes hostilities and closes the session. Resumption
+with the retained source owner Absent rejects for the exact source-attendance
+reason, with unchanged export and rows, while the participating PC is Present.
+Resumption with that source owner Present succeeds; the source read remains
+available with the same choices, and Host takeover remains refused. Ordinary
+accepted setup commands and one restore are sufficient; this adds no second
+creation scenario or redundant cold/retry matrix.
+
+Two optional positive images were not fabricated. The production table battlefield
+producer (`crates/dmd-rules/src/table/battlefield.rs`) initializes tactical knowledge
+empty; the source audit found no production producer of `ActorKnowledge` or
+`RememberedContact`, while the existing spatial unit tests explicitly construct
+them. Thus this genuine application history cannot produce a remembered-only
+contact. The existing strict remembered-contact filter is unchanged. Likewise,
+enabled source assignment (`table/source_control.rs`), Begin controller attendance,
+and `table/reducer.rs::require_aftermath_attendance` prevent the absent-active
+controller image. The new test exercises that actual resumption refusal rather
+than injecting an unreachable state or pretending it isolates the read guard.
+
+Full static review checked the new geometry against actual source footprints and
+senses, the real initiative/Finished/replacement/session paths, the observer-union
+projection, and exact error text against existing aftermath coverage. Direct
+`rustfmt --edition 2024 --config skip_children=true`, its `--check`, and
+`git diff --check` pass. The full correction is additive in two paths only.
+All four application tests, the 26 frontend cases, compilation, CI and native
+acceptance remain UNRUN. Parent must independently review the new exact head before
+allocating execution; no earlier verification is transferred to this correction.
