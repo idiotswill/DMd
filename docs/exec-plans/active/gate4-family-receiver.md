@@ -159,3 +159,53 @@ Next: independently review this staging and the complete intrinsic source,
 resolve actual findings, then receive the whole reviewed intrinsic history.
 The unchanged verification, accepted-main73 and native prerequisites still apply.
 Gate4 remains active; no Gate5.
+
+## Reviewed intrinsic receipt and actual historical failure correction
+
+Independent staging review cleared65675190, with991 unrelated original blobs
+identical, all whole parents present and both complete condition-plan histories
+preserved. Audit SHA256
+ed0fbf3b701a552ad4899aa2f95698d213bff9285fcb723ce9896e128e6c7b06.
+
+Root reviewed the complete intrinsic17-file source at4b4e29bc, then its two-path
+privacy/attendance correction atc1366962b463412e710aa98d11bede1f73b9d5fd.
+The added genuine encounter distinguishes acting-source perception from Host
+truth and another source observer owned by the same player. Actual absent-owner
+session resumption refuses; Present resumption and owned choices remain required.
+The correction introduces no production change. Root closure report SHA256
+3befe3e60e810f3754d68d8601e4e0854860fc8edcecd171d81c3337303c7229.
+Whole intrinsic history was normally received at2a50229592dc4db0cd19b92523fae0c6b38532b1.
+Four new application tests and26 frontend cases are authored, all runtime UNRUN.
+
+Original52ae canonical verification has now FAILED, not passed. After44 earlier
+cases, historical decline cut01 failed driver.rs220 at09:12:41 UTC; Linux CI
+independently failed the same assertion. Preserved logs and dead-database inspection
+show all17 old bindings literal; only the newly accepted command's legitimate
+response revision differs. The shared test helper incorrectly treated that new
+binding as an archived retained response. See the full diagnosis and plan in
+[historical compatibility](gate4-physical-facts-historical-compatibility.md).
+Neither old run proves complete historical compatibility or this receiver.
+
+Separate plan-firstdd7a694d and reviewed correction
+663b49f3bab2f6217ee372e6f986b9eadd32b65b fix only historical test helpers. Required
+old bindings now derive from immutable checkpoints and each must be present
+literally; missing-row skipping is removed. Every original scenario/cut, corpus
+and production source remains unchanged. The new pure negative control is
+discovered in each of the three existing consumer targets. Independent full
+inverse/preservation audit SHA256
+72c1a7a3287b146241b59d3397201d41679ec7299ced2a4f7868eeb00e7fa603.
+Normal receipt3d0fce6d6bb157ea93d269eb73e8fc9fe92e0372 preserves that whole history.
+
+The original local run ended and released its heavy lock. Root now allocates
+one serial frontend pass on this reviewed receiver: ordinary npm ci, check,
+complete test and build scripts, with exact head/source and full original logs.
+Expected authored inventory is37 files/296 cases, subject to actual enumeration.
+No Rust/native runtime is concurrent with that pass. Separately, after independent
+runner review, root will run all three historical harnesses unfiltered on exact
+663b49f3 using the explicitly reused prior target and ordinary GNU settings.
+Those results remain attributed to their actual tested source; final accepted-main
+receipt, full receiver verification, packaging and native acceptance still remain.
+
+Next: execute and inspect the allocated frontend pass, review/start the separate
+historical correction run, then reconcile actual accepted73 main when available.
+No PR publication, main merge, native or Gate4 acceptance is implied by staging.
