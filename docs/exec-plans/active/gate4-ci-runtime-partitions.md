@@ -1,0 +1,580 @@
+# Gate 4 — Preserve full verification within hosted job capacity
+
+Status: source implementation allocated on 2026-10-07. Sole writer after this
+plan commit: ci_oct7. Root owns independent review, publication and merge.
+Branch: `codex/gate4-ci-runtime-partitions`.
+Baseline: main `4cf815bd0f0d9b128612867ba829c9ac1c2549f7`.
+
+## Problem and scope
+
+The full canonical suite has become expensive enough that a single hosted job
+cannot be assumed to finish reliably. Actual PR66 Linux job112274454208 ended
+cancelled after6h00m39s, with an incomplete table_loop harness; Windows on the
+same PR finished its full951 tests and package in5h31m. The cancelling actor is
+not proved. Timing is consistent with GitHub's documented six-hour hosted-job
+limit, rather than proof of a test failure. Preserve that distinction and every
+original log. Other pending jobs still need their actual terminal outcomes.
+
+The reviewed external duration inventory rehashes and reconciles15 terminal
+runtime logs. In13 of14 completed runs, table_loop plus
+legacy_shield_missile_v1_replay take94.7–98.2 percent of summed harness time.
+The Grapple suite is also growing. These are source/platform-specific historical
+observations, not a controlled benchmark or a prediction that all jobs will fail.
+Evidence: tooling/ci-oct7/ci-capacity-evidence-v2-2026-10-07.json, SHA256
+`578906e399bc6642e095a804a0f2c26eab54ece1886f2414877277d7fcd36081`;
+proposal SHA256
+`899b2605b425078bdc9f44ccad3bbe70ac36996b70e34f9717851470f5d7350e`.
+The earlier v1 timing parser is invalid for harness attribution and is not used.
+
+Binding sources are AGENTS, the product definition, Gate4, the gate execution
+protocol, the current development runbook and canonical scripts/verify. This
+slice advances trustworthy evidence for tactical development; it changes no
+game behavior, source content, runtime authority, persistence or acceptance.
+Canonical local full verification remains available and unchanged.
+
+## Selected boundaries
+
+Split hosted execution at complete test-executable boundaries. Start with
+separate allocations for table_loop, legacy_shield_missile_v1_replay and
+table_grapple_public, plus every remaining target and documentation test.
+Retain each whole test case and its full scenario/restore loops. A target absent
+from an older baseline is recorded as absent in the discovered manifest; no
+required target present in the build may silently disappear or be unassigned.
+
+Use the identical workspace, dependency lock, ordinary test profile, selected
+platform target, default features and default harness threading. No release
+test profile, raised timeout, stack/thread override, test deletion, new ignore,
+removed assertion, reduced fixture matrix, filtered incomplete pass or restored
+state shortcut is allocated. Do not alter existing test files or cargo locks.
+Case-level sharding is outside this first implementation; if a complete harness
+still cannot fit, record the actual evidence for a separately reviewed design.
+
+Generate a complete execution inventory from the canonical platform-specific
+Cargo build and actual test listings. Bind source head/tree, package and target
+identities, features/configuration, toolchain/target, executable identity and
+all named cases. Preserve canonical unit, integration, binary, example and
+documentation coverage, including compile-only and zero-case targets. Dynamic
+discovery must fail closed on unsupported target semantics, duplicate or missing
+allocation, unexplained changes, ignored cases or an incomplete result.
+
+Before implementation of invocation, record its exact Cargo equivalence here.
+Prefer ordinary Cargo execution where it preserves the canonical workspace
+feature graph and target semantics. Direct binary execution, if necessary,
+must preserve Cargo's original package working directory, runtime environment,
+required binaries/libraries and complete harness arguments, with proof rather
+than assumption. Building an isolated package/target must not change resolver2
+feature unification. A source manifest is not a compiler/execution result.
+
+Every allocation must record complete outcomes and reconcile them against its
+expected inventory. A required aggregate must verify the complete disjoint union
+and source/platform identity. Missing, failed, cancelled, timed-out, skipped,
+partial or duplicate execution never passes the aggregate. Log parsing cannot
+associate interleaved stdout/stderr with the wrong target; execute/log boundaries
+must be explicit. Preserve complete original logs beside compact receipts.
+
+Keep Windows release packaging required after its full runtime aggregate.
+Retain exact source checkout selection and all existing frontend, static build,
+MSRV, formatting, strict lint, source-boundary and genericity checks. Preserve
+normal installed-content/icon/notice/NSIS packaging and artifact naming.
+No successful package may replace a failed or missing runtime allocation.
+Required final check names must remain clear; normal GitHub protections still
+apply, with no admin bypass or accepting skipped prerequisites as green.
+
+## Implementation and review
+
+1. Inspect complete workflows, Cargo target/configuration metadata sources,
+   packaging scripts and the official Cargo semantics. Record concrete discovery,
+   execution, aggregation and artifact transport decisions here before code.
+2. Implement a small deterministic runner/inventory validator and complete-job
+   workflow separation. Avoid introducing an unrelated dependency or deployment.
+3. Add meaningful lightweight runner tests for missing/duplicate/wrong-source
+   allocations, incomplete outcomes, zero-case targets, malformed listings,
+   discovery changes and aggregation gating. These must exercise behavior,
+   rather than mirror a static YAML text string.
+4. Freeze coherent source and full preservation inventory for root and a fresh
+   independent reviewer. The same author must not self-certify the CI replacement.
+5. Publish a draft only after review preparation, then collect actual complete
+   platform evidence. Existing unmodified main4cf full jobs keep running as the
+   canonical comparison; do not cancel them because this branch exists.
+
+## Acceptance
+
+- Every original source, content, test body, fixture, dependency lock and local
+  verification command remains exact baseline.
+- Exact-head source review and meaningful runner-negative tests pass.
+- On both Linux and Windows, discovered and executed targets/cases equal the
+  ordinary canonical workspace scope at the same production/test source. Account
+  explicitly for platform-only targets and docs; a lower passing count is not
+  sufficient. Use independently audited completed canonical evidence and one
+  controlled source-equivalent comparison, with all differences attributed.
+- All new exact-head jobs complete and required aggregation checks pass only
+  after every allocation. The actual built target/configuration identity is
+  checked, not inferred from matching filenames.
+- Windows frontend/MSRV/lint and ordinary release/installer packaging remain
+  successful. No native gameplay claim is created by this tooling-only change.
+- Record evidence, risks and next actions in this plan and PR. Merge normally
+  with expected-head protection only after the full replacement is proved.
+
+## Allocation and current status
+
+Root created this separate checkout from freshly fetched main4cf after the app
+worktree helper could not resolve that commit in the outer wrapper repository.
+No existing checkout or active run was reset. This plan precedes implementation.
+All implementation, runner tests and new CI are currently UNRUN.
+
+ci_oct7 may edit only this branch and external CI evidence. Static Git/file reads
+and lightweight Python runner unit tests are allocated. Local Cargo, Rust
+compilation, npm, project gameplay tests, native execution and database work are
+not allocated: capture969 currently owns the single local heavy slot. Cloud CI
+publication/dispatch remains root's responsibility. Continue preserving current
+terminal CI outcomes while developing this bounded tooling slice; report a real
+failure promptly. Gate4 stays active, and no Gate5 work or product waiver begins.
+
+Official references checked on2026-10-07:
+[GitHub Actions limits](https://docs.github.com/en/actions/reference/limits) and
+[Cargo test](https://doc.rust-lang.org/cargo/commands/cargo-test.html).
+
+## Invocation decision — before implementation, 2026-10-07
+
+Use four fixed allocations: `table-loop`, `legacy-missile`, `grapple-public`,
+and `remainder`. The first three select only the matching complete `dmd-app`
+integration target; remainder owns every other executable and all doctests.
+Discovery, not this list, determines the complete required universe. A genuinely
+absent named allocation is explicit in every manifest and must still return a
+valid empty receipt; no existing target may be omitted.
+
+Each allocation builds the **whole** ordinary workspace first:
+`cargo test --locked --workspace --no-run --message-format=json`, adding only
+the existing `--target x86_64-pc-windows-msvc` on Windows. Cargo metadata and
+compiler-artifact messages bind package/target identity, source, actual enabled
+features, profile, all compile-only outputs and every test executable/hash.
+There is no isolated package/target build, feature override or artifact transfer
+between differently rooted jobs. Each job independently builds the same graph.
+
+Execution uses `cargo test --locked --workspace --message-format=json` with
+the same platform argument. The only execution configuration additions are a
+`target.<host-triple>.runner` and a `RUSTDOC` delegate. Cargo still constructs
+the commands, package working directory, library paths and runtime environment.
+The runner receives Cargo's actual executable and original arguments. It checks
+the exact inventoried executable/hash and actual package cwd, lists all/ignored
+cases, and invokes selected complete harnesses with **unchanged** original
+arguments and inherited cwd/environment. Unselected harnesses produce explicit
+listed-only receipts, never passing execution receipts. No test filter or thread
+argument is added to an executed harness. A custom/non-libtest harness, ignored
+case, unsupported argument/listing or configuration is an explicit failure.
+
+The rustdoc delegate forwards Cargo's original tool arguments/environment/cwd
+to the actual toolchain rustdoc. It lists all/ignored doctests for inventory;
+only remainder executes the original unmodified rustdoc test command. This
+avoids substituting a separate `--doc` build graph. Non-test rustdoc queries are
+delegated unchanged. Doctest identities, original invocation and full results
+remain separately accounted for, including zero-case crates. Unsupported output
+or semantics fail closed. Runtime Cargo artifact graphs must equal discovery;
+all four jobs must agree on normalized source/configuration/build/listing scope.
+
+Each complete executable has its own stdout/stderr log boundary, eliminating
+the interleaved adjacent-target attribution error found in the timing draft.
+Recorded test names and libtest totals must equal the discovered case set;
+failed, ignored, measured, filtered, incomplete or duplicate results refuse a
+successful receipt. Compilation-only outputs remain in the full graph proof.
+Source head/tree, clean tracked content, toolchain, target, lockfile, metadata,
+graph, listings, original command, executable hashes and logs bind each result.
+No credentials or complete environment values are serialized into artifacts.
+
+Receipts and logs are uploaded even on failure, but success is written only
+after final source/graph/coverage checks. A separate required aggregate downloads
+the exact four same-run artifacts and verifies their complete disjoint executed
+union and identical inventory. Missing/failed/cancelled/skipped prerequisites
+fail it. Linux keeps the final `rust` check name. Windows retains `Windows 1.88.0`
+and final `Windows stable`: stable frontend/check/lint, partition receipts,
+runtime aggregation, and unchanged fresh packaging/upload must all succeed.
+Packaging remains a separate post-aggregate job and preserves the original
+source-head checkout and package artifact name. Canonical scripts/verify and
+scripts/verify-fast stay byte-identical.
+
+Official semantics additionally read before this decision:
+[Cargo runner configuration](https://doc.rust-lang.org/cargo/reference/config.html#targettriplerunner),
+[Cargo environment](https://doc.rust-lang.org/cargo/reference/environment-variables.html),
+and [Cargo JSON artifacts](https://doc.rust-lang.org/cargo/reference/external-tools.html#json-messages).
+This is the implementation choice, not a claim that wrappers or equivalence have
+run successfully. Actual two-platform comparison and independent review remain
+mandatory; only lightweight Python runner tests are currently allocated locally.
+
+Cargo source was also checked at
+[`1fd17bcd77ee9d4883d0a766a5995184a4064ff9`](https://github.com/rust-lang/cargo/tree/1fd17bcd77ee9d4883d0a766a5995184a4064ff9):
+`src/compiler/build_context/target_info.rs` initializes the normal host
+configuration from the host target tuple even without `--target`;
+`src/compiler/compilation.rs` selects that runner, then applies the original
+package cwd, package/build-script variables, dynamic library paths and jobserver
+inheritance to the runner process. Build scripts retain the ordinary host path.
+The Python delegate must preserve inheritable descriptors as well as cwd/env
+(`close_fds=False`), rather than quietly breaking Cargo's jobserver inheritance.
+This supports retaining the Linux command without adding `--target`; actual CI
+must still prove every expected executable reached the wrapper on both platforms.
+No unstable host configuration is accepted.
+
+Executable bytes are compared with the canonical no-run inventory **within each
+job** before/after its actual execution. Across independent builds, require equal
+source/toolchain/platform/graph/case identities, not assumed reproducible binary
+hashes or Windows PDB paths. Each job retains its own actual artifact hash. No
+source-only artifact manifest substitutes for a runtime receipt.
+
+The same pinned Cargo `src/ops/cargo_test.rs` also injects the configured target
+runner into rustdoc as `--test-runtool` / `--test-runtool-arg`. The rustdoc
+delegate must verify this is **exactly our own** execution instrumentation and
+remove only those fields before listing or executing the real tool. The result
+is the original canonical rustdoc argument vector, including Cargo's actual
+source paths, extern libraries, package `--test-run-directory`, flags and target.
+It must not route dynamically generated doctest programs through the workspace
+executable inventory. Unexpected runtools/arguments fail closed. The injected
+and restored vectors are both recorded, and negative tests cover this restoration.
+
+Each Windows allocation runs the existing `desktop-prepare.ps1` unchanged in
+its own fresh checkout before Cargo discovery. This supplies the original
+frontend checks/build, icons and licenses required by the desktop build without
+transporting generated build assets or assuming equivalent machine paths.
+Repeated frontend runs are recorded as repeated validation, not extra distinct
+test coverage. The final packaging job also uses the unchanged packaging script
+and its own preparation. There is no new packaging shortcut or stale binary reuse.
+
+## Implementation handback — 2026-10-07
+
+The new `scripts/ci_runtime.py` and its focused Python controls implement the
+discovery, Cargo-owned delegates, complete original logs, within-job executable
+hash checks and cross-job disjoint-union validation described above. Aggregation
+reparses original metadata, both Cargo compilation graphs, all/ignored listings
+and executed results; it does not trust a compact success label alone. Discovery
+and actual original cwd/arguments must agree across jobs. A listed-only target
+cannot carry an execution result. No executable bytes are transported between jobs.
+
+Both workflows now separate complete runtime allocations and aggregation while
+retaining the original required final names and existing check commands. Failure,
+cancellation or skipping of a prerequisite makes the final required check fail;
+Windows packaging runs only after its complete runtime aggregate. GitHub's
+existing job limit, default test profile/thread count and workflow concurrency
+remain unchanged. The new artifact download action `actions/download-artifact@v8`
+was checked against its official tag, commit
+`9000827ccba6bdab643e8b6fd33ac0654aef8333`.
+
+Local validation completed: 15 lightweight Python tests pass via
+`python -B -m unittest discover -s scripts/tests -p test_ci_runtime.py -v`.
+They include a real harmless Python subprocess for cwd/env forwarding, complete
+aggregate receipt/log reconstruction, altered/missing original logs, missing or
+duplicate allocations, incorrect source/platform/run identity, false listed-only
+outcomes, unsupported harness/listing semantics, complete doctest groups, zero
+cases, incomplete named results and exact rustdoc instrumentation removal.
+`git diff --check` passes. No local Cargo, npm, Rust/gameplay test, native app or
+database work was performed for this slice. `scripts/verify-fast` and
+`scripts/verify` are UNRUN on this head because that runtime was not allocated.
+
+This is a review candidate, not accepted replacement CI. Independent full source
+review, actual workflow syntax/execution, both real Cargo delegate paths, complete
+two-platform receipts, packaging, and comparison with canonical main4cf are still
+required. In particular, Python fixture tests cannot certify Cargo/rustdoc output
+semantics, Windows command forwarding or hosted completion times. Unsupported
+actual semantics must cause a visible failure and a separately reviewed fix.
+No elapsed-time improvement or full workspace pass is claimed yet. Next action:
+root/fresh reviewer inspect the frozen complete diff and preservation inventory,
+then root may publish for genuine two-platform validation. Keep canonical main4cf
+jobs running and preserve every terminal outcome.
+
+## Hosted Windows fixture correction — before implementation
+
+PR73 head `5413da89ade6045c197b5633988dcb02257bb9be` was independently
+reviewed and published. Actual Windows stable-checks job112819324651 failed its
+new `test_custom_harness_is_refused_before_invocation` Python control: the
+expected `harness=false` refusal was preceded by `workspace package outside
+checkout`. The fixture passes an unresolved `TemporaryDirectory` path, while
+workspace discovery resolves its manifest before checking containment. This is
+a fixture path-normalization mismatch on the hosted Windows environment; the
+production allocation entry point already resolves its checkout root.
+
+Apply only `Path(directory).resolve()` in that fixture. Preserve its custom
+harness manifest, exact refusal assertion, all other controls and production
+runner/workflow bytes. Rerun the lightweight Python controls, freeze and request
+review before root publishes a successor. Actual Windows execution is still
+required. Do not relabel the failed original run. The original Linux empty
+Grapple allocation and remainder have uploaded artifacts, but their real complete
+receipts still require inspection; no full-workspace aggregate passed.
+
+The aggregate also requires one workflow run **and attempt** for all four
+receipts. A partial retry that mixes earlier successful allocations with a newer
+attempt refuses. Use a full workflow rerun when retrying this strict design.
+
+The one-line fixture correction is implemented. All15 lightweight Python controls
+pass locally again (0.739s), and `git diff --check` passes. Runner and workflow
+blobs remain exact5413. No Cargo/npm/native/database execution was performed;
+fresh hosted Windows proof and independent correction review remain pending.
+
+## Windows executable-change diagnostics — before implementation
+
+Published successor `8d23f55f36a355de00447a0651325bd7aedfbd84` passes the
+15 Python controls on hosted Windows. Runtime jobs112903985987 and112903985905
+in run37653439392 nevertheless fail the existing before-execution byte guard:
+the `dmd-desktop` executable changes after the canonical no-run compilation.
+Both preserved artifacts contain593 Cargo messages in each phase; removing only
+the `fresh` field leaves identical graphs. Only the desktop executable is rebuilt
+in the second phase. Its actual replacement hash and Cargo's dirty reason were
+not recorded. Do not infer a cause from equal graph fields or a stable filename.
+
+Root allocates a diagnostic-only successor. Keep the exact canonical argv,
+phase order, discovery, graph checks, byte guards, harness execution, aggregation,
+profiles, threading and timeouts. Set only Cargo fingerprint INFO logging for
+both compilation phases, retaining complete stderr. Before each phase write a
+separate diagnostic JSON file with the exact argv, cwd, source/run identity,
+runner/Python identity and an explicit allowlist of relevant configuration
+values; never serialize the full environment or credentials. On an executable
+hash mismatch write expected and actual SHA256, target identity, path and guard
+phase before refusing with the existing error. Diagnostic files must not match
+the harness `*.receipt.json` glob and cannot confer a passing outcome.
+
+Add lightweight controls proving mismatches still refuse and never execute a
+harness or create its receipt, and that matching bytes retain the existing
+execution path. Verify the diagnostic environment allowlist excludes unrelated
+values. No local Cargo/npm/native/gameplay/database run is allocated. Freeze the
+bounded patch for independent review before publication. First obtain an actual
+dirty reason; no stabilization rebuild, binary normalization, accepted old hash,
+guard relaxation or other build-semantic correction is authorized here.
+
+Original failed artifacts and prior partial runs remain preserved. Original5413
+Linux has since completed its genuine56-target/817-case union, matching completed
+literal main4cf; this does not pass the current head or either Windows failure.
+
+The diagnostic-only implementation retains all three executable byte guards
+(before execution, after execution and final allocation check), their original
+messages and failure behavior. Its separate JSON files are excluded from harness
+receipt discovery. Both compilation phases retain their original argv and add
+only the fingerprint logging environment value. All18 lightweight Python controls
+pass locally, including the original15 unchanged bodies and three new controls
+for pre-execution refusal, matching/post-execution/final guards and restricted
+phase provenance. `git diff --check` passes. No project runtime was executed.
+Next: independent full bounded source review, then root-controlled publication
+and inspection of actual Cargo dirty reasons. The underlying cause remains open.
+
+Independent review of unpublished4927674 found a diagnostic blocker: the chosen
+`cargo::core::compiler::fingerprint` filter is an obsolete module namespace.
+Actual8d Linux receipts identify Cargo1.99.0 commit
+`5f94df4789f005f9a352888e8355ffc645b7ed0e`; the hosted Windows Rust commit
+`b940084d7eb6a299eb4bfeb8e34901bc051e7ac4` pins the same Cargo submodule.
+That exact Cargo source's `src/compiler/fingerprint/mod.rs` documents
+`cargo::compiler::fingerprint` and emits its INFO dirty-reason events through
+the default module target. The earlier legacy-only filter would not capture
+those events. Before publication, correct only the logging constant to
+`cargo::compiler::fingerprint=info`, retain all prior controls and guards, rerun
+the lightweight suite and freeze again for review. No build-semantic change is
+introduced; the actual desktop dirty reason remains unknown.
+
+Pinned official sources:
+[hosted Rust Cargo submodule](https://github.com/rust-lang/rust/tree/b940084d7eb6a299eb4bfeb8e34901bc051e7ac4/src/tools/cargo)
+and [Cargo fingerprint implementation](https://github.com/rust-lang/cargo/blob/5f94df4789f005f9a352888e8355ffc645b7ed0e/src/compiler/fingerprint/mod.rs).
+
+The logging namespace correction is implemented; all18 lightweight controls pass
+again (0.839s), and diff whitespace checks pass. The single constant is the only
+code change after4927674. Hosted diagnostic output remains unrun and requires
+fresh review/publication. Preserve4927674 as the reviewed-but-corrected candidate;
+do not imply that its obsolete filter could diagnose the actual hosted rebuild.
+
+Before final publication, root approves one additional bounded evidence fix:
+persist the already-read `rustc -vV` and `cargo -vV` strings in both pre-phase
+diagnostics. Currently those strings reach only `complete.json`, so a failure
+loses direct toolchain provenance. Pass the existing strings to the diagnostic
+helper without invoking any extra command or changing compilation. Extend only
+the new provenance control, rerun the18 lightweight controls and freeze the full
+cumulative patch for final review. No further optional diagnostic expansion.
+
+The existing toolchain strings are now retained in both phase diagnostics.
+All18 lightweight controls pass (0.855s), including exact multiline toolchain
+provenance and exclusion of unrelated environment values; whitespace checks
+pass. Source is frozen for final cumulative review. Actual hosted diagnostic
+execution and the desktop rebuild cause remain pending.
+
+
+## Missing watched capabilities directory — before implementation
+
+Actual literal dd344 Windows run37659391088, attempt1, fails jobs112924988940
+(remainder) and112924989071 (grapple-public) at the unchanged before-execution
+executable guard. Both preserved Cargo INFO logs name the same cause: the missing
+`crates/dmd-desktop/capabilities` path makes RunCustomBuild stale (MissingFile),
+then the desktop Test unit stale (StaleDepFingerprint). Only the desktop test
+executable recompiles. Both phases have593 identical JSON messages after removing
+only `fresh`; source/toolchain/runner/cwd and the approved configuration agree.
+Actual expected/replacement SHA256 values are retained. The artifacts contain
+no complete receipt; remainder's69 prior passing cases do not pass the allocation.
+The precise differing PE bytes are not captured, so no linker-timestamp cause is
+claimed. The observed missing watched path is sufficient to explain the rebuild.
+
+Independent full logs/artifact/source diagnosis:
+`tooling/ci-oct7/pr73-dd344-windows-failure-diagnosis-2026-10-07.md`, SHA256
+`5ec156f681f2651812a33321fce543314248ee0a2b7d1fd153b75067febfb387`;
+full source/phase/ZIP-member audit SHA256
+`31b12df4d497ed06601a19ca122f0d5c97e115003c8ab5b615a2eacb3cd1ecc1`.
+Both downloaded failure artifacts match their actual GitHub upload SHA256 values;
+all original failures remain preserved and no active job was cancelled.
+
+Exact locked tauri-build2.6.3 crate checksum
+`bc9ce40b16101cb6ea63d3e221567affd1c3a9205f95d7bc574941a10636b632`
+matches Cargo.lock and the read registry source. Its src/acl.rs lines424-428
+unconditionally emits the default `rerun-if-changed=capabilities` watch, then
+parses `./capabilities/**/*`. Empty security.capabilities does not disable the
+watch. Locked tauri-utils2.9.3 checksum
+`3e176a18e67764923c4f1ce66f25ae4abe5f688384d5eb1a0fa6c77f3d90f887`
+also matches its crate and source. Its src/acl/build.rs lines41-47/204-215 parses
+only json, optional json5 and toml extensions; `.gitkeep` has no such extension.
+
+Root now selects only a tracked inert `crates/dmd-desktop/capabilities/.gitkeep`
+to make that watched directory exist in every fresh checkout. It defines no
+capability or permission. Preserve security.capabilities=[], build.rs, config,
+all production/test bodies, dependencies, workflow/runner bytes, exact phases,
+byte guards, default profile/threading, timeouts and complete coverage. No
+stabilization rebuild, hash replacement/normalization, watch bypass or added
+capability JSON/TOML is selected. Commit this plan before the sentinel.
+
+Allowed local validation is complete Git/source preservation plus the existing18
+lightweight Python runner controls. No Cargo/compiler/npm/gameplay/native/database
+execution is allocated. Freeze for root and independent review before publication.
+Actual fresh Windows two-phase execution must prove the MissingFile reason and
+unnecessary rebuild gone, retain identical inventoried/executed bytes, and finish
+all allocation/aggregate/packaging requirements. Any newly observed different
+cause requires its own diagnosis. This proposal is not a passing-build claim.
+
+The selected inert sentinel is now added after plan commit30c89e36. The existing18
+lightweight Python runner controls pass unchanged (0.832s); original complete
+stdout/stderr and executable/argv receipt are saved under
+`tooling/ci-oct7/pr73-capabilities-sentinel-python-controls-2026-10-07.*`.
+Git whitespace checks pass. All build/config/runner/workflow/dependency/test
+bytes remain unchanged; independent full-tree preservation review is next.
+No Cargo/compiler/npm/gameplay/native/database execution occurred. The required
+fresh Windows two-phase/allocation/aggregate/package proof remains UNRUN.
+
+## Fixed generated-dependency bootstrap — before implementation
+
+Root now authorizes a bounded preparation change after actual Windows08d jobs
+112936821704 and112936821643 in run37662891169 exposed a second dirty input.
+The inert capabilities directory removed the earlier MissingFile reason. Both
+new complete logs instead name a generated tauri-codegen CSS file newer than
+the desktop test dep-info reference; unchanged executable guards reject the
+rebuilt bytes. Both593-message phase graphs agree except fresh. Original logs,
+artifacts, phase identities and expected/actual hashes remain preserved.
+First diagnosis/audit SHA256:
+`95239d7a5c2340effc78cd8bedef2c77dd5257c1800e74f84af4adc0732f25d1`;
+second allocation audit:
+`23ec3995ecff32bee2bbaaadcab68b7d7e6e6da204c37eee28fd8d5014d0cb25`.
+The full source-supported assessment is
+`tooling/ci-oct7/pr73-08d-css-diagnosis-and-bootstrap-assessment-2026-10-07.md`,
+SHA256 `7f98ea48b8567dd6d5f42ff81177c95035d2042db896ec842aa6ee73b26f267b`.
+
+Exact Cargo.lock-verified tauri-codegen2.6.3 creates a content-addressed generated
+asset only when absent, then emits include_bytes for that output. The macro runs
+during rustc expansion. Exact hosted Cargo1.99 fingerprint source rewinds the
+dep-info reference to invocation start. The recorded CSS mtime is newer than
+that reference in both failing jobs. This supports first-generation dependency
+materialization as the cause of the next separate compile. CSS byte streams,
+precreation existence probes, syscalls and precise differing PE bytes were not
+captured; writer timing remains a source-supported inference. The source does
+not repeatedly rewrite an existing identical-content asset.
+
+This explicitly supersedes the earlier diagnostic-only prohibition on a
+preparation rebuild, and only to this extent: execute exactly one fixed canonical
+workspace no-run bootstrap, then the identical canonical inventoried no-run,
+then the original Cargo-owned execution. The bootstrap materializes generated
+dependencies and executes zero tests. There is no retry/stabilization loop,
+timestamp adjustment, watcher bypass, binary normalization or replacement-hash
+acceptance. The executable baseline is created only after the designated second
+no-run; all existing before-harness, after-harness and final guards remain exact.
+
+Both platforms use the same fixed phase contract. Linux gains no --target flag;
+Windows retains its existing explicit MSVC target. Preserve canonical argv,
+default profile/features/threading, package cwd, inherited environment, compile-
+only/zero-case/doc targets and exact whole-harness coverage. Before and between
+compiler phases verify clean source identity, actual rustc/cargo versions,
+runner/Python bytes and unchanged ambient configuration/environment. Private
+environment values may be compared in memory, never serialized. Phase-specific
+execution instrumentation remains the existing RUSTDOC/context/runner additions.
+
+Compare all three complete compiler graphs and executable identities. Keep
+bootstrap, inventory and execution stdout/stderr in full. Internal receipt schema
+becomes2, with exactly four ordered original log pairs: metadata, bootstrap,
+build (inventory), cargo-execution. Aggregate must require those exact named
+pairs, rehash every stream, and reconstruct all three original graphs, complete
+discovered assignments and executable identities against the common universe.
+A bootstrap failure aborts before inventory/context or execution. Further
+post-inventory drift still fails; no incomplete allocation becomes a pass.
+
+Changes are limited to this plan, scripts/ci_runtime.py and its focused Python
+control file. Workflows, application source/tests, immutable corpus, dependencies,
+local verification and desktop configuration remain exact08d. Preserve all18
+current controls and their assertions. The original aggregate fixture alone may
+add its new bootstrap log-pair stimulus to conform to schema2; record its exact
+inverse in the preservation audit. Add controls for fixed Linux/Windows phase
+order/argv/env, bootstrap failure, graph/executable drift, boundary source/
+toolchain/configuration drift, missing/altered/reordered bootstrap evidence and
+the unchanged post-inventory executable refusal.
+
+Only lightweight Python control execution is allocated locally. No Cargo/npm/
+native/gameplay/database run is permitted. Commit this decision before code,
+freeze a full source preservation audit and handback, then await root and an
+independent review before publication. Actual fresh two-platform allocations,
+aggregate, complete canonical case reconciliation and Windows packaging remain
+mandatory. This preparation design is not yet hosted evidence or gate acceptance.
+
+The fixed bootstrap is now implemented after plan commit ee0d1d00. All24
+lightweight Python controls pass locally (2.508s): the original18 retain all
+assertions and bodies except the authorized additional bootstrap log-pair
+fixture stimulus; six new controls exercise phase order on both platforms,
+bootstrap failure, graph/executable-path drift, actual unchanged byte refusal,
+source/toolchain/environment/executor boundaries and aggregate log corruption.
+The aggregate reparses all three complete compiler graphs and requires all four
+original log pairs in their exact phase order. The source of the three existing
+executable byte guards and all harness/default-thread/doctest logic is unchanged.
+
+This is simulated-compiler Python validation, not Cargo or hosted Windows proof.
+No application compilation, npm, gameplay, native or database execution occurred.
+The plan-first diff check reported an extra blank line at EOF, which is removed
+in this implementation; final full-diff whitespace validation is required before
+freeze. Root and an independent reviewer must inspect the complete cumulative
+source change and preservation audit before publication. Fresh exact-head
+Linux/Windows allocations, aggregate and Windows packaging remain UNRUN.
+
+## Aggregate executable association correction — before implementation, 2026-10-08
+
+Independent source review of frozen82c05c0 found that aggregate reconstruction
+checked target assignments and executable path multisets separately. A bounded
+Python reproduction with two simulated targets swapped their executable and
+filename values only in one bootstrap log, refreshed that stream's receipt hash,
+and retained all common, inventory, execution and other-allocation evidence.
+The complete aggregate incorrectly accepted both original and swapped evidence.
+The local bootstrap/inventory identity comparison correctly distinguishes those
+tuples, but the aggregate did not reconstruct the same target-to-path relation.
+Complete stimulus and both results are preserved outside the repository under
+`tooling/ci-oct8/bootstrap-82c05c0-identity-swap-reproduction/`, with the companion
+Python reproduction script. This is simulated evidence, not a Cargo or CI result.
+
+Root allocates only the bounded correction to bootstrap_review_oct8 as sole
+writer; root retains independent review and publication. Before source changes,
+commit this diagnosis and decision. Aggregate must compare each complete
+normalized package_id/target/executable tuple from bootstrap, inventory and
+execution against the designated inventory phase. Preserve all existing graph,
+path, assignment, log hash, coverage, byte, default-thread and source checks.
+Add a two-target regression that first accepts coherent original evidence, then
+refuses a refreshed-hash path association swap in each of the three phases.
+Keep all24 prior controls and all production/workflow/content bytes unchanged.
+
+Only source analysis and lightweight Python controls/reproduction are allocated.
+No Cargo, npm, native, gameplay or database execution; no publication by this
+writer. Save full control logs and source preservation audit, freeze the complete
+cumulative change, and return it to root for independent review. The hosted
+two-platform allocations, aggregate, canonical reconciliation and Windows
+packaging remain required and unproved by this correction.
+
+The aggregate now compares complete normalized executable identity tuples from
+all three original compiler outputs against the inventory phase before accepting
+the existing assignment and path checks. The two-target regression accepted the
+original fixture and failed against the uncorrected runner for independently
+swapped bootstrap, inventory and execution associations, despite refreshed hashes.
+With the correction all25 lightweight Python controls pass locally (1.491s),
+including all24 unchanged prior control bodies. Complete meaningful red/green
+stdout and stderr are saved as `tooling/ci-oct8/bootstrap-association-red-isolated.*`
+and `bootstrap-association-green.*`; these are simulated-compiler control logs.
+The preserved original/forged external fixture will also be rechecked without
+recreating or overwriting its evidence. Source audit and root's independent
+review precede publication. No hosted, full-workspace or gate pass is claimed.

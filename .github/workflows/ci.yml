@@ -13,19 +13,66 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  rust:
+  rust-checks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Verify runtime accounting and refusal controls
+        run: python -B -m unittest discover -s scripts/tests -p test_ci_runtime.py -v
       - name: Fast verification
         run: ./scripts/verify-fast
       - name: Clippy
         run: cargo clippy --locked --workspace --all-targets -- -D warnings
-      - name: Test
-        run: cargo test --locked --workspace
+
+  runtime:
+    name: Linux runtime ${{ matrix.allocation }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        allocation: [table-loop, legacy-missile, grapple-public, remainder]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - name: Compile canonical workspace and execute assigned complete harnesses
+        run: python -B scripts/ci_runtime.py run --platform linux --allocation ${{ matrix.allocation }}
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: linux-runtime-${{ matrix.allocation }}
+          path: target/ci-runtime/${{ matrix.allocation }}/
+          if-no-files-found: error
+          retention-days: 14
+
+  rust:
+    needs: [rust-checks, runtime]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require all validation and runtime allocations
+        env:
+          CHECKS_RESULT: ${{ needs.rust-checks.result }}
+          RUNTIME_RESULT: ${{ needs.runtime.result }}
+        run: test "$CHECKS_RESULT" = success && test "$RUNTIME_RESULT" = success
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.11'
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: linux-runtime-*
+          path: target/ci-runtime-receipts/
+      - name: Prove complete disjoint workspace execution from original logs
+        run: python -B scripts/ci_runtime.py aggregate --platform linux --directory target/ci-runtime-receipts
 
   msrv:
     runs-on: ubuntu-latest
