@@ -184,7 +184,7 @@ async fn finish(f: &mut Fixture, roles: &Roles) {
         ruling:"Participants conclude this actual settled encounter; the existing order continues until all boundaries are settled.".into(),
     })).await;
     assert_eq!(flow(&f.state().await).phase, TacticalPhase::Active);
-    Box::pin(f.premature_mass()).await;
+    Box::pin(f.premature_mass(None)).await;
     if let Some(reactor) = roles.reactor {
         let before = f.state().await;
         assert_eq!(

@@ -582,3 +582,11 @@ prepare final receiver canonical/frontend verification using the released heavy
 slot. Canonical workspace includes all three historical targets unfiltered.
 Preserve both52 and663 failures; no filtered or partial pass replaces full
 receiver/CI/package/native/Gate4 acceptance.
+
+The three-helper correction is authored after plan-firstcccac95f. The original
+checkpoint supplies the full optional transfer; the current transfer and Host
+notice must match it before the exact, single expected refusal is checked.
+The later genuine finish path explicitly expects no transfer. Existing complete
+export/typed-cell checks and every original scenario/cut remain unchanged.
+Direct changed-file Rustfmt/check and whitespace checks pass. Compilation and
+runtime on this correction are UNRUN; independent full-delta review comes next.

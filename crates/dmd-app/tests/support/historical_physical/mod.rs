@@ -69,7 +69,8 @@ pub async fn run(name: &str) {
             if phase == "after" {
                 Box::pin(f.retry(&cut.request, &cut.response_bytes)).await;
             }
-            Box::pin(f.premature_mass()).await;
+            let expected_transfer = decoded(export).table.unwrap().inspiration_transfer;
+            Box::pin(f.premature_mass(expected_transfer.as_ref())).await;
             Box::pin(f.reopen()).await;
             Box::pin(f.exact_views(views)).await;
             Box::pin(f.exact_image(export)).await;

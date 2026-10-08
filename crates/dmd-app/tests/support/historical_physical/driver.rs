@@ -235,15 +235,31 @@ impl Fixture {
         assert_eq!(rows(&self.pool).await, cells);
         error
     }
-    pub async fn premature_mass(&self) {
+    pub async fn premature_mass(&self, expected_transfer: Option<&TableInspirationTransfer>) {
         let state = self.state().await;
         assert!(state.physical_facts.is_none());
+        assert_eq!(
+            state.table.as_ref().unwrap().inspiration_transfer.as_ref(),
+            expected_transfer,
+            "pending transfer must match the immutable checkpoint"
+        );
         assert_eq!(
             state.encounter.unwrap().flow.unwrap().phase,
             TacticalPhase::Active
         );
         let host = self.view(&TableTransportChannel::Host).await;
         assert!(host.physical.as_ref().is_none_or(|p| p.controls.is_empty()));
+        assert_eq!(
+            host.inspiration_transfer
+                .as_ref()
+                .map(|view| view.character_id),
+            expected_transfer.map(|transfer| transfer.character_id)
+        );
+        assert!(
+            host.inspiration_transfer
+                .as_ref()
+                .is_none_or(|view| view.choices.is_empty())
+        );
         let request = self
             .request(
                 TableTransportChannel::Host,
@@ -254,7 +270,11 @@ impl Fixture {
         let error = self.refuse(request).await;
         assert_eq!(
             error,
-            "invalid mechanics: This physical-fact control is no longer current."
+            if expected_transfer.is_some() {
+                "Finish the pending player choice before changing the table."
+            } else {
+                "invalid mechanics: This physical-fact control is no longer current."
+            }
         );
     }
     /// Genuine acceptance after cold reopen, plus independent portable acceptance.
