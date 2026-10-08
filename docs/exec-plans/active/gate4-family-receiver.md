@@ -1,7 +1,8 @@
 # Gate 4 combined family receiver
 
-Status: plan-first SOURCE-ONLY staging, 2026-10-08. No receiver verification or
-acceptance yet. Branch `codex/gate4-family-receiver`; no PR. Root is sole writer
+Status: complete source review and exact368 frontend PASS; accepted-main receipt
+and full receiver verification pending, 2026-10-08. No feature/gate acceptance.
+Branch `codex/gate4-family-receiver`; no PR yet. Root is sole writer
 in the reused clean `gate4-grapple-combined-receipt` checkout. The old
 `codex/gate4-finished-character-creation` ref remains at its unchanged4deba086 head.
 
@@ -209,3 +210,71 @@ receipt, full receiver verification, packaging and native acceptance still remai
 Next: execute and inspect the allocated frontend pass, review/start the separate
 historical correction run, then reconcile actual accepted73 main when available.
 No PR publication, main merge, native or Gate4 acceptance is implied by staging.
+
+## Complete source review and accepted-main receipt allocation — 2026-10-08
+
+Root and three reviewers completed the entire main4cf-to36877505 source review.
+All570 changed paths are accounted for: domain/rules142 (129 independent plus13
+root-reviewed complete test files), application/persistence/content110,
+desktop/bridge43, corpus/provenance/tooling235, and40 complete execution plans.
+No uncovered path or actionable finding remains. All58 local plan links resolve.
+Intrinsic author self-review is explicitly supplemented by root's independent
+complete feature/correction review and another independent full plan review.
+Full coverage receipt SHA256:
+385f7e6441d6c43601e636fef480014c489a09f2e7fdd86147bf7430d3bb7c50.
+These are source assessments, not promises that pending checks will pass.
+
+Exact36877505/tree772d4f28134c360e487f07281a5a798b07e17f1f completed ordinary
+npm ci, Svelte check (zero errors/warnings), all296 cases in37 files, and build.
+Its1004 original working-file pins, head/tree and clean status were unchanged.
+Root terminal audit SHA256:
+1180d0953b55903890795e2df08556a0ea312c7b501a318ffe64da1c4185a5f1.
+No Rust, package or native result is inferred from this frontend pass.
+
+PR73's exact08c748ceb174b5d33f46c4e089d9f5bc360ce979 has passed all17 checks,
+Linux817/56 and Windows819/56 complete named-case/target unions, and normal
+Windows release/offline installer packaging. Independent reconstruction verifies
+the original allocation logs, complete canonical scope equivalence and package
+contents. Runtime terminal audit SHA256:
+0baaaa44b2fe4db40b4f6d745ec1d9aff12a784d0b533094e65750ea5dd7ae95;
+package audit SHA256:
+246ec155f79e40e13151e50587e657e0c9be6f2ea1e5642ed966f1a7b3273c81.
+Root normally merged with fresh exact-head/base/check guards and expected-head
+protection. Actual accepted main is c101c202a9d7302e5ac60d791d3d6c5a4ed30e84,
+treecd725478afe27525caf5d56026df076a3b3e81b5, exactly the reviewed08c tree.
+Literal-main push runs37761019398/37761019333 are running separately; their
+completion is not claimed from the PR runs.
+
+After this plan commit, receive that entire actual main by normal merge. The
+expected incoming delta is exactly its six reviewed CI paths: two workflows,
+the inert capabilities directory, runner, runner controls and CI execution plan.
+Every existing gameplay/content/frontend/test/corpus entry must remain exact368.
+Audit all parent deltas and working bytes and independently review the receipt.
+Append the actual73 acceptance to its inherited plan without rewriting earlier
+failures. Then freeze the coherent head and record its exact verification inputs.
+
+### Early draft verification scheduling
+
+The owner handoff requires slices to be opened early for CI. Root explicitly
+amends only this plan's earlier publication scheduling: after the accepted-main
+receipt, complete composition review and clean final freeze, publish a new draft
+main-facing family PR while the separately pinned663 historical run continues.
+Hosted jobs do not share its local source, target, executors or heavy lock.
+No test result from52ae,663,368 or08c passes the new receiver. Preserve PR72's
+failed52ae runs and all donor branches/PRs; close superseded proposals only after
+the new receiver is verified and normally merged.
+
+The historical663 run remains exclusive local heavy work. It has passed the
+previously failing cut01 acceptance and proceeds through the complete original
+three targets; it has no terminal result yet. Do not change its source, runner,
+manifest, settings, target or evidence. Once it releases the local slot, perform
+the actual final receiver's canonical verify-fast/verify, full frontend and
+required focused checks with unchanged ordinary settings and complete logs.
+Inventory actual targets/cases and preserve failures before any correction.
+Both complete hosted platform unions, MSRV/lint/source guards, ordinary packaging,
+combined native ledger and exact-head merge/literal-main requirements remain
+mandatory. Draft publication changes timing only; it grants no acceptance waiver.
+
+Next: normal accepted-main receipt, independent union audit, status freeze and
+early draft publication; continue all actual historical/canonical/CI/native work.
+Gate4 remains active and Gate5 is not started.
