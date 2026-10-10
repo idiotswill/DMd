@@ -123,6 +123,15 @@ Root applied only the three explicit test-profile settings above. Review/freeze
 the complete delta, then allocate fresh verification. No new run or profile
 performance result is claimed by this checkpoint.
 
+Before launching that candidate, independent source review found a definite
+invalid replacement initiative grouping in the actual failed M+G3 fixture.
+The [source-roll correction plan](gate4-source-roll-and-replacement-corrections.md#october-10-replacement-initiative-grouping-correction)
+allocates its narrow repair. The prepared 5b9da641 runner/manifest remains
+unlaunched and preserved; a corrected final head needs its own binding/review.
+Do not spend a diagnostic build on a setup already proved invalid by the exact
+production guard. The missing original panic remains unknown. The failed case
+still runs first after the source correction and must actually pass.
+
 Independent source assessment found repeated full replay in the actual fixture
 and read paths, with bounded outer loops. Removing the duplicate replay/query
 authentication would save only two of fourteen authentication calls inside a

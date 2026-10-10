@@ -113,3 +113,48 @@ preservation audit are complete. There was no Cargo/compiler/frontend/test,
 application/native/database execution, push or workflow action. All corrected
 runtime evidence remains UNRUN; the five existing failure witnesses must pass
 on the final frozen head before the unchanged full acceptance sequence.
+
+## October 10: replacement initiative grouping correction
+
+The actual 63b48d50 Linux Grapple output names the existing M+G3 owned-source
+case FAILED before its six-hour cancellation. The buffered final panic summary
+is absent; do not claim its exact assertion was observed. Original audit SHA256:
+`83739f8a59316c643d51554f0818685a4893cfb7d74d77242e6abff7cad80378`.
+
+Independent static investigation found a definite invalid setup in the repaired
+M source fixture. `start_mass` assigns the owned Goblin and opposing Host Goblin
+separate initiative groups, although both use the same immutable Goblin source,
+surprise and initiative circumstances. `tactical/validation.rs` rejects precisely
+that state: identical creatures must share a roll. Ownership is not an initiative
+circumstance. The initial `Fixture::with_opponent` already uses the lawful shared
+group and actual Host tie decision. The same defect affects the M+G4 setup even
+though that case has no terminal failure output. This is a source diagnosis of
+a definite defect, not a reconstructed missing panic.
+
+Root allocates a bounded correction only in
+`tests/support/table_grapple_roll_details_mass.rs`, after this plan amendment:
+
+- Use one replacement initiative group `[owned Goblin, Host Goblin]`, retaining
+  the distinct PC group. Do not change combatants, source pins, positions,
+  controller provenance, real intervening turns or opposing relationships.
+- Submit one real shared physical source roll through the owned source channel;
+  remove the invented separate Host roll. Preserve the PC-only fixture path.
+- Inspect the resulting genuine unresolved tie and use the existing Host
+  `ProposeInitiativeTie` command to order source then holder. This is not a
+  character-only tie, so do not invent player acceptance or change production
+  authority. Keep the command-v5/G3-or-G4 distinction and cold/portable/exact-retry
+  helper for the tie transition.
+- Assert exact shared group/request/roller, actual owned acceptance and physical
+  face, two new rolls with unchanged old prefix, shared total, pending-free tie,
+  Host decision and final participant order. Preserve all original source-roll
+  tests, four ability branches, private reads, no-write and recovery assertions.
+- No production, source content, schema, corpus, snapshot, controller policy,
+  resolver or canonical verification change is allocated by this correction.
+
+The independently reviewed test-profile candidate 5b9da641 has not compiled or
+run. Its external runner/manifest preparation is preserved without launching it.
+Correct this definite setup defect before spending a fresh compilation; then
+independently review the full source delta and bind a new clean head to a fresh
+target. Keep the same seven focused stages with M+G3 first and unchanged complete
+canonical/Python/frontend/hosted/package/native acceptance. The original actual
+failure remains recorded until the corrected case really executes successfully.
