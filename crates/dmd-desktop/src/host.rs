@@ -282,6 +282,13 @@ pub async fn desktop_roll_details(
     Ok(host.runtime().await?.table_roll_details(request).await?)
 }
 #[tauri::command]
+pub async fn desktop_grapple_options(
+    host: State<'_, DesktopHost>,
+    request: dmd_app::TableGrappleOptionsRequest,
+) -> Result<dmd_app::TableGrappleOptions, DesktopError> {
+    Ok(host.runtime().await?.table_grapple_options(request).await?)
+}
+#[tauri::command]
 pub async fn desktop_intrinsic_attack_options(
     host: State<'_, DesktopHost>,
     request: dmd_app::TableIntrinsicAttackRequest,

@@ -2,6 +2,12 @@ import { invoke } from '@tauri-apps/api/core';
 import type { BattlefieldSetup, TacticalAction, TacticalView } from './tactical-api';
 
 export type Id = string;
+export interface GrappleOptionsRequest {
+  version: 1; campaign_id: Id; channel: LocalChannel; revision: Id;
+}
+export interface GrappleOptions extends GrappleOptionsRequest {
+  handles: Id[];
+}
 export interface IntrinsicAttackRequest {
   version: 1; campaign_id: Id; channel: LocalChannel; revision: Id; actor: Id;
 }
@@ -225,6 +231,7 @@ export function requestLabel(request: UnconfirmedRequest): string {
 
 // The desktop adapter supplies trusted channels independently of natural-language text.
 export const tableApi = {
+  grappleOptions: (request: GrappleOptionsRequest) => invoke<GrappleOptions>('desktop_grapple_options', { request }),
   intrinsicAttackOptions: (request: IntrinsicAttackRequest) => invoke<IntrinsicAttackOptions>('desktop_intrinsic_attack_options', { request }),
   sourceControlOptions: (request: { campaign_id: Id; channel: LocalChannel; revision: Id }) => invoke<SourceControlOptions>('desktop_source_control_options', { request }),
   creatureOptions: (request: { campaign_id: Id; channel: RequestContext['channel']; revision: Id }) => invoke<CreatureOption[]>('desktop_creature_options', { request }),

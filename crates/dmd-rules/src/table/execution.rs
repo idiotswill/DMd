@@ -331,6 +331,30 @@ impl<'a> TableRead<'a> {
     ) -> Result<Vec<TableGrappleOffer>, RulesError> {
         crate::tactical::grapple::table_choices(&self.context(), issuer, self.pack)
     }
+
+    /// Live advisory controls only. Historical presentation uses grapple_choices
+    /// unchanged; the accepted producer still owns spending the Action or attack.
+    pub fn current_grapple_choices(
+        &self,
+        issuer: CommandIssuer,
+    ) -> Result<Vec<TableGrappleOffer>, RulesError> {
+        let mut choices = self.grapple_choices(issuer)?;
+        let state = self.state();
+        let spent_action = state
+            .rules
+            .as_ref()
+            .and_then(|rules| rules.timing.as_ref())
+            .is_some_and(|timing| timing.action_spent);
+        let exhausted_attacks = state
+            .encounter
+            .as_ref()
+            .and_then(|encounter| encounter.flow.as_ref())
+            .is_some_and(|flow| flow.budget.attacks_remaining == 0);
+        if spent_action && exhausted_attacks {
+            choices.retain(|offer| !matches!(&offer.choice, TableGrappleChoice::Attempt { .. }));
+        }
+        Ok(choices)
+    }
 }
 
 impl PreparedTableStep<'_> {

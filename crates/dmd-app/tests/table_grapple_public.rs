@@ -99,6 +99,9 @@ mod roll_details;
 #[path = "support/table_intrinsic_attack_options.rs"]
 mod intrinsic_attack_options;
 
+#[path = "support/table_grapple_options.rs"]
+mod grapple_options;
+
 fn runtime(pool: sqlx::SqlitePool) -> CampaignRuntime {
     CampaignRuntime::from_content_root(
         pool,
@@ -1223,6 +1226,7 @@ async fn real_grapple_save_release_and_after_equipment_cold_replay_keep_exact_ra
     let release = f
         .choose(f.pc(0), "Release Small armored figure from left hand")
         .await;
+    Box::pin(grapple_options::assert_available(&f, &release)).await;
     Box::pin(f.cold(release)).await;
     let released = f.state().await;
     assert!(released.rules.as_ref().unwrap().tactical_grapples.is_none());
@@ -1302,15 +1306,51 @@ async fn withdraw_cancels_only_its_pending_request_and_never_refunds_the_paid_at
     );
     assert_eq!(settled_rules.cancelled_roll_ids, rules.cancelled_roll_ids);
     assert_eq!(settled_rules.rolls, rules.rolls);
+    let settled_view = f.view(f.pc(0)).await;
+    // Retained views preserve their original handles and semantics. The current
+    // advisory read suppresses an unaffordable Attempt without rewriting them.
+    let legacy_attempt = settled_view
+        .grapple
+        .as_ref()
+        .unwrap()
+        .choices
+        .iter()
+        .find(|choice| choice.label.starts_with("Grapple "))
+        .unwrap()
+        .key;
+    let rows = all_rows(&f.pool).await;
+    let options = Box::pin(f.runtime.table_grapple_options(TableGrappleOptionsRequest {
+        version: 1,
+        campaign_id: f.campaign,
+        channel: f.pc(0),
+        revision: settled_view.revision,
+    }))
+    .await
+    .unwrap();
+    assert_eq!(options.version, 1);
+    assert_eq!(options.campaign_id, f.campaign);
+    assert_eq!(options.channel, f.pc(0));
+    assert_eq!(options.revision, settled_view.revision);
+    assert!(options.handles.is_empty());
+    assert_eq!(f.view(f.pc(0)).await, settled_view);
+    assert_eq!(all_rows(&f.pool).await, rows);
+    let forged = f
+        .request(
+            f.pc(0),
+            TableTransportInput::GrappleChoice {
+                handle: legacy_attempt,
+            },
+        )
+        .await;
+    let error = Box::pin(f.runtime.submit_presented_table(forged))
+        .await
+        .unwrap_err();
     assert!(
-        f.view(f.pc(0))
-            .await
-            .grapple
-            .unwrap()
-            .choices
-            .iter()
-            .all(|choice| !choice.label.starts_with("Grapple "))
+        error
+            .to_string()
+            .contains("that action budget has already been spent")
     );
+    assert_eq!(all_rows(&f.pool).await, rows);
 
     // Real turn progression restores availability without refunding the old action.
     let pc = f.pc(0);
@@ -1330,6 +1370,7 @@ async fn withdraw_cancels_only_its_pending_request_and_never_refunds_the_paid_at
     let next = f
         .choose(pc, "Grapple Small armored figure with right hand")
         .await;
+    Box::pin(grapple_options::assert_available(&f, &next)).await;
     Box::pin(f.cold(next)).await;
     let admitted = f.state().await;
     let admitted_rules = admitted.rules.as_ref().unwrap();

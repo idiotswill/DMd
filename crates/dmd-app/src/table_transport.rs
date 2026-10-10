@@ -143,6 +143,27 @@ pub struct TableCreatureOptionsRequest {
     pub revision: ProjectionRevision,
 }
 
+/// Current Grapple affordances supplement, but never rewrite, retained views.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableGrappleOptionsRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableGrappleOptions {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    /// Existing audience handles only: no new authority or presentation record.
+    pub handles: Vec<CommandId>,
+}
+
 /// Advisory current source choices do not alter retained presentation bytes.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]

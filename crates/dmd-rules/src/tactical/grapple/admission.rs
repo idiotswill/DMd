@@ -225,14 +225,6 @@ pub(super) fn plan_attempt_with_read(
     let target_source = super::super::shove::source_pin(state, target)?;
     let mut budget = flow(state)?.budget.clone();
     let new_action = budget.attacks_remaining == 0;
-    if new_action
-        && rules
-            .timing
-            .as_ref()
-            .is_some_and(|timing| timing.action_spent)
-    {
-        return Err(prerequisite("that action budget has already been spent"));
-    }
     let window = if new_action {
         WeaponActionWindow {
             id: meta.id,

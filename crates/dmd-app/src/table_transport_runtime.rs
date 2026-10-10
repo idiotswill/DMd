@@ -881,6 +881,78 @@ impl CampaignRuntime {
         self.read_current_roll(request, |_, _, options| Ok(options))
             .await
     }
+    pub async fn table_grapple_options(
+        &self,
+        request: TableGrappleOptionsRequest,
+    ) -> Result<TableGrappleOptions, RunnableCampaignError> {
+        if request.version != 1 {
+            return Err(rejected("Unsupported Grapple options version."));
+        }
+        // One authenticated read-only snapshot, without bootstrap, allocation,
+        // changed presentation bytes or an accepted response/outbox write.
+        let mut tx = self.pool.begin().await.map_err(recovery)?;
+        let export = export_campaign_in_transaction(&mut tx, request.campaign_id)
+            .await
+            .map_err(recovery)?;
+        let (execution, history) = self.protocol_history(&export)?;
+        let current = history
+            .latest
+            .get(&request.channel.audience())
+            .filter(|entry| entry.revision == request.revision)
+            .ok_or_else(|| {
+                rejected("Refresh the current table before viewing its Grapple choices.")
+            })?;
+        let read = execution.read();
+        let state = read.state();
+        let (issuer, selected_actor) = match request.channel {
+            TableTransportChannel::Host => (CommandIssuer::Admin, None),
+            TableTransportChannel::Player {
+                player_id,
+                character_id,
+            } => {
+                let character = state
+                    .characters
+                    .get(&character_id)
+                    .filter(|character| character.controlling_player_id == Some(player_id))
+                    .ok_or_else(|| rejected("Select a character controlled by this player."))?;
+                (CommandIssuer::Player(player_id), Some(character.entity_id))
+            }
+            TableTransportChannel::SourceCreature { player_id, actor } => {
+                if !crate::table_source_control::owns_source(state, player_id, actor) {
+                    return Err(rejected(
+                        "Select a source creature controlled by this player.",
+                    ));
+                }
+                (CommandIssuer::Player(player_id), Some(actor))
+            }
+        };
+        let offers = read.current_grapple_choices(issuer).map_err(rejected)?;
+        let handles = current
+            .handles
+            .iter()
+            .filter_map(|entry| {
+                let ProjectionCapability::GrappleChoice { offer } = &entry.capability else {
+                    return None;
+                };
+                if selected_actor.is_some_and(|actor| actor != offer.actor)
+                    || !offers.contains(offer)
+                {
+                    return None;
+                }
+                Some(CommandId(entry.opaque))
+            })
+            .collect();
+        let result = TableGrappleOptions {
+            version: 1,
+            campaign_id: request.campaign_id,
+            channel: request.channel,
+            revision: request.revision,
+            handles,
+        };
+        tx.commit().await.map_err(recovery)?;
+        Ok(result)
+    }
+
     pub async fn table_intrinsic_attack_options(
         &self,
         request: TableIntrinsicAttackRequest,

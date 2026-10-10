@@ -50,6 +50,10 @@
   const selectedActor = $derived(sourceActor?.actor ?? (!sourceActorId ? currentCharacter?.entity_id : undefined));
   const attending = $derived(view?.active_session?.participants.some(p=>p.player_id===playerId&&p.attendance==='Present') ?? false);
   const canSpeak = $derived(Boolean(!sourceActorId && binding && currentCharacter));
+  const grappleChannel = $derived<LocalChannel | null>(host ? 'Host' : !attending ? null
+    : sourceActor ? { SourceCreature: { player_id: playerId, actor: sourceActor.actor } }
+    : !sourceActorId && binding?.character_id && currentCharacter
+      ? { Player: { player_id: playerId, character_id: binding.character_id } } : null);
   const ownsPending = $derived(view?.pending?.player_id === playerId);
   function hostMayRoll(current: TableView): boolean {
     return !!current.roll && !current.characters.some(character=>character.entity_id===current.roll?.roller)
@@ -296,7 +300,7 @@
       </section>
       {#if intrinsicContext}{#key intrinsicContext.key}<IntrinsicAttackPanel request={intrinsicContext.request} disabled={gameLocked} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
       {#if view.tactical}{#key view.tactical.encounter_id}<EncounterPanel groundDrag={view.grapple?.ground_drag??[]} tactical={view.tactical} characters={view.characters} {host} actor={selectedActor??null} playerControlledSources={(view.source_control?.actors??[]).filter(actor=>typeof actor.controller==="object").map(actor=>actor.actor)} player={playerId||null} disabled={gameLocked||!!view.pending||!view.active_session} administrativeDisabled={gameLocked||!!view.pending} pendingRoll={!!view.roll} onAction={(action)=>act({Tactical:{action}})}/>{/key}{/if}
-      <GrapplePanel {view} {host} actor={selectedActor??null} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
+      <GrapplePanel {view} {host} actor={selectedActor??null} channel={grappleChannel} disabled={gameLocked||!!view.pending||!view.active_session} onEnable={enableGrapple} onEnableTransport={enableGroundDrag} onChoice={(handle)=>act({Tactical:{action:{GrappleChoice:{handle}}}})}/>
       <InspirationTransfer {view} {host} disabled={locked} canChoose={!sourceActor && currentCharacter?.character_id===view.inspiration_transfer?.character_id} onChoice={handle=>act({InspirationTransfer:{handle}})} />
       {#key `${campaignId}:${view.active_session?.session_id}:${host}`}<InspirationAward {view} {host} disabled={gameLocked} onAward={(character_id,reason)=>act({AwardHeroicInspiration:{character_id,reason}})} onExcessAward={(character_id,reason)=>act({AwardExcessInspiration:{character_id,reason}})} />{/key}
       <PhysicalFactsPanel physical={view.physical} host={false} disabled={gameLocked} />

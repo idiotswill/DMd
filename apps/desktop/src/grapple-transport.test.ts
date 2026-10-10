@@ -1,11 +1,24 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { invoke } from '@tauri-apps/api/core';
-import { loadRequest, saveRequest, tableApi, type RequestContext, type UnconfirmedRequest } from './table-api';
+import { loadRequest, saveRequest, tableApi, REQUEST_KEY, type RequestContext, type UnconfirmedRequest } from './table-api';
 vi.mock('@tauri-apps/api/core',()=>({invoke:vi.fn()}));
 const context:RequestContext={version:3,command_id:'retained-command',campaign_id:'campaign',session_id:'session',channel:{SourceCreature:{player_id:'owner',actor:'goblin'}},revision:'original-revision'};
 beforeEach(()=>{vi.mocked(invoke).mockReset();localStorage.clear();});
 
 describe('Grapple original opaque transport',()=>{
+  it('reads original handles through its separate command without allocating or changing an outbox',async()=>{
+    const request={version:1 as const,campaign_id:context.campaign_id,channel:context.channel,revision:context.revision};
+    const answer={...request,handles:['original-offer']};vi.mocked(invoke).mockResolvedValue(answer);
+    expect(await tableApi.grappleOptions(request)).toEqual(answer);
+    expect(invoke).toHaveBeenLastCalledWith('desktop_grapple_options',{request});expect(loadRequest()).toBeNull();
+    const saved:UnconfirmedRequest={kind:'action',request:{...context,action:{Tactical:{action:{GrappleChoice:{handle:'original-offer'}}}}}};
+    saveRequest(saved);const bytes=localStorage.getItem(REQUEST_KEY);
+    await tableApi.grappleOptions(request);expect(localStorage.getItem(REQUEST_KEY)).toBe(bytes);
+    vi.mocked(invoke).mockRejectedValueOnce(new Error('read unavailable'));
+    await expect(tableApi.grappleOptions(request)).rejects.toThrow('read unavailable');expect(localStorage.getItem(REQUEST_KEY)).toBe(bytes);
+    expect(vi.mocked(invoke).mock.calls.every(call=>call[0]==='desktop_grapple_options')).toBe(true);
+    expect(JSON.stringify(vi.mocked(invoke).mock.calls)).not.toContain('command_id');
+  });
   it('retains the complete source choice after uncertain acknowledgement without adding canonical identity',async()=>{
     const saved:UnconfirmedRequest={kind:'action',request:{...context,action:{Tactical:{action:{GrappleChoice:{handle:'original-offer'}}}}}};
     saveRequest(saved);

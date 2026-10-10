@@ -174,6 +174,13 @@ Failure audit SHA256:
 `412bebbff252e92e479a5a8ce805cc7b3b3b5c14950042ad8d81d52a05c7ce24`.
 Original fixture SHA256:
 `f4364d8d2fe7e2d9607338907f2f465b9fa99676a74d0993678af146c44b568c`.
+Later original logs also show the same presentation-history rejection in Linux
+Recipient job114311084696 and Decline job114311084721 after cut05's before
+proof, and Windows Ground job114311933875 at cut02. Each failed harness records
+one pass and one failure; caught hostile-loader negative panics are separate
+successful controls. Original archives/logs and their exact source/run/attempt
+bindings are retained in audit SHA256
+`dbc0edc2e9fa07660c3f86d55249eb3f1fef5395ec623f3462d743978137c1de`.
 Six hosted prerequisite jobs passed at7c; that does not pass its runtime union.
 Root superseded the local7c allocation after verifying and preserving its exact
 owned process/lock/log state. Supersession receipt SHA256:
@@ -219,10 +226,12 @@ Root remains sole repository writer. Obtain independent design/patch review,
 commit this amendment before implementation, review the full resulting delta,
 then freeze a new clean head. Derive actual new test counts from source and
 discovery; previous catalogue counts are historical, not fixed pass targets.
-The fresh local allocation first exercises the changed withdrawal case and
-the exact failed original-ground-history case, then runs the complete unchanged
-canonical verification, all CI Python controls and frontend install/check/test/
-build. Preserve committed profiles, ordinary threads/stack, executors, one local
+The fresh local allocation first runs ordinary frontend install/check/test/build
+to catch API/component regressions before expensive Rust compilation. It then
+exercises the changed withdrawal case and exact failed original-ground-history
+case, followed by complete unchanged canonical verification and all CI Python
+controls. This changes only scheduling; no command, case, profile or acceptance
+is omitted. Preserve committed profiles, ordinary threads/stack, executors, one local
 heavy slot and a fresh absent target. No old runner is edited or resumed.
 Publish the reviewed successor for all hosted checks, complete platform unions
 and ordinary packaging. Earlier results cannot establish the successor's pass.
@@ -239,3 +248,38 @@ Independent review cleared the proposed production design and preserved f7
 assertions, with the new backend/frontend tests still to be authored and run.
 Next: commit this amendment, apply the reviewed compatibility correction and
 complete its regressions, then independent full-diff review and fresh checks.
+
+### Authored compatibility correction, awaiting execution
+
+Plan-first commit `98b447201515ee86b2ff0d75d867cc0b6e340513` precedes
+the implementation. The applied correction restores the historical planner,
+adds the separately authenticated live options query and desktop integration,
+and retains the Host player-owned equipment fix. Three new public Rust cases
+exercise genuine paid slots, active decisions, source ownership transfer and
+free off-turn Release, including cold reopen and no-write assertions. Thirty
+TableApp cases and one real API adapter case cover audience identity, stale
+asynchronous results, malformed responses, gameplay locking and the original
+uncertain-command outbox recovery route. Existing withdrawal and Release
+assertions remain; historical fixtures and restore checks are unchanged.
+
+Independent applied-source review found no actionable issue, with report
+SHA256 `f1fd6857182a254eb04d34bd5422cca70eb89acebdab412f48852f512ddd1649`.
+The review compared all 1,014 baseline paths: 1,000 are byte-identical,
+12 code paths and two plan/status documents have intended changes, and two
+test files are additive. The boxed query future follows existing test practice;
+no stack, profile, test-thread or executor override was introduced.
+
+Expected source inventory is 1,153 GNU Rust cases across 58 executable targets
+plus six doctest groups, including 95 public Grapple cases; frontend is
+329 tests in 38 files. These are expectations, not measured pass results.
+The frozen external test proposal's 58-to-61 public-target count was a
+top-level-function count; a separate clarification preserves the original
+memo and records the correct module-expanded 92-to-95 count.
+
+Independent static runner review SHA256
+`ddc28febb0436e7f6e4313c4c3abfba7d5d3cd60d92baeddce9a2d399afafe29`
+clears the unbound template only. It preserves all original evidence pins and
+full verification obligations. Next: commit the reviewed source, bind and
+independently verify the exact head/tree and fresh allocation manifest, publish
+the successor, and execute frontend, focused Rust, complete canonical and
+Python checks. No successor runtime, hosted, package or native pass is claimed.
