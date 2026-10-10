@@ -185,3 +185,35 @@ must precede the new frozen-head verification allocation. The original named
 M+G3 failure and absent panic summary remain preserved; no current-source pass
 or performance improvement is claimed. The corrected M+G3 case still runs first,
 followed by all previously allocated focused and full acceptance requirements.
+
+## October 10: capture the observed Host-refusal mismatch
+
+The fresh local run on 2e0c126a reached the later `host_cannot_answer`
+assertion after the corrected initiative setup, then failed: zero passes, one
+failure, 91 filtered cases, 155.98 seconds, exit101 at08:14:03 UTC. Original
+log SHA256 is
+`b50f59ab72f1667aae6b3986f3a65de8206d6bf2bf3e79af276f3fb72bb5c1b8`.
+The exact returned Result was not printed. This is a genuine assertion failure;
+the six later focused stages and full canonical/Python/frontend stages are UNRUN.
+Terminal audit confirms clean exact source, original executors absent and the
+heavy lock released. Read-only inspection of this test's own temporary database
+shows the owned source's initial save still pending at event32, with no accepted
+Host roll. This does not recover the actual rejection text or execute the
+unchanged-row assertion that follows the failing assertion.
+
+Source tracing predicts the established source-control refusal: Admin public
+rolls for a Player-controlled source are rejected by `authorize_tactical` before
+the generic tactical authorization check. Existing source-control tests assert
+that precise message. Treat this as a diagnosis to confirm, not observed output.
+
+Root allocates only a diagnostic change in the same helper: bind the existing
+submission Result, match it by reference against the identical error variant
+and exact literal, and include Debug output if the assertion fails. Preserve
+the request, every oracle, all-row/export check and five case bodies. After
+independent source review, run only the same exact M+G3 test in a fresh dedicated
+target, with the established GNU/profile/environment and owned heavy lock.
+This one-case diagnostic stops at its terminal result; it cannot accept the
+family or replace the full verification sequence. Preserve the original target,
+runner, logs, database and published2e0 CI; do not push a diagnostic-only head.
+Any subsequent message correction must be justified by the captured Result,
+keep a precise owner-specific refusal and retain the no-write assertion.
