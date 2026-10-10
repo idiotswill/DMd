@@ -167,16 +167,10 @@ async fn start_mass(source_owner: bool) -> Fixture {
                     request_id: RollRequestId::new(),
                 },
                 InitiativeGroup {
-                    actors: vec![goblin],
+                    actors: std::iter::once(goblin).chain(opponent).collect(),
                     request_id: RollRequestId::new(),
                 },
-            ]
-            .into_iter()
-            .chain(opponent.map(|actor| InitiativeGroup {
-                actors: vec![actor],
-                request_id: RollRequestId::new(),
-            }))
-            .collect(),
+            ],
         }),
         5,
     ))
@@ -242,6 +236,28 @@ async fn start_mass(source_owner: bool) -> Fixture {
 }
 
 async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
+    let before = f.state().await;
+    let previous_rolls = &before.rules.as_ref().unwrap().rolls;
+    let groups = before
+        .encounter
+        .as_ref()
+        .unwrap()
+        .flow
+        .as_ref()
+        .unwrap()
+        .initiative_groups
+        .clone();
+    if let Some(holder) = f.opponent {
+        assert!(source_owner);
+        assert_eq!(groups.len(), 2);
+        assert_eq!(groups[0].actors, vec![f.actors[0]]);
+        assert_eq!(groups[1].actors, vec![f.goblin, holder]);
+        assert_ne!(groups[0].request_id, groups[1].request_id);
+        let pending = before.rules.as_ref().unwrap().pending.as_ref().unwrap();
+        assert_eq!(pending.request.id, groups[0].request_id);
+        assert_eq!(pending.request.roller, Some(f.actors[0]));
+    }
+    let mut accepted = Vec::new();
     for (channel, face) in [
         (f.pc(0), 18),
         (
@@ -252,14 +268,11 @@ async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
             },
             2,
         ),
-    ]
-    .into_iter()
-    .chain(f.opponent.map(|_| (TableTransportChannel::Host, 1)))
-    {
+    ] {
         let roll = f.view(channel.clone()).await.roll.unwrap();
         assert_eq!(roll.reason, "Initiative");
         assert_eq!(roll.mode, RollMode::Normal);
-        Box::pin(submit(
+        let request = Box::pin(submit(
             f,
             channel,
             action(TacticalAction::SubmitRoll {
@@ -275,6 +288,105 @@ async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
             5,
         ))
         .await;
+        accepted.push(request);
+    }
+    if let Some(holder) = f.opponent {
+        let tied = f.state().await;
+        let rules = tied.rules.as_ref().unwrap();
+        // Replacement encounters retain earlier accepted rolls. Only these two
+        // new physical requests may extend that unchanged history.
+        assert_eq!(rules.rolls.len(), previous_rolls.len() + 2);
+        assert_eq!(
+            &rules.rolls[..previous_rolls.len()],
+            previous_rolls.as_slice()
+        );
+        assert!(rules.pending.is_none());
+        for (index, actor, player, face, total) in [
+            (0, f.actors[0], f.players[0], 18, 20),
+            (1, f.goblin, f.players[1], 2, 4),
+        ] {
+            let roll = &rules.rolls[previous_rolls.len() + index];
+            assert_eq!(roll.request.id, groups[index].request_id);
+            assert_eq!(roll.request.roller, Some(actor));
+            assert_eq!(roll.request.mode, RollMode::Normal);
+            assert_eq!(
+                roll.request.dice,
+                vec![DieSpec {
+                    count: 1,
+                    sides: 20
+                }]
+            );
+            assert_eq!(roll.request.modifier, 2);
+            assert_eq!(roll.result.request_id, groups[index].request_id);
+            assert_eq!(roll.result.source, RollSource::Physical);
+            assert_eq!(
+                roll.result.dice,
+                vec![DieResult {
+                    sides: 20,
+                    value: face
+                }]
+            );
+            assert_eq!(roll.accepted_by.id, accepted[index].command_id);
+            assert_eq!(roll.accepted_by.issuer, CommandIssuer::Player(player));
+            assert_eq!(roll.accepted_by.actor, Some(AgentRef::Entity(actor)));
+            assert_eq!(roll.resolved.total, total);
+            assert_eq!(accepted[index].version, 5);
+        }
+        assert_eq!(accepted[0].channel, f.pc(0));
+        assert_eq!(accepted[1].channel, source(f));
+        let flow = tied.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+        assert_eq!(flow.initiative_groups, groups);
+        assert_eq!(
+            flow.phase,
+            TacticalPhase::InitiativeTies {
+                ties: vec![InitiativeTie {
+                    total: 4,
+                    actors: vec![f.goblin, holder],
+                    proposed_order: None,
+                    accepted_by: vec![],
+                    host_decided: false,
+                }],
+            }
+        );
+        // Creature ties are genuinely Host-decided, even when a player owns
+        // the source that reported their one shared physical initiative roll.
+        let order = vec![f.goblin, holder];
+        Box::pin(submit(
+            f,
+            TableTransportChannel::Host,
+            action(TacticalAction::ProposeInitiativeTie { order }),
+            5,
+        ))
+        .await;
+        let ready = f.state().await;
+        assert_eq!(ready.rules.as_ref().unwrap().rolls, rules.rolls);
+        assert!(ready.rules.as_ref().unwrap().pending.is_none());
+        let flow = ready.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+        assert_eq!(flow.initiative_groups, groups);
+        assert_eq!(
+            flow.initiative_decisions,
+            vec![InitiativeTie {
+                total: 4,
+                actors: vec![f.goblin, holder],
+                proposed_order: Some(vec![f.goblin, holder]),
+                accepted_by: vec![],
+                host_decided: true,
+            }]
+        );
+        assert_eq!(
+            ready
+                .rules
+                .as_ref()
+                .unwrap()
+                .timing
+                .as_ref()
+                .unwrap()
+                .order
+                .iter()
+                .map(|entry| (entry.actor, entry.total, entry.tie_break))
+                .collect::<Vec<_>>(),
+            vec![(f.actors[0], 20, 0), (f.goblin, 4, 0), (holder, 4, 1)]
+        );
     }
     let state = f.state().await;
     assert_eq!(

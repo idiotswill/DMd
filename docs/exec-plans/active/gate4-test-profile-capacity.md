@@ -140,3 +140,12 @@ observation, not a wall-time attribution. The test-profile experiment leaves
 those real restore/retry/privacy paths intact. Development-build and packaged
 application latency still require separate measurement; faster tests cannot be
 reported as a production performance fix.
+
+The plan-first bec6c3f8 replacement-initiative fixture repair is now authored in
+the one allocated mass support helper. It preserves both actual creatures and
+their ownership, uses the lawful shared physical source roll and genuine Host
+tie decision, and proves the retained old rolls plus exactly two new rolls.
+All original case/matrix bodies and the three profile settings remain intact.
+Only formatting and static preservation checks have run. Root and independent
+source review must bind a new final head before any fresh compilation/runtime;
+the prepared 5b9da641 allocation remains unlaunched and does not pass this source.

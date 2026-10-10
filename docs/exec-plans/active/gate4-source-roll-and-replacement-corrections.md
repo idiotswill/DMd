@@ -158,3 +158,30 @@ independently review the full source delta and bind a new clean head to a fresh
 target. Keep the same seven focused stages with M+G3 first and unchanged complete
 canonical/Python/frontend/hosted/package/native acceptance. The original actual
 failure remains recorded until the corrected case really executes successfully.
+
+### October 10 source correction authored; runtime unrun
+
+After plan-first bec6c3f8, delegated sole writer `ci_recovery_oct10` corrected
+only the mass roll-details helper. Replacement Begin now retains the distinct
+PC group and one `[owned Goblin, Host holder]` group. The existing owned source
+channel supplies the shared physical face2. The helper asserts precisely two
+new rolls after the unchanged old history prefix, the original group/request
+IDs, physical dice, actual roller/player/actor/command acceptance and totals.
+It observes the real pending-free total4 tie, submits the Host's existing
+command-v5 tie decision through the cold/portable/exact-retry helper, proves no
+roll was added or changed by that decision, and asserts the persisted Host
+decision and final PC/source/holder order. No player tie acceptance is invented.
+
+The PC-only path retains its original groups, channels, dice and commands. All
+five named mass tests and the matrix/save/Escape/read-only/ownership/recovery
+bodies remain exact. No production or corpus source, rule guard, controller
+policy, canonical command or configured test-profile setting changed.
+Standalone configured Rustfmt/check with edition2024 and skip_children=true,
+whitespace and static preservation checks pass. No compiler, test/runtime,
+database/native, publication or workflow execution was performed.
+
+This is a source-only handback to root. Root and independent full-delta review
+must precede the new frozen-head verification allocation. The original named
+M+G3 failure and absent panic summary remain preserved; no current-source pass
+or performance improvement is claimed. The corrected M+G3 case still runs first,
+followed by all previously allocated focused and full acceptance requirements.
