@@ -124,3 +124,26 @@ Gate5 is not allocated.
 
 Next: independent plan/proposal review, then the bounded implementation and
 fresh source-bound verification. No routine owner approval is needed.
+
+## Authored correction checkpoint
+
+Plan-first commit `d9548f76` preceded all four code/test edits. Independent
+proposal review found no actionable issue; report SHA256
+`f35a015dbfe97f987238250e230c04dfd2d7e1e80d3ac194f559caa1a0e761d2`.
+Root read that review, applied both complete bounded patches and formatted only
+the two edited Rust files with the configured standalone formatter. Full source
+diff review and whitespace checks pass; the formatter only expanded new chains.
+All original test statements remain in order. No compiler or test result is
+claimed yet. Exact frozen-diff review and all verification above remain required.
+
+The final f7 copied Graze/equipment audit has SHA256
+`2edd21ca41cc66306f0b9c7a9292639028bc2a861eca1fc6d2fa7c5e9d44352e`.
+It confirms all nine campaign images across pending/closed/reopened105 and
+completed/closed106, one original miss, Graze44-to41 and one owner stow. The
+Host observation specifically had a settable selector and enabled Decline;
+Apply was disabled before selection. No unsupported command was attempted.
+Both findings remain open until corrected-package verification.
+
+Next: freeze/review this correction, bind the new runner and publish for fresh
+hosted checks. Native remains closed at106; preserve it for corrected-package
+reopen. Recheck memory/process/disk headroom before allocating local compilation.

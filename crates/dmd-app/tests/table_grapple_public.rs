@@ -1277,6 +1277,77 @@ async fn withdraw_cancels_only_its_pending_request_and_never_refunds_the_paid_at
             .iter()
             .all(|choice| !choice.label.starts_with("Grapple "))
     );
+
+    // Retiring the owed equipment choice must not expose a second paid attack.
+    let finish = f.choose(f.pc(0), "Finish without changing equipment").await;
+    Box::pin(f.cold(finish)).await;
+    let settled = f.state().await;
+    let settled_rules = settled.rules.as_ref().unwrap();
+    let settled_flow = settled.encounter.as_ref().unwrap().flow.as_ref().unwrap();
+    assert!(settled_flow.resolution.is_none());
+    assert!(settled_rules.pending.is_none());
+    assert_eq!(settled_rules.timing, rules.timing);
+    assert!(settled_rules.timing.as_ref().unwrap().action_spent);
+    assert_eq!(settled_flow.budget.attacks_remaining, 0);
+    assert_eq!(
+        settled_flow.budget,
+        after
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .budget
+    );
+    assert_eq!(settled_rules.cancelled_roll_ids, rules.cancelled_roll_ids);
+    assert_eq!(settled_rules.rolls, rules.rolls);
+    assert!(
+        f.view(f.pc(0))
+            .await
+            .grapple
+            .unwrap()
+            .choices
+            .iter()
+            .all(|choice| !choice.label.starts_with("Grapple "))
+    );
+
+    // Real turn progression restores availability without refunding the old action.
+    let pc = f.pc(0);
+    Box::pin(f.cold_action(pc.clone(), TacticalAction::EndTurn)).await;
+    Box::pin(f.cold_action(TableTransportChannel::Host, TacticalAction::EndTurn)).await;
+    let fresh = f.state().await;
+    let fresh_rules = fresh.rules.as_ref().unwrap();
+    let fresh_timing = fresh_rules.timing.as_ref().unwrap();
+    assert_eq!(fresh_timing.order[fresh_timing.index].actor, f.actors[0]);
+    assert_eq!(
+        fresh_timing.turn_number,
+        settled_rules.timing.as_ref().unwrap().turn_number + 2
+    );
+    assert!(!fresh_timing.action_spent);
+    assert_eq!(fresh_rules.cancelled_roll_ids, rules.cancelled_roll_ids);
+    assert_eq!(fresh_rules.rolls, rules.rolls);
+    let next = f
+        .choose(pc, "Grapple Small armored figure with right hand")
+        .await;
+    Box::pin(f.cold(next)).await;
+    let admitted = f.state().await;
+    let admitted_rules = admitted.rules.as_ref().unwrap();
+    assert!(admitted_rules.timing.as_ref().unwrap().action_spent);
+    assert_eq!(
+        admitted
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .budget
+            .attacks_remaining,
+        0
+    );
+    assert_eq!(admitted_rules.cancelled_roll_ids, rules.cancelled_roll_ids);
+    assert_eq!(admitted_rules.rolls, rules.rolls);
     f.close().await;
 }
 

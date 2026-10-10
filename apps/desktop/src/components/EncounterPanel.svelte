@@ -22,6 +22,7 @@
     groundDrag?:{key:Id;actor:Id;label:string}[];tactical:TacticalView;characters:CharacterView[];host:boolean;actor:Id|null;player:Id|null;playerControlledSources?:Id[];disabled?:boolean;administrativeDisabled?:boolean;pendingRoll?:boolean;onAction:(action:TacticalAction)=>void;
   }=$props();
   const controls=(subject:Id|null)=>host ? subject===null||!playerControlledSources.includes(subject) : actor===subject;
+  const hostEquipmentReadOnly=$derived(host&&!!tactical.attack_equipment&&characters.some(character=>character.entity_id===tactical.attack_equipment?.actor&&character.player_id!==null));
   const administrationLocked=$derived(administrativeDisabled??disabled);
   let surprised=$state<Id[]>([]);
   let tieOrder=$state<Record<string,Id[]>>({});
@@ -70,7 +71,8 @@
     <button disabled={administrationLocked||pendingRoll||pendingDecision||!!tactical.ready?.length||!!tactical.budget?.movement_spent||!!tactical.budget?.action_spent||!!tactical.budget?.bonus_action_spent} onclick={()=>onAction('ActivateAttackEquipment')}>Enable attack equipment choices</button>
   {/if}
   {#if tactical.attack_equipment && controls(tactical.attack_equipment.actor)}
-    {#key `${host}:${player}:${actor}:${tactical.attack_equipment.key}`}<AttackEquipmentForm choice={tactical.attack_equipment} disabled={disabled||pendingRoll} {onAction}/>{/key}
+    {#if hostEquipmentReadOnly}<p>Waiting for {name(tactical.attack_equipment.actor)}'s player to choose equipment.</p>{/if}
+    {#key `${host}:${player}:${actor}:${tactical.attack_equipment.key}`}<AttackEquipmentForm choice={tactical.attack_equipment} disabled={disabled||pendingRoll||hostEquipmentReadOnly} {onAction}/>{/key}
   {/if}
   <TacticalMap {tactical} {characters} {actor}/>
   {#if tactical.shove && ((tactical.shove.stage==='PushReview' && host) || (tactical.shove.stage!=='PushReview' && controls(tactical.shove.actor)))}

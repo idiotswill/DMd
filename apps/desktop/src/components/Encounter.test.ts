@@ -185,3 +185,43 @@ it('shares identical creature initiative while separating current roll circumsta
   expect(onAction.mock.calls[0][0].Begin.groups.map((group:{actors:string[]})=>group.actors)).toEqual([['a','b'],['c']]);
   expect(Object.keys(onAction.mock.calls[0][0].Begin.combatants[0]).sort()).toEqual(['actor','source','surprised']);
 });
+
+function afterAttackEquipment(actor:string):TacticalView {
+  return {encounter_id:'equipment-encounter',phase:'active',round:2,active_actor:actor,execution:'EncounterReleaseV1',battlefield:null,participants:[],observers:[],initiative:[],ties:[],
+    budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[],equipment_enabled:true,
+    attack_equipment:{key:'equipment-work',actor,may_decline:true,operations:[{operation:{Unequip:{item:'held-glaive'}},label:'Put away Glaive'}]}};
+}
+
+it('keeps Host PC equipment read only while the owning player can choose',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const characters:CharacterView[]=[{character_id:'pc-character',player_id:'owner',entity_id:'pc',name:'Cora',profile:null,sheet:null,details:null,second_wind_remaining:null}];
+  const component=render(EncounterPanel,{tactical:afterAttackEquipment('pc'),characters,host:true,actor:null,player:null,onAction});
+  expect(screen.getByText("Waiting for Cora's player to choose equipment.")).toBeTruthy();
+  expect(screen.getByRole('option',{name:'Put away Glaive'})).toBeTruthy();
+  expect(screen.getByRole('button',{name:'Apply equipment choice'}).closest('fieldset')?.disabled).toBe(true);
+  expect(screen.getByRole('button',{name:'Decline equipment choice'}).closest('fieldset')?.disabled).toBe(true);
+  await user.click(screen.getByRole('button',{name:'Decline equipment choice'}));
+  expect(onAction).not.toHaveBeenCalled();
+  await component.rerender({host:false,actor:'pc',player:'owner'});
+  expect(screen.queryByText("Waiting for Cora's player to choose equipment.")).toBeNull();
+  expect(screen.getByRole('button',{name:'Decline equipment choice'}).closest('fieldset')?.disabled).toBe(false);
+  await user.selectOptions(screen.getByLabelText('Equipment operation'),JSON.stringify({Unequip:{item:'held-glaive'}}));
+  await user.click(screen.getByRole('button',{name:'Apply equipment choice'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({AttackEquipment:{handle:'equipment-work',choice:{Apply:{Unequip:{item:'held-glaive'}}}}});
+  await component.rerender({actor:'other-pc',player:'other-owner'});
+  expect(screen.queryByLabelText('Equipment operation')).toBeNull();
+  expect(screen.queryByRole('button',{name:'Decline equipment choice'})).toBeNull();
+});
+
+it('preserves Host NPC equipment decisions and excludes player-controlled sources',async()=>{
+  const user=userEvent.setup();const onAction=vi.fn();
+  const component=render(EncounterPanel,{tactical:afterAttackEquipment('npc'),characters:[],host:true,actor:null,player:null,onAction});
+  expect(screen.getByRole('button',{name:'Decline equipment choice'}).closest('fieldset')?.disabled).toBe(false);
+  await user.click(screen.getByRole('button',{name:'Decline equipment choice'}));
+  expect(onAction).toHaveBeenCalledExactlyOnceWith({AttackEquipment:{handle:'equipment-work',choice:'Decline'}});
+  await component.rerender({playerControlledSources:['npc']});
+  expect(screen.queryByLabelText('Equipment operation')).toBeNull();
+  expect(screen.queryByRole('button',{name:'Decline equipment choice'})).toBeNull();
+  await component.rerender({host:false,actor:'npc',player:'source-owner'});
+  expect(screen.getByRole('button',{name:'Decline equipment choice'}).closest('fieldset')?.disabled).toBe(false);
+});
