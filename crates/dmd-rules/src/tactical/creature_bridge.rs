@@ -172,7 +172,11 @@ pub(super) fn offer(
     });
     Ok(())
 }
-pub(super) fn decline(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+pub(super) fn decline(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let window = resolution(state)?
         .legendary_window
         .clone()
@@ -193,7 +197,7 @@ pub(super) fn decline(state: &mut CampaignState, meta: &CommandMeta) -> Result<(
         .ok_or(RulesError::Uninitialized)?
         .tactical_creatures = Some(transition.next);
     resolution_mut(state)?.legendary_window = None;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 pub(super) fn validate_window(
     state: &CampaignState,

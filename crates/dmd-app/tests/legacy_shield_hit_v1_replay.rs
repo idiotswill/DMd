@@ -754,3 +754,6 @@ async fn genuine_flow3_post_shield_natural20_damage_keeps_original_cause_and_hp7
     );
     Box::pin(f.finish()).await;
 }
+
+#[path = "support/mage_source_coexistence.rs"]
+mod mage_source_coexistence;

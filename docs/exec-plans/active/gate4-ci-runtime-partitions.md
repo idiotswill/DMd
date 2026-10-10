@@ -1,7 +1,8 @@
 # Gate 4 — Preserve full verification within hosted job capacity
 
-Status: source implementation allocated on 2026-10-07. Sole writer after this
-plan commit: ci_oct7. Root owns independent review, publication and merge.
+Status: verified and merged as PR73 on 2026-10-08; literal-main follow-up CI
+is separately running. Earlier dated allocations below remain history.
+Root owns receiving verification. Original source writer: ci_oct7.
 Branch: `codex/gate4-ci-runtime-partitions`.
 Baseline: main `4cf815bd0f0d9b128612867ba829c9ac1c2549f7`.
 
@@ -578,3 +579,43 @@ and `bootstrap-association-green.*`; these are simulated-compiler control logs.
 The preserved original/forged external fixture will also be rechecked without
 recreating or overwriting its evidence. Source audit and root's independent
 review precede publication. No hosted, full-workspace or gate pass is claimed.
+
+## Exact-head acceptance and actual main receipt — 2026-10-08
+
+Root completed independent cumulative review and reran all25 Python controls.
+Exact08c748ceb174b5d33f46c4e089d9f5bc360ce979, tree
+cd725478afe27525caf5d56026df076a3b3e81b5, then passed all17 hosted checks.
+[Linux37740225604](https://github.com/idiotswill/DMd/actions/runs/37740225604)
+executed817 named cases across56 targets; its actual synthetic merge1965b31d
+has the exact08c tree. [Windows37740225621](https://github.com/idiotswill/DMd/actions/runs/37740225621)
+executed819 cases across56 targets on literal08c. Each platform's four complete
+allocations and aggregate passed. Independent reconstruction rehashed all1,040
+referenced logs per platform and checked complete graphs and target identities.
+
+Completed ordinary canonical main4cf runs match all named cases/targets and
+all365 protected source entries. Windows differs by exactly three MSVC-only
+tests minus one Unix-only test; all six zero-case doctest groups ran on each.
+Runtime audit SHA256:
+0baaaa44b2fe4db40b4f6d745ec1d9aff12a784d0b533094e65750ea5dd7ae95;
+canonical equivalence SHA256:
+abccb4839fbabbc6730086c27fa1dfb59cb81c3b916fb927f521078315d87dea.
+
+Windows frontend, stable/MSRV, lint and ordinary release/offline NSIS package
+passed. Artifact11541582499 is232772146 bytes, SHA256
+07045f7378cd8b6c7dd10fa1581bb8f794701d64b2f49dcbf358b8e7d731cf9e,
+matching GitHub/upload digests. All1,072 checksum entries match its1,073 files.
+Build-info pins exact08c/MSVC/release; portable executable, installer, eight
+source content files and seven declared content checksums were checked.
+Package audit SHA256:
+246ec155f79e40e13151e50587e657e0c9be6f2ea1e5642ed966f1a7b3273c81.
+No native gameplay claim is made by this tooling-only acceptance.
+
+After fresh head/base/check/review/mergeability guards, root normally merged
+[PR73](https://github.com/idiotswill/DMd/pull/73) with expected08c protection.
+Actual main c101c202a9d7302e5ac60d791d3d6c5a4ed30e84 has parents4cf815bd and
+08c748ce and the exact verifiedcd725478 tree. The main checkout was fetched and
+fast-forwarded cleanly, with an empty whole-tree diff against08c. Fresh push
+runs37761019398/37761019333 belong to literalc101 and remain running at this
+record. Prior failed evidence remains preserved. Future family receivers need
+their own complete allocation, aggregate and package checks; this CI acceptance
+transfers no gameplay or Gate4 pass.

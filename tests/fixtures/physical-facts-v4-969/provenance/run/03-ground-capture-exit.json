@@ -1,0 +1,31 @@
+{
+  "name": "03-ground-capture",
+  "argv": [
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+    "test",
+    "--locked",
+    "-p",
+    "dmd-app",
+    "--test",
+    "table_grapple_public",
+    "ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw",
+    "--",
+    "--exact"
+  ],
+  "expected": "ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw",
+  "scenario": "ground-v4",
+  "expected_cuts": [
+    "v-three-before-upgrade",
+    "v-four-equipment-activation",
+    "before-source-controller",
+    "before-paid-ground-move",
+    "paid-prefix-before-opportunity",
+    "issued-source-raw-before-release",
+    "released-source-raw-before-answer",
+    "stopped-ground-before-next-turn"
+  ],
+  "exit": 0,
+  "ended_utc": "2026-10-07T12:13:49.332669+00:00",
+  "log": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07\\03-ground-capture.log",
+  "log_sha256": "80b23ebb40dc88531b283e21560213894b79790c9215fd55e48c04e7b1d2e4c8"
+}

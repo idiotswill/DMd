@@ -1,0 +1,8 @@
+    Checking dmd-domain v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-domain)
+   Compiling dmd-persistence v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-persistence)
+    Checking dmd-rules v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-rules)
+    Checking dmd-conversation v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-conversation)
+    Checking dmd-core v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-core)
+    Checking dmd-app v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-app)
+   Compiling dmd-desktop v0.1.0 (C:\Users\jadra\Documents\ChatGPT\DMD\gate4-v4-compatibility-captures\crates\dmd-desktop)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3m 00s

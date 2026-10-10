@@ -7,7 +7,7 @@ import { contract, emptyView, options } from './components/table-fixtures.test-s
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type CreationOptions } from './table-api';
 import physicalCatalog from '../../../content/srd-5.2.1/character-creation-physical-v1.json';
 
-vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi: { defaults:vi.fn(), list:vi.fn(), create:vi.fn(), view:vi.fn(), options:vi.fn(), situation:vi.fn(), action:vi.fn(), text:vi.fn(), rollOptions:vi.fn(), creatureOptions:vi.fn(), sourceControlOptions:vi.fn() } }));
+vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi: { defaults:vi.fn(), list:vi.fn(), create:vi.fn(), view:vi.fn(), options:vi.fn(), situation:vi.fn(), action:vi.fn(), text:vi.fn(), rollDetails:vi.fn(), creatureOptions:vi.fn(), sourceControlOptions:vi.fn() } }));
 const currentOptions: CreationOptions = { ...options, catalog: physicalCatalog, fighter_masteries: [...options.fighter_masteries, 'greatsword', 'glaive'] };
 
 beforeEach(() => {

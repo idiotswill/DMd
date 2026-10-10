@@ -351,6 +351,8 @@ pub struct ActionPermission {
 #[serde(deny_unknown_fields)]
 pub struct RulesState {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub tactical_grapples: Option<crate::TacticalGrapples>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tactical_recovery: Option<HashMap<EntityId, crate::TacticalRecovery>>,
     pub pack_id: String,
     pub pack_version: String,

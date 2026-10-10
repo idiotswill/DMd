@@ -221,22 +221,37 @@ async fn prepare_sources(f: &mut Fixture, url: &str, directory: &Path) -> Source
         ),
         (dragon, "adult-red-dragon", CreatureSize::Huge, vec![]),
     ] {
+        let host = f
+            .runtime
+            .presented_table_view(f.campaign, TableViewer::Host)
+            .await
+            .unwrap();
+        let options = f
+            .runtime
+            .table_creature_options(TableCreatureOptionsRequest {
+                campaign_id: f.campaign,
+                channel: TableTransportChannel::Host,
+                revision: host.revision,
+            })
+            .await
+            .unwrap();
+        let source = options
+            .iter()
+            .find(|source| source.definition_id == definition_id)
+            .unwrap();
         let allocation =
-            dmd_rules::tactical_creature_equipment::creature_equipment_plan(definition_id, 0)
-                .unwrap();
+            dmd_rules::tactical_creature_equipment::creature_equipment_plan_from_source(
+                source.source.as_ref().unwrap(),
+                0,
+            )
+            .unwrap();
         f.host(
             TableAction::CreateCreature {
                 creation: Box::new(TableCreatureCreation {
                     entity_id: actor,
                     name: format!("Private {definition_id}"),
                     definition_id: definition_id.into(),
-                    source: Some(
-                        dmd_rules::tactical_creatures::creature_source_pin(
-                            dmd_rules::tactical_creatures::creature_definition(definition_id)
-                                .unwrap(),
-                        )
-                        .unwrap(),
-                    ),
+                    source: source.source.clone(),
                     size,
                     additional_languages,
                     ammunition_units: 0,

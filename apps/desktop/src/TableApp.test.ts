@@ -4,9 +4,9 @@ import { beforeEach, describe, it, expect, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type UnconfirmedRequest } from './table-api';
-vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
+vi.mock('./table-api', async (original) => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollDetails:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
 
-beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
+beforeEach(() => { localStorage.clear(); vi.resetAllMocks(); vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract)); vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]); vi.mocked(tableApi.view).mockResolvedValue(emptyView()); vi.mocked(tableApi.options).mockResolvedValue(options); vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]}); vi.mocked(tableApi.rollDetails).mockResolvedValue({version:1,options:{savage_attacker:null},display_reason:"Pending physical roll"}); vi.mocked(tableApi.creatureOptions).mockResolvedValue([]); });
 describe('durable UI retry',()=>{
   it('retries a closed-session finish unchanged after a new encounter appears',async()=>{
     const user=userEvent.setup(),view=emptyView();
@@ -160,12 +160,12 @@ describe('durable UI retry',()=>{
     view.tactical={encounter_id:'encounter',phase:'initiative',round:null,active_actor:null,battlefield:null,participants:[],observers:[],initiative:[],ties:[],budget:null,continuation:null,may_fail_save:null,legendary_resistance:null,legendary_action:null,combatant_sources:[]};
     vi.mocked(tableApi.view).mockResolvedValue(view);localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
     const mounted=render(TableApp);await waitFor(()=>expect(screen.getByRole('button',{name:'Refresh saved table'}).hasAttribute('disabled')).toBe(false));
-    expect(tableApi.rollOptions).not.toHaveBeenCalled();expect(screen.queryByRole('button',{name:'Report these faces'})).toBeNull();mounted.unmount();
+    expect(tableApi.rollDetails).not.toHaveBeenCalled();expect(screen.queryByRole('button',{name:'Report these faces'})).toBeNull();mounted.unmount();
     const legacy={...view};delete legacy.source_control;vi.mocked(tableApi.view).mockResolvedValue(legacy);const legacyMount=render(TableApp);
-    await screen.findByLabelText('Die 1 · d20');expect(tableApi.rollOptions).toHaveBeenCalledOnce();legacyMount.unmount();
+    await screen.findByLabelText('Die 1 · d20');expect(tableApi.rollDetails).toHaveBeenCalledOnce();legacyMount.unmount();
     // Secret source rolls retain the existing Host-only route; no player form is implied.
     vi.mocked(tableApi.view).mockResolvedValue({...view,roll:{...view.roll,visibility:'Secret'}});render(TableApp);
-    await screen.findByLabelText('Die 1 · d20');expect(tableApi.rollOptions).toHaveBeenCalledTimes(2);
+    await screen.findByLabelText('Die 1 · d20');expect(tableApi.rollDetails).toHaveBeenCalledTimes(2);
   });
   it.each(['campaign','channel','revision'] as const)('discards late source-control results and errors after a %s switch',async(change)=>{
     const user=userEvent.setup();const view=emptyView();view.players=[{id:'player',campaign_id:'campaign',display_name:'Sam'}];
@@ -252,7 +252,7 @@ describe('durable UI retry',()=>{
     vi.mocked(tableApi.view).mockResolvedValue(view);vi.mocked(tableApi.action).mockRejectedValue({message:'Delivery uncertain.',retryable:true});
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player',sourceActorId:'mage'}));render(TableApp);
     await user.type(await screen.findByLabelText('Die 1 · d20'),'12');await user.click(screen.getByRole('button',{name:'Report these faces'}));await screen.findByText('Delivery uncertain.');
-    expect(tableApi.rollOptions).toHaveBeenCalledWith({campaign_id:'campaign',revision:view.revision,roll_id:'opaque-initiative',channel:{SourceCreature:{player_id:'player',actor:'mage'}}});
+    expect(tableApi.rollDetails).toHaveBeenCalledWith({version:1,campaign_id:'campaign',revision:view.revision,roll_id:'opaque-initiative',channel:{SourceCreature:{player_id:'player',actor:'mage'}}});
     expect(vi.mocked(tableApi.action).mock.calls[0][0]).toMatchObject({version:2,channel:{SourceCreature:{player_id:'player',actor:'mage'}},action:{Tactical:{action:{SubmitRoll:{result:{request_id:'opaque-initiative',source:'Physical',dice:[{sides:20,value:12}]}}}}}});
   });
   it('preserves a selected Shield form request and its opaque response handle across restart',async()=>{
@@ -348,12 +348,12 @@ describe('durable UI retry',()=>{
     view.roll={id:'opaque-damage',roller:'actor',dice:[{count:2,sides:4}],modifier:3,mode:'Normal',visibility:'Public',reason:'Attack damage'};
     view.roll_channel='Tactical';
     vi.mocked(tableApi.view).mockResolvedValue(view);
-    vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:{weapon_dice:2,heroic_inspiration:false}});
+    vi.mocked(tableApi.rollDetails).mockResolvedValue({version:1,options:{savage_attacker:{weapon_dice:2,heroic_inspiration:false}},display_reason:"Attack damage"});
     vi.mocked(tableApi.action).mockRejectedValueOnce({message:'Delivery uncertain.',retryable:true}).mockImplementationOnce(async request=>({command_id:request.command_id,revision:'accepted',outcome:{message:'Damage accepted.'}}));
     localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:'player'}));
     render(TableApp);
     await screen.findByLabelText('Use Savage Attacker (once per turn)');
-    expect(tableApi.rollOptions).toHaveBeenCalledWith({campaign_id:'campaign',channel:{Player:{player_id:'player',character_id:'pc'}},revision:view.revision,roll_id:'opaque-damage'});
+    expect(tableApi.rollDetails).toHaveBeenCalledWith({version:1,campaign_id:'campaign',channel:{Player:{player_id:'player',character_id:'pc'}},revision:view.revision,roll_id:'opaque-damage'});
     await user.type(screen.getByLabelText('Die 1 · d4'),'1');await user.type(screen.getByLabelText('Die 2 · d4'),'2');
     await user.click(screen.getByLabelText('Use Savage Attacker (once per turn)'));
     await user.type(screen.getByLabelText('Second weapon die 1 · d4'),'3');await user.type(screen.getByLabelText('Second weapon die 2 · d4'),'4');

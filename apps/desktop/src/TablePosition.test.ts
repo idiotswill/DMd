@@ -6,14 +6,14 @@ import { contract, emptyView, options } from './components/table-fixtures.test-s
 import { REQUEST_KEY, SELECTION_KEY, tableApi } from './table-api';
 import type { SpellCastChoice } from './tactical-api';
 
-vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollOptions:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
+vi.mock('./table-api', async original => ({ ...await original<typeof import('./table-api')>(), tableApi:{defaults:vi.fn(),list:vi.fn(),create:vi.fn(),view:vi.fn(),options:vi.fn(),situation:vi.fn(),action:vi.fn(),text:vi.fn(),rollDetails:vi.fn(),creatureOptions:vi.fn(),sourceControlOptions:vi.fn()} }));
 beforeEach(()=>{
   localStorage.clear();vi.resetAllMocks();
   vi.mocked(tableApi.defaults).mockResolvedValue(structuredClone(contract));
   vi.mocked(tableApi.list).mockResolvedValue([{id:'campaign',name:'Saved campaign'}]);
   vi.mocked(tableApi.options).mockResolvedValue(options);
   vi.mocked(tableApi.situation).mockResolvedValue({title:'',description:'',challenges:[]});
-  vi.mocked(tableApi.rollOptions).mockResolvedValue({savage_attacker:null});
+  vi.mocked(tableApi.rollDetails).mockResolvedValue({version:1,options:{savage_attacker:null},display_reason:"Pending physical roll"});
   vi.mocked(tableApi.creatureOptions).mockResolvedValue([]);
   localStorage.setItem(SELECTION_KEY,JSON.stringify({campaignId:'campaign',playerId:null}));
 });

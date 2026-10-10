@@ -6,6 +6,83 @@ fn pack() -> TacticalDefinitions {
     TacticalDefinitions::from_json(TACTICAL_DEFINITIONS_JSON).expect("reviewed source definitions")
 }
 
+#[test]
+fn gear_counts_are_canonical_and_never_add_a_field_to_old_sources() {
+    use dmd_rules::tactical_creatures::{
+        creature_definition_fingerprint, creature_source_pin, immutable_creature_sources,
+    };
+    // Keep every old omitted-field expectation; Ogre's count-bearing immutable
+    // source has its own additive controls in tactical_ogre_source.
+    let mage_pin = creature_source_pin(bundled_mage_v2().unwrap()).unwrap();
+    let originals: Vec<_> = immutable_creature_sources()
+        .unwrap()
+        .into_iter()
+        .filter(|source| source.id != "ogre")
+        .filter(|source| creature_source_pin(source).unwrap() != mage_pin)
+        .collect();
+    assert_eq!(originals.len(), 12);
+    for source in originals {
+        let original = serde_json::to_string(source).unwrap();
+        assert!(!original.contains("gear_quantities"));
+        assert!(source.statistics.gear_quantities.is_empty());
+        let mut explicit_empty: Value = serde_json::from_str(&original).unwrap();
+        explicit_empty["statistics"]["gear_quantities"] = json!({});
+        let roundtrip: CreatureDefinition = serde_json::from_value(explicit_empty).unwrap();
+        assert_eq!(serde_json::to_string(&roundtrip).unwrap(), original);
+        assert_eq!(
+            creature_definition_fingerprint(&roundtrip).unwrap(),
+            creature_definition_fingerprint(source).unwrap()
+        );
+    }
+
+    let mut value: Value = serde_json::from_str(TACTICAL_DEFINITIONS_JSON).unwrap();
+    value["creatures"][0]["statistics"]["gear"] = json!(["javelin", "greatclub"]);
+    value["creatures"][0]["statistics"]["gear_quantities"] = json!({"javelin": 3, "greatclub": 2});
+    let proposed = TacticalDefinitions::from_json(&value.to_string()).unwrap();
+    let source = &proposed.creatures[0];
+    let serialized = serde_json::to_string(source).unwrap();
+    assert!(serialized.contains(r#""gear_quantities":{"greatclub":2,"javelin":3}"#));
+    let mut different_count = source.clone();
+    different_count
+        .statistics
+        .gear_quantities
+        .insert("javelin".into(), 2);
+    assert_ne!(
+        creature_definition_fingerprint(source).unwrap(),
+        creature_definition_fingerprint(&different_count).unwrap()
+    );
+}
+
+#[test]
+fn gear_count_validation_keeps_duplicate_json_keys_visible() {
+    for quantities in [
+        json!({"scimitar": 0}),
+        json!({"scimitar": 1}),
+        json!({"javelin": 3}),
+        json!(null),
+        json!({"scimitar": -2}),
+        json!({"scimitar": 2.5}),
+    ] {
+        rejects(|value| value["creatures"][0]["statistics"]["gear_quantities"] = quantities);
+    }
+    // Do not use a Value to represent this input: it would erase the duplicate.
+    for duplicate in [
+        r#""scimitar":2,"scimitar":3"#,
+        r#""scimitar":2,"scimitar":2"#,
+    ] {
+        let mut value: Value = serde_json::from_str(TACTICAL_DEFINITIONS_JSON).unwrap();
+        value["creatures"][0]["statistics"]["gear_quantities"] = json!("REPLACE_QUANTITIES");
+        let raw = value
+            .to_string()
+            .replace(r#""REPLACE_QUANTITIES""#, &format!("{{{duplicate}}}"));
+        let error = TacticalDefinitions::from_json(&raw).unwrap_err();
+        assert!(
+            error.0.contains("duplicate gear quantity definition"),
+            "{error}"
+        );
+    }
+}
+
 fn rejects(edit: impl FnOnce(&mut Value)) {
     let mut value: Value = serde_json::from_str(TACTICAL_DEFINITIONS_JSON).unwrap();
     edit(&mut value);

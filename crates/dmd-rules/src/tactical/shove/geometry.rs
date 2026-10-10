@@ -86,6 +86,7 @@ pub(in crate::tactical) fn choose_outcome(
     state: &mut CampaignState,
     meta: &CommandMeta,
     choice: &ShoveChoice,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_execution(state)?;
     let s = current(state)?;
@@ -149,9 +150,10 @@ pub(in crate::tactical) fn choose_outcome(
             if !immune {
                 queue_fall(state, meta, &selected)?;
             }
+            execution.settle_work(state, meta)?;
             super::super::work_trace::leave(state, previous)?;
             refresh_dodges(state)?;
-            pump(state, meta)
+            pump_with_context(state, meta, execution)
         }
     }
 }
@@ -160,6 +162,7 @@ pub(in crate::tactical) fn rule_push(
     state: &mut CampaignState,
     meta: &CommandMeta,
     ruling: ShoveGeometryRuling,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     require_execution(state)?;
     privileged(meta)?;
@@ -249,9 +252,10 @@ pub(in crate::tactical) fn rule_push(
     if ruling == ShoveGeometryRuling::CommitExactPush {
         queue_fall(state, meta, &selected)?;
     }
+    execution.settle_work(state, meta)?;
     super::super::work_trace::leave(state, previous)?;
     refresh_dodges(state)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 fn encounter_mut(state: &mut CampaignState) -> Result<&mut TacticalEncounter, RulesError> {

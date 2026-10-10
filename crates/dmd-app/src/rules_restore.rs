@@ -4,17 +4,18 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 
 use dmd_domain::{
     AgentRef, CampaignId, CampaignState, CommandId, CommandIssuer, CommandMeta, PendingPurpose,
-    PlaySession, PlaySessionId, PlaySessionStatus, RollSource, Ruling, RulingRecord,
+    PhysicalFactAcceptance, PhysicalFactInput, PhysicalFactOffer, PlaySession, PlaySessionId,
+    PlaySessionStatus, RollSource, Ruling, RulingRecord,
 };
 use dmd_persistence::{
-    CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow, SessionChange,
+    CampaignExport, CampaignStateSnapshotCodec, CommandAuditRow, EventJournalRow,
 };
 use dmd_rules::tactical::{
     TACTICAL_EVENT_KIND, TACTICAL_EVENT_VERSION, TacticalAction, TacticalEvent, TacticalOutcome,
 };
 use dmd_rules::{RULES_EVENT_KIND, RULES_EVENT_VERSION, RulesAction, RulesEvent, RulesPack};
 
-use crate::table_engine::{replay_table, validate_table};
+use crate::table_engine::validate_table;
 use crate::{TABLE_EVENT_KIND, TABLE_EVENT_VERSION, TableAction, TableEvent, TableOutcome};
 
 enum RecoveryEvent {
@@ -58,21 +59,78 @@ pub(crate) fn validate_rules_export(
     crate::table_presentation_history::validate_history(export, pack).map(|_| ())
 }
 
-/// Visits only authenticated semantic images. Presentation bootstrap and validation
-/// use this same replay rather than trusting snapshots or reconstructing hidden history
-/// from the current world. The initial visit has no prior image/event.
-pub(crate) fn visit_rules_history(
+/// Complete original semantic and historical-presentation authentication.
+pub(crate) struct AuthenticatedTableHistory {
+    execution: dmd_rules::table::CampaignExecution,
+    presentation: crate::table_presentation_history::PresentationHistory,
+    selection: Option<bool>,
+}
+impl AuthenticatedTableHistory {
+    pub(crate) fn into_parts(
+        self,
+    ) -> (
+        dmd_rules::table::CampaignExecution,
+        crate::table_presentation_history::PresentationHistory,
+    ) {
+        (self.execution, self.presentation)
+    }
+    pub(crate) fn read(&self) -> dmd_rules::table::TableRead<'_> {
+        self.execution.read()
+    }
+    pub(crate) fn selection_matches(&self) -> Option<bool> {
+        self.selection
+    }
+}
+
+pub(crate) fn authenticate_history(
+    export: &CampaignExport,
+    pack: RulesPack,
+) -> Result<AuthenticatedTableHistory, String> {
+    authenticate_history_with_selection(export, pack, None)
+}
+
+pub(crate) fn authenticate_history_with_selection(
+    export: &CampaignExport,
+    pack: RulesPack,
+    selection: Option<crate::table_presentation_history::LegacySelectionCheck>,
+) -> Result<AuthenticatedTableHistory, String> {
+    let mut verifier = crate::table_presentation_history::HistoryVerifier::new(export, selection)?;
+    let execution = replay_history(export, &pack, &mut verifier)?;
+    let (presentation, selection) = verifier.finish()?;
+    Ok(AuthenticatedTableHistory {
+        execution,
+        presentation,
+        selection,
+    })
+}
+
+/// Modern images cannot authenticate themselves. Structural checks still run now;
+/// full semantic checks run on their exact owned replay images before equality below.
+fn validate_decoded_image(state: &CampaignState, pack: &RulesPack) -> Result<(), String> {
+    if dmd_rules::physical_facts::enabled(state)
+        || dmd_rules::table::grapple_enabled(state)
+        || dmd_domain::has_unimplemented_grapple_records(state)
+    {
+        if !state.validate().is_empty() {
+            return Err("Campaign state is inconsistent.".into());
+        }
+        if let Some(table) = &state.table {
+            table.validate(state)?;
+        }
+        Ok(())
+    } else {
+        validate_table(state, pack)
+    }
+}
+
+fn replay_history(
     export: &CampaignExport,
     pack: &RulesPack,
-    mut visit: impl FnMut(
-        Option<&CampaignState>,
-        &CampaignState,
-        Option<&EventJournalRow>,
-    ) -> Result<(), String>,
-) -> Result<(), String> {
+    verifier: &mut crate::table_presentation_history::HistoryVerifier<'_>,
+) -> Result<dmd_rules::table::CampaignExecution, String> {
     let current = CampaignState::decode_json(&export.current_state.state_json)
         .map_err(|error| format!("current rules state: {error}"))?;
-    validate_table(&current, pack)?;
+    validate_decoded_image(&current, pack)?;
     for observation in &export.observations {
         if observation.record.kind.starts_with("table.") {
             crate::table_runtime::validate_table_observation(&observation.record)?;
@@ -87,7 +145,7 @@ pub(crate) fn visit_rules_history(
         let state = codec
             .decode_state(version, &row.state_json)
             .map_err(|error| format!("rules snapshot {sequence}: {error}"))?;
-        validate_table(&state, pack)
+        validate_decoded_image(&state, pack)
             .map_err(|error| format!("rules snapshot {sequence}: {error}"))?;
         if state.campaign_id() != current.campaign_id()
             || state.applied_event_sequence != sequence
@@ -106,7 +164,11 @@ pub(crate) fn visit_rules_history(
     if dmd_domain::has_current_character_creation(anchor) {
         return Err("current character creation requires its original pre-creation anchor".into());
     }
-    if anchor.encounter_history.is_some()
+    if anchor.physical_facts.is_some()
+        || dmd_domain::has_unimplemented_ground_records(anchor)
+        || dmd_domain::has_unimplemented_grapple_records(anchor)
+        || dmd_rules::table::grapple_enabled(anchor)
+        || anchor.encounter_history.is_some()
         || crate::table_source_control::enabled(anchor)
         || anchor
             .encounter
@@ -257,7 +319,8 @@ pub(crate) fn visit_rules_history(
         &checked_commands,
     )?;
 
-    let mut replayed = anchor.clone();
+    let mut execution =
+        dmd_rules::table::CampaignExecution::from_original_anchor(anchor.clone(), pack.clone())?;
     let mut session_ledger = HashMap::new();
     if let Some(binding) = anchor
         .table
@@ -274,9 +337,11 @@ pub(crate) fn visit_rules_history(
         .map(|id| id.to_owned())
         .collect::<HashSet<_>>();
     seen_sessions.extend(session_ledger.keys().map(|id| id.0.to_string()));
-    visit(None, &replayed, None)?;
+    verifier.anchor(execution.read())?;
     for (&sequence, (row, event)) in events.range((anchor_sequence.saturating_add(1))..) {
-        let expected = replayed
+        let expected = execution
+            .read()
+            .state()
             .applied_event_sequence
             .checked_add(1)
             .ok_or_else(|| "rules replay sequence overflow".to_owned())?;
@@ -285,71 +350,61 @@ pub(crate) fn visit_rules_history(
                 "rules replay gap: expected {expected}, found {sequence}"
             ));
         }
-        let mut next = match event {
-            RecoveryEvent::Tactical(event) => {
-                if replayed.table.is_some() {
-                    return Err("raw tactical event bypasses the table command boundary".into());
-                }
-                dmd_rules::tactical::replay_tactical(&replayed, event, pack)
-                    .map_err(|error| format!("tactical replay at {sequence}: {error}"))?
-                    .next_state
-            }
+        let prepared = match event {
+            RecoveryEvent::Tactical(event) => execution
+                .prepare_legacy_replay(dmd_rules::table::LegacyRulesEventRef::Tactical(event)),
             RecoveryEvent::Rules(event) => {
-                if replayed.table.is_some() {
-                    return Err("raw rules event bypasses the table command boundary".into());
-                }
-                dmd_rules::replay(&replayed, event, pack)
-                    .map_err(|error| format!("rules replay at {sequence}: {error}"))?
-                    .next_state
+                execution.prepare_legacy_replay(dmd_rules::table::LegacyRulesEventRef::Rules(event))
             }
             RecoveryEvent::Table(event) => {
-                let transition = replay_table(&replayed, event, pack)
-                    .map_err(|error| format!("table replay at {sequence}: {error}"))?;
-                if let Some(change) = transition.session_change {
-                    match change {
-                        SessionChange::Start { session } => {
-                            if !seen_sessions.insert(session.id.0.to_string()) {
-                                return Err(
-                                    "table replay reuses an earlier session identity".into()
-                                );
-                            }
-                            session_ledger.insert(session.id, session);
-                        }
-                        SessionChange::Replace { expected, next } => {
-                            if session_ledger.get(&expected.id) != Some(&expected)
-                                || expected.status != PlaySessionStatus::Active
-                            {
-                                return Err(
-                                    "table replay session replacement lacks its exact prior image"
-                                        .into(),
-                                );
-                            }
-                            session_ledger.insert(next.id, next);
-                        }
-                    }
-                }
-                transition.state
+                crate::table_engine::prepare_replay_owned(&mut execution, event)
             }
-        };
-        next.applied_event_sequence = sequence;
-        if next.clock.now.0 != row.occurred_at_world || validate_table(&next, pack).is_err() {
+        }
+        .map_err(|error| format!("semantic replay at {sequence}: {error}"))?;
+        if let Some(change) = prepared.produced().session_change.clone() {
+            match change {
+                dmd_rules::table::TableSessionChange::Start { session } => {
+                    if !seen_sessions.insert(session.id.0.to_string()) {
+                        return Err("table replay reuses an earlier session identity".into());
+                    }
+                    session_ledger.insert(session.id, session);
+                }
+                dmd_rules::table::TableSessionChange::Replace { expected, next } => {
+                    if session_ledger.get(&expected.id) != Some(&expected)
+                        || expected.status != PlaySessionStatus::Active
+                    {
+                        return Err(
+                            "table replay session replacement lacks its exact prior image".into(),
+                        );
+                    }
+                    session_ledger.insert(next.id, next);
+                }
+            }
+        }
+
+        let step = prepared.commit();
+        let after = step.after();
+        let next = after.state();
+        if next.applied_event_sequence != sequence
+            || next.clock.now.0 != row.occurred_at_world
+            || after.validate().is_err()
+        {
             return Err(format!("rules replay time/domain mismatch at {sequence}"));
         }
         if let Some(snapshot) = snapshots.get(&sequence)
-            && snapshot != &next
+            && snapshot != next
         {
             return Err(format!(
                 "rules snapshot disagrees with replay at {sequence}"
             ));
         }
-        visit(Some(&replayed), &next, Some(row))?;
-        replayed = next;
+        verifier.step(step.before(), step.after(), row)?;
     }
-    if replayed != current {
+    if execution.read().state() != &current {
         return Err("current rules state disagrees with anchor-and-journal replay".into());
     }
     validate_replayed_sessions(export, &session_ledger)?;
-    Ok(())
+    Ok(execution)
 }
 
 fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
@@ -357,7 +412,7 @@ fn nonnegative(value: i64, field: &str) -> Result<u64, String> {
 }
 
 fn supported_command_version(kind: &str, version: i64) -> bool {
-    version == 1 || (kind == "table.action" && matches!(version, 2 | 3))
+    version == 1 || (kind == "table.action" && matches!(version, 2..=6))
 }
 
 pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction, String> {
@@ -367,7 +422,7 @@ pub(crate) fn table_audit_action(audit: &CommandAuditRow) -> Result<TableAction,
     match audit.command_schema_version {
         1 => serde_json::from_str(&audit.payload_json)
             .map_err(|e| format!("invalid table command: {e}")),
-        2 | 3 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
+        2..=6 => serde_json::from_str::<crate::table_transport::TransportedTableAction>(
             &audit.payload_json,
         )
         .map(|body| body.action)
@@ -494,7 +549,40 @@ fn validate_event(
 fn validate_nested_rules(event: &TableEvent) -> Result<(), String> {
     if matches!(
         event.action,
-        TableAction::EnableSourceActorAccess { .. }
+        TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. }
+    ) {
+        if event.meta.issuer != CommandIssuer::Admin
+            || event.meta.actor.is_some()
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration award has incompatible Host or nested authority".into());
+        }
+        return Ok(());
+    }
+    if matches!(
+        event.action,
+        TableAction::ResolveHostInspirationTransfer { .. }
+    ) {
+        if !matches!(event.meta.issuer, CommandIssuer::Player(_))
+            || !matches!(event.meta.actor, Some(AgentRef::Entity(_)))
+            || event.meta.session_id.is_none()
+            || event.rules_event.is_some()
+            || event.tactical_event.is_some()
+            || event.outcome.mechanics.is_some()
+        {
+            return Err("Inspiration choice has incompatible Player or nested authority".into());
+        }
+        return Ok(());
+    }
+    if matches!(
+        event.action,
+        TableAction::PhysicalFact { .. }
+            | TableAction::EnableGrappleAccess
+            | TableAction::EnableGrappleTransport
+            | TableAction::EnableSourceActorAccess { .. }
             | TableAction::SetSourceCreatureController { .. }
     ) {
         if event.meta.issuer != CommandIssuer::Admin
@@ -776,9 +864,20 @@ fn validate_rulings(
             {
                 return Err("ruling provenance disagrees with accepted audit".into());
             }
-            let action = commands
+            let command = commands
                 .get(&record.command.id)
-                .and_then(|event| event.rules_event())
+                .ok_or("ruling has no checked typed command")?;
+            if let RecoveryEvent::Table(event) = command
+                && let TableAction::AwardHeroicInspiration { reason, .. }
+                | TableAction::AwardExcessInspiration { reason, .. } = &event.action
+            {
+                if record.ruling != dmd_rules::table::inspiration_award_ruling(reason) {
+                    return Err("ruling disagrees with its originating Inspiration award".into());
+                }
+                continue;
+            }
+            let action = command
+                .rules_event()
                 .map(|event| &event.action)
                 .ok_or("ruling has no checked typed rules action")?;
             if action_ruling(action) != Some(&record.ruling) {
@@ -833,6 +932,20 @@ fn action_ruling(action: &RulesAction) -> Option<&Ruling> {
     }
 }
 
+fn ground_image_origins<'a>(
+    image: &'a dmd_domain::AttackGroundPickupBefore,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&image.ground.origin, &image.equipment.command]);
+}
+
+fn equipment_cause_origins<'a>(
+    cause: &'a dmd_domain::AttackEquipmentCause,
+    origins: &mut Vec<&'a CommandMeta>,
+) {
+    origins.extend([&cause.origin, &cause.completed_by]);
+}
+
 fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     let mut origins = state
         .table
@@ -840,6 +953,18 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
         .and_then(|table| table.pending.as_ref())
         .map(|pending| vec![&pending.origin])
         .unwrap_or_default();
+    origins.extend(
+        state
+            .table
+            .as_ref()
+            .and_then(|table| table.inspiration_transfer.as_ref())
+            .map(|transfer| &transfer.origin),
+    );
+    grapple_origins(state, &mut origins);
+    if let Some(facts) = &state.physical_facts {
+        origins.push(&facts.origin);
+        origins.extend(facts.records.iter().map(|fact| &fact.origin));
+    }
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
             origins.extend([
@@ -866,10 +991,41 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             origins.extend([&adoption.profile_origin, &adoption.control_origin]);
         }
     }
+    if let Some(access) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.grapple_access.as_ref())
+    {
+        origins.push(&access.origin);
+        origins.extend(
+            access
+                .ground_transport
+                .as_ref()
+                .map(|transport| &transport.origin),
+        );
+    }
     if let Some(encounter) = &state.encounter {
         origins.push(&encounter.origin);
         if let Some(flow) = &encounter.flow {
             origins.push(&flow.origin);
+            if let Some(access) = &flow.attack_equipment_access {
+                origins.push(&access.origin);
+            }
+            for receipt in &flow.budget.weapon_history {
+                if let Some(image) = &receipt.ground_pickup_before {
+                    ground_image_origins(image, &mut origins);
+                }
+                if let Some(after) = &receipt.after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend([&after.selected_by, &after.chosen_by]);
+                    if let Some(applied) = &after.applied {
+                        origins.push(&applied.equipment_before.command);
+                        if let Some(image) = &applied.ground_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                    }
+                }
+            }
             if let Some(aftermath) = &flow.aftermath {
                 origins.push(&aftermath.origin);
             }
@@ -887,6 +1043,10 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
             }
             if let Some(resolution) = &flow.resolution {
                 origins.push(&resolution.origin);
+                if let Some(after) = &resolution.attack_after_equipment {
+                    equipment_cause_origins(&after.cause, &mut origins);
+                    origins.extend(after.selected_by.as_ref());
+                }
                 if let Some(shove) = &resolution.shove {
                     origins.push(&shove.origin);
                     if let Some(save) = &shove.save {
@@ -1009,6 +1169,12 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
                     origins.push(&attack.origin);
                     if let Some(weapon) = attack.weapon() {
                         origins.push(&weapon.equipment_before.command);
+                        if let Some(image) = &weapon.ground_pickup_before {
+                            ground_image_origins(image, &mut origins);
+                        }
+                        if let Some(parent) = &weapon.after_equipment_parent {
+                            origins.push(&parent.paused_by);
+                        }
                     }
                     if let dmd_domain::TacticalAttackAdmission::Opportunity(window) =
                         &attack.admission
@@ -1164,6 +1330,130 @@ fn command_origins(state: &CampaignState) -> Vec<&CommandMeta> {
     origins
 }
 
+fn grapple_origins<'a>(state: &'a CampaignState, origins: &mut Vec<&'a CommandMeta>) {
+    use dmd_domain::{
+        GrappleActivity, GrappleAttemptOutcome, GrappleEquipmentDecision, GrappleEscapeOutcome,
+        GrappleSaveEvidence, TacticalFallCause, TacticalGrappleSave, TacticalGrip,
+    };
+    fn save<'a>(save: &'a TacticalGrappleSave, origins: &mut Vec<&'a CommandMeta>) {
+        origins.push(&save.chosen_by);
+        if let Some(proof) = &save.proof {
+            origins.extend([proof.evidence.resolved_by(), &proof.finalized_by]);
+            if let GrappleSaveEvidence::Decision(decision) = &proof.evidence {
+                origins.push(&decision.issued_by);
+            }
+            origins.extend(
+                proof
+                    .legendary
+                    .as_ref()
+                    .map(|legendary| &legendary.chosen_by),
+            );
+        }
+    }
+    fn grip<'a>(grip: &'a TacticalGrip, origins: &mut Vec<&'a CommandMeta>) {
+        origins.extend([&grip.declaration.origin, &grip.established_by]);
+        save(&grip.save, origins);
+    }
+    if let Some(live) = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_grapples.as_ref())
+    {
+        for item in &live.active {
+            grip(item, origins);
+        }
+    }
+    let Some(resolution) = state
+        .encounter
+        .as_ref()
+        .and_then(|e| e.flow.as_ref())
+        .and_then(|f| f.resolution.as_ref())
+    else {
+        return;
+    };
+    if let Some(context) = &resolution.grapple {
+        for item in &context.proofs {
+            grip(item, origins);
+        }
+        origins.extend(context.cuts.iter().map(|cut| &cut.issued_by));
+        origins.extend(context.ends.iter().map(|end| &end.caused_by));
+        for receipt in &context.completed_casts {
+            origins.extend([
+                &receipt.record.cast.plan.origin,
+                &receipt.record.cast.last_operation,
+                &receipt.finished_by,
+            ]);
+            origins.extend(
+                receipt
+                    .record
+                    .creature_activation
+                    .as_ref()
+                    .map(|activation| &activation.origin),
+            );
+        }
+        for refresh in &context.opportunity_refreshes {
+            origins.extend([&refresh.movement_origin, &refresh.window_origin]);
+        }
+        match &context.activity {
+            Some(GrappleActivity::Attempt(attempt)) => {
+                origins.push(&attempt.declaration.origin);
+                if let Some(saved) = &attempt.save {
+                    save(saved, origins);
+                }
+                if let Some(
+                    GrappleEquipmentDecision::Declined { chosen_by, .. }
+                    | GrappleEquipmentDecision::Applied { chosen_by, .. },
+                ) = &attempt.equipment.after
+                {
+                    origins.push(chosen_by);
+                }
+                match &attempt.outcome {
+                    Some(
+                        GrappleAttemptOutcome::Resisted { resolved_by }
+                        | GrappleAttemptOutcome::Immune { resolved_by },
+                    ) => origins.push(resolved_by),
+                    Some(GrappleAttemptOutcome::Withdrawn { withdrawn_by, .. }) => {
+                        origins.push(withdrawn_by)
+                    }
+                    Some(GrappleAttemptOutcome::Established { .. }) | None => {}
+                }
+            }
+            Some(GrappleActivity::Escape(escape)) => {
+                origins.push(&escape.origin);
+                match &escape.outcome {
+                    Some(GrappleEscapeOutcome::Checked { resolved_by, .. }) => {
+                        origins.push(resolved_by)
+                    }
+                    Some(GrappleEscapeOutcome::Obsolete { ended_by, .. }) => origins.push(ended_by),
+                    None => {}
+                }
+            }
+            None => {}
+        }
+    }
+    if let Some(transport) = resolution
+        .grapple
+        .as_ref()
+        .and_then(|c| c.transport.as_ref())
+    {
+        origins.push(&transport.admission.origin);
+        origins.extend(transport.steps.iter().map(|step| &step.cause));
+        origins.extend(transport.stop.as_ref().map(|stop| &stop.cause));
+    }
+    origins.extend(
+        resolution
+            .movement
+            .as_ref()
+            .and_then(|movement| movement.grapple_self_only.as_ref())
+            .map(|admission| &admission.origin),
+    );
+    for fall in &resolution.falls {
+        if let TacticalFallCause::GrappleFlightLost { consequence, .. } = &fall.cause {
+            origins.push(consequence);
+        }
+    }
+}
+
 fn purpose_permission_origin(purpose: &PendingPurpose) -> Option<&CommandMeta> {
     match purpose {
         PendingPurpose::Attack { permission, .. } | PendingPurpose::Healing { permission, .. } => {
@@ -1180,6 +1470,32 @@ fn validate_origins(
     audits: &HashMap<CommandId, (&CommandAuditRow, CommandMeta)>,
     commands: &HashMap<CommandId, &RecoveryEvent>,
 ) -> Result<(), String> {
+    if let Some(facts) = &state.physical_facts {
+        let original = |origin: &CommandMeta| {
+            commands.get(&origin.id).and_then(|event| match event {
+                RecoveryEvent::Table(event) if event.meta == *origin => match &event.action {
+                    TableAction::PhysicalFact { acceptance } => Some(acceptance.as_ref()),
+                    _ => None,
+                },
+                _ => None,
+            })
+        };
+        if !matches!(original(&facts.origin), Some(PhysicalFactAcceptance { offer: PhysicalFactOffer::Enable { catalog }, input: PhysicalFactInput::Enable }) if catalog == &facts.catalog)
+        {
+            return Err("Physical activation lacks its exact accepted Host command.".into());
+        }
+        for fact in &facts.records {
+            let acceptance = original(&fact.origin)
+                .ok_or("Physical fact lacks its exact original Host command.")?;
+            if dmd_rules::physical_facts::accepted_fact(&fact.origin, acceptance)?.as_ref()
+                != Some(fact)
+            {
+                return Err(
+                    "Physical fact differs from its original accepted value or scope.".into(),
+                );
+            }
+        }
+    }
     if let Some(history) = &state.encounter_history {
         for receipt in &history.completions {
             let accepted = |origin: &CommandMeta| {
@@ -1237,6 +1553,59 @@ fn validate_origins(
             return Err("aftermath conclusion lacks its exact accepted host decision".into());
         }
     }
+    if let Some(flow) = state.encounter.as_ref().and_then(|e| e.flow.as_ref()) {
+        let accepted = |origin: &CommandMeta| {
+            commands
+                .get(&origin.id)
+                .and_then(|event| match event {
+                    RecoveryEvent::Tactical(event) => Some(event.as_ref()),
+                    RecoveryEvent::Table(event) => event.tactical_event.as_ref(),
+                    RecoveryEvent::Rules(_) => None,
+                })
+                .filter(|event| event.meta == *origin)
+        };
+        if let Some(access) = &flow.attack_equipment_access
+            && !accepted(&access.origin)
+                .is_some_and(|event| event.action == TacticalAction::ActivateAttackEquipment)
+        {
+            return Err("equipment activation lacks its original accepted host command".into());
+        }
+        for after in flow
+            .budget
+            .weapon_history
+            .iter()
+            .filter_map(|r| r.after_equipment.as_ref())
+        {
+            let choice = after
+                .applied
+                .as_ref()
+                .map_or(dmd_domain::AttackEquipmentChoice::Decline, |applied| {
+                    dmd_domain::AttackEquipmentChoice::Apply(applied.operation)
+                });
+            if !accepted(&after.chosen_by).is_some_and(|event| {
+                event.action
+                    == TacticalAction::ChooseAttackEquipment {
+                        work: after.work,
+                        choice,
+                    }
+            }) {
+                return Err(
+                    "equipment decision differs from its original accepted work and operation"
+                        .into(),
+                );
+            }
+        }
+    }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+        && !commands.get(&transfer.origin.id).is_some_and(|event| matches!(event,
+            RecoveryEvent::Table(event) if event.meta == transfer.origin
+                && matches!(event.action, TableAction::AwardExcessInspiration { character_id, .. } if character_id == transfer.character_id)))
+    {
+        return Err("Inspiration choice lacks its exact accepted Host excess award".into());
+    }
     let pending = state
         .table
         .as_ref()
@@ -1255,7 +1624,7 @@ fn validate_origins(
                         .get(&origin.id)
                         .is_some_and(|e| matches!(e, RecoveryEvent::Tactical(_)))
                     && !commands.get(&origin.id).is_some_and(|event| matches!(event,
-                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. })
+                        RecoveryEvent::Table(event) if matches!(event.action, TableAction::PhysicalFact { .. } | TableAction::PrepareEquipment { .. } | TableAction::CreateCreature { .. } | TableAction::PrepareBattlefield { .. } | TableAction::Tactical { .. } | TableAction::EnableGrappleAccess | TableAction::EnableGrappleTransport | TableAction::EnableSourceActorAccess { .. } | TableAction::SetSourceCreatureController { .. } | TableAction::AwardHeroicInspiration { .. } | TableAction::AwardExcessInspiration { .. })
                             || (matches!(event.action, TableAction::Adjudicate { .. })
                                 && event.tactical_event.as_ref().is_some_and(|nested|
                                     nested.meta == event.meta && nested.action == TacticalAction::SecondWind))))
@@ -1325,9 +1694,26 @@ fn validate_origins(
                 },
                 RecoveryEvent::Rules(_) => None,
             });
-        if !matches!(action, Some((TacticalAction::Move { path }, outcome))
-            if outcome.active_actor == Some(movement.actor) && path.len() == usize::from(movement.requested_steps))
-        {
+        let matches = match action {
+            Some((
+                TacticalAction::Move { path } | TacticalAction::MoveSelfOnly { path },
+                outcome,
+            )) => {
+                movement.transport.is_none()
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            Some((TacticalAction::MoveGrappled { grip, path }, outcome)) => {
+                movement
+                    .transport
+                    .as_ref()
+                    .is_some_and(|transport| transport.grip == *grip)
+                    && outcome.active_actor == Some(movement.actor)
+                    && path.len() == usize::from(movement.requested_steps)
+            }
+            _ => false,
+        };
+        if !matches {
             return Err("movement receipt disagrees with its originating Move action".into());
         }
     }
@@ -1360,6 +1746,10 @@ fn validate_origins(
     }
     Ok(())
 }
+
+#[cfg(test)]
+#[path = "rules_restore_ground_tests.rs"]
+mod ground_tests;
 
 #[cfg(test)]
 mod tests {

@@ -1,0 +1,200 @@
+{
+  "id": "goblin-warrior",
+  "name": "Goblin Warrior",
+  "coverage": "CompleteStatBlock",
+  "statistics": {
+    "size": "Small",
+    "allowed_sizes": [
+      "Small"
+    ],
+    "creature_type": "Fey",
+    "alignment": "Chaotic Neutral",
+    "armor_class": 15,
+    "hit_points": 10,
+    "hit_point_formula": {
+      "dice": [
+        {
+          "count": 3,
+          "sides": 6
+        }
+      ],
+      "fixed": 0
+    },
+    "ability_scores": [
+      8,
+      15,
+      10,
+      10,
+      8,
+      8
+    ],
+    "saving_throw_modifiers": [
+      -1,
+      2,
+      0,
+      0,
+      -1,
+      -1
+    ],
+    "initiative_modifier": 2,
+    "proficiency_bonus": 2,
+    "challenge_rating": "1/4",
+    "experience_points": 50,
+    "speeds": {
+      "walk": 30,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0,
+      "hover": false
+    },
+    "skills": [
+      {
+        "skill": "Stealth",
+        "modifier": 6
+      }
+    ],
+    "senses": {
+      "blindsight": 0,
+      "darkvision": 60,
+      "tremorsense": 0,
+      "truesight": 0,
+      "passive_perception": 9
+    },
+    "damage_resistances": [],
+    "damage_vulnerabilities": [],
+    "damage_immunities": [],
+    "condition_immunities": [],
+    "exhaustion_immune": false,
+    "languages": [
+      "Common",
+      "Goblin"
+    ],
+    "additional_languages": 0,
+    "can_speak": true,
+    "gear": [
+      "leather-armor",
+      "scimitar",
+      "shield",
+      "shortbow"
+    ],
+    "creature_tags": [
+      "Goblinoid"
+    ]
+  },
+  "traits": [],
+  "features": [
+    {
+      "id": "scimitar",
+      "name": "Scimitar",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 4,
+          "delivery": {
+            "Melee": {
+              "reach_feet": 5
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 2
+              },
+              "damage_type": "Slashing"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 4
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Slashing"
+            }
+          ],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 290
+    },
+    {
+      "id": "shortbow",
+      "name": "Shortbow",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 4,
+          "delivery": {
+            "Ranged": {
+              "range": {
+                "normal_feet": 80,
+                "long_feet": 320
+              }
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 2
+              },
+              "damage_type": "Piercing"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 1,
+                    "sides": 4
+                  }
+                ],
+                "fixed": 0
+              },
+              "damage_type": "Piercing"
+            }
+          ],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 290
+    },
+    {
+      "id": "nimble-escape",
+      "name": "Nimble Escape",
+      "activation": "BonusAction",
+      "feature": {
+        "BasicActionChoice": {
+          "options": [
+            "Disengage",
+            "Hide"
+          ]
+        }
+      },
+      "source_page": 290
+    }
+  ],
+  "legendary_budget": null,
+  "source_pages": [
+    290
+  ],
+  "ordinary_hands": "TwoHandsV1"
+}

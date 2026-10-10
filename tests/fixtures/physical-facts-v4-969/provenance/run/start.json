@@ -1,0 +1,196 @@
+{
+  "source": {
+    "head": "969627f90d2a44643c7f33d9b1a205500337976f",
+    "tree": "84c74d1f3372df7913fad5eecbd13775f6b1e4ac",
+    "status": ""
+  },
+  "repository": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\gate4-v4-compatibility-captures",
+  "tracked_hash_count": 727,
+  "selected_cases": [
+    "ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw",
+    "inspiration::transfer::v4_capture::capture_v4_inspiration_recipient_and_physical_reroll",
+    "inspiration::transfer::v4_capture::capture_v4_inspiration_decline_and_physical_reroll"
+  ],
+  "protected_original_test_count": 1112,
+  "selection_scope": "Canonical verify-fast, normal-profile compile-only artifact pin, three exact genuine v4 capture cases serially, strict workspace/all-target Clippy. Not full verify, future consumer verification or Gate 4 acceptance.",
+  "steps": [
+    {
+      "name": "01-canonical-verify-fast",
+      "argv": [
+        "C:/Program Files/Git/bin/bash.exe",
+        "./scripts/verify-fast"
+      ]
+    },
+    {
+      "name": "02-compile-capture-executable",
+      "argv": [
+        "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_grapple_public",
+        "--no-run",
+        "--message-format=json"
+      ],
+      "compile_capture": true
+    },
+    {
+      "name": "03-ground-capture",
+      "argv": [
+        "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_grapple_public",
+        "ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw",
+        "--",
+        "--exact"
+      ],
+      "expected": "ground_transport::v4_capture::capture_v4_ground_upgrade_paid_prefix_and_issued_source_raw",
+      "scenario": "ground-v4",
+      "expected_cuts": [
+        "v-three-before-upgrade",
+        "v-four-equipment-activation",
+        "before-source-controller",
+        "before-paid-ground-move",
+        "paid-prefix-before-opportunity",
+        "issued-source-raw-before-release",
+        "released-source-raw-before-answer",
+        "stopped-ground-before-next-turn"
+      ]
+    },
+    {
+      "name": "04-inspiration-recipient-capture",
+      "argv": [
+        "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_grapple_public",
+        "inspiration::transfer::v4_capture::capture_v4_inspiration_recipient_and_physical_reroll",
+        "--",
+        "--exact"
+      ],
+      "expected": "inspiration::transfer::v4_capture::capture_v4_inspiration_recipient_and_physical_reroll",
+      "scenario": "inspiration-recipient-v4",
+      "expected_cuts": [
+        "before-ground-equipment",
+        "before-first-host-award",
+        "first-award-before-duplicate",
+        "pending-owner-transfer",
+        "pending-physical-inspiration-reroll",
+        "consumed-reroll-before-equipment-finish",
+        "settled-reroll-before-next-turn"
+      ]
+    },
+    {
+      "name": "05-inspiration-decline-capture",
+      "argv": [
+        "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+        "test",
+        "--locked",
+        "-p",
+        "dmd-app",
+        "--test",
+        "table_grapple_public",
+        "inspiration::transfer::v4_capture::capture_v4_inspiration_decline_and_physical_reroll",
+        "--",
+        "--exact"
+      ],
+      "expected": "inspiration::transfer::v4_capture::capture_v4_inspiration_decline_and_physical_reroll",
+      "scenario": "inspiration-decline-v4",
+      "expected_cuts": [
+        "before-ground-equipment",
+        "before-first-host-award",
+        "first-award-before-duplicate",
+        "pending-owner-transfer",
+        "pending-physical-inspiration-reroll",
+        "consumed-reroll-before-equipment-finish",
+        "settled-reroll-before-next-turn"
+      ]
+    },
+    {
+      "name": "06-strict-workspace-clippy",
+      "argv": [
+        "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+        "clippy",
+        "--locked",
+        "--workspace",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ]
+    }
+  ],
+  "evidence": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07",
+  "fresh_target": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07-target",
+  "runner_files": {
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\run-v4-capture-969627f-2026-10-07.py": "8fd658e7ed657dbcae6699cee965015f5eea59aeee3f7cb27e59bddc5b7705f1",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\v4-capture-969627f-runner-manifest-2026-10-07.json": "d4e02d0ddbaafad874ae45e4088de676f68f669d21baea0443d1f5e7c28b2e12",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\prepare-grapple-ff0e103-focused82-2026-10-06.py": "11ba1b92289aee501586b41b72c179449a001c5c60a6f2331c0f4f4b4351e74d"
+  },
+  "tool_executable_sha256": {
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\rustc.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\rustfmt.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo-fmt.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo-clippy.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\clippy-driver.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\rustup.exe": "6d5b5709addc0122c916d8c810da8d8a7b086a5d64fa805ef404d506392aadc8",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\cargo.exe": "135cb112917fc079b0f286ddffcd1f45a3435a620fcf4331f952f137ff176945",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\rustc.exe": "7ad76e93c15b06e41b0a6ef538bf3c0467c0b497638c1d9c9de2566d299d876e",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\rustfmt.exe": "a6816f65891c7c839ddc942f35c36fd3d0bd1449b3ba1a563ccbbfe246bd504f",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\cargo-fmt.exe": "9ce64d3d8c5841a9f1506441e1525cccc0e75a1b896eabde5615d3058717a366",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\cargo-clippy.exe": "ddce86045e3193e9770342181af926fcb48ffd61209e87ecdbfc62825068f1e3",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\clippy-driver.exe": "43d6104f7eb300093a2fca2cc712499a2d07d6259b0d5a8f648a4747013f521a",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup\\toolchains\\stable-x86_64-pc-windows-gnu\\bin\\rustdoc.exe": "99ee4252c6546420b3396050537fd367b229597b33a41d7593a0b6241988cef6",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\w64devkit\\bin\\gcc.exe": "9a52de3e3af8f4896e963c4b68ed159f049954775decb20e421cd75d51aab6ed",
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\w64devkit\\bin\\ar.exe": "aed9770e957b9583775cd0e88fd5f5ff6b39f9a2188bfd246d187f60aefd48c0",
+    "C:\\Program Files\\Git\\bin\\bash.exe": "a80d0cc4ed45f99c6073e8504bcdd9935c553afd9460627cbbb4bec103e7ef60"
+  },
+  "capture_parent": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07-captures",
+  "capture_environment": {
+    "DMD_V4_CAPTURE_DIR": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07-captures"
+  },
+  "effective_controlled_environment": {
+    "CARGO_HOME": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo",
+    "RUSTUP_HOME": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\rustup",
+    "RUSTUP_TOOLCHAIN": "stable-x86_64-pc-windows-gnu",
+    "CARGO_TARGET_DIR": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07-target",
+    "CARGO_BUILD_JOBS": "1",
+    "CARGO_INCREMENTAL": "0",
+    "CARGO_TERM_COLOR": "never",
+    "CC_X86_64_PC_WINDOWS_GNU": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\w64devkit\\bin\\gcc.exe",
+    "AR_X86_64_PC_WINDOWS_GNU": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\w64devkit\\bin\\ar.exe",
+    "CARGO_TARGET_X86_64_PC_WINDOWS_GNU_RUSTFLAGS": "-C link-self-contained=yes",
+    "PATH": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin;C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\w64devkit\\bin;C:/Program Files/Git/usr/bin;C:/Program Files/Git/bin;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell;C:\\Users\\jadra\\.codex\\tmp\\arg0\\codex-arg07i16yG;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\libheif\\libheif\\bin;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\jxrlib\\jxrlib\\bin;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\poppler\\Library\\bin;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\bin\\override;C:\\WINDOWS\\system32;C:\\WINDOWS;C:\\WINDOWS\\System32\\Wbem;C:\\WINDOWS\\System32\\WindowsPowerShell\\v1.0\\;C:\\WINDOWS\\System32\\OpenSSH\\;C:\\Program Files\\dotnet\\;C:\\Program Files\\Git\\cmd;C:\\Users\\jadra\\.local\\bin;C:\\Users\\jadra\\AppData\\Local\\Programs\\Python\\Python311\\Scripts\\;C:\\Users\\jadra\\AppData\\Local\\Programs\\Python\\Python311\\;C:\\Users\\jadra\\AppData\\Local\\Programs\\Python\\Python312\\Scripts\\;C:\\Users\\jadra\\AppData\\Local\\Programs\\Python\\Python312\\;C:\\Users\\jadra\\AppData\\Local\\Programs\\Python\\Launcher\\;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\powershell;C:\\Users\\jadra\\AppData\\Local\\Microsoft\\WindowsApps;C:\\Users\\jadra\\AppData\\Local\\Python\\bin;C:\\Users\\jadra\\AppData\\Local\\Programs\\Ollama;C:\\Users\\jadra\\AppData\\Local\\Microsoft\\WinGet\\Packages\\astral-sh.uv_Microsoft.Winget.Source_8wekyb3d8bbwe;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\bin\\fallback;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin;C:\\Users\\jadra\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\native\\git\\cmd;C:\\Users\\jadra\\AppData\\Local\\OpenAI\\Codex\\bin\\26f5cb65bac96647;C:\\Users\\jadra\\AppData\\Local\\OpenAI\\Codex\\bin\\5ea220ae823df3d7"
+  },
+  "preflight": {
+    "processes": [],
+    "memory": {
+      "AvailableBytes": 7268085760,
+      "CommittedBytes": 12296777728,
+      "CommitLimit": 59385434112
+    },
+    "disk": {
+      "Name": "C",
+      "Free": 130873081856
+    },
+    "existing_heavy_lock": false
+  },
+  "project_execution": "UNRUN",
+  "started_utc": "2026-10-07T11:27:59.004873+00:00",
+  "results": [],
+  "failure": null,
+  "all_planned_passed": false,
+  "qualification": "Canonical verify-fast + normal-profile capture executable build/pin + three exact genuine v4 capture cases + strict all-target workspace Clippy; not full canonical verify, full workspace tests, future consumer verification, CI, native package, MSRV or gate acceptance.",
+  "rustc_verbose": "rustc 1.98.1 (48a229cea 2026-09-01)\nbinary: rustc\ncommit-hash: 48a229ceaefd4985c50990b14116b6d856af0985\ncommit-date: 2026-09-01\nhost: x86_64-pc-windows-gnu\nrelease: 1.98.1\nLLVM version: 22.1.8\n",
+  "cargo_version": "cargo 1.98.1 (797e8a9bc 2026-08-05)"
+}

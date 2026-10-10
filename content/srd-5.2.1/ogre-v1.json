@@ -1,0 +1,186 @@
+{
+  "id": "ogre",
+  "name": "Ogre",
+  "coverage": "CompleteStatBlock",
+  "statistics": {
+    "size": "Large",
+    "allowed_sizes": [
+      "Large"
+    ],
+    "creature_type": "Giant",
+    "creature_tags": [],
+    "alignment": "Chaotic Evil",
+    "armor_class": 11,
+    "hit_points": 68,
+    "hit_point_formula": {
+      "dice": [
+        {
+          "count": 8,
+          "sides": 10
+        }
+      ],
+      "fixed": 24
+    },
+    "ability_scores": [
+      19,
+      8,
+      16,
+      5,
+      7,
+      7
+    ],
+    "saving_throw_modifiers": [
+      4,
+      -1,
+      3,
+      -3,
+      -2,
+      -2
+    ],
+    "initiative_modifier": -1,
+    "proficiency_bonus": 2,
+    "challenge_rating": "2",
+    "experience_points": 450,
+    "speeds": {
+      "walk": 40,
+      "burrow": 0,
+      "climb": 0,
+      "fly": 0,
+      "swim": 0,
+      "hover": false
+    },
+    "skills": [],
+    "senses": {
+      "blindsight": 0,
+      "darkvision": 60,
+      "tremorsense": 0,
+      "truesight": 0,
+      "passive_perception": 8
+    },
+    "damage_resistances": [],
+    "damage_vulnerabilities": [],
+    "damage_immunities": [],
+    "condition_immunities": [],
+    "exhaustion_immune": false,
+    "languages": [
+      "Common",
+      "Giant"
+    ],
+    "additional_languages": 0,
+    "can_speak": true,
+    "gear": [
+      "greatclub",
+      "javelin"
+    ],
+    "gear_quantities": {
+      "javelin": 3
+    }
+  },
+  "traits": [],
+  "features": [
+    {
+      "id": "greatclub",
+      "name": "Greatclub",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 6,
+          "delivery": {
+            "Melee": {
+              "reach_feet": 5
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 8
+                  }
+                ],
+                "fixed": 4
+              },
+              "damage_type": "Bludgeoning"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 312
+    },
+    {
+      "id": "javelin-melee",
+      "name": "Javelin (Melee)",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 6,
+          "delivery": {
+            "Melee": {
+              "reach_feet": 5
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 4
+              },
+              "damage_type": "Piercing"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 312
+    },
+    {
+      "id": "javelin-thrown",
+      "name": "Javelin (Thrown)",
+      "activation": "Action",
+      "feature": {
+        "Attack": {
+          "bonus": 6,
+          "delivery": {
+            "Ranged": {
+              "range": {
+                "normal_feet": 30,
+                "long_feet": 120
+              }
+            }
+          },
+          "damage": [
+            {
+              "amount": {
+                "dice": [
+                  {
+                    "count": 2,
+                    "sides": 6
+                  }
+                ],
+                "fixed": 4
+              },
+              "damage_type": "Piercing"
+            }
+          ],
+          "extra_damage_if_attack_had_advantage": [],
+          "conditional_hits": []
+        }
+      },
+      "source_page": 312
+    }
+  ],
+  "legendary_budget": null,
+  "source_pages": [
+    312
+  ],
+  "ordinary_hands": "TwoHandsV1"
+}

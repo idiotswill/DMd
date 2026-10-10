@@ -912,3 +912,6 @@ async fn genuine_v2_source_aftermath_resumes_and_upgrades_without_retiming_armor
     Box::pin(f.reject(changed)).await;
     f.close().await;
 }
+
+#[path = "support/goblin_source_coexistence.rs"]
+mod goblin_source_coexistence;

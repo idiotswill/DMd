@@ -1,0 +1,2667 @@
+{
+  "format_version": 3,
+  "state_schema_version": 4,
+  "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+  "exported_at_utc": "2026-10-07 12:17:57",
+  "lifecycle": {
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "display_name": "Grapple journal",
+    "storage_status": "active",
+    "state_schema_version": 4,
+    "created_at_utc": "2026-10-07 12:13:56",
+    "archived_at_utc": null
+  },
+  "current_state": {
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "schema_version": 4,
+    "applied_event_sequence": 18,
+    "state_json": "{\"encounter\":{\"id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"participants\":[{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"size\":\"Medium\",\"public_label\":\"Character 0\",\"height\":12,\"reach\":10,\"movement\":{\"walk\":60,\"climb\":null,\"swim\":null,\"fly\":null,\"burrow\":null,\"hover\":false},\"senses\":{\"darkvision\":0,\"blindsight\":0,\"tremorsense\":0,\"truesight\":0},\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]},{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"size\":\"Small\",\"public_label\":\"Small armored figure\",\"height\":8,\"reach\":10,\"movement\":{\"walk\":60,\"climb\":null,\"swim\":null,\"fly\":null,\"burrow\":null,\"hover\":false},\"senses\":{\"darkvision\":120,\"blindsight\":0,\"tremorsense\":0,\"truesight\":0},\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"knowledge\":[],\"origin\":{\"id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":10},\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"},\"flow\":{\"version\":5,\"origin\":{\"id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":11},\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"initiative_groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"initiative_decisions\":[],\"phase\":\"Active\",\"budget\":{\"movement_spent\":0,\"dash_grants\":[],\"attacks_remaining\":0,\"object_interaction_spent\":false,\"attack_window\":null,\"weapon_history\":[],\"disengaged\":null,\"other_slot_casters\":[]},\"attack_equipment_access\":{\"version\":\"GroundEquipmentV1\",\"origin\":{\"id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":16}}}},\"table\":{\"contract\":{\"tone\":\"Grounded fantasy adventure\",\"humor\":\"Welcome when it fits the table\",\"tactical_preference\":\"Balanced\",\"exploration_preference\":\"Balanced\",\"social_preference\":\"Balanced\",\"lethality\":\"Consequences follow the selected rules\",\"ruleset\":{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"},\"permitted_content\":[{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"}],\"advancement\":\"Milestones agreed by the table\",\"optional_rules\":[],\"house_rules\":{\"ability_test_natural_extremes\":false},\"house_rule_notes\":\"No additional mechanical house rules\",\"pvp_policy\":\"Requires the affected player's explicit consent\",\"theft_and_secrets\":\"Requires the affected player's explicit consent\",\"retcon_policy\":\"Correct uncommitted intent; preserve accepted history\",\"content_boundaries\":\"Discuss and record the table's boundaries before play\",\"explanation_depth\":\"Brief, with more detail on request\",\"experience\":\"Mixed experience\",\"absent_player_policy\":\"Absent characters take no voluntary actions\"},\"character_profiles\":{\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\":{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"class_id\":\"fighter\",\"species_id\":\"human\",\"background_id\":\"soldier\",\"level\":1,\"experience_points\":0,\"size\":\"Medium\",\"speed_feet\":30,\"base_ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"languages\":[\"common\",\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"features\":[{\"id\":\"fighting-style\",\"source_page\":47,\"execution_gate\":3,\"scope\":\"Defense/Archery bonuses\"},{\"id\":\"second-wind\",\"source_page\":48,\"execution_gate\":3,\"scope\":\"Raw healing die and partial/full rest recovery\"},{\"id\":\"weapon-mastery\",\"source_page\":48,\"execution_gate\":4,\"scope\":\"Three grants; mastery execution remains Gate 4\"},{\"id\":\"resourceful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Long-rest Inspiration and optional controller-selected transfer\"},{\"id\":\"skillful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"One selected skill proficiency\"},{\"id\":\"versatile\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Skilled is the supported extra Origin feat\"},{\"id\":\"skilled\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Three selected skill proficiencies; tool choices remain a later extension\"},{\"id\":\"savage-attacker\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Once-per-turn weapon damage dice choice\"}],\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"],\"tool_proficiencies\":[\"gaming-dice\"],\"armor_training\":[\"light\",\"medium\",\"heavy\",\"shield\"],\"weapon_proficiencies\":[\"simple\",\"martial\"],\"equipment\":[{\"item_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"unit_cost_cp\":10,\"source_page\":91},{\"item_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"unit_cost_cp\":200,\"source_page\":91},{\"item_id\":\"glaive\",\"display_name\":\"Glaive\",\"quantity\":1,\"unit_cost_cp\":2000,\"source_page\":91},{\"item_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"unit_cost_cp\":1000,\"source_page\":92},{\"item_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"unit_cost_cp\":2500,\"source_page\":91}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"money_cp\":14790,\"creation_source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"}},\"072f2c22-01d4-433d-973c-b9a6dfd166c2\":{\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"class_id\":\"fighter\",\"species_id\":\"human\",\"background_id\":\"soldier\",\"level\":1,\"experience_points\":0,\"size\":\"Medium\",\"speed_feet\":30,\"base_ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"languages\":[\"common\",\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"features\":[{\"id\":\"fighting-style\",\"source_page\":47,\"execution_gate\":3,\"scope\":\"Defense/Archery bonuses\"},{\"id\":\"second-wind\",\"source_page\":48,\"execution_gate\":3,\"scope\":\"Raw healing die and partial/full rest recovery\"},{\"id\":\"weapon-mastery\",\"source_page\":48,\"execution_gate\":4,\"scope\":\"Three grants; mastery execution remains Gate 4\"},{\"id\":\"resourceful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Long-rest Inspiration and optional controller-selected transfer\"},{\"id\":\"skillful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"One selected skill proficiency\"},{\"id\":\"versatile\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Skilled is the supported extra Origin feat\"},{\"id\":\"skilled\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Three selected skill proficiencies; tool choices remain a later extension\"},{\"id\":\"savage-attacker\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Once-per-turn weapon damage dice choice\"}],\"masteries\":[\"club\",\"dagger\",\"shortbow\"],\"tool_proficiencies\":[\"gaming-dice\"],\"armor_training\":[\"light\",\"medium\",\"heavy\",\"shield\"],\"weapon_proficiencies\":[\"simple\",\"martial\"],\"equipment\":[{\"item_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"unit_cost_cp\":10,\"source_page\":91},{\"item_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"unit_cost_cp\":200,\"source_page\":91},{\"item_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"unit_cost_cp\":1000,\"source_page\":92},{\"item_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"unit_cost_cp\":2500,\"source_page\":91}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"money_cp\":16790,\"creation_source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"}}},\"active_session\":{\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"display_name\":\"Grapple session\",\"started_at_world\":0,\"participants\":[{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"attendance\":\"Present\"},{\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"attendance\":\"Present\"}]},\"pending\":null,\"roll_context\":null,\"situation\":{\"title\":\"\",\"description\":\"\",\"challenges\":[]},\"source_actor_access\":{\"version\":\"SourceActorsV1\",\"origin\":{\"id\":\"7bb7cdc0-d417-4720-a842-8c8358da3aca\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":5},\"adopted\":[]},\"grapple_access\":{\"ground_transport\":{\"version\":\"GroundDragV1\",\"origin\":{\"id\":\"38eedd42-f406-47ed-af18-6741acc473be\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":15}},\"version\":\"OrdinaryGrappleV1\",\"origin\":{\"id\":\"d01c3843-65d9-4533-be7b-e60fac21226f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":14}}},\"rules\":{\"tactical_recovery\":{},\"pack_id\":\"srd-5.2\",\"pack_version\":\"5.2.1\",\"entities\":{\"0d56dd3c-db57-4682-9308-8098c087ade3\":{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"level\":0,\"ability_scores\":[8,15,10,10,8,8],\"armor\":{\"Fixed\":15},\"max_hp\":10,\"hp\":10,\"temporary_hp\":0,\"hit_dice\":{\"sides\":6,\"maximum\":3,\"remaining\":3},\"death\":{\"successes\":0,\"failures\":0,\"stable\":false,\"dead\":false},\"uses_death_saves\":false,\"exhaustion\":0,\"heroic_inspiration\":false,\"prone\":false,\"saving_proficiencies\":[],\"skill_proficiencies\":{},\"attacks\":[],\"attack_proficiencies\":[],\"prepared_spells\":[],\"spellcasting\":null,\"resources\":{},\"resistances\":[],\"vulnerabilities\":[],\"damage_immunities\":[],\"condition_immunities\":[],\"concentration\":null,\"last_long_rest_finished\":null},\"909fb7f5-2de3-46da-8503-d5131f006d92\":{\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"character_features\":{\"fighter_level\":1,\"fighting_style\":\"Defense\",\"wearing_armor\":true,\"human_resourceful\":true,\"savage_attacker\":true,\"second_wind_remaining\":2,\"inspiration_transfer_pending\":false,\"savage_attacker_turn\":null},\"level\":1,\"ability_scores\":[17,14,14,8,10,12],\"armor\":{\"Armor\":{\"base\":11,\"dexterity_cap\":null,\"shield\":false}},\"max_hp\":12,\"hp\":12,\"temporary_hp\":0,\"hit_dice\":{\"sides\":10,\"maximum\":1,\"remaining\":1},\"death\":{\"successes\":0,\"failures\":0,\"stable\":false,\"dead\":false},\"uses_death_saves\":true,\"exhaustion\":0,\"heroic_inspiration\":false,\"prone\":false,\"saving_proficiencies\":[\"Strength\",\"Constitution\"],\"skill_proficiencies\":{\"Acrobatics\":\"Proficient\",\"Athletics\":\"Proficient\",\"Insight\":\"Proficient\",\"Intimidation\":\"Proficient\",\"Investigation\":\"Proficient\",\"Perception\":\"Proficient\",\"Stealth\":\"Proficient\",\"Survival\":\"Proficient\"},\"attacks\":[\"club\",\"dagger\",\"shortbow\"],\"attack_proficiencies\":[\"club\",\"dagger\",\"shortbow\"],\"prepared_spells\":[],\"spellcasting\":null,\"resources\":{},\"resistances\":[],\"vulnerabilities\":[],\"damage_immunities\":[],\"condition_immunities\":[],\"concentration\":null,\"last_long_rest_finished\":null},\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\":{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"character_features\":{\"fighter_level\":1,\"fighting_style\":\"Defense\",\"wearing_armor\":true,\"human_resourceful\":true,\"savage_attacker\":true,\"second_wind_remaining\":2,\"inspiration_transfer_pending\":false,\"savage_attacker_turn\":null},\"level\":1,\"ability_scores\":[17,14,14,8,10,12],\"armor\":{\"Armor\":{\"base\":11,\"dexterity_cap\":null,\"shield\":false}},\"max_hp\":12,\"hp\":12,\"temporary_hp\":0,\"hit_dice\":{\"sides\":10,\"maximum\":1,\"remaining\":1},\"death\":{\"successes\":0,\"failures\":0,\"stable\":false,\"dead\":false},\"uses_death_saves\":true,\"exhaustion\":0,\"heroic_inspiration\":true,\"prone\":false,\"saving_proficiencies\":[\"Strength\",\"Constitution\"],\"skill_proficiencies\":{\"Acrobatics\":\"Proficient\",\"Athletics\":\"Proficient\",\"Insight\":\"Proficient\",\"Intimidation\":\"Proficient\",\"Investigation\":\"Proficient\",\"Perception\":\"Proficient\",\"Stealth\":\"Proficient\",\"Survival\":\"Proficient\"},\"attacks\":[\"club\",\"dagger\",\"shortbow\"],\"attack_proficiencies\":[\"club\",\"dagger\",\"shortbow\"],\"prepared_spells\":[],\"spellcasting\":null,\"resources\":{},\"resistances\":[],\"vulnerabilities\":[],\"damage_immunities\":[],\"condition_immunities\":[],\"concentration\":null,\"last_long_rest_finished\":null}},\"house_rules\":{\"ability_test_natural_extremes\":false},\"effects\":[],\"tactical_effects\":{\"groups\":[],\"effects\":[],\"turn\":{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"number\":1,\"boundary\":\"Start\"},\"trigger_uses\":[],\"last_operation\":{\"command\":{\"id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":13},\"step\":1},\"pending\":[]},\"tactical_inventory\":{\"schema_version\":1,\"receipts\":[{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"command\":{\"id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":7},\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\"},\"creation_profile\":{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"class_id\":\"fighter\",\"species_id\":\"human\",\"background_id\":\"soldier\",\"level\":1,\"experience_points\":0,\"size\":\"Medium\",\"speed_feet\":30,\"base_ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"languages\":[\"common\",\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"features\":[{\"id\":\"fighting-style\",\"source_page\":47,\"execution_gate\":3,\"scope\":\"Defense/Archery bonuses\"},{\"id\":\"second-wind\",\"source_page\":48,\"execution_gate\":3,\"scope\":\"Raw healing die and partial/full rest recovery\"},{\"id\":\"weapon-mastery\",\"source_page\":48,\"execution_gate\":4,\"scope\":\"Three grants; mastery execution remains Gate 4\"},{\"id\":\"resourceful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Long-rest Inspiration and optional controller-selected transfer\"},{\"id\":\"skillful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"One selected skill proficiency\"},{\"id\":\"versatile\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Skilled is the supported extra Origin feat\"},{\"id\":\"skilled\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Three selected skill proficiencies; tool choices remain a later extension\"},{\"id\":\"savage-attacker\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Once-per-turn weapon damage dice choice\"}],\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"],\"tool_proficiencies\":[\"gaming-dice\"],\"armor_training\":[\"light\",\"medium\",\"heavy\",\"shield\"],\"weapon_proficiencies\":[\"simple\",\"martial\"],\"equipment\":[{\"item_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"unit_cost_cp\":10,\"source_page\":91},{\"item_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"unit_cost_cp\":200,\"source_page\":91},{\"item_id\":\"glaive\",\"display_name\":\"Glaive\",\"quantity\":1,\"unit_cost_cp\":2000,\"source_page\":91},{\"item_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"unit_cost_cp\":1000,\"source_page\":92},{\"item_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"unit_cost_cp\":2500,\"source_page\":91}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"money_cp\":14790,\"creation_source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"}},\"allocations\":[{\"definition_id\":\"club\",\"initial_quantity\":1,\"item_ids\":[\"1a2f702f-95dc-4801-8a28-d15015252019\"]},{\"definition_id\":\"dagger\",\"initial_quantity\":1,\"item_ids\":[\"13d84406-1443-4021-ba7e-3243ee36185e\"]},{\"definition_id\":\"glaive\",\"initial_quantity\":1,\"item_ids\":[\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\"]},{\"definition_id\":\"leather-armor\",\"initial_quantity\":1,\"item_ids\":[\"13800771-9c44-4da0-a49a-84f39651d3fc\"]},{\"definition_id\":\"shortbow\",\"initial_quantity\":1,\"item_ids\":[\"b4e8afcd-4722-4651-b33a-a301a0363495\"]}]},{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"actor\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"command\":{\"id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":8},\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\"},\"creation_profile\":{\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"class_id\":\"fighter\",\"species_id\":\"human\",\"background_id\":\"soldier\",\"level\":1,\"experience_points\":0,\"size\":\"Medium\",\"speed_feet\":30,\"base_ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"languages\":[\"common\",\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"features\":[{\"id\":\"fighting-style\",\"source_page\":47,\"execution_gate\":3,\"scope\":\"Defense/Archery bonuses\"},{\"id\":\"second-wind\",\"source_page\":48,\"execution_gate\":3,\"scope\":\"Raw healing die and partial/full rest recovery\"},{\"id\":\"weapon-mastery\",\"source_page\":48,\"execution_gate\":4,\"scope\":\"Three grants; mastery execution remains Gate 4\"},{\"id\":\"resourceful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Long-rest Inspiration and optional controller-selected transfer\"},{\"id\":\"skillful\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"One selected skill proficiency\"},{\"id\":\"versatile\",\"source_page\":86,\"execution_gate\":3,\"scope\":\"Skilled is the supported extra Origin feat\"},{\"id\":\"skilled\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Three selected skill proficiencies; tool choices remain a later extension\"},{\"id\":\"savage-attacker\",\"source_page\":87,\"execution_gate\":3,\"scope\":\"Once-per-turn weapon damage dice choice\"}],\"masteries\":[\"club\",\"dagger\",\"shortbow\"],\"tool_proficiencies\":[\"gaming-dice\"],\"armor_training\":[\"light\",\"medium\",\"heavy\",\"shield\"],\"weapon_proficiencies\":[\"simple\",\"martial\"],\"equipment\":[{\"item_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"unit_cost_cp\":10,\"source_page\":91},{\"item_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"unit_cost_cp\":200,\"source_page\":91},{\"item_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"unit_cost_cp\":1000,\"source_page\":92},{\"item_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"unit_cost_cp\":2500,\"source_page\":91}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"money_cp\":16790,\"creation_source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"}},\"allocations\":[{\"definition_id\":\"club\",\"initial_quantity\":1,\"item_ids\":[\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\"]},{\"definition_id\":\"dagger\",\"initial_quantity\":1,\"item_ids\":[\"8afc920c-02a5-4759-9716-9e9c0614dd36\"]},{\"definition_id\":\"leather-armor\",\"initial_quantity\":1,\"item_ids\":[\"babb7b86-ef40-4d55-90c3-184d9371eed0\"]},{\"definition_id\":\"shortbow\",\"initial_quantity\":1,\"item_ids\":[\"b29661c5-96dd-4641-87ef-236c345e457d\"]}]}],\"loadouts\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"hands\":{\"hands\":[{\"Item\":\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\"},\"Free\"]},\"worn_armor\":\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"shield\":\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"command\":{\"id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":4}},{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"hands\":{\"hands\":[\"Free\",\"Free\"]},\"worn_armor\":\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"shield\":null,\"command\":{\"id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":7}},{\"actor\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"hands\":{\"hands\":[\"Free\",\"Free\"]},\"worn_armor\":\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"shield\":null,\"command\":{\"id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":8}}]},\"tactical_creatures\":{\"schema_version\":1,\"profiles\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"origin\":{\"id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":4},\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"definition_id\":\"goblin-warrior\",\"definition_fingerprint\":\"a3c8ca4ae26b5c28\"},\"size\":\"Small\",\"additional_languages\":[],\"hit_points\":\"Average\"}],\"runtime\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"controller\":\"Host\",\"control_origin\":{\"id\":\"e1942024-c336-4746-ba08-5e1211db004a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":6},\"in_lair\":false,\"lair_origin\":{\"id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":4},\"recharge\":[],\"limited_uses\":[],\"used_this_own_turn\":[],\"legendary_spent\":0,\"legendary_resistance_spent\":0,\"legendary_resistance_rolls\":[],\"observed_turn\":{\"encounter_id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"number\":1,\"boundary\":\"Start\"},\"legendary_window_spent\":false,\"routine\":null,\"last_rest\":null,\"last_operation\":{\"id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":13}}]},\"pending\":null,\"rolls\":[{\"issued_by\":{\"id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":11},\"accepted_by\":{\"id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":{\"Player\":\"66053ffd-7301-4553-97d1-80026df820e3\"},\"actor\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"expected_event_sequence\":12},\"original_result\":null,\"request\":{\"id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"roller\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"dice\":[{\"count\":1,\"sides\":20}],\"modifier\":2,\"mode\":\"Normal\",\"visibility\":\"Public\",\"reason\":\"Initiative\"},\"result\":{\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]},\"resolved\":{\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"source\":\"Physical\",\"raw_dice\":[{\"sides\":20,\"value\":18}],\"kept_dice\":[{\"sides\":20,\"value\":18}],\"modifier\":2,\"total\":20},\"purpose\":{\"TacticalInitiative\":{\"encounter\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"group_index\":0}}},{\"issued_by\":{\"id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":{\"Player\":\"66053ffd-7301-4553-97d1-80026df820e3\"},\"actor\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"expected_event_sequence\":12},\"accepted_by\":{\"id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":13},\"original_result\":null,\"request\":{\"id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"roller\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"dice\":[{\"count\":1,\"sides\":20}],\"modifier\":2,\"mode\":\"Normal\",\"visibility\":\"Secret\",\"reason\":\"Initiative\"},\"result\":{\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]},\"resolved\":{\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"source\":\"Physical\",\"raw_dice\":[{\"sides\":20,\"value\":2}],\"kept_dice\":[{\"sides\":20,\"value\":2}],\"modifier\":2,\"total\":4},\"purpose\":{\"TacticalInitiative\":{\"encounter\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"group_index\":1}}}],\"cancelled_roll_ids\":[],\"rulings\":[{\"command\":{\"id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":17},\"ruling\":{\"basis\":{\"Srd\":{\"page\":8}},\"reason\":\"For protecting the retreating group.\"}}],\"timing\":{\"order\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"total\":20,\"tie_break\":0},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"total\":4,\"tie_break\":0}],\"index\":0,\"round\":1,\"turn_number\":1,\"action_spent\":false,\"bonus_action_spent\":false,\"slot_spent_this_turn\":false,\"reactions_spent\":[]},\"rests\":[],\"completed_short_rests\":[],\"permission\":null},\"schema_version\":4,\"campaign\":{\"id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Grapple journal\",\"status\":\"Active\",\"world_seed\":7439726653326741325,\"ruleset\":{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"},\"content_packs\":[]},\"clock\":{\"now\":0,\"calendar_id\":\"seconds\"},\"players\":{\"66053ffd-7301-4553-97d1-80026df820e3\":{\"id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Player 0\"},\"cc9af969-7d9a-44df-953f-53dd463d3c74\":{\"id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Player 1\"}},\"characters\":{\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\":{\"id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"controlling_player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"display_name\":\"Character 0\",\"status\":\"Active\"},\"072f2c22-01d4-433d-973c-b9a6dfd166c2\":{\"id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"controlling_player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"display_name\":\"Character 1\",\"status\":\"Active\"}},\"entities\":{\"909fb7f5-2de3-46da-8503-d5131f006d92\":{\"id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Character 1\",\"kind\":\"Character\",\"existence\":\"Present\",\"location_id\":null},\"0d56dd3c-db57-4682-9308-8098c087ade3\":{\"id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Private sentry\",\"kind\":\"Creature\",\"existence\":\"Present\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\"},\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\":{\"id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Character 0\",\"kind\":\"Character\",\"existence\":\"Present\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\"}},\"factions\":{},\"locations\":{\"f822e779-7787-4204-a6cf-319c0f8a697d\":{\"id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Courtyard\",\"parent_location_id\":null}},\"scenes\":{\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\":{\"id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"mode\":\"Combat\",\"status\":\"Active\",\"started_at\":0,\"presences\":[{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"role\":\"Participant\"},{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"role\":\"Participant\"}]}},\"items\":{\"b29661c5-96dd-4641-87ef-236c345e457d\":{\"id\":\"b29661c5-96dd-4641-87ef-236c345e457d\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"owner\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"custody\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"state\":\"Intact\"},\"2cd85807-3b7b-499c-8f1d-8f56b196859d\":{\"id\":\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"owner\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"custody\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"state\":\"Intact\"},\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\":{\"id\":\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"glaive\",\"display_name\":\"Glaive\",\"quantity\":1,\"owner\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"custody\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"state\":\"Intact\"},\"e141315f-9f44-4150-953b-7b5b8a286888\":{\"id\":\"e141315f-9f44-4150-953b-7b5b8a286888\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"arrows\",\"display_name\":\"Arrows\",\"quantity\":20,\"owner\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"custody\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"state\":\"Intact\"},\"13800771-9c44-4da0-a49a-84f39651d3fc\":{\"id\":\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"owner\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"custody\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"state\":\"Intact\"},\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\":{\"id\":\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"owner\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"custody\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"state\":\"Intact\"},\"13d84406-1443-4021-ba7e-3243ee36185e\":{\"id\":\"13d84406-1443-4021-ba7e-3243ee36185e\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"owner\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"custody\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"state\":\"Intact\"},\"33814009-afad-4243-8e97-2373ddc35868\":{\"id\":\"33814009-afad-4243-8e97-2373ddc35868\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"owner\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"custody\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"state\":\"Intact\"},\"b4e8afcd-4722-4651-b33a-a301a0363495\":{\"id\":\"b4e8afcd-4722-4651-b33a-a301a0363495\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"shortbow\",\"display_name\":\"Shortbow\",\"quantity\":1,\"owner\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"custody\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"state\":\"Intact\"},\"8afc920c-02a5-4759-9716-9e9c0614dd36\":{\"id\":\"8afc920c-02a5-4759-9716-9e9c0614dd36\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"dagger\",\"display_name\":\"Dagger\",\"quantity\":1,\"owner\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"custody\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"state\":\"Intact\"},\"babb7b86-ef40-4d55-90c3-184d9371eed0\":{\"id\":\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"leather-armor\",\"display_name\":\"Leather Armor\",\"quantity\":1,\"owner\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"custody\":{\"Entity\":\"909fb7f5-2de3-46da-8503-d5131f006d92\"},\"state\":\"Intact\"},\"a6395031-91cc-4ed7-9205-02efa7026d74\":{\"id\":\"a6395031-91cc-4ed7-9205-02efa7026d74\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"scimitar\",\"display_name\":\"Scimitar\",\"quantity\":1,\"owner\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"custody\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"state\":\"Intact\"},\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\":{\"id\":\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"shield\",\"display_name\":\"Shield\",\"quantity\":1,\"owner\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"custody\":{\"Entity\":\"0d56dd3c-db57-4682-9308-8098c087ade3\"},\"state\":\"Intact\"},\"1a2f702f-95dc-4801-8a28-d15015252019\":{\"id\":\"1a2f702f-95dc-4801-8a28-d15015252019\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"definition_id\":\"club\",\"display_name\":\"Club\",\"quantity\":1,\"owner\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"custody\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"state\":\"Intact\"}},\"facts\":{},\"claims\":{},\"beliefs\":{},\"knowledge\":[],\"directives\":{},\"applied_event_sequence\":18}"
+  },
+  "play_sessions": [
+    {
+      "id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "display_name": "Grapple session",
+      "status": "active",
+      "started_at_world": 0,
+      "ended_at_world": null
+    }
+  ],
+  "play_session_participants": [
+    {
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "ordinal": 0,
+      "player_id": "66053ffd-7301-4553-97d1-80026df820e3",
+      "character_id": "f7e0011c-daee-4269-a0b4-ed05d1e6979b",
+      "attendance": "present"
+    },
+    {
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "ordinal": 1,
+      "player_id": "cc9af969-7d9a-44df-953f-53dd463d3c74",
+      "character_id": "072f2c22-01d4-433d-973c-b9a6dfd166c2",
+      "attendance": "present"
+    }
+  ],
+  "command_audit": [
+    {
+      "id": "da137cc9-fcf3-43a5-bbe8-d866251c570a",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 0,
+      "command_kind": "table.action",
+      "command_schema_version": 2,
+      "payload_json": "{\"request\":{\"version\":1,\"command_id\":\"da137cc9-fcf3-43a5-bbe8-d866251c570a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"1ada231e-6153-4d97-a19b-d533df9cdac6\",\"input\":{\"Action\":{\"AddPlayer\":{\"id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"name\":\"Player 0\"}}}},\"action\":{\"AddPlayer\":{\"id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"name\":\"Player 0\"}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Player 0 joined the campaign.\",\"mechanics\":null}",
+      "resulting_event_sequence": 1
+    },
+    {
+      "id": "77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 1,
+      "command_kind": "table.action",
+      "command_schema_version": 2,
+      "payload_json": "{\"request\":{\"version\":1,\"command_id\":\"77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"512d0152-f491-485f-9547-652a19ce1aec\",\"input\":{\"Action\":{\"CreateCharacterFromSource\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1},{\"item_id\":\"glaive\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"]}}}}},\"action\":{\"CreateCharacterFromSource\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1},{\"item_id\":\"glaive\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"]}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Character 0 was created as a level 1 Human Fighter with the Soldier background.\",\"mechanics\":\"Changed\"}",
+      "resulting_event_sequence": 2
+    },
+    {
+      "id": "f473f453-d040-402b-bf39-296b9227b089",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 2,
+      "command_kind": "table.action",
+      "command_schema_version": 2,
+      "payload_json": "{\"request\":{\"version\":1,\"command_id\":\"f473f453-d040-402b-bf39-296b9227b089\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"df7927cd-7e91-4d8b-b353-afd71e0e2ee5\",\"input\":{\"Action\":{\"AddPlayer\":{\"id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"name\":\"Player 1\"}}}},\"action\":{\"AddPlayer\":{\"id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"name\":\"Player 1\"}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Player 1 joined the campaign.\",\"mechanics\":null}",
+      "resulting_event_sequence": 3
+    },
+    {
+      "id": "c667f988-24f4-4117-ba54-4b177ee9f0ac",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 3,
+      "command_kind": "table.action",
+      "command_schema_version": 2,
+      "payload_json": "{\"request\":{\"version\":1,\"command_id\":\"c667f988-24f4-4117-ba54-4b177ee9f0ac\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"9e8e6bc5-1912-4d7d-8a2c-1573a60828b6\",\"input\":{\"Action\":{\"CreateCharacterFromSource\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"club\",\"dagger\",\"shortbow\"]}}}}},\"action\":{\"CreateCharacterFromSource\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"club\",\"dagger\",\"shortbow\"]}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Character 1 was created as a level 1 Human Fighter with the Soldier background.\",\"mechanics\":\"Changed\"}",
+      "resulting_event_sequence": 4
+    },
+    {
+      "id": "b168420a-7611-4e5d-9834-81b4439a8128",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 4,
+      "command_kind": "table.action",
+      "command_schema_version": 2,
+      "payload_json": "{\"request\":{\"version\":1,\"command_id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"ec5ac117-b673-459b-96ef-867b360a4b8d\",\"input\":{\"Action\":{\"CreateCreature\":{\"creation\":{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"name\":\"Private sentry\",\"definition_id\":\"goblin-warrior\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"definition_id\":\"goblin-warrior\",\"definition_fingerprint\":\"a3c8ca4ae26b5c28\"},\"size\":\"Small\",\"additional_languages\":[],\"ammunition_units\":20,\"item_ids\":[\"e141315f-9f44-4150-953b-7b5b8a286888\",\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"a6395031-91cc-4ed7-9205-02efa7026d74\",\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"33814009-afad-4243-8e97-2373ddc35868\"]}}}}},\"action\":{\"CreateCreature\":{\"creation\":{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"name\":\"Private sentry\",\"definition_id\":\"goblin-warrior\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"definition_id\":\"goblin-warrior\",\"definition_fingerprint\":\"a3c8ca4ae26b5c28\"},\"size\":\"Small\",\"additional_languages\":[],\"ammunition_units\":20,\"item_ids\":[\"e141315f-9f44-4150-953b-7b5b8a286888\",\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"a6395031-91cc-4ed7-9205-02efa7026d74\",\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"33814009-afad-4243-8e97-2373ddc35868\"]}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Host preparation recorded.\",\"mechanics\":null}",
+      "resulting_event_sequence": 5
+    },
+    {
+      "id": "7bb7cdc0-d417-4720-a842-8c8358da3aca",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 5,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"7bb7cdc0-d417-4720-a842-8c8358da3aca\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"46b1030d-1946-40b7-b47e-874beecc0e8e\",\"input\":{\"Action\":{\"EnableSourceActorAccess\":{\"adopted\":[]}}}},\"action\":{\"EnableSourceActorAccess\":{\"adopted\":[]}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Source creature control is enabled for this table.\",\"mechanics\":null}",
+      "resulting_event_sequence": 6
+    },
+    {
+      "id": "e1942024-c336-4746-ba08-5e1211db004a",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 6,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"e1942024-c336-4746-ba08-5e1211db004a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"5447c140-5c00-4708-a4cf-82e681fabb39\",\"input\":{\"Action\":{\"SetSourceCreatureController\":{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"controller\":\"Host\"}}}},\"action\":{\"SetSourceCreatureController\":{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"controller\":\"Host\"}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Source control updated.\",\"mechanics\":null}",
+      "resulting_event_sequence": 7
+    },
+    {
+      "id": "66f43b46-ed57-491b-b807-3208bfaa29cb",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 7,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"86cd9277-3fb7-4c55-b64a-081a2447475e\",\"input\":{\"Action\":{\"PrepareEquipment\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"item_ids\":[\"1a2f702f-95dc-4801-8a28-d15015252019\",\"13d84406-1443-4021-ba7e-3243ee36185e\",\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\",\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"b4e8afcd-4722-4651-b33a-a301a0363495\"]}}}},\"action\":{\"PrepareEquipment\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"item_ids\":[\"1a2f702f-95dc-4801-8a28-d15015252019\",\"13d84406-1443-4021-ba7e-3243ee36185e\",\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\",\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"b4e8afcd-4722-4651-b33a-a301a0363495\"]}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Starting equipment is ready for play.\",\"mechanics\":null}",
+      "resulting_event_sequence": 8
+    },
+    {
+      "id": "e837a407-6a24-44cc-b816-7bdd13e827b2",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": null,
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 8,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"33ef2021-defe-4581-93a6-e6f691f3b983\",\"input\":{\"Action\":{\"PrepareEquipment\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"item_ids\":[\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\",\"8afc920c-02a5-4759-9716-9e9c0614dd36\",\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"b29661c5-96dd-4641-87ef-236c345e457d\"]}}}},\"action\":{\"PrepareEquipment\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"item_ids\":[\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\",\"8afc920c-02a5-4759-9716-9e9c0614dd36\",\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"b29661c5-96dd-4641-87ef-236c345e457d\"]}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Starting equipment is ready for play.\",\"mechanics\":null}",
+      "resulting_event_sequence": 9
+    },
+    {
+      "id": "cd3e5310-1287-4fad-a219-2f80b587d7dc",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 9,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"cd3e5310-1287-4fad-a219-2f80b587d7dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"9bc423ae-3e02-4bfb-bba0-a710d9b3f356\",\"input\":{\"Action\":{\"StartSession\":{\"id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"name\":\"Grapple session\",\"participants\":[{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"attendance\":\"Present\"},{\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"attendance\":\"Present\"}]}}}},\"action\":{\"StartSession\":{\"id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"name\":\"Grapple session\",\"participants\":[{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"attendance\":\"Present\"},{\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"attendance\":\"Present\"}]}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Session started: Grapple session.\",\"mechanics\":null}",
+      "resulting_event_sequence": 10
+    },
+    {
+      "id": "441e61df-4a35-4e57-8712-a4bec447734a",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 10,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"1475a823-39c5-4ada-bc4f-8452c88685c2\",\"input\":{\"Action\":{\"PrepareBattlefield\":{\"setup\":{\"encounter_id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"name\":\"Courtyard\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"characters\":[{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"height\":12,\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]}],\"creatures\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"public_label\":\"Small armored figure\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"height\":8,\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"}}}}}},\"action\":{\"PrepareBattlefield\":{\"setup\":{\"encounter_id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"name\":\"Courtyard\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"characters\":[{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"height\":12,\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]}],\"creatures\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"public_label\":\"Small armored figure\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"height\":8,\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"}}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"The encounter map is ready.\",\"mechanics\":null}",
+      "resulting_event_sequence": 11
+    },
+    {
+      "id": "9961d04e-cf6d-4148-8913-f7ad37a9da40",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 11,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"46e08001-b858-4aa0-84e0-d92fc832dc48\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"Begin\":{\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"execution\":\"EncounterReleaseV1\"}}}}}},\"action\":{\"Tactical\":{\"action\":{\"Begin\":{\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"execution\":\"EncounterReleaseV1\"}}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Encounter action recorded.\",\"mechanics\":null}",
+      "resulting_event_sequence": 12
+    },
+    {
+      "id": "07ae635f-2963-4b59-868e-b3eb2ee56c5f",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "player",
+      "issuer_player_id": "66053ffd-7301-4553-97d1-80026df820e3",
+      "actor_kind": "entity",
+      "actor_id": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+      "expected_event_sequence": 12,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":{\"Player\":{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\"}},\"revision\":\"1fde71ba-6fc6-4342-ad8e-cc7720242067\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"ab7eaee7-dfdf-4eb1-91af-a84a3dc46ee4\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]}}}}}}},\"action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]}}}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Encounter action recorded.\",\"mechanics\":null}",
+      "resulting_event_sequence": 13
+    },
+    {
+      "id": "ffa180e1-a2b9-47dc-b90e-113dde73f5dc",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 13,
+      "command_kind": "table.action",
+      "command_schema_version": 3,
+      "payload_json": "{\"request\":{\"version\":2,\"command_id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"8ee7e864-22ef-4760-9724-654f6828e8e3\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"93bed96f-69fe-48bc-9548-5b15008b5a4d\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]}}}}}}},\"action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]}}}}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Encounter action recorded.\",\"mechanics\":null}",
+      "resulting_event_sequence": 14
+    },
+    {
+      "id": "d01c3843-65d9-4533-be7b-e60fac21226f",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 14,
+      "command_kind": "table.action",
+      "command_schema_version": 4,
+      "payload_json": "{\"request\":{\"version\":3,\"command_id\":\"d01c3843-65d9-4533-be7b-e60fac21226f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"1795edf7-31c2-4fb6-b9b0-b6a1ef70996c\",\"input\":{\"Action\":\"EnableGrappleAccess\"}},\"action\":\"EnableGrappleAccess\"}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Grapple is enabled for this table.\",\"mechanics\":null}",
+      "resulting_event_sequence": 15
+    },
+    {
+      "id": "38eedd42-f406-47ed-af18-6741acc473be",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 15,
+      "command_kind": "table.action",
+      "command_schema_version": 5,
+      "payload_json": "{\"request\":{\"version\":4,\"command_id\":\"38eedd42-f406-47ed-af18-6741acc473be\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"5835b4d6-867a-4ed6-ba4b-094d1fcb4185\",\"input\":{\"Action\":\"EnableGrappleTransport\"}},\"action\":\"EnableGrappleTransport\"}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Dragging and Inspiration controls are enabled for this table.\",\"mechanics\":null}",
+      "resulting_event_sequence": 16
+    },
+    {
+      "id": "2113a3ee-2609-4805-9f49-19fcbaa4e2fd",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 16,
+      "command_kind": "table.action",
+      "command_schema_version": 5,
+      "payload_json": "{\"request\":{\"version\":4,\"command_id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"b9209e3a-081e-4541-8485-b0a304c8ee8d\",\"input\":{\"Action\":{\"Tactical\":{\"action\":\"ActivateAttackEquipment\"}}}},\"action\":{\"Tactical\":{\"action\":\"ActivateAttackEquipment\"}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Attack equipment choices enabled for this encounter.\",\"mechanics\":null}",
+      "resulting_event_sequence": 17
+    },
+    {
+      "id": "b891d696-9ff7-419a-a637-57760a0e547f",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "issuer_kind": "admin",
+      "issuer_player_id": null,
+      "actor_kind": null,
+      "actor_id": null,
+      "expected_event_sequence": 17,
+      "command_kind": "table.action",
+      "command_schema_version": 5,
+      "payload_json": "{\"request\":{\"version\":4,\"command_id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"36c10a3e-376c-44be-9f92-c8b9dff8c093\",\"input\":{\"Action\":{\"AwardHeroicInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For protecting the retreating group.\"}}}},\"action\":{\"AwardHeroicInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For protecting the retreating group.\"}}}",
+      "accepted": 1,
+      "resolution_explanation": "{\"message\":\"Heroic Inspiration awarded.\",\"mechanics\":null}",
+      "resulting_event_sequence": 18
+    }
+  ],
+  "event_journal": [
+    {
+      "id": "de122be0-bb3f-4c7d-9e79-26189da26905",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 1,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "da137cc9-fcf3-43a5-bbe8-d866251c570a",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"da137cc9-fcf3-43a5-bbe8-d866251c570a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":0},\"action\":{\"AddPlayer\":{\"id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"name\":\"Player 0\"}},\"outcome\":{\"message\":\"Player 0 joined the campaign.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "a02652be-323e-486a-bee4-df94a7b120cd",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 2,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":1},\"action\":{\"CreateCharacterFromSource\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1},{\"item_id\":\"glaive\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"]}}},\"outcome\":{\"message\":\"Character 0 was created as a level 1 Human Fighter with the Soldier background.\",\"mechanics\":\"Changed\"},\"rules_event\":{\"meta\":{\"id\":\"77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":1},\"action\":{\"CreateCharacterFromSource\":{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1},{\"item_id\":\"glaive\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"]}}},\"outcome\":\"Changed\"}}"
+    },
+    {
+      "id": "65669f21-bcbd-4c1d-a217-c6b96ce8db9c",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 3,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "f473f453-d040-402b-bf39-296b9227b089",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"f473f453-d040-402b-bf39-296b9227b089\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":2},\"action\":{\"AddPlayer\":{\"id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"name\":\"Player 1\"}},\"outcome\":{\"message\":\"Player 1 joined the campaign.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "dac060ef-c7a3-4c5e-b4b2-4a4248692ea0",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 4,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "c667f988-24f4-4117-ba54-4b177ee9f0ac",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"c667f988-24f4-4117-ba54-4b177ee9f0ac\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":3},\"action\":{\"CreateCharacterFromSource\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"club\",\"dagger\",\"shortbow\"]}}},\"outcome\":{\"message\":\"Character 1 was created as a level 1 Human Fighter with the Soldier background.\",\"mechanics\":\"Changed\"},\"rules_event\":{\"meta\":{\"id\":\"c667f988-24f4-4117-ba54-4b177ee9f0ac\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":3},\"action\":{\"CreateCharacterFromSource\":{\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"club\",\"dagger\",\"shortbow\"]}}},\"outcome\":\"Changed\"}}"
+    },
+    {
+      "id": "37db654d-cc60-45df-adeb-26e579470779",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 5,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "b168420a-7611-4e5d-9834-81b4439a8128",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":4},\"action\":{\"CreateCreature\":{\"creation\":{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"name\":\"Private sentry\",\"definition_id\":\"goblin-warrior\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"definition_id\":\"goblin-warrior\",\"definition_fingerprint\":\"a3c8ca4ae26b5c28\"},\"size\":\"Small\",\"additional_languages\":[],\"ammunition_units\":20,\"item_ids\":[\"e141315f-9f44-4150-953b-7b5b8a286888\",\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"a6395031-91cc-4ed7-9205-02efa7026d74\",\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"33814009-afad-4243-8e97-2373ddc35868\"]}}},\"outcome\":{\"message\":\"Host preparation recorded.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "f824c72f-70e4-44fe-84f5-f1404f4d8c0e",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 6,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "7bb7cdc0-d417-4720-a842-8c8358da3aca",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"7bb7cdc0-d417-4720-a842-8c8358da3aca\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":5},\"action\":{\"EnableSourceActorAccess\":{\"adopted\":[]}},\"outcome\":{\"message\":\"Source creature control is enabled for this table.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "4b5ca1f0-9aeb-4762-bee8-dac92e6fc4aa",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 7,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "e1942024-c336-4746-ba08-5e1211db004a",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"e1942024-c336-4746-ba08-5e1211db004a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":6},\"action\":{\"SetSourceCreatureController\":{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"controller\":\"Host\"}},\"outcome\":{\"message\":\"Source control updated.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "dafcac8c-3050-4b9f-af04-768a98990567",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 8,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "66f43b46-ed57-491b-b807-3208bfaa29cb",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":7},\"action\":{\"PrepareEquipment\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"item_ids\":[\"1a2f702f-95dc-4801-8a28-d15015252019\",\"13d84406-1443-4021-ba7e-3243ee36185e\",\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\",\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"b4e8afcd-4722-4651-b33a-a301a0363495\"]}},\"outcome\":{\"message\":\"Starting equipment is ready for play.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "9e96da7f-3ae4-4e17-a610-59fdc9a8b631",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 9,
+      "session_id": null,
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "e837a407-6a24-44cc-b816-7bdd13e827b2",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":8},\"action\":{\"PrepareEquipment\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"item_ids\":[\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\",\"8afc920c-02a5-4759-9716-9e9c0614dd36\",\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"b29661c5-96dd-4641-87ef-236c345e457d\"]}},\"outcome\":{\"message\":\"Starting equipment is ready for play.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "1f49788c-8716-4fdb-b121-6a85d7e484ff",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 10,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "cd3e5310-1287-4fad-a219-2f80b587d7dc",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"cd3e5310-1287-4fad-a219-2f80b587d7dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":9},\"action\":{\"StartSession\":{\"id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"name\":\"Grapple session\",\"participants\":[{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"attendance\":\"Present\"},{\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"attendance\":\"Present\"}]}},\"outcome\":{\"message\":\"Session started: Grapple session.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "00162ab6-cfb7-49ce-882b-3c579688d9f9",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 11,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "441e61df-4a35-4e57-8712-a4bec447734a",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":10},\"action\":{\"PrepareBattlefield\":{\"setup\":{\"encounter_id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"name\":\"Courtyard\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"characters\":[{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"height\":12,\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]}],\"creatures\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"public_label\":\"Small armored figure\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"height\":8,\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"}}}},\"outcome\":{\"message\":\"The encounter map is ready.\",\"mechanics\":null},\"rules_event\":null,\"tactical_event\":{\"meta\":{\"id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":10},\"action\":{\"Establish\":{\"encounter\":{\"id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"participants\":[{\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"size\":\"Medium\",\"public_label\":\"Character 0\",\"height\":12,\"reach\":10,\"movement\":{\"walk\":60,\"climb\":null,\"swim\":null,\"fly\":null,\"burrow\":null,\"hover\":false},\"senses\":{\"darkvision\":0,\"blindsight\":0,\"tremorsense\":0,\"truesight\":0},\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]},{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"size\":\"Small\",\"public_label\":\"Small armored figure\",\"height\":8,\"reach\":10,\"movement\":{\"walk\":60,\"climb\":null,\"swim\":null,\"fly\":null,\"burrow\":null,\"hover\":false},\"senses\":{\"darkvision\":120,\"blindsight\":0,\"tremorsense\":0,\"truesight\":0},\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"knowledge\":[],\"origin\":{\"id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":10},\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"}}}},\"outcome\":{\"next_roll\":null,\"awaiting_initiative_ties\":false,\"active_actor\":null,\"awaiting_turn_work\":false}}}"
+    },
+    {
+      "id": "0f0c4cad-9ea3-44a0-967b-b716581d3e2a",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 12,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "9961d04e-cf6d-4148-8913-f7ad37a9da40",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":11},\"action\":{\"Tactical\":{\"action\":{\"Begin\":{\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"execution\":\"EncounterReleaseV1\"}}}},\"outcome\":{\"message\":\"Encounter action recorded.\",\"mechanics\":null},\"rules_event\":null,\"tactical_event\":{\"meta\":{\"id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":11},\"action\":{\"Begin\":{\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"execution\":\"EncounterReleaseV1\"}},\"outcome\":{\"next_roll\":{\"id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"roller\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"dice\":[{\"count\":1,\"sides\":20}],\"modifier\":2,\"mode\":\"Normal\",\"visibility\":\"Public\",\"reason\":\"Initiative\"},\"awaiting_initiative_ties\":false,\"active_actor\":null,\"awaiting_turn_work\":false}}}"
+    },
+    {
+      "id": "28f133c9-7904-473c-9381-b7d204bf6d04",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 13,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": "entity",
+      "actor_id": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+      "command_id": "07ae635f-2963-4b59-868e-b3eb2ee56c5f",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":{\"Player\":\"66053ffd-7301-4553-97d1-80026df820e3\"},\"actor\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"expected_event_sequence\":12},\"action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]}}}}},\"outcome\":{\"message\":\"Encounter action recorded.\",\"mechanics\":null},\"rules_event\":null,\"tactical_event\":{\"meta\":{\"id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":{\"Player\":\"66053ffd-7301-4553-97d1-80026df820e3\"},\"actor\":{\"Entity\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"},\"expected_event_sequence\":12},\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]}}},\"outcome\":{\"next_roll\":{\"id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"roller\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"dice\":[{\"count\":1,\"sides\":20}],\"modifier\":2,\"mode\":\"Normal\",\"visibility\":\"Secret\",\"reason\":\"Initiative\"},\"awaiting_initiative_ties\":false,\"active_actor\":null,\"awaiting_turn_work\":false}}}"
+    },
+    {
+      "id": "d240a537-9358-416d-b2a8-855405812394",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 14,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "ffa180e1-a2b9-47dc-b90e-113dde73f5dc",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":13},\"action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]}}}}},\"outcome\":{\"message\":\"Encounter action recorded.\",\"mechanics\":null},\"rules_event\":null,\"tactical_event\":{\"meta\":{\"id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":13},\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]}}},\"outcome\":{\"next_roll\":null,\"awaiting_initiative_ties\":false,\"active_actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"awaiting_turn_work\":false}}}"
+    },
+    {
+      "id": "13c929f7-f796-4b25-8344-53ef15ad2272",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 15,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "d01c3843-65d9-4533-be7b-e60fac21226f",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"d01c3843-65d9-4533-be7b-e60fac21226f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":14},\"action\":\"EnableGrappleAccess\",\"outcome\":{\"message\":\"Grapple is enabled for this table.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "cc9c6dbf-b116-4409-b773-883449db63f0",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 16,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "38eedd42-f406-47ed-af18-6741acc473be",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"38eedd42-f406-47ed-af18-6741acc473be\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":15},\"action\":\"EnableGrappleTransport\",\"outcome\":{\"message\":\"Dragging and Inspiration controls are enabled for this table.\",\"mechanics\":null},\"rules_event\":null}"
+    },
+    {
+      "id": "7fbc2573-3fa1-425a-b2f6-0df7adc9820f",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 17,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "2113a3ee-2609-4805-9f49-19fcbaa4e2fd",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":16},\"action\":{\"Tactical\":{\"action\":\"ActivateAttackEquipment\"}},\"outcome\":{\"message\":\"Attack equipment choices enabled for this encounter.\",\"mechanics\":null},\"rules_event\":null,\"tactical_event\":{\"meta\":{\"id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":16},\"action\":\"ActivateAttackEquipment\",\"outcome\":{\"next_roll\":null,\"awaiting_initiative_ties\":false,\"active_actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"awaiting_turn_work\":false}}}"
+    },
+    {
+      "id": "8d5ca130-2908-4e85-8955-a78c5f0817af",
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "sequence": 18,
+      "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+      "occurred_at_world": 0,
+      "source": "rule_resolution",
+      "actor_kind": null,
+      "actor_id": null,
+      "command_id": "b891d696-9ff7-419a-a637-57760a0e547f",
+      "event_kind": "table.action_resolved",
+      "event_schema_version": 1,
+      "payload_json": "{\"meta\":{\"id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"issuer\":\"Admin\",\"actor\":null,\"expected_event_sequence\":17},\"action\":{\"AwardHeroicInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For protecting the retreating group.\"}},\"outcome\":{\"message\":\"Heroic Inspiration awarded.\",\"mechanics\":null},\"rules_event\":null}"
+    }
+  ],
+  "event_causes": [],
+  "snapshots": [
+    {
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "event_sequence": 0,
+      "state_schema_version": 4,
+      "state_json": "{\"encounter\":null,\"table\":{\"contract\":{\"tone\":\"Grounded fantasy adventure\",\"humor\":\"Welcome when it fits the table\",\"tactical_preference\":\"Balanced\",\"exploration_preference\":\"Balanced\",\"social_preference\":\"Balanced\",\"lethality\":\"Consequences follow the selected rules\",\"ruleset\":{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"},\"permitted_content\":[{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"}],\"advancement\":\"Milestones agreed by the table\",\"optional_rules\":[],\"house_rules\":{\"ability_test_natural_extremes\":false},\"house_rule_notes\":\"No additional mechanical house rules\",\"pvp_policy\":\"Requires the affected player's explicit consent\",\"theft_and_secrets\":\"Requires the affected player's explicit consent\",\"retcon_policy\":\"Correct uncommitted intent; preserve accepted history\",\"content_boundaries\":\"Discuss and record the table's boundaries before play\",\"explanation_depth\":\"Brief, with more detail on request\",\"experience\":\"Mixed experience\",\"absent_player_policy\":\"Absent characters take no voluntary actions\"},\"character_profiles\":{},\"active_session\":null,\"pending\":null,\"roll_context\":null,\"situation\":{\"title\":\"\",\"description\":\"\",\"challenges\":[]}},\"rules\":null,\"schema_version\":4,\"campaign\":{\"id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"display_name\":\"Grapple journal\",\"status\":\"Active\",\"world_seed\":7439726653326741325,\"ruleset\":{\"id\":\"srd-5.2\",\"version\":\"5.2.1\"},\"content_packs\":[]},\"clock\":{\"now\":0,\"calendar_id\":\"seconds\"},\"players\":{},\"characters\":{},\"entities\":{},\"factions\":{},\"locations\":{},\"scenes\":{},\"items\":{},\"facts\":{},\"claims\":{},\"beliefs\":{},\"knowledge\":[],\"directives\":{},\"applied_event_sequence\":0}",
+      "created_at_utc": "2026-10-07 12:13:56"
+    }
+  ],
+  "observations": [],
+  "table_projection_history": [
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 1,
+      "cause": {
+        "Bootstrap": {
+          "event_sequence": 0,
+          "observation_ordinal": 0
+        }
+      },
+      "transcript": [],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": null,
+          "revision": "1ada231e-6153-4d97-a19b-d533df9cdac6",
+          "visible_digest": "2891090bbce95b62913614c072544df5170b5e9aebb65e3740314dcf53bc1f53",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 2,
+      "cause": {
+        "Event": {
+          "id": "de122be0-bb3f-4c7d-9e79-26189da26905",
+          "command_id": "da137cc9-fcf3-43a5-bbe8-d866251c570a"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "de122be0-bb3f-4c7d-9e79-26189da26905",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "1ada231e-6153-4d97-a19b-d533df9cdac6",
+          "revision": "512d0152-f491-485f-9547-652a19ce1aec",
+          "visible_digest": "4ecb4d6b01e903a6863b1093839b3752181bb5b8498dbdf54ca4a59d0be41983",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": null,
+          "revision": "e82d2078-a3de-436a-b160-7f33c66f9953",
+          "visible_digest": "d895d8d59a0a04276ea481163e3cef923812d3962d43f7c0ec238422710d295f",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 3,
+      "cause": {
+        "Event": {
+          "id": "a02652be-323e-486a-bee4-df94a7b120cd",
+          "command_id": "77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "a02652be-323e-486a-bee4-df94a7b120cd",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "512d0152-f491-485f-9547-652a19ce1aec",
+          "revision": "df7927cd-7e91-4d8b-b353-afd71e0e2ee5",
+          "visible_digest": "c94321be99e327b2212b5b5541b0f6026c55b33ca2feef57d3d1bd8872efe45d",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "e82d2078-a3de-436a-b160-7f33c66f9953",
+          "revision": "02bad597-9041-4af3-8177-2a4289bb7dc2",
+          "visible_digest": "81a3fa57fb6d4b44c10489052099ce2235bb24480f88fc41e8f09db6d2949e08",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 4,
+      "cause": {
+        "Event": {
+          "id": "65669f21-bcbd-4c1d-a217-c6b96ce8db9c",
+          "command_id": "f473f453-d040-402b-bf39-296b9227b089"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "65669f21-bcbd-4c1d-a217-c6b96ce8db9c",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "df7927cd-7e91-4d8b-b353-afd71e0e2ee5",
+          "revision": "9e8e6bc5-1912-4d7d-8a2c-1573a60828b6",
+          "visible_digest": "541e86993a2c4215f6f3279dd91b610b70e60ac0a8275c479140c57a45f7d249",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "02bad597-9041-4af3-8177-2a4289bb7dc2",
+          "revision": "1702b6a6-e5e3-4a4d-b4f5-7bdea61d53c9",
+          "visible_digest": "ace2c73db3a1cb0cde9829d30ccdd1cab2ff809831abab05da793fa234e668fd",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": null,
+          "revision": "cce573ef-f5a6-44b6-a1c6-87c532a01bb6",
+          "visible_digest": "80d766a7ad73dd0c96037833f3966e59881e1a1ce81a3e3c9cc0623f71d682ec",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 5,
+      "cause": {
+        "Event": {
+          "id": "dac060ef-c7a3-4c5e-b4b2-4a4248692ea0",
+          "command_id": "c667f988-24f4-4117-ba54-4b177ee9f0ac"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "dac060ef-c7a3-4c5e-b4b2-4a4248692ea0",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "9e8e6bc5-1912-4d7d-8a2c-1573a60828b6",
+          "revision": "ec5ac117-b673-459b-96ef-867b360a4b8d",
+          "visible_digest": "2989bd15325b2151d4a5f84ee143d90698d2020100abfd3a53734a60b745a42a",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "1702b6a6-e5e3-4a4d-b4f5-7bdea61d53c9",
+          "revision": "0231acc9-4fca-4e6d-9f00-f90d506457d0",
+          "visible_digest": "d5caab68922238726cc6706763f5393ef2d302c0bf0afc8c19c59c741be238d3",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "cce573ef-f5a6-44b6-a1c6-87c532a01bb6",
+          "revision": "021089a4-8c5d-4824-9504-862c60dd091c",
+          "visible_digest": "88efe2a014a93d2d51afe5b668972f2595a596a8486f195f369113e2ac3f20a7",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 1,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 6,
+      "cause": {
+        "Event": {
+          "id": "37db654d-cc60-45df-adeb-26e579470779",
+          "command_id": "b168420a-7611-4e5d-9834-81b4439a8128"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "37db654d-cc60-45df-adeb-26e579470779",
+          "audiences": [
+            "Host"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "ec5ac117-b673-459b-96ef-867b360a4b8d",
+          "revision": "46b1030d-1946-40b7-b47e-874beecc0e8e",
+          "visible_digest": "fdf97a2371d32aa0474abea92e58182b437aa700a88a590e507adaf201f84ac1",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 7,
+      "cause": {
+        "Event": {
+          "id": "f824c72f-70e4-44fe-84f5-f1404f4d8c0e",
+          "command_id": "7bb7cdc0-d417-4720-a842-8c8358da3aca"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "f824c72f-70e4-44fe-84f5-f1404f4d8c0e",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "46b1030d-1946-40b7-b47e-874beecc0e8e",
+          "revision": "5447c140-5c00-4708-a4cf-82e681fabb39",
+          "visible_digest": "27c73876530dd98a48d71dac116c6493903daf154be365c1fe41412d10aedd1c",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "0231acc9-4fca-4e6d-9f00-f90d506457d0",
+          "revision": "984f3ba4-b4f7-41c4-a611-7d91f87f50ff",
+          "visible_digest": "73f7a31c42b45d2499130fb6d967c82fff11737b89db1c2d6dc2fb7c5237a000",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "021089a4-8c5d-4824-9504-862c60dd091c",
+          "revision": "e9688fc9-057c-4c9e-8a2e-d906165d197b",
+          "visible_digest": "ae02af2f8baa1d781dfe02b4dc89f07a47d25b1f6804c366593a990a102f2317",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 8,
+      "cause": {
+        "Event": {
+          "id": "4b5ca1f0-9aeb-4762-bee8-dac92e6fc4aa",
+          "command_id": "e1942024-c336-4746-ba08-5e1211db004a"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "4b5ca1f0-9aeb-4762-bee8-dac92e6fc4aa",
+          "audiences": [
+            "Host"
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "5447c140-5c00-4708-a4cf-82e681fabb39",
+          "revision": "86cd9277-3fb7-4c55-b64a-081a2447475e",
+          "visible_digest": "21953c98d4c43f6b49c47d318077acd7de1f64104dc6fdb90b760b40d881b1b9",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 9,
+      "cause": {
+        "Event": {
+          "id": "dafcac8c-3050-4b9f-af04-768a98990567",
+          "command_id": "66f43b46-ed57-491b-b807-3208bfaa29cb"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "dafcac8c-3050-4b9f-af04-768a98990567",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "86cd9277-3fb7-4c55-b64a-081a2447475e",
+          "revision": "33ef2021-defe-4581-93a6-e6f691f3b983",
+          "visible_digest": "c132991170e4157e535ed728d3d580d10a9ae31638baf28d41682a27bf5e5167",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "984f3ba4-b4f7-41c4-a611-7d91f87f50ff",
+          "revision": "2f766187-be70-4b71-9772-b18d7d5c0276",
+          "visible_digest": "54bc26b1a8d94b57cc502d350656d45f4cbc0584dca5f63c81fe4cb46a9c50bb",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 10,
+      "cause": {
+        "Event": {
+          "id": "9e96da7f-3ae4-4e17-a610-59fdc9a8b631",
+          "command_id": "e837a407-6a24-44cc-b816-7bdd13e827b2"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "9e96da7f-3ae4-4e17-a610-59fdc9a8b631",
+          "audiences": [
+            "Host",
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "33ef2021-defe-4581-93a6-e6f691f3b983",
+          "revision": "9bc423ae-3e02-4bfb-bba0-a710d9b3f356",
+          "visible_digest": "2831d87f6f245b9219a01228cf97f213833f14e8ca4ec7efc32f4aada0233d81",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "e9688fc9-057c-4c9e-8a2e-d906165d197b",
+          "revision": "baaeaeeb-f36c-4607-a94f-c14c2b776562",
+          "visible_digest": "6c1442c4c7153ca6cc4679f3c17ea6c18a6970681aa9dd92937284188b926e9d",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 11,
+      "cause": {
+        "Event": {
+          "id": "1f49788c-8716-4fdb-b121-6a85d7e484ff",
+          "command_id": "cd3e5310-1287-4fad-a219-2f80b587d7dc"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "1f49788c-8716-4fdb-b121-6a85d7e484ff",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "9bc423ae-3e02-4bfb-bba0-a710d9b3f356",
+          "revision": "1475a823-39c5-4ada-bc4f-8452c88685c2",
+          "visible_digest": "55f8057d8a28fdb41a787d3d6f5b21a94bb3bfd1fad486ffa6d9daf4c90d0395",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "2f766187-be70-4b71-9772-b18d7d5c0276",
+          "revision": "fc739042-5acc-448e-8cc9-d7d98c87e82e",
+          "visible_digest": "fcd63539a7fedf850923a36a530e209ec2cef181288a87e9e41af732527806a1",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "baaeaeeb-f36c-4607-a94f-c14c2b776562",
+          "revision": "3536eeed-a92c-42f9-91e4-4619e0ef1d3e",
+          "visible_digest": "23d4971f38381e9b29814f4331de0774dcb9dafaff0b3f8aca080506e6d4e764",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 12,
+      "cause": {
+        "Event": {
+          "id": "00162ab6-cfb7-49ce-882b-3c579688d9f9",
+          "command_id": "441e61df-4a35-4e57-8712-a4bec447734a"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "00162ab6-cfb7-49ce-882b-3c579688d9f9",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "1475a823-39c5-4ada-bc4f-8452c88685c2",
+          "revision": "46e08001-b858-4aa0-84e0-d92fc832dc48",
+          "visible_digest": "ac07199c6a3108f85d17253016e3b3764b3351e782cb9cef438bd1166629395a",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "fc739042-5acc-448e-8cc9-d7d98c87e82e",
+          "revision": "97b9cce9-bf88-49cb-b494-68a4d74c05a7",
+          "visible_digest": "78d2b368efd156c2a5ec291a3ac2c582fc54b0411b6e7f0f3b3e5bc7a953a818",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "3536eeed-a92c-42f9-91e4-4619e0ef1d3e",
+          "revision": "2adebe4a-ba0f-47a3-90da-7d556e2a6557",
+          "visible_digest": "63840d2e859126f08a64da703871bf56f5b9611fa35bb03e6aabdeee46cf7fff",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 13,
+      "cause": {
+        "Event": {
+          "id": "0f0c4cad-9ea3-44a0-967b-b716581d3e2a",
+          "command_id": "9961d04e-cf6d-4148-8913-f7ad37a9da40"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "0f0c4cad-9ea3-44a0-967b-b716581d3e2a",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "46e08001-b858-4aa0-84e0-d92fc832dc48",
+          "revision": "aefe78d5-6bbd-404a-ad2b-764eeb4b6ef4",
+          "visible_digest": "9d91a666d88ce7415707e0587be878649b2452f779bd2d40596e97d5f8ae6085",
+          "handles": [
+            {
+              "opaque": "b36f867b-419f-4941-9ea5-2c2153907803",
+              "capability": {
+                "Roll": {
+                  "canonical": "e57bca7b-9a80-4eb7-9bad-ddb6300391ac"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "97b9cce9-bf88-49cb-b494-68a4d74c05a7",
+          "revision": "1fde71ba-6fc6-4342-ad8e-cc7720242067",
+          "visible_digest": "b8af29be3a63d424744c0951e2613da7e67284a9ecf599ba56acf21e15b8cb20",
+          "handles": [
+            {
+              "opaque": "ab7eaee7-dfdf-4eb1-91af-a84a3dc46ee4",
+              "capability": {
+                "Roll": {
+                  "canonical": "e57bca7b-9a80-4eb7-9bad-ddb6300391ac"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "2adebe4a-ba0f-47a3-90da-7d556e2a6557",
+          "revision": "60530d9f-d49a-4e64-997b-9997b9c1f1c5",
+          "visible_digest": "66f9597ca1d4f090c8c8fa2df7b437bcfcdfbdc8c4aab80d919aaea4a8c52464",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 14,
+      "cause": {
+        "Event": {
+          "id": "28f133c9-7904-473c-9381-b7d204bf6d04",
+          "command_id": "07ae635f-2963-4b59-868e-b3eb2ee56c5f"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "28f133c9-7904-473c-9381-b7d204bf6d04",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "aefe78d5-6bbd-404a-ad2b-764eeb4b6ef4",
+          "revision": "8ee7e864-22ef-4760-9724-654f6828e8e3",
+          "visible_digest": "7609c2105a239a91b452c0330e6e71d3943912ad623272389d2c6c374edc4b6c",
+          "handles": [
+            {
+              "opaque": "93bed96f-69fe-48bc-9548-5b15008b5a4d",
+              "capability": {
+                "Roll": {
+                  "canonical": "18d35754-a3d7-4308-bad8-59a194a8d234"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "1fde71ba-6fc6-4342-ad8e-cc7720242067",
+          "revision": "4a3b9b35-94fb-4e7d-8dc6-b0f272652d81",
+          "visible_digest": "adea8f074c505e5c6f9da03429413907da51bf945b10ee1f3a5155bb8cf385e7",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 2,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 15,
+      "cause": {
+        "Event": {
+          "id": "d240a537-9358-416d-b2a8-855405812394",
+          "command_id": "ffa180e1-a2b9-47dc-b90e-113dde73f5dc"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "d240a537-9358-416d-b2a8-855405812394",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "8ee7e864-22ef-4760-9724-654f6828e8e3",
+          "revision": "1795edf7-31c2-4fb6-b9b0-b6a1ef70996c",
+          "visible_digest": "1bb0e177925185080780c71276625ed821a05c34aae7685ad956b53968071db7",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "4a3b9b35-94fb-4e7d-8dc6-b0f272652d81",
+          "revision": "71ea2284-7ee8-4a93-966f-ed791f389f61",
+          "visible_digest": "a470fe15856eee3395deb9ca3cd9dc6a3f183b0241d722ebb4b09fe82a6fd2e6",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "60530d9f-d49a-4e64-997b-9997b9c1f1c5",
+          "revision": "35ee9171-340f-4a38-a14c-d853c581ce0e",
+          "visible_digest": "56de680fdaf0800518c1ddab760d50d41f7d33a4f0caa2b1cc1ef76e655b4c4f",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 3,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 16,
+      "cause": {
+        "Event": {
+          "id": "13c929f7-f796-4b25-8344-53ef15ad2272",
+          "command_id": "d01c3843-65d9-4533-be7b-e60fac21226f"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "13c929f7-f796-4b25-8344-53ef15ad2272",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "1795edf7-31c2-4fb6-b9b0-b6a1ef70996c",
+          "revision": "5835b4d6-867a-4ed6-ba4b-094d1fcb4185",
+          "visible_digest": "ca90c247da080ad9eb0f68d5a6688164188b9321509d6ac3a9eb616c081907e4",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "71ea2284-7ee8-4a93-966f-ed791f389f61",
+          "revision": "252f55bc-27ba-473d-98ac-25951fbb3a54",
+          "visible_digest": "5e4217986e95d34721452aa936421ecc52526779c40b3c9e7093778677b756d9",
+          "handles": [
+            {
+              "opaque": "ba4c43ec-feab-446f-bb8a-8701f5ac6fea",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "d4c43201-aeb9-40a9-91d5-5073c1a3b4f0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "3dee347b-5e45-4054-8246-b8f952913de0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "5fe45918-b2a4-48f3-a76f-a32a9577c7cc",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "b8f274eb-117c-415f-9a3d-1315ad490776",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "34c720f6-15ad-45ae-a6b3-772c6d4c2e6f",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "13970fb6-4b6e-43d8-a3b5-433e8bb424d5",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "0739f099-5ca6-4e93-a912-bacbadc3a2a3",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "4f6d1dac-cc32-42b3-90b5-286ef943b947",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "1afa1162-b5b8-4962-ab1a-de624b47d596",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "35ee9171-340f-4a38-a14c-d853c581ce0e",
+          "revision": "6906dc62-cc82-4bb0-a242-3757c72d0a2b",
+          "visible_digest": "eb6ff20c0394e8390615bbfdc0b5a6938e08363c46c3c3377e15355361c3817e",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 4,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 17,
+      "cause": {
+        "Event": {
+          "id": "cc9c6dbf-b116-4409-b773-883449db63f0",
+          "command_id": "38eedd42-f406-47ed-af18-6741acc473be"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "cc9c6dbf-b116-4409-b773-883449db63f0",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            },
+            {
+              "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "5835b4d6-867a-4ed6-ba4b-094d1fcb4185",
+          "revision": "b9209e3a-081e-4541-8485-b0a304c8ee8d",
+          "visible_digest": "05b93574c627e0394ac3ee73d27d45cae339627996a1810bd55653b7abd64dcc",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "252f55bc-27ba-473d-98ac-25951fbb3a54",
+          "revision": "544c0368-d3bd-49ea-9fec-26caa24d5544",
+          "visible_digest": "c9f6ffd140a74d5ee61aea46b7396019402f9a39e26bf5088331fe4eb1308602",
+          "handles": [
+            {
+              "opaque": "ba4c43ec-feab-446f-bb8a-8701f5ac6fea",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "d4c43201-aeb9-40a9-91d5-5073c1a3b4f0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "3dee347b-5e45-4054-8246-b8f952913de0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "5fe45918-b2a4-48f3-a76f-a32a9577c7cc",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "b8f274eb-117c-415f-9a3d-1315ad490776",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "34c720f6-15ad-45ae-a6b3-772c6d4c2e6f",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "13970fb6-4b6e-43d8-a3b5-433e8bb424d5",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "0739f099-5ca6-4e93-a912-bacbadc3a2a3",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "4f6d1dac-cc32-42b3-90b5-286ef943b947",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "1afa1162-b5b8-4962-ab1a-de624b47d596",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "audience": {
+            "Player": "cc9af969-7d9a-44df-953f-53dd463d3c74"
+          },
+          "previous": "6906dc62-cc82-4bb0-a242-3757c72d0a2b",
+          "revision": "eb016cb6-01e9-4352-89b4-06b95f172c13",
+          "visible_digest": "2cd8863cc33b927fcc371188003fa4c06bb923595ae305077581d9ffd42a0388",
+          "handles": []
+        }
+      ]
+    },
+    {
+      "version": 4,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 18,
+      "cause": {
+        "Event": {
+          "id": "7fbc2573-3fa1-425a-b2f6-0df7adc9820f",
+          "command_id": "2113a3ee-2609-4805-9f49-19fcbaa4e2fd"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "7fbc2573-3fa1-425a-b2f6-0df7adc9820f",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "b9209e3a-081e-4541-8485-b0a304c8ee8d",
+          "revision": "36c10a3e-376c-44be-9f92-c8b9dff8c093",
+          "visible_digest": "1de4bdaa620f715b8b531ac155a488b8a0ec64fbfe23d9008caedb1545e05546",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "544c0368-d3bd-49ea-9fec-26caa24d5544",
+          "revision": "874a3907-f016-426e-8f4b-46bb93ea9059",
+          "visible_digest": "bc10b548af131e2aedde32fb819d0ec965284e65d668ce29673ec7bfbe6a196f",
+          "handles": [
+            {
+              "opaque": "ba4c43ec-feab-446f-bb8a-8701f5ac6fea",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "d4c43201-aeb9-40a9-91d5-5073c1a3b4f0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "3dee347b-5e45-4054-8246-b8f952913de0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "5fe45918-b2a4-48f3-a76f-a32a9577c7cc",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "b8f274eb-117c-415f-9a3d-1315ad490776",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "34c720f6-15ad-45ae-a6b3-772c6d4c2e6f",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "13970fb6-4b6e-43d8-a3b5-433e8bb424d5",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "0739f099-5ca6-4e93-a912-bacbadc3a2a3",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "4f6d1dac-cc32-42b3-90b5-286ef943b947",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "1afa1162-b5b8-4962-ab1a-de624b47d596",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "version": 4,
+      "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+      "ordinal": 19,
+      "cause": {
+        "Event": {
+          "id": "8d5ca130-2908-4e85-8955-a78c5f0817af",
+          "command_id": "b891d696-9ff7-419a-a637-57760a0e547f"
+        }
+      },
+      "transcript": [
+        {
+          "event_id": "8d5ca130-2908-4e85-8955-a78c5f0817af",
+          "audiences": [
+            "Host",
+            {
+              "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+            }
+          ]
+        }
+      ],
+      "changes": [
+        {
+          "audience": "Host",
+          "previous": "36c10a3e-376c-44be-9f92-c8b9dff8c093",
+          "revision": "848b0620-df70-4ba3-833a-536812acc504",
+          "visible_digest": "257657c2b31dbdc497d806e4d3812214c5608e6f584a76ba908ed6462b499b43",
+          "handles": []
+        },
+        {
+          "audience": {
+            "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+          },
+          "previous": "874a3907-f016-426e-8f4b-46bb93ea9059",
+          "revision": "e662f642-0163-4706-8326-640729beadc2",
+          "visible_digest": "4b245a839eed0e54232bd060ee7faf863f5a3f7532a206cc2ee9d43c86c47512",
+          "handles": [
+            {
+              "opaque": "ba4c43ec-feab-446f-bb8a-8701f5ac6fea",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "d4c43201-aeb9-40a9-91d5-5073c1a3b4f0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "3dee347b-5e45-4054-8246-b8f952913de0",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "5fe45918-b2a4-48f3-a76f-a32a9577c7cc",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "b8f274eb-117c-415f-9a3d-1315ad490776",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Left",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Right"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "34c720f6-15ad-45ae-a6b3-772c6d4c2e6f",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": null
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "13970fb6-4b6e-43d8-a3b5-433e8bb424d5",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "10a886f6-acdc-4a6d-9810-d657ac6bfbea",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "0739f099-5ca6-4e93-a912-bacbadc3a2a3",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "13d84406-1443-4021-ba7e-3243ee36185e",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "4f6d1dac-cc32-42b3-90b5-286ef943b947",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "1a2f702f-95dc-4801-8a28-d15015252019",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            {
+              "opaque": "1afa1162-b5b8-4962-ab1a-de624b47d596",
+              "capability": {
+                "GrappleChoice": {
+                  "offer": {
+                    "actor": "b15b79ec-9afd-4372-ae20-8e0f18bd060c",
+                    "choice": {
+                      "Attempt": {
+                        "target": "0d56dd3c-db57-4682-9308-8098c087ade3",
+                        "hand": "Right",
+                        "before_change": {
+                          "Equip": {
+                            "item": "b4e8afcd-4722-4651-b33a-a301a0363495",
+                            "hand": "Left"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "table_transport_bindings": [
+    {
+      "version": 2,
+      "meta": {
+        "id": "07ae635f-2963-4b59-868e-b3eb2ee56c5f",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": {
+          "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+        },
+        "actor": {
+          "Entity": "b15b79ec-9afd-4372-ae20-8e0f18bd060c"
+        },
+        "expected_event_sequence": 12
+      },
+      "audience": {
+        "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+      },
+      "projection_ordinal": 14,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 13
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":{\"Player\":{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\"}},\"revision\":\"1fde71ba-6fc6-4342-ad8e-cc7720242067\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"ab7eaee7-dfdf-4eb1-91af-a84a3dc46ee4\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":18}]}}}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"07ae635f-2963-4b59-868e-b3eb2ee56c5f\",\"revision\":\"4a3b9b35-94fb-4e7d-8dc6-b0f272652d81\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+    },
+    {
+      "version": 4,
+      "meta": {
+        "id": "2113a3ee-2609-4805-9f49-19fcbaa4e2fd",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 16
+      },
+      "audience": "Host",
+      "projection_ordinal": 18,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 17
+        }
+      },
+      "request_json": "{\"version\":4,\"command_id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"b9209e3a-081e-4541-8485-b0a304c8ee8d\",\"input\":{\"Action\":{\"Tactical\":{\"action\":\"ActivateAttackEquipment\"}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"2113a3ee-2609-4805-9f49-19fcbaa4e2fd\",\"revision\":\"36c10a3e-376c-44be-9f92-c8b9dff8c093\",\"outcome\":{\"message\":\"Attack equipment choices enabled for this encounter.\"}}}"
+    },
+    {
+      "version": 4,
+      "meta": {
+        "id": "38eedd42-f406-47ed-af18-6741acc473be",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 15
+      },
+      "audience": "Host",
+      "projection_ordinal": 17,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 16
+        }
+      },
+      "request_json": "{\"version\":4,\"command_id\":\"38eedd42-f406-47ed-af18-6741acc473be\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"5835b4d6-867a-4ed6-ba4b-094d1fcb4185\",\"input\":{\"Action\":\"EnableGrappleTransport\"}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"38eedd42-f406-47ed-af18-6741acc473be\",\"revision\":\"b9209e3a-081e-4541-8485-b0a304c8ee8d\",\"outcome\":{\"message\":\"Dragging and Inspiration controls are enabled for this table.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "441e61df-4a35-4e57-8712-a4bec447734a",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 10
+      },
+      "audience": "Host",
+      "projection_ordinal": 12,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 11
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"1475a823-39c5-4ada-bc4f-8452c88685c2\",\"input\":{\"Action\":{\"PrepareBattlefield\":{\"setup\":{\"encounter_id\":\"dfb35807-3a01-4ea0-b50c-fc2d71c71cd7\",\"scene_id\":\"3fbf4246-7e38-4bd5-b9cf-46e4594ce07d\",\"location_id\":\"f822e779-7787-4204-a6cf-319c0f8a697d\",\"name\":\"Courtyard\",\"battlefield\":{\"bounds\":{\"min\":{\"x\":0,\"y\":0,\"z\":0},\"max\":{\"x\":100,\"y\":100,\"z\":60}},\"floor_z\":0,\"floor_surface\":\"stone\",\"ambient_light\":\"Bright\",\"terrain\":[],\"obstacles\":[],\"lights\":[]},\"characters\":[{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"position\":{\"x\":10,\"y\":10,\"z\":0},\"height\":12,\"allies\":[],\"enemies\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"]}],\"creatures\":[{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"public_label\":\"Small armored figure\",\"position\":{\"x\":20,\"y\":10,\"z\":0},\"height\":8,\"allies\":[],\"enemies\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"]}],\"geometry_ruling\":{\"basis\":\"GmAdjudication\",\"reason\":\"Host establishes the visible courtyard.\"}}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"441e61df-4a35-4e57-8712-a4bec447734a\",\"revision\":\"46e08001-b858-4aa0-84e0-d92fc832dc48\",\"outcome\":{\"message\":\"The encounter map is ready.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "66f43b46-ed57-491b-b807-3208bfaa29cb",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 7
+      },
+      "audience": "Host",
+      "projection_ordinal": 9,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 8
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"86cd9277-3fb7-4c55-b64a-081a2447475e\",\"input\":{\"Action\":{\"PrepareEquipment\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"item_ids\":[\"1a2f702f-95dc-4801-8a28-d15015252019\",\"13d84406-1443-4021-ba7e-3243ee36185e\",\"10a886f6-acdc-4a6d-9810-d657ac6bfbea\",\"13800771-9c44-4da0-a49a-84f39651d3fc\",\"b4e8afcd-4722-4651-b33a-a301a0363495\"]}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"66f43b46-ed57-491b-b807-3208bfaa29cb\",\"revision\":\"33ef2021-defe-4581-93a6-e6f691f3b983\",\"outcome\":{\"message\":\"Starting equipment is ready for play.\"}}}"
+    },
+    {
+      "version": 1,
+      "meta": {
+        "id": "77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 1
+      },
+      "audience": "Host",
+      "projection_ordinal": 3,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 2
+        }
+      },
+      "request_json": "{\"version\":1,\"command_id\":\"77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"512d0152-f491-485f-9547-652a19ce1aec\",\"input\":{\"Action\":{\"CreateCharacterFromSource\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"entity_id\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 0\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1},{\"item_id\":\"glaive\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"greatsword\",\"glaive\",\"dagger\"]}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"77ae63b2-3ff3-4ca1-9e5b-dbd0b99a5a85\",\"revision\":\"df7927cd-7e91-4d8b-b353-afd71e0e2ee5\",\"outcome\":{\"message\":\"Character 0 was created as a level 1 Human Fighter with the Soldier background.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "7bb7cdc0-d417-4720-a842-8c8358da3aca",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 5
+      },
+      "audience": "Host",
+      "projection_ordinal": 7,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 6
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"7bb7cdc0-d417-4720-a842-8c8358da3aca\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"46b1030d-1946-40b7-b47e-874beecc0e8e\",\"input\":{\"Action\":{\"EnableSourceActorAccess\":{\"adopted\":[]}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"7bb7cdc0-d417-4720-a842-8c8358da3aca\",\"revision\":\"5447c140-5c00-4708-a4cf-82e681fabb39\",\"outcome\":{\"message\":\"Source creature control is enabled for this table.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "9961d04e-cf6d-4148-8913-f7ad37a9da40",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 11
+      },
+      "audience": "Host",
+      "projection_ordinal": 13,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 12
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"46e08001-b858-4aa0-84e0-d92fc832dc48\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"Begin\":{\"combatants\":[{\"actor\":\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\",\"source\":\"Character\",\"surprised\":false},{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"source\":{\"Creature\":{\"definition_id\":\"goblin-warrior\"}},\"surprised\":false}],\"groups\":[{\"actors\":[\"b15b79ec-9afd-4372-ae20-8e0f18bd060c\"],\"request_id\":\"e57bca7b-9a80-4eb7-9bad-ddb6300391ac\"},{\"actors\":[\"0d56dd3c-db57-4682-9308-8098c087ade3\"],\"request_id\":\"18d35754-a3d7-4308-bad8-59a194a8d234\"}],\"execution\":\"EncounterReleaseV1\"}}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"9961d04e-cf6d-4148-8913-f7ad37a9da40\",\"revision\":\"aefe78d5-6bbd-404a-ad2b-764eeb4b6ef4\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+    },
+    {
+      "version": 1,
+      "meta": {
+        "id": "b168420a-7611-4e5d-9834-81b4439a8128",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 4
+      },
+      "audience": "Host",
+      "projection_ordinal": 6,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 5
+        }
+      },
+      "request_json": "{\"version\":1,\"command_id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"ec5ac117-b673-459b-96ef-867b360a4b8d\",\"input\":{\"Action\":{\"CreateCreature\":{\"creation\":{\"entity_id\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"name\":\"Private sentry\",\"definition_id\":\"goblin-warrior\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"definition_id\":\"goblin-warrior\",\"definition_fingerprint\":\"a3c8ca4ae26b5c28\"},\"size\":\"Small\",\"additional_languages\":[],\"ammunition_units\":20,\"item_ids\":[\"e141315f-9f44-4150-953b-7b5b8a286888\",\"2cd85807-3b7b-499c-8f1d-8f56b196859d\",\"a6395031-91cc-4ed7-9205-02efa7026d74\",\"bc9b0e00-da6e-43f8-8e91-5d450f35d860\",\"33814009-afad-4243-8e97-2373ddc35868\"]}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"b168420a-7611-4e5d-9834-81b4439a8128\",\"revision\":\"46b1030d-1946-40b7-b47e-874beecc0e8e\",\"outcome\":{\"message\":\"Host preparation recorded.\"}}}"
+    },
+    {
+      "version": 4,
+      "meta": {
+        "id": "b891d696-9ff7-419a-a637-57760a0e547f",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 17
+      },
+      "audience": "Host",
+      "projection_ordinal": 19,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 18
+        }
+      },
+      "request_json": "{\"version\":4,\"command_id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"36c10a3e-376c-44be-9f92-c8b9dff8c093\",\"input\":{\"Action\":{\"AwardHeroicInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For protecting the retreating group.\"}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"revision\":\"848b0620-df70-4ba3-833a-536812acc504\",\"outcome\":{\"message\":\"Heroic Inspiration awarded.\"}}}"
+    },
+    {
+      "version": 1,
+      "meta": {
+        "id": "c667f988-24f4-4117-ba54-4b177ee9f0ac",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 3
+      },
+      "audience": "Host",
+      "projection_ordinal": 5,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 4
+        }
+      },
+      "request_json": "{\"version\":1,\"command_id\":\"c667f988-24f4-4117-ba54-4b177ee9f0ac\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"9e8e6bc5-1912-4d7d-8a2c-1573a60828b6\",\"input\":{\"Action\":{\"CreateCharacterFromSource\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"entity_id\":\"909fb7f5-2de3-46da-8503-d5131f006d92\",\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"source\":{\"ruleset_id\":\"srd-5.2\",\"ruleset_version\":\"5.2.1\",\"catalog_schema_version\":1,\"profile_id\":\"human-fighter-soldier-level-1-physical-v1\",\"definition_fingerprint\":\"e2d57011783b3fae\"},\"input\":{\"name\":\"Character 1\",\"pronouns\":\"they/them\",\"description\":\"A traveler\",\"alignment\":\"Neutral Good\",\"backstory\":\"A private goal\",\"ability_scores\":[15,14,13,8,10,12],\"background_boosts\":[2,0,1,0,0,0],\"fighter_skills\":[\"Perception\",\"Survival\"],\"human_skill\":\"Insight\",\"skilled_skills\":[\"Acrobatics\",\"Stealth\",\"Investigation\"],\"size\":\"Medium\",\"languages\":[\"dwarvish\",\"elvish\"],\"fighting_style\":\"Defense\",\"gaming_set\":\"Dice\",\"purchases\":[{\"item_id\":\"leather-armor\",\"quantity\":1},{\"item_id\":\"dagger\",\"quantity\":1},{\"item_id\":\"club\",\"quantity\":1},{\"item_id\":\"shortbow\",\"quantity\":1}],\"worn_armor\":\"leather-armor\",\"shield\":false,\"masteries\":[\"club\",\"dagger\",\"shortbow\"]}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"c667f988-24f4-4117-ba54-4b177ee9f0ac\",\"revision\":\"ec5ac117-b673-459b-96ef-867b360a4b8d\",\"outcome\":{\"message\":\"Character 1 was created as a level 1 Human Fighter with the Soldier background.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "cd3e5310-1287-4fad-a219-2f80b587d7dc",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 9
+      },
+      "audience": "Host",
+      "projection_ordinal": 11,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 10
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"cd3e5310-1287-4fad-a219-2f80b587d7dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"9bc423ae-3e02-4bfb-bba0-a710d9b3f356\",\"input\":{\"Action\":{\"StartSession\":{\"id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"name\":\"Grapple session\",\"participants\":[{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"attendance\":\"Present\"},{\"player_id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"attendance\":\"Present\"}]}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"cd3e5310-1287-4fad-a219-2f80b587d7dc\",\"revision\":\"1475a823-39c5-4ada-bc4f-8452c88685c2\",\"outcome\":{\"message\":\"Session started: Grapple session.\"}}}"
+    },
+    {
+      "version": 3,
+      "meta": {
+        "id": "d01c3843-65d9-4533-be7b-e60fac21226f",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 14
+      },
+      "audience": "Host",
+      "projection_ordinal": 16,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 15
+        }
+      },
+      "request_json": "{\"version\":3,\"command_id\":\"d01c3843-65d9-4533-be7b-e60fac21226f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"1795edf7-31c2-4fb6-b9b0-b6a1ef70996c\",\"input\":{\"Action\":\"EnableGrappleAccess\"}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"d01c3843-65d9-4533-be7b-e60fac21226f\",\"revision\":\"5835b4d6-867a-4ed6-ba4b-094d1fcb4185\",\"outcome\":{\"message\":\"Grapple is enabled for this table.\"}}}"
+    },
+    {
+      "version": 1,
+      "meta": {
+        "id": "da137cc9-fcf3-43a5-bbe8-d866251c570a",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 0
+      },
+      "audience": "Host",
+      "projection_ordinal": 2,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 1
+        }
+      },
+      "request_json": "{\"version\":1,\"command_id\":\"da137cc9-fcf3-43a5-bbe8-d866251c570a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"1ada231e-6153-4d97-a19b-d533df9cdac6\",\"input\":{\"Action\":{\"AddPlayer\":{\"id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"name\":\"Player 0\"}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"da137cc9-fcf3-43a5-bbe8-d866251c570a\",\"revision\":\"512d0152-f491-485f-9547-652a19ce1aec\",\"outcome\":{\"message\":\"Player 0 joined the campaign.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "e1942024-c336-4746-ba08-5e1211db004a",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 6
+      },
+      "audience": "Host",
+      "projection_ordinal": 8,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 7
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"e1942024-c336-4746-ba08-5e1211db004a\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"5447c140-5c00-4708-a4cf-82e681fabb39\",\"input\":{\"Action\":{\"SetSourceCreatureController\":{\"actor\":\"0d56dd3c-db57-4682-9308-8098c087ade3\",\"controller\":\"Host\"}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"e1942024-c336-4746-ba08-5e1211db004a\",\"revision\":\"86cd9277-3fb7-4c55-b64a-081a2447475e\",\"outcome\":{\"message\":\"Source control updated.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "e837a407-6a24-44cc-b816-7bdd13e827b2",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 8
+      },
+      "audience": "Host",
+      "projection_ordinal": 10,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 9
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"33ef2021-defe-4581-93a6-e6f691f3b983\",\"input\":{\"Action\":{\"PrepareEquipment\":{\"character_id\":\"072f2c22-01d4-433d-973c-b9a6dfd166c2\",\"item_ids\":[\"68953c5f-b2ad-4bc2-8bcb-fa4d22c2fd2e\",\"8afc920c-02a5-4759-9716-9e9c0614dd36\",\"babb7b86-ef40-4d55-90c3-184d9371eed0\",\"b29661c5-96dd-4641-87ef-236c345e457d\"]}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"e837a407-6a24-44cc-b816-7bdd13e827b2\",\"revision\":\"9bc423ae-3e02-4bfb-bba0-a710d9b3f356\",\"outcome\":{\"message\":\"Starting equipment is ready for play.\"}}}"
+    },
+    {
+      "version": 1,
+      "meta": {
+        "id": "f473f453-d040-402b-bf39-296b9227b089",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": null,
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 2
+      },
+      "audience": "Host",
+      "projection_ordinal": 4,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 3
+        }
+      },
+      "request_json": "{\"version\":1,\"command_id\":\"f473f453-d040-402b-bf39-296b9227b089\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":null,\"channel\":\"Host\",\"revision\":\"df7927cd-7e91-4d8b-b353-afd71e0e2ee5\",\"input\":{\"Action\":{\"AddPlayer\":{\"id\":\"cc9af969-7d9a-44df-953f-53dd463d3c74\",\"name\":\"Player 1\"}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"f473f453-d040-402b-bf39-296b9227b089\",\"revision\":\"9e8e6bc5-1912-4d7d-8a2c-1573a60828b6\",\"outcome\":{\"message\":\"Player 1 joined the campaign.\"}}}"
+    },
+    {
+      "version": 2,
+      "meta": {
+        "id": "ffa180e1-a2b9-47dc-b90e-113dde73f5dc",
+        "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+        "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+        "issuer": "Admin",
+        "actor": null,
+        "expected_event_sequence": 13
+      },
+      "audience": "Host",
+      "projection_ordinal": 15,
+      "acceptance": {
+        "Command": {
+          "resulting_event_sequence": 14
+        }
+      },
+      "request_json": "{\"version\":2,\"command_id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"8ee7e864-22ef-4760-9724-654f6828e8e3\",\"input\":{\"Action\":{\"Tactical\":{\"action\":{\"SubmitRoll\":{\"result\":{\"request_id\":\"93bed96f-69fe-48bc-9548-5b15008b5a4d\",\"source\":\"Physical\",\"dice\":[{\"sides\":20,\"value\":2}]}}}}}}}",
+      "response_json": "{\"Accepted\":{\"command_id\":\"ffa180e1-a2b9-47dc-b90e-113dde73f5dc\",\"revision\":\"1795edf7-31c2-4fb6-b9b0-b6a1ef70996c\",\"outcome\":{\"message\":\"Encounter action recorded.\"}}}"
+    }
+  ]
+}

@@ -330,6 +330,7 @@ async fn opportunity_two_handed_projection_agrees_with_reaction_source_planning(
                 expected_event_sequence: state.applied_event_sequence,
             };
             let choice = WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target: actors[1],
                 delivery: WeaponDelivery::Melee,

@@ -1,0 +1,20 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "997b8ff8-f2df-4a20-aa4e-c51855e9c382",
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+    "issuer": "Admin",
+    "actor": null,
+    "expected_event_sequence": 18
+  },
+  "audience": "Host",
+  "projection_ordinal": 20,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 19
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"997b8ff8-f2df-4a20-aa4e-c51855e9c382\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"848b0620-df70-4ba3-833a-536812acc504\",\"input\":{\"Action\":{\"AwardExcessInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For returning to help a companion escape.\"}}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"997b8ff8-f2df-4a20-aa4e-c51855e9c382\",\"revision\":\"8d2fc43b-fb5a-4859-bbae-95fe43f19f2f\",\"outcome\":{\"message\":\"Extra Heroic Inspiration awarded; its owner chooses whether to give it away.\"}}}"
+}

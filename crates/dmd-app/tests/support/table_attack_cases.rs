@@ -32,7 +32,10 @@ pub(super) async fn prepare_at(f: &mut Fixture, point: SpatialPoint) -> EntityId
                 definition_id: "goblin-warrior".into(),
                 source: Some(
                     dmd_rules::tactical_creatures::creature_source_pin(
-                        dmd_rules::tactical_creatures::creature_definition("goblin-warrior")
+                        dmd_rules::tactical_creatures::current_creature_sources()
+                            .unwrap()
+                            .into_iter()
+                            .find(|source| source.id == "goblin-warrior")
                             .unwrap(),
                     )
                     .unwrap(),
@@ -173,6 +176,7 @@ async fn begin_attack(f: &Fixture, target: EntityId) -> CommandMeta {
     let action = TableAction::Tactical {
         action: TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target,
                 delivery: WeaponDelivery::Melee,
@@ -414,6 +418,7 @@ async fn thrown_weapon_custody_removes_it_from_later_table_choices() {
             TableAction::Tactical {
                 action: TacticalAction::Attack {
                     choice: WeaponUseChoice {
+                        after_equipment: None,
                         weapon,
                         target,
                         delivery: WeaponDelivery::Thrown,
@@ -487,6 +492,7 @@ async fn light_and_nick_table_choices_use_real_current_turn_triggers_only_once()
                 TableAction::Tactical {
                     action: TacticalAction::Attack {
                         choice: WeaponUseChoice {
+                            after_equipment: None,
                             weapon: daggers[0],
                             target,
                             delivery: WeaponDelivery::Melee,
@@ -558,6 +564,7 @@ async fn check_light_followup(
         ]
     );
     let choice = WeaponUseChoice {
+        after_equipment: None,
         weapon: daggers[1],
         target,
         delivery: if nick {
@@ -699,6 +706,7 @@ async fn ready_guard_weapon(f: &mut Fixture) {
         TableAction::Tactical {
             action: TacticalAction::Attack {
                 choice: WeaponUseChoice {
+                    after_equipment: None,
                     weapon,
                     target: f.actors[0],
                     delivery: WeaponDelivery::Melee,

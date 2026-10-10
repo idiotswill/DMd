@@ -1,0 +1,11 @@
+{
+  "name": "01-canonical-verify-fast",
+  "argv": [
+    "C:/Program Files/Git/bin/bash.exe",
+    "./scripts/verify-fast"
+  ],
+  "exit": 0,
+  "ended_utc": "2026-10-07T11:32:53.555133+00:00",
+  "log": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07\\01-canonical-verify-fast.log",
+  "log_sha256": "56b7a996283b1a2bc3a559c9951ca983d6afe8e43410c4ce4b0b7bb53947a759"
+}

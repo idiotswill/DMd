@@ -393,6 +393,7 @@ async fn hit(f: &mut Fixture, path: &Path, mage: EntityId, face: u16) -> Command
         channel.clone(),
         action(TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon,
                 target: mage,
                 delivery: WeaponDelivery::Melee,

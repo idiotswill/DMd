@@ -6,13 +6,38 @@ use std::collections::HashSet;
 
 /// Unified ephemeral condition views retain the actual charmer/grappler/fear source.
 pub fn condition_effects(rules: &RulesState) -> impl Iterator<Item = ActiveEffect> + '_ {
-    rules.effects.iter().cloned().chain(
-        rules
-            .tactical_effects
-            .as_ref()
-            .into_iter()
-            .flat_map(active_effect_views),
-    )
+    rules
+        .effects
+        .iter()
+        .cloned()
+        .chain(
+            rules
+                .tactical_effects
+                .as_ref()
+                .into_iter()
+                .flat_map(active_effect_views),
+        )
+        .chain(
+            rules
+                .tactical_grapples
+                .as_ref()
+                .into_iter()
+                .flat_map(|grapples| &grapples.active)
+                .map(|grip| ActiveEffect {
+                    // A query identity in its own domain, never persisted or
+                    // independently removed. Only the live relation owns expiry.
+                    id: EffectId(uuid::Uuid::new_v5(
+                        &grip.declaration.id.0,
+                        b"dmd.tactical.grip.condition.v1\0",
+                    )),
+                    source: grip.declaration.grappler,
+                    target: grip.declaration.target,
+                    condition: Some(Condition::Grappled),
+                    label: "Grappled".into(),
+                    expires: Expiry::Never,
+                    concentration_owner: None,
+                }),
+        )
 }
 
 pub fn validate_effect_attachment(state: &CampaignState) -> Result<(), RulesError> {

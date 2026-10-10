@@ -1,8 +1,10 @@
 //! Segment execution in the existing tactical queue. This module is attached only
 //! after the attack author's shared-resolution checkpoint and sealed OA adapter.
+use super::grapple::execution::{ExecutionContext, ReadContext};
 use super::turns::*;
 use super::*;
 use crate::spatial::{MovementSegment, participant_distance, perceive};
+use crate::tactical_hands::EffectiveHands;
 
 fn current(state: &CampaignState) -> Result<&TacticalMovement, RulesError> {
     resolution(state)?
@@ -17,13 +19,53 @@ fn current_mut(state: &mut CampaignState) -> Result<&mut TacticalMovement, Rules
         .ok_or_else(|| invalid("Movement work is absent."))
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub(super) enum Intent {
+    Ordinary,
+    SelfOnly,
+    GroundDrag(GrappleId),
+}
+
 pub(super) fn begin(
     state: &mut CampaignState,
     meta: &CommandMeta,
     path: &[TacticalMoveStep],
+    intent: Intent,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let actor = active(state)?;
     authorize(state, meta, actor)?;
+    let outgoing = state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_grapples.as_ref())
+        .is_some_and(|grapples| {
+            grapples
+                .active
+                .iter()
+                .any(|grip| grip.declaration.grappler == actor)
+        });
+    match intent {
+        Intent::Ordinary if outgoing => {
+            return Err(prerequisite(
+                "choose explicit self-only movement while holding a creature",
+            ));
+        }
+        Intent::SelfOnly => {
+            execution
+                .read(state)?
+                .require_guarded("self-only movement requires owned original history")?;
+            if !crate::table::grapple_enabled(state) || !outgoing {
+                return Err(prerequisite(
+                    "self-only movement requires enabled Grapple and a current held creature",
+                ));
+            }
+        }
+        Intent::GroundDrag(grip) => {
+            super::grapple::transport::admit(&execution.read(state)?, meta, grip, path)?
+        }
+        Intent::Ordinary => (),
+    }
     let movement = crate::tactical_movement::admit(state, meta, actor, path)?;
     let turn_number = state
         .rules
@@ -33,6 +75,8 @@ pub(super) fn begin(
         .turn_number;
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
+        grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
         turn_number,
@@ -52,8 +96,14 @@ pub(super) fn begin(
         work_trace,
         next_occurrence: 0,
     }));
+    if intent == Intent::SelfOnly {
+        super::grapple::capture_self_only_movement(state, meta)?;
+    }
+    if let Intent::GroundDrag(grip) = intent {
+        super::grapple::transport::capture(state, grip)?;
+    }
     push_frame(state, vec![TacticalWorkKind::MoveSegment])?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn selected_opportunity(
@@ -65,11 +115,102 @@ pub(super) fn selected_opportunity(
         .ok_or_else(|| prerequisite("No opportunity attack is due."))
 }
 
+/// Rebuild only the still-unspent selected crossing after its reactor frees a
+/// real grip hand. Already-issued attacks/raw work never enter this refresh.
+pub(super) fn refresh_after_grip_end(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    ended_grip: GrappleId,
+) -> Result<(), RulesError> {
+    let Some(movement) = resolution(state)?.movement.clone() else {
+        return Ok(());
+    };
+    let Some(window) = &movement.opportunity else {
+        return Ok(());
+    };
+    let context = resolution(state)?
+        .grapple
+        .as_ref()
+        .ok_or_else(|| invalid("refresh lacks ending proof"))?;
+    let proof = context
+        .proofs
+        .iter()
+        .find(|p| p.declaration.id == ended_grip)
+        .ok_or_else(|| invalid("refresh grip proof absent"))?;
+    if proof.declaration.grappler != window.reactor {
+        return Ok(());
+    }
+    if !context
+        .ends
+        .iter()
+        .any(|end| end.grip == ended_grip && end.caused_by == *meta)
+    {
+        return Err(invalid("refresh does not own this actual ending"));
+    }
+    if resolution(state)?.attack.is_some() || resolution(state)?.pending.is_some() {
+        return Err(invalid("issued attack cannot be refreshed"));
+    }
+    let segment = crate::tactical_movement::next_segment(state, &movement)?;
+    let hands = EffectiveHands::current(
+        state,
+        state.rules.as_ref().ok_or(RulesError::Uninitialized)?,
+        window.reactor,
+    )?;
+    let resulting = options(state, &movement, window.reactor, &segment, &hands)?;
+    if resulting == window.options {
+        return Ok(());
+    }
+    if resulting.is_empty() {
+        return Err(invalid(
+            "freeing a grip unexpectedly removes the selected crossing",
+        ));
+    }
+    let work = resolution(state)?
+        .work_trace
+        .as_ref()
+        .and_then(|trace| {
+            trace.nodes.iter().rev().find(|node| {
+                node.work.kind
+                    == (TacticalWorkKind::MovementOpportunity {
+                        reactor: window.reactor,
+                    })
+            })
+        })
+        .map(|node| TacticalWorkKey {
+            resolution: resolution(state).expect("resolution exists").origin.id,
+            occurrence: node.work.occurrence,
+        })
+        .ok_or_else(|| invalid("selected crossing has no actual work"))?;
+    let refresh = GrappleOpportunityRefresh {
+        work,
+        movement_origin: movement.origin.clone(),
+        window_origin: window.origin.clone(),
+        reactor: window.reactor,
+        step: window.step_index,
+        ended_grip,
+        previous: window.options.clone(),
+        resulting: resulting.clone(),
+    };
+    current_mut(state)?
+        .opportunity
+        .as_mut()
+        .ok_or_else(|| invalid("selected crossing absent"))?
+        .options = resulting;
+    resolution_mut(state)?
+        .grapple
+        .as_mut()
+        .ok_or_else(|| invalid("refresh context absent"))?
+        .opportunity_refreshes
+        .push(refresh);
+    Ok(())
+}
+
 fn options(
     state: &CampaignState,
     movement: &TacticalMovement,
     reactor: EntityId,
     segment: &MovementSegment,
+    hands: &EffectiveHands,
 ) -> Result<Vec<TacticalMeleeOption>, RulesError> {
     let encounter = encounter(state)?;
     let enemy = encounter
@@ -95,23 +236,43 @@ fn options(
     let before = participant_distance(enemy, mover).map_err(|e| invalid(&e.to_string()))?;
     let mut after = mover.clone();
     after.position = segment.to;
-    let after = participant_distance(enemy, &after).map_err(|e| invalid(&e.to_string()))?;
-    Ok(
-        super::attacks::opportunity_options_for_crossing(state, reactor, movement.actor, after)?
-            .into_iter()
-            .filter(|option| before <= option.reach && after > option.reach)
-            .collect(),
-    )
+    let mut enemy_after = enemy.clone();
+    if let Some(history) = super::grapple::transport::history(state)
+        && history.admission.target == reactor
+    {
+        enemy_after.position.x = enemy_after
+            .position
+            .x
+            .checked_add(segment.to.x - segment.from.x)
+            .ok_or_else(|| invalid("paired opportunity position overflow"))?;
+        enemy_after.position.y = enemy_after
+            .position
+            .y
+            .checked_add(segment.to.y - segment.from.y)
+            .ok_or_else(|| invalid("paired opportunity position overflow"))?;
+    }
+    let after = participant_distance(&enemy_after, &after).map_err(|e| invalid(&e.to_string()))?;
+    Ok(super::attacks::opportunity_options_with_hands(
+        state,
+        reactor,
+        movement.actor,
+        after,
+        hands,
+    )?
+    .into_iter()
+    .filter(|option| before <= option.reach && after > option.reach)
+    .collect())
 }
 
 pub(super) fn start(
     state: &mut CampaignState,
     meta: &CommandMeta,
     work: &TacticalWorkItem,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<bool, RulesError> {
     match work.kind {
         TacticalWorkKind::MoveSegment => {
-            advance_segment(state, meta)?;
+            advance_segment(state, meta, execution)?;
             Ok(true)
         }
         TacticalWorkKind::MovementOpportunity { reactor } => {
@@ -126,7 +287,8 @@ pub(super) fn start(
                 }
                 Err(error) => return Err(error),
             };
-            let options = match options(state, &movement, reactor, &segment) {
+            let hands = EffectiveHands::current_with_read(&execution.read(state)?, reactor)?;
+            let options = match options(state, &movement, reactor, &segment, &hands) {
                 Ok(options) => options,
                 Err(RulesError::Prerequisite(_)) => {
                     finish_movement(state, meta, TacticalMovementEnd::Stopped)?;
@@ -168,9 +330,43 @@ fn unavailable(
     Ok(())
 }
 
+/// A stopped selected transport cannot offer a departure that will never happen.
+/// Accepted Attack children have already consumed their window and remain queued.
+pub(super) fn stop_ground_transport(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+) -> Result<(), RulesError> {
+    if resolution(state)?.movement.is_none() {
+        return Ok(());
+    }
+    if let Some(window) = current_mut(state)?.opportunity.take() {
+        unavailable(state, meta, window.reactor)?;
+    }
+    let reactors = resolution(state)?
+        .frames
+        .iter()
+        .flatten()
+        .filter_map(|work| match work.kind {
+            TacticalWorkKind::MovementOpportunity { reactor } => Some(reactor),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    for frame in &mut resolution_mut(state)?.frames {
+        frame.retain(|work| !matches!(work.kind, TacticalWorkKind::MovementOpportunity { .. }));
+    }
+    for reactor in reactors {
+        unavailable(state, meta, reactor)?;
+    }
+    Ok(())
+}
+
 /// Resolve canceled source windows before asking anyone to order phantom choices.
 /// Called by the common pump after nested consequences and before its frame choice.
-pub(super) fn prune(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+pub(super) fn prune(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let Some(movement) = resolution(state)?.movement.clone() else {
         return Ok(());
     };
@@ -192,8 +388,9 @@ pub(super) fn prune(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
         Err(error) => return Err(error),
     };
     for reactor in queued {
+        let hands = EffectiveHands::current_with_read(&execution.read(state)?, reactor)?;
         let still_due = match &segment {
-            Some(segment) => match options(state, &movement, reactor, segment) {
+            Some(segment) => match options(state, &movement, reactor, segment, &hands) {
                 Ok(options) => !options.is_empty(),
                 // Keep the MoveSegment underneath existing children. It rechecks
                 // this unresolved source crossing and stops before departing;
@@ -213,7 +410,11 @@ pub(super) fn prune(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
     Ok(())
 }
 
-fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+fn advance_segment(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let movement = current(state)?.clone();
     if usize::from(movement.next_step) == movement.path.len() {
         return finish_movement(state, meta, TacticalMovementEnd::Completed);
@@ -239,7 +440,7 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             return finish_movement(
                 state,
                 meta,
-                if displaced || capability_lost {
+                if displaced || capability_lost || super::grapple::transport::interrupted(state)? {
                     TacticalMovementEnd::Interrupted
                 } else {
                     TacticalMovementEnd::Stopped
@@ -263,7 +464,8 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         if actor == movement.actor || answered {
             continue;
         }
-        let options = match options(state, &movement, actor, &segment) {
+        let hands = EffectiveHands::current_with_read(&execution.read(state)?, actor)?;
+        let options = match options(state, &movement, actor, &segment, &hands) {
             Ok(options) => options,
             Err(RulesError::Prerequisite(_)) => {
                 return finish_movement(state, meta, TacticalMovementEnd::Stopped);
@@ -296,6 +498,26 @@ fn advance_segment(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
                 .collect(),
         )?;
         return Ok(());
+    }
+    if let Some(coupled) = crate::tactical_movement::next_coupled_segment(state, &movement)? {
+        if coupled.holder != segment {
+            return Err(invalid("paired movement query changed before commit"));
+        }
+        super::grapple::transport::record(state, meta, &coupled)?;
+        state
+            .encounter
+            .as_mut()
+            .ok_or_else(|| invalid("Battlefield disappeared."))?
+            .participants
+            .iter_mut()
+            .find(|p| p.entity_id == coupled.target.actor)
+            .ok_or_else(|| invalid("held target disappeared"))?
+            .position = coupled.target.to;
+        crate::kernel::interrupt_rest(
+            state.rules.as_mut().ok_or(RulesError::Uninitialized)?,
+            coupled.target.actor,
+            state.clock.now,
+        );
     }
     state
         .encounter
@@ -372,6 +594,7 @@ fn finish_movement(
 ) -> Result<(), RulesError> {
     let movement = current(state)?.clone();
     let result = TacticalMovementResult {
+        transport: super::grapple::transport::result(state)?,
         original: movement.origin.clone(),
         cause: meta.clone(),
         actor: movement.actor,
@@ -411,11 +634,21 @@ fn finish_movement(
 
 /// The attack adapter calls this before spending any reaction. It cannot accept a
 /// caller-authored window: the selected source and crossing belong to this state.
-pub(super) fn validate_opportunity(
-    state: &CampaignState,
+pub(super) fn validate_opportunity_with_read<'a>(
+    read: &ReadContext<'a>,
     reactor: EntityId,
     mover: EntityId,
-) -> Result<&TacticalOpportunityWindow, RulesError> {
+) -> Result<&'a TacticalOpportunityWindow, RulesError> {
+    let hands = EffectiveHands::current_with_read(read, reactor)?;
+    validate_opportunity_with_hands(read.state(), reactor, mover, &hands)
+}
+
+pub(super) fn validate_opportunity_with_hands<'a>(
+    state: &'a CampaignState,
+    reactor: EntityId,
+    mover: EntityId,
+    hands: &EffectiveHands,
+) -> Result<&'a TacticalOpportunityWindow, RulesError> {
     let movement = current(state)?;
     let window = movement
         .opportunity
@@ -441,7 +674,7 @@ pub(super) fn validate_opportunity(
     if window.from != segment.from
         || window.to != segment.to
         || window.options.is_empty()
-        || options(state, movement, reactor, &segment)? != window.options
+        || options(state, movement, reactor, &segment, hands)? != window.options
     {
         return Err(invalid(
             "Opportunity source, geometry or eligibility changed.",
@@ -450,12 +683,16 @@ pub(super) fn validate_opportunity(
     Ok(window)
 }
 
-pub(super) fn decline(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+pub(super) fn decline(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let window = current(state)?
         .opportunity
         .clone()
         .ok_or_else(|| prerequisite("No opportunity attack is due."))?;
-    validate_opportunity(state, window.reactor, window.mover)?;
+    validate_opportunity_with_read(&execution.read(state)?, window.reactor, window.mover)?;
     authorize(state, meta, window.reactor)?;
     current_mut(state)?
         .decisions
@@ -465,7 +702,7 @@ pub(super) fn decline(state: &mut CampaignState, meta: &CommandMeta) -> Result<(
             kind: TacticalOpportunityDecisionKind::Declined,
         });
     current_mut(state)?.opportunity = None;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 /// Called only after the source attack adapter has validated and reserved its reaction.
@@ -498,7 +735,8 @@ pub(super) fn record_attack(
     Ok(())
 }
 
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    let state = read.state();
     crate::tactical_movement::validate_budget_progress(state)?;
     if let Some(origin) = &flow(state)?.budget.movement_origin {
         authorize(state, origin, active(state)?)?;
@@ -536,7 +774,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
                 ));
             }
             let segment = crate::tactical_movement::next_segment(state, movement)?;
-            if options(state, movement, reactor, &segment)?.is_empty() {
+            let hands = EffectiveHands::current_with_read(read, reactor)?;
+            if options(state, movement, reactor, &segment, &hands)?.is_empty() {
                 return Err(invalid("Queued opportunity is no longer source-eligible."));
             }
         }
@@ -596,7 +835,7 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         }
     }
     if let Some(window) = &movement.opportunity {
-        validate_opportunity(state, window.reactor, window.mover)?;
+        validate_opportunity_with_read(read, window.reactor, window.mover)?;
     }
     let next_steps = resolution
         .frames

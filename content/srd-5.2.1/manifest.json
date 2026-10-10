@@ -9,10 +9,10 @@
   "files": [
     {
       "path": "NOTICE.md",
-      "byte_len": 3986,
+      "byte_len": 6106,
       "checksum": {
         "algorithm": "fnv1a64",
-        "value": "ad7e5f1ef054ef8e"
+        "value": "7a7344ee097a0ee0"
       }
     },
     {
@@ -61,6 +61,38 @@
       "checksum": {
         "algorithm": "fnv1a64",
         "value": "fb84cb6236c1303f"
+      }
+    },
+    {
+      "path": "goblin-warrior-v2.json",
+      "byte_len": 4011,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "3ab5048b144641fc"
+      }
+    },
+    {
+      "path": "ogre-v1.json",
+      "byte_len": 3775,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "fbd9e806fb626bc4"
+      }
+    },
+    {
+      "path": "mage-v2.json",
+      "byte_len": 3287,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "37ecf4043c2c86d0"
+      }
+    },
+    {
+      "path": "equipment-mass-v1.json",
+      "byte_len": 17077,
+      "checksum": {
+        "algorithm": "fnv1a64",
+        "value": "1ffe74159f6889cf"
       }
     }
   ]

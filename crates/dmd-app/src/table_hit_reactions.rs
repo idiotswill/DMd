@@ -20,10 +20,11 @@ pub(super) fn player_controlled(state: &CampaignState, actor: EntityId) -> bool 
 }
 
 pub(super) fn view(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     own: &HashSet<EntityId>,
     host: bool,
 ) -> Result<Option<Box<TableHitView>>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -130,7 +131,8 @@ pub(super) fn view(
             key,
             actor: target,
             selected: hit.stage == TacticalHitReviewStage::Selected,
-            shield: dmd_rules::tactical::shield_choices(state, target)
+            shield: read
+                .shield_choices(target)
                 .map_err(|error| error.to_string())?,
         })
     } else {

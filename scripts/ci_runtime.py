@@ -16,9 +16,13 @@ import subprocess
 import sys
 import tomllib
 
-ALLOCATIONS = ('table-loop', 'legacy-missile', 'grapple-public', 'remainder')
+ALLOCATIONS = ('table-loop', 'legacy-missile', 'grapple-public', 'physical-history-decline',
+               'physical-history-ground', 'physical-history-recipient', 'remainder')
 SPECIAL = {'table_loop': 'table-loop', 'legacy_shield_missile_v1_replay': 'legacy-missile',
-           'table_grapple_public': 'grapple-public'}
+           'table_grapple_public': 'grapple-public',
+           'physical_history_decline': 'physical-history-decline',
+           'physical_history_ground': 'physical-history-ground',
+           'physical_history_recipient': 'physical-history-recipient'}
 SCHEMA = 2
 COMMAND_PHASES = ('metadata', 'bootstrap', 'build', 'cargo-execution')
 ANSI = re.compile(r'\x1b\[[0-?]*[ -/]*[@-~]')

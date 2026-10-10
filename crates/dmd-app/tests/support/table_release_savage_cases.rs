@@ -21,6 +21,7 @@ fn marker(state: &CampaignState, actor: EntityId) -> Option<u64> {
 
 fn dagger_choice(dagger: ItemId, target: EntityId) -> WeaponUseChoice {
     WeaponUseChoice {
+        after_equipment: None,
         weapon: dagger,
         target,
         delivery: WeaponDelivery::Melee,

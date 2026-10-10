@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "b0edae9a-4b87-4bd1-9cc2-131175358801",
+    "campaign_id": "9f23b744-599c-4344-8038-8b60d3747480",
+    "session_id": "1bc373fa-2668-44a4-872c-eca487d0c457",
+    "issuer": {
+      "Player": "73bdce9d-83ab-4d9f-963d-d42a402d887f"
+    },
+    "actor": {
+      "Entity": "097625ca-e57d-4373-baef-435f775597be"
+    },
+    "expected_event_sequence": 19
+  },
+  "audience": {
+    "Player": "73bdce9d-83ab-4d9f-963d-d42a402d887f"
+  },
+  "projection_ordinal": 21,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 20
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"b0edae9a-4b87-4bd1-9cc2-131175358801\",\"campaign_id\":\"9f23b744-599c-4344-8038-8b60d3747480\",\"session_id\":\"1bc373fa-2668-44a4-872c-eca487d0c457\",\"channel\":{\"Player\":{\"player_id\":\"73bdce9d-83ab-4d9f-963d-d42a402d887f\",\"character_id\":\"8a0bfa05-e9bf-4b9b-9352-abda57b58a0e\"}},\"revision\":\"82e16f2f-32cc-41df-aaa5-324f0a616be3\",\"input\":{\"InspirationTransfer\":{\"handle\":\"ea6de780-b146-415a-afef-33e56bcfb1c7\"}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"b0edae9a-4b87-4bd1-9cc2-131175358801\",\"revision\":\"29eea467-7931-467e-882e-d1dece598b4a\",\"outcome\":{\"message\":\"Extra Heroic Inspiration declined; the original Inspiration is retained.\"}}}"
+}

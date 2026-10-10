@@ -32,7 +32,11 @@ async fn create_casters(f: &mut Fixture) -> (EntityId, EntityId, EntityId) {
                     definition_id: definition.into(),
                     source: Some(
                         dmd_rules::tactical_creatures::creature_source_pin(
-                            dmd_rules::tactical_creatures::creature_definition(definition).unwrap(),
+                            dmd_rules::tactical_creatures::current_creature_sources()
+                                .unwrap()
+                                .into_iter()
+                                .find(|source| source.id == definition)
+                                .unwrap(),
                         )
                         .unwrap(),
                     ),

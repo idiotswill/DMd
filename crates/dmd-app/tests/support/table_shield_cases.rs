@@ -182,6 +182,7 @@ pub(super) fn bow_action(
     TacticalAction::CreatureWeaponAttack {
         feature_id: "shortbow".into(),
         choice: CreatureWeaponUseChoice {
+            after_equipment: None,
             weapon: bow,
             target,
             grip: WeaponGrip::TwoHands,

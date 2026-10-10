@@ -1,0 +1,81 @@
+# Combined Grapple/Ground compilation correction
+
+Status: planned before source edits, 2026-10-06. Root is sole writer on
+`codex/gate4-grapple-positive-integration`, current local e8bb926 after normal
+receipt of Groundb30. Published dae7d0f failed all four compiler jobs; both
+architecture/genericity guards passed. Full actual logs are preserved externally
+as tooling/ci-oct6/pr70-dae-job-{112209846649,112209846900,112209750161,112209750396}-2026-10-06.log.
+
+## Findings and bounded correction
+
+The combined production opportunity path still calls the removed ordinary
+`creature_weapon::validate_source`, although it already owns the admitted attack
+read. Pass that exact read to the existing `validate_source_with_read` operation,
+preserving source damage and opportunity admission validation.
+
+The complete incoming private Ground mechanism tests still use their old helper
+entry points. Public Grapple converted those production functions to explicit
+ExecutionContext/ReadContext, and did not need their old names. Restore only
+`cfg(test)` ordinary adapters for those names, following the existing ordinary
+attack validate and continuation submit adapters. Each delegates to the real
+current implementation using the existing ordinary context, which cannot mint
+guarded Grapple authority. No production bypass or new context constructor.
+
+Ground's private PreparedPickup tests likewise use the prior eight-argument
+new/derive methods and plan method. Keep those exact tests by giving the actual
+current methods explicit with-hands names, retaining their exact implementation,
+and adding cfg(test) prior-signature adapters that pass no derived hands/read.
+All production callers continue passing the actual owned hands/read. The existing
+raw/marked-state guards and negative controls remain intact.
+
+## Acceptance and next action
+
+Commit this plan before source changes. Inspect every actual compiler diagnostic,
+modify only the named forwarding/adapter boundaries, and preserve every existing
+test body, assertion, source/content file and capture. Compare complete inverse
+diffs and run direct formatting/whitespace checks, then fresh exact-head CI.
+No local competing Cargo run while the canonical Expiry391 package holds the
+heavy slot. This is a compile correction; no runtime or Gate 4 acceptance follows
+until the original and combined tests execute successfully. Remaining positive
+scenarios, native acceptance, full canonical and integration checks remain due.
+
+## Authored checkpoint
+
+Plan10ab78b preceded the correction. The actual opportunity call now forwards
+its already-owned admitted read. Twelve cfg(test) adapters preserve the complete
+existing private-test source files; all consuming production calls still use
+the explicit context/hands methods. No guarded constructor was added. The
+Ground plan adapter consumes self, retaining the original one-use test surface.
+
+Root reviewed all six complete diffs and direct formatting/checks passed.
+Audit c4a1483628afbbf7f24632f6ece94a693863df17ce08abbaaf3b038f34ab2342
+checks the complete non-whitespace inverse of every changed file after removing
+only these adapters, reversing the private method renames and restoring the
+single forwarding call. It also checks that every existing test file remains
+unchanged. The inverse ignores formatting; the full visible diff was separately
+read. All compiler/runtime results for this correction remain pending. Preserve
+the dae failure logs and publish for fresh exact-head verification.
+
+## Application compile follow-up (planned before edits)
+
+Exact 2ffb7c4 CI passes the rules compilation that previously failed, then both
+platforms and both toolchains fail in dmd-app. Actual logs are retained as
+tooling/ci-oct6/pr70-2ff-job-{112215192501,112215193212,112215192698,112215193081}-2026-10-06.log.
+There are three missing references: source-control projection forwards an
+unbound pack variable; tactical presentation lacks the RulesPack type import;
+the existing Ogre private test lacks the RulesPack import formerly supplied by
+its parent module. Forward read.pack() from the same owned projection read, add
+the production type import, and import the type directly in the private test.
+No changes to authority, test bodies/assertions, fixtures, content or read
+construction are needed. Review the full three-line diff, format/check and
+publish for another fresh exact-head CI run. Runtime remains unverified.
+
+## Strict lint follow-up (planned before edits)
+
+Exact 10503d1 now passes Linux all-target compilation and MSRV. Its strict Clippy
+job 112218201572 fails three needless_borrow diagnostics: ground.rs:678 passes
+an already borrowed EffectiveHands by another reference, and attacks/validation.rs
+lines 442/493 do the same with the already borrowed physical plan. Remove only
+these three redundant ampersands; preserve the same actual arguments, ownership,
+validation order and all tests. Inspect full diff and direct formatting, then
+publish for fresh checks. The complete actual log is retained externally.

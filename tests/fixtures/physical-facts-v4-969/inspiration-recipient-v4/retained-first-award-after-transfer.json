@@ -1,0 +1,20 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "b891d696-9ff7-419a-a637-57760a0e547f",
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+    "issuer": "Admin",
+    "actor": null,
+    "expected_event_sequence": 17
+  },
+  "audience": "Host",
+  "projection_ordinal": 19,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 18
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":\"Host\",\"revision\":\"36c10a3e-376c-44be-9f92-c8b9dff8c093\",\"input\":{\"Action\":{\"AwardHeroicInspiration\":{\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\",\"reason\":\"For protecting the retreating group.\"}}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"b891d696-9ff7-419a-a637-57760a0e547f\",\"revision\":\"848b0620-df70-4ba3-833a-536812acc504\",\"outcome\":{\"message\":\"Heroic Inspiration awarded.\"}}}"
+}

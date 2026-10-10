@@ -1,4 +1,4 @@
-use std::{fs, path::PathBuf, str::FromStr};
+use std::{path::PathBuf, str::FromStr};
 
 use dmd_domain::{
     Campaign, CampaignId, CampaignState, CampaignStatus, CommandId, CommandIssuer, CommandMeta,
@@ -11,6 +11,9 @@ use dmd_persistence::{
     migrate_sqlite, open_campaign, open_sqlite, purge_campaign, restore_campaign,
 };
 use sqlx::sqlite::{SqliteConnectOptions, SqlitePoolOptions};
+
+#[path = "support/sqlite_test_cleanup.rs"]
+mod sqlite_test_cleanup;
 
 async fn test_pool() -> sqlx::SqlitePool {
     let options = SqliteConnectOptions::from_str("sqlite::memory:")
@@ -378,6 +381,8 @@ async fn restored_campaign_reopens_after_database_restart() {
     }
 
     if PathBuf::from(&path).exists() {
-        fs::remove_file(&path).expect("temporary database should delete");
+        sqlite_test_cleanup::remove_closed_file(&path)
+            .await
+            .expect("temporary database should delete");
     }
 }

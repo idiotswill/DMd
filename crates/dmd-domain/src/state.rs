@@ -12,6 +12,8 @@ pub const CURRENT_STATE_SCHEMA_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct CampaignState {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical_facts: Option<Box<crate::PhysicalFacts>>,
     /// Authenticated completion/highwater and old scene placements. Absent keeps
     /// the exact historical wire; resources remain in their existing stores.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -47,6 +49,7 @@ impl CampaignState {
     #[must_use]
     pub fn empty(campaign: Campaign, clock: WorldClock) -> Self {
         Self {
+            physical_facts: None,
             encounter_history: None,
             encounter: None,
             table: None,

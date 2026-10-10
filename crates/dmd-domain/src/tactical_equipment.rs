@@ -68,8 +68,18 @@ pub enum EquipmentChangeTiming {
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum AttackEquipmentOperation {
-    Equip { item: ItemId, hand: Hand },
-    Unequip { item: ItemId },
+    Equip {
+        item: ItemId,
+        hand: Hand,
+    },
+    Unequip {
+        item: ItemId,
+    },
+    /// Guarded foundation only; public execution is not enabled.
+    Pickup {
+        item: ItemId,
+        hand: Hand,
+    },
 }
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -80,6 +90,8 @@ pub struct AttackEquipmentChange {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct WeaponUseChoice {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment: Option<crate::AfterAttackEquipmentIntent>,
     pub weapon: ItemId,
     pub target: EntityId,
     pub delivery: WeaponDelivery,
@@ -105,6 +117,10 @@ pub enum WeaponAttackOutcome {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct WeaponAttackReceipt {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after_equipment: Option<Box<crate::AttackAfterEquipmentReceipt>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ground_pickup_before: Option<crate::AttackGroundPickupBefore>,
     pub origin: CommandMeta,
     pub actor: EntityId,
     pub turn_number: u64,

@@ -3,9 +3,10 @@ use dmd_domain::*;
 use dmd_rules::tactical_inventory::{EquipmentKind, equipment_definition};
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableShieldOptions>, String> {
+    let state = read.state();
     let Some(rules) = &state.rules else {
         return Ok(None);
     };
@@ -24,6 +25,10 @@ pub(super) fn options(
     else {
         return Ok(None);
     };
+    let available = read.hands(actor).map_err(|error| error.to_string())?;
+    available
+        .validate_loadout(&loadout.hands)
+        .map_err(|error| error.to_string())?;
     let mut shields = Vec::new();
     if loadout.shield.is_none() {
         for item in state.items.values().filter(|item| {
@@ -39,8 +44,7 @@ pub(super) fn options(
             let hands = [Hand::Left, Hand::Right]
                 .into_iter()
                 .filter(|hand| {
-                    (loadout.hands.hands[hand.index()] == HandAssignment::Free
-                        || loadout.hands.hands[hand.index()] == HandAssignment::Item(item.id))
+                    available.can_hold(&loadout.hands, *hand, item.id)
                         && loadout.hands.hands[1 - hand.index()] != HandAssignment::Item(item.id)
                 })
                 .collect::<Vec<_>>();

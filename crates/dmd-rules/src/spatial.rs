@@ -3,6 +3,7 @@
 mod areas;
 mod falling;
 mod geometry;
+mod ground_support;
 mod movement;
 mod perception;
 #[cfg(test)]

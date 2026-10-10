@@ -11,24 +11,25 @@ use dmd_rules::tactical_spells::*;
 use crate::{TableAttackTarget, TableCastingOptions, TableCastingVariant};
 
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<TableCastingOptions>, String> {
-    options_with_self_target(state, actor, false)
+    options_with_self_target(read, actor, false)
 }
 
 pub(super) fn options_v2(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<TableCastingOptions>, String> {
-    options_with_self_target(state, actor, true)
+    options_with_self_target(read, actor, true)
 }
 
 fn options_with_self_target(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
     self_target: bool,
 ) -> Result<Option<TableCastingOptions>, String> {
+    let state = read.state();
     let Some(rules) = &state.rules else {
         return Ok(None);
     };
@@ -192,7 +193,7 @@ fn options_with_self_target(
                             ]);
                         // Type eligibility remains private. A legal wrong-type selection
                         // is still offered and later pays/resolves according to source.
-                        bind_spell(state, &plan, &selection)
+                        read.bind_spell(&plan, &selection)
                             .is_ok_and(|bound| bound.consumed_material().is_none())
                     })
                     .cloned()

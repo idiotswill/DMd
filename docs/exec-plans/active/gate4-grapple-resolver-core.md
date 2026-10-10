@@ -1,0 +1,411 @@
+# Gate 4 — Guarded ordinary-Grapple resolver core
+
+Status: the bounded PR56 synthetic opportunity-menu correction is authored and returned clean for root and independent review on 2026-10-04. Plan-before-code is `910a6671928d761007d768d6f0b7ca414a3f8907`. Only this existing test and this plan change; production and all other controls retain exact `5296d06f` bytes. Direct rustfmt and diff checks pass; the correction is UNCOMPILED/UNRUN. Writing returns to root and pauses pending explicit transfer. Earlier focused46 success remains attributed to `afc40ef`, not a full receiving-head pass. All public guards and complete Gate4 obligations remain required.
+
+## Receiving-head CI failure and bounded correction plan — 2026-10-04
+
+Fetched `origin/codex/gate4-grapple-resolver-core` still equals clean local
+`5296d06f2619027a9ce554131cb0ecd8c80dc607`, tree
+`7fd8d82ffb7f2412271e821e99d5b93f8f02b0fc`; fetched main remains
+`dbf1d633460473183324b4ec519e8d1980884b5c`. Root confirmed the discovered
+checkout/branch before authoring. No foundation/condition/attack-context branch
+is included in this writer transfer.
+
+Actual Linux run37204758444 attempt1/job111443524789 executes
+`cargo test --locked --workspace` with rustc1.99.0. Its synthetic checkout
+`60b58444d9a1e98e04976a9355fdabbb0bea500f` has parents fa4/5296 and the exact
+5296 tree, verified from saved REST commit objects and literal checkout log.
+Thirty-nine completed result groups contain485 passes/1 failure, zero ignored
+or filtered. The last rules-library group is199/1; all24 private core controls
+passed inside it. Domain Grapple11, original Flow4 eight and table62 groups also
+completed. The workspace exits101; later groups are not execution evidence.
+
+The only failure is
+`tactical::attacks::opportunity::hand_tests::current_two_hand_options_change_without_removing_unarmed_or_rewriting_selected_work`
+at opportunity.rs479:73: `Invalid("Grapple equipment decision/stage differs")`.
+Full decoded UTF-8 log is external
+`tooling/ci-ground-watch-2026-10-04/job-111443524789-20261004171229.log`,
+143526 bytes/SHA256
+`ec19fa02c810f6cc41ce2f820dbbc3fea795bd7e8daebaca5152806d1e761767`.
+The original connector JSON, attempt/head/commit provenance and complete literal
+group audit are preserved there; handoff SHA256
+`c05237b47427567951e927bf7d43ea23a039a928bf01deffde9311b1417cb798`.
+
+Source diagnosis: the pure menu test installs a synthetic provisional Attempt,
+then writes Complete/Withdrawn with neither a before operation nor an after
+decision. `EffectiveHands::current` correctly calls strict domain shape
+validation, which requires exactly one consumed allowance for Complete.
+Actual `grapple::equipment::choose` records the owned Applied/Declined decision
+and work before setting Complete; withdrawal with an unused allowance first
+queues that actual equipment work. No production defect is demonstrated.
+
+After committing this plan, change only this existing test and this plan:
+
+- Retain the original malformed Complete/Withdrawn image as an explicit exact
+  error/no-mutation negative, rather than relaxing the production guard.
+- Supply the positive synthetic completed image's explicit Declined decision,
+  distinct later command, matching GrappleAfterEquipment node/key and causal
+  Begin parent in its synthetic work trace. Keep its non-gameplay status explicit;
+  this is a source/shape menu composition control, not accepted release/replay.
+- Preserve the original provisional blocking, unarmed inclusion, glaive reach,
+  restored exact menu and empty opportunity-refresh assertions. Assert the
+  positive query also leaves the whole state unchanged. Do not change the
+  shared fixture/helper, source profile, physical planner, domain validator,
+  production behavior, public refusal or any other control/capture.
+- Direct rustfmt and diff/static preservation checks only. Return clean exact
+  correction and full diff to root plus a different peer before execution.
+  Root must later run this exact named control (nonzero matching count), relevant
+  hands/core/domain checks and full canonical/receiving-head CI as assigned.
+
+This is not a waiver of the original lifecycle/read-context/LR/replay/app/native
+contract, and no development-base merge or public activation is authorized.
+
+Authored result: the original missing-decision image now has an exact-error and
+whole-state no-mutation assertion. The positive synthetic Complete image adds a
+Declined receipt with later identity/sequence, its exact AfterEquipment work key,
+matching node and Begin parent, and consistent occurrence bound. It explicitly
+passes the unchanged shape validator before the original menu-equality check;
+that query also leaves the whole state unchanged. All original assertions remain.
+No source/helper/profile/fixture or production guard changed. Root's next action
+is complete exact-head review by root and a different peer before assigning the
+named test and broader verification; no execution result is inferred from syntax.
+
+Branch: `codex/gate4-grapple-resolver-core`, checkout `gate4-grapple-resolver-core`, a fresh follow-on branch/PR from the reviewed Grapple foundation integration. Keep PR54's foundation, effective-hands and Goblin coexistence source frozen for its separate verification. Dependencies remain development inputs until independently accepted; do not merge a stacked PR into its development base.
+
+Reviewed starting head: `fa4ea903dfe44333c2cefb1b1b1acc91ba160f8f`, tree `5922405605b45d00a0e5993b1fd4e7e43df2d7b1`. It normally integrates Shove `f9c0f3df7c6c7ed8c53c41adb95480e634a15c20`, Air3f/release8c/main d88 and the exact reviewed Goblin coexistence child. Root's complete static integration review is external `tooling/grapple-fa4ea90-root-independent-integration-review-2026-09-30.md`, SHA256 `69f7e022a0589dc39f983eb95bb400fc94378c3cad51c3d377a038b1dca8c6b3`; independent rerun byte audit is `6c385abb1ce3857fc300ee988cdf81691015748b02b3528d9c1f2b6a6a79f728`. These are static CLEAR, not compilation, runtime or dependency acceptance. Root created this separate clean worktree from the exact reviewed head; foundation PR54 remains frozen. The original external core draft was read against801; its integration changes only the specified dependency unions, new test and documentation. Reconcile exact signatures against fa4 before source editing.
+
+Design input: `gate4-grapple-authenticated-resolver-next-slice-map-2026-09-30.md`, SHA256 `e9ecc2a7df6785fbdb3dd8db7e7ec5cbe63652d5a681193b366b75ab3889ab67`. Independent blueprint review: `gate4-grapple-authenticated-resolver-map-independent-review-2026-09-30.md`, SHA256 `3b40b3efee4a26f6b8a6a9df44cfa6e8f3afd4660a65a6bab79a33a18c1c76df`. The map's full obligations remain authoritative design input; this draft implements only its guarded steps 1–3.
+
+## Objective, authority and completion boundary
+
+Implement one coherent private rules core: source-authenticated paid Attempt, target-owned STR/DEX save and exact outcome evidence, the one before-or-after equipment allowance, withdrawal, paid selected-grip Escape, and owner release for the core's supported consumer contexts. These are production-intended handlers wired to the existing continuation stack, not a parallel test engine. They remain unreachable through both public live and historical command execution.
+
+This advances the product definition's real tactical actions, physical dice, provenance, atomic invalid-input behavior and recoverable local play. It does not satisfy player-facing feature completion. Root `AGENTS.md`, product-definition feature-completion rule, Gate04, ADR025/026/028, the full lifecycle plan and effective-hands plan remain in force. Drag/carry, special body parts, PvP consent, broader reaction/Ready families and all later map steps stay Gate4 obligations.
+
+Checkpoint completion means a clean independently reviewed exact head with the code and meaningful guarded tests below, accurate validation results and all public refusals preserved. Passing these tests cannot establish runnable Grapple, historical replay, table/SQLite, privacy or native acceptance. Do not remove any global Grapple authority/raw-history guard in this checkpoint.
+
+## Permanent and temporary execution boundaries
+
+In `tactical.rs::resolve_with_policy`, after existing campaign/revision checks and before mutation, call a closed new-family dispatch check for both `ExecutionPolicy::Live` and `Historical`. For any new Grapple-family action it first requires `TacticalExecutionVersion::EncounterReleaseV1.flow_version()` exactly, then unconditionally returns the temporary not-enabled prerequisite. Ordinary actions retain their existing error/source-query ordering. No enabled flag, environment setting, feature flag, test-only production bypass or caller-selected policy is added.
+
+Keep real match arms below that refusal referencing the private core handlers. This provides actual production call sites and allows unit tests inside the private module to exercise those same handlers directly; it does not create a second public reducer. The permanent flow5 check must survive eventual removal of the temporary refusal. There has been no Grapple1–4 producer. Historical dispatch must not admit a forged immediate no-effect, withdrawal or decline just because its final attachment disappears.
+
+Preserve `kernel/validation.rs::validate_state`'s `has_unimplemented_grapple_records` refusal and raw19/20 rejection, `tactical/validation.rs::validate_tactical_state`'s early refusal, old-schema/restore-anchor rejection, and the current retired-raw-only hand refusal. New semantic validators are called by the actual private handlers/work/request paths, not substituted for the public guards. Old no-authority histories keep their exact path.
+
+The private release/withdrawal implementation supports only the contexts actually implemented here: its own Attempt/save/LR/equipment work, its own selected Escape, or an otherwise idle relation with no suspended consumer. Explicitly refuse an unsupported attack, cast/source child, movement/OA, fall, hit/missile, simultaneous or other temporal consumer before mutation. Establishment also refuses a context whose required non-Hover flight-loss child is not yet implemented. This is a temporary internal checkpoint boundary, never an idle-only product rule; full free release during every wait and flight/break behavior remain activation blockers. Add no inert callbacks claiming those effects occurred. Because Grappled condition/zero-Speed projection and permanent ending of Dodge are deferred, also refuse before mutation any relevant core transition or read whose correct result needs those missing consumers. In particular, do not privately establish a grip on a currently Dodging target and then permit release/repeated saves to revive Dodge. Derive that refusal from the relevant actual state/source, and test unchanged state; do not make an incorrect positive pass by omitting the Dodge/Speed effects. This temporary private refusal is removed with the real step5 lifecycle, never exposed as a product restriction.
+
+## Required record amendments
+
+In `dmd-domain/src/tactical_grapples.rs`, add required `TacticalGrappleAttempt.equipment: GrappleEquipmentAdmission`:
+
+```rust
+pub struct GrappleEquipmentAdmission {
+    pub equipment_before: ActorEquipmentLoadout,
+    pub before_change: Option<AttackEquipmentOperation>,
+    pub after: Option<GrappleEquipmentDecision>,
+}
+pub enum GrappleEquipmentDecision {
+    Declined { chosen_by: CommandMeta, work: TacticalWorkKey },
+    Applied {
+        chosen_by: CommandMeta,
+        work: TacticalWorkKey,
+        operation: AttackEquipmentOperation,
+        equipment_before: Box<ActorEquipmentLoadout>,
+    },
+}
+```
+
+Use the existing strict serde conventions: unknown fields reject; absent optional fields omit consistently. The before operation belongs to `declaration.origin`; the after decision belongs to the selected `GrappleAfterEquipment { grip }` work in the enclosing trace. Keep paid origin distinct from enclosing resolution identity. The Applied image is the image at that later choice. Never store a caller-provided after-state or boolean claiming the allowance was spent. Decline changes no physical loadout metadata. Applied changes only the allowed physical weapon hand assignment and records the actual applying command, preserving worn armor/shield. No fake `WeaponUseChoice`, weapon receipt or raw occurrence is created.
+
+Structural and semantic stage rules:
+
+| Durable stage | Exact required state |
+| --- | --- |
+| SaveChoice | Selected BeginGrapple work; no save/outcome/after decision; before image and optional before operation retained; exact provisional hand reserved. |
+| Saving | Save key/request chosen by target; no outcome/after decision; exactly one matching raw pending or failed-save pause, including genuine automatic failure; no selected choice. |
+| AfterEquipment | Paid final outcome or withdrawal; before_change is None; no after decision yet; selected matching GrappleAfterEquipment work. Established grip already reserves its hand; other outcomes have no provisional reservation. |
+| Complete | Outcome present; either before_change is Some with after None, or before None with an owned Applied/Declined after decision. No selected/pending work for this activity. |
+
+Queued/Resolving are internal transitions, not durable material pauses in this core. Validators must distinguish queued frame work from selected durable work instead of forcing every queued node through the selected-stage check. Update both current synthetic Attempt constructors (`dmd-domain/tests/tactical_grapple_records.rs`, `dmd-rules/src/tactical_hands/tests.rs`) to supply the new evidence; keep their synthetic status explicit. Change only the new attachment's version requirement from4 to5 and corresponding synthetic fixture version literals; do not rewrite old captures or invent Grapple4 continuation tests.
+
+**Concrete interim-save correction:** `TacticalGrappleSave::validate_shape` currently rejects `request=None, proof=None`, but an actual automatic failed save may wait for Legendary Resistance, and withdrawal may retire that wait before any final save proof exists. Keep `GrappleSaveProof` final-only. Refactor save shape validation so an unresolved no-request save is permitted only through Attempt-context validation: either an exact matching `resolution.failed_save` with no raw result and matching automatic `TacticalSaveDecision`, or a Withdrawn outcome whose original no-die decision is retained and semantically authenticated. The resolution shape layer can bind the exact failed work/key and withdrawal chronology; the private rules validator must bind the real flow decision. A live `TacticalGrip` still requires final failed proof. Bare save, missing decision, wrong key, a made-up finalizer and an automatic decision changed into physical evidence all reject. An issued physical request withdrawn before submission has its exact canceled ID; accepted physical dice/LR-wait withdrawal retains accepted faces and adds no false cancellation. No new interim wire field is needed if these existing receipts suffice; surface any concrete missing receipt before expanding the schema.
+
+The request producer has an earlier transient: `continuations::start_inner` derives the request before installing its pending tuple or Automatic decision. At that moment choose_save has installed Saving with request=None/proof=None, but the future receipt does not exist. Separate narrow entered-producer request/admission validation from durable material-pause validation, or order the actual writes so no caller demands a future receipt. Authenticate exact entered work, source and stage in that internal path; do not permit a bare unresolved no-die save as a durable state or add a public bypass. Exercise the real private pump through automatic no-LR completion as well as LR pause and withdrawal.
+
+## Exact action and work surface
+
+Add only these implemented core variants to `TacticalAction` now; later self-only movement will be added with its actual producer in step5 and included in the same both-policy guard at that time. Use clear Rust names below unless integration produces an actual naming conflict.
+
+| Action | Private production handler and authority |
+| --- | --- |
+| `Grapple { target, hand, before_change: Option<AttackEquipmentOperation> }` | `grapple::begin(state, meta, target, hand, before_change, pack)`: derive active actor, paid window, source anatomy/DC and grip ID; client cannot supply them. |
+| `ChooseGrappleSave { grip, ability }` | `grapple::choose_save`: match current Attempt ID and selected Begin work; actual target controller only. |
+| `ApplyGrappleAfterEquipment { grip, work, operation }` | `grapple::apply_after_equipment`: exact selected work key and original grappler's current controller; available allowance only. |
+| `DeclineGrappleAfterEquipment { grip, work }` | `grapple::decline_after_equipment`: same binding, records owned explicit decline. |
+| `WithdrawGrapple { grip }` | `grapple::withdraw`: actual pending Attempt and its grappler; cannot release an established grip through this route. |
+| `EscapeGrapple { grip, choice }` | `grapple::begin_escape`: active target owns this selected incoming grip and pays its Action once; unknown ordinary-hand anatomy does not exclude an Escape actor. |
+| `ReleaseGrapple { grip }` | `grapple::release`: current living relation's actual holder/controller, no turn or visibility requirement. Current session/attendance policy is unchanged. |
+
+Append four genuinely consumed `TacticalWorkKind` variants; do not renumber raw roles or old UUID domains:
+
+| Work | Use, selected owner and raw identity |
+| --- | --- |
+| `BeginGrapple { grip }` | Queued Attempt -> selected SaveChoice, target chooses ability. No raw key. |
+| `GrappleSave { grip }` | Selected raw/no-die target save; key origin is declaration.origin.id, subject target, role19, occurrence actual allocated work. Final save/outcome and successful establishment happen under this exact work's entered ancestry. |
+| `GrappleAfterEquipment { grip }` | Selected owned equipment/decline after outcome. No raw key. Its decision retains this exact key after selected clears. |
+| `GrappleEscapeCheck { grip }` | Paid selected target check; key origin is Escape.origin.id, subject escaping actor, role20, occurrence actual allocated work. Resolve success/end or failure under this exact work. |
+
+Do not add unused generic Finish kinds. `finish_save` sets the actual outcome, establishes a grip only after final failed nonimmune save, and either queues owned after-equipment or marks Complete when before already used the allowance. Escape completion records the checked outcome and ends only its selected grip on success. Existing pump retirement can retire this core-only settled activity; its live grip survives in `rules.tactical_grapples`. General last-consumer retention and old raw-history acceptance are deliberately not enabled here.
+
+## Concrete implementation order and callers
+
+1. Commit this reconciled plan first, with reviewed integration SHA/tree and writer. Add the domain record/action/work shapes and exhaustive match handling together with their actual core consumers; avoid a separately published dead API checkpoint. Maintain canonical optional absence on old states. Introduce `tactical/grapple.rs` with small `admission.rs`, `validation.rs`, `equipment.rs`, `lifecycle.rs` children where size warrants, and private `tests.rs` at the conventional EOF/module position.
+
+2. Extract the physical weapon operation from `tactical_weapons/equipment.rs::apply_change` into a narrow crate-internal `apply_attack_equipment_operation(state, actor, window, definitions, physical_hands, operation, effective_hands)`. Keep the current `before_attack` and `after_attack` callers using that implementation with identical ordering/errors; expose it through the owning module, not a fake WeaponAttackInput. It still requires one intact physical weapon in actual custody, AttackAction window and a legal hand; a shield is not an Attack-allowance weapon. The Grapple before/after producers are its other real callers. `tactical_inventory::validate_loadout` remains physical-only; anatomy -> creature profile -> armor -> inventory must not recurse through EffectiveHands.
+
+3. Implement `admission::plan_attempt` as a read-only derivation before spending or changing state. Follow `shove::begin`'s current checked ordering: exact execution/idle active actor/owner, known body-target admission before private source facts, supported opposition, settled geometry, can-act/may-harm, actual5ft body reach/contact/cover and size, exact source pin/anatomy, physical before image, permitted before operation and effective-free chosen hand, source STR+PB DC, and one ordinary Attack opportunity. Reuse `attacks::admit_body_target`, current source lookup, actual `ordinary_grapple_anatomy`, and `tactical_budget::{start_attack_action,spend_attack}`. Narrowly share source/ownership helpers only when old Shove behavior remains byte-for-byte/semantically unchanged. Explicitly reject an existing source Multiattack routine and Light/Nick/Reaction substitution; AttackAction enum alone is not permission to spend a source routine's attack. Unknown anatomy rejects only new attempts; old Goblin/Air remain lawful targets. Test source failures before payment and before equipment changes.
+
+4. Implement `admission::validate_attempt_admission` with a concrete own-Attempt hand consumer. It must locate this exact attached Attempt, validate full paid CommandMeta, ID, actor/hand/source/window, matching admitted equipment image/operation and trace/payment constraints before minting a private nonserialized `AuthenticatedAttemptAdmission` token. `EffectiveHands` gets one crate-internal constructor accepting only that token; it shares the current occupancy algorithm and removes exactly the token's provisional reservation, never live reservations. Its only production caller is this admission reconstruction. No public ignore_pending/mask/actor-only overload. Tie this proof to the exact attached state and Attempt lifetime, or revalidate its complete binding at consumption; a cached token must never authorize a later mutated or different state. Tests must challenge that boundary. The resulting excluded-hand view must also stay bound: ordinary EffectiveHands is owned and Clone, so do not let an exempted value escape or become a cached view for a later/different state. Keep the exclusion/query inside immediate admission reconstruction or use an internal state-bound wrapper that cannot be passed as ordinary current authority. Avoid recursive validation: authenticate identity/source/physical inputs, derive the own-attempt hand view, then finish the free-hand/admission check. New-attempt planning uses ordinary current occupancy. Match explicit attached RulesState and keep no-authority early-return/source-query behavior unchanged. This exemption is provisional-only. Validate the pending admission before atomic establishment; after Established -> AfterEquipment, the live grip correctly owns that hand. Completed-attempt validation uses retained original equipment/payment/save/work evidence and exact relation proof, never reruns a current-free-hand test or broadens the token to ignore an established live grip. While that relation is live its retained proof must equal the live grip; after a supported owner release during AfterEquipment, retain the proof and exact Released end until the owned equipment consumer finishes. The historical outcome stays Established even though the live relation has ended. Stage-specific validation must accept the genuine successful after-equipment pause while rejecting a live-hand overlap.
+
+5. `grapple::begin` commits the fully validated equipment/budget/rest interruption and initializes the ordinary `TacticalResolution` plus `TacticalGrappleResolution.activity=Attempt`. Fill the required equipment image, retained declaration and exact origin. Use `work_trace::initial`, `turns::push_frame([BeginGrapple])` and `turns::pump`; no second queue. Add `grapple::{waiting,start,is_work,validate_work,key,request}` to `continuations::{key,request,start_inner,finish_inner}`, `turn_validation::{validate_work,selected_applicable,pending,validate}` and the existing pump. Include selected Grapple work in the occurrence uniqueness/trace validation, both pump suspension checks and `turns::choose` refusal/owner handling. A popped choice frame must not cause resolution retirement while its selected choice remains. An area delegation never grants another body's save/equipment/release authority.
+
+6. `choose_save` validates the exact owned selected Begin node, predicts the actual next allocated occurrence as existing Shove does, derives the source save request, records choice/request, and creates the child GrappleSave frame while the Begin node is entered. Save request uses actual save modifier, body armor penalty, STR/DEX condition/disposition, DEX cover and dodge context. `continuations::ruling`, `voluntarily_fail`, `failed_save::{is_failure,stage_or_finish,choose}`, and the turn save-decision allowlist gain role19 only. Role20 is never a save/LR/voluntary-fail role; its ability-check ruling uses p182. Add actual owner enforcement to submission, Inspiration and LR paths based on the exact new pending work; do not apply controller substitution simply because a resolution has a Grapple attachment.
+
+7. `finish_save` reconstructs evidence from the exact RecordedRoll or TacticalSaveDecision, using original accepted_by/issued_by rather than equating them to the latest command. `failed_save::choose` must record `GrappleLegendaryDecision` after authenticating the live source resistance proof/actual owner and before clearing failed_save, so a decline is distinct from no LR window; `forced_success=false` alone cannot encode that distinction. Final proof binds actual finalizer. Success -> paid Resisted; final failure + exact immunity -> paid Immune; otherwise establish sorted unique live grip with exact source/work/save and free the provisional role atomically. No attack roll, AC damage, weapon receipt, fabricated no-die roll or hidden immunity offer. Keep the record/shape interim-save rule above valid at every actual suspension.
+
+8. `equipment::{apply_after,decline}` consumes only the available allowance at its selected work. Current live/provisional hands govern the actual after operation; the successful grip blocks equipping its hand. Plan and validate the change before mutation. Invalid operation preserves outcome and pending choice, allowing a later genuine decline. Withdrawal/resistance/immunity do not consume/refund the allowance. The applying/declining command and work remain after selected clears; before Some never creates an after choice.
+
+9. `begin_escape` derives source `TestKind::Check { ability, skill }` from Athletics/Acrobatics, actual source test modifier/check conditions and established escape DC. Use Medicine's source modifier/check pattern, not save proficiency or source spell DC. Spend `TacticalCost::Action` once, preserve selected grip proof and create GrappleEscapeCheck through the same stack. No ordinary-hand capability gate or LR. Successful result removes only the selected grip and records `GrappleEndCause::Escaped { roll, work }`; failed result retains it. Preserve actual accepted dice and possible Inspiration. Existing multiple incoming grips remain.
+
+10. `lifecycle::{withdraw,release}` validates metadata/actual ownership and supported core context before removing authority. Enter an existing exact selected/save node when withdrawal creates after-equipment descendants. Pre-request withdrawal has no canceled roll; issued matching raw is removed from both pending locations and added once to canceled IDs; an accepted/LR-wait result remains immutable. Clear only that matching failed save, never somebody else's pending tuple. Live release may obsolete this selected Escape, cancel only its unfinished request and retain its paid Action/outcome cause/accepted faces. It also supports the promised own AfterEquipment wait: establish -> selected equipment -> holder Release -> legal equipment operation/decline. Preserve the Established outcome, retained proof and exact Released end through that remaining consumer; retire them only when that owned work completes. This is minimal core-owned retention, not general temporal retention. Voluntary failure may already have canceled the physical request before LR -> Withdraw; preserve that existing canceled ID exactly once. Withdrawal cancels only a currently unfinished matching request and never invents a second cancellation or changes the original voluntary decision. Do not manufacture a work node for free Released. Never run pump through unrelated unresolved work. Before/after image cloning in the caller/test must prove rejection is atomic; no global public guard is bypassed for these helpers.
+
+11. Add the core semantic validator as an actual caller in each producer/continuation validation path. Reconstruct exact source, hand, payment, stages, own selected work, request/evidence, after decision and live/proof equality. Keep it small and separate from the public guarded whole-state validator. It may validate records retained by these core paths; it must not claim general historical cut, causal break or completed raw-only authentication. Update necessary memory/work accounting for newly retained equipment images/decisions if present in the integrated accounting path; do not add arbitrary new caps or a lifetime ledger. Finish one reviewable coherent checkpoint, update actual checks/failures and hand it back clean.
+
+## Meaningful tests authored with the core
+
+Use private-module tests which start from actual admitted Human/source records and actual Item/weapon definitions, then call the production private handlers plus semantic validators. Test helpers may clone/advance source-built states and invoke private handlers; they must not expose a production public bypass or present those calls as accepted journal replay. Use the installed final Goblin V2 full pin; preserve its V1 negative-control source. Existing table-created/frozen starting images may supply genuine pre-Grapple state, but everything after private invocation is explicitly guarded internal execution.
+
+| Discriminating test | Required assertions |
+| --- | --- |
+| Public boundary | Every new variant refuses under Live and Historical flow5; same commands on1–4 refuse, including immediate immune/no-die/withdraw/decline paths. Existing genuine old commands still replay. Input state/event history byte-identical after every refusal. Authority-bearing live, pending-only, raw-only and decision-only states still fail public validators/restore. |
+| Actual before equipment/admission | Human holds actual greatsword in both hands: attempt without change fails; allowed Unequip creates exactly one paid attack and chosen hand reservation with correct before image. Shield/free-hand, other Item custody, broken Item, wrong source pin, unknown anatomy, size/range/hidden target and missing Action fail before cost/change. Actual Goblin V2 can act through supported ownership; V1/Air cannot be inferred to have ordinary hands. |
+| Exact own-Attempt proof | Retained admission reconstructs its actual before-image despite its own provisional reservation. Same actor/different hand, copied ID with another paid origin, changed window/source/item, duplicate hand reservation and foreign Attempt object reject. A token or excluded-hand view cannot be reused after state/Attempt mutation or against another state. Established AfterEquipment validates through retained evidence without bypassing its live reservation. Ordinary weapon/component/ammo planners still see the provisional reservation. Physical inventory/source validation does not recurse. |
+| Save source and ownership | Source-backed STR and DEX requests differ where their real modifiers differ; actual DEX cover, exhaustion/armor conditions and Inspiration preserve arithmetic and original faces. Target alone chooses/submits; host substitution for owned body and foreign/stale choice fail. Final failed nonimmune save establishes; successful save resists; actual Air immunity yields paid no-effect without private offer/refund. |
+| Auto/voluntary/LR intermediate state | Real private pump automatic no-LR completion, actual LR pause and voluntary-fail decision retain exact choice/key/origin and no fabricated roll; entered-producer request derivation never requires a future receipt, while bare unresolved durable no-die state rejects. Synthetic LR-capable control exercises automatic failure pause -> decline/use and pause -> withdrawal with exact interim validation. No positive real LR claim: current real dragon is too large for ordinary admitted Human/Goblin grip. Missing/wrong-key automatic decision, false finalizer, evidence substitution and LR-on-Escape reject. |
+| Equipment outcomes and withdrawal matrix | For established/resisted/immune/withdrawn outcomes, before Some forbids a second allowance; before None reaches real Apply/Decline. Withdrawal before request, after issued request and after accepted faces/LR pause each preserve correct cancellation/evidence/payment. Equipping the established hand fails without losing outcome/choice; the other lawful hand or explicit decline works. Releasing the established grip during that same AfterEquipment wait preserves its historical Established outcome/proof/end and then allows the lawful current-hand operation or decline. Voluntary-fail -> LR -> Withdraw keeps its canceled ID exactly once. No rewritten armor/shield or fake weapon receipt. |
+| Escape and core release | Target's actual Athletics/Acrobatics modifier/DC and Action cost; failure retains selected grip, success ends only it. Real current source definitions support the check. Multiple incoming relation fixtures are labeled internal. Holder release during the own pending Escape cancels only its exact request, retains Action/accepted faces and leaves other relation authority. Wrong holder/no grip/obsolete ID/stale command changes nothing. |
+| Pump and ancestry | SaveChoice/AfterEquipment remain selected after their frames pop; simultaneous choose cannot bypass them. Every new work key binds actual grip and exact trace node/parent; original paid ID differs safely from a consumer resolution ID where applicable. Forged parent, duplicate occurrence, after decision copied from another node and missing admitted activity fail. |
+| Temporal/retirement checkpoint boundary | An idle core grip survives the creating resolution's retirement and can be privately released. Unsupported attack/OA/movement/fall/other wait release and unsupported flight-loss establishment refuse before mutation. Relevant deferred Grappled/Speed/Dodge-dependent reads or transitions also refuse, including establishing on an active Dodging target; no release/repeated-save path can restore an unended Dodge. After last consumer retires, public raw-only guards still refuse: no ordinary-action acceptance claim until step6 authentication lands. |
+| Extraction regression | Existing actual weapon before/after/ammunition controls preserve plans/errors and legacy bytes after physical helper extraction. All immutable legacy fixture blobs and receiving suites retain exact integrated-parent bytes. No broad duplicated synthetic tests solely restating the helper. |
+
+Domain tests remain synthetic structural controls. Add exact equipment union/stage/chronology checks and the contextual unresolved no-die shape checks; preserve existing raw role19/20 UUID assertions. Keep newly authored test modules after production items to avoid the already observed strict Clippy failure. Do not claim any test ran merely because its source was written.
+
+## Validation, risks and next action
+
+Current status: the original d05f186 compile failure is preserved below. Reviewed correction db60dd6 passed all-target compilation, then its focused tests stopped at the recorded provenance assertion (34 total passed/1 failed). The pending test-only correction has no execution evidence. No CI or complete focused/canonical pass is claimed. Foundation801 remains only an independently checked relocation of unchanged tests plus the recorded earlier Clippy failure; later fa4 integration is the reviewed source baseline. Root coordinates the single heavy slot. Authoring must not start Cargo/npm/build/DB/native work without that slot; direct formatting/diff/UTF-8/static immutable-byte checks can run when root authorizes source work. Afterwards run the repository `scripts/verify-fast` and `scripts/verify` with root's canonical environment and exact-head CI, retaining actual logs and failures. Review the whole final diff, not only the new module. No publication/merge based on an older foundation SHA.
+
+Risks to resolve during the bounded implementation, not by scope expansion: contextual no-die shape through withdrawal; original versus finalizing LR metadata; exact own-Attempt hand exemption without recursion; preserving existing weapon helper behavior; selected choice survival and cleanup; core release unable to mutate unsupported consumers. If an existing receipt cannot authenticate a required core transition, stop that dependent implementation and present the concrete missing field/counterexample before changing the reviewed records.
+
+Activation remains blocked on all map steps4–8: sealed attack/request/source-damage cuts; every temporal reader; Grappled condition projection and real movement/holder breaks; unanswered OA refresh versus selected OA history; real retained flight/fall cause; last-consumer retention and strict completed raw19/20/cancellation/save-decision original replay; app origin collection and anchor rejection; session/controller/source-transfer/Finish boundaries; table transport/UI/privacy/native/cold acceptance; both-policy permanent flow5 requirement; exact integrated verification. No ordinary-action history may remain stranded by the temporary current-hands raw guard when activation occurs. Release during all waits remains a full obligation.
+
+Next action: root independently reviews the clean provenance-test correction checkpoint and its full small diff, then schedules any later focused rerun. No compiler/test retry while its native verification owns the heavy slot. Preserve both earlier failed runs and their private targets. This author must not publish. The foundation integration remains frozen on its own PR. Keep both-policy whole-family denial and every existing authority/raw/restore guard; no public activation is part of this checkpoint.
+
+
+## Plan review amendments
+
+Independent source challenge found three concrete sequencing seams and one proof-lifetime precision. The plan now distinguishes entered no-die request production from durable Automatic/LR/withdrawn evidence; refuses private positives requiring deferred Grappled/Speed/Dodge semantics; separates provisional admission from completed live-grip validation; and binds both the own-Attempt token and excluded-hand view to their immediate actual state. These are guarded core correctness requirements, not public activation or a reduced feature contract. They were approved before source authoring began in plan checkpoint011128d.
+
+The final challenge also requires the supported Release-during-own-AfterEquipment path to retain an ended proof and historical Established outcome until the equipment consumer completes, and distinguishes a new withdrawal cancellation from an earlier voluntary-failure cancellation. Both receive explicit discriminating tests.
+
+## Authoring findings — source reachability and exhaustive consumers
+
+Root approved the necessary defensive app exhaustiveness change: `table_tactical_choices` must omit every guarded Grapple attachment/work before its existing work-kind projection. It adds no DTO, control, admission or playable route; a negative projection control is required.
+
+The planned positive synthetic LR private-pump control is **UNMET**. Source inspection found only Adult Red Dragon has the bundled LegendaryResistance trait, and it is Huge. Authenticated ordinary anatomy is Human Medium or Goblin Small; neither legally admits that target. Creature profile reconstruction uses the immutable registry, so changing a test size/pin or introducing an admission bypass would be false evidence. Root explicitly approved preserving strict source validation and recording this gap. Current controls cover genuine source dragon size refusal/no-write, contextual no-die/LR/withdrawal shapes and cancellation identities, role rejection, and the actual private automatic no-LR pump. They do not replace the unmet positive LR route. A later verified source-backed Large-or-larger ordinary-hand grappler, or a genuine admitted size-changing source with its corresponding profile/geometry semantics, is needed to exercise actual paid ordinary Grapple against the Huge LR source. No such producer is added here; full activation/acceptance cannot claim that proof.
+
+
+## Authored checkpoint and exact verification boundary
+
+The private `tactical/grapple` core now owns paid ordinary Attempt, exact target-owned save choice/raw19/automatic/voluntary handling, final outcomes, the one before-or-after equipment allowance, withdrawal, selected paid Escape/raw20 and release in its implemented contexts. Four appended work kinds use the existing queue, ancestry and pump. SaveChoice and AfterEquipment remain selected after their frame pops. The actual shared submit/Inspiration and LR routes enforce the pending body's owner. Save19 remains nonmagical; Escape20 remains an ability check. MR and its classifier are not dependencies of this branch.
+
+The required equipment record is authored, including actual after choice work/metadata. Existing weapon before/after code calls the extracted unchanged physical weapon operation. No loadout/wire primitive, source payload, fake weapon receipt, new arbitrary cap or retained lifetime ledger was introduced. Existing work/frame limits still apply; there is no separate per-record memory-accounting path in this integrated source to amend. The guarded core retains only its implemented Attempt/Escape-owned proof/end context and refuses other temporal consumers.
+
+The own-Attempt proof borrows the actual attached state and record; its sole consumer checks pointer identity, source, payment/window, original Begin/save ancestry, physical before operation and current equality. Only that immediate consumer removes the exact provisional reservation in a local hand value. Neither token nor excluded view is returned for caching. Completed outcomes never receive this exemption. Retained saves rederive modifier/mode/automatic disposition, source pin/anatomy/DC independently of provisional admission. Matching a forged request to a forged roll is insufficient. Final work, outcome, LR expenditure, cancellation and equipment evidence are checked before the common pump retires the core context. Current-source rederivation is limited to the explicitly supported no-temporal-change core; it is not historical original replay.
+
+Private controls are authored for every new command under both policies and versions1–5; actual Human/greatsword before equipment and source/item/cost/geometry refusals; foreign attached token and same-sequence source/Item/window changes; real failed/resisted saves and Air immunity; Mage STR/DEX request differences; actual shared Inspiration with original faces; DEX cover/Exhaustion/Restrained mode; no-LR automatic and voluntary common-pump outcomes; pre-request/issued withdrawal with both allowance states; release during own AfterEquipment and later lawful equip; actual Goblin V1 refusal/V2 ordinary admission; real Athletics/Acrobatics request derivation and selected Escape failure/success; two source-built private paid grips on separate hands with one selected Escape; stale/wrong-owner/mixed-consumer refusal; non-Hover source flight-loss refusal; forged final request/automatic evidence; and domain interim-save/equipment chronology/union plus app nonprojection. All are UNRUN. The initial fresh-turn/executor, imported conditions/geometry and loose physical loot are explicitly internal scaffolds, never accepted journal history. The source-built private outcomes are not an app/replay/native claim.
+
+The positive LR private-pump branch and accepted-face LR withdrawal matrix remain **UNMET** for the source reachability reason above. Independent audit `tooling/grapple-legendary-resistance-source-reachability-review-2026-09-30.md`, SHA256 `f1b26653625d7520e6c8c5ce2b7b0d5f60be70889440d2c54189d1feb8a2af7d`, confirms no installed lawful size-changing route. A separate preflighted Large ordinary-hand source or genuine size-changing producer is required; no such source is added here. The authored contextual shape and single-cancellation controls do not replace that evidence or waive activation acceptance.
+
+Static author verification: direct rustfmt edition2024/skip_children formatting and parsing completed successfully for all23 changed/new Rust paths; UTF-8 decoding succeeded for all24 changed/new paths at that check. The final clean checkpoint audit records formatter --check, complete diff whitespace, immutable fixture/receiving-suite/content/guard comparisons and exact source tree outside the repository. These checks do not compile or execute Rust. No Cargo, npm, build, test, database, native/UI, remote publication or merge ran. Root's old release/foundation CI is not evidence for this source.
+
+## Independent review corrections — plan-first scope
+
+Correction baseline is clean `61582c523c2d5f147235c22d421cee979cb315eb`, tree `ab892627f905cba4744bc6bf81a4781352c068f7`. Final independent review `tooling/grapple-core-61582c5-independent-review-2026-09-30.md`, SHA256 `c54897a5e44351afb927211b0447cf418f27a3b7a668e8faeb9ea5d5f25511a9`, records CORRECTIONS REQUIRED; root fully read and agrees. The exact plan had earlier independent CLEAR at cbce (memo `fe25aa369d73ea76b3410ecab755559daba018591f03fc9af6f2c8def117ed31`); that design approval is not a code pass. Fetch at correction start retained main `d88a69232c0b9d7f44fa6d3a1437dfe5e18f56a7` and published foundation `b5572e3cd8c274609013c2befdba9366acb9fd31`, with the local correction baseline unchanged. Neither is evidence for this private core.
+
+| Finding | Authorized correction and discriminating control | Status |
+| --- | --- | --- |
+| F1, obsolete Escape chronology | Bind the Released end to this Escape's admission origin using the actual grip holder, in addition to establishment/ownership/cancellation validation. Start from a genuine private Escape route; explicitly label the manufactured pre-retirement backdated receipt and require atomic refusal. Preserve the real later release and paid Action. | Authored, UNRUN; re-review pending |
+| F2, retired live-hand collision | At private validation, validate actual physical inventory/loadout and EffectiveHands for holders of live grips only. No ended-proof occupancy check, own-Attempt exemption or recursive inventory/source validation. A real established retired grip plus malformed carried-item overlap must reject both validation and release without mutation. Retain distinct-hand multiple grips and the genuine release-during-AfterEquipment/re-equip positive. | Authored, UNRUN; re-review pending |
+| F3, Escape dice issuer | Apply the producer's Digital-or-Secret requires Admin/System rule to completed Escape raw proof. Use actual Physical and host-owned paths; mutate only the completed raw source for a same-face Player Digital rejection, with precise pre-retirement test labels. Do not broaden owner permissions. | Authored, UNRUN; re-review pending |
+| F4, required LR decision | In supported unchanged-source context, require an explicit decision after a failure when LR was available, distinguishing current available decline from expenditure on this exact key and no-LR/success cases. Add bounded malformed/semantic omission controls without fabricating a lawful source-positive LR result. This remains a latent, source-reachability-qualified issue. | Check/negative control authored, UNRUN; positive LR remains UNMET |
+| F5, before-Some outcomes | Resolve real greatsword before-Unequip Attempts through the shared save/pump for established, resisted and actual Air-immune outcomes. Assert one paid Action/attack, original physical admission and raw identity, no second after allowance, correct live authority and immediate retirement. Retain before-None Apply/Decline and before-Some withdrawal controls. | Authored, UNRUN; re-review pending |
+
+Commit this plan checkpoint before source edits. Keep changes within the private validator/tests unless an actual signature requires otherwise. No content/source definition, Ogre/counts, public guard, DTO/UI, original fixture/replay suite or schema expansion is authorized. The separate Ogre preflight is future source work, not a route to fabricate LR evidence here. Full activation, original raw/history authentication and all deferred temporal/app/native obligations remain unchanged. Only direct rustfmt parsing/format, diff, UTF-8 and immutable-byte/static checks are authorized; no Cargo/npm/compiler/build/test/DB/native/push/PR operation. After corrections, record actual authored/static status and return writer ownership for independent re-review.
+
+Plan-first commit is `95dab4caeaa84a179a098d2a6996898781b45cb8`. The correction changes production only in `tactical/grapple/validation.rs`: causal release-to-Escape binding; the existing raw issuer rule for completed Escape; actual physical loadout plus derived reservations for live holders; and omitted-LR-decision rejection. Existing exact-key expenditure equality already rejects a missing use after the last LR charge, without requiring current availability after consumption. The new availability query is only for failed evidence with no recorded decision. Neither source definitions nor the current-hands exemption/public guards change.
+
+Five new controls in `tactical/grapple/tests/review.rs` cover the findings. The shared test fixture now exposes an internal `submit_as` helper which still calls the real shared submit/pump; its old `submit` behavior remains Physical/current target. F1 and F3 first complete real private producer routes, then explicitly reconstruct a discarded Complete consumer solely to challenge the validator before retirement. They are not durable pauses or accepted history. F2 demonstrates that the forged carried-item assignment passes the physical-only primitive but fails live reservation composition and atomic release. F5 resolves three real source outcomes through the common pump, verifies unchanged paid budget/items and exact raw/admission identity, and refuses both Apply and Decline attempts at a nonexistent second allowance. Existing ended-proof/re-equip and distinct-hand multiple-grip controls remain unchanged.
+
+The F4 negative deliberately substitutes a genuine immutable Huge dragon source into an otherwise manufactured final evidence image and adapts the matching request/raw/proof. It asserts only rejection for an omitted required decision; Human-to-Huge admission remains illegal and is independently refused by the existing genuine size control. There is no passing LR admission/override/pump assertion, source mutation or test-only production bypass. Actual LR use/decline, automatic LR and accepted-face withdrawal positives remain UNMET; the source preflight does not waive them or supply historical resource reconstruction.
+
+Correction static checks: direct configured GNU rustfmt edition2024/skip_children parse/format and --check passed on all three correction Rust paths; `git diff --check` passed. The unqualified rustfmt command was initially absent from PATH; the configured existing binary was then used directly, without installing/running a compiler. Final clean-head UTF-8, immutable bytes, full-source formatting and exact diff/tree audit are retained externally with the handback. No test, compile, Cargo/npm, DB/native, publication or merge ran. The reviewer must recheck this exact correction head before root schedules actual verification.
+
+## First focused compile failure — plan-first app authorization correction
+
+F1–F5 received independent static CLEAR at `d05f1865bf3cc19c6ad9a60ef06bafff266c8b77`, tree `3259d1d55594f4c4e2056bdce044f2cc3d4fbea8`. The final correction memo is external `tooling/grapple-core-d05f186-independent-correction-review-2026-09-30.md`, SHA256 `09ea59e96206ad34257a57ca711808c3de95ff1e31422374683a6676999f1e5c`. The earlier table's re-review-pending labels describe its authored checkpoint; this later review resolves those static findings, not the still-unmet positive LR route or runtime acceptance.
+
+Root transferred the sole local heavy slot for focused verification of that clean exact head. `cargo fmt --all -- --check` passed. `cargo check --locked -p dmd-domain -p dmd-rules -p dmd-app --all-targets` failed with exit101 at `2026-09-30T21:27:01.252596+00:00`: E0004 at `crates/dmd-app/src/table_source_control.rs:309`, the exhaustive actor match in `authorize_tactical`, omits all seven new Grapple-family actions. This is an actual app-library compilation failure, not memory exhaustion or a test assertion. Domain/rules production checking emitted no diagnostics before the failure, but the all-target command did not complete. No domain, rules or app tests and no Clippy command ran. Full canonical verification and CI remain pending.
+
+The stopped run used existing GNU rustc/Cargo1.98.1, jobs1, incremental0, default stack/profiles and the existing GNU self-contained-link flag. It started at `2026-09-30T21:20:05.438773+00:00` and ended at `2026-09-30T21:27:01.455813+00:00`, with clean source before and after. Preserve external `tooling/grapple-core-d05f186-focused-2026-09-30/02-check.log` (SHA256 `fec5804a9c340f3c9b2de3a14e561aa8a0b8ea795dccef5614f8e5212c91ee69`), `run-result.json` (`4c4aa6c58859ca4dc3a4163749c46de269b981599824bce05f6829c12c198e64`), and the complete environment/command/failure audit there. The failure handback is `tooling/grapple-core-d05f186-focused-failure-handback-2026-09-30.md`, SHA256 `52ea85a684fbe26b2e5aaff2663a2aab2f63fe2ecfa22f3f8b3958062b18b512`. Its exclusive private target `tooling/grapple-core-d05f186-focused-2026-09-30-target` must remain untouched by the correction and retry.
+
+Root authorizes only this bounded correction, to be committed after this plan checkpoint:
+
+- Add one explicit `Err` match arm covering `Grapple`, `ChooseGrappleSave`, `ApplyGrappleAfterEquipment`, `DeclineGrappleAfterEquipment`, `WithdrawGrapple`, `EscapeGrapple` and `ReleaseGrapple`. Do not infer their actor from current initiative, authorize source control, add a wildcard, or expose any new route. Preserve the existing non-Admin/System early return and legacy source-control-absent branch exactly; downstream rules whole-family denial still applies to those routes.
+- Add a narrow pure app unit using the existing captured-state fixture and the real source-control activation helper, with synthetic new command identities clearly labeled. Exercise all seven actions with enabled source control and Admin/System metadata, requiring the exact not-enabled error from this match. Preserve unchanged state and the existing early-routing behavior. This is a synthetic compile/guard fixture, not an accepted Grapple journal or table/DB/UI test.
+- Keep every existing rule/public Live/Historical, authority/raw19/20, restore, source/content/schema, DTO/UI and immutable-fixture boundary unchanged. Make no Ogre/count or LR-source addition. No redesign, public activation or broader authorization change is part of this correction.
+
+Only direct rustfmt parsing/format and static diff/UTF-8/byte checks may run while authoring. Return the clean source/test checkpoint and full diff for root's independent review; do not compile, test, publish or reuse the failed target before that review. A subsequent authorized focused rerun must use a fresh private target and new exclusive evidence, include the new exact app unit as well as the already selected nonprojection unit, and retain stop-on-first-failure/default-environment discipline. All new and existing Grapple behavior controls are still UNRUN.
+
+The correction plan was committed first as `bf296e0`. The only production addition is the explicit seven-variant refusal arm in `table_source_control::authorize_tactical`; its surrounding actor selection and early routes are unchanged. The new pure `table_source_control::tests::guarded_grapple_commands_refuse_enabled_privileged_source_authorization` control uses the unchanged reactions fixture, real activation, all seven commands, both Admin/System issuers and the preserved legacy/Player early returns. The latter are routing assertions only, never public gameplay admission. Direct configured rustfmt edition2024/skip_children parsing/format and `git diff --check` passed. This correction and its test remain UNCOMPILED / UNRUN; the original E0004 outcome is retained, not superseded by static checks.
+
+After review, add `cargo test --locked -p dmd-app --lib table_source_control::tests::guarded_grapple_commands_refuse_enabled_privileged_source_authorization -- --exact --test-threads=1` to the already specified focused run, requiring one matching passing test. No new fixture, source content, inventory/schema, private core behavior, existing test body or public rules guard is changed. Exact final diff/tree, additive-byte audit and original failure evidence hashes are recorded in the external correction handback.
+
+## Focused db60dd6 failure — plan-first provenance test correction
+
+Root independently reviewed the complete app correction and authorized the nine-command focused run at clean `db60dd67b2b63c2305e90d9db71bb0cf372e3b78`, tree `71748ae452039e0b7ac5b97e3b01ac3ea4b9c851`; review memo `tooling/grapple-core-db60dd6-root-independent-review-2026-10-01.md`. The actual run used GNU1.98.1, jobs1, incremental0, default profiles/stack and one test thread, from `2026-10-01T08:05:54.850511+00:00` to `2026-10-01T08:19:02.834983+00:00`. Formatting and `cargo check --locked -p dmd-domain -p dmd-rules -p dmd-app --all-targets` passed. Domain `tactical_grapple_records` passed11. Rules `--lib tactical::grapple::` completed with23 passed/1 failed and exit101. No `tactical_hands`, source integration, either app unit or Clippy command ran. The source stayed clean throughout; no DB/native action or publication occurred.
+
+The failed test is `tactical::grapple::tests::review::completed_escape_preserves_the_producers_physical_digital_and_secret_issuer_rule`, at `review.rs:253`. It changes `raw.result.source` from Physical to Digital, then incorrectly demands equality between the unchanged Physical `raw.resolved` and a newly resolved Digital result. The request, face1, modifier4 and total5 match; source is intentionally part of `ResolvedRoll` equality. Failure occurs before the intended Unauthorized validation/release assertions, and the first Player Physical iteration aborts before either later host-owned producer case executes. Do not claim those assertions/cases passed merely because the enclosing test compiled.
+
+Source analysis confirms `ResolveRoll::resolve` copies the input source into `ResolvedRoll`; the shared `continuations::submit` authenticates Digital/Secret ownership then records this complete resolved value. `validate_escape` applies the same issuer rule and also requires exact resolved equality. Physical and Digital provenance must remain distinct even for identical faces. This is a test-construction error, not authorization to remove provenance, weaken production equality or alter issuer rules.
+
+Root authorizes a narrow correction in `tactical/grapple/tests/review.rs` only, after this plan commit: assert both recorded raw and resolved sources equal the actually submitted source for each attainable producer case; make the deliberately forged Player Digital snapshot internally consistent by resolving its changed input; compare the recomputed value to a clone of the original resolved value with only its source changed. Keep exact request/faces/kept faces/modifier/total equality, the same owner/outcome, both Unauthorized validation/release assertions and whole-state no-mutation assertion. Clearly label both forged source fields; do not claim accepted Digital player history. No production, helper, domain/schema, content/source, guard, original fixture, UI or app authorization change is needed.
+
+Preserve full failure log `tooling/grapple-core-db60dd6-focused-2026-10-01/04-core-grapple.log`, SHA256 `f7bb3c94e6dad3f579f0c5622d8737ec2c722884e58372d4a185274982d46873`; run result `7a56c73e830a3bbf5f0a53947cd86ba7af089096782c5f85dd0620684ea5d992`; completion audit `76cb511f9359c429f51938a95be39e2d58b5454727273cb70d19d8ad7a605b66`. The full command/result handback is `tooling/grapple-core-db60dd6-focused-failure-handback-2026-10-01.md`, SHA256 `dabf542ec5b844de133296549c68fdc8446c71f0db9884ec1f3f65fbd7716414`. Preserve its private `tooling/grapple-core-db60dd6-focused-2026-10-01-target` and the earlier d05 target/evidence unchanged. The empty post-run process snapshot at `08:19:32UTC` confirms the runner finished before root reclaimed the heavy slot.
+
+Only static formatting/diff/UTF-8/byte checks may run for this correction. Return the clean committed exact head/tree and full small diff for independent review. No test/build retry or publication now. Both app filters still require actual one-test execution, and the full focused suite, canonical/CI, source-backed LR positives and deferred temporal/replay/app/native/public-activation obligations remain pending.
+
+Plan-first checkpoint `9db7383` preceded the test edit. The corrected test now asserts each attainable raw and resolved source against the submitted source, and constructs the deliberately forged Digital record by recomputing its resolved value. Its expected clone changes only source, so the full equality still checks request/raw faces/kept faces/modifier/total. The two existing Unauthorized assertions, positive retained validation, player/host visibility/ownership checks and whole-state no-mutation assertion remain. Only this test and this plan change; production and all other tests retain exact parent bytes. Direct configured rustfmt edition2024/skip_children formatting/check and diff whitespace passed. The corrected test remains UNCOMPILED / UNRUN; no runtime result above transfers to the new checkpoint.
+
+## Interrupted-run recovery and strict Clippy correction — 2026-10-04
+
+At clean `62995ce0242f771524d4c23c857048297d1c2cd4`, tree
+`0d69fb5055431d7e9f1580a8c3c7c0188cf15c2f`, the October1 attempt completed
+formatting, three-package all-target check and44 tests: domain11, private core24
+(including corrected Escape provenance), EffectiveHands5 and source4. It then
+stopped while compiling the first app test; no completion is inferred. The
+independent interruption audit SHA256 is
+`b64ecbe454f88254ed15ced4915b38c6540fec2efd270a385388b2559c337601`.
+
+Root resumed only commands7–9 using the identical source, GNU1.98.1, default
+profiles/stack, jobs1 and preserved target, with exclusive new evidence. The first
+attempt compiled successfully but its incorrect filename-based filter selected
+zero tests. The runner's actual-one-test guard stopped it, preserving the log
+SHA256 `ece1ad8f985c710ec7bb55c6d4c65e6c9757d9711c21d7ff2bc55469b8707013`.
+The compiled binary's test inventory establishes the real name as
+`table_tactical::choices::tests::guarded_grapple_work_and_attachments_have_no_continuation_projection`.
+Use that exact path in future focused commands; the earlier filename-based path
+is not a runnable test name. The source-authorization filter was already correct.
+
+The second continuation actually passed both named app tests once (46 focused
+tests across the two dates), then strict Clippy exited101 on
+`GrappleEquipmentDecision::Applied.equipment_before`: the enum is at least320
+bytes with315-byte and114-byte variants. Full failure log SHA256
+`87c4ae8a7ff6ea8a4e1ee08e1f636445ba9f94f64cfa60eede4e51067604789a`
+is preserved under `tooling/grapple-core-62995ce-continuation-2026-10-04-attempt2`.
+This is a lint failure, not a completed focused pass. No public/DB/native or
+canonical/CI acceptance follows from the private controls.
+
+After this plan commit, box only the Applied equipment before-image, construct
+that Box at its one producer and compare its borrowed value at retained validation.
+Serde's transparent Box representation must preserve the existing wire shape and
+all provenance/validation semantics. Do not suppress the lint, change a public
+guard or alter test assertions, fixtures or content. Inspect the complete small
+delta and every consumer before rerunning strict Clippy and the affected domain/
+private-core/app checks on the corrected exact head. Keep both interrupted/failed
+attempts; no earlier result becomes execution on that later head.
+
+At clean `3f84e16af413e9db91d461c25132b412c3a3d55e`, tree
+`78a76f3a80ac91e46060f0b224702f9f7ccdc792`, independent complete-diff/consumer/
+serde/runner review was CLEAR (external memo SHA256
+`69577f9a81ed9cb16f5eebf7270fa8c34e1967645f09e1b4739ffd1f2d58c809`).
+The actual fresh-evidence run on October4 at12:53:40–12:54:06UTC passed fmt,
+then strict three-package all-target Clippy exited101 in dmd-rules. It reported
+five `unused_unit` expressions (lifecycle147 and validation729/750/756/764) and
+two `collapsible_if` forms (admission40/319). The enum diagnostic is resolved;
+downstream lint success is not yet established. Full failure log SHA256
+`4dd3075fc5b54bdefc7d46e232efb51de21b0736f9d42a4e79c96226a7941856`
+is preserved in `tooling/grapple-core-3f84e16-focused-2026-10-04`. No tests ran.
+
+After this plan checkpoint, remove only those five redundant unit expressions
+and collapse those two nested conditional checks with Rust2024 let chains.
+Preserve all predicates, short-circuit ordering, errors, match guards, mutations,
+public denials and tests exactly. No lint suppression or behavior redesign.
+Review the complete small source delta, format, then rerun strict Clippy and all
+46 focused controls on the corrected frozen head with a new evidence directory.
+Explicit reuse of the same build target is permitted; preserve and hash every
+prior attempt. A further actual diagnostic must be addressed on its own evidence.
+
+## Corrected focused verification completed — 2026-10-04
+
+Plan47f3eb2 preceded the style correction at
+`afc40ef5d4fb194ea30149e3a6592f4c6259c30f`, tree
+`2243331dec35e6f41c79e06ea554e1284e0c469c`. Independent complete-diff review
+found only the five redundant unit removals and two equivalent let chains;
+all predicates, evaluation order, errors, guards and tests are preserved. Review
+memo SHA256 `3144bce046ec409bafde23e85bb7c627682e4197bddd26ff9c0f13672f1106e7`.
+
+Root ran the reviewed eight-command sequence from12:57:30 to13:03:15UTC at that
+clean frozen head. Formatting and strict three-package all-target Clippy passed.
+Actual focused outcomes are domain11, private Grapple24, EffectiveHands5,
+source4, exact app nonprojection1 and exact app authorization1:46 passed,
+zero failed or ignored. Filtered unrelated library tests are not claimed as run.
+Root read all actual logs and confirmed the named app controls each ran once.
+The run used GNU1.98.1, jobs1, incremental0, normal stack/profiles, one test thread
+for these focused controls and explicitly reused the629 target. It was not a
+fresh build. Earlier evidence files were hash-checked before/after each command.
+Source HEAD/tree/index/worktree remained unchanged throughout.
+
+External evidence directory is `tooling/grapple-core-afc40ef-focused-2026-10-04`.
+Its `run-result.json` SHA256 is
+`1c0eebb7298df0b29ebbb440764d55c7e723df6445aeb3379bf109799ad13d03`;
+the reviewed runner SHA256 is
+`28f5c6893222c91939a7a0992f1174c771a2bfab99fc39bcb8965e67f78cd4c3`.
+Strict Clippy log SHA256 is
+`e9285d125ef7624d98855fefffe99665a810107dc23a29efd2c9564e096aad3c`.
+No database, native/UI, source-admission or public Grapple action ran.
+
+These focused results do not establish whole-workspace canonical/CI acceptance,
+actual Legendary Resistance positives, temporal consumers, table/persistence/
+portable/native behavior or public activation. Root returned the sole heavy
+slot to the previously queued Air canonical run. Keep this core guarded while
+the next temporal checkpoint and its genuine-source dependencies are reviewed;
+do not silently remove deferred projection/flight/release restrictions.
+
+### Draft publication for receiving-head CI
+
+Root freshly fetched main and the foundation branch on October4: main is still
+`dbf1d633460473183324b4ec519e8d1980884b5c`; development foundation remains
+`fa4ea903dfe44333c2cefb1b1b1acc91ba160f8f`. The core branch has no existing remote
+head or PR. Publish the reviewed guarded checkpoint as a draft against
+`codex/gate4-grapple-lifecycle` solely to isolate the core delta and run exact-head
+Linux/Windows CI while Air uses the local slot. The foundation is an unaccepted
+dependency. Never merge into that development base: reconcile accepted main and
+retarget only after prerequisite and slice acceptance, exact-head review and
+required checks. Root retains publication and merge ownership.
+
+The complete core review and F1–F5 corrections, app compile correction, provenance
+test repair, enum representation and style corrections each have independently
+reviewed deltas recorded above. The latest result documentation adds no source
+change. Draft CI is broader verification, not a claim of runnable Grapple,
+actual LR-positive coverage, full temporal behavior or completed Gate4 work.
+Keep every public/kernel/history/restore guard and all immutable captures intact.

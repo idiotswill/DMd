@@ -16,6 +16,47 @@ fn recovery(error: impl ToString) -> RunnableCampaignError {
     RunnableCampaignError::Table(error.to_string())
 }
 
+/// Borrows either an ordinary legacy image or one exact owned replay image.
+/// The owned variant has no state argument that could substitute a forged clone.
+#[derive(Clone, Copy)]
+pub(crate) enum ProjectionRead<'a> {
+    Ordinary {
+        state: &'a CampaignState,
+        pack: &'a RulesPack,
+    },
+    Owned(&'a dmd_rules::table::TableRead<'a>),
+}
+impl<'a> ProjectionRead<'a> {
+    pub(crate) fn tactical(self) -> crate::table_tactical::TacticalRead<'a> {
+        match self {
+            Self::Ordinary { state, .. } => crate::table_tactical::TacticalRead::Ordinary(state),
+            Self::Owned(read) => crate::table_tactical::TacticalRead::Owned(read),
+        }
+    }
+    pub(crate) fn state(self) -> &'a CampaignState {
+        match self {
+            Self::Ordinary { state, .. } => state,
+            Self::Owned(read) => read.state(),
+        }
+    }
+    pub(crate) fn pack(self) -> &'a RulesPack {
+        match self {
+            Self::Ordinary { pack, .. } => pack,
+            Self::Owned(read) => read.pack(),
+        }
+    }
+    pub(crate) fn query(
+        self,
+        issuer: CommandIssuer,
+        query: &RulesQuery,
+    ) -> Result<RulesAnswer, dmd_rules::RulesError> {
+        match self {
+            Self::Ordinary { state, pack } => dmd_rules::query(state, issuer, query, pack),
+            Self::Owned(read) => read.query(issuer, query),
+        }
+    }
+}
+
 /// Only presentation inputs; no synthetic game envelope or source authority.
 pub(crate) struct ProjectionEvent {
     pub id: EventId,
@@ -48,6 +89,7 @@ impl TryFrom<&EventJournalRow> for ProjectionEvent {
     }
 }
 
+#[cfg(test)]
 pub(crate) fn project_table(
     state: &CampaignState,
     viewer: TableViewer,
@@ -56,20 +98,47 @@ pub(crate) fn project_table(
     observations: &[SessionObservation],
     visible_events: Option<&HashSet<EventId>>,
 ) -> Result<TableView, RunnableCampaignError> {
-    let mut view = project_table_v1(
-        state,
-        viewer.clone(),
-        pack,
+    project_table_read(
+        ProjectionRead::Ordinary { state, pack },
+        viewer,
         events,
         observations,
         visible_events,
-    )?;
+    )
+}
+
+pub(crate) fn project_table_read(
+    read: ProjectionRead<'_>,
+    viewer: TableViewer,
+    events: &[ProjectionEvent],
+    observations: &[SessionObservation],
+    visible_events: Option<&HashSet<EventId>>,
+) -> Result<TableView, RunnableCampaignError> {
+    let state = read.state();
+    let mut view =
+        project_table_v1_read(read, viewer.clone(), events, observations, visible_events)?;
+    if dmd_rules::physical_facts::enabled(state) {
+        let ProjectionRead::Owned(owned) = read else {
+            return Err(invalid("Physical facts require original table history."));
+        };
+        view.physical = Some(crate::table_physical::view(owned, &viewer).map_err(invalid)?);
+    }
+    if dmd_rules::table::grapple_enabled(state) {
+        let ProjectionRead::Owned(owned) = read else {
+            return Err(invalid(
+                "Grapple presentation requires original table history.",
+            ));
+        };
+        view.grapple = Some(crate::table_tactical::grapple_view(owned, &viewer).map_err(invalid)?);
+    }
     if crate::table_source_control::enabled(state) {
         view.source_control = Some(crate::TableSourceControlView {
             version: 2,
             actors: crate::table_source_control::visible_actors(state, &viewer).map_err(invalid)?,
         });
-        view.tactical = crate::table_tactical::view_v2(state, &viewer).map_err(invalid)?;
+        view.tactical =
+            crate::table_tactical::view_read(read.tactical(), &viewer, true, read.pack())
+                .map_err(invalid)?;
         // Only source-owned public tactical requests gain the new table visibility.
         // Legacy PC kernel queries (including source-inappropriate sheet formulas) stay frozen.
         if let TableViewer::Player(player) = viewer
@@ -94,10 +163,38 @@ pub(crate) fn project_table(
             view.roll_channel = Some(TableRollChannel::Tactical);
         }
     }
+    if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+    {
+        let issuer = match viewer {
+            TableViewer::Host => CommandIssuer::Admin,
+            TableViewer::Player(player) => CommandIssuer::Player(player),
+        };
+        let choices =
+            dmd_rules::table::inspiration_transfer_choices(state, issuer).map_err(invalid)?;
+        if matches!(viewer, TableViewer::Host) || !choices.is_empty() {
+            view.inspiration_transfer = Some(crate::TableInspirationTransferView {
+                character_id: transfer.character_id,
+                choices: choices
+                    .into_iter()
+                    .map(|choice| crate::TableInspirationOption {
+                        label: choice.recipient.map_or_else(
+                            || "Decline the extra Inspiration".into(),
+                            |id| format!("Give to {}", state.characters[&id].display_name),
+                        ),
+                        key: choice,
+                    })
+                    .collect(),
+            });
+        }
+    }
     Ok(view)
 }
 
 /// Historical version-one projection, including PC-only ownership, is immutable.
+#[cfg(test)]
 pub(crate) fn project_table_v1(
     state: &CampaignState,
     viewer: TableViewer,
@@ -106,6 +203,24 @@ pub(crate) fn project_table_v1(
     observations: &[SessionObservation],
     visible_events: Option<&HashSet<EventId>>,
 ) -> Result<TableView, RunnableCampaignError> {
+    project_table_v1_read(
+        ProjectionRead::Ordinary { state, pack },
+        viewer,
+        events,
+        observations,
+        visible_events,
+    )
+}
+
+fn project_table_v1_read(
+    read: ProjectionRead<'_>,
+    viewer: TableViewer,
+    events: &[ProjectionEvent],
+    observations: &[SessionObservation],
+    visible_events: Option<&HashSet<EventId>>,
+) -> Result<TableView, RunnableCampaignError> {
+    let state = read.state();
+    let pack = read.pack();
     let campaign_id = state.campaign_id();
     let table = table(state).map_err(invalid)?;
     if let TableViewer::Player(player) = viewer
@@ -130,13 +245,11 @@ pub(crate) fn project_table_v1(
                 .as_ref()
                 .is_some_and(|rules| rules.entities.contains_key(&character.entity_id))
         {
-            Some(dmd_rules::query(
-                state,
+            Some(read.query(
                 issuer,
                 &RulesQuery::Character {
                     actor: character.entity_id,
                 },
-                pack,
             )?)
         } else {
             None
@@ -188,7 +301,7 @@ pub(crate) fn project_table_v1(
     characters.sort_by_key(|character| character.character_id.0);
     let mut roll_channel = None;
     let roll = if state.rules.is_some() {
-        match dmd_rules::query(state, issuer, &RulesQuery::PendingRoll, pack)? {
+        match read.query(issuer, &RulesQuery::PendingRoll)? {
             RulesAnswer::PendingRoll(Some(mut request)) => {
                 let pending = state
                     .rules
@@ -319,6 +432,9 @@ pub(crate) fn project_table_v1(
         .rev()
         .collect();
     Ok(TableView {
+        inspiration_transfer: None,
+        physical: None,
+        grapple: None,
         source_control: None,
         campaign_id,
         name: state.campaign.display_name.clone(),
@@ -330,7 +446,8 @@ pub(crate) fn project_table_v1(
         pending,
         roll,
         roll_channel,
-        tactical: crate::table_tactical::view(state, &viewer).map_err(invalid)?,
+        tactical: crate::table_tactical::view_read(read.tactical(), &viewer, false, pack)
+            .map_err(invalid)?,
         creature_setup: crate::table_creatures::view(state, matches!(viewer, TableViewer::Host))
             .map_err(invalid)?,
         situation_title: table.situation.title.clone(),

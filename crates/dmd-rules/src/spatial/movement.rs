@@ -77,6 +77,184 @@ pub struct MovementPlan {
     pub progress: TacticalMovementProgress,
 }
 
+pub(crate) struct CoupledGroundQuery<'a> {
+    pub encounter: &'a TacticalEncounter,
+    pub state: &'a CampaignState,
+    pub holder: EntityId,
+    pub target: EntityId,
+    pub step: &'a TacticalMoveStep,
+    pub allowance: &'a MovementAllowance,
+    pub progress: &'a TacticalMovementProgress,
+    pub ends_move: bool,
+}
+
+pub(crate) struct CoupledGroundSegment {
+    pub holder: MovementSegment,
+    pub target: GrappleBodyDisplacement,
+    pub ordinary_cost: u32,
+    pub haul_cost: u32,
+    pub holder_size: CreatureSize,
+    pub target_size: CreatureSize,
+}
+
+/// Source-owned callers name the selected pair; this pure query grants no grip,
+/// voluntary target movement, special anatomy, support or second budget.
+pub(crate) fn evaluate_coupled_ground(
+    query: CoupledGroundQuery<'_>,
+) -> Result<CoupledGroundSegment, SpatialError> {
+    let CoupledGroundQuery {
+        encounter,
+        state,
+        holder,
+        target,
+        step,
+        allowance,
+        progress,
+        ends_move,
+    } = query;
+    validate_encounter(encounter, state)?;
+    if holder == target || allowance.forced || allowance.teleport_range.is_some() {
+        return Err(invalid("invalid coupled ground query"));
+    }
+    if !matches!(step.mode, MovementMode::Walk | MovementMode::Crawl)
+        || air_form(state, holder)?
+        || air_form(state, target)?
+        || dead(state, target)
+    {
+        return Err(SpatialError::Unsupported);
+    }
+    let a = participant(encounter, holder)?;
+    let b = participant(encounter, target)?;
+    let dx = step
+        .destination
+        .x
+        .checked_sub(a.position.x)
+        .ok_or_else(|| invalid("translation overflow"))?;
+    let dy = step
+        .destination
+        .y
+        .checked_sub(a.position.y)
+        .ok_or_else(|| invalid("translation overflow"))?;
+    if step.destination.z != a.position.z {
+        return Err(SpatialError::Unsupported);
+    }
+    let target_to = SpatialPoint {
+        x: b.position
+            .x
+            .checked_add(dx)
+            .ok_or_else(|| invalid("translation overflow"))?,
+        y: b.position
+            .y
+            .checked_add(dy)
+            .ok_or_else(|| invalid("translation overflow"))?,
+        z: b.position.z,
+    };
+    target_to.validate().map_err(invalid)?;
+    let alignment = if b.size == CreatureSize::Tiny { 5 } else { 10 };
+    if target_to.x.rem_euclid(alignment) != 0 || target_to.y.rem_euclid(alignment) != 0 {
+        return Err(illegal("coupled destination is not aligned"));
+    }
+    let mut a_to = a.clone();
+    a_to.position = step.destination;
+    let mut b_to = b.clone();
+    b_to.position = target_to;
+    if a.volume()
+        .map_err(invalid)?
+        .intersects(b.volume().map_err(invalid)?)
+        || a_to
+            .volume()
+            .map_err(invalid)?
+            .intersects(b_to.volume().map_err(invalid)?)
+    {
+        return Err(SpatialError::Unsupported);
+    }
+    // Equal translation preserves pair separation. Check stationary participants
+    // against both simultaneous endpoints rather than either artificial half-step.
+    let mut joint = encounter.clone();
+    for body in &mut joint.participants {
+        if body.entity_id == holder {
+            body.position = step.destination;
+        }
+        if body.entity_id == target {
+            body.position = target_to;
+        }
+    }
+    occupancy(&joint, state, &b_to, ends_move)?;
+    if forced_step_physically_blocked(encounter, target, target_to)? {
+        return Err(illegal("coupled path is obstructed"));
+    }
+    super::falling::validate_physical_position(encounter, b)?;
+    super::falling::validate_physical_position(encounter, &b_to)?;
+    if !super::ground_support::ground_translation_supported(encounter, a, step.destination)?
+        || !super::ground_support::ground_translation_supported(encounter, b, target_to)?
+    {
+        return Err(SpatialError::Unsupported);
+    }
+    let path = SpatialPath {
+        steps: vec![MovementStep {
+            destination: step.destination,
+            mode: step.mode,
+        }],
+    };
+    let plan = evaluate_path_projection(
+        encounter,
+        state,
+        holder,
+        &path,
+        allowance,
+        PathProjection {
+            progress,
+            ends_move,
+            co_mover: Some((target, target_to)),
+        },
+    )?;
+    let mut segment = plan
+        .segments
+        .into_iter()
+        .next()
+        .ok_or_else(|| invalid("coupled segment absent"))?;
+    if segment.falls_after || plan.falls_at_end {
+        return Err(SpatialError::Unsupported);
+    }
+    let distance = grid_distance(segment.from, segment.to)?;
+    let ordinary_cost = segment.cost;
+    let haul_cost = if b.size == CreatureSize::Tiny || a.size.rank() - b.size.rank() >= 2 {
+        0
+    } else {
+        distance
+    };
+    segment.cost = ordinary_cost
+        .checked_add(haul_cost)
+        .ok_or_else(|| invalid("coupled cost overflow"))?;
+    let spent = allowance
+        .spent
+        .checked_add(segment.cost)
+        .ok_or_else(|| invalid("movement budget overflow"))?;
+    if spent > 10_000 {
+        return Err(SpatialError::Capacity);
+    }
+    let maximum = speed(a, state, step.mode)?
+        .checked_mul(1 + u32::from(allowance.dash.for_mode(&a.movement, step.mode)))
+        .ok_or_else(|| invalid("movement budget overflow"))?;
+    if spent > maximum {
+        return Err(illegal(
+            "path exceeds remaining movement for its selected speed",
+        ));
+    }
+    Ok(CoupledGroundSegment {
+        holder: segment,
+        target: GrappleBodyDisplacement {
+            actor: target,
+            from: b.position,
+            to: target_to,
+        },
+        ordinary_cost,
+        haul_cost,
+        holder_size: a.size,
+        target_size: b.size,
+    })
+}
+
 pub fn append_straight_movement(
     previous: Option<TacticalStraightMovement>,
     from: SpatialPoint,
@@ -522,7 +700,43 @@ pub fn evaluate_path_progress(
     progress: &TacticalMovementProgress,
     ends_move: bool,
 ) -> Result<MovementPlan, SpatialError> {
+    evaluate_path_projection(
+        encounter,
+        state,
+        actor_id,
+        path,
+        allowance,
+        PathProjection {
+            progress,
+            ends_move,
+            co_mover: None,
+        },
+    )
+}
+
+struct PathProjection<'a> {
+    progress: &'a TacticalMovementProgress,
+    ends_move: bool,
+    co_mover: Option<(EntityId, SpatialPoint)>,
+}
+
+fn evaluate_path_projection(
+    encounter: &TacticalEncounter,
+    state: &CampaignState,
+    actor_id: EntityId,
+    path: &SpatialPath,
+    allowance: &MovementAllowance,
+    projection: PathProjection<'_>,
+) -> Result<MovementPlan, SpatialError> {
+    let PathProjection {
+        progress,
+        ends_move,
+        co_mover,
+    } = projection;
     validate_encounter(encounter, state)?;
+    if co_mover.is_some() && path.steps.len() != 1 {
+        return Err(invalid("coupled projection requires one actual segment"));
+    }
     if path.steps.is_empty()
         || path.steps.len() > 1024
         || allowance.dash.total() > 20
@@ -599,6 +813,15 @@ pub fn evaluate_path_progress(
         let last = ends_move && step_index + 1 == path.steps.len();
         let ordinary_occupancy = if allowance.forced {
             Ok(false)
+        } else if let Some((other, destination)) = co_mover {
+            let mut joint = working.clone();
+            joint
+                .participants
+                .iter_mut()
+                .find(|p| p.entity_id == other)
+                .ok_or(SpatialError::UnknownActor)?
+                .position = destination;
+            occupancy(&joint, state, &next, last)
         } else {
             occupancy(&working, state, &next, last)
         };
@@ -715,7 +938,14 @@ pub fn evaluate_path_progress(
                 .filter(|e| e.target == actor_id && e.condition == Some(Condition::Frightened))
             {
                 let fear = participant(encounter, effect.source)?;
-                if participant_distance(&next, fear)? < participant_distance(&moving, fear)? {
+                let mut fear_after = fear.clone();
+                if let Some((other, destination)) = co_mover
+                    && other == effect.source
+                {
+                    fear_after.position = destination;
+                }
+                if participant_distance(&next, &fear_after)? < participant_distance(&moving, fear)?
+                {
                     return Err(illegal("frightened movement cannot approach its source"));
                 }
             }
@@ -762,9 +992,15 @@ pub fn evaluate_path_progress(
         let mut opportunities = Vec::new();
         if !teleport && !allowance.forced && !allowance.disengaged {
             for enemy in &working.participants {
+                let mut enemy_after = enemy.clone();
+                if let Some((other, destination)) = co_mover
+                    && other == enemy.entity_id
+                {
+                    enemy_after.position = destination;
+                }
                 if enemy.enemies.contains(&actor_id)
                     && participant_distance(enemy, &moving)? <= enemy.reach
-                    && participant_distance(enemy, &next)? > enemy.reach
+                    && participant_distance(&enemy_after, &next)? > enemy.reach
                     && !conditions(state, enemy.entity_id).contains(&Condition::Incapacitated)
                     && !state
                         .rules

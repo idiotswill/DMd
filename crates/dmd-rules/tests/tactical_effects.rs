@@ -46,6 +46,7 @@ impl Fixture {
             );
         }
         campaign.rules = Some(RulesState {
+            tactical_grapples: None,
             tactical_recovery: None,
             pack_id: "srd-5.2".into(),
             pack_version: "5.2.1".into(),

@@ -183,6 +183,7 @@ async fn actual_knockout(
         Some(0),
         action(TacticalAction::Attack {
             choice: WeaponUseChoice {
+                after_equipment: None,
                 weapon: dagger,
                 target: gear.goblin,
                 delivery: WeaponDelivery::Melee,
@@ -571,6 +572,7 @@ async fn wake_without_regrant(
         action(TacticalAction::CreatureWeaponAttack {
             feature_id: "scimitar".into(),
             choice: CreatureWeaponUseChoice {
+                after_equipment: None,
                 weapon: scimitar,
                 target,
                 grip: WeaponGrip::OneHand(Hand::Right),

@@ -227,9 +227,14 @@ fn select_next(state: &mut CampaignState, missile: u16) -> Result<(), RulesError
     Ok(())
 }
 
-fn advance(state: &mut CampaignState, meta: &CommandMeta, missile: u16) -> Result<(), RulesError> {
+fn advance(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    missile: u16,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     select_next(state, missile)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn respond(
@@ -238,6 +243,7 @@ pub(super) fn respond(
     window: TacticalWorkKey,
     actor: EntityId,
     accept: bool,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let missile = require_window(state, window)?;
     owner(state, meta, actor)?;
@@ -252,7 +258,10 @@ pub(super) fn respond(
     {
         return Err(prerequisite("that missile response was already decided"));
     }
-    if accept && super::hit_reactions::shield_choices(state, actor)?.is_empty() {
+    if accept
+        && super::hit_reactions::shield_choices_with_read(&execution.read(state)?, actor)?
+            .is_empty()
+    {
         return Err(prerequisite(
             "no source Shield response is currently available",
         ));
@@ -263,7 +272,7 @@ pub(super) fn respond(
         origin: meta.clone(),
         accepted: accept,
     });
-    advance(state, meta, missile)
+    advance(state, meta, missile, execution)
 }
 
 pub(super) fn delegate(
@@ -291,6 +300,7 @@ pub(super) fn order(
     meta: &CommandMeta,
     window: TacticalWorkKey,
     instruction: &TacticalReactionOrdering,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let missile = require_window(state, window)?;
     let record = current(state, missile)?;
@@ -309,13 +319,14 @@ pub(super) fn order(
         origin: meta.clone(),
         instruction: instruction.clone(),
     });
-    advance(state, meta, missile)
+    advance(state, meta, missile, execution)
 }
 
 pub(super) fn decline(
     state: &mut CampaignState,
     meta: &CommandMeta,
     window: TacticalWorkKey,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let missile = require_window(state, window)?;
     let TacticalMissileStage::Selected { respondent } = current(state, missile)?.stage else {
@@ -328,7 +339,7 @@ pub(super) fn decline(
     current_mut(state, missile)?.respondents[usize::from(respondent)]
         .response
         .declined_after_selection = Some(meta.clone());
-    advance(state, meta, missile)
+    advance(state, meta, missile, execution)
 }
 
 pub(super) fn cast(
@@ -336,6 +347,7 @@ pub(super) fn cast(
     meta: &CommandMeta,
     window: TacticalWorkKey,
     choice: &SpellCastChoice,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let missile = require_window(state, window)?;
     let TacticalMissileStage::Selected { respondent } = current(state, missile)?.stage else {
@@ -352,7 +364,8 @@ pub(super) fn cast(
     if cast >= 32_768 || resolution(state)?.casts.len() >= MAX_TACTICAL_CASTS {
         return Err(invalid("response casting capacity exceeded"));
     }
-    let (record, source) = super::casting::shield_admission(state, meta, choice, cast)?;
+    let (record, source) =
+        super::casting::shield_admission_with_read(&execution.read(state)?, meta, choice, cast)?;
     *state = apply_spell_casting_cost(state, actor, SpellCastingCost::Reaction)?;
     if let Some(source) = source {
         state
@@ -380,7 +393,7 @@ pub(super) fn cast(
         }],
     )?;
     super::work_trace::leave(state, previous)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn finish_shield(

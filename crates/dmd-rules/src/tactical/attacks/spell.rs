@@ -57,6 +57,7 @@ fn fill_facts(
     state: &CampaignState,
     attack: &mut TacticalAttack,
     proof: &SpellAttackOccurrence,
+    read: Option<&super::super::grapple::reads::AttackRead<'_>>,
 ) -> Result<(), RulesError> {
     planning::require_located_target(state, proof.actor(), proof.target())?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
@@ -67,7 +68,7 @@ fn fill_facts(
     // The currently executable AttackDamage source node is created only from
     // RangedSpellAttack. Future melee source programs need an explicit delivery.
     let (mode, armor, critical) =
-        planning::hit_facts_for(state, proof.actor(), proof.target(), true, false)?;
+        planning::hit_facts_for_with_read(state, proof.actor(), proof.target(), true, false, read)?;
     attack.delivery = TacticalAttackDelivery::Ranged;
     attack.attack_modifier =
         i32::from(proof.intrinsic_attack_bonus()) - i32::from(caster.exhaustion) * 2;
@@ -86,6 +87,7 @@ pub(in crate::tactical) fn begin_spell_attack(
     state: &mut CampaignState,
     causal_meta: &CommandMeta,
     occurrence: &SpellAttackOccurrence,
+    execution: &mut ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let r = resolution(state)?;
     if r.attack.is_some() || r.pending.is_some() || r.failed_save.is_some() {
@@ -138,11 +140,19 @@ pub(in crate::tactical) fn begin_spell_attack(
         damage_roll: None,
         outcome: None,
     };
-    fill_facts(state, &mut attack, occurrence)?;
+    let context = execution.read(state)?;
+    let read = context.attack_current(occurrence.actor(), occurrence.target(), false)?;
+    fill_facts(state, &mut attack, occurrence, read.as_ref())?;
+    let proofs = read
+        .as_ref()
+        .map(|read| read.captured())
+        .unwrap_or_default();
+    drop(read);
     // No action, spell slot, feature use, ammunition or equipment changes occur
     // here. The single casting transaction has already reserved its own costs.
     resolution_mut(state)?.attack = Some(attack);
     push_frame(state, vec![TacticalWorkKind::AttackRoll])?;
+    super::super::grapple::reads::capture_admission(state, causal_meta, proofs)?;
     // The caller is the shared pump; recursively pumping here would erase its
     // parent cast before the caller resumes processing that same work item.
     Ok(())
@@ -180,6 +190,7 @@ pub(super) fn validate_admission(
 pub(super) fn validate_source(
     state: &CampaignState,
     attack: &TacticalAttack,
+    read: Option<&super::super::grapple::reads::AttackRead<'_>>,
 ) -> Result<(), RulesError> {
     validate_admission(state, attack)?;
     let TacticalAttackSource::Spell { cast, at, .. } = &attack.source else {
@@ -196,7 +207,7 @@ pub(super) fn validate_source(
         return Err(invalid("spell attack retains an inapplicable source stage"));
     }
     let mut derived = attack.clone();
-    fill_facts(state, &mut derived, &occurrence)?;
+    fill_facts(state, &mut derived, &occurrence, read)?;
     if derived != *attack {
         return Err(invalid(
             "spell attack differs from live source-derived hit facts",

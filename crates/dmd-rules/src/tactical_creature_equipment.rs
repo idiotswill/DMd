@@ -32,6 +32,11 @@ pub fn creature_attack_gear(
     }) {
         return Err(invalid("The selected source feature is not an attack."));
     }
+    if source.id == "ogre" {
+        let program = ogre_weapon_program(&profile.source, feature_id)
+            .map_err(|error| invalid(error.to_string()))?;
+        return Ok(Some(program.weapon().id.as_str()));
+    }
     let gear = match (source.id.as_str(), feature_id) {
         ("goblin-warrior", "scimitar") => Some("scimitar"),
         ("goblin-warrior" | "skeleton", "shortbow") => Some("shortbow"),
@@ -98,11 +103,37 @@ pub fn creature_equipment_plan_from_source(
 ) -> Result<Vec<CreatureEquipmentAllocation>, RulesError> {
     let definitions = creature_definitions().map_err(|e| invalid(e.to_string()))?;
     let source = creature_source(pin).map_err(|e| invalid(e.to_string()))?;
+    equipment_plan(source, definitions, ammunition_units)
+}
+
+/// The public path resolves an immutable pin before calling this post-load planner.
+/// Proposed source controls may exercise planning without admitting a new source.
+fn equipment_plan(
+    source: &CreatureDefinition,
+    definitions: &TacticalDefinitions,
+    ammunition_units: u16,
+) -> Result<Vec<CreatureEquipmentAllocation>, RulesError> {
     let mut result = BTreeMap::new();
     let mut ammunition = HashSet::new();
     for id in &source.statistics.gear {
-        equipment_definition(id).map_err(|e| invalid(e.to_string()))?;
-        result.insert(id.clone(), 1);
+        let definition = equipment_definition(id).map_err(|e| invalid(e.to_string()))?;
+        let quantity = source
+            .statistics
+            .gear_quantities
+            .get(id)
+            .copied()
+            .unwrap_or(1);
+        if quantity > 1
+            && matches!(
+                definition.kind,
+                EquipmentKind::Armor | EquipmentKind::Shield
+            )
+        {
+            return Err(invalid(
+                "Repeated source armor/shields require an explicit equipped-item selection.",
+            ));
+        }
+        result.insert(id.clone(), quantity);
         if let Some(weapon) = definitions.weapon(id)
             && let Some(id) = crate::tactical_weapons::required_ammunition_definition(weapon)
         {
@@ -115,6 +146,11 @@ pub fn creature_equipment_plan_from_source(
         ));
     }
     for id in ammunition {
+        if source.statistics.gear.iter().any(|fixed| fixed == id) {
+            return Err(invalid(
+                "Fixed source gear collides with generated ammunition.",
+            ));
+        }
         result.insert(id.into(), u32::from(ammunition_units));
     }
     for feature in &source.features {
@@ -130,18 +166,53 @@ pub fn creature_equipment_plan_from_source(
                     .spell(&grant.spell_id)
                     .ok_or_else(|| invalid("Unknown source spell."))?;
                 if spell.components.material.is_some() {
-                    result.insert(format!("spell-material:{}", spell.id), 1);
+                    let id = format!("spell-material:{}", spell.id);
+                    if source.statistics.gear.contains(&id) {
+                        return Err(invalid(
+                            "Fixed source gear collides with a generated spell material.",
+                        ));
+                    }
+                    // Repeated grants of the same material still need one stack.
+                    result.insert(id, 1);
                 }
             }
         }
     }
-    Ok(result
-        .into_iter()
-        .map(|(definition_id, quantity)| CreatureEquipmentAllocation {
-            definition_id,
-            quantity,
-        })
-        .collect())
+    let mut allocation_count = 0_usize;
+    for (id, quantity) in &result {
+        let definition = equipment_definition(id).map_err(|e| invalid(e.to_string()))?;
+        let count = match definition.stacking {
+            ItemStacking::Individual => usize::try_from(*quantity)
+                .map_err(|_| invalid("Source gear quantity cannot be represented."))?,
+            ItemStacking::Stack => 1,
+        };
+        allocation_count = allocation_count
+            .checked_add(count)
+            .ok_or_else(|| invalid("Source equipment allocation count overflows."))?;
+    }
+    let mut allocations = Vec::new();
+    allocations
+        .try_reserve_exact(allocation_count)
+        .map_err(|_| invalid("Source equipment allocations could not be reserved."))?;
+    for (definition_id, quantity) in result {
+        let definition =
+            equipment_definition(&definition_id).map_err(|e| invalid(e.to_string()))?;
+        match definition.stacking {
+            ItemStacking::Individual => {
+                for _ in 0..quantity {
+                    allocations.push(CreatureEquipmentAllocation {
+                        definition_id: definition_id.clone(),
+                        quantity: 1,
+                    });
+                }
+            }
+            ItemStacking::Stack => allocations.push(CreatureEquipmentAllocation {
+                definition_id,
+                quantity,
+            }),
+        }
+    }
+    Ok(allocations)
 }
 
 /// Establishes custody once during source creation. No RNG, new IDs or journal writes.
@@ -303,6 +374,9 @@ pub fn creature_current_armor(
         .map(ArmorClass::Fixed)
         .map_err(|_| invalid("Creature armor is outside bounds."))
 }
+
+#[cfg(test)]
+mod gear_count_tests;
 
 #[cfg(test)]
 mod tests {

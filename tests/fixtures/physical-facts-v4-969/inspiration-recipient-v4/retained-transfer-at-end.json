@@ -1,0 +1,26 @@
+{
+  "version": 4,
+  "meta": {
+    "id": "6e7f06a3-848a-4f48-b153-b355ada36773",
+    "campaign_id": "ff592603-a34a-4c5c-b3bb-a3c1bd613eb4",
+    "session_id": "e12c62bd-7266-4584-95a5-2692129796ef",
+    "issuer": {
+      "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+    },
+    "actor": {
+      "Entity": "b15b79ec-9afd-4372-ae20-8e0f18bd060c"
+    },
+    "expected_event_sequence": 19
+  },
+  "audience": {
+    "Player": "66053ffd-7301-4553-97d1-80026df820e3"
+  },
+  "projection_ordinal": 21,
+  "acceptance": {
+    "Command": {
+      "resulting_event_sequence": 20
+    }
+  },
+  "request_json": "{\"version\":4,\"command_id\":\"6e7f06a3-848a-4f48-b153-b355ada36773\",\"campaign_id\":\"ff592603-a34a-4c5c-b3bb-a3c1bd613eb4\",\"session_id\":\"e12c62bd-7266-4584-95a5-2692129796ef\",\"channel\":{\"Player\":{\"player_id\":\"66053ffd-7301-4553-97d1-80026df820e3\",\"character_id\":\"f7e0011c-daee-4269-a0b4-ed05d1e6979b\"}},\"revision\":\"d01cb74e-e3b5-4da7-8a99-088b6da8bcb4\",\"input\":{\"InspirationTransfer\":{\"handle\":\"e224f74d-c686-40d1-b860-eda9dc9eb0f3\"}}}",
+  "response_json": "{\"Accepted\":{\"command_id\":\"6e7f06a3-848a-4f48-b153-b355ada36773\",\"revision\":\"3fd597c4-72f3-4a83-bc85-b81e815b97b8\",\"outcome\":{\"message\":\"Extra Heroic Inspiration given to the selected character.\"}}}"
+}

@@ -73,7 +73,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        allocation: [table-loop, legacy-missile, grapple-public, remainder]
+        allocation: [table-loop, legacy-missile, grapple-public, physical-history-decline, physical-history-ground, physical-history-recipient, remainder]
     steps:
       - uses: actions/checkout@v7
         with:

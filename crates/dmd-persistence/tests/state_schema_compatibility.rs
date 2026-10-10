@@ -139,6 +139,7 @@ fn encounter_state() -> CampaignState {
         },
     );
     initial.rules = Some(RulesState {
+        tactical_grapples: None,
         pack_id: initial.campaign.ruleset.id.clone(),
         pack_version: initial.campaign.ruleset.version.clone(),
         entities: [(actor, MechanicalEntity::basic(actor))]
@@ -835,6 +836,40 @@ fn legacy_saves_reject_creatures_authority_and_duplicate_null_shadows() {
                     .decode_state(
                         version,
                         &json.replacen("\"tactical_creatures\":", replacement, 1)
+                    )
+                    .is_err()
+            );
+        }
+    }
+}
+
+#[test]
+fn legacy_saves_reject_grapple_authority_and_duplicate_null_shadows() {
+    // Hostile decoded shapes only. No Grapple producer exists at this checkpoint.
+    let codec = CampaignStateSnapshotCodec::new();
+    let mut forged = encounter_state();
+    forged.encounter = None;
+    forged.rules.as_mut().unwrap().timing = None;
+    forged.rules.as_mut().unwrap().tactical_grapples = Some(dmd_domain::TacticalGrapples {
+        schema_version: 1,
+        active: vec![],
+    });
+    for version in 1..=3 {
+        forged.schema_version = version;
+        let json = forged.encode_json().unwrap();
+        assert!(matches!(
+            codec.decode_state(version, &json),
+            Err(SnapshotCodecError::MigrationFailed { .. })
+        ));
+        for replacement in [
+            "\"tactical_grapples\":null,\"tactical_grapples\":",
+            "\"tactical_grapples\":{},\"tactical_grapples\":null,\"ignored\":",
+        ] {
+            assert!(
+                codec
+                    .decode_state(
+                        version,
+                        &json.replacen("\"tactical_grapples\":", replacement, 1)
                     )
                     .is_err()
             );

@@ -9,3 +9,6 @@
 /crates/dmd-app/tests/fixtures/flow4-*.json -text whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol
 # Completed test logs retain the test harness's final empty line.
 /crates/dmd-app/tests/fixtures/flow4-source-verification/*.txt -text whitespace=blank-at-eol,-blank-at-eof,space-before-tab,cr-at-eol
+
+# Immutable original v4 compatibility corpus and its exact provenance bytes.
+/tests/fixtures/physical-facts-v4-969/** -text whitespace=blank-at-eol,-blank-at-eof,space-before-tab,cr-at-eol
