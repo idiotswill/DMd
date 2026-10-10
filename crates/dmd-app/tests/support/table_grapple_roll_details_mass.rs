@@ -510,9 +510,11 @@ async fn host_cannot_answer(f: &Fixture, owner: &TableTransportChannel) {
         )
         .await;
     request.version = 5;
+    let result = Box::pin(f.runtime.submit_presented_table(request)).await;
     assert!(
-        matches!(Box::pin(f.runtime.submit_presented_table(request)).await,
-        Err(RunnableCampaignError::TableRejected(message)) if message == "issuer is not authorized for this action")
+        matches!(&result,
+        Err(RunnableCampaignError::TableRejected(message)) if message == "issuer is not authorized for this action"),
+        "unexpected Host roll response: {result:?}"
     );
     Box::pin(unchanged(f, &export, &rows)).await;
 }
