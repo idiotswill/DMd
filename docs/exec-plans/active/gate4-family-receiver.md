@@ -6,6 +6,10 @@ The [native action-control correction plan](gate4-native-action-control-correcti
 owns their bounded repair and fresh exact-head verification. The current family
 is not merge-ready; native acceptance and Gate4 remain incomplete. Earlier
 verification and failure checkpoints below retain their original attribution.
+The first correction7c failed original Ground presentation-history replay;
+the correction plan's compatibility amendment restores historical offers and
+allocates a separate authenticated live-controls query. Its local build was
+deliberately stopped with preserved evidence, without a local test outcome.
 
 Historical status: source reviewed; verification incomplete, 2026-10-10. Published 63b48d50
 has five local focused passes, one actual hosted M+G3 failure and incomplete

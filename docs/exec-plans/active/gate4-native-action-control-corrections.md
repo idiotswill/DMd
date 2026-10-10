@@ -1,6 +1,13 @@
 # Gate 4 native action-control corrections
 
-Status: plan before implementation, 2026-10-10. Root is the sole writer on
+Current status, 2026-10-10: the first correction7c failed original Ground
+presentation-history replay. The compatibility amendment below supersedes its
+shared-planner change and allocates a separate live advisory query. Root stopped
+the obsolete local compiler at21:18:21Z, preserving all logs and the partial
+target; no local test outcome is claimed. Native remains closed at106. Both
+control findings and Gate4 remain open.
+
+Historical plan-first baseline, 2026-10-10. Root is the sole writer on
 `codex/gate4-family-receiver`, draft PR #76. Freshly fetched baseline is
 `f7b8d0ee8b695931970e531104c86742eac8c3ae`, tree
 `2dd83dea568ad3c686d66266a6759dbb704e2e51`; accepted main remains
@@ -147,3 +154,88 @@ Both findings remain open until corrected-package verification.
 Next: freeze/review this correction, bind the new runner and publish for fresh
 hosted checks. Native remains closed at106; preserve it for corrected-package
 reopen. Recheck memory/process/disk headroom before allocating local compilation.
+
+## Historical compatibility correction, plan before implementation
+
+The first authored correction is superseded by an actual exact-head replay
+failure. Head `7c76345f7835aa9521d17a598ee647dfbff92a61`, tree
+`04cb67203ae3e67ec3f40043845dacbd0882090e`, failed Linux run38085520699
+attempt1 job114311084812 in
+`original_v4_ground_history_and_genuine_v5_continuation`. At original ground-v4
+cut02 before-source-controller-before-export, restore rejected presentation
+history with "presentation revision does not match its historical audience".
+The original fixture is already flow5/presentation4; a flow-version condition
+would not repair this safely. Its spent-Action owner view retained Release and
+two Attempt capabilities. Changing the shared planner removes those historical
+capabilities. ADR020 requires their original authenticated replay, not rewriting
+the fixture, digest, presentation version, or expected capabilities.
+
+Failure audit SHA256:
+`412bebbff252e92e479a5a8ce805cc7b3b3b5c14950042ad8d81d52a05c7ce24`.
+Original fixture SHA256:
+`f4364d8d2fe7e2d9607338907f2f465b9fa99676a74d0993678af146c44b568c`.
+Six hosted prerequisite jobs passed at7c; that does not pass its runtime union.
+Root superseded the local7c allocation after verifying and preserving its exact
+owned process/lock/log state. Supersession receipt SHA256:
+`42c0a3ecdc9507ce50a464fe3a5005721dd8519e599103a1f4b23072929f0bbc`.
+No interrupted stage gains a test result.
+
+This amendment replaces the first planner-change bullet above. Restore the
+shared planner exactly to f7. Keep the Host player-owned equipment repair and
+its tests. Add an independent, versioned, read-only live Grapple-options query
+through the existing application/desktop API pattern used by intrinsic attacks
+and roll details. One exported transaction snapshot authenticates execution,
+original presentation history, current audience revision and selected channel.
+Validate actual PC ownership or source-creature control; Host receives only
+its existing authorized offers. Return only the original opaque handles from
+that current audience which correspond to current typed offers. Suppress an
+Attempt when it needs a new Action and the Action is already spent. Preserve
+paid remaining attack slots, free Release and other legal Grapple decisions.
+Never infer an action type from its human-readable label. The accepted command
+producer keeps its existing budget and ownership checks.
+
+The desktop reads this advisory query for the exact campaign/channel/revision.
+It must not enable an unverified or stale choice while a query is loading,
+after failure, on identity change, or while the existing gameplay lock is set.
+Responses are advisory and may only narrow the displayed original choices;
+submitting a choice still uses the existing durable request/outbox path.
+Reject foreign/unknown response handles and mismatched response identity.
+Preserve activation controls and expose recoverable loading/failure behavior.
+No canonical state, historical DTO, transport acceptance version, save schema,
+content corpus or fixture changes are allocated.
+
+Extend the same public withdrawal regression through the already authored real
+Finish, cold reopen and subsequent real owned turn. Verify old raw projection
+compatibility separately from absence of unaffordable live controls. Preserve
+every pre-7c assertion, exact canceled request/history and paid budget checks.
+Add live-query coverage for no writes on success/refusal, exact handles,
+channel/revision rejection, source control, free Release and legitimate paid
+slots. Exercise the actual TableApp/API integration and asynchronous stale
+responses/lock/context changes, not only a detached component mock. The
+original physical-history corpus and its hostile negative controls must pass
+unchanged; do not regenerate it or weaken any restore assertion.
+
+Root remains sole repository writer. Obtain independent design/patch review,
+commit this amendment before implementation, review the full resulting delta,
+then freeze a new clean head. Derive actual new test counts from source and
+discovery; previous catalogue counts are historical, not fixed pass targets.
+The fresh local allocation first exercises the changed withdrawal case and
+the exact failed original-ground-history case, then runs the complete unchanged
+canonical verification, all CI Python controls and frontend install/check/test/
+build. Preserve committed profiles, ordinary threads/stack, executors, one local
+heavy slot and a fresh absent target. No old runner is edited or resumed.
+Publish the reviewed successor for all hosted checks, complete platform unions
+and ordinary packaging. Earlier results cannot establish the successor's pass.
+
+Native remains closed at the preserved QA2 sequence106/QA1 sequence88 boundary.
+All nine campaigns, failed evidence and old packages remain intact. Bind a new
+native allocation only to the verified successor package. All inherited native
+ledger and Finished addendum obligations, including fresh no-M G3-to-G4 and
+M-only-to-M+G3-to-M+G4 witnesses, remain required. Neither f7 nor7c grants native
+pass credit to a new package. Both control findings, family acceptance and
+Gate4 remain open; Gate5 is not allocated.
+
+Independent review cleared the proposed production design and preserved f7
+assertions, with the new backend/frontend tests still to be authored and run.
+Next: commit this amendment, apply the reviewed compatibility correction and
+complete its regressions, then independent full-diff review and fresh checks.
