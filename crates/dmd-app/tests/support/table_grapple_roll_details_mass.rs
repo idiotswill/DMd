@@ -467,6 +467,13 @@ async fn initiative(f: &mut Fixture, source_owner: bool, grapple: Option<u32>) {
 }
 
 async fn host_cannot_answer(f: &Fixture, owner: &TableTransportChannel) {
+    let expected_message = match owner {
+        TableTransportChannel::Player { .. } => "issuer is not authorized for this action",
+        TableTransportChannel::SourceCreature { .. } => {
+            "This source creature's player must make the decision or report its public dice."
+        }
+        TableTransportChannel::Host => panic!("Host is not a player-owned roll channel"),
+    };
     let export = export_campaign(&f.pool, f.campaign).await.unwrap();
     let rows = all_rows(&f.pool).await;
     let pending = f.state().await.rules.unwrap().pending.unwrap();
@@ -513,7 +520,7 @@ async fn host_cannot_answer(f: &Fixture, owner: &TableTransportChannel) {
     let result = Box::pin(f.runtime.submit_presented_table(request)).await;
     assert!(
         matches!(&result,
-        Err(RunnableCampaignError::TableRejected(message)) if message == "issuer is not authorized for this action"),
+        Err(RunnableCampaignError::TableRejected(message)) if message == expected_message),
         "unexpected Host roll response: {result:?}"
     );
     Box::pin(unchanged(f, &export, &rows)).await;

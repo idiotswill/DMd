@@ -250,3 +250,11 @@ head for fresh exact-source Linux/MSVC prerequisites, seven-allocation unions,
 aggregate and Windows packaging; retain all original failure evidence. Current
 2e0 hosted results do not pass this new head. Native ledger/addendum, final-main
 checks and separate human Gate 4 evidence remain due. No acceptance is waived.
+
+Correction authored after plan commit 119486b9. The only test-code change selects
+one exact expected message from the existing owner channel before submitting the
+unchanged request. Unsupported Host input fails before any fixture operation.
+The original TableRejected check, Debug failure detail, export/all-row assertion
+and every matrix/case body remain intact. Direct configured Rustfmt/check and
+whitespace checks pass. Compilation and runtime on the corrected head are UNRUN;
+freeze for independent source review and the full verification allocation above.
