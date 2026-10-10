@@ -1,6 +1,13 @@
 # Gate 4 combined family receiver
 
-Status: source reviewed; verification incomplete, 2026-10-10. Published 63b48d50
+Current status, 2026-10-10: f7 native acceptance found two actionable control
+defects after completed paid attacks and in Host's player-owned equipment form.
+The [native action-control correction plan](gate4-native-action-control-corrections.md)
+owns their bounded repair and fresh exact-head verification. The current family
+is not merge-ready; native acceptance and Gate4 remain incomplete. Earlier
+verification and failure checkpoints below retain their original attribution.
+
+Historical status: source reviewed; verification incomplete, 2026-10-10. Published 63b48d50
 has five local focused passes, one actual hosted M+G3 failure and incomplete
 hosted execution after nine six-hour timeouts. No feature/gate acceptance.
 The [test-profile capacity plan](gate4-test-profile-capacity.md) governs the
