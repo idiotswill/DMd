@@ -2,7 +2,7 @@
 //! used by restore. Opaque identifiers never become gameplay authority.
 use crate::{
     TABLE_EVENT_KIND, TablePresentedView, TableView, TableViewer,
-    table_projection::{ProjectionEvent, project_table},
+    table_projection::{ProjectionEvent, ProjectionRead, project_table_read},
     table_transport::presented_view,
 };
 use dmd_domain::*;
@@ -49,6 +49,50 @@ fn capabilities(
     state: &CampaignState,
 ) -> Result<Vec<ProjectionCapability>, String> {
     let mut result = Vec::new();
+    if let Some(physical) = &raw.physical {
+        result.extend(
+            physical
+                .controls
+                .iter()
+                .map(|control| ProjectionCapability::PhysicalFact {
+                    offer: control.key.clone(),
+                }),
+        );
+    }
+    if let Some(transfer) = &raw.inspiration_transfer {
+        result.extend(transfer.choices.iter().map(|option| {
+            ProjectionCapability::InspirationTransfer {
+                choice: option.key.clone(),
+            }
+        }));
+    }
+    if let Some(grapple) = &raw.grapple {
+        result.extend(
+            grapple
+                .choices
+                .iter()
+                .map(|choice| ProjectionCapability::GrappleChoice {
+                    offer: choice.key.clone(),
+                }),
+        );
+    }
+    if let Some(choice) = raw
+        .tactical
+        .as_ref()
+        .and_then(|t| t.attack_equipment.as_ref())
+    {
+        result.push(ProjectionCapability::AttackEquipment {
+            origin: choice.key.resolution,
+            occurrence: choice.key.occurrence,
+        });
+    }
+    if let Some(grapple) = &raw.grapple {
+        result.extend(grapple.ground_drag.iter().map(|choice| {
+            ProjectionCapability::GrappleTransport {
+                offer: choice.key.clone(),
+            }
+        }));
+    }
     if let Some(shove) = raw.tactical.as_ref().and_then(|t| t.shove.as_ref()) {
         result.push(ProjectionCapability::ShoveDecision {
             origin: shove.key.resolution,
@@ -153,9 +197,8 @@ fn visible_ids(history: &PresentationHistory, audience: ProjectionAudience) -> H
         .map(|v| v.event_id)
         .collect()
 }
-fn raw_view(
-    state: &CampaignState,
-    pack: &RulesPack,
+pub(crate) fn raw_view(
+    read: ProjectionRead<'_>,
     events: &[ProjectionEvent],
     observations: &[SessionObservation],
     history: &PresentationHistory,
@@ -173,10 +216,9 @@ fn raw_view(
         })
         .cloned()
         .collect::<Vec<_>>();
-    project_table(
-        state,
+    project_table_read(
+        read,
         viewer(audience),
-        pack,
         events,
         &observations,
         Some(&visible),
@@ -184,13 +226,13 @@ fn raw_view(
     .map_err(|e| e.to_string())
 }
 
-pub(crate) fn current_view(
-    state: &CampaignState,
-    pack: &RulesPack,
+pub(crate) fn current_view_read(
+    read: ProjectionRead<'_>,
     export: &CampaignExport,
     history: &PresentationHistory,
     audience: ProjectionAudience,
 ) -> Result<TablePresentedView, String> {
+    let state = read.state();
     let events = export
         .event_journal
         .iter()
@@ -201,14 +243,7 @@ pub(crate) fn current_view(
         .get(&audience)
         .ok_or("unknown presentation audience")?;
     presented_view(
-        raw_view(
-            state,
-            pack,
-            &events,
-            &export.observations,
-            history,
-            audience,
-        )?,
+        raw_view(read, &events, &export.observations, history, audience)?,
         audience,
         latest.revision,
         &latest.handles,
@@ -219,11 +254,12 @@ pub(crate) fn current_view(
 /// A gameplay event is published to an audience only when its acceptance changes
 /// that audience's presented game state. This cannot be recomputed using later sight.
 fn classify(
-    before: &CampaignState,
-    after: &CampaignState,
+    before_read: ProjectionRead<'_>,
+    after_read: ProjectionRead<'_>,
     event: &EventJournalRow,
-    pack: &RulesPack,
 ) -> Result<Option<TranscriptVisibility>, String> {
+    let before = before_read.state();
+    let after = after_read.state();
     if event.event_kind != TABLE_EVENT_KIND {
         return Ok(None);
     }
@@ -247,20 +283,18 @@ fn classify(
         let ProjectionAudience::Player(id) = audience else {
             unreachable!()
         };
-        let new = project_table(
-            after,
+        let new = project_table_read(
+            after_read,
             viewer(audience),
-            pack,
             &[],
             &[],
             Some(&HashSet::new()),
         )
         .map_err(|e| e.to_string())?;
         let changed = if before.players.contains_key(&id) {
-            let old = project_table(
-                before,
+            let old = project_table_read(
+                before_read,
                 viewer(audience),
-                pack,
                 &[],
                 &[],
                 Some(&HashSet::new()),
@@ -282,15 +316,15 @@ fn classify(
 }
 
 fn expected_changes(
-    state: &CampaignState,
-    pack: &RulesPack,
+    read: ProjectionRead<'_>,
     events: &[ProjectionEvent],
     observations: &[SessionObservation],
     history: &PresentationHistory,
 ) -> Result<Vec<(ProjectionAudience, String, Vec<ProjectionCapability>)>, String> {
+    let state = read.state();
     let mut result = Vec::new();
     for audience in audiences(state) {
-        let raw = raw_view(state, pack, events, observations, history, audience)?;
+        let raw = raw_view(read, events, observations, history, audience)?;
         let capabilities = capabilities(&raw, state)?;
         let digest = digest(raw, state)?;
         let unchanged = history.latest.get(&audience).is_some_and(|old| {
@@ -308,21 +342,21 @@ fn expected_changes(
     Ok(result)
 }
 fn validate_record(
-    state: &CampaignState,
-    pack: &RulesPack,
+    read: ProjectionRead<'_>,
     events: &[ProjectionEvent],
     observations: &[SessionObservation],
     history: &mut PresentationHistory,
     record: &TableProjectionRecord,
     transcript: &[TranscriptVisibility],
 ) -> Result<(), String> {
+    let state = read.state();
     if record.version != crate::table_source_control::presentation_version(state)
         || record.ordinal != history.ordinal + 1
         || record.transcript != transcript
     {
         return Err("presentation history/cause visibility mismatch".into());
     }
-    let expected = expected_changes(state, pack, events, observations, history)?;
+    let expected = expected_changes(read, events, observations, history)?;
     if record.changes.len() != expected.len() {
         return Err("presentation changed-audience set mismatch".into());
     }
@@ -363,6 +397,23 @@ pub(crate) fn build_record(
     cause: ProjectionCause,
     transcript: Vec<TranscriptVisibility>,
 ) -> Result<TableProjectionRecord, String> {
+    build_record_read(
+        ProjectionRead::Ordinary { state, pack },
+        export,
+        history,
+        cause,
+        transcript,
+    )
+}
+
+pub(crate) fn build_record_read(
+    read: ProjectionRead<'_>,
+    export: &CampaignExport,
+    history: &mut PresentationHistory,
+    cause: ProjectionCause,
+    transcript: Vec<TranscriptVisibility>,
+) -> Result<TableProjectionRecord, String> {
+    let state = read.state();
     let events = export
         .event_journal
         .iter()
@@ -370,7 +421,7 @@ pub(crate) fn build_record(
         .collect::<Result<Vec<_>, _>>()?;
     let mut changes = Vec::new();
     for (audience, visible_digest, capabilities) in
-        expected_changes(state, pack, &events, &export.observations, history)?
+        expected_changes(read, &events, &export.observations, history)?
     {
         let prior = history.latest.get(&audience);
         let handles = capabilities
@@ -412,7 +463,24 @@ pub(crate) fn accepted_event_visibility(
     pack: &RulesPack,
     history: &mut PresentationHistory,
 ) -> Result<Vec<TranscriptVisibility>, String> {
-    let result = classify(before, after, row, pack)?
+    accepted_event_visibility_read(
+        ProjectionRead::Ordinary {
+            state: before,
+            pack,
+        },
+        ProjectionRead::Ordinary { state: after, pack },
+        row,
+        history,
+    )
+}
+
+pub(crate) fn accepted_event_visibility_read(
+    before: ProjectionRead<'_>,
+    after: ProjectionRead<'_>,
+    row: &EventJournalRow,
+    history: &mut PresentationHistory,
+) -> Result<Vec<TranscriptVisibility>, String> {
+    let result = classify(before, after, row)?
         .into_iter()
         .collect::<Vec<_>>();
     history.visibility.extend(result.clone());
@@ -442,71 +510,168 @@ pub(crate) fn validate_history(
     export: &CampaignExport,
     pack: &RulesPack,
 ) -> Result<PresentationHistory, String> {
-    let mut history = PresentationHistory::default();
-    let current =
-        CampaignState::decode_json(&export.current_state.state_json).map_err(|e| e.to_string())?;
-    let marked = export
-        .command_audit
-        .iter()
-        .any(|a| a.command_kind == "table.action" && matches!(a.command_schema_version, 2 | 3))
-        || export.observations.iter().any(|o| {
-            o.record.kind == "table.conversation"
-                && matches!(o.record.payload_schema_version, 2 | 3)
-        })
-        || crate::table_source_control::enabled(&current);
-    if current.table.is_none() {
-        if !export.table_projection_history.is_empty()
-            || !export.table_transport_bindings.is_empty()
-            || marked
+    crate::rules_restore::authenticate_history(export, pack.clone())
+        .map(|verified| verified.into_parts().1)
+}
+
+pub(crate) struct LegacySelectionCheck {
+    pub meta: CommandMeta,
+    pub channel: crate::TableTransportChannel,
+    matched: bool,
+}
+impl LegacySelectionCheck {
+    pub(crate) fn new(meta: CommandMeta, channel: crate::TableTransportChannel) -> Self {
+        Self {
+            meta,
+            channel,
+            matched: false,
+        }
+    }
+    fn observe(&mut self, state: &CampaignState) {
+        if state.applied_event_sequence != self.meta.expected_event_sequence {
+            return;
+        }
+        self.matched = match self.channel {
+            crate::TableTransportChannel::SourceCreature { .. } => false,
+            crate::TableTransportChannel::Host => {
+                self.meta.issuer == CommandIssuer::Admin && self.meta.actor.is_none()
+            }
+            crate::TableTransportChannel::Player {
+                player_id,
+                character_id,
+            } => {
+                self.meta.issuer == CommandIssuer::Player(player_id)
+                    && state.characters.get(&character_id).is_some_and(|c| {
+                        c.controlling_player_id == Some(player_id)
+                            && self.meta.actor == Some(AgentRef::Entity(c.entity_id))
+                    })
+            }
+        };
+    }
+}
+
+pub(crate) struct HistoryVerifier<'a> {
+    export: &'a CampaignExport,
+    history: PresentationHistory,
+    events: Vec<ProjectionEvent>,
+    bootstrap_head: u64,
+    bootstrap_observation: u64,
+    next_record: usize,
+    bootstrapped: bool,
+    table: bool,
+    selection: Option<LegacySelectionCheck>,
+}
+impl<'a> HistoryVerifier<'a> {
+    pub(crate) fn new(
+        export: &'a CampaignExport,
+        selection: Option<LegacySelectionCheck>,
+    ) -> Result<Self, String> {
+        let current = CampaignState::decode_json(&export.current_state.state_json)
+            .map_err(|e| e.to_string())?;
+        let marked =
+            export.command_audit.iter().any(|a| {
+                a.command_kind == "table.action" && matches!(a.command_schema_version, 2..=6)
+            }) || export.observations.iter().any(|o| {
+                o.record.kind == "table.conversation"
+                    && matches!(o.record.payload_schema_version, 2..=6)
+            }) || crate::table_source_control::enabled(&current)
+                || dmd_rules::table::grapple_enabled(&current)
+                || dmd_rules::physical_facts::enabled(&current);
+        if current.table.is_none()
+            && (!export.table_projection_history.is_empty()
+                || !export.table_transport_bindings.is_empty()
+                || marked)
         {
             return Err("presentation requires a table history".into());
         }
-        crate::rules_restore::visit_rules_history(export, pack, |_, _, _| Ok(()))?;
-        return Ok(history);
+        let bootstrap = export.table_projection_history.first();
+        if bootstrap.is_none() && (marked || !export.table_transport_bindings.is_empty()) {
+            return Err("canonical protocol acceptance is missing presentation history".into());
+        }
+        let (bootstrap_head, bootstrap_observation) = match bootstrap.map(|b| &b.cause) {
+            Some(ProjectionCause::Bootstrap {
+                event_sequence,
+                observation_ordinal,
+            }) => (*event_sequence, *observation_ordinal),
+            None => (
+                current.applied_event_sequence,
+                export.observations.len() as u64,
+            ),
+            _ => return Err("presentation lacks its initial bootstrap".into()),
+        };
+        let events = export
+            .event_journal
+            .iter()
+            .map(ProjectionEvent::try_from)
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(Self {
+            export,
+            history: PresentationHistory::default(),
+            events,
+            bootstrap_head,
+            bootstrap_observation,
+            next_record: 1,
+            bootstrapped: false,
+            table: current.table.is_some(),
+            selection,
+        })
     }
-    let bootstrap = export.table_projection_history.first();
-    if bootstrap.is_none() && (marked || !export.table_transport_bindings.is_empty()) {
-        return Err("canonical protocol acceptance is missing presentation history".into());
+    pub(crate) fn anchor(&mut self, read: dmd_rules::table::TableRead<'_>) -> Result<(), String> {
+        self.frame(None, read, None)
     }
-    let (bootstrap_head, bootstrap_observation) = match bootstrap.map(|b| &b.cause) {
-        Some(ProjectionCause::Bootstrap {
-            event_sequence,
-            observation_ordinal,
-        }) => (*event_sequence, *observation_ordinal),
-        None => (
-            current.applied_event_sequence,
-            export.observations.len() as u64,
-        ),
-        _ => return Err("presentation lacks its initial bootstrap".into()),
-    };
-    let events = export
-        .event_journal
-        .iter()
-        .map(ProjectionEvent::try_from)
-        .collect::<Result<Vec<_>, _>>()?;
-    let mut next_record = 1usize;
-    let mut bootstrapped = false;
-    crate::rules_restore::visit_rules_history(export, pack, |before, state, row| {
+    pub(crate) fn step(
+        &mut self,
+        before: dmd_rules::table::TableRead<'_>,
+        after: dmd_rules::table::TableRead<'_>,
+        row: &EventJournalRow,
+    ) -> Result<(), String> {
+        self.frame(Some(before), after, Some(row))
+    }
+    fn frame(
+        &mut self,
+        prior_read: Option<dmd_rules::table::TableRead<'_>>,
+        read: dmd_rules::table::TableRead<'_>,
+        row: Option<&EventJournalRow>,
+    ) -> Result<(), String> {
+        let state = read.state();
+        if let Some(selection) = &mut self.selection {
+            selection.observe(state);
+        }
+        if !self.table {
+            return Ok(());
+        }
+        let before = prior_read.as_ref().map(|read| read.state());
+        let projection = ProjectionRead::Owned(&read);
+        let export = self.export;
+        let bootstrap = export.table_projection_history.first();
+        let events = &self.events;
+
         if state.table.is_none() {
             return Err("table presentation requires its original table anchor".into());
         }
         for observation in &export.observations {
             if observation.record.observed_event_sequence == state.applied_event_sequence {
-                accepted_observation_visibility(state, &observation.record, &mut history);
+                accepted_observation_visibility(state, &observation.record, &mut self.history);
             } else if before.is_none()
                 && observation.record.observed_event_sequence < state.applied_event_sequence
             {
-                history
+                self.history
                     .observation_audiences
                     .insert(observation.record.id, vec![ProjectionAudience::Host]);
             }
         }
-        let event_visibility = if let (Some(before), Some(row)) = (before, row) {
-            accepted_event_visibility(before, state, row, pack, &mut history)?
+        let event_visibility = if let (Some(_), Some(row)) = (before, row) {
+            accepted_event_visibility_read(
+                ProjectionRead::Owned(prior_read.as_ref().expect("prior image")),
+                projection,
+                row,
+                &mut self.history,
+            )?
         } else {
             // No knowledge is invented for an opaque pre-table anchor. Such old
             // entries remain host diagnostics and cannot become player transcript.
-            history.visibility.extend(
+            self.history.visibility.extend(
                 export
                     .event_journal
                     .iter()
@@ -524,43 +689,42 @@ pub(crate) fn validate_history(
             );
             Vec::new()
         };
-        if state.applied_event_sequence < bootstrap_head {
+        if state.applied_event_sequence < self.bootstrap_head {
             return Ok(());
         }
-        if !bootstrapped {
-            if state.applied_event_sequence != bootstrap_head {
+        if !self.bootstrapped {
+            if state.applied_event_sequence != self.bootstrap_head {
                 return Err("bootstrap is before the authenticated anchor".into());
             }
             // A new acceptance can never precede initialization of its protocol.
             if export.command_audit.iter().any(|a| {
-                matches!(a.command_schema_version, 2 | 3)
+                matches!(a.command_schema_version, 2..=6)
                     && a.command_kind == "table.action"
-                    && a.resulting_event_sequence <= bootstrap_head as i64
+                    && a.resulting_event_sequence <= self.bootstrap_head as i64
             }) || export.observations.iter().any(|o| {
-                o.ordinal <= bootstrap_observation
+                o.ordinal <= self.bootstrap_observation
                     && o.record.kind == "table.conversation"
-                    && matches!(o.record.payload_schema_version, 2 | 3)
+                    && matches!(o.record.payload_schema_version, 2..=6)
             }) {
                 return Err("protocol marker precedes its bootstrap".into());
             }
-            history.observation_ordinal = bootstrap_observation;
+            self.history.observation_ordinal = self.bootstrap_observation;
             if let Some(record) = bootstrap {
-                let transcript = history.visibility.clone();
+                let transcript = self.history.visibility.clone();
                 validate_record(
-                    state,
-                    pack,
-                    &events,
+                    projection,
+                    events,
                     &export.observations,
-                    &mut history,
+                    &mut self.history,
                     record,
                     &transcript,
                 )?;
             }
-            bootstrapped = true;
+            self.bootstrapped = true;
         } else if let Some(row) = row {
             let record = export
                 .table_projection_history
-                .get(next_record)
+                .get(self.next_record)
                 .ok_or("missing accepted event presentation")?;
             let cause = ProjectionCause::Event {
                 id: EventId(Uuid::parse_str(&row.id).map_err(|e| e.to_string())?),
@@ -571,13 +735,12 @@ pub(crate) fn validate_history(
             }
             // Transport request/response semantics are authenticated separately at
             // this exact before/after image, before advancing the stored revision.
-            let prior = history.latest.clone();
+            let prior = self.history.latest.clone();
             validate_record(
-                state,
-                pack,
-                &events,
+                projection,
+                events,
                 &export.observations,
-                &mut history,
+                &mut self.history,
                 record,
                 &event_visibility,
             )?;
@@ -587,12 +750,12 @@ pub(crate) fn validate_history(
                 state,
                 row,
                 &prior,
-                &history,
-                pack,
+                &self.history,
+                read.pack(),
             )?;
-            next_record += 1;
+            self.next_record += 1;
         }
-        while let Some(record) = export.table_projection_history.get(next_record) {
+        while let Some(record) = export.table_projection_history.get(self.next_record) {
             let ProjectionCause::Observation { id } = record.cause else {
                 break;
             };
@@ -604,40 +767,47 @@ pub(crate) fn validate_history(
             if observation.record.observed_event_sequence != state.applied_event_sequence {
                 break;
             }
-            if observation.ordinal != history.observation_ordinal + 1 {
+            if observation.ordinal != self.history.observation_ordinal + 1 {
                 return Err("presentation observation order mismatch".into());
             }
-            let prior = history.latest.clone();
-            history.observation_ordinal = observation.ordinal;
+            let prior = self.history.latest.clone();
+            self.history.observation_ordinal = observation.ordinal;
             validate_record(
-                state,
-                pack,
-                &events,
+                projection,
+                events,
                 &export.observations,
-                &mut history,
+                &mut self.history,
                 record,
                 &[],
             )?;
             crate::table_transport_runtime::validate_observation_binding(
                 export,
-                state,
+                projection,
                 observation,
                 &prior,
-                &history,
-                pack,
+                &self.history,
             )?;
-            next_record += 1;
+            self.next_record += 1;
         }
         Ok(())
-    })?;
-    if !bootstrapped {
-        return Err("presentation bootstrap image unavailable".into());
     }
-    if bootstrap.is_some() && next_record != export.table_projection_history.len() {
-        return Err("unconsumed presentation evidence".into());
+    pub(crate) fn finish(mut self) -> Result<(PresentationHistory, Option<bool>), String> {
+        let export = self.export;
+        let bootstrap = export.table_projection_history.first();
+        if self.table {
+            if !self.bootstrapped {
+                return Err("presentation bootstrap image unavailable".into());
+            }
+            if bootstrap.is_some() && self.next_record != export.table_projection_history.len() {
+                return Err("unconsumed presentation evidence".into());
+            }
+            if bootstrap.is_none() {
+                self.history.observation_ordinal = export.observations.len() as u64;
+            }
+        }
+        Ok((
+            self.history,
+            self.selection.map(|selection| selection.matched),
+        ))
     }
-    if bootstrap.is_none() {
-        history.observation_ordinal = export.observations.len() as u64;
-    }
-    Ok(history)
 }

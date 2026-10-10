@@ -242,7 +242,8 @@ pub fn choose_weapon_mastery(
             WeaponMasteryChoice::Cleave { attack },
         ) => {
             require(
-                attack.weapon == *weapon
+                attack.after_equipment.is_none()
+                    && attack.weapon == *weapon
                     && attack.target != *first_target
                     && attack.delivery == WeaponDelivery::Melee
                     && attack.purpose == WeaponAttackPurpose::Cleave { trigger: *trigger },

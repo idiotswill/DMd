@@ -83,6 +83,9 @@ pub(super) fn key(
     state: &CampaignState,
     work: &TacticalWorkItem,
 ) -> Result<TacticalRollKey, RulesError> {
+    if super::grapple::is_work(&work.kind) {
+        return super::grapple::key(state, work);
+    }
     if super::shove::is_work(&work.kind) {
         return super::shove::key(state, work);
     }
@@ -110,6 +113,10 @@ pub(super) fn key(
         return super::attacks::key(state, work);
     }
     let (role, subject) = match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => unreachable!("handled above"),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ShoveSave
         | TacticalWorkKind::ChooseShoveOutcome
@@ -141,6 +148,7 @@ pub(super) fn key(
         }
         TacticalWorkKind::AttackRoll
         | TacticalWorkKind::AttackDamage
+        | TacticalWorkKind::AttackAfterEquipment
         | TacticalWorkKind::FinishAttack => {
             return Err(invalid("attack work has no ordinary save key"));
         }
@@ -191,13 +199,17 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
                 | TacticalRollRole::LiquidLandingCheck
                 | TacticalRollRole::Medicine
                 | TacticalRollRole::ShoveSave
+                | TacticalRollRole::GrappleSave
+                | TacticalRollRole::GrappleEscape
         )
     {
         return Ruling {
             basis: RulingBasis::HouseRule {
                 id: "ability-test-natural-extremes".into(),
             },
-            reason: if role == TacticalRollRole::Medicine {
+            reason: if role == TacticalRollRole::GrappleEscape {
+                "The table's explicit natural-1/20 rule applies to this Escape check."
+            } else if role == TacticalRollRole::Medicine {
                 "The table's explicit natural-1/20 rule applies to this Medicine check."
             } else if role == TacticalRollRole::LiquidLandingCheck {
                 "The table's explicit natural-1/20 rule applies to this landing check."
@@ -208,6 +220,14 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         };
     }
     let (page, reason) = match role {
+        TacticalRollRole::GrappleSave => (
+            190,
+            "The target chooses Strength or Dexterity against ordinary Grapple.",
+        ),
+        TacticalRollRole::GrappleEscape => (
+            182,
+            "Escape uses Athletics or Acrobatics against the established escape DC.",
+        ),
         TacticalRollRole::ShoveSave => (
             190,
             "The target chooses Strength or Dexterity against Shove.",
@@ -256,13 +276,18 @@ pub(super) fn ruling(role: TacticalRollRole, houses: &HouseRules) -> Ruling {
         reason: reason.into(),
     }
 }
-pub(super) fn request(
-    state: &CampaignState,
+pub(super) fn request_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
     work: &TacticalWorkItem,
     key: TacticalRollKey,
 ) -> Result<Option<RollRequest>, RulesError> {
+    let state = read.state();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match &work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => super::grapple::request(state, work, key),
         TacticalWorkKind::ShoveSave => super::shove::request(state, work, key),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ChooseShoveOutcome
@@ -293,9 +318,11 @@ pub(super) fn request(
             Err(invalid("movement choice has no raw roll"))
         }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => {
-            super::attacks::request(state, work, key)
+            super::attacks::request_with_read(read, work, key)
         }
-        TacticalWorkKind::FinishAttack => Err(invalid("attack completion has no raw roll")),
+        TacticalWorkKind::FinishAttack | TacticalWorkKind::AttackAfterEquipment => {
+            Err(invalid("attack completion has no raw roll"))
+        }
         TacticalWorkKind::DeathSave { actor } => {
             let context = crate::tactical_vitality_adapter::context(
                 state,
@@ -370,13 +397,31 @@ pub(super) fn request(
     }
 }
 
+#[cfg(test)]
 pub(super) fn start(
     state: &mut CampaignState,
     meta: &CommandMeta,
     work: TacticalWorkItem,
 ) -> Result<(), RulesError> {
+    start_with_context(
+        state,
+        meta,
+        work,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+
+pub(super) fn start_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    work: TacticalWorkItem,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    execution.check_live_constraints(state)?;
     let previous = super::work_trace::enter(state, &work)?;
-    let result = start_inner(state, meta, work).and_then(|()| {
+    let result = start_inner(state, meta, work, execution).and_then(|()| {
+        execution.settle_work(state, meta)?;
+        execution.check_live_constraints(state)?;
         if resolution(state)?.work_trace.is_some() {
             super::falling::queue_losses(state, meta)?;
         }
@@ -391,7 +436,11 @@ fn start_inner(
     state: &mut CampaignState,
     meta: &CommandMeta,
     work: TacticalWorkItem,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
+    if super::grapple::start(state, &work)? {
+        return Ok(());
+    }
     if super::shove::start(state, &work)? {
         return Ok(());
     }
@@ -401,13 +450,17 @@ fn start_inner(
     if super::falling::start(state, meta, &work)? {
         return Ok(());
     }
-    if super::movement::start(state, meta, &work)? {
+    if super::movement::start(state, meta, &work, execution)? {
         return Ok(());
     }
-    if super::attacks::start(state, meta, &work)? {
+    if super::attacks::start(state, meta, &work, execution)? {
         return Ok(());
     }
     match &work.kind {
+        TacticalWorkKind::GrappleSave { .. } | TacticalWorkKind::GrappleEscapeCheck { .. } => (),
+        TacticalWorkKind::BeginGrapple { .. } | TacticalWorkKind::GrappleAfterEquipment { .. } => {
+            return Err(invalid("Grapple choice was not handled"));
+        }
         TacticalWorkKind::ShoveSave => (),
         TacticalWorkKind::BeginShove
         | TacticalWorkKind::ChooseShoveOutcome
@@ -458,7 +511,7 @@ fn start_inner(
             return Ok(());
         }
         TacticalWorkKind::SpellProgram { cast, at } => {
-            if super::casting::start(state, meta, *cast, *at)? {
+            if super::casting::start(state, meta, *cast, *at, execution)? {
                 return Ok(());
             }
         }
@@ -469,6 +522,9 @@ fn start_inner(
             return Err(invalid("movement work was not handled"));
         }
         TacticalWorkKind::AttackRoll | TacticalWorkKind::AttackDamage => (),
+        TacticalWorkKind::AttackAfterEquipment => {
+            return super::attack_equipment::select(state, meta, &work);
+        }
         TacticalWorkKind::FinishAttack => return Err(invalid("attack completion was not handled")),
         TacticalWorkKind::LegendaryWindow { actor } => {
             let actor = *actor;
@@ -535,17 +591,19 @@ fn start_inner(
         }
     }
     let key = key(state, &work)?;
-    let derived = request(state, &work, key)?;
+    let derived = request_with_read(&execution.read(state)?, &work, key)?;
     let pending = TacticalPendingWork { work, key };
     resolution_mut(state)?.pending = Some(pending.clone());
     let Some(request) = derived else {
-        flow_mut(state)?.save_decisions.push(TacticalSaveDecision {
+        let decision = TacticalSaveDecision {
             key,
             issued_by: meta.clone(),
             resolved_by: meta.clone(),
             failure: TacticalSaveFailure::Automatic,
-        });
-        super::failed_save::stage_or_finish(state, meta, pending, None)?;
+        };
+        execution.observe_decision(state, meta, &pending, &decision)?;
+        flow_mut(state)?.save_decisions.push(decision);
+        super::failed_save::stage_or_finish_with_context(state, meta, pending, None, execution)?;
         return Ok(());
     };
     let encounter = encounter(state)?.id;
@@ -569,14 +627,37 @@ fn start_inner(
         purpose: PendingPurpose::TacticalResolution { encounter, key },
         ruling: ruling(key.role, &rules.house_rules),
     });
+    let issued_work = resolution(state)?
+        .pending
+        .as_ref()
+        .ok_or_else(|| invalid("issued work absent"))?
+        .work
+        .clone();
+    super::grapple::reads::capture_issue(state, meta, &issued_work, key)?;
     Ok(())
 }
 
+#[cfg(test)]
 pub(super) fn submit(
     state: &mut CampaignState,
     meta: &CommandMeta,
     result: &RollResult,
     inspiration: Option<(usize, DieResult)>,
+) -> Result<(), RulesError> {
+    submit_with_context(
+        state,
+        meta,
+        result,
+        inspiration,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn submit_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    result: &RollResult,
+    inspiration: Option<(usize, DieResult)>,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let pending = state
         .rules
@@ -584,12 +665,15 @@ pub(super) fn submit(
         .and_then(|r| r.pending.as_ref())
         .ok_or(RulesError::NoPending)?
         .clone();
-    super::validation::validate_tactical_pending(state, &pending)?;
+    super::validation::validate_tactical_pending_with_read(&execution.read(state)?, &pending)?;
     let actor = pending
         .request
         .roller
         .ok_or_else(|| invalid("missing tactical roller"))?;
     authorize(state, meta, actor)?;
+    if let PendingPurpose::TacticalResolution { key, .. } = pending.purpose {
+        super::grapple::authorize_pending(state, meta, key)?;
+    }
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, actor)?;
     }
@@ -627,8 +711,7 @@ pub(super) fn submit(
         .pending
         .clone()
         .ok_or_else(|| invalid("missing pending work"))?;
-    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
-    rules.rolls.push(RecordedRoll {
+    let recorded = RecordedRoll {
         issued_by: pending.issued_by,
         accepted_by: meta.clone(),
         request: pending.request,
@@ -637,15 +720,36 @@ pub(super) fn submit(
         purpose: pending.purpose,
         original_result: inspiration.map(|_| result.clone()),
         savage_attacker: None,
-    });
+    };
+    execution.observe_roll(state, meta, &continuation, &recorded)?;
+    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+    rules.rolls.push(recorded);
     rules.pending = None;
-    super::failed_save::stage_or_finish(state, meta, continuation, Some(&accepted))?;
-    pump(state, meta)
+    super::failed_save::stage_or_finish_with_context(
+        state,
+        meta,
+        continuation,
+        Some(&accepted),
+        execution,
+    )?;
+    super::turns::pump_with_context(state, meta, execution)
 }
 
+#[cfg(test)]
 pub(super) fn voluntarily_fail(
     state: &mut CampaignState,
     meta: &CommandMeta,
+) -> Result<(), RulesError> {
+    voluntarily_fail_with_context(
+        state,
+        meta,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn voluntarily_fail_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let pending = state
         .rules
@@ -653,7 +757,7 @@ pub(super) fn voluntarily_fail(
         .and_then(|r| r.pending.as_ref())
         .ok_or(RulesError::NoPending)?
         .clone();
-    super::validation::validate_tactical_pending(state, &pending)?;
+    super::validation::validate_tactical_pending_with_read(&execution.read(state)?, &pending)?;
     let continuation = resolution(state)?
         .pending
         .clone()
@@ -666,6 +770,7 @@ pub(super) fn voluntarily_fail(
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
             | TacticalRollRole::ShoveSave
+            | TacticalRollRole::GrappleSave
     ) {
         return Err(prerequisite("pending work is not a saving throw"));
     }
@@ -677,36 +782,44 @@ pub(super) fn voluntarily_fail(
             .roller
             .ok_or_else(|| invalid("missing save actor"))?,
     )?;
+    super::grapple::authorize_pending(state, meta, continuation.key)?;
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, continuation.key.subject)?;
     }
-    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
-    rules.pending = None;
-    rules.cancelled_roll_ids.push(pending.request.id);
-    flow_mut(state)?.save_decisions.push(TacticalSaveDecision {
+    let decision = TacticalSaveDecision {
         key: continuation.key,
         issued_by: pending.issued_by,
         resolved_by: meta.clone(),
         failure: TacticalSaveFailure::Voluntary,
-    });
-    super::failed_save::stage_or_finish(state, meta, continuation, None)?;
-    pump(state, meta)
+    };
+    execution.observe_decision(state, meta, &continuation, &decision)?;
+    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+    rules.pending = None;
+    rules.cancelled_roll_ids.push(pending.request.id);
+    flow_mut(state)?.save_decisions.push(decision);
+    super::failed_save::stage_or_finish_with_context(state, meta, continuation, None, execution)?;
+    super::turns::pump_with_context(state, meta, execution)
 }
 
-pub(super) fn finish(
+pub(super) fn finish_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pending: TacticalPendingWork,
     result: Option<&RollResult>,
     forced_success: bool,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
+    execution.check_live_constraints(state)?;
     let previous = super::work_trace::enter(state, &pending.work)?;
-    let result = finish_inner(state, meta, pending, result, forced_success).and_then(|()| {
-        if resolution(state)?.work_trace.is_some() {
-            super::falling::queue_losses(state, meta)?;
-        }
-        Ok(())
-    });
+    let result =
+        finish_inner(state, meta, pending, result, forced_success, execution).and_then(|()| {
+            execution.settle_work(state, meta)?;
+            execution.check_live_constraints(state)?;
+            if resolution(state)?.work_trace.is_some() {
+                super::falling::queue_losses(state, meta)?;
+            }
+            Ok(())
+        });
     let reset = super::work_trace::leave(state, previous);
     result?;
     reset
@@ -718,11 +831,12 @@ fn finish_inner(
     pending: TacticalPendingWork,
     result: Option<&RollResult>,
     forced_success: bool,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     // Derive the current request before removing the selected ticket/cause.
     let raw = result
         .map(|result| {
-            request(state, &pending.work, pending.key)?
+            request_with_read(&execution.read(state)?, &pending.work, pending.key)?
                 .ok_or_else(|| invalid("automatic save cannot accept dice"))?
                 .resolve(result)
                 .map_err(RulesError::from)
@@ -739,6 +853,12 @@ fn finish_inner(
         return super::falling::finish(state, meta, &pending, result);
     }
     match pending.work.kind {
+        TacticalWorkKind::BeginGrapple { .. }
+        | TacticalWorkKind::GrappleSave { .. }
+        | TacticalWorkKind::GrappleAfterEquipment { .. }
+        | TacticalWorkKind::GrappleEscapeCheck { .. } => {
+            return super::grapple::finish(state, meta, &pending, result, forced_success);
+        }
         TacticalWorkKind::ShoveSave => {
             return super::shove::finish_save(state, meta, &pending, result, forced_success);
         }
@@ -828,8 +948,9 @@ fn finish_inner(
             meta,
             &pending,
             result.ok_or_else(|| invalid("attack requires raw dice"))?,
+            execution,
         )?,
-        TacticalWorkKind::FinishAttack => {
+        TacticalWorkKind::FinishAttack | TacticalWorkKind::AttackAfterEquipment => {
             return Err(invalid("attack completion is not pending dice"));
         }
         TacticalWorkKind::DeathSave { actor } => {

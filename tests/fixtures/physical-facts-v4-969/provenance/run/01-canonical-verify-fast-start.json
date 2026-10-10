@@ -1,0 +1,10 @@
+{
+  "name": "01-canonical-verify-fast",
+  "argv": [
+    "C:/Program Files/Git/bin/bash.exe",
+    "./scripts/verify-fast"
+  ],
+  "at": "2026-10-07T11:28:00.044306+00:00",
+  "executable": null,
+  "capture_environment": {}
+}

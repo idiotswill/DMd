@@ -15,6 +15,86 @@ pub(super) use capabilities::{available, can_act};
 pub use resistance::*;
 pub use validation::*;
 
+/// Advisory own-turn primitives only. This borrows the actual source/runtime and
+/// shares scheduler validation; it never forecasts an invocation or spends uses.
+pub(crate) fn intrinsic_action_features(
+    state: &CampaignState,
+    actor: EntityId,
+) -> Result<Vec<&'static NamedMonsterFeature>, CreatureError> {
+    let rules = rules(state)?;
+    let current = rules
+        .tactical_creatures
+        .as_ref()
+        .ok_or_else(|| invalid("creature state absent"))?;
+    let profile = current
+        .profile(actor)
+        .ok_or_else(|| invalid("source profile absent"))?;
+    let runtime = current
+        .runtime(actor)
+        .ok_or_else(|| invalid("source runtime absent"))?;
+    can_act(state, actor)?;
+    let turn = runtime
+        .observed_turn
+        .ok_or_else(|| invalid("source turn absent"))?;
+    validate_current_turn(state, turn)?;
+    if turn.actor != actor
+        || turn.boundary != TurnBoundary::Start
+        || rules
+            .timing
+            .as_ref()
+            .is_none_or(|timing| timing.action_spent)
+        || runtime.routine.is_some()
+        || runtime
+            .recharge
+            .iter()
+            .any(|recharge| recharge.pending.is_some())
+    {
+        return Err(CreatureError::Unavailable(
+            "source Action is not currently available".into(),
+        ));
+    }
+    let source = source_for_profile(profile)?;
+    let mut features = vec![];
+    for feature in &source.features {
+        if feature.activation != FeatureActivation::Action || feature.usage.is_some() {
+            continue;
+        }
+        let MonsterFeature::Attack {
+            delivery: AttackDelivery::Melee { .. },
+            conditional_hits,
+            ..
+        } = &feature.feature
+        else {
+            continue;
+        };
+        if !crate::tactical_creature_equipment::creature_attack_gear(profile, &feature.id)
+            .is_ok_and(|required| required.is_none())
+            || conditional_hits.iter().any(|hit| {
+                hit.effects.iter().any(|effect| {
+                    !matches!(
+                        effect,
+                        EffectDescriptor::Condition {
+                            condition: Condition::Prone
+                        } | EffectDescriptor::Damage { .. }
+                    )
+                })
+            })
+        {
+            continue;
+        }
+        let selection = CreatureFeatureSelection {
+            feature_id: feature.id.clone(),
+            spell_id: None,
+            simple_action: None,
+        };
+        if available(source, runtime, &selection).is_ok() {
+            features.push(feature);
+        }
+    }
+    features.sort_by(|a, b| a.id.cmp(&b.id));
+    Ok(features)
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct CreatureRechargeId {

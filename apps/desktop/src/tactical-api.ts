@@ -1,6 +1,9 @@
 import type { Ability, Id } from './table-api';
 
 export type Hand = 'Left' | 'Right';
+export type AttackEquipmentOperation = { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } | { Pickup: { item: Id; hand: Hand } };
+export type AttackEquipmentChoice = 'Decline' | { Apply: AttackEquipmentOperation };
+export interface AttackEquipmentView { key: Id; actor: Id; operations: { operation: AttackEquipmentOperation; label: string }[]; may_decline: boolean }
 export type WeaponGrip = 'TwoHands' | { OneHand: Hand };
 export type WeaponDelivery = 'Melee' | 'Thrown' | 'Shot';
 export type WeaponAttackPurpose = 'Normal' | { LightBonus: { trigger: Id } } | { Nick: { trigger: Id } } | { Cleave: { trigger: Id } };
@@ -8,9 +11,11 @@ export interface WeaponUseChoice {
   weapon: Id; target: Id; delivery: WeaponDelivery; ability: Ability; grip: WeaponGrip;
   purpose: WeaponAttackPurpose;
   ammunition: Id | null;
-  equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: { Equip: { item: Id; hand: Hand } } | { Unequip: { item: Id } } } | null;
+  equipment_change: { timing: 'BeforeAttack' | 'AfterAttack'; operation: AttackEquipmentOperation } | null;
+  after_equipment?: 'Choose' | null;
 }
 export interface AttackOptions {
+  equipment?: { pickups: { item: Id; name: string; hands: Hand[] }[] } | null;
   actor: Id; hands: { hands: ('Free' | { Item: Id })[] };
   weapons: { item: Id; name: string; deliveries: WeaponDelivery[]; abilities: Ability[]; grips: WeaponGrip[]; purposes: WeaponAttackPurpose[]; ammunition_required: boolean; ammunition: { id: Id; name: string; quantity: number }[]; source_features?: { feature_id: Id; label: string; weapon: Id|null }[] }[];
   targets: { actor: Id; label: string }[];
@@ -56,9 +61,10 @@ export type ShoveDecision = { Save: { ability: 'Strength'|'Dexterity' } } | { Ou
 export interface ShoveView { key: Id; actor: Id; stage: 'SaveChoice'|'OutcomeChoice'|'PushReview'; from: Point|null; destination: Point|null }
 export type MovementMode = 'Walk' | 'Crawl' | 'Climb' | 'Swim' | 'Fly' | 'Burrow' | 'Jump';
 export interface MoveStep { destination: Point; mode: MovementMode }
-export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[] }
-export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } };
-export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[] }
+export interface MovementOptions { actor: Id; position: Point; grid_units: number; modes: MovementMode[]; self_only_required?: boolean }
+export type MeleeChoice = { Weapon: WeaponUseChoice } | { UnarmedDamage: { ability: Ability } } | { CreatureFeature: { feature_id: string; weapon: Id | null } } | { CreatureWeapon: { feature_id: string; weapon: Id; grip: WeaponGrip } };
+export interface PhysicalSourceWeaponChoice { feature_id: string; item: Id; label: string; weapon_name: string; grips: WeaponGrip[] }
+export interface OpportunityView { actor: Id; target: { actor: Id; label: string }; weapons: AttackOptions | null; unarmed: boolean; features: { feature_id: string; label: string; weapon: Id | null }[]; physical_source_weapons?: PhysicalSourceWeaponChoice[] }
 export interface Volume { min: Point; max: Point }
 export interface Battlefield {
   bounds: Volume; floor_z: number; floor_surface: string; ambient_light: 'Bright' | 'Dim' | 'Darkness';
@@ -81,8 +87,13 @@ export interface SavageAttackerRoll {
   inspiration: { roll: 'First' | 'Second'; die_index: number; replacement: { sides: number; value: number } } | null;
 }
 export type TacticalAction =
+  | { CreatureAttack: { target: Id; feature_id: string; weapon: null } }
+  | 'ActivateAttackEquipment'
+  | { AttackEquipment: { handle: Id; choice: AttackEquipmentChoice } }
+  | { SubmitRollWithInspiration: { result: { request_id: Id; source: 'Physical'; dice: { sides: number; value: number }[] }; die_index: number; replacement: { sides: number; value: number } } }
   | { Shove: { target: Id } }
   | { ShoveDecision: { handle: Id; decision: ShoveDecision } }
+  | { GrappleChoice: { handle: Id } }
   | 'FinishEncounter'
   | { ConcludeHostilities: { cadence: 'ContinueExistingOrder'; ruling: string } }
   | 'UpgradeExecution'
@@ -102,6 +113,8 @@ export type TacticalAction =
   | { CreatureArea: { feature_id: string; aim: { origin: Point; toward: Point; include_origin: boolean }; ordering: 'Host' | 'DelegateToHost' } }
   | { CastSpell: { choice: SpellCastChoice; targets: { Entities: Id[] } } }
   | { Move: { path: MoveStep[] } }
+  | { MoveSelfOnly: { path: MoveStep[] } }
+  | { MoveGrappled: { option: Id; path: MoveStep[] } }
   | 'DeclineOpportunity' | { OpportunityAttack: { choice: MeleeChoice } }
   | { ChooseLiquidLanding: { choice: 'Athletics' | 'Acrobatics' | null } }
   | { ChooseAttackKnockout: { choice: 'NormalDamage' | 'KnockOut' } }
@@ -112,6 +125,8 @@ export type TacticalAction =
   | { ProposeInitiativeTie: { order: Id[] } } | { AcceptInitiativeTie: { total: number } };
 export interface InitiativeTie { total: number; actors: Id[]; proposed_order: Id[] | null; accepted_by: Id[]; host_decided: boolean }
 export interface TacticalView {
+  equipment_enabled?: boolean;
+  attack_equipment?: AttackEquipmentView | null;
   shove?: ShoveView|null;
   execution?: 'ReactionsV1' | 'ShieldHitV1' | 'ShieldMissileV1' | 'EncounterReleaseV1' | null;
   release?: { may_finish: boolean; blocker: string | null; required_actors: Id[] } | null;

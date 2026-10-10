@@ -1,0 +1,882 @@
+//! Additive current-read coverage over original production-created histories.
+use super::*;
+
+async fn request(f: &Fixture, channel: TableTransportChannel) -> TableIntrinsicAttackRequest {
+    let view = f.view(channel.clone()).await;
+    TableIntrinsicAttackRequest {
+        version: 1,
+        campaign_id: f.campaign,
+        channel,
+        revision: view.revision,
+        actor: f.goblin,
+    }
+}
+
+async fn unchanged(f: &Fixture, before: &CampaignExport, rows: &[(String, Vec<Vec<String>>)]) {
+    let mut after = export_campaign(&f.pool, f.campaign).await.unwrap();
+    after.exported_at_utc = before.exported_at_utc.clone();
+    assert_eq!(&after, before);
+    assert_eq!(all_rows(&f.pool).await, rows);
+}
+
+async fn refused(f: &Fixture, request: TableIntrinsicAttackRequest) {
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let rows = all_rows(&f.pool).await;
+    assert!(matches!(
+        Box::pin(f.runtime.table_intrinsic_attack_options(request)).await,
+        Err(RunnableCampaignError::TableRejected(_))
+    ));
+    Box::pin(unchanged(f, &before, &rows)).await;
+}
+
+async fn read(f: &Fixture, request: TableIntrinsicAttackRequest) -> TableIntrinsicAttackOptions {
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let rows = all_rows(&f.pool).await;
+    let result = Box::pin(f.runtime.table_intrinsic_attack_options(request.clone()))
+        .await
+        .unwrap();
+    assert_eq!(result.version, 1);
+    assert_eq!(result.revision, request.revision);
+    assert_eq!(result.actor, request.actor);
+    assert!(
+        result
+            .features
+            .windows(2)
+            .all(|pair| pair[0].feature_id < pair[1].feature_id)
+    );
+    assert!(result.targets.iter().all(|target| target.actor != f.goblin));
+    assert!(
+        result
+            .targets
+            .iter()
+            .all(|target| target.actor != f.actors[1])
+    );
+    assert_eq!(
+        Box::pin(f.runtime.table_intrinsic_attack_options(request))
+            .await
+            .unwrap(),
+        result
+    );
+    Box::pin(unchanged(f, &before, &rows)).await;
+    result
+}
+
+async fn submit_at(
+    f: &mut Fixture,
+    channel: TableTransportChannel,
+    input: TableTransportInput,
+    version: u32,
+) {
+    let mut request = f.request(channel, input).await;
+    request.version = version;
+    if let TableTransportInput::Action(action) = &request.input
+        && let TableAction::StartSession { id, .. } = action.as_ref()
+    {
+        request.session_id = Some(*id);
+    }
+    Box::pin(f.cold(request)).await;
+}
+
+async fn begin_mass_encounter(f: &mut Fixture, owner: TableTransportChannel) {
+    let original = f.state().await;
+    let encounter = original.encounter.as_ref().unwrap();
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        action(TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "The participants settle this encounter before enabling physical facts.".into(),
+        }),
+        4,
+    ))
+    .await;
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        TableTransportInput::Action(Box::new(TableAction::EndSession)),
+        4,
+    ))
+    .await;
+    let closed_session = request(f, owner.clone()).await;
+    Box::pin(refused(f, closed_session)).await;
+    let participants = (0..2)
+        .map(|index| SessionParticipant {
+            player_id: f.players[index],
+            character_id: Some(f.characters[index]),
+            attendance: AttendanceStatus::Present,
+        })
+        .collect();
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        TableTransportInput::Action(Box::new(TableAction::StartSession {
+            id: PlaySessionId::new(),
+            name: "Resumed source ownership".into(),
+            participants,
+        })),
+        4,
+    ))
+    .await;
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        action(TacticalAction::FinishEncounter),
+        4,
+    ))
+    .await;
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        TableTransportInput::EnablePhysicalFacts,
+        5,
+    ))
+    .await;
+    let pc = encounter.participant(f.actors[0]).unwrap();
+    let creature = encounter.participant(f.goblin).unwrap();
+    let setup = TableBattlefieldSetup {
+        encounter_id: EncounterId::new(),
+        scene_id: SceneId::new(),
+        location_id: LocationId::new(),
+        name: "A new encounter with the retained participants".into(),
+        battlefield: encounter.battlefield.clone(),
+        characters: vec![TableCharacterPlacement {
+            character_id: f.characters[0],
+            position: pc.position,
+            height: 12,
+            allies: pc.allies.clone(),
+            enemies: pc.enemies.clone(),
+        }],
+        creatures: vec![TableCreaturePlacement {
+            actor: f.goblin,
+            public_label: "Small armored figure".into(),
+            position: creature.position,
+            height: 20,
+            allies: creature.allies.clone(),
+            enemies: creature.enemies.clone(),
+        }],
+        geometry_ruling: Ruling {
+            basis: RulingBasis::GmAdjudication,
+            reason: "The Host establishes the retained visible geometry in a new scene.".into(),
+        },
+        area_grid_policy: None,
+    };
+    assert_ne!(setup.encounter_id, encounter.id);
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        TableTransportInput::Action(Box::new(TableAction::PrepareBattlefield {
+            setup: Box::new(setup),
+        })),
+        5,
+    ))
+    .await;
+    // A genuine replacement map is readable before Begin, with retained G4 but
+    // no flow or possible ground-drag offer. These reads must not write rows.
+    let prepared = f.state().await;
+    assert!(prepared.encounter.as_ref().unwrap().flow.is_none());
+    assert!(prepared.rules.as_ref().unwrap().pending.is_none());
+    assert_eq!(
+        prepared.table.as_ref().unwrap().grapple_access,
+        original.table.as_ref().unwrap().grapple_access
+    );
+    assert!(dmd_rules::table::grapple_transport_enabled(&prepared));
+    let saved = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let rows = all_rows(&f.pool).await;
+    for viewer in [
+        TableViewer::Host,
+        TableViewer::Player(f.players[0]),
+        TableViewer::Player(f.players[1]),
+    ] {
+        let raw = f
+            .runtime
+            .table_view(f.campaign, viewer.clone())
+            .await
+            .unwrap();
+        let shown = f
+            .runtime
+            .presented_table_view(f.campaign, viewer)
+            .await
+            .unwrap();
+        assert_eq!(raw.grapple.as_ref().unwrap().version, 4);
+        assert_eq!(shown.grapple.as_ref().unwrap().version, 4);
+        assert!(raw.grapple.unwrap().ground_drag.is_empty());
+        assert!(shown.grapple.unwrap().ground_drag.is_empty());
+    }
+    let premature = request(f, owner.clone()).await;
+    Box::pin(refused(f, premature)).await;
+    Box::pin(unchanged(f, &saved, &rows)).await;
+    let actor = f.goblin;
+    let pc = f.actors[0];
+    Box::pin(submit_at(
+        f,
+        TableTransportChannel::Host,
+        action(TacticalAction::Begin {
+            execution: TacticalExecutionVersion::EncounterReleaseV1,
+            combatants: vec![
+                TacticalCombatant {
+                    actor: pc,
+                    source: TacticalSource::Character,
+                    surprised: false,
+                },
+                TacticalCombatant {
+                    actor,
+                    source: TacticalSource::Creature {
+                        definition_id: "chimera".into(),
+                    },
+                    surprised: false,
+                },
+            ],
+            groups: vec![
+                InitiativeGroup {
+                    actors: vec![pc],
+                    request_id: RollRequestId::new(),
+                },
+                InitiativeGroup {
+                    actors: vec![actor],
+                    request_id: RollRequestId::new(),
+                },
+            ],
+        }),
+        5,
+    ))
+    .await;
+    for (channel, value) in [(f.pc(0), 18), (owner, 2)] {
+        let roll = f.view(channel.clone()).await.roll.unwrap();
+        assert_eq!(roll.mode, RollMode::Normal);
+        Box::pin(submit_at(
+            f,
+            channel,
+            action(TacticalAction::SubmitRoll {
+                result: RollResult {
+                    request_id: roll.id,
+                    source: RollSource::Physical,
+                    dice: vec![DieResult { sides: 20, value }],
+                },
+            }),
+            5,
+        ))
+        .await;
+    }
+    let pc = f.pc(0);
+    Box::pin(submit_at(f, pc, action(TacticalAction::EndTurn), 5)).await;
+    let active = f.state().await;
+    assert_eq!(
+        active
+            .encounter
+            .as_ref()
+            .unwrap()
+            .flow
+            .as_ref()
+            .unwrap()
+            .phase,
+        TacticalPhase::Active
+    );
+    assert_eq!(
+        active.table.as_ref().unwrap().grapple_access,
+        prepared.table.as_ref().unwrap().grapple_access
+    );
+    assert!(active.rules.as_ref().unwrap().pending.is_none());
+    let timing = active.rules.as_ref().unwrap().timing.as_ref().unwrap();
+    assert_eq!(timing.order[timing.index].actor, actor);
+}
+
+#[tokio::test]
+async fn advisory_intrinsic_choice_uses_original_attack_and_survives_release_restore_and_retry() {
+    let mut f = Box::pin(Fixture::with_source("chimera", CreatureSize::Large)).await;
+    Box::pin(f.activate()).await;
+    let wrong_turn = request(&f, TableTransportChannel::Host).await;
+    Box::pin(refused(&f, wrong_turn)).await;
+    let grip = Box::pin(f.establish_pc_grip()).await;
+    let pc = f.pc(0);
+    Box::pin(f.cold_action(pc.clone(), TacticalAction::EndTurn)).await;
+    let host = request(&f, TableTransportChannel::Host).await;
+    let original_view = f.view(TableTransportChannel::Host).await;
+    let choices = Box::pin(read(&f, host.clone())).await;
+    assert_eq!(f.view(TableTransportChannel::Host).await, original_view);
+    let bite = choices
+        .features
+        .iter()
+        .find(|choice| choice.feature_id == "bite")
+        .unwrap();
+    assert_eq!(bite.label, "Bite");
+    assert!(
+        choices
+            .targets
+            .iter()
+            .any(|target| target.actor == f.actors[0])
+    );
+    let target = f.actors[0];
+    for (feature_id, target, weapon) in [
+        ("fire-breath", target, None),
+        ("foreign-feature", target, None),
+        ("bite", f.actors[1], None),
+        ("bite", target, Some(ItemId::new())),
+    ] {
+        let bad = f
+            .request(
+                TableTransportChannel::Host,
+                action(TacticalAction::CreatureAttack {
+                    target,
+                    feature_id: feature_id.into(),
+                    weapon,
+                }),
+            )
+            .await;
+        Box::pin(f.reject(bad)).await;
+    }
+    let accepted = Box::pin(f.cold_action(
+        TableTransportChannel::Host,
+        TacticalAction::CreatureAttack {
+            target,
+            feature_id: bite.feature_id.clone(),
+            weapon: None,
+        },
+    ))
+    .await;
+    let before = f.state().await;
+    let raw = before.rules.as_ref().unwrap().pending.clone().unwrap();
+    assert!(
+        resolution(&before)
+            .grapple
+            .as_ref()
+            .unwrap()
+            .cuts
+            .iter()
+            .all(|cut| cut.grips == vec![grip])
+    );
+    let pending = request(&f, TableTransportChannel::Host).await;
+    Box::pin(refused(&f, pending)).await;
+    let release = f
+        .choose(pc, "Release Small armored figure from left hand")
+        .await;
+    Box::pin(f.cold(release)).await;
+    assert_eq!(
+        f.state().await.rules.as_ref().unwrap().pending.as_ref(),
+        Some(&raw)
+    );
+    Box::pin(f.cold_roll(TableTransportChannel::Host, 1)).await;
+    let after = f.state().await;
+    let rules = after.rules.as_ref().unwrap();
+    assert_eq!(
+        rules
+            .rolls
+            .iter()
+            .find(|roll| roll.request.id == raw.request.id)
+            .unwrap()
+            .request,
+        raw.request
+    );
+    assert!(rules.timing.as_ref().unwrap().action_spent);
+    assert!(matches!(
+        Box::pin(f.runtime.submit_presented_table(accepted))
+            .await
+            .unwrap(),
+        TableTransportResult::Accepted(_)
+    ));
+    Box::pin(refused(&f, host)).await;
+
+    // Reuse this genuine settled history for source ownership and a fresh turn.
+    let actor = f.goblin;
+    let player = f.players[1];
+    Box::pin(f.host(TableAction::SetSourceCreatureController {
+        actor,
+        controller: CreatureController::Player(player),
+    }))
+    .await;
+    let owner = TableTransportChannel::SourceCreature {
+        player_id: player,
+        actor,
+    };
+    Box::pin(f.cold_action(owner.clone(), TacticalAction::EndTurn)).await;
+    let pc = f.pc(0);
+    Box::pin(f.cold_action(pc, TacticalAction::EndTurn)).await;
+    let owned = request(&f, owner.clone()).await;
+    let owned_choices = Box::pin(read(&f, owned.clone())).await;
+    assert_eq!(owned_choices.features, choices.features);
+    let host_now = request(&f, TableTransportChannel::Host).await;
+    Box::pin(refused(&f, host_now)).await;
+    let pc_same_human = request(&f, f.pc(1)).await;
+    assert_eq!(pc_same_human.revision, owned.revision);
+    Box::pin(refused(&f, pc_same_human)).await;
+    let mut wrong_selected = owned.clone();
+    wrong_selected.channel = TableTransportChannel::SourceCreature {
+        player_id: player,
+        actor: f.actors[1],
+    };
+    Box::pin(refused(&f, wrong_selected)).await;
+    let unrelated = request(
+        &f,
+        TableTransportChannel::SourceCreature {
+            player_id: f.players[0],
+            actor,
+        },
+    )
+    .await;
+    Box::pin(refused(&f, unrelated)).await;
+    let mut bad_version = owned.clone();
+    bad_version.version = 2;
+    Box::pin(refused(&f, bad_version)).await;
+
+    // A current audience revision never grants a former controller permission.
+    Box::pin(f.host(TableAction::SetSourceCreatureController {
+        actor,
+        controller: CreatureController::Player(f.players[0]),
+    }))
+    .await;
+    let former = request(&f, owner.clone()).await;
+    Box::pin(refused(&f, former)).await;
+    let new_owner = request(
+        &f,
+        TableTransportChannel::SourceCreature {
+            player_id: f.players[0],
+            actor,
+        },
+    )
+    .await;
+    assert_eq!(
+        Box::pin(read(&f, new_owner)).await.features,
+        choices.features
+    );
+    Box::pin(f.host(TableAction::SetSourceCreatureController {
+        actor,
+        controller: CreatureController::Player(player),
+    }))
+    .await;
+    let owned = request(&f, owner.clone()).await;
+    let owned_choices = Box::pin(read(&f, owned.clone())).await;
+
+    // An independent portable restore preserves original audience bytes and choices.
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let mirror = runtime(pool.clone());
+    Box::pin(mirror.restore_campaign(&export)).await.unwrap();
+    let rows = all_rows(&pool).await;
+    assert_eq!(
+        Box::pin(mirror.table_intrinsic_attack_options(owned.clone()))
+            .await
+            .unwrap(),
+        owned_choices
+    );
+    assert_eq!(all_rows(&pool).await, rows);
+    pool.close().await;
+
+    // The actual source player's choice uses the existing durable command too.
+    Box::pin(f.cold_action(
+        owner.clone(),
+        TacticalAction::CreatureAttack {
+            target,
+            feature_id: "bite".into(),
+            weapon: None,
+        },
+    ))
+    .await;
+    Box::pin(f.cold_roll(owner.clone(), 1)).await;
+    let exhausted = request(&f, owner.clone()).await;
+    Box::pin(refused(&f, exhausted)).await;
+    Box::pin(f.cold_action(owner.clone(), TacticalAction::EndTurn)).await;
+    let pc = f.pc(0);
+    Box::pin(f.cold_action(pc, TacticalAction::EndTurn)).await;
+
+    // Distinct opt-ins, same real history: no synthetic G/M current state.
+    let mut upgrade = f
+        .request(
+            TableTransportChannel::Host,
+            TableTransportInput::Action(Box::new(TableAction::EnableGrappleTransport)),
+        )
+        .await;
+    upgrade.version = 4;
+    Box::pin(f.cold(upgrade)).await;
+    let g4 = request(&f, owner.clone()).await;
+    assert_eq!(Box::pin(read(&f, g4)).await.features, choices.features);
+    Box::pin(begin_mass_encounter(&mut f, owner.clone())).await;
+    let mg4 = request(&f, owner).await;
+    assert_eq!(Box::pin(read(&f, mg4)).await.features, choices.features);
+    f.close().await;
+}
+
+#[tokio::test]
+async fn source_candidates_keep_conditional_and_multicomponent_actions_and_exclude_physical_ogre() {
+    for (definition, feature) in [
+        ("warhorse", Some("hooves")),
+        ("young-red-dragon", Some("rend")),
+        ("air-elemental", Some("thunderous-slam")),
+        ("ogre", None),
+    ] {
+        let mut f = Box::pin(Fixture::with_source(definition, CreatureSize::Large)).await;
+        // Host may direct an Autonomous source as well as a Host-controlled one.
+        let actor = f.goblin;
+        Box::pin(f.host(TableAction::SetSourceCreatureController {
+            actor,
+            controller: CreatureController::Autonomous,
+        }))
+        .await;
+        let pc = f.pc(0);
+        Box::pin(f.cold_action(pc, TacticalAction::EndTurn)).await;
+        let current = request(&f, TableTransportChannel::Host).await;
+        let choices = Box::pin(read(&f, current)).await;
+        if let Some(feature) = feature {
+            let offered = choices
+                .features
+                .iter()
+                .find(|choice| choice.feature_id == feature)
+                .unwrap();
+            let target = f.actors[0];
+            Box::pin(f.cold_action(
+                TableTransportChannel::Host,
+                TacticalAction::CreatureAttack {
+                    target,
+                    feature_id: offered.feature_id.clone(),
+                    weapon: None,
+                },
+            ))
+            .await;
+            if definition == "young-red-dragon" {
+                assert_eq!(
+                    resolution(&f.state().await)
+                        .attack
+                        .as_ref()
+                        .unwrap()
+                        .damage
+                        .len(),
+                    2
+                );
+            }
+            Box::pin(f.cold_roll(TableTransportChannel::Host, 1)).await;
+        } else {
+            assert!(choices.features.is_empty());
+        }
+        f.close().await;
+    }
+}
+
+#[test]
+fn intrinsic_read_schema_is_separate_strict_and_has_no_command_or_proof_fields() {
+    let request = TableIntrinsicAttackRequest {
+        version: 1,
+        campaign_id: CampaignId::new(),
+        channel: TableTransportChannel::Host,
+        revision: dmd_persistence::ProjectionRevision(RollRequestId::new().0),
+        actor: EntityId::new(),
+    };
+    let value = serde_json::to_value(&request).unwrap();
+    assert_eq!(value.as_object().unwrap().len(), 5);
+    for key in [
+        "command_id",
+        "expected_event_sequence",
+        "state",
+        "proof",
+        "feature_id",
+        "target",
+        "session_id",
+    ] {
+        let mut changed = value.clone();
+        changed[key] = serde_json::json!("not-authority");
+        assert!(serde_json::from_value::<TableIntrinsicAttackRequest>(changed).is_err());
+    }
+    let result = TableIntrinsicAttackOptions {
+        version: 1,
+        revision: request.revision,
+        actor: request.actor,
+        features: vec![],
+        targets: vec![],
+    };
+    let mut changed = serde_json::to_value(result).unwrap();
+    changed["armor_class"] = serde_json::json!(10);
+    assert!(serde_json::from_value::<TableIntrinsicAttackOptions>(changed).is_err());
+}
+
+#[tokio::test]
+async fn intrinsic_targets_use_the_active_sources_sight_not_host_or_same_owner_observers() {
+    // The existing adjacent-PC layout keeps the Goblin outside the Large body.
+    let f = Box::pin(Fixture::with_opponent_geometry(
+        "chimera",
+        CreatureSize::Large,
+        true,
+        true,
+    ))
+    .await;
+    let actor = f.goblin;
+    let observer = f.opponent.unwrap();
+    let target = f.actors[0];
+    // Replace the original, genuinely completed encounter through its public route.
+    Box::pin(f.host(TableAction::Tactical {
+        action: TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling:
+                "The participants agree to finish before entering the divided courtyard.".into(),
+        },
+    }))
+    .await;
+    Box::pin(f.host(TableAction::Tactical {
+        action: TacticalAction::FinishEncounter,
+    }))
+    .await;
+    let p = |x, y, z| SpatialPoint { x, y, z };
+    Box::pin(
+        f.host(TableAction::PrepareBattlefield {
+            setup: Box::new(TableBattlefieldSetup {
+                encounter_id: EncounterId::new(),
+                scene_id: SceneId::new(),
+                location_id: LocationId::new(),
+                name: "Divided courtyard".into(),
+                battlefield: Battlefield {
+                    bounds: SpatialBox {
+                        min: p(0, 0, 0),
+                        max: p(100, 100, 60),
+                    },
+                    floor_z: 0,
+                    floor_surface: "stone".into(),
+                    ambient_light: LightLevel::Bright,
+                    terrain: vec![],
+                    obstacles: vec![SpatialObstacle {
+                        id: "courtyard-wall".into(),
+                        volume: SpatialBox {
+                            min: p(40, 0, 0),
+                            max: p(50, 50, 60),
+                        },
+                        blocks_movement: true,
+                        blocks_sight: true,
+                        observable: true,
+                        cover: CoverDegree::Total,
+                    }],
+                    lights: vec![],
+                },
+                characters: vec![TableCharacterPlacement {
+                    character_id: f.characters[0],
+                    position: p(60, 10, 0),
+                    height: 12,
+                    allies: vec![],
+                    enemies: vec![],
+                }],
+                creatures: vec![
+                    TableCreaturePlacement {
+                        actor,
+                        public_label: "Chimera west of the wall".into(),
+                        position: p(10, 10, 0),
+                        height: 20,
+                        allies: vec![],
+                        enemies: vec![],
+                    },
+                    TableCreaturePlacement {
+                        actor: observer,
+                        public_label: "Observer east of the wall".into(),
+                        position: p(60, 40, 0),
+                        height: 8,
+                        allies: vec![],
+                        enemies: vec![],
+                    },
+                ],
+                area_grid_policy: None,
+                geometry_ruling: Ruling {
+                    basis: RulingBasis::GmAdjudication,
+                    reason:
+                        "An opaque stone wall separates the Chimera from the other participants."
+                            .into(),
+                },
+            }),
+        }),
+    )
+    .await;
+    Box::pin(
+        f.host(TableAction::Tactical {
+            action: TacticalAction::Begin {
+                execution: TacticalExecutionVersion::EncounterReleaseV1,
+                combatants: vec![
+                    TacticalCombatant {
+                        actor: target,
+                        source: TacticalSource::Character,
+                        surprised: false,
+                    },
+                    TacticalCombatant {
+                        actor,
+                        source: TacticalSource::Creature {
+                            definition_id: "chimera".into(),
+                        },
+                        surprised: false,
+                    },
+                    TacticalCombatant {
+                        actor: observer,
+                        source: TacticalSource::Creature {
+                            definition_id: "goblin-warrior".into(),
+                        },
+                        surprised: false,
+                    },
+                ],
+                groups: [target, actor, observer]
+                    .into_iter()
+                    .map(|actor| InitiativeGroup {
+                        actors: vec![actor],
+                        request_id: RollRequestId::new(),
+                    })
+                    .collect(),
+            },
+        }),
+    )
+    .await;
+    Box::pin(f.roll(f.pc(0), 18)).await;
+    Box::pin(f.roll(TableTransportChannel::Host, 12)).await;
+    Box::pin(f.roll(TableTransportChannel::Host, 1)).await;
+    Box::pin(f.send(f.pc(0), action(TacticalAction::EndTurn))).await;
+
+    let state = f.state().await;
+    let encounter = state.encounter.as_ref().unwrap();
+    assert_eq!(encounter.participants.len(), 3);
+    assert!(encounter.participant(target).is_some());
+    assert!(encounter.knowledge.is_empty());
+    assert!(
+        !dmd_rules::spatial::perceive(encounter, &state, actor, target)
+            .unwrap()
+            .precisely_located
+    );
+    assert!(
+        dmd_rules::spatial::perceive(encounter, &state, observer, target)
+            .unwrap()
+            .sees
+    );
+    let host_view = f.view(TableTransportChannel::Host).await.tactical.unwrap();
+    assert_eq!(host_view.active_actor, Some(actor));
+    assert!(host_view.participants.iter().any(|p| p.entity_id == target));
+    let host_request = request(&f, TableTransportChannel::Host).await;
+    let host_choices = Box::pin(read(&f, host_request)).await;
+    assert!(host_choices.features.iter().any(|f| f.feature_id == "bite"));
+    assert!(
+        host_choices
+            .targets
+            .iter()
+            .all(|choice| choice.actor != target)
+    );
+
+    let player = f.players[1];
+    for actor in [actor, observer] {
+        Box::pin(f.host(TableAction::SetSourceCreatureController {
+            actor,
+            controller: CreatureController::Player(player),
+        }))
+        .await;
+    }
+    let owner = TableTransportChannel::SourceCreature {
+        player_id: player,
+        actor,
+    };
+    let player_view = f.view(owner.clone()).await.tactical.unwrap();
+    let active_view = player_view
+        .observers
+        .iter()
+        .find(|view| view.observer == actor)
+        .unwrap();
+    assert!(
+        active_view
+            .contacts
+            .iter()
+            .all(|contact| contact.entity_id != target)
+    );
+    let other_view = player_view
+        .observers
+        .iter()
+        .find(|view| view.observer == observer)
+        .unwrap();
+    assert!(other_view.contacts.iter().any(|contact| {
+        contact.entity_id == target && contact.status == dmd_rules::spatial::ContactStatus::Seen
+    }));
+    // The ordinary player view really does know this target through the other
+    // observer. Reusing its audience union would therefore leak an attack choice.
+    assert!(
+        player_view
+            .initiative
+            .iter()
+            .any(|entry| entry.actor == target)
+    );
+    let owner_request = request(&f, owner.clone()).await;
+    let owner_choices = Box::pin(read(&f, owner_request.clone())).await;
+    assert_eq!(owner_choices.features, host_choices.features);
+    assert!(
+        owner_choices
+            .targets
+            .iter()
+            .all(|choice| choice.actor != target)
+    );
+    let host_request = request(&f, TableTransportChannel::Host).await;
+    Box::pin(refused(&f, host_request)).await;
+
+    // One independent restore checks the genuinely different observer views at
+    // the same accepted history; no copied knowledge or current-state injection.
+    let export = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let pool = open_sqlite("sqlite::memory:").await.unwrap();
+    let mirror = runtime(pool.clone());
+    Box::pin(mirror.restore_campaign(&export)).await.unwrap();
+    let rows = all_rows(&pool).await;
+    assert_eq!(
+        Box::pin(mirror.table_intrinsic_attack_options(owner_request))
+            .await
+            .unwrap(),
+        owner_choices
+    );
+    assert_eq!(all_rows(&pool).await, rows);
+    pool.close().await;
+
+    // Actual active aftermath cannot resume without its current source owner.
+    // Test the real admission boundary instead of fabricating an absent-active
+    // state which Begin, assignment and session resumption all prevent.
+    Box::pin(f.host(TableAction::Tactical {
+        action: TacticalAction::ConcludeHostilities {
+            cadence: AftermathCadence::ContinueExistingOrder,
+            ruling: "The separated participants pause with their existing order retained.".into(),
+        },
+    }))
+    .await;
+    Box::pin(f.host(TableAction::EndSession)).await;
+    let session = PlaySessionId::new();
+    let participants = |attendance| {
+        vec![
+            SessionParticipant {
+                player_id: f.players[0],
+                character_id: Some(f.characters[0]),
+                attendance: AttendanceStatus::Present,
+            },
+            SessionParticipant {
+                player_id: player,
+                character_id: None,
+                attendance,
+            },
+        ]
+    };
+    let start = |attendance| {
+        TableTransportInput::Action(Box::new(TableAction::StartSession {
+            id: session,
+            name: "Resume both source observers".into(),
+            participants: participants(attendance),
+        }))
+    };
+    let mut absent = f
+        .request(TableTransportChannel::Host, start(AttendanceStatus::Absent))
+        .await;
+    absent.session_id = Some(session);
+    let before = export_campaign(&f.pool, f.campaign).await.unwrap();
+    let rows = all_rows(&f.pool).await;
+    assert!(matches!(
+        Box::pin(f.runtime.submit_presented_table(absent)).await,
+        Err(RunnableCampaignError::TableRejected(message))
+            if message == "Resume aftermath with every retained source creature's controller explicitly present."
+    ));
+    Box::pin(unchanged(&f, &before, &rows)).await;
+    let mut present = f
+        .request(
+            TableTransportChannel::Host,
+            start(AttendanceStatus::Present),
+        )
+        .await;
+    present.session_id = Some(session);
+    assert!(matches!(
+        Box::pin(f.runtime.submit_presented_table(present))
+            .await
+            .unwrap(),
+        TableTransportResult::Accepted(_)
+    ));
+    let resumed = request(&f, owner).await;
+    let resumed_choices = Box::pin(read(&f, resumed)).await;
+    assert_eq!(resumed_choices.features, owner_choices.features);
+    assert_eq!(resumed_choices.targets, owner_choices.targets);
+    let host_request = request(&f, TableTransportChannel::Host).await;
+    Box::pin(refused(&f, host_request)).await;
+    f.close().await;
+}

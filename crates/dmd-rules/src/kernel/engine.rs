@@ -9,13 +9,83 @@ pub fn resolve(
     action: &RulesAction,
     pack: &RulesPack,
 ) -> Result<RulesTransition, RulesError> {
+    let mut next = state.clone();
+    let event = apply_table_with_context(
+        state,
+        &mut next,
+        meta,
+        action,
+        pack,
+        &mut crate::tactical::grapple::execution::ExecutionContext::ordinary(),
+    )?;
+    Ok(RulesTransition {
+        next_state: next,
+        outcome: event.outcome.clone(),
+        event,
+    })
+}
+
+pub(crate) fn apply_table_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<RulesEvent, RulesError> {
+    apply_with_context(state, next, meta, action, pack, execution, false)
+}
+
+/// Only authenticated table creation may add a new entity beside retained
+/// Finished history. Standalone rules commands keep ordinary admission.
+pub(crate) fn apply_table_creation_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+) -> Result<RulesEvent, RulesError> {
+    let finished_creation =
+        matches!(
+            action,
+            RulesAction::CreateCharacter { .. } | RulesAction::CreateCharacterFromSource { .. }
+        ) && matches!(meta.issuer, CommandIssuer::Admin | CommandIssuer::System)
+            && meta.actor.is_none()
+            && meta.session_id.is_none()
+            && state.table.as_ref().is_some_and(|table| {
+                table.active_session.is_none()
+                    && table.pending.is_none()
+                    && table.roll_context.is_none()
+            })
+            && crate::tactical::require_finished_encounter(state).is_ok();
+    apply_with_context(
+        state,
+        next,
+        meta,
+        action,
+        pack,
+        execution,
+        finished_creation,
+    )
+}
+
+fn apply_with_context(
+    state: &CampaignState,
+    next: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &RulesAction,
+    pack: &RulesPack,
+    execution: &mut crate::tactical::grapple::execution::ExecutionContext<'_>,
+    finished_creation: bool,
+) -> Result<RulesEvent, RulesError> {
     if meta.campaign_id != state.campaign_id() {
         return Err(RulesError::Unauthorized);
     }
     if meta.expected_event_sequence != state.applied_event_sequence {
         return Err(RulesError::Stale);
     }
-    validate_state(state, pack)?;
+    validate_state_with_read(&execution.read(next)?, pack)?;
     if state
         .rules
         .as_ref()
@@ -35,11 +105,12 @@ pub fn resolve(
             "physical equipment requires the tactical action path",
         ));
     }
-    if state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
+    if (state.encounter.as_ref().is_some_and(|e| e.flow.is_some())
         || state
             .rules
             .as_ref()
-            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some())
+            .is_some_and(|r| r.tactical_effects.is_some() || r.tactical_recovery.is_some()))
+        && !finished_creation
     {
         return Err(prerequisite(
             "active tactical state requires the tactical command path",
@@ -68,7 +139,6 @@ pub fn resolve(
             "an Inspiration transfer choice awaits its controller",
         ));
     }
-    let mut next = state.clone();
     let outcome = if let RulesAction::CreateCharacter { entity_id, input }
     | RulesAction::CreateCharacterFromSource {
         entity_id, input, ..
@@ -104,6 +174,7 @@ pub fn resolve(
             rules.permission = None;
         } else {
             next.rules = Some(RulesState {
+                tactical_grapples: None,
                 tactical_recovery: None,
                 pack_id: pack.id.clone(),
                 pack_version: pack.version.clone(),
@@ -148,6 +219,7 @@ pub fn resolve(
             return Err(invalid("duplicate/empty mechanical initialization"));
         }
         next.rules = Some(RulesState {
+            tactical_grapples: None,
             tactical_recovery: None,
             pack_id: pack.id.clone(),
             pack_version: pack.version.clone(),
@@ -173,19 +245,16 @@ pub fn resolve(
     } else {
         let mut rules = next.rules.take().ok_or(RulesError::Uninitialized)?;
         let permission = rules.permission.take();
-        let outcome = apply(&mut next, &mut rules, meta, action, pack, permission)?;
+        let outcome = apply(next, &mut rules, meta, action, pack, permission)?;
         next.rules = Some(rules);
         outcome
     };
-    sync_deaths(&mut next);
-    validate_state(&next, pack)?;
-    Ok(RulesTransition {
-        next_state: next,
-        event: RulesEvent {
-            meta: meta.clone(),
-            action: action.clone(),
-            outcome: outcome.clone(),
-        },
+    sync_deaths(next);
+    validate_state_with_read(&execution.read(next)?, pack)?;
+    execution.observe_kernel_result(next, meta, action)?;
+    Ok(RulesEvent {
+        meta: meta.clone(),
+        action: action.clone(),
         outcome,
     })
 }
@@ -208,7 +277,22 @@ pub fn query(
     query: &RulesQuery,
     pack: &RulesPack,
 ) -> Result<RulesAnswer, RulesError> {
-    validate_state(state, pack)?;
+    query_with_read(
+        &crate::tactical::grapple::execution::ReadContext::ordinary(state),
+        issuer,
+        query,
+        pack,
+    )
+}
+
+pub(crate) fn query_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    issuer: CommandIssuer,
+    query: &RulesQuery,
+    pack: &RulesPack,
+) -> Result<RulesAnswer, RulesError> {
+    validate_state_with_read(read, pack)?;
+    let state = read.state();
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     match query {
         RulesQuery::PendingRoll => Ok(RulesAnswer::PendingRoll(
@@ -564,36 +648,7 @@ fn apply(
             )
         }
         RulesAction::ResolveInspirationTransfer { actor, recipient } => {
-            authorize(state, meta, *actor)?;
-            if !entity(rules, *actor)?
-                .character_features
-                .as_ref()
-                .is_some_and(|f| f.inspiration_transfer_pending)
-            {
-                return Err(prerequisite("no Inspiration transfer is pending"));
-            }
-            if let Some(recipient) = recipient {
-                if recipient == actor
-                    || !state.characters.values().any(|c| {
-                        c.entity_id == *recipient
-                            && c.status == CharacterStatus::Active
-                            && c.controlling_player_id.is_some()
-                    })
-                    || entity(rules, *recipient)?.heroic_inspiration
-                    || entity(rules, *recipient)?.death.dead
-                {
-                    return Err(prerequisite(
-                        "recipient must be another eligible group PC lacking Inspiration",
-                    ));
-                }
-                entity_mut(rules, *recipient)?.heroic_inspiration = true;
-            }
-            entity_mut(rules, *actor)?
-                .character_features
-                .as_mut()
-                .unwrap()
-                .inspiration_transfer_pending = false;
-            Ok(RulesOutcome::Changed)
+            resolve_inspiration_transfer(state, rules, meta, *actor, *recipient)
         }
         RulesAction::SubmitSavageAttacker { roll } => {
             if roll.weapon_dice.is_some() {
@@ -686,15 +741,7 @@ fn apply(
             Ok(outcome)
         }
         RulesAction::GrantInspiration { actor, ruling } => {
-            adjudicate(rules, meta, ruling)?;
-            let e = entity_mut(rules, *actor)?;
-            if e.heroic_inspiration {
-                return Err(prerequisite(
-                    "Heroic Inspiration does not stack; designate another eligible recipient",
-                ));
-            }
-            e.heroic_inspiration = true;
-            Ok(RulesOutcome::Changed)
+            grant_inspiration(rules, meta, *actor, ruling)
         }
         RulesAction::CancelRoll { ruling } => {
             adjudicate(rules, meta, ruling)?;
@@ -1037,6 +1084,90 @@ fn apply(
             Ok(RulesOutcome::Changed)
         }
     }
+}
+
+/// Original Resourceful resolution; table callers additionally require the attending owner.
+pub(crate) fn resolve_inspiration_transfer(
+    state: &CampaignState,
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    recipient: Option<EntityId>,
+) -> Result<RulesOutcome, RulesError> {
+    authorize(state, meta, actor)?;
+    if !entity(rules, actor)?
+        .character_features
+        .as_ref()
+        .is_some_and(|f| f.inspiration_transfer_pending)
+    {
+        return Err(prerequisite("no Inspiration transfer is pending"));
+    }
+    if let Some(recipient) = recipient {
+        if recipient == actor
+            || !state.characters.values().any(|c| {
+                c.entity_id == recipient
+                    && c.status == CharacterStatus::Active
+                    && c.controlling_player_id.is_some()
+            })
+            || entity(rules, recipient)?.heroic_inspiration
+            || entity(rules, recipient)?.death.dead
+        {
+            return Err(prerequisite(
+                "recipient must be another eligible group PC lacking Inspiration",
+            ));
+        }
+        entity_mut(rules, recipient)?.heroic_inspiration = true;
+    }
+    entity_mut(rules, actor)?
+        .character_features
+        .as_mut()
+        .unwrap()
+        .inspiration_transfer_pending = false;
+    Ok(RulesOutcome::Changed)
+}
+
+/// Only the owned table producer may pair this flag with its actual Host ruling.
+pub(crate) fn begin_host_inspiration_transfer(
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    ruling: &Ruling,
+) -> Result<(), RulesError> {
+    adjudicate(rules, meta, ruling)?;
+    let e = entity_mut(rules, actor)?;
+    if !e.heroic_inspiration
+        || !e
+            .character_features
+            .as_ref()
+            .is_some_and(|f| f.human_resourceful && !f.inspiration_transfer_pending)
+    {
+        return Err(prerequisite(
+            "an excess award requires an inspired source-created PC without a pending transfer",
+        ));
+    }
+    e.character_features
+        .as_mut()
+        .unwrap()
+        .inspiration_transfer_pending = true;
+    Ok(())
+}
+
+/// Shared fixed grant; callers retain their own command-path admission guards.
+pub(crate) fn grant_inspiration(
+    rules: &mut RulesState,
+    meta: &CommandMeta,
+    actor: EntityId,
+    ruling: &Ruling,
+) -> Result<RulesOutcome, RulesError> {
+    adjudicate(rules, meta, ruling)?;
+    let e = entity_mut(rules, actor)?;
+    if e.heroic_inspiration {
+        return Err(prerequisite(
+            "Heroic Inspiration does not stack; designate another eligible recipient",
+        ));
+    }
+    e.heroic_inspiration = true;
+    Ok(RulesOutcome::Changed)
 }
 
 fn adjudicate(

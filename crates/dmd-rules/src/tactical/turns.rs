@@ -188,12 +188,13 @@ fn expire_legacy(
 
 /// Called once after initiative is committed and once after each completed End frame.
 /// The cursor is installed before any request is emitted, never refunded on resume.
-pub(super) fn begin_boundary(
+pub(super) fn begin_boundary_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     boundary: TurnBoundary,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    begin_boundary_from(state, meta, boundary, 0)
+    begin_boundary_from(state, meta, boundary, 0, execution)
 }
 
 fn begin_boundary_from(
@@ -201,6 +202,7 @@ fn begin_boundary_from(
     meta: &CommandMeta,
     boundary: TurnBoundary,
     first_occurrence: u16,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let actor = active(state)?;
     let number = state
@@ -214,6 +216,8 @@ fn begin_boundary_from(
     }
     let work_trace = super::work_trace::initial(state)?;
     flow_mut(state)?.resolution = Some(Box::new(TacticalResolution {
+        attack_after_equipment: None,
+        grapple: None,
         origin: meta.clone(),
         turn_actor: actor,
         turn_number: number,
@@ -304,12 +308,19 @@ fn begin_boundary_from(
     }
     super::creature_bridge::boundary(state, meta, &mut work)?;
     push_frame(state, work)?;
-    pump(state, meta)
+    pump_with_context(state, meta, execution)
 }
 
-pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+pub(super) fn pump_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     for _ in 0..32_768 {
-        if super::shove::waiting(state)
+        execution.check_live_constraints(state)?;
+        if super::grapple::waiting(state)
+            || super::attack_equipment::waiting(state)
+            || super::shove::waiting(state)
             || super::falling::selected(state)?.is_some()
             || resolution(state)?
                 .movement
@@ -326,8 +337,10 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
                 resolution_mut(state)?.frames.pop();
             }
         }
-        super::movement::prune(state, meta)?;
-        if super::shove::waiting(state)
+        super::movement::prune(state, meta, execution)?;
+        if super::grapple::waiting(state)
+            || super::attack_equipment::waiting(state)
+            || super::shove::waiting(state)
             || super::hit_reactions::waiting(state)
             || super::missiles::waiting(state)
             || resolution(state)?.pending.is_some()
@@ -365,6 +378,9 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
         let Some(frame) = r.frames.last() else {
             let boundary = r.boundary;
             let next_occurrence = r.next_occurrence;
+            if r.grapple.is_some() {
+                super::grapple::validate(state)?;
+            }
             flow_mut(state)?.resolution = None;
             if boundary == TurnBoundary::End {
                 let mut next_budget = TacticalTurnBudget::default();
@@ -384,7 +400,13 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
                         .ok_or_else(|| invalid("world clock overflow"))?;
                 }
                 flow_mut(state)?.budget = next_budget;
-                return begin_boundary_from(state, meta, TurnBoundary::Start, next_occurrence);
+                return begin_boundary_from(
+                    state,
+                    meta,
+                    TurnBoundary::Start,
+                    next_occurrence,
+                    execution,
+                );
             }
             return Ok(());
         };
@@ -396,17 +418,33 @@ pub(super) fn pump(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), 
             .last_mut()
             .and_then(Vec::pop)
             .ok_or_else(|| invalid("work disappeared"))?;
-        super::continuations::start(state, meta, work)?;
+        super::continuations::start_with_context(state, meta, work, execution)?;
     }
     Err(invalid("consequence execution capacity exceeded"))
 }
 
+#[cfg(test)]
 pub(super) fn choose(
     state: &mut CampaignState,
     meta: &CommandMeta,
     occurrence: u16,
 ) -> Result<(), RulesError> {
-    if super::shove::waiting(state)
+    choose_with_context(
+        state,
+        meta,
+        occurrence,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn choose_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    occurrence: u16,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    if super::grapple::waiting(state)
+        || super::attack_equipment::waiting(state)
+        || super::shove::waiting(state)
         || super::hit_reactions::waiting(state)
         || super::missiles::waiting(state)
     {
@@ -459,8 +497,8 @@ pub(super) fn choose(
         .ok_or_else(|| invalid("unknown simultaneous work"))?;
     let work = frame.remove(index);
     super::missiles::select_impact(state, meta, &work)?;
-    super::continuations::start(state, meta, work)?;
-    pump(state, meta)
+    super::continuations::start_with_context(state, meta, work, execution)?;
+    pump_with_context(state, meta, execution)
 }
 
 pub(super) fn speeds(
@@ -521,10 +559,24 @@ pub(super) fn refresh_dodges(state: &mut CampaignState) -> Result<(), RulesError
         .retain(|d| !expired.contains(&d.actor));
     Ok(())
 }
+#[cfg(test)]
 pub(super) fn core_action(
     state: &mut CampaignState,
     meta: &CommandMeta,
     action: &TacticalAction,
+) -> Result<(), RulesError> {
+    core_action_with_context(
+        state,
+        meta,
+        action,
+        &mut super::grapple::execution::ExecutionContext::ordinary(),
+    )
+}
+pub(super) fn core_action_with_context(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    action: &TacticalAction,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     if flow(state)?.phase != TacticalPhase::Active || flow(state)?.resolution.is_some() {
         return Err(RulesError::Pending);
@@ -532,7 +584,7 @@ pub(super) fn core_action(
     let actor = active(state)?;
     authorize(state, meta, actor)?;
     if matches!(action, TacticalAction::EndTurn) {
-        return begin_boundary(state, meta, TurnBoundary::End);
+        return begin_boundary_with_context(state, meta, TurnBoundary::End, execution);
     }
     let current_speeds = speeds(state, actor)?;
     if matches!(action, TacticalAction::StandProne) {

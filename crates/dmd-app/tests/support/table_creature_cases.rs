@@ -322,7 +322,11 @@ async fn verify_creature_creation(f: &mut Fixture, url: &str) -> (CampaignState,
         definition_id: "goblin-warrior".into(),
         source: Some(
             dmd_rules::tactical_creatures::creature_source_pin(
-                dmd_rules::tactical_creatures::creature_definition("goblin-warrior").unwrap(),
+                dmd_rules::tactical_creatures::current_creature_sources()
+                    .unwrap()
+                    .into_iter()
+                    .find(|source| source.id == "goblin-warrior")
+                    .unwrap(),
             )
             .unwrap(),
         ),

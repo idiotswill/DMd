@@ -5,10 +5,15 @@ use dmd_domain::*;
 #[path = "table_opportunity_tests.rs"]
 mod tests;
 
+#[cfg(test)]
+#[path = "table_physical_source_opportunity_tests.rs"]
+mod physical_source_tests;
+
 pub(super) fn options(
-    state: &CampaignState,
+    read: super::TacticalRead<'_>,
     actor: EntityId,
 ) -> Result<Option<crate::TableMovementOptions>, String> {
+    let state = read.state();
     let Some(encounter) = &state.encounter else {
         return Ok(None);
     };
@@ -86,13 +91,30 @@ pub(super) fn options(
             10
         },
         modes,
+        self_only_required: matches!(read, super::TacticalRead::Owned(_))
+            && dmd_rules::table::grapple_enabled(state)
+            && rules.tactical_grapples.as_ref().is_some_and(|grapples| {
+                grapples
+                    .active
+                    .iter()
+                    .any(|grip| grip.declaration.grappler == actor)
+            }),
     }))
 }
 
+#[cfg(test)]
 pub(super) fn opportunity(
     state: &CampaignState,
     window: &TacticalOpportunityWindow,
 ) -> Result<crate::TableOpportunityView, String> {
+    opportunity_read(super::TacticalRead::Ordinary(state), window)
+}
+
+pub(super) fn opportunity_read(
+    read: super::TacticalRead<'_>,
+    window: &TacticalOpportunityWindow,
+) -> Result<crate::TableOpportunityView, String> {
+    let state = read.state();
     let encounter = state
         .encounter
         .as_ref()
@@ -111,8 +133,14 @@ pub(super) fn opportunity(
             .and_then(|contact| contact.label.clone())
             .unwrap_or_else(|| "Located creature".into()),
     };
-    let mut weapons = super::attacks::options(state, window.reactor)?;
+    let mut weapons = super::attacks::options(read, window.reactor)?;
     if let Some(options) = &mut weapons {
+        let hands = read
+            .hands(window.reactor)
+            .map_err(|error| error.to_string())?;
+        hands
+            .validate_loadout(&options.hands)
+            .map_err(|error| error.to_string())?;
         options.targets = vec![target.clone()];
         options.weapons.retain(|weapon| {
             window.options.iter().any(|option|
@@ -123,19 +151,8 @@ pub(super) fn opportunity(
             weapon.deliveries = vec![WeaponDelivery::Melee];
             weapon.purposes = vec![WeaponAttackPurpose::Normal];
             weapon.grips.retain(|grip| match grip {
-                WeaponGrip::OneHand(hand) => {
-                    options.hands.hands[hand.index()] == HandAssignment::Item(weapon.item)
-                }
-                WeaponGrip::TwoHands => {
-                    options
-                        .hands
-                        .hands
-                        .contains(&HandAssignment::Item(weapon.item))
-                        && options.hands.hands.iter().all(|hand| {
-                            *hand == HandAssignment::Free
-                                || *hand == HandAssignment::Item(weapon.item)
-                        })
-                }
+                WeaponGrip::OneHand(hand) => hands.holds(&options.hands, *hand, weapon.item),
+                WeaponGrip::TwoHands => hands.can_use_two_hands(&options.hands, weapon.item),
             });
         }
         options.weapons.retain(|weapon| !weapon.grips.is_empty());
@@ -184,11 +201,53 @@ pub(super) fn opportunity(
             })
         })
         .collect();
+    let mut physical_source_weapons = vec![];
+    for option in &window.options {
+        let TacticalMeleeSource::CreatureWeapon { feature_id, item } = &option.source else {
+            continue;
+        };
+        let grips = read
+            .physical_source_opportunity_grips(window.reactor, feature_id, *item)
+            .map_err(|error| error.to_string())?;
+        if grips.is_empty() {
+            continue;
+        }
+        let feature = creature
+            .and_then(|source| {
+                source
+                    .features
+                    .iter()
+                    .find(|feature| &feature.id == feature_id)
+            })
+            .ok_or("Physical source reaction feature is absent.")?;
+        let weapon = state
+            .items
+            .get(item)
+            .ok_or("Physical source weapon is absent.")?;
+        let definitions = dmd_rules::tactical_definitions::bundled_tactical_definitions()
+            .map_err(|error| error.to_string())?;
+        let weapon = definitions
+            .weapon(&weapon.definition_id)
+            .ok_or("Physical source weapon definition is absent.")?;
+        physical_source_weapons.push(crate::TablePhysicalSourceWeaponChoice {
+            feature_id: feature_id.clone(),
+            item: *item,
+            label: feature.name.clone(),
+            weapon_name: weapon.name.clone(),
+            grips,
+        });
+    }
+    physical_source_weapons.sort_by(|a, b| {
+        a.feature_id
+            .cmp(&b.feature_id)
+            .then(a.item.0.cmp(&b.item.0))
+    });
     Ok(crate::TableOpportunityView {
         actor: window.reactor,
         target,
         weapons,
         features,
+        physical_source_weapons,
         unarmed: window
             .options
             .iter()

@@ -45,6 +45,22 @@ pub struct TranscriptVisibility {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum ProjectionCapability {
+    PhysicalFact {
+        offer: dmd_domain::PhysicalFactOffer,
+    },
+    InspirationTransfer {
+        choice: dmd_domain::TableInspirationTransferChoice,
+    },
+    GrappleTransport {
+        offer: dmd_domain::TableGrappleTransportOffer,
+    },
+    GrappleChoice {
+        offer: dmd_domain::TableGrappleOffer,
+    },
+    AttackEquipment {
+        origin: CommandId,
+        occurrence: u16,
+    },
     ShoveDecision {
         origin: CommandId,
         occurrence: u16,
@@ -161,7 +177,7 @@ pub async fn load_table_projection_history(
                 serde_json::from_str(&row.try_get::<String, _>("record_json")?)
                     .map_err(|_| TableProjectionStoreError::InvalidRecord)?;
             if record.campaign_id != campaign_id
-                || !matches!(record.version, 1 | 2)
+                || !matches!(record.version, 1..=5)
                 || i64::try_from(record.ordinal).ok() != Some(row.try_get("ordinal")?)
             {
                 return Err(TableProjectionStoreError::InvalidRecord);
@@ -175,7 +191,7 @@ pub async fn insert_table_projection_record(
     connection: &mut SqliteConnection,
     record: &TableProjectionRecord,
 ) -> Result<(), TableProjectionStoreError> {
-    if !matches!(record.version, 1 | 2) || record.ordinal == 0 {
+    if !matches!(record.version, 1..=5) || record.ordinal == 0 {
         return Err(TableProjectionStoreError::InvalidRecord);
     }
     let ordinal =
@@ -205,7 +221,7 @@ pub async fn load_table_transport_bindings(
                 serde_json::from_str(&row.try_get::<String, _>("record_json")?)
                     .map_err(|_| TableProjectionStoreError::InvalidRecord)?;
             if record.meta.campaign_id != campaign_id
-                || !matches!(record.version, 1 | 2)
+                || !matches!(record.version, 1..=5)
                 || record.meta.id.0.to_string() != row.try_get::<String, _>("command_id")?
                 || i64::try_from(record.projection_ordinal).ok()
                     != Some(row.try_get("projection_ordinal")?)
@@ -221,7 +237,7 @@ pub async fn insert_table_transport_binding(
     connection: &mut SqliteConnection,
     record: &TableTransportBinding,
 ) -> Result<(), TableProjectionStoreError> {
-    if !matches!(record.version, 1 | 2) || record.projection_ordinal == 0 {
+    if !matches!(record.version, 1..=5) || record.projection_ordinal == 0 {
         return Err(TableProjectionStoreError::InvalidRecord);
     }
     let ordinal = i64::try_from(record.projection_ordinal)
@@ -264,7 +280,7 @@ pub(crate) fn validate_portable_protocol(
         .map(|row| (row.record.id, row))
         .collect::<HashMap<_, _>>();
     for (index, record) in export.table_projection_history.iter().enumerate() {
-        if !matches!(record.version, 1 | 2)
+        if !matches!(record.version, 1..=5)
             || record.campaign_id != state.campaign_id()
             || record.ordinal != index as u64 + 1
         {
@@ -366,7 +382,7 @@ pub(crate) fn validate_portable_protocol(
     for binding in &export.table_transport_bindings {
         let (issuer, player) = crate::journal_store::encode_issuer(binding.meta.issuer);
         let (actor_kind, actor_id) = crate::journal_store::encode_agent(binding.meta.actor);
-        if !matches!(binding.version, 1 | 2)
+        if !matches!(binding.version, 1..=5)
             || binding.meta.campaign_id != state.campaign_id()
             || !commands.insert(binding.meta.id)
             || binding.projection_ordinal == 0

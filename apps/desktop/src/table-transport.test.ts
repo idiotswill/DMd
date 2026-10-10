@@ -23,6 +23,18 @@ describe('durable opaque desktop transport',()=>{
     expect(vi.mocked(invoke).mock.calls[0]).toEqual(vi.mocked(invoke).mock.calls[1]);
     expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...host,input:{Action:action}}});
   });
+  it.each(['Decline','Apply'] as const)('retries the original equipment %s operation and opaque work after restart',async(kind)=>{
+    const choice=kind==='Decline'?'Decline' as const:{Apply:{Pickup:{item:'same-item',hand:'Right' as const}}};
+    const action={Tactical:{action:{AttackEquipment:{handle:'original-equipment-work',choice}}}};
+    const saved:UnconfirmedRequest={kind:'action',request:{...context,action}};
+    saveRequest(saved);
+    vi.mocked(invoke).mockRejectedValueOnce(new Error('lost acknowledgement')).mockResolvedValueOnce({Accepted:{command_id:context.command_id,revision:'accepted',outcome:{message:'Recorded.'}}});
+    await expect(tableApi.action(saved.request)).rejects.toThrow('lost acknowledgement');
+    const retry=loadRequest();if(retry?.kind!=='action')throw new Error('missing saved action');
+    await tableApi.action(retry.request);
+    expect(vi.mocked(invoke).mock.calls[0]).toEqual(vi.mocked(invoke).mock.calls[1]);
+    expect(invoke).toHaveBeenLastCalledWith('desktop_submit_table',{request:{...context,input:{AttackEquipment:{handle:'original-equipment-work',choice}}}});
+  });
   it('retries the original Shove consequence without rebinding a newer stage handle',async()=>{
     const decision={Outcome:{choice:{Push:{destination:{x:30,y:10,z:0}}}}};
     const action={Tactical:{action:{ShoveDecision:{handle:'original-shove-choice',decision}}}};
@@ -95,7 +107,7 @@ describe('durable opaque desktop transport',()=>{
     expect(loadRequest()).toEqual(legacy);
   });
   it('contains mixed or unknown envelope versions instead of guessing a new context',()=>{
-    for(const request of [{...context,version:3},{...context,version:'2'},{...context,expected_event_sequence:3},{...context,revision:''}]){
+    for(const request of [{...context,version:99},{...context,version:'2'},{...context,expected_event_sequence:3},{...context,revision:''}]){
       localStorage.setItem(REQUEST_KEY,JSON.stringify({kind:'text',request:{...request,text:'Hello'}}));
       expect(()=>loadRequest()).toThrow('incomplete or incompatible');
       expect(invoke).not.toHaveBeenCalled();

@@ -98,13 +98,14 @@ pub(super) fn submit_with_inspiration(
     original: &RollResult,
     die_index: usize,
     replacement: DieResult,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let pending = state
         .rules
         .as_ref()
         .and_then(|r| r.pending.as_ref())
         .ok_or(RulesError::NoPending)?;
-    validate_tactical_pending(state, pending)?;
+    super::validation::validate_tactical_pending_with_read(&execution.read(state)?, pending)?;
     pending.request.resolve(original)?;
     let actor = pending
         .request
@@ -132,13 +133,7 @@ pub(super) fn submit_with_inspiration(
     mechanics.heroic_inspiration = false;
     let mut result = original.clone();
     result.dice[die_index] = replacement;
-    submit(state, meta, &result)?;
-    state
-        .rules
-        .as_mut()
-        .and_then(|r| r.rolls.last_mut())
-        .ok_or_else(|| invalid("missing accepted initiative reroll"))?
-        .original_result = Some(original.clone());
+    submit_inner(state, meta, &result, Some(original), execution)?;
     Ok(())
 }
 
@@ -174,6 +169,17 @@ pub(super) fn submit(
     state: &mut CampaignState,
     meta: &CommandMeta,
     result: &RollResult,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
+    submit_inner(state, meta, result, None, execution)
+}
+
+fn submit_inner(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    result: &RollResult,
+    original: Option<&RollResult>,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let pending = state
         .rules
@@ -181,7 +187,7 @@ pub(super) fn submit(
         .and_then(|r| r.pending.as_ref())
         .ok_or(RulesError::NoPending)?
         .clone();
-    validate_tactical_pending(state, &pending)?;
+    super::validation::validate_tactical_pending_with_read(&execution.read(state)?, &pending)?;
     let actor = pending
         .request
         .roller
@@ -194,17 +200,19 @@ pub(super) fn submit(
         return Err(RulesError::Unauthorized);
     }
     let resolved = pending.request.resolve(result)?;
-    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
-    rules.rolls.push(RecordedRoll {
-        issued_by: pending.issued_by,
+    let recorded = RecordedRoll {
+        issued_by: pending.issued_by.clone(),
         accepted_by: meta.clone(),
-        original_result: None,
+        original_result: original.cloned(),
         savage_attacker: None,
-        request: pending.request,
+        request: pending.request.clone(),
         result: result.clone(),
         resolved,
-        purpose: pending.purpose,
-    });
+        purpose: pending.purpose.clone(),
+    };
+    execution.observe_initiative(state, meta, &pending, &recorded)?;
+    let rules = state.rules.as_mut().ok_or(RulesError::Uninitialized)?;
+    rules.rolls.push(recorded);
     rules.pending = None;
     let f = flow_mut(state)?;
     let TacticalPhase::Initiative { next_group } = &mut f.phase else {
@@ -230,7 +238,7 @@ pub(super) fn submit(
         })
         .collect();
     flow_mut(state)?.phase = TacticalPhase::InitiativeTies { ties };
-    finish_if_agreed(state, meta)
+    finish_if_agreed(state, meta, execution)
 }
 
 pub(super) fn entries(state: &CampaignState) -> Result<Vec<InitiativeEntry>, RulesError> {
@@ -277,6 +285,7 @@ pub(super) fn propose_tie(
     state: &mut CampaignState,
     meta: &CommandMeta,
     order: &[EntityId],
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let TacticalPhase::InitiativeTies { ties } = &flow(state)?.phase else {
         return Err(prerequisite("no initiative ties await decisions"));
@@ -314,12 +323,13 @@ pub(super) fn propose_tie(
         vec![]
     };
     ties[index].host_decided = !players;
-    finish_if_agreed(state, meta)
+    finish_if_agreed(state, meta, execution)
 }
 pub(super) fn accept_tie(
     state: &mut CampaignState,
     meta: &CommandMeta,
     total: i32,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let CommandIssuer::Player(player) = meta.issuer else {
         return Err(RulesError::Unauthorized);
@@ -345,9 +355,13 @@ pub(super) fn accept_tie(
         unreachable!()
     };
     ties[index].accepted_by.push(player);
-    finish_if_agreed(state, meta)
+    finish_if_agreed(state, meta, execution)
 }
-fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
+fn finish_if_agreed(
+    state: &mut CampaignState,
+    meta: &CommandMeta,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
+) -> Result<(), RulesError> {
     let TacticalPhase::InitiativeTies { ties } = &flow(state)?.phase else {
         return Err(invalid("initiative tie phase is missing"));
     };
@@ -393,5 +407,5 @@ fn finish_if_agreed(state: &mut CampaignState, meta: &CommandMeta) -> Result<(),
     });
     flow_mut(state)?.initiative_decisions = accepted_ties;
     flow_mut(state)?.phase = TacticalPhase::Active;
-    super::turns::begin_boundary(state, meta, TurnBoundary::Start)
+    super::turns::begin_boundary_with_context(state, meta, TurnBoundary::Start, execution)
 }

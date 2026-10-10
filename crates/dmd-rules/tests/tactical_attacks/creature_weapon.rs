@@ -73,6 +73,7 @@ pub(super) fn item(f: &Fixture, id: &str) -> ItemId {
 
 pub(super) fn choice(f: &Fixture, id: &str) -> CreatureWeaponUseChoice {
     CreatureWeaponUseChoice {
+        after_equipment: None,
         weapon: item(f, id),
         target: f.actors[1],
         grip: if id == "shortbow" {

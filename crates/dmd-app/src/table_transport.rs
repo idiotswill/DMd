@@ -9,6 +9,9 @@ use serde::{Deserialize, Serialize};
 
 pub const TABLE_TRANSPORT_VERSION: u32 = 1;
 pub const TABLE_SOURCE_TRANSPORT_VERSION: u32 = 2;
+pub const TABLE_GRAPPLE_TRANSPORT_VERSION: u32 = 3;
+pub const TABLE_GROUND_DRAG_TRANSPORT_VERSION: u32 = 4;
+pub const TABLE_PHYSICAL_TRANSPORT_VERSION: u32 = 5;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -38,6 +41,25 @@ impl TableTransportChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableTransportInput {
+    EnablePhysicalFacts,
+    PhysicalFact {
+        handle: CommandId,
+        input: PhysicalFactInput,
+    },
+    InspirationTransfer {
+        handle: CommandId,
+    },
+    MoveGrappled {
+        option: CommandId,
+        path: Vec<TacticalMoveStep>,
+    },
+    GrappleChoice {
+        handle: CommandId,
+    },
+    AttackEquipment {
+        handle: CommandId,
+        choice: AttackEquipmentChoice,
+    },
     ShoveDecision {
         handle: CommandId,
         decision: Box<TableShoveInput>,
@@ -121,6 +143,41 @@ pub struct TableCreatureOptionsRequest {
     pub revision: ProjectionRevision,
 }
 
+/// Advisory current source choices do not alter retained presentation bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub actor: EntityId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackFeature {
+    pub feature_id: String,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackTarget {
+    pub actor: EntityId,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableIntrinsicAttackOptions {
+    pub version: u32,
+    pub revision: ProjectionRevision,
+    pub actor: EntityId,
+    pub features: Vec<TableIntrinsicAttackFeature>,
+    pub targets: Vec<TableIntrinsicAttackTarget>,
+}
+
 /// Read-only live roll affordances are separate from immutable presentation v1.
 /// They are tied to the owned opaque request; accepting them still rederives rules.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -135,6 +192,27 @@ pub struct TableRollOptionsRequest {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableRollOptions {
     pub savage_attacker: Option<TableSavageAttackerOption>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub heroic_inspiration: Option<bool>,
+}
+
+/// Opted-in live guidance; this never changes retained presentation bytes.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetailsRequest {
+    pub version: u32,
+    pub campaign_id: CampaignId,
+    pub channel: TableTransportChannel,
+    pub revision: ProjectionRevision,
+    pub roll_id: RollRequestId,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct TableRollDetails {
+    pub version: u32,
+    pub options: TableRollOptions,
+    pub display_reason: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -244,6 +322,12 @@ pub struct TableHostDiagnostics {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TablePresentedView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical: Option<TablePhysicalView<CommandId>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspiration_transfer: Option<TableInspirationTransferView<CommandId>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<TableGrappleView<CommandId, CommandId>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub revision: ProjectionRevision,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -293,6 +377,8 @@ pub(crate) fn presented_view(
         .tactical
         .map(|tactical| {
             let TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,
@@ -324,6 +410,19 @@ pub(crate) fn presented_view(
                 shield_options,
                 area_options,
             } = tactical;
+            let attack_equipment = attack_equipment
+                .map(|offer| {
+                    Ok::<_, &str>(TableAttackEquipmentView {
+                        key: CommandId(handle(&ProjectionCapability::AttackEquipment {
+                            origin: offer.key.resolution,
+                            occurrence: offer.key.occurrence,
+                        })?),
+                        actor: offer.actor,
+                        operations: offer.operations,
+                        may_decline: offer.may_decline,
+                    })
+                })
+                .transpose()?;
             let shove = shove
                 .map(|s| {
                     Ok::<_, &str>(TableShoveView {
@@ -461,6 +560,8 @@ pub(crate) fn presented_view(
                 })
                 .transpose()?;
             Ok::<_, &str>(TableTacticalView {
+                equipment_enabled,
+                attack_equipment,
                 shove,
                 encounter_id,
                 aftermath,
@@ -496,6 +597,92 @@ pub(crate) fn presented_view(
         .transpose()
         .map_err(str::to_owned)?;
     Ok(TablePresentedView {
+        inspiration_transfer: raw
+            .inspiration_transfer
+            .map(|transfer| {
+                Ok::<_, &str>(TableInspirationTransferView {
+                    character_id: transfer.character_id,
+                    choices: transfer
+                        .choices
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableInspirationOption {
+                                key: CommandId(handle(
+                                    &ProjectionCapability::InspirationTransfer {
+                                        choice: choice.key,
+                                    },
+                                )?),
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
+        grapple: raw
+            .grapple
+            .map(|grapple| {
+                Ok::<_, &str>(TableGrappleView {
+                    ground_drag: grapple
+                        .ground_drag
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleTransport {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                    version: grapple.version,
+                    choices: grapple
+                        .choices
+                        .into_iter()
+                        .map(|choice| {
+                            Ok::<_, &str>(TableGrappleOption {
+                                key: CommandId(handle(&ProjectionCapability::GrappleChoice {
+                                    offer: choice.key,
+                                })?),
+                                actor: choice.actor,
+                                label: choice.label,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
+        physical: raw
+            .physical
+            .map(|physical| {
+                Ok::<_, &str>(TablePhysicalView {
+                    version: physical.version,
+                    actors: physical.actors,
+                    controls: physical
+                        .controls
+                        .into_iter()
+                        .map(|control| {
+                            Ok::<_, &str>(TablePhysicalControl {
+                                key: CommandId(handle(&ProjectionCapability::PhysicalFact {
+                                    offer: control.key,
+                                })?),
+                                label: control.label,
+                                kind: control.kind,
+                                source: control.source,
+                                conditions: control.conditions,
+                                unit: control.unit,
+                                gross: control.gross,
+                                wallet_cp: control.wallet_cp,
+                            })
+                        })
+                        .collect::<Result<Vec<_>, _>>()?,
+                })
+            })
+            .transpose()
+            .map_err(str::to_owned)?,
         source_control: raw.source_control,
         revision,
         diagnostics: matches!(audience, ProjectionAudience::Host).then_some(TableHostDiagnostics {

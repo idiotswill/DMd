@@ -2,19 +2,36 @@ use super::*;
 
 pub(super) async fn prepare(f: &mut Fixture) -> EntityId {
     let mage = EntityId::new();
-    let gear = dmd_rules::tactical_creature_equipment::creature_equipment_plan("mage", 0).unwrap();
+    let host = f
+        .runtime
+        .presented_table_view(f.campaign, TableViewer::Host)
+        .await
+        .unwrap();
+    let options = f
+        .runtime
+        .table_creature_options(TableCreatureOptionsRequest {
+            campaign_id: f.campaign,
+            channel: TableTransportChannel::Host,
+            revision: host.revision,
+        })
+        .await
+        .unwrap();
+    let source = options
+        .iter()
+        .find(|source| source.definition_id == "mage")
+        .unwrap();
+    let gear = dmd_rules::tactical_creature_equipment::creature_equipment_plan_from_source(
+        source.source.as_ref().unwrap(),
+        0,
+    )
+    .unwrap();
     f.host(
         TableAction::CreateCreature {
             creation: Box::new(TableCreatureCreation {
                 entity_id: mage,
                 name: "Private ledge Mage".into(),
                 definition_id: "mage".into(),
-                source: Some(
-                    dmd_rules::tactical_creatures::creature_source_pin(
-                        dmd_rules::tactical_creatures::creature_definition("mage").unwrap(),
-                    )
-                    .unwrap(),
-                ),
+                source: source.source.clone(),
                 size: CreatureSize::Medium,
                 additional_languages: vec!["dwarvish".into(), "elvish".into(), "draconic".into()],
                 ammunition_units: 0,

@@ -1,0 +1,30 @@
+{
+  "name": "04-inspiration-recipient-capture",
+  "argv": [
+    "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\cargo\\bin\\cargo.exe",
+    "test",
+    "--locked",
+    "-p",
+    "dmd-app",
+    "--test",
+    "table_grapple_public",
+    "inspiration::transfer::v4_capture::capture_v4_inspiration_recipient_and_physical_reroll",
+    "--",
+    "--exact"
+  ],
+  "expected": "inspiration::transfer::v4_capture::capture_v4_inspiration_recipient_and_physical_reroll",
+  "scenario": "inspiration-recipient-v4",
+  "expected_cuts": [
+    "before-ground-equipment",
+    "before-first-host-award",
+    "first-award-before-duplicate",
+    "pending-owner-transfer",
+    "pending-physical-inspiration-reroll",
+    "consumed-reroll-before-equipment-finish",
+    "settled-reroll-before-next-turn"
+  ],
+  "exit": 0,
+  "ended_utc": "2026-10-07T12:33:45.446974+00:00",
+  "log": "C:\\Users\\jadra\\Documents\\ChatGPT\\DMD\\tooling\\gate4-v4-compatibility-capture-969627f90d2a-01-2026-10-07\\04-inspiration-recipient-capture.log",
+  "log_sha256": "eb1e0b6e8ff56f34bbfdfc386f8c098e03fd1a0d4408e65bbfb26961b0e73f8a"
+}

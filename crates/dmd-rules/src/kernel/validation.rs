@@ -426,6 +426,28 @@ pub(super) fn validate_entity(
     Ok(())
 }
 pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), RulesError> {
+    validate_state_with_read(
+        &crate::tactical::grapple::execution::ReadContext::ordinary(state),
+        pack,
+    )
+}
+
+pub(crate) fn validate_state_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    pack: &RulesPack,
+) -> Result<(), RulesError> {
+    read.validate_physical_facts()?;
+    let state = read.state();
+    if has_unimplemented_ground_records(state) && !crate::tactical::attack_equipment_enabled(state)
+    {
+        return Err(invalid("ground pickup execution is not enabled"));
+    }
+    crate::tactical::validate_attack_equipment_state(state)?;
+    // Source/domain-only checkpoint: structural records cannot authorize play.
+    // Replace with full source/causal validation only in the reviewed resolver slice.
+    if has_unimplemented_grapple_records(state) || crate::table::grapple_enabled(state) {
+        read.require_guarded("Grapple execution is not enabled by this source/domain checkpoint")?;
+    }
     if let Some(history) = &state.encounter_history {
         history.validate(state).map_err(invalid)?;
     }
@@ -584,6 +606,10 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
                 return Err(invalid("invalid tactical roll identity"));
             }
             let expected = match key.role {
+                TacticalRollRole::GrappleSave | TacticalRollRole::GrappleEscape => {
+                    read.validate_recorded_grapple(roll)?;
+                    Some(20)
+                }
                 TacticalRollRole::DeathSave
                 | TacticalRollRole::EffectSave
                 | TacticalRollRole::Attack
@@ -687,7 +713,7 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             p.request.roller.ok_or_else(|| invalid("missing roller"))?,
         )?;
         ruling_valid(&p.ruling, &rules.house_rules)?;
-        request_integrity::pending(state, rules, p, pack)?;
+        request_integrity::pending_with_read(read, rules, p, pack)?;
     }
     let mut ruling_commands = HashSet::new();
     for r in &rules.rulings {
@@ -765,6 +791,6 @@ pub fn validate_state(state: &CampaignState, pack: &RulesPack) -> Result<(), Rul
             pack.attack(&p.content_id)?;
         }
     }
-    crate::tactical::validate_tactical_state(state)?;
+    crate::tactical::validation::validate_tactical_state_with_read(read)?;
     Ok(())
 }

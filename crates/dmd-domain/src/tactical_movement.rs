@@ -49,6 +49,12 @@ pub enum TacticalMeleeSource {
         /// attacks have no retrievable implement (SRD255).
         weapon: Option<ItemId>,
     },
+    /// Distinct from the historical gripless feature route. Selection must pass
+    /// the physical source adapter with the controller's actual legal grip.
+    CreatureWeapon {
+        feature_id: String,
+        item: ItemId,
+    },
 }
 
 /// Internal source query result, not a client-supplied reach permission.
@@ -107,6 +113,8 @@ pub struct TacticalOpportunityDecision {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalMovement {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple_self_only: Option<crate::GrappleSelfOnlyAdmission>,
     pub origin: CommandMeta,
     pub actor: EntityId,
     pub path: Vec<TacticalMoveStep>,
@@ -138,6 +146,8 @@ pub enum TacticalMovementEnd {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct TacticalMovementResult {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub transport: Option<crate::GrappleTransportResult>,
     pub original: CommandMeta,
     pub cause: CommandMeta,
     pub actor: EntityId,

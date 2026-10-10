@@ -1,6 +1,28 @@
 use super::*;
 
-pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
+pub(super) fn validate_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    let state = read.state();
+    validate_declaration(read)?;
+    if let Some(attack) = flow(state)?
+        .resolution
+        .as_ref()
+        .and_then(|r| r.attack.as_ref())
+    {
+        validate_source(read, attack)?;
+    }
+    validate_continuation(read)
+}
+
+// The paid reader needs exact stage/raw/work binding before its local inverse.
+// This is the same structural validator, with source calculation factored out
+// to avoid recursively reconstructing its own input.
+pub(super) fn validate_structure_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    validate_declaration(read)?;
+    validate_continuation(read)
+}
+
+fn validate_declaration(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    let state = read.state();
     let Some(resolution) = flow(state)?.resolution.as_ref() else {
         return Ok(());
     };
@@ -32,7 +54,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
         validate_equipment_origin(state, &attack.origin, attack.actor).map_err(|e| invalid(&e))?;
         authorize(state, &attack.origin, attack.actor)?;
     }
-    opportunity::validate_admission(state, attack)?;
+    opportunity::validate_admission(read, attack)?;
+    super::super::attack_equipment::validate_pause(state)?;
     if attack.automatic_miss {
         return Err(invalid(
             "an automatic miss must finish without accepting an attack roll",
@@ -92,7 +115,22 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     {
         return Err(invalid("invalid retained attack identity/bounds"));
     }
-    validate_source(state, attack)?;
+    Ok(())
+}
+
+fn validate_continuation(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    validate_raw_with_read(read)?;
+    validate_work(read.state())
+}
+
+pub(super) fn validate_raw_with_read(read: &ReadContext<'_>) -> Result<(), RulesError> {
+    let state = read.state();
+    let Some(resolution) = flow(state)?.resolution.as_ref() else {
+        return Ok(());
+    };
+    let Some(attack) = &resolution.attack else {
+        return Ok(());
+    };
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     if let Some(id) = attack.attack_roll {
         let record = rules
@@ -117,7 +155,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             || key.occurrence >= resolution.next_occurrence
             || record.issued_by != attack.origin
             || record.request
-                != request(state, &work, key)?.ok_or_else(|| invalid("attack request absent"))?
+                != request_with_read(read, &work, key)?
+                    .ok_or_else(|| invalid("attack request absent"))?
             || record.request.resolve(&record.result)? != record.resolved
         {
             return Err(invalid("accepted attack request differs"));
@@ -171,7 +210,8 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             || key.occurrence >= resolution.next_occurrence
             || record.issued_by != issued.accepted_by
             || record.request
-                != request(state, &work, key)?.ok_or_else(|| invalid("damage request absent"))?
+                != request_with_read(read, &work, key)?
+                    .ok_or_else(|| invalid("damage request absent"))?
             || record.request.resolve(&record.result)? != record.resolved
         {
             return Err(invalid("accepted damage request differs"));
@@ -231,6 +271,16 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
             return Err(invalid("knockout decision is not due for this damage"));
         }
     }
+    Ok(())
+}
+
+fn validate_work(state: &CampaignState) -> Result<(), RulesError> {
+    let Some(resolution) = flow(state)?.resolution.as_ref() else {
+        return Ok(());
+    };
+    let Some(attack) = &resolution.attack else {
+        return Ok(());
+    };
     let work = resolution
         .frames
         .iter()
@@ -278,12 +328,15 @@ pub(super) fn validate(state: &CampaignState) -> Result<(), RulesError> {
     Ok(())
 }
 
-fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(), RulesError> {
+fn validate_source(context: &ReadContext<'_>, attack: &TacticalAttack) -> Result<(), RulesError> {
+    let state = context.state();
+    let admitted = context.attack_retained(attack)?;
+    let read = admitted.as_ref();
     if matches!(attack.source, TacticalAttackSource::Spell { .. }) {
-        return spell::validate_source(state, attack);
+        return spell::validate_source(state, attack, read);
     }
     let Some(weapon) = attack.weapon() else {
-        let plan = intrinsic::plan(state, attack)?;
+        let plan = intrinsic::plan_with_read(state, attack, read)?;
         if attack.stage == TacticalAttackStage::MasteryChoice
             || attack.automatic_miss
             || attack.attack_modifier != plan.modifier
@@ -310,7 +363,19 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
     }
     validate_equipment_change_origin(state, &weapon.equipment_before.command, attack.actor)
         .map_err(|e| invalid(&e))?;
-    let plan = planning::reconstruct(state, attack)?;
+    let plan = planning::reconstruct_with_read(state, attack, context)?;
+    validate_physical_plan(state, attack, &plan, read)
+}
+
+pub(super) fn validate_physical_plan(
+    state: &CampaignState,
+    attack: &TacticalAttack,
+    plan: &WeaponAttackPlan,
+    read: Option<&super::super::grapple::reads::AttackRead<'_>>,
+) -> Result<(), RulesError> {
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical attack source absent"))?;
     if plan
         .mastery
         .is_some_and(|m| !matches!(m, WeaponMastery::Nick | WeaponMastery::Graze))
@@ -335,6 +400,7 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
             || weapon.choice.purpose != WeaponAttackPurpose::Normal
             || weapon.choice.delivery != WeaponDelivery::Melee
             || weapon.choice.equipment_change.is_some()
+            || weapon.choice.after_equipment.is_some()
             || weapon.ammunition.is_some()
         {
             return Err(invalid(
@@ -373,7 +439,7 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
         .loadout(attack.actor)
         .ok_or_else(|| invalid("attack loadout absent"))?;
     let expected_damage = if matches!(attack.source, TacticalAttackSource::CreatureWeapon { .. }) {
-        creature_weapon::validate_source(state, attack, &plan)?
+        creature_weapon::validate_source_with_read(state, attack, plan, read)?
     } else {
         vec![AttackDamageComponent {
             damage_type: plan.damage.damage_type,
@@ -424,7 +490,7 @@ fn validate_source(state: &CampaignState, attack: &TacticalAttack) -> Result<(),
     }
     {
         let (mode, armor, critical) =
-            planning::hit_facts(state, attack.actor, &weapon.choice, &plan)?;
+            planning::hit_facts_with_read(state, attack.actor, &weapon.choice, plan, read)?;
         if (attack.mode, attack.armor_class, attack.critical_on_hit) != (mode, armor, critical) {
             return Err(invalid("pending attack circumstances differ"));
         }

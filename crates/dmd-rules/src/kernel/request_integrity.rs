@@ -74,21 +74,22 @@ fn same_permission(
     }
     Ok(())
 }
-pub(super) fn pending(
-    state: &CampaignState,
+pub(super) fn pending_with_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
     rules: &RulesState,
     p: &PendingRoll,
     pack: &RulesPack,
 ) -> Result<(), RulesError> {
-    pending_with_recency(state, rules, p, pack, true)
+    pending_with_recency_and_read(read, rules, p, pack, true)
 }
-fn pending_with_recency(
-    state: &CampaignState,
+fn pending_with_recency_and_read(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
     rules: &RulesState,
     p: &PendingRoll,
     pack: &RulesPack,
     check_recency: bool,
 ) -> Result<(), RulesError> {
+    let state = read.state();
     command(state, &p.issued_by)?;
     if check_recency
         && !matches!(
@@ -112,7 +113,7 @@ fn pending_with_recency(
     }];
     match &p.purpose {
         PendingPurpose::TacticalInitiative { .. } | PendingPurpose::TacticalResolution { .. } => {
-            crate::tactical::validate_tactical_pending(state, p)?;
+            crate::tactical::validation::validate_tactical_pending_with_read(read, p)?;
         }
         PendingPurpose::Test {
             kind,
@@ -255,7 +256,7 @@ fn pending_with_recency(
                 purpose: previous.purpose.clone(),
                 ruling: auth.ruling.clone(),
             };
-            pending_with_recency(state, rules, &origin, pack, false)?;
+            pending_with_recency_and_read(read, rules, &origin, pack, false)?;
             let face = previous
                 .resolved
                 .kept_dice

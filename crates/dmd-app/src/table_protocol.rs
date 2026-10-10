@@ -9,6 +9,21 @@ pub const TABLE_EVENT_VERSION: u32 = 1;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub enum TableAction {
+    PhysicalFact {
+        acceptance: Box<PhysicalFactAcceptance>,
+    },
+    AwardExcessInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
+    ResolveHostInspirationTransfer {
+        choice: TableInspirationTransferChoice,
+    },
+    AwardHeroicInspiration {
+        character_id: CharacterId,
+        reason: String,
+    },
+    EnableGrappleAccess,
     CreateCharacterFromSource {
         character_id: CharacterId,
         entity_id: EntityId,
@@ -16,6 +31,7 @@ pub enum TableAction {
         source: CharacterCreationSourcePin,
         input: CharacterCreationInput,
     },
+    EnableGrappleTransport,
     UpdateContract {
         contract: TableContract,
     },
@@ -108,58 +124,9 @@ pub enum TableViewer {
     Player(PlayerId),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCreatureCreation {
-    pub entity_id: EntityId,
-    pub name: String,
-    pub definition_id: String,
-    /// Absence is frozen V1 replay, never a current-catalog default.
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub source: Option<CreatureSourcePin>,
-    pub size: CreatureSize,
-    pub additional_languages: Vec<String>,
-    pub ammunition_units: u16,
-    pub item_ids: Vec<ItemId>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableBattlefieldSetup {
-    pub encounter_id: EncounterId,
-    pub scene_id: SceneId,
-    pub location_id: LocationId,
-    pub name: String,
-    pub battlefield: Battlefield,
-    pub characters: Vec<TableCharacterPlacement>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub creatures: Vec<TableCreaturePlacement>,
-    pub geometry_ruling: Ruling,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub area_grid_policy: Option<TacticalAreaGridPolicy>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCreaturePlacement {
-    pub actor: EntityId,
-    pub public_label: String,
-    pub position: SpatialPoint,
-    pub height: u32,
-    pub allies: Vec<EntityId>,
-    pub enemies: Vec<EntityId>,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(deny_unknown_fields)]
-pub struct TableCharacterPlacement {
-    pub character_id: CharacterId,
-    pub position: SpatialPoint,
-    /// Explicit physical geometry, measured in half-feet; not a mechanical bonus.
-    pub height: u32,
-    pub allies: Vec<EntityId>,
-    pub enemies: Vec<EntityId>,
-}
+pub use dmd_rules::table::{
+    TableBattlefieldSetup, TableCharacterPlacement, TableCreatureCreation, TableCreaturePlacement,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableCampaignSummary {
@@ -241,6 +208,12 @@ pub enum TableRollChannel {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableView {
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub physical: Option<crate::TablePhysicalView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub inspiration_transfer: Option<TableInspirationTransferView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub grapple: Option<TableGrappleView>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub source_control: Option<TableSourceControlView>,
     pub campaign_id: CampaignId,
     pub name: String,
@@ -259,6 +232,33 @@ pub struct TableView {
     pub situation_description: String,
     pub transcript: Vec<TableTranscriptEntry>,
     pub recap: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableInspirationTransferView<K = TableInspirationTransferChoice> {
+    pub character_id: CharacterId,
+    pub choices: Vec<TableInspirationOption<K>>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableInspirationOption<K = TableInspirationTransferChoice> {
+    pub key: K,
+    pub label: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(bound(deserialize = "K: Deserialize<'de>, T: Deserialize<'de>"))]
+pub struct TableGrappleView<K = TableGrappleOffer, T = TableGrappleTransportOffer> {
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub ground_drag: Vec<TableGrappleOption<T>>,
+    pub version: u32,
+    pub choices: Vec<TableGrappleOption<K>>,
+}
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableGrappleOption<K = TableGrappleOffer> {
+    pub key: K,
+    pub actor: EntityId,
+    pub label: String,
 }
 
 /// No command metadata or private actors belonging to another audience appear here.
@@ -322,6 +322,10 @@ pub struct TableCreatureView {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(bound(deserialize = "WorkChoice: Deserialize<'de>, HitKey: Deserialize<'de>"))]
 pub struct TableTacticalView<WorkChoice = TableTacticalWorkChoice, HitKey = TacticalWorkKey> {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub equipment_enabled: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub attack_equipment: Option<TableAttackEquipmentView<HitKey>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub shove: Option<TableShoveView<HitKey>>,
     pub encounter_id: EncounterId,
@@ -479,6 +483,17 @@ pub struct TableOpportunityView {
     pub weapons: Option<TableAttackOptions>,
     pub unarmed: bool,
     pub features: Vec<TableCreatureAttackChoice>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub physical_source_weapons: Vec<TablePhysicalSourceWeaponChoice>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TablePhysicalSourceWeaponChoice {
+    pub feature_id: String,
+    pub item: ItemId,
+    pub label: String,
+    pub weapon_name: String,
+    pub grips: Vec<WeaponGrip>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -494,6 +509,12 @@ pub struct TableMovementOptions {
     pub position: SpatialPoint,
     pub grid_units: u32,
     pub modes: Vec<MovementMode>,
+    #[serde(default, skip_serializing_if = "movement_self_only_absent")]
+    pub self_only_required: bool,
+}
+
+fn movement_self_only_absent(value: &bool) -> bool {
+    !value
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -510,10 +531,38 @@ pub enum TableAttackDecisionKind {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct TableAttackOptions {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub equipment: Option<TableEquipmentOptions>,
     pub actor: EntityId,
     pub hands: WeaponLoadout,
     pub weapons: Vec<TableWeaponChoice>,
     pub targets: Vec<TableAttackTarget>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEquipmentOptions {
+    pub pickups: Vec<TableGroundPickup>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableGroundPickup {
+    pub item: ItemId,
+    pub name: String,
+    pub hands: Vec<Hand>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableAttackEquipmentView<Key = TacticalWorkKey> {
+    pub key: Key,
+    pub actor: EntityId,
+    pub operations: Vec<TableEquipmentOperation>,
+    pub may_decline: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TableEquipmentOperation {
+    pub operation: AttackEquipmentOperation,
+    pub label: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

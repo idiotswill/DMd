@@ -1,6 +1,8 @@
 //! Pure source-backed weapon plans. These are not player-authorized commands.
 //! The encounter resolver supplies validated truth and commits resources/receipts atomically.
 mod equipment;
+pub(crate) use equipment::apply_attack_equipment_operation;
+pub(crate) mod ground;
 mod history;
 mod mastery;
 #[cfg(test)]
@@ -8,6 +10,7 @@ mod tests;
 use crate::tactical_definitions::*;
 use crate::{RulesPack, ability_modifier, proficiency_bonus, validate_character_intrinsics};
 use dmd_domain::*;
+pub use ground::{GroundPickupOption, ground_pickup_options};
 pub use mastery::*;
 use serde::Serialize;
 use thiserror::Error;
@@ -34,6 +37,7 @@ fn require(condition: bool, message: &str) -> Result<(), WeaponError> {
 }
 
 /// Source identity is established by the encounter resolver, never a player flag.
+#[derive(Clone, Copy)]
 pub enum WeaponActorSource<'a> {
     Character(&'a CharacterProfile),
     /// Ordinary use of equipment. Stat-block features must use their explicit attack
@@ -41,6 +45,7 @@ pub enum WeaponActorSource<'a> {
     CreatureOrdinaryWeapon(&'a CreatureDefinition),
 }
 /// Runtime-derived geometry/timing facts. Intentionally not Deserialize.
+#[derive(Clone, Copy)]
 pub struct WeaponAttackContext<'a> {
     pub origin: &'a CommandMeta,
     pub actor: EntityId,
@@ -146,6 +151,114 @@ pub fn recoverable_ammunition(expended: u32) -> u32 {
 
 pub fn prepare_weapon_attack(
     input: &WeaponAttackInput<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    let ground = is_ground_pickup(input.choice.equipment_change)
+        || input.choice.after_equipment.is_some()
+        || has_unimplemented_ground_records(input.state)
+        || input
+            .history
+            .iter()
+            .any(|r| r.ground_pickup_before.is_some() || r.after_equipment.is_some());
+    if ground && crate::tactical::attack_equipment_enabled(input.state) {
+        crate::tactical::validate_attack_equipment_state(input.state)
+            .map_err(|e| invalid(e.to_string()))?;
+    } else {
+        require(
+            !is_ground_pickup(input.choice.equipment_change)
+                && input.choice.after_equipment.is_none()
+                && !has_unimplemented_ground_records(input.state)
+                && input
+                    .history
+                    .iter()
+                    .all(|r| r.ground_pickup_before.is_none() && r.after_equipment.is_none()),
+            "ground pickup execution is not enabled",
+        )?;
+    }
+    prepare_tactical_weapon_attack(input)
+}
+
+/// Private production calculation behind the unchanged public admission guard.
+/// This grants no command/state authority and returns only a derived plan.
+pub(crate) fn prepare_tactical_weapon_attack(
+    input: &WeaponAttackInput<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    validate_equipment_intent(input)?;
+    ground::prepare(input)
+}
+
+fn validate_equipment_intent(input: &WeaponAttackInput<'_>) -> Result<(), WeaponError> {
+    if input.choice.after_equipment.is_some() {
+        require(
+            input.choice.equipment_change.is_none()
+                && input.choice.purpose == WeaponAttackPurpose::Normal
+                && input.context.on_actor_turn
+                && input.context.window.kind == WeaponActionKind::AttackAction
+                && input
+                    .state
+                    .encounter
+                    .as_ref()
+                    .and_then(|e| e.flow.as_ref())
+                    .is_some_and(|f| {
+                        f.version == TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+                    }),
+            "later equipment needs an unused ordinary Attack allowance",
+        )?;
+    }
+    Ok(())
+}
+
+pub(crate) fn prepare_weapon_attack_with_read(
+    input: &WeaponAttackInput<'_>,
+    read: &crate::tactical::grapple::reads::AttackRead<'_>,
+) -> Result<WeaponAttackPlan, WeaponError> {
+    prepare_weapon_attack_inner(input, Some(read))
+}
+
+pub(crate) fn complete_weapon_equipment(
+    read: &crate::tactical::grapple::execution::ReadContext<'_>,
+    attack: &TacticalAttack,
+    plan: &WeaponAttackPlan,
+) -> Result<WeaponLoadout, WeaponError> {
+    let state = read.state();
+    let weapon = attack
+        .weapon()
+        .ok_or_else(|| invalid("physical completion source absent"))?;
+    let current = state
+        .rules
+        .as_ref()
+        .and_then(|r| r.tactical_inventory.as_ref())
+        .and_then(|i| i.loadout(attack.actor))
+        .ok_or_else(|| invalid("physical completion loadout absent"))?;
+    require(
+        current.hands == plan.loadout_for_attack
+            && current.worn_armor == weapon.equipment_before.worn_armor
+            && current.shield == weapon.equipment_before.shield
+            && current.command == attack.origin,
+        "physical completion differs from actual reserved equipment",
+    )?;
+    crate::tactical_inventory::validate_loadout(state, current)
+        .map_err(|e| invalid(e.to_string()))?;
+    let hands = crate::tactical_hands::EffectiveHands::current_with_read(read, attack.actor)
+        .map_err(|e| invalid(e.to_string()))?;
+    hands
+        .validate_loadout(&current.hands)
+        .map_err(|e| invalid(e.to_string()))?;
+    let definitions = crate::tactical_definitions::bundled_tactical_definitions()
+        .map_err(|e| invalid(e.to_string()))?;
+    equipment::after_attack_at(
+        state,
+        attack.actor,
+        &weapon.choice,
+        weapon.window,
+        definitions,
+        &current.hands,
+        &hands,
+    )
+}
+
+fn prepare_weapon_attack_inner(
+    input: &WeaponAttackInput<'_>,
+    read: Option<&crate::tactical::grapple::reads::AttackRead<'_>>,
 ) -> Result<WeaponAttackPlan, WeaponError> {
     let WeaponAttackInput {
         state,
@@ -290,9 +403,26 @@ pub fn prepare_weapon_attack(
         }
     };
     history::validate(input, weapon, mastery)?;
-    let loadout_for_attack = equipment::before_attack(input, weapon)?;
-    let ammunition = equipment::ammunition(input, weapon, &loadout_for_attack)?;
-    let loadout_after_attack = equipment::after_attack(input, &loadout_for_attack)?;
+    let hands = if let Some(read) = read {
+        require(
+            read.actor() == context.actor && read.target() == choice.target && read.uses_hands(),
+            "attack read differs from physical reader",
+        )?;
+        crate::tactical_hands::EffectiveHands::attack(read)
+    } else {
+        crate::tactical_hands::EffectiveHands::current(
+            state,
+            state
+                .rules
+                .as_ref()
+                .ok_or_else(|| invalid("missing rules"))?,
+            context.actor,
+        )
+    }
+    .map_err(|error| invalid(error.to_string()))?;
+    let loadout_for_attack = equipment::before_attack(input, weapon, &hands)?;
+    let ammunition = equipment::ammunition(input, weapon, &loadout_for_attack, &hands)?;
+    let loadout_after_attack = equipment::after_attack(input, &loadout_for_attack, &hands)?;
     let reach = context
         .base_reach
         .checked_add(u32::from(weapon.reach_bonus_feet) * 2)
@@ -348,6 +478,8 @@ pub fn prepare_weapon_attack(
             modifier
         };
     let receipt = WeaponAttackReceipt {
+        after_equipment: None,
+        ground_pickup_before: None,
         origin: context.origin.clone(),
         actor: context.actor,
         turn_number: context.turn_number,

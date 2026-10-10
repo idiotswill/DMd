@@ -29,13 +29,15 @@ fn expiry(expiry: &TacticalEffectExpiry, now: WorldInstant) -> Result<(), RulesE
 /// effects and defense-only spells, own timing; projected conditions do not.
 /// Reuse this scan at Finished/session/replacement boundaries, with no mutation.
 pub fn retained_encounter_dependencies(state: &CampaignState) -> Result<Vec<EntityId>, RulesError> {
-    retained_dependencies(state, false)
+    retained_dependencies(state, false, None)
 }
 
 fn retained_dependencies(
     state: &CampaignState,
     allow_new_initiative: bool,
+    allowed_host_transfer_actor: Option<EntityId>,
 ) -> Result<Vec<EntityId>, RulesError> {
+    require_no_live_grips(state)?;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
     let admitted_initiative = allow_new_initiative
         && rules.pending.as_ref().is_some_and(|pending| {
@@ -51,10 +53,11 @@ fn retained_dependencies(
             .as_ref()
             .is_some_and(|table| table.pending.is_some() || table.roll_context.is_some())
         || rules.entities.values().any(|entity| {
-            entity
-                .character_features
-                .as_ref()
-                .is_some_and(|features| features.inspiration_transfer_pending)
+            Some(entity.entity_id) != allowed_host_transfer_actor
+                && entity
+                    .character_features
+                    .as_ref()
+                    .is_some_and(|features| features.inspiration_transfer_pending)
         })
     {
         return Err(prerequisite(
@@ -192,6 +195,20 @@ fn retained_dependencies(
         require_future_placement(state, *actor)?;
     }
     Ok(dependencies)
+}
+
+fn require_no_live_grips(state: &CampaignState) -> Result<(), RulesError> {
+    if state
+        .rules
+        .as_ref()
+        .and_then(|rules| rules.tactical_grapples.as_ref())
+        .is_some_and(|grapples| !grapples.active.is_empty())
+    {
+        return Err(prerequisite(
+            "release or resolve live grips before finishing encounter timing",
+        ));
+    }
+    Ok(())
 }
 
 /// The next supported table placement must be possible before timing is removed.
@@ -342,7 +359,46 @@ pub fn require_finished_encounter(state: &CampaignState) -> Result<(), RulesErro
             "finish the existing encounter before preparing another",
         ));
     }
-    validate_history(state)
+    validate_history(state)?;
+    retained_encounter_dependencies(state).map(|_| ())
+}
+
+/// Read a Finished encounter while a genuine later Host award awaits its owner.
+/// This is not transition admission: setup/session/creation still use the strict
+/// scan. Owned reduction and journal replay authenticate the award companion.
+pub fn finished_encounter_dependencies(state: &CampaignState) -> Result<Vec<EntityId>, RulesError> {
+    let current = flow(state)?;
+    if current.version != TacticalExecutionVersion::EncounterReleaseV1.flow_version()
+        || current.phase != TacticalPhase::Finished
+    {
+        return Err(prerequisite("the encounter is not Finished"));
+    }
+    validate_history(state)?;
+    finished_dependencies(state)
+}
+
+fn finished_dependencies(state: &CampaignState) -> Result<Vec<EntityId>, RulesError> {
+    let allowed_actor = if let Some(transfer) = state
+        .table
+        .as_ref()
+        .and_then(|table| table.inspiration_transfer.as_ref())
+    {
+        transfer.validate(state).map_err(|error| invalid(&error))?;
+        let last = state
+            .encounter_history
+            .as_ref()
+            .and_then(|history| history.last())
+            .ok_or_else(|| invalid("Finished award lacks completion history"))?;
+        if transfer.origin.expected_event_sequence <= last.released_by.expected_event_sequence {
+            return Err(invalid(
+                "Finished Inspiration choice predates encounter release",
+            ));
+        }
+        Some(state.characters[&transfer.character_id].entity_id)
+    } else {
+        None
+    };
+    retained_dependencies(state, false, allowed_actor)
 }
 
 pub(super) fn finish(state: &mut CampaignState, meta: &CommandMeta) -> Result<(), RulesError> {
@@ -552,7 +608,7 @@ pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> 
                 "Finished encounter differs from its authenticated release boundary",
             ));
         }
-        retained_encounter_dependencies(state)?;
+        finished_dependencies(state)?;
     } else {
         if rules
             .timing
@@ -569,7 +625,7 @@ pub(super) fn validate_history(state: &CampaignState) -> Result<(), RulesError> 
                 TacticalPhase::Initiative { .. } | TacticalPhase::InitiativeTies { .. }
             )
         }) {
-            let required = retained_dependencies(state, true)?;
+            let required = retained_dependencies(state, true, None)?;
             if current.participants.len() > MAX_RELEASE_DEPENDENCIES
                 || required
                     .iter()

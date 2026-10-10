@@ -297,6 +297,7 @@ async fn prepare(f: &mut Fixture) -> EntityId {
 
 fn dagger_choice(weapon: ItemId, target: EntityId, equip: bool) -> WeaponUseChoice {
     WeaponUseChoice {
+        after_equipment: None,
         weapon,
         target,
         delivery: WeaponDelivery::Melee,

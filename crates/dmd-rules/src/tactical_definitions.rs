@@ -2,14 +2,90 @@
 //! Kept separate from the version-1 kernel pack so historical replay keeps its meaning.
 use dmd_domain::{Ability, Condition, DamageType, DieSpec, Skill};
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::OnceLock;
 use thiserror::Error;
+
+mod gear_quantities;
 
 pub const TACTICAL_DEFINITIONS_JSON: &str =
     include_str!("../../../content/srd-5.2.1/tactical.json");
 pub const AIR_ELEMENTAL_SOURCE_JSON: &str =
     include_str!("../../../content/srd-5.2.1/air-elemental-v1.json");
+pub const GOBLIN_WARRIOR_V2_SOURCE_JSON: &str =
+    include_str!("../../../content/srd-5.2.1/goblin-warrior-v2.json");
+pub const MAGE_V2_SOURCE_JSON: &str = include_str!("../../../content/srd-5.2.1/mage-v2.json");
+pub const OGRE_SOURCE_JSON: &str = include_str!("../../../content/srd-5.2.1/ogre-v1.json");
+
+/// Immutable source representation only. Creation remains closed until the
+/// physical own-turn/OA/recovery adapters are complete and independently reviewed.
+pub fn bundled_ogre() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(OGRE_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Ogre JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            ensure(
+                source.id == "ogre" && legacy.creature(&source.id).is_none(),
+                "additive Ogre identity collides with V1",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
+
+/// A new immutable revision annotates the reviewed ordinary hand roles. Every
+/// printed action/statistic remains equal to V1; V1 bytes and fingerprints stay put.
+pub fn bundled_goblin_warrior_v2() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(GOBLIN_WARRIOR_V2_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Goblin Warrior V2 JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            let mut expected = legacy
+                .creature("goblin-warrior")
+                .ok_or_else(|| DefinitionError("frozen Goblin source is absent".into()))?
+                .clone();
+            expected.ordinary_hands = Some(dmd_domain::OrdinaryHandAnatomy::TwoHandsV1);
+            ensure(
+                source == expected,
+                "Goblin revision changed more than reviewed anatomy",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
+
+/// Bounded ordinary-body engineering interpretation for this revision only.
+/// Page305 does not state a hand count; every original source clause stays exact.
+pub fn bundled_mage_v2() -> Result<&'static CreatureDefinition, DefinitionError> {
+    static SOURCE: OnceLock<Result<CreatureDefinition, DefinitionError>> = OnceLock::new();
+    SOURCE
+        .get_or_init(|| {
+            let source: CreatureDefinition = serde_json::from_str(MAGE_V2_SOURCE_JSON)
+                .map_err(|e| DefinitionError(format!("Mage V2 JSON: {e}")))?;
+            let legacy = bundled_tactical_definitions()?;
+            let mut expected = legacy
+                .creature("mage")
+                .ok_or_else(|| DefinitionError("frozen Mage source is absent".into()))?
+                .clone();
+            expected.ordinary_hands = Some(dmd_domain::OrdinaryHandAnatomy::TwoHandsV1);
+            ensure(
+                source == expected,
+                "Mage revision changed more than reviewed anatomy",
+            )?;
+            source.validate(legacy)?;
+            Ok(source)
+        })
+        .as_ref()
+        .map_err(Clone::clone)
+}
 
 /// Additive immutable entry. It uses V1's spell/weapon vocabulary without changing
 /// the V1 catalog or any definition serialized into a historical fingerprint.
@@ -466,6 +542,14 @@ pub struct CreatureStatistics {
     pub additional_languages: u8,
     pub can_speak: bool,
     pub gear: Vec<String>,
+    /// Fixed source quantities; omission preserves all original source fingerprints.
+    /// Individual equipment is later expanded into distinct quantity-one items.
+    #[serde(
+        default,
+        skip_serializing_if = "BTreeMap::is_empty",
+        deserialize_with = "gear_quantities::deserialize"
+    )]
+    pub gear_quantities: BTreeMap<String, u32>,
 }
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -665,6 +749,10 @@ pub struct CreatureDefinition {
     pub features: Vec<NamedMonsterFeature>,
     pub legendary_budget: Option<LegendaryBudget>,
     pub source_pages: Vec<u16>,
+    /// Explicit reviewed capability, never inferred from default equipment slots.
+    /// Omission preserves every frozen definition's canonical JSON fingerprint.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ordinary_hands: Option<dmd_domain::OrdinaryHandAnatomy>,
 }
 
 impl TacticalDefinitions {
@@ -1092,6 +1180,14 @@ impl CreatureDefinition {
             label(language)?;
         }
         unique_ids(s.gear.iter().map(String::as_str))?;
+        // Equipment classification is post-load: the global equipment registry
+        // itself loads this catalog and must not reenter its initializing lock.
+        for (id, quantity) in &s.gear_quantities {
+            ensure(
+                *quantity >= 2 && s.gear.contains(id),
+                "gear quantity must override a listed definition with at least two",
+            )?;
+        }
         unique_ids(self.features.iter().map(|f| f.id.as_str()))?;
         ensure(
             !self.features.is_empty(),

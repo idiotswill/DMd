@@ -7,11 +7,12 @@ use crate::tactical_creatures::{
     use_creature_legendary_resistance,
 };
 
-pub(super) fn is_failure(
-    state: &CampaignState,
+fn is_failure_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
     pending: &TacticalPendingWork,
     result: Option<&RollResult>,
 ) -> Result<bool, RulesError> {
+    let state = read.state();
     if !matches!(
         pending.key.role,
         TacticalRollRole::DeathSave
@@ -20,6 +21,7 @@ pub(super) fn is_failure(
             | TacticalRollRole::SpellSave
             | TacticalRollRole::AreaSave
             | TacticalRollRole::ShoveSave
+            | TacticalRollRole::GrappleSave
     ) {
         return Ok(false);
     }
@@ -29,13 +31,16 @@ pub(super) fn is_failure(
     if pending.key.role == TacticalRollRole::AreaSave {
         return super::areas::save_failed(state, pending, Some(result));
     }
+    if pending.key.role == TacticalRollRole::GrappleSave {
+        return super::grapple::save_failed(state, pending, Some(result));
+    }
     if pending.key.role == TacticalRollRole::ShoveSave {
         return super::shove::save_failed(state, pending, Some(result));
     }
     if pending.key.role == TacticalRollRole::SpellSave {
         return super::casting::save_failed(state, pending, Some(result));
     }
-    let request = super::continuations::request(state, &pending.work, pending.key)?
+    let request = super::continuations::request_with_read(read, &pending.work, pending.key)?
         .ok_or_else(|| invalid("automatic failure has no raw roll"))?;
     let roll = request.resolve(result)?;
     match &pending.work.kind {
@@ -95,6 +100,16 @@ pub fn validate_failed_save(
     state: &CampaignState,
     failed: &TacticalFailedSave,
 ) -> Result<CreatureFailedSaveProof, RulesError> {
+    validate_failed_save_with_read(
+        &super::grapple::execution::ReadContext::ordinary(state),
+        failed,
+    )
+}
+pub(super) fn validate_failed_save_with_read(
+    read: &super::grapple::execution::ReadContext<'_>,
+    failed: &TacticalFailedSave,
+) -> Result<CreatureFailedSaveProof, RulesError> {
+    let state = read.state();
     let r = resolution(state)?;
     let encounter_id = encounter(state)?.id;
     let rules = state.rules.as_ref().ok_or(RulesError::Uninitialized)?;
@@ -108,7 +123,7 @@ pub fn validate_failed_save(
         || failed.resolved_by.expected_event_sequence > state.applied_event_sequence
         || failed.issued_by.expected_event_sequence > failed.resolved_by.expected_event_sequence
         || failed.issued_by.expected_event_sequence < r.origin.expected_event_sequence
-        || !is_failure(state, p, failed.result.as_ref())?
+        || !is_failure_with_read(read, p, failed.result.as_ref())?
         || !available(state, p.key.subject)?
     {
         return Err(invalid(
@@ -119,7 +134,7 @@ pub fn validate_failed_save(
         .map_err(|e| invalid(&e))?;
     validate_equipment_change_origin(state, &failed.resolved_by, p.key.subject)
         .map_err(|e| invalid(&e))?;
-    let request = super::continuations::request(state, &p.work, p.key)?;
+    let request = super::continuations::request_with_read(read, &p.work, p.key)?;
     if let Some(raw) = &failed.result {
         let request = request.ok_or_else(|| invalid("automatic failure supplied raw dice"))?;
         authorize(state, &failed.resolved_by, p.key.subject)?;
@@ -169,13 +184,16 @@ pub fn validate_failed_save(
     ))
 }
 
-pub(super) fn stage_or_finish(
+pub(super) fn stage_or_finish_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     pending: TacticalPendingWork,
     result: Option<&RollResult>,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
-    if is_failure(state, &pending, result)? && available(state, pending.key.subject)? {
+    if is_failure_with_read(&execution.read(state)?, &pending, result)?
+        && available(state, pending.key.subject)?
+    {
         let issued_by = if result.is_some() {
             state
                 .rules
@@ -203,19 +221,21 @@ pub(super) fn stage_or_finish(
         });
         return Ok(());
     }
-    super::continuations::finish(state, meta, pending, result, false)
+    super::continuations::finish_with_context(state, meta, pending, result, false, execution)
 }
 
-pub(super) fn choose(
+pub(super) fn choose_with_context(
     state: &mut CampaignState,
     meta: &CommandMeta,
     use_resistance: bool,
+    execution: &mut super::grapple::execution::ExecutionContext<'_>,
 ) -> Result<(), RulesError> {
     let failed = resolution(state)?
         .failed_save
         .clone()
         .ok_or_else(|| prerequisite("no Legendary Resistance decision is due"))?;
-    let proof = validate_failed_save(state, &failed)?;
+    let proof = validate_failed_save_with_read(&execution.read(state)?, &failed)?;
+    super::grapple::authorize_pending(state, meta, failed.pending.key)?;
     if resolution(state)?.shove.is_some() {
         super::shove::authorize_owner(state, meta, failed.pending.key.subject)?;
     }
@@ -235,13 +255,18 @@ pub(super) fn choose(
             .ok_or(RulesError::Uninitialized)?
             .tactical_creatures = Some(consumed);
     }
-    resolution_mut(state)?.failed_save = None;
-    super::continuations::finish(
+    // The new core consumes the actual LR decision while this exact failed
+    // tuple still exists, distinguishing decline from no LR window.
+    if failed.pending.key.role != TacticalRollRole::GrappleSave {
+        resolution_mut(state)?.failed_save = None;
+    }
+    super::continuations::finish_with_context(
         state,
         meta,
         failed.pending,
         failed.result.as_ref(),
         use_resistance,
+        execution,
     )?;
-    pump(state, meta)
+    super::turns::pump_with_context(state, meta, execution)
 }
