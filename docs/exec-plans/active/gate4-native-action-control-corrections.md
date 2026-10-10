@@ -283,3 +283,38 @@ full verification obligations. Next: commit the reviewed source, bind and
 independently verify the exact head/tree and fresh allocation manifest, publish
 the successor, and execute frontend, focused Rust, complete canonical and
 Python checks. No successor runtime, hosted, package or native pass is claimed.
+
+### Obsolete-query lifecycle correction
+
+At `166494bc77a95ec8f8650ef9c21d2bdf99a349d1`, all four local frontend
+commands exited successfully: 329 tests in 38 files, zero Svelte-check errors
+or warnings, and a completed production build. The original test stderr also
+contains 28 `derived_inert` warnings across 14 delayed-response cases. This
+is a real lifecycle finding despite passing assertions: the old query reads
+the parent-derived `disabled` property before rejecting its invalid generation.
+The independent terminal frontend audit is SHA256
+`8ef88bfab96f2dc94aa0525346db67e84515d8cb049d4739dbf3d8c74b75c2b5`.
+
+The bounded correction checks the plain generation token before accessing any
+reactive property. Existing delayed success/failure tests additionally assert
+that no destroyed-derived warning is emitted, with a passthrough console spy
+that restores the original method. No warning is suppressed; existing assertions
+and the 329/38 frontend and 1,153 Rust inventories remain unchanged. No backend,
+historical fixture, command path, resource rule or acceptance criterion changes.
+
+All six hosted prerequisite jobs passed at 166494bc; original Windows test logs
+retain the same lifecycle warning. Their audit SHA256 is
+`9957a08f75ed6427c4da77d2d15640e383980b90b071e4ec6f77be044ada0c0c`.
+Those results do not verify the successor. Preserve the original local frontend
+receipts, logs and partially compiled Rust target. Root stopped the exact owned
+local process tree at 21:47:25 UTC before editing the source; all bound handles
+exited, no descendants remained, and the original lock was archived. The stop
+receipt SHA256 is
+`3c48cad166c3215eb7864e46e2f74a679b8bd6cca2e9db88539292ddab042ecf`.
+No Rust outcome or original runner result was synthesized. Independent review
+cleared the two-file lifecycle proposal with report SHA256
+`28e4ef2574471ef7f372ec8d8436c5f927fad9765fdd89d317d54fa85f1ee649`.
+The new reviewed head requires
+fresh frontend, both focused regressions, complete canonical/Python checks,
+hosted unions, packaging and all corrected-package native acceptance. Both
+original native findings and Gate4 remain open; Gate5 is unallocated.

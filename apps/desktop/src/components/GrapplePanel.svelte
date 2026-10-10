@@ -22,7 +22,7 @@
       : JSON.stringify(['SourceCreature', value.SourceCreature.player_id, value.SourceCreature.actor]);
   }
   async function load(value: GrappleOptionsRequest, observed: string, ticket: number, offered: string[]) {
-    const current = () => !disabled && generation === ticket && identity === observed;
+    const current = () => generation === ticket && !disabled && identity === observed;
     try {
       const answer = await tableApi.grappleOptions(value);
       if (!current()) return;

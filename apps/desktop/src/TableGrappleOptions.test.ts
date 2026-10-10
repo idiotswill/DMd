@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/svelte';
 import userEvent from '@testing-library/user-event';
 import { tick } from 'svelte';
-import { beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import TableApp from './TableApp.svelte';
 import { contract, emptyView, options } from './components/table-fixtures.test-support';
 import { REQUEST_KEY, SELECTION_KEY, tableApi, type GrappleOptions, type GrappleOptionsRequest, type TableView } from './table-api';
@@ -60,6 +60,8 @@ beforeEach(() => {
   vi.mocked(tableApi.action).mockResolvedValue({ command_id: 'accepted', revision: 'accepted', outcome: { message: 'Recorded.' } });
 });
 
+afterEach(() => { vi.restoreAllMocks(); });
+
 it.each(['pc', 'source', 'host'] as const)('queries the exact %s channel and submits only its original allowed handle', async mode => {
   const user = userEvent.setup(); select(mode); render(TableApp); await ready();
   const control = await screen.findByRole('button', { name: /Grapple wording for the available grip/ });
@@ -102,6 +104,7 @@ it.each(['version', 'campaign', 'revision', 'channel', 'unknown', 'duplicate'] a
 it.each(['source', 'channel', 'campaign', 'revision', 'session', 'encounter', 'round', 'unmount'].flatMap(change => [
   { change, failure: false }, { change, failure: true },
 ]))('discards obsolete query after $change; late failure=$failure', async ({ change, failure }) => {
+  const warnings = vi.spyOn(console, 'warn'); // Keep the original warning output visible.
   const user = userEvent.setup(); let resolve!: (value: GrappleOptions) => void; let reject!: (reason: Error) => void;
   vi.mocked(tableApi.grappleOptions).mockReturnValueOnce(new Promise((yes, no) => { resolve = yes; reject = no; }))
     .mockImplementation(async request => answer(request, true));
@@ -127,6 +130,7 @@ it.each(['source', 'channel', 'campaign', 'revision', 'session', 'encounter', 'r
   expect(screen.queryByText('Mismatched Grapple options. Refresh the table.')).toBeNull();
   expect(screen.getByRole('button', { name: /Release wording for a paid attack/ })).toBeTruthy();
   expect(tableApi.action).not.toHaveBeenCalled(); expect(localStorage.getItem(REQUEST_KEY)).toBeNull();
+  expect(warnings.mock.calls.flat().map(String).join('\n')).not.toContain('derived_inert');
 });
 
 it.each([false, true])('a pending accepted-request retry invalidates an in-flight query and unlock reloads; late failure=%s', async failure => {
