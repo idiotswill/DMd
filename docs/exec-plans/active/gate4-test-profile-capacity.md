@@ -1,6 +1,7 @@
 # Gate 4: complete verification within runner capacity
 
-Status: proposed 2026-10-10, before implementation. Root is the sole writer on
+Status: three-setting candidate authored after independent plan review on
+2026-10-10; compilation and runtime remain UNRUN. Root is the sole writer on
 `codex/gate4-family-receiver`. Baseline is
 `63b48d50a29407ac3e7197f49aaf106f70714fe6`, tree
 `d0c540f81568017dcc89ff02fb4c96b7c3beb60c`. Gate 4 remains active; Gate 5 is not
@@ -116,9 +117,11 @@ Avoid mixing an authority-path refactor into this configuration experiment.
 
 ## Exact next action
 
-Independent plan review, then apply only the three explicit test-profile settings,
-review/freeze the delta, and allocate fresh verification. No new run or profile
-performance result is claimed by this plan.
+Plan 66903a5d received independent CLEAR; report SHA256
+`e444aca02162a3d845a69c7e73da7565a2644b8fdb40673155f464a2b8bd5ede`.
+Root applied only the three explicit test-profile settings above. Review/freeze
+the complete delta, then allocate fresh verification. No new run or profile
+performance result is claimed by this checkpoint.
 
 Independent source assessment found repeated full replay in the actual fixture
 and read paths, with bounded outer loops. Removing the duplicate replay/query

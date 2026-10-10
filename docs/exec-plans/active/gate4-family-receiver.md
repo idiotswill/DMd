@@ -1,8 +1,11 @@
 # Gate 4 combined family receiver
 
-Status: complete source review, exact368 frontend PASS and accepted-main receipt;
-final receiver verification pending, 2026-10-08. No feature/gate acceptance.
-Branch `codex/gate4-family-receiver`; no PR yet. Root is sole writer
+Status: source reviewed; verification incomplete, 2026-10-10. Published 63b48d50
+has five local focused passes, one actual hosted M+G3 failure and incomplete
+hosted execution after nine six-hour timeouts. No feature/gate acceptance.
+The [test-profile capacity plan](gate4-test-profile-capacity.md) governs the
+next independently reviewed candidate and failure-first diagnostic allocation.
+Branch `codex/gate4-family-receiver`; draft PR #76. Root is sole writer
 in the reused clean `gate4-grapple-combined-receipt` checkout. The old
 `codex/gate4-finished-character-creation` ref remains at its unchanged4deba086 head.
 
