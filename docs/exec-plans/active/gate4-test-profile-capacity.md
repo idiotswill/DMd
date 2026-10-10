@@ -12,9 +12,18 @@ The corrected family still cannot complete its current hosted verification.
 Linux run 37813727243 and Windows run 37813727264 have nine cancelled runtime
 jobs after approximately six hours. Their downstream union/package guards
 failed. Five complete runtime jobs succeeded; those jobs do not complete either
-platform. Original job logs and artifacts are being preserved and audited under
+platform. The original Linux Grapple log also records an actual failed case,
+`roll_details::mass::actual_m_g3_source_save_and_escape_details_preserve_owned_source_and_retry`.
+It contains 82 named passes, that failure and nine unresolved cases; cancellation
+prevented the final panic summary. This is a functional blocker, not merely a
+capacity problem. Windows Grapple has 81 named passes and 11 unresolved cases.
+Original job logs and artifacts are being preserved and audited under
 `tooling/ci-oct10`, outside the repository. Timing alone does not prove the
 cancelling actor, an assertion failure, or successful completion of partial tests.
+The subsequently recovered Ground annotation explicitly reports the six-hour
+maximum execution time. Ground and Recipient each finish their small control
+and remain inside a single long historical case, so case-level sharding would
+not resolve those individual cases.
 
 The local GNU attempt on the same head completed the three new Finished
 Inspiration cases, the existing Finished/Mass case, and the intrinsic-attack
@@ -79,6 +88,9 @@ settings explicitly in new artifacts. Previous-head passes do not verify it.
    using the previous seven focused stages and unchanged full canonical/Python/
    frontend stages. Preserve all original attempts; do not resume or reuse their
    targets. Keep GNU 1.98.1, jobs=1 and incremental=0 as previously allocated.
+   Run the existing M+G3 source case first to obtain its terminal panic/outcome;
+   then run the other six original stages. A failure stops the sequence and
+   requires a diagnosed source correction before a new frozen-head allocation.
 3. Compare the exact intrinsic case with the original 1,805.54-second outcome,
    clearly separating compilation from test duration. The earlier observation
    is not a controlled benchmark. Record actual configuration, resources and
@@ -107,3 +119,12 @@ Avoid mixing an authority-path refactor into this configuration experiment.
 Independent plan review, then apply only the three explicit test-profile settings,
 review/freeze the delta, and allocate fresh verification. No new run or profile
 performance result is claimed by this plan.
+
+Independent source assessment found repeated full replay in the actual fixture
+and read paths, with bounded outer loops. Removing the duplicate replay/query
+authentication would save only two of fourteen authentication calls inside a
+successful cold helper, before additional audience reads. That is a call-count
+observation, not a wall-time attribution. The test-profile experiment leaves
+those real restore/retry/privacy paths intact. Development-build and packaged
+application latency still require separate measurement; faster tests cannot be
+reported as a production performance fix.
