@@ -217,3 +217,36 @@ family or replace the full verification sequence. Preserve the original target,
 runner, logs, database and published2e0 CI; do not push a diagnostic-only head.
 Any subsequent message correction must be justified by the captured Result,
 keep a precise owner-specific refusal and retain the no-write assertion.
+
+## October 10: correct the observed owner-specific refusal oracle
+
+The diagnostic on frozen edb8921d compiled in 19m07s and failed the one exact
+M+G3 case after 180.05 seconds: zero passes, one failure, 91 filtered, exit101
+at 08:50:37 UTC. Its actual Result is now captured:
+`Err(TableRejected("This source creature's player must make the decision or report its public dice."))`.
+Original log SHA256:
+`5e78ad78593ab7492aa66f7996afa6750382c6085bb7fae4ce10afd6955425de`.
+Independent terminal audit SHA256:
+`a5f15e82a90cfdecadade6470432fe9e467427186fb95819c888b910e2a61097`.
+It verifies all 1,013 source hashes, 281 preserved evidence pins, 16 executors,
+clean before/after source, absent processes and released heavy lock. The
+post-assertion unchanged-data check did not execute and is not claimed passed.
+
+The observed result confirms the existing source-control guard and its already
+tested precise message. The shared helper incorrectly demanded the character
+authorization message for both character and source owners. Allocate only an
+owner-channel match in `host_cannot_answer`: Player retains the exact generic
+unauthorized message; SourceCreature requires the captured exact source-owner
+message; Host is an invalid helper input and must panic. Keep the TableRejected
+variant, diagnostic Result output, original request, complete export/all-row
+unchanged check, matrix and every case body. No production authorization, content,
+controller policy, schema, transport, test-profile or verification change.
+
+Commit this plan before the correction. Review the complete frozen delta,
+including preservation of the earlier diagnostic, before allocating a fresh
+target for the original seven focused stages and unchanged full canonical,
+27 Python controls and frontend verification. Publish the reviewed corrected
+head for fresh exact-source Linux/MSVC prerequisites, seven-allocation unions,
+aggregate and Windows packaging; retain all original failure evidence. Current
+2e0 hosted results do not pass this new head. Native ledger/addendum, final-main
+checks and separate human Gate 4 evidence remain due. No acceptance is waived.
